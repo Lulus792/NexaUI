@@ -12,6 +12,12 @@ function(nexaui_audit_core_target target)
     # and the compositor-supplied XKB keymap; UI input routing stays in NexaUI.
     set(_allowed_links user32 shell32 imm32 m Threads::Threads X11::X11
         PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
+    # AppKit supplies native macOS windows, input and pasteboard services.
+    # objc is its OS runtime, needed when a plain C executable links the static
+    # adapter. Neither entry is permitted on other target platforms.
+    if(APPLE)
+        list(APPEND _allowed_links "-framework AppKit" objc)
+    endif()
     foreach(_property LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
         get_target_property(_links "${target}" "${_property}")
         if(_links)
@@ -60,11 +66,11 @@ function(nexaui_audit_core_target target)
             endif()
             message(FATAL_ERROR "Dependency audit: missing source '${_path}'")
         endif()
-        file(STRINGS "${_path}" _includes REGEX "^[ \t]*#[ \t]*include[ \t]*")
+        file(STRINGS "${_path}" _includes REGEX "^[ \t]*#[ \t]*(include|import)[ \t]*")
         foreach(_include IN LISTS _includes)
             string(REGEX REPLACE
-                "^[ \t]*#[ \t]*include[ \t]*[<\"]([^>\"]+)[>\"].*$"
-                "\\1" _header "${_include}")
+                "^[ \t]*#[ \t]*(include|import)[ \t]*[<\"]([^>\"]+)[>\"].*$"
+                "\\2" _header "${_include}")
             string(TOLOWER "${_header}" _header)
             string(REGEX MATCH "^[^/.]+" _root "${_header}")
             if(_root IN_LIST _forbidden_roots)

@@ -34,3 +34,9 @@ The Vulkan backend includes authored GLSL and generated SPIR-V words.
 `glslangValidator` and `spirv-val` are optional development tools for shader
 regeneration/verification; normal builds and application runtime use the
 embedded arrays and link neither tool. See [shader regeneration](vulkan.md#embedded-shaders).
+
+The initial Apple adapter uses the OS `AppKit` framework and `objc` runtime.
+These links are allowed only for an Apple target; the implementation remains in
+`platform/macos/window.m`. The runtime link is explicit for plain C consumers of
+the static archive. The audit checks both `#include` and Objective-C `#import`;
+fixtures reject forbidden UI imports and AppKit links on non-Apple targets.
