@@ -5,13 +5,46 @@
 [![Build and test](https://github.com/Lulus792/NexaUI/actions/workflows/ci.yml/badge.svg)](https://github.com/Lulus792/NexaUI/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Getting started](#getting-started) · [Examples](#examples) · [Integration](#integration) · [Documentation](#documentation) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+[Usage](#usage) · [Getting started](#getting-started) · [Examples](#examples) · [Integration](#integration) · [Documentation](#documentation) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
 NexaUI brings layout, widgets, text, rendering and native window integration behind a C API. Its core uses NexaUI code and the C standard library; platform and renderer modules call operating-system and graphics APIs directly. It does not use third-party UI, windowing, layout, shaping or font libraries.
 
 Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, an initial Windows D3D12 renderer, a Linux Vulkan clear/present path, and primitives for moving simulation snapshots and commands between worker threads and the UI.
 
 > **Early development — 0.1.0.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
+
+## Usage
+
+Create a context, record a frame, then pass its drawing commands to a renderer. This complete C example draws a panel into an in-memory RGBA8 image; it needs no window or font:
+
+```c
+#include <nexaui/nexaui.h>
+
+int main(void) {
+    nx_context *ui = NULL;
+    const nx_command *commands = NULL;
+    size_t count = 0;
+    static uint8_t rgba[320 * 180 * 4];
+
+    nx_result result = nx_context_create(NULL, &ui);
+    if (result != NX_OK) return 1;
+
+    result = nx_begin_frame(ui, 320, 180, 1.0 / 60.0);
+    if (result == NX_OK)
+        result = nx_fill_round_rect(ui, (nx_rect){16, 16, 288, 148}, 12,
+                                    (nx_color){0.12f, 0.15f, 0.21f, 1});
+    if (result == NX_OK) result = nx_end_frame(ui);
+    if (result == NX_OK) result = nx_frame_commands(ui, &commands, &count);
+    if (result == NX_OK)
+        result = nx_headless_render(commands, count, rgba, 320, 180, 320 * 4,
+                                   (nx_color){0.06f, 0.08f, 0.12f, 1});
+
+    nx_context_destroy(ui);
+    return result == NX_OK ? 0 : 1;
+}
+```
+
+Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headless example](examples/00_headless/main.c) also writes the pixels to a PPM file. For a native window and widgets, start with [Hello UI](examples/01_hello_ui/README.md); for a larger application, explore the [Studio showcase](examples/showcase/README.md).
 
 ## Features
 
@@ -66,6 +99,14 @@ ctest --test-dir build -C Debug --output-on-failure --timeout 30
 ```
 
 Tests and examples are enabled by default. Multi-configuration generators such as Visual Studio use the `Debug` configuration above. With a single-configuration generator, add `-DCMAKE_BUILD_TYPE=Debug` to the configure command for a debug build.
+
+On Linux, run the X11 native tests in an isolated display to avoid interference from an active desktop clipboard. Install `xvfb` and `xauth`, then use:
+
+```sh
+NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a ctest --test-dir build --output-on-failure --timeout 30
+```
+
+Wayland native tests additionally need a running compositor. See the [Linux CI workflow](.github/workflows/ci.yml) for the display and renderer test environments.
 
 ### Run an example
 
