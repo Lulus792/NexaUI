@@ -369,3 +369,11 @@ the shared scene also passes local Linux software-rendered workflows.
 The full scene now runs through Vulkan on X11/Wayland. Continue with native
 Cocoa/Metal and the remaining per-OS accessibility, DPI, large-text, performance
 and release checks. [Delivery and acceptance scope](docs/nexacloud.md).
+
+An initial AppKit window adapter now exists behind the same C ABI, with main-thread
+ownership, per-window event/drop queues, point/backing-scale separation, native
+close/focus/input and an initial NSTextInputClient composition path. Native
+callbacks and ownership have authored macOS tests; their execution is pending.
+Full-document IME/reconversion and Command editor actions remain M04 work, and
+Metal/native NexaCloud rendering remains A01–A08 work. Windows/Linux build and
+shared-input checks do not count as macOS validation. See [the AppKit report](docs/concepts/macos.md).

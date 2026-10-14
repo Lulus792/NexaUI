@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added the initial private AppKit window/input adapter and native callback/ownership tests. Main-thread windows, preedit, UTF-8 pasteboard and file URL drops have an implementation; macOS execution evidence and Metal remain pending.
 - Added Vulkan RGBA8/A8 image and glyph-mask uploads through a bounded reusable atlas, per-frame source-view deduplication, exact RGBA8 tint/compositing and retained storage across submission timeouts. NexaCloud now has an X11/Wayland native runner; full overview/file/compact GPU captures match its software reference.
 - Added Vulkan nested clips and integer straight-alpha composition through an owned canvas/history pair, plus analytic rounded fills, inside strokes and round-capped lines. GPU output matches the tested headless reference at 1×/1.5×/2×; native examples, allocation/retirement regressions and sanitizer checks cover both X11 and Wayland. Bitmap/glyph rendering and native macOS remain pending.
 - Fixed Wayland teardown losing already-decoded server-created data offers when another reader leaves them queued; a mock-compositor regression verifies adoption and cleanup before listener destruction.

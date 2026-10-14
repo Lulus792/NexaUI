@@ -329,13 +329,14 @@ typedef struct nx_file_drop_info {
     uint32_t index, count; /* Zero-based path index and total paths in this drop. */
 } nx_file_drop_info;
 
-/* Native windows exist on Windows and Linux. Linux selects Wayland when a
+/* Native adapters exist on Windows, Linux and initially macOS/AppKit. Linux selects Wayland when a
    compositor is available, then X11 as fallback; NEXAUI_PLATFORM=x11 or
-   wayland explicitly selects one adapter. macOS remains unsupported. Create,
-   poll, read and destroy a window on the same OS event thread. No native
+   wayland explicitly selects one adapter. Create, poll, read and destroy a
+   window on the same OS event thread; macOS requires the main thread. No native
    handle leaks through this API. Poll waits up to timeout_ms and dispatches
    native events; Linux polls each window connection, while Win32 pumps its
-   thread's windows. */
+   thread's windows and AppKit dispatches process-wide events. See the platform
+   validation reports for native acceptance status. */
 NX_API nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window);
 NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);

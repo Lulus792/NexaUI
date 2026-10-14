@@ -7,3 +7,7 @@ System contracts and implementation status: [Layout](concepts/layout.md), [Input
 Native rendering: [D3D12](concepts/d3d12.md) and [Linux Vulkan shapes, clips and alpha](concepts/vulkan.md). Vulkan now includes RGBA8/A8 uploads; native macOS remains pending. The [NexaCloud example](../examples/nexacloud/README.md) has Windows/D3D12 and Linux/Vulkan native runners.
 
 The guide will expand with each public API slice. Pages for unimplemented capabilities are deliberately absent to avoid implying support that has not been built or validated.
+
+The initial [AppKit window adapter](concepts/macos.md) now has implementation and
+authored native checks. Its native macOS execution evidence is pending; Metal and
+the full macOS NexaCloud runner are not yet available.

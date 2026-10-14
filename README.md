@@ -63,13 +63,13 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 | --- | --- | --- |
 | Windows | Win32 backend, clipboard, file drops and initial IME integration | Software renderer and initial D3D12 backend |
 | Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Software renderer and Vulkan shapes, RGBA8 images and A8 masks with nested clips and straight alpha |
-| macOS | Native backend planned | Headless software renderer |
+| macOS | Initial AppKit adapter added; native validation pending | Headless software renderer; Metal pending |
 
 On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one.
 
 ### Known limitations
 
-- Native macOS windows, Metal, broader native acceptance and direct GPU texture import are pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
+- An initial [AppKit adapter](docs/concepts/macos.md) is awaiting native validation. Metal, broader native acceptance and direct GPU texture import are pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
