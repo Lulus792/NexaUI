@@ -1,15 +1,17 @@
 # Linux Vulkan backend
 
 The private `nexaui_renderer_vulkan` target implements V01 device selection
-and an initial V02 Wayland/X11 surface, swapchain and clear/present path. It
+and an initial V02 Wayland/X11 surface, swapchain and clear/present path, with
+V03 presentation-fence retirement and retryable teardown/recovery. It
 accepts empty command streams through the private renderer driver. Drawing
-NexaUI shapes, images and text remains V04–V06 work; resource hardening,
-batching, profiling and broader recovery remain V03/V07–V09 work.
+NexaUI shapes, images and text remains V04–V06 work; batching, profiling,
+hardware device-loss acceptance and broader integration remain V07–V09 work.
 
 ## Build boundary
 
 Linux builds enable `NEXAUI_BUILD_VULKAN` by default and require Vulkan SDK
-headers and the system Vulkan loader. Debian/Ubuntu packages are
+headers 1.3.250 or newer and the system Vulkan loader. The runtime still uses
+Vulkan 1.0 plus explicitly negotiated extensions. Debian/Ubuntu packages are
 `libvulkan-dev`; a software driver for development is available through
 `mesa-vulkan-drivers`. Pass `-DNEXAUI_BUILD_VULKAN=OFF` to build the core without
 the private target. Windows and macOS do not configure this option or find
@@ -23,7 +25,15 @@ framework dependency.
 
 ## Device and ownership contract
 
-`nx_vk_device_create` requests Vulkan 1.0 with no optional device features.
+`nx_vk_device_create` requests Vulkan 1.0. Its default descriptor enables no
+optional device features. A requested present-fence policy negotiates
+`VK_KHR_swapchain_maintenance1` or `VK_EXT_swapchain_maintenance1`, preferring
+KHR when both are available. The selected device must advertise both the
+extension and the `swapchainMaintenance1` feature. Instance creation enables
+the matching surface-maintenance extension, `VK_KHR_get_surface_capabilities2`
+and `VK_KHR_get_physical_device_properties2`; missing dependencies or a false
+feature reject a required request. An optional request can select an adapter
+without present fences. Diagnostics report the enabled variant.
 It enables `VK_KHR_surface`, which needs no display connection and is required
 by the `VK_KHR_swapchain` device extension. Callers can supply up to 64 unique
 additional instance extension names for later platform surface integration.
@@ -53,8 +63,8 @@ submissions must be retired by the caller.
 
 `nx_vk_device_wait_idle` maps device loss to `NX_ERROR_STATE`. Destruction
 attempts an idle wait and releases the logical device before its instance,
-including after device loss. Recovery and in-flight resource tracking are
-V03 work. Adapter diagnostics report the advertised API and driver version,
+including after device loss. The renderer uses a separate private destroy
+entry only after retiring all of its tracked work. Adapter diagnostics report the advertised API and driver version,
 vendor/device IDs, name, kind, queue families and enabled swapchain extension.
 
 ## Window surfaces and presentation
@@ -79,15 +89,20 @@ enumeration retries at most four times, and the backend caps format lists at
 
 One command buffer, acquisition semaphore and submission fence serialize the
 initial frames. Each swapchain image owns a separate present-wait semaphore,
-reused only after that image is reacquired. Image barriers preserve acquisition,
+and strict mode adds a present fence per image. Image barriers preserve acquisition,
 transfer and presentation order, including separate graphics/present families.
-Acquisition and submission-fence waits use one-second timeouts. A timeout
-suspends a frame without reusing in-flight storage; an out-of-date swapchain
+Acquisition, acquisition-fence, submission-fence and present-fence waits use
+one-second timeouts. A timed-out image fence retains the acquired image and
+its acquisition signal for the next call; it does not acquire another image
+or rebuild the swapchain first. A timeout suspends a frame without reusing
+in-flight storage; an out-of-date swapchain
 is rebuilt on retry. Suboptimal surfaces also trigger a rebuild even when the
 application's target dimensions have not changed.
 
-Resize currently waits for device idle, destroys the old swapchain and then
-creates the replacement. A failure after teardown leaves an empty target for retry.
+Strict resize first retires acquisition, submission and all pending presentations
+with one aggregate, one-second fence wait. A timeout retains the old chain
+and returns a suspended frame. Successful retirement destroys the old chain
+before creating its replacement. A failure after teardown leaves an empty target for retry.
 Fatal device/surface failures latch an unusable renderer until explicit
 recovery recreates the device and surface. Native tests exercise explicit
 rebuild and injected driver state; actual hardware removal is not yet forced.
@@ -95,14 +110,41 @@ Empty zero-size driver targets suspend, and drawing commands are rejected
 before image acquisition. The visible [native clear example](../../examples/10_native_clear/README.md)
 runs this path on either Linux backend.
 
-### Remaining presentation-lifetime work
+### Presentation retirement and close
 
-The current Vulkan 1.0 cleanup follows the conventional device-idle wait before
-destroying swapchain resources. As the [Khronos semaphore guide](https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html#vk_ext_swapchain_maintenance1_extension)
-explains, unextended Vulkan does not give that wait a formal presentation-
-completion guarantee. V03 must add presentation-fence support and an explicit
-fallback/retirement policy before this backend can pass release lifetime
-acceptance. Passing validation layers does not resolve that specification gap.
+`nx_vulkan_renderer_create` and the F11 adapter use strict retirement by
+default. `nx_vulkan_renderer_create_config` accepts these explicit policies:
+
+| Policy | Present fences | Driver without maintenance support |
+| --- | --- | --- |
+| `NX_VULKAN_RETIRE_STRICT` | Required; KHR preferred, EXT accepted | Creation returns `NX_ERROR_UNSUPPORTED` |
+| `NX_VULKAN_RETIRE_COMPATIBLE` | Used when supported | Conventional device-idle fallback |
+| `NX_VULKAN_RETIRE_LEGACY` | Disabled | Conventional device-idle path |
+
+A presentation fence proves when the image's present-wait semaphore may be
+reused or destroyed. All pending present fences must complete before swapchain
+destruction. A submission fence alone proves only submission completion.
+Strict cleanup does not substitute `vkDeviceWaitIdle` for presentation fences.
+As the [Khronos semaphore guide](https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html#vk_ext_swapchain_maintenance1_extension)
+explains, device-idle waits in unextended Vulkan lack that formal presentation
+retirement guarantee. The explicit fallback modes retain this limitation.
+
+`nx_vulkan_renderer_destroy` now returns `nx_result`. A timeout returns
+`NX_ERROR_LIMIT` and preserves the renderer, its resources and its window
+lease. Keep the window alive, process events and retry destruction. Once close
+starts, only diagnostics and another close are allowed. The private F11
+`nx_renderer_close` propagates the error and retains its backend pointer until
+close succeeds; applications must check the result. Recovery follows the same
+retire-before-release rule, but remains retryable as recovery until close starts.
+
+Presentation OOM leaves its wait operation unenqueued; cleanup waits for the
+already submitted graphics work without waiting on an unsignaled present
+fence. An enqueued out-of-date presentation still contributes a fence to
+retirement. Readback buffers remain owned by the renderer after a submission
+timeout and are freed only after a subsequent wait retires that work.
+`VK_ERROR_DEVICE_LOST` returned by a synchronization wait counts as completion
+for determining resource use, as specified by Vulkan; merely latching a loss
+flag is insufficient to release resources.
 
 ## Tests
 
@@ -126,6 +168,14 @@ scale, window lease rejection, wrong-thread access, every NexaUI bookkeeping
 allocation failure and explicit device/surface rebuild. Driver-state injection
 checks cached-target invalidation, zero-size suspension, unsupported commands
 and recovery; it is not physical device-loss evidence.
+
+Maintenance negotiation tests cover EXT, KHR, preference, missing dependencies,
+false feature bits, optional fallback and all bookkeeping allocation failures.
+Presentation fault tests retain old resources across resize/recovery/close
+timeouts, resume a held acquisition before rebuilding, clean a partial rebuild,
+distinguish unenqueued OOM from enqueued out-of-date, and retain readback storage
+across submission timeouts. The F11 mock and real adapters verify failed close
+preserves ownership and blocks new work until a successful retry.
 
 The Wayland presentation tests skip if no compositor is available; set
 `NEXAUI_REQUIRE_VULKAN_WAYLAND=1` together with `NEXAUI_REQUIRE_VULKAN=1` to
@@ -181,6 +231,30 @@ library has no Vulkan loader link. The four Vulkan device/presentation tests als
 passed with Clang ASan/UBSan and leak detection enabled. Physical mixed-DPI
 transitions, hardware drivers and physical device removal remain unverified.
 
+V03 local validation on the same environment:
+
+- Final static and shared Ninja Debug builds each passed all 77 tests under
+  Khronos validation, with required X11 and Wayland Vulkan execution. The
+  complete suites took 14.29 and 14.37 seconds respectively.
+- Clang 22.1.3 ASan/UBSan and leak detection passed all four Vulkan tests in
+  3.37 seconds, including the new retirement and retained-readback faults.
+  No sanitizer, leak or validation finding was reported.
+- Windows MSVC Debug built successfully; 81 tests passed and the clipboard
+  test skipped. The shared Windows build also succeeded and passed all three
+  focused F11/D3D12 tests. These check the changed private destroy callback;
+  they do not execute Vulkan on Windows.
+- The updated shared core installed successfully. Its package consumer
+  configured, linked and ran with Vulkan discovery disabled; `ldd` still
+  showed no Vulkan loader dependency in the core library.
+- The README's complete C example built and ran against the installed core;
+  all 96 local links/anchors in the README and updated renderer guides were
+  checked. The installed public header has no changes in this slice.
+
+EXT/KHR selection and missing-feature paths use injected dispatch. Native
+execution uses Mesa Lavapipe; it does not establish physical GPU removal,
+hardware performance or compatibility with every driver. Legacy fallback
+keeps its documented specification limitation.
+
 ## Specification references
 
 - [Instance creation](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateInstance.html)
@@ -191,6 +265,11 @@ transitions, hardware drivers and physical device removal remain unverified.
 - [Wayland surfaces](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateWaylandSurfaceKHR.html)
 - [Xlib surfaces](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateXlibSurfaceKHR.html)
 - [Swapchain synchronization and retirement](https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html)
+- [KHR maintenance dependencies](https://docs.vulkan.org/refpages/latest/refpages/source/VK_KHR_swapchain_maintenance1.html)
+- [EXT maintenance dependencies](https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_swapchain_maintenance1.html)
+- [Presentation-fence lifetime](https://docs.vulkan.org/refpages/latest/refpages/source/VkSwapchainPresentFenceInfoKHR.html)
+- [Present enqueue errors](https://docs.vulkan.org/refpages/latest/refpages/source/vkQueuePresentKHR.html)
+- [Device loss and synchronization](https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devicelost)
 
 NexaUI command rendering and hardware GPU acceptance remain open. CPU-driver
 presentation is evidence of the tested WSI path, not GPU performance.

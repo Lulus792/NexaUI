@@ -38,13 +38,14 @@ typedef struct nx_render_backend {
                         nx_color clear_color,
                         nx_render_outcome *out_outcome);
     nx_result (*recover)(void *user);
-    void (*destroy)(void *user);
+    /* Failure retains backend ownership for another close attempt. */
+    nx_result (*destroy)(void *user);
 } nx_render_backend;
 
 typedef struct nx_renderer_driver {
     nx_render_backend backend;
     nx_render_target target;
-    int open, has_target, device_lost;
+    int open, has_target, device_lost, closing;
 } nx_renderer_driver;
 
 /* No callback is called for a malformed stream. Clip depth and every command
@@ -59,6 +60,8 @@ NX_RENDER_INTERNAL_API nx_result nx_renderer_run(nx_renderer_driver *driver,
                           nx_color clear_color,
                           nx_render_outcome *out_outcome);
 NX_RENDER_INTERNAL_API nx_result nx_renderer_recover(nx_renderer_driver *driver);
-NX_RENDER_INTERNAL_API void nx_renderer_close(nx_renderer_driver *driver);
+/* Failure preserves the backend and prevents new submissions/recovery.
+   Retry close when pending work can complete. NULL/already closed is NX_OK. */
+NX_RENDER_INTERNAL_API nx_result nx_renderer_close(nx_renderer_driver *driver);
 
 #endif

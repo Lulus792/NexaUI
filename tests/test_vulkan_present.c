@@ -110,7 +110,7 @@ static void *wrong_thread(void *user) {
         !info.pixel_width && nx_vulkan_clear_present(state->renderer,
             (nx_color){0, 0, 0, 1}, &presented) == NX_ERROR_STATE && !presented &&
         nx_vulkan_renderer_create(state->window, NULL, &other) == NX_ERROR_STATE && !other;
-    nx_vulkan_renderer_destroy(state->renderer);
+    if (nx_vulkan_renderer_destroy(state->renderer) != NX_ERROR_STATE) state->passed = 0;
     return NULL;
 }
 
@@ -151,7 +151,12 @@ static int test_driver(nx_window *window) {
     CHECK(nx_renderer_run(&driver, target, NULL, 0,
                           (nx_color){0, 0, 0, 1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_READY);
-    nx_renderer_close(&driver);
+    CHECK(nx_vulkan_test_fail_next(driver.backend.user, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    CHECK(nx_renderer_close(&driver) == NX_ERROR_LIMIT);
+    CHECK(driver.open && driver.closing && driver.backend.user);
+    CHECK(nx_renderer_run(&driver, target, NULL, 0,
+                         (nx_color){0, 0, 0, 1}, &outcome) == NX_ERROR_STATE);
+    CHECK(nx_renderer_close(&driver) == NX_OK);
     CHECK(!driver.open);
     return 0;
 }
@@ -165,6 +170,7 @@ static int test_renderer(nx_window *window) {
     nx_vulkan_renderer_info info;
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
     CHECK(info.device.has_surface && !info.presented_frames && !info.image_count);
+    CHECK(info.device.present_fences != NX_VK_PRESENT_FENCES_NONE);
     nx_vulkan_renderer *duplicate = NULL;
     CHECK(nx_vulkan_renderer_create(window, NULL, &duplicate) == NX_ERROR_STATE && !duplicate);
     int token = 0;
@@ -223,7 +229,7 @@ static int test_renderer(nx_window *window) {
         getenv("NEXAUI_PLATFORM"), info.device.name, info.pixel_width,
         info.pixel_height, info.image_count, (unsigned long long)info.presented_frames,
         info.device.graphics_queue_family, info.device.present_queue_family);
-    nx_vulkan_renderer_destroy(renderer);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     CHECK(!track.live);
     /* Fail each bookkeeping allocation, then reacquire the same window. */
     for (size_t fail = 1; fail <= allocation_calls; ++fail) {
@@ -233,6 +239,93 @@ static int test_renderer(nx_window *window) {
         CHECK(!renderer && !track.live);
     }
     CHECK(test_driver(window) == 0);
+    return 0;
+}
+
+static int test_retirement_failures(nx_window *window) {
+    nx_vulkan_renderer *renderer = NULL;
+    nx_vulkan_renderer_info before, after;
+    const nx_color clear = {0.1f, 0.2f, 0.3f, 1};
+    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK);
+    CHECK(before.pending_present_fences && before.device.present_fences);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    int presented = 1;
+    CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_OK && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK);
+    CHECK(after.swapchain_generation == before.swapchain_generation &&
+          after.image_count == before.image_count && after.pending_present_fences);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_PRESENT_WAIT_TIMEOUT) == NX_OK);
+    int held = 0;
+    for (unsigned i = 0; i < 128u; ++i) {
+        CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_OK);
+        CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK);
+        if (!presented && before.has_acquired_image) { held = 1; break; }
+    }
+    CHECK(held);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK);
+    CHECK(!after.has_acquired_image && after.swapchain_generation == before.swapchain_generation);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK);
+    CHECK(after.swapchain_generation > before.swapchain_generation && after.completed_present_fences);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_REBUILD_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_ERROR_MEMORY);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && !after.image_count);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_PRESENT_OOM) == NX_OK);
+    CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK && before.has_acquired_image);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK &&
+          after.swapchain_generation == before.swapchain_generation);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
+    CHECK(show_frame(window, renderer, clear) == 0);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_PRESENT_OUT_OF_DATE) == NX_OK);
+    CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_OK && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK &&
+          !before.has_acquired_image && before.pending_present_fences);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && after.closing &&
+          after.image_count == before.image_count);
+    CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_ERROR_STATE);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_ERROR_STATE);
+    nx_vulkan_renderer *other = NULL;
+    CHECK(nx_vulkan_renderer_create(window, NULL, &other) == NX_ERROR_STATE && !other);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
+    for (int policy = NX_VULKAN_RETIRE_COMPATIBLE; policy <= NX_VULKAN_RETIRE_LEGACY; ++policy) {
+        nx_vulkan_renderer_desc desc = {0};
+        desc.retirement = (nx_vulkan_retirement_policy)policy;
+        CHECK(nx_vulkan_renderer_create_config(window, &desc, &renderer) == NX_OK);
+        CHECK(show_frame(window, renderer, clear) == 0);
+        CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK);
+        CHECK((after.device.present_fences == NX_VK_PRESENT_FENCES_NONE) ==
+              (policy == NX_VULKAN_RETIRE_LEGACY));
+        CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
+    }
+    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
+    /* The readback submits real GPU work before its two waits time out.
+       Its private storage must survive the call and be retired on retry. */
+    nx_window_info native;
+    CHECK(nx_window_get_info(window, &native) == NX_OK);
+    size_t stride = (size_t)ceil(native.width * native.scale) * 4u;
+    unsigned char *pixels = malloc(stride * (size_t)ceil(native.height * native.scale));
+    CHECK(pixels);
+    nx_result result = nx_vulkan_test_readback(renderer, clear, pixels, stride);
+    free(pixels);
+    CHECK(result == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && after.pending_readback);
+    CHECK(read_pixels(window, renderer) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && !after.pending_readback);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     return 0;
 }
 
@@ -250,6 +343,7 @@ int main(void) {
         return 1;
     }
     int status = test_renderer(window);
+    if (!status) status = test_retirement_failures(window);
     nx_window_destroy(window);
     return status;
 }

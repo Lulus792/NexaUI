@@ -62,7 +62,15 @@ int main(int argc, char **argv) {
             if (nx_renderer_recover(&renderer) != NX_OK) { status = 1; break; }
         } else if (outcome == NX_RENDER_READY) ++frames;
     }
-    nx_renderer_close(&renderer);
+    result = nx_renderer_close(&renderer);
+    for (unsigned retry = 0; result == NX_ERROR_LIMIT && retry < 3u; ++retry) {
+        (void)nx_window_poll(window, 16);
+        result = nx_renderer_close(&renderer);
+    }
+    if (result != NX_OK) {
+        fprintf(stderr, "Renderer retirement is incomplete: %d\n", (int)result);
+        return 1; /* Keep the borrowed window alive until process teardown. */
+    }
     nx_window_destroy(window);
     if (smoke && !frames) status = 1;
     if (!status) printf("Presented %u Vulkan frames\n", frames);

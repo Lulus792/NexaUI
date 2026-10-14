@@ -12,7 +12,7 @@ typedef struct mock_backend {
     unsigned resizes, submits, recovers, destroys;
     nx_render_target last_target;
     nx_render_outcome next_resize, next_submit;
-    nx_result recover_result;
+    nx_result recover_result, destroy_result;
     uint8_t pixels[8u * 8u * 4u];
     size_t received_count;
     nx_command_type received_type;
@@ -51,8 +51,11 @@ static nx_result mock_recover(void *user) {
     return mock->recover_result;
 }
 
-static void mock_destroy(void *user) {
-    ++((mock_backend *)user)->destroys;
+static nx_result mock_destroy(void *user) {
+    mock_backend *mock = user;
+    if (mock->destroy_result != NX_OK) return mock->destroy_result;
+    ++mock->destroys;
+    return NX_OK;
 }
 
 static nx_render_backend backend_for(mock_backend *mock) {
@@ -194,6 +197,27 @@ static int test_preflight(void) {
     return 0;
 }
 
+static int test_close_retry(void) {
+    mock_backend mock = {0};
+    nx_render_backend backend = backend_for(&mock);
+    nx_renderer_driver driver = {0};
+    CHECK(nx_renderer_open(&driver, &backend) == NX_OK);
+    mock.destroy_result = NX_ERROR_LIMIT;
+    CHECK(nx_renderer_close(&driver) == NX_ERROR_LIMIT);
+    CHECK(driver.open && driver.closing && driver.backend.user == &mock && !mock.destroys);
+    nx_render_outcome outcome;
+    CHECK(nx_renderer_run(&driver, (nx_render_target){4, 4, 1}, NULL, 0,
+        (nx_color){0, 0, 0, 1}, &outcome) == NX_ERROR_STATE);
+    driver.device_lost = 1;
+    CHECK(nx_renderer_recover(&driver) == NX_ERROR_STATE && !mock.recovers);
+    CHECK(!mock.resizes && !mock.submits);
+    mock.destroy_result = NX_OK;
+    CHECK(nx_renderer_close(&driver) == NX_OK);
+    CHECK(!driver.open && !driver.backend.user && mock.destroys == 1);
+    CHECK(nx_renderer_close(&driver) == NX_OK && mock.destroys == 1);
+    return 0;
+}
+
 int main(void) {
-    return test_lifecycle() || test_device_loss() || test_preflight();
+    return test_lifecycle() || test_device_loss() || test_preflight() || test_close_retry();
 }

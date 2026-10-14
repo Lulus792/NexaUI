@@ -2208,8 +2208,9 @@ static nx_result nx_d3d12_backend_recover(void *user) {
     return nx_d3d12_renderer_recover(user);
 }
 
-static void nx_d3d12_backend_destroy(void *user) {
+static nx_result nx_d3d12_backend_destroy(void *user) {
     nx_d3d12_renderer_destroy(user);
+    return NX_OK;
 }
 
 nx_result nx_d3d12_driver_open(nx_window *window,

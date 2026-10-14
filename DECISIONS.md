@@ -1,5 +1,34 @@
 # Decisions
 
+## 2026-10-14 — Retire Vulkan presentation explicitly and retain failed close
+
+V03 makes the private renderer's default policy require
+`VK_KHR_swapchain_maintenance1` or `VK_EXT_swapchain_maintenance1`, with its
+matching surface-maintenance and feature-query dependencies. Device selection
+checks the actual feature bit and prefers KHR when both variants are available.
+Older EXT SDK type spellings are binary aliases of KHR structures, so headers
+1.3.250 suffice without requiring the SDK that introduced the KHR names.
+
+Each swapchain image owns a present fence and semaphore. An acquisition fence
+tracks availability independently of graphics submission. Teardown/recovery
+waits for all tracked work before dropping any native resources; a one-second
+timeout retains ownership for retry. An acquired image held by a timed-out
+present fence finishes on the old swapchain before any resize. Submission
+timeouts retain readback buffers. Present OOM does not enqueue its fence,
+whereas an out-of-date result still retires the enqueued presentation.
+
+The private F11 destroy callback and close operation now return `nx_result`.
+Failed close preserves the backend table/pointer and prevents new rendering or
+recovery. Only a successful retry clears ownership, so callers must also keep
+the borrowed native window alive. The public installed C header is unchanged.
+
+Explicit compatible and legacy policies preserve the former unextended path.
+Their conventional device-idle teardown retains the specification limitation
+recorded below; it is not the strict default. Native fault tests exercise
+timeouts after real submissions and distinguish enqueued from unenqueued
+present errors. Physical GPU loss remains an acceptance gap. See
+[the Vulkan contract and primary sources](docs/concepts/vulkan.md).
+
 ## 2026-10-14 — Create Vulkan surfaces before selecting presentation queues
 
 V02 extends the private bootstrap with a surface factory called after instance
@@ -22,9 +51,9 @@ storage. Readback compares every RGBA8 byte to headless output, while X11
 also checks the displayed window. Native tests include resize, synthetic 2×
 Wayland scaling, injected cached-target invalidation and explicit recovery.
 
-This slice retains conventional device-idle swapchain teardown. The Vulkan
+The original V02 slice retained conventional device-idle swapchain teardown. The Vulkan
 specification does not formally guarantee present completion through that
-wait in unextended Vulkan; V03 must add presentation fences and an explicit
+wait in unextended Vulkan; V03 adds presentation fences and an explicit
 retirement/fallback policy before release acceptance. Hardware removal and
 hardware GPU behavior are still unverified. See [the contract and sources](docs/concepts/vulkan.md).
 

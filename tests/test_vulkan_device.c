@@ -31,6 +31,9 @@ typedef struct mock_state {
     VkResult surface_result, surface_support_result;
     unsigned surfaces;
     int present_mode;
+    unsigned instance_maintenance, enabled_maintenance, device_maintenance[4];
+    int maintenance_feature[4], missing_dependencies, missing_proc, instance_incomplete;
+    VkResult instance_enumeration_result;
 } mock_state;
 
 static mock_state mock;
@@ -49,6 +52,15 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(
     VERIFY(create->enabledExtensionCount >= 1 &&
            !strcmp(create->ppEnabledExtensionNames[0],
                    VK_KHR_SURFACE_EXTENSION_NAME));
+    mock.enabled_maintenance = 0;
+    for (uint32_t i = 0; i < create->enabledExtensionCount; ++i) {
+        if (!strcmp(create->ppEnabledExtensionNames[i], "VK_EXT_surface_maintenance1"))
+            mock.enabled_maintenance |= 2u;
+        if (!strcmp(create->ppEnabledExtensionNames[i], "VK_KHR_surface_maintenance1"))
+            mock.enabled_maintenance |= 4u;
+        for (uint32_t j = 0; j < i; ++j)
+            VERIFY(strcmp(create->ppEnabledExtensionNames[i], create->ppEnabledExtensionNames[j]));
+    }
     *instance = HANDLE(VkInstance, 100u);
     if (mock.instance_result == VK_SUCCESS) ++mock.instances;
     return mock.instance_result;
@@ -120,15 +132,20 @@ static VKAPI_ATTR VkResult VKAPI_CALL enumerate_extensions(
     unsigned index = adapter_index(physical);
     VERIFY(!layer);
     if (mock.extension_result != VK_SUCCESS) return mock.extension_result;
+    const char *names[3];
+    uint32_t total = 0;
+    if (mock.adapters[index].swapchain) names[total++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+    if (mock.device_maintenance[index] & 2u) names[total++] = "VK_EXT_swapchain_maintenance1";
+    if (mock.device_maintenance[index] & 4u) names[total++] = "VK_KHR_swapchain_maintenance1";
     if (!extensions) {
-        *count = mock.adapters[index].swapchain ? 1u : 0u;
+        *count = total;
         return VK_SUCCESS;
     }
-    VERIFY(*count >= 1u);
-    memset(extensions, 0, sizeof(*extensions));
-    memcpy(extensions[0].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-           sizeof(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
-    *count = 1;
+    VERIFY(*count >= total);
+    memset(extensions, 0, total * sizeof(*extensions));
+    for (uint32_t i = 0; i < total; ++i)
+        strcpy(extensions[i].extensionName, names[i]);
+    *count = total;
     return mock.extensions_incomplete ? VK_INCOMPLETE : VK_SUCCESS;
 }
 
@@ -145,7 +162,16 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(
     if (create->queueCreateInfoCount == 2)
         VERIFY(create->pQueueCreateInfos[1].queueFamilyIndex == 0);
     VERIFY(create->enabledExtensionCount ==
-           (mock.adapters[index].swapchain ? 1u : 0u));
+           (mock.adapters[index].swapchain ? 1u : 0u) + (create->pNext ? 1u : 0u));
+    if (create->pNext) {
+        const VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT *features = create->pNext;
+        VERIFY(features->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT);
+        VERIFY(features->swapchainMaintenance1 && mock.maintenance_feature[index]);
+        unsigned available = mock.device_maintenance[index] & mock.enabled_maintenance;
+        VERIFY(available);
+        VERIFY(!strcmp(create->ppEnabledExtensionNames[1], (available & 4u)
+            ? "VK_KHR_swapchain_maintenance1" : "VK_EXT_swapchain_maintenance1"));
+    }
     if (create->enabledExtensionCount)
         VERIFY(!strcmp(create->ppEnabledExtensionNames[0],
                        VK_KHR_SWAPCHAIN_EXTENSION_NAME));
@@ -204,10 +230,45 @@ static VKAPI_ATTR VkResult VKAPI_CALL surface_support(VkPhysicalDevice physical,
     return mock.surface_support_result;
 }
 
+static VKAPI_ATTR VkResult VKAPI_CALL instance_extensions(const char *layer,
+    uint32_t *count, VkExtensionProperties *extensions) {
+    VERIFY(!layer);
+    if (mock.instance_enumeration_result != VK_SUCCESS) return mock.instance_enumeration_result;
+    const char *names[4];
+    uint32_t total = 0;
+    if (!mock.missing_dependencies)
+        names[total++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+    names[total++] = VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME;
+    if (mock.instance_maintenance & 2u) names[total++] = "VK_EXT_surface_maintenance1";
+    if (mock.instance_maintenance & 4u) names[total++] = "VK_KHR_surface_maintenance1";
+    if (!extensions) { *count = total; return VK_SUCCESS; }
+    VERIFY(*count >= total);
+    memset(extensions, 0, total * sizeof(*extensions));
+    for (uint32_t i = 0; i < total; ++i) strcpy(extensions[i].extensionName, names[i]);
+    *count = total;
+    return mock.instance_incomplete ? VK_INCOMPLETE : VK_SUCCESS;
+}
+
+static VKAPI_ATTR void VKAPI_CALL query_features(VkPhysicalDevice physical,
+                                                 VkPhysicalDeviceFeatures2 *features) {
+    unsigned index = adapter_index(physical);
+    VERIFY(features->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR);
+    VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT *maintenance = features->pNext;
+    VERIFY(maintenance && maintenance->sType ==
+           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT);
+    maintenance->swapchainMaintenance1 = mock.maintenance_feature[index] ? VK_TRUE : VK_FALSE;
+}
+
+static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL instance_proc(VkInstance instance,
+                                                             const char *name) {
+    VERIFY(instance != VK_NULL_HANDLE && !strcmp(name, "vkGetPhysicalDeviceFeatures2KHR"));
+    return mock.missing_proc ? NULL : (PFN_vkVoidFunction)query_features;
+}
+
 static const nx_vk_api api = {
     create_instance, destroy_instance, enumerate_devices, get_properties,
     get_queues, enumerate_extensions, create_device, destroy_device,
-    get_queue, wait_idle, surface_support, destroy_surface
+    get_queue, wait_idle, surface_support, destroy_surface, instance_extensions, instance_proc
 };
 
 typedef struct allocation { void *pointer; size_t size; } allocation;
@@ -502,11 +563,89 @@ static int presentation_selection(void) {
     return 0;
 }
 
+static void maintenance_adapter(unsigned mask) {
+    mock.instance_maintenance = mask;
+    for (unsigned i = 0; i < mock.count; ++i) {
+        mock.device_maintenance[i] = mask;
+        mock.maintenance_feature[i] = 1;
+    }
+}
+
+static int maintenance_selection(void) {
+    nx_vk_device *device = NULL;
+    nx_vk_device_desc desc = {0};
+    desc.present_fences = NX_VK_PRESENT_FENCES_REQUIRED;
+    nx_vk_device_info info;
+    const unsigned variants[] = {2u, 4u, 6u};
+    for (unsigned i = 0; i < 3u; ++i) {
+        reset_mock();
+        maintenance_adapter(variants[i]);
+        CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_OK);
+        CHECK(nx_vk_device_get_info(device, &info) == NX_OK);
+        CHECK(info.present_fences == (variants[i] & 4u ? NX_VK_PRESENT_FENCES_KHR
+                                                       : NX_VK_PRESENT_FENCES_EXT));
+        nx_vk_device_destroy_retired(device);
+        CHECK(!mock.instances && !mock.devices);
+    }
+    reset_mock();
+    maintenance_adapter(6u);
+    mock.maintenance_feature[2] = 0;
+    CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_OK);
+    CHECK(nx_vk_device_get_info(device, &info) == NX_OK && info.device_id == 2u);
+    nx_vk_device_destroy(device);
+    for (unsigned mode = 0; mode < 5u; ++mode) {
+        reset_mock();
+        maintenance_adapter(6u);
+        if (!mode) mock.instance_maintenance = 0;
+        if (mode == 1u) mock.missing_dependencies = 1;
+        if (mode == 2u) mock.missing_proc = 1;
+        if (mode == 3u) for (unsigned i = 0; i < mock.count; ++i) mock.device_maintenance[i] = 0;
+        if (mode == 4u) for (unsigned i = 0; i < mock.count; ++i) mock.maintenance_feature[i] = 0;
+        desc.present_fences = NX_VK_PRESENT_FENCES_REQUIRED;
+        CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_ERROR_UNSUPPORTED);
+        CHECK(!device && !mock.instances && !mock.devices);
+        desc.present_fences = NX_VK_PRESENT_FENCES_OPTIONAL;
+        CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_OK);
+        CHECK(nx_vk_device_get_info(device, &info) == NX_OK &&
+              info.present_fences == NX_VK_PRESENT_FENCES_NONE);
+        nx_vk_device_destroy(device);
+    }
+    reset_mock();
+    maintenance_adapter(6u);
+    desc.present_fences = NX_VK_PRESENT_FENCES_REQUIRED;
+    mock.instance_incomplete = 1;
+    CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_ERROR_LIMIT);
+    CHECK(!device && !mock.instances);
+    reset_mock();
+    maintenance_adapter(6u);
+    mock.instance_enumeration_result = VK_ERROR_OUT_OF_HOST_MEMORY;
+    CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_ERROR_MEMORY);
+    CHECK(!device && !mock.instances);
+    tracker track = {0};
+    desc.allocator = (nx_allocator){&track, track_allocate, track_deallocate};
+    reset_mock();
+    maintenance_adapter(6u);
+    CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_OK);
+    size_t calls = track.calls;
+    nx_vk_device_destroy(device);
+    CHECK(!track.count);
+    for (size_t fail = 1; fail <= calls; ++fail) {
+        reset_mock();
+        maintenance_adapter(6u);
+        track = (tracker){0};
+        track.fail_at = fail;
+        CHECK(nx_vk_test_device_create(&desc, &api, &device) == NX_ERROR_MEMORY);
+        CHECK(!device && !track.count && !mock.instances && !mock.devices);
+    }
+    return 0;
+}
+
 int main(void) {
     CHECK(selection() == 0);
     CHECK(enumeration_and_capabilities() == 0);
     CHECK(failures_and_allocations() == 0);
     CHECK(arguments_and_ownership() == 0);
     CHECK(presentation_selection() == 0);
+    CHECK(maintenance_selection() == 0);
     return 0;
 }

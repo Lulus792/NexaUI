@@ -5,7 +5,10 @@
 The Linux `nexaui_native_clear` opens a native window for up to three seconds
 and presents a changing clear color through Vulkan. Resize it or close it
 early to exercise the renderer driver. It uses the chosen Linux window
-backend and requires a Vulkan driver supporting presentation to that surface.
+backend and requires a Vulkan driver supporting presentation to that surface
+and KHR or EXT swapchain-maintenance present fences. The default F11 adapter
+uses strict retirement; see [the Vulkan contract](../../docs/concepts/vulkan.md)
+for explicit compatibility modes on older drivers.
 
 ```sh
 NEXAUI_PLATFORM=wayland ./build/examples/10_native_clear/nexaui_native_clear
@@ -17,6 +20,11 @@ frame was presented. CTest registers both backend variants; an unavailable
 display skips the corresponding smoke test unless explicitly required.
 This V02 path handles empty command streams only. Shapes, images and text
 remain later Vulkan tasks; see [the Vulkan contract](../../docs/concepts/vulkan.md).
+
+The example checks `nx_renderer_close` and retries a retirement timeout while
+keeping the native window alive. If retirement still fails, it exits with an
+error and leaves cleanup to process teardown. Applications that remain running
+must keep the renderer and window and retry close after pending work completes.
 
 ## Windows D3D12 shapes
 

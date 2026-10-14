@@ -37,17 +37,29 @@ RGBA8/A8 bitmap views rather than reusable native resource handles. A native
 submit must copy or upload their bytes into backend-owned storage before it
 returns `NX_RENDER_READY`; it may let GPU execution continue afterward.
 `destroy` releases the backend's resources after outstanding GPU work is
-retired. Native handles stay private to each renderer instance and cannot be
+retired. Its callback and `nx_renderer_close` return `nx_result`: an error
+retains the callback table, backend pointer and open state for another close
+attempt. Once close starts, render and recovery calls return `NX_ERROR_STATE`.
+Only successful close clears the driver; closing NULL or an already closed
+driver returns `NX_OK`. Applications must preserve the backend's borrowed
+window until that success. Native handles stay private to each renderer instance and cannot be
 reused after its teardown. Upload caching, explicit resource handles and
 backend-specific fences remain future work.
 
 The mock backend test exercises command preflight, content forwarding,
 unchanged-size reuse, scale changes, zero-size suspension, temporary
 suspension, device loss from resize and submit, failed and successful recovery,
-and one-time teardown. The test calls the headless renderer inside submit to
+and failed-close ownership retention followed by successful, idempotent close.
+The test calls the headless renderer inside submit to
 check the forwarded command stream against pixels. It does not validate
 asynchronous presentation. The separate D3D12 smoke test checks device,
 queue, swap-chain and F11 adapter lifecycle on Windows, then forces real
 device removal where supported and submits again after recovery. A test-only
 GPU readback compares filled rectangle and triangle pixels with the headless
 reference at 1× and 2×, including layered alpha over an opaque clear.
+
+The Linux Vulkan adapter accepts empty streams and uses explicit per-image
+presentation fences by default. Its native tests exercise close/recovery/resize
+timeouts after real submissions and verify that a pending close retains the
+window lease. See [the Vulkan contract](vulkan.md) for extension requirements
+and explicit compatibility modes.

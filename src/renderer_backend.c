@@ -84,6 +84,7 @@ nx_result nx_renderer_run(nx_renderer_driver *driver,
     if (!driver || !driver->open || !isfinite(target.scale) ||
         target.scale <= 0.0 || !nx_valid_color(clear_color))
         return NX_ERROR_ARGUMENT;
+    if (driver->closing) return NX_ERROR_STATE;
     nx_result result = nx_render_validate_commands(commands, count);
     if (result != NX_OK) return result;
     if (driver->device_lost) {
@@ -123,7 +124,7 @@ nx_result nx_renderer_run(nx_renderer_driver *driver,
 }
 
 nx_result nx_renderer_recover(nx_renderer_driver *driver) {
-    if (!driver || !driver->open || !driver->device_lost)
+    if (!driver || !driver->open || !driver->device_lost || driver->closing)
         return NX_ERROR_STATE;
     nx_result result = driver->backend.recover(driver->backend.user);
     if (result != NX_OK) return result;
@@ -132,8 +133,11 @@ nx_result nx_renderer_recover(nx_renderer_driver *driver) {
     return NX_OK;
 }
 
-void nx_renderer_close(nx_renderer_driver *driver) {
-    if (!driver || !driver->open) return;
-    driver->backend.destroy(driver->backend.user);
+nx_result nx_renderer_close(nx_renderer_driver *driver) {
+    if (!driver || !driver->open) return NX_OK;
+    driver->closing = 1;
+    nx_result result = driver->backend.destroy(driver->backend.user);
+    if (result != NX_OK) return result;
     *driver = (nx_renderer_driver){0};
+    return NX_OK;
 }

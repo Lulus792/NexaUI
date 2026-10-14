@@ -79,7 +79,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 - A C17 compiler and **CMake 3.21 or newer**.
 - The platform SDK and a CMake build tool, such as Visual Studio/MSBuild, Ninja or Make.
-- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner`, `pkg-config`, and Vulkan headers/loader for the private backend (disable with `-DNEXAUI_BUILD_VULKAN=OFF`).
+- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner`, `pkg-config`, and Vulkan headers 1.3.250 or newer plus the loader for the private backend (disable with `-DNEXAUI_BUILD_VULKAN=OFF`). The native Vulkan example requires KHR or EXT swapchain-maintenance present fences by default; [explicit compatibility modes](docs/concepts/vulkan.md#presentation-retirement-and-close) support older drivers with a weaker retirement guarantee.
 - Python 3 for Unicode table verification and Python-based development checks. The generated tables and their source data are already included.
 
 For Debian/Ubuntu, install the native build dependencies with:

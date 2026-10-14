@@ -19,6 +19,8 @@ typedef struct nx_vk_api {
     PFN_vkDeviceWaitIdle wait_idle;
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR surface_support;
     PFN_vkDestroySurfaceKHR destroy_surface;
+    PFN_vkEnumerateInstanceExtensionProperties enumerate_instance_extensions;
+    PFN_vkGetInstanceProcAddr instance_proc;
 } nx_vk_api;
 
 typedef struct nx_vk_handles {
@@ -47,6 +49,9 @@ nx_result nx_vk_device_create_for_surface(const nx_vk_device_desc *desc,
    work and resources must be retired before destroying this device. */
 nx_result nx_vk_device_get_handles(nx_vk_device *device,
                                    nx_vk_handles *out_handles);
+/* Owner thread only. The caller completed all external submissions and retired
+   every presentation. Unlike destroy, this performs no device-idle wait. */
+void nx_vk_device_destroy_retired(nx_vk_device *device);
 
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
 nx_result nx_vk_test_device_create(const nx_vk_device_desc *desc,

@@ -24,6 +24,8 @@ struct nx_vulkan_renderer {
     VkSwapchainKHR swapchain;
     VkImage images[NX_VK_MAX_IMAGES];
     VkSemaphore finished[NX_VK_MAX_IMAGES];
+    VkFence present_fences[NX_VK_MAX_IMAGES];
+    unsigned char present_pending[NX_VK_MAX_IMAGES];
     uint32_t image_count;
     VkFormat format;
     VkExtent2D extent;
@@ -31,6 +33,18 @@ struct nx_vulkan_renderer {
     VkCommandBuffer commands;
     VkSemaphore acquired;
     VkFence fence;
+    VkFence acquire_fence;
+    VkBuffer readback_buffer;
+    VkDeviceMemory readback_memory;
+    uint32_t acquired_index;
+    int acquire_pending, submission_pending, has_acquired;
+    int device_lost, closing, legacy_presented;
+    nx_vulkan_retirement_policy retirement;
+    nx_vk_present_fence_support present_support;
+    uint64_t completed_present_fences;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    unsigned char test_faults[NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT + 1];
+#endif
     uint64_t presented_frames;
     uint64_t swapchain_generation;
     int leased, dirty, broken, readback;
@@ -63,6 +77,75 @@ static int nx_vk_renderer_owner(nx_vulkan_renderer *renderer) {
     return renderer && pthread_equal(renderer->owner, pthread_self());
 }
 
+static nx_result nx_vk_wait_submission(nx_vulkan_renderer *renderer) {
+    if (!renderer->submission_pending) return NX_OK;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (renderer->test_faults[NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT]) {
+        --renderer->test_faults[NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT];
+        return NX_ERROR_LIMIT;
+    }
+#endif
+    VkResult status = vkWaitForFences(renderer->native.logical, 1,
+        &renderer->fence, VK_TRUE, NX_VK_WAIT_NS);
+    if (status == VK_ERROR_DEVICE_LOST) {
+        renderer->device_lost = renderer->broken = 1;
+        renderer->submission_pending = 0;
+        return NX_ERROR_STATE;
+    }
+    if (status == VK_SUCCESS) renderer->submission_pending = 0;
+    return nx_vk_status(status);
+}
+
+static void nx_vk_free_readback(nx_vulkan_renderer *renderer) {
+    if (renderer->readback_buffer != VK_NULL_HANDLE)
+        vkDestroyBuffer(renderer->native.logical, renderer->readback_buffer, NULL);
+    if (renderer->readback_memory != VK_NULL_HANDLE)
+        vkFreeMemory(renderer->native.logical, renderer->readback_memory, NULL);
+    renderer->readback_buffer = VK_NULL_HANDLE;
+    renderer->readback_memory = VK_NULL_HANDLE;
+}
+
+/* One aggregate timeout, not one timeout per swapchain image. No handles or
+   pending flags are discarded on timeout/error. Device loss is terminal. */
+static nx_result nx_vk_retire(nx_vulkan_renderer *renderer) {
+    if (!renderer->device) return NX_OK;
+    VkFence fences[NX_VK_MAX_IMAGES + 2u];
+    uint32_t count = 0;
+    if (renderer->acquire_pending) fences[count++] = renderer->acquire_fence;
+    if (renderer->submission_pending) fences[count++] = renderer->fence;
+    for (uint32_t i = 0; i < renderer->image_count; ++i)
+        if (renderer->present_pending[i]) fences[count++] = renderer->present_fences[i];
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (count && renderer->test_faults[NX_VK_TEST_RETIRE_TIMEOUT]) {
+        renderer->test_faults[NX_VK_TEST_RETIRE_TIMEOUT] = 0;
+        return NX_ERROR_LIMIT;
+    }
+#endif
+    if (count) {
+        VkResult status = vkWaitForFences(renderer->native.logical, count,
+            fences, VK_TRUE, NX_VK_WAIT_NS);
+        if (status == VK_ERROR_DEVICE_LOST) {
+            renderer->device_lost = renderer->broken = 1;
+            renderer->acquire_pending = renderer->submission_pending = 0;
+            memset(renderer->present_pending, 0, sizeof(renderer->present_pending));
+            return NX_OK;
+        }
+        if (status != VK_SUCCESS) return nx_vk_status(status);
+    }
+    if (renderer->legacy_presented) {
+        nx_result result = nx_vk_device_wait_idle(renderer->device);
+        if (result == NX_ERROR_STATE) renderer->device_lost = renderer->broken = 1;
+        else if (result != NX_OK) return result;
+    }
+    renderer->acquire_pending = renderer->submission_pending = 0;
+    for (uint32_t i = 0; i < renderer->image_count; ++i)
+        if (renderer->present_pending[i]) {
+            ++renderer->completed_present_fences;
+            renderer->present_pending[i] = 0;
+        }
+    return NX_OK;
+}
+
 static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
                                             VkSurfaceKHR *surface) {
     nx_window *window = user;
@@ -93,6 +176,10 @@ static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
         if (renderer->finished[i] != VK_NULL_HANDLE)
             vkDestroySemaphore(renderer->native.logical, renderer->finished[i], NULL);
         renderer->finished[i] = VK_NULL_HANDLE;
+        if (renderer->present_fences[i] != VK_NULL_HANDLE)
+            vkDestroyFence(renderer->native.logical, renderer->present_fences[i], NULL);
+        renderer->present_fences[i] = VK_NULL_HANDLE;
+        renderer->present_pending[i] = 0;
         renderer->images[i] = VK_NULL_HANDLE;
     }
     if (renderer->swapchain != VK_NULL_HANDLE)
@@ -100,19 +187,24 @@ static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
     renderer->swapchain = VK_NULL_HANDLE;
     renderer->image_count = 0;
     renderer->extent = (VkExtent2D){0, 0};
+    renderer->has_acquired = renderer->legacy_presented = 0;
 }
 
-static void nx_vk_drop_native(nx_vulkan_renderer *renderer) {
+static nx_result nx_vk_drop_native(nx_vulkan_renderer *renderer) {
+    nx_result result = nx_vk_retire(renderer);
+    if (result != NX_OK) return result;
     if (renderer->device) {
-        (void)nx_vk_device_wait_idle(renderer->device);
+        nx_vk_free_readback(renderer);
         nx_vk_drop_swapchain(renderer);
         if (renderer->fence != VK_NULL_HANDLE)
             vkDestroyFence(renderer->native.logical, renderer->fence, NULL);
         if (renderer->acquired != VK_NULL_HANDLE)
             vkDestroySemaphore(renderer->native.logical, renderer->acquired, NULL);
+        if (renderer->acquire_fence != VK_NULL_HANDLE)
+            vkDestroyFence(renderer->native.logical, renderer->acquire_fence, NULL);
         if (renderer->pool != VK_NULL_HANDLE)
             vkDestroyCommandPool(renderer->native.logical, renderer->pool, NULL);
-        nx_vk_device_destroy(renderer->device);
+        nx_vk_device_destroy_retired(renderer->device);
     }
     renderer->device = NULL;
     renderer->native = (nx_vk_handles){0};
@@ -120,6 +212,10 @@ static void nx_vk_drop_native(nx_vulkan_renderer *renderer) {
     renderer->acquired = VK_NULL_HANDLE;
     renderer->pool = VK_NULL_HANDLE;
     renderer->commands = VK_NULL_HANDLE;
+    renderer->acquire_fence = VK_NULL_HANDLE;
+    renderer->acquire_pending = renderer->submission_pending = 0;
+    renderer->device_lost = 0;
+    return NX_OK;
 }
 
 static nx_result nx_vk_open_native(nx_vulkan_renderer *renderer) {
@@ -130,12 +226,19 @@ static nx_result nx_vk_open_native(nx_vulkan_renderer *renderer) {
     desc.instance_extensions = &extension;
     desc.instance_extension_count = 1;
     desc.require_swapchain = 1;
+    desc.present_fences = renderer->retirement == NX_VULKAN_RETIRE_LEGACY
+        ? NX_VK_PRESENT_FENCES_DISABLED : renderer->retirement == NX_VULKAN_RETIRE_COMPATIBLE
+        ? NX_VK_PRESENT_FENCES_OPTIONAL : NX_VK_PRESENT_FENCES_REQUIRED;
     nx_vk_surface_source source = {renderer->window, nx_vk_create_window_surface};
     nx_result result = nx_vk_device_create_for_surface(&desc, &source,
                                                        &renderer->device);
     if (result != NX_OK) return result;
     result = nx_vk_device_get_handles(renderer->device, &renderer->native);
     if (result != NX_OK) return result;
+    nx_vk_device_info device_info;
+    result = nx_vk_device_get_info(renderer->device, &device_info);
+    if (result != NX_OK) return result;
+    renderer->present_support = device_info.present_fences;
     VkCommandPoolCreateInfo pool = {0};
     pool.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     pool.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -161,6 +264,10 @@ static nx_result nx_vk_open_native(nx_vulkan_renderer *renderer) {
     fence.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     status = vkCreateFence(renderer->native.logical, &fence, NULL, &renderer->fence);
     if (status != VK_SUCCESS) renderer->fence = VK_NULL_HANDLE;
+    if (status != VK_SUCCESS) return nx_vk_status(status);
+    fence.flags = 0;
+    status = vkCreateFence(renderer->native.logical, &fence, NULL, &renderer->acquire_fence);
+    if (status != VK_SUCCESS) renderer->acquire_fence = VK_NULL_HANDLE;
     renderer->dirty = 1;
     return nx_vk_status(status);
 }
@@ -199,7 +306,11 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
                                uint32_t height, nx_render_outcome *outcome) {
     *outcome = NX_RENDER_SUSPENDED;
     if (renderer->broken) { *outcome = NX_RENDER_DEVICE_LOST; return NX_OK; }
+    if (renderer->closing) return NX_ERROR_STATE;
     if (!width || !height) return NX_OK;
+    /* A timed-out image fence can leave an acquired image waiting for retry.
+       Finish that frame before resizing or discarding its acquisition signal. */
+    if (renderer->has_acquired) { *outcome = NX_RENDER_READY; return NX_OK; }
     VkSurfaceCapabilitiesKHR caps;
     VkResult status = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
         renderer->native.physical, renderer->native.surface, &caps);
@@ -234,13 +345,12 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
         return NX_OK;
     }
     if (result != NX_OK) return result;
-    result = nx_vk_device_wait_idle(renderer->device);
+    result = nx_vk_retire(renderer);
     if (result != NX_OK) {
-        renderer->broken = 1;
-        if (result != NX_ERROR_STATE) return result;
-        *outcome = NX_RENDER_DEVICE_LOST;
-        return NX_OK;
+        if (result == NX_ERROR_LIMIT) return NX_OK;
+        return result;
     }
+    if (renderer->device_lost) { *outcome = NX_RENDER_DEVICE_LOST; return NX_OK; }
     nx_vk_drop_swapchain(renderer);
     VkSwapchainCreateInfoKHR create = {0};
     create.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -286,6 +396,13 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
         }
         return nx_vk_status(status);
     }
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (renderer->test_faults[NX_VK_TEST_REBUILD_MEMORY]) {
+        renderer->test_faults[NX_VK_TEST_REBUILD_MEMORY] = 0;
+        nx_vk_drop_swapchain(renderer);
+        return NX_ERROR_MEMORY;
+    }
+#endif
     uint32_t count = NX_VK_MAX_IMAGES;
     status = vkGetSwapchainImagesKHR(renderer->native.logical, renderer->swapchain,
                                      &count, renderer->images);
@@ -304,6 +421,17 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
             renderer->finished[i] = VK_NULL_HANDLE;
             nx_vk_drop_swapchain(renderer);
             return nx_vk_status(status);
+        }
+        if (renderer->present_support != NX_VK_PRESENT_FENCES_NONE) {
+            VkFenceCreateInfo fence = {0};
+            fence.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            status = vkCreateFence(renderer->native.logical, &fence, NULL,
+                                    &renderer->present_fences[i]);
+            if (status != VK_SUCCESS) {
+                renderer->present_fences[i] = VK_NULL_HANDLE;
+                nx_vk_drop_swapchain(renderer);
+                return nx_vk_status(status);
+            }
         }
     }
     renderer->extent = extent;
@@ -328,15 +456,18 @@ static nx_result nx_vk_window_target(nx_vulkan_renderer *renderer,
     return NX_OK;
 }
 
-nx_result nx_vulkan_renderer_create(nx_window *window,
-    const nx_allocator *allocator, nx_vulkan_renderer **out_renderer) {
+nx_result nx_vulkan_renderer_create_config(nx_window *window,
+    const nx_vulkan_renderer_desc *desc, nx_vulkan_renderer **out_renderer) {
     if (!out_renderer) return NX_ERROR_ARGUMENT;
     *out_renderer = NULL;
     nx_window_info info;
     if (!window) return NX_ERROR_ARGUMENT;
     nx_result result = nx_window_get_info(window, &info);
     if (result != NX_OK) return result;
-    nx_allocator a = allocator ? *allocator : (nx_allocator){0};
+    nx_vulkan_renderer_desc options = desc ? *desc : (nx_vulkan_renderer_desc){0};
+    if (options.retirement < NX_VULKAN_RETIRE_STRICT || options.retirement > NX_VULKAN_RETIRE_LEGACY)
+        return NX_ERROR_ARGUMENT;
+    nx_allocator a = options.allocator;
     if ((a.allocate == NULL) != (a.deallocate == NULL)) return NX_ERROR_ARGUMENT;
     if (!a.allocate)
         a = (nx_allocator){NULL, nx_vk_renderer_malloc, nx_vk_renderer_free};
@@ -346,6 +477,7 @@ nx_result nx_vulkan_renderer_create(nx_window *window,
     renderer->allocator = a;
     renderer->owner = pthread_self();
     renderer->window = window;
+    renderer->retirement = options.retirement;
     result = nx_window_renderer_acquire(window, renderer);
     if (result == NX_OK) {
         renderer->leased = 1;
@@ -356,23 +488,58 @@ nx_result nx_vulkan_renderer_create(nx_window *window,
     return NX_OK;
 }
 
+nx_result nx_vulkan_renderer_create(nx_window *window,
+    const nx_allocator *allocator, nx_vulkan_renderer **out_renderer) {
+    nx_vulkan_renderer_desc desc = {0};
+    if (allocator) desc.allocator = *allocator;
+    return nx_vulkan_renderer_create_config(window, &desc, out_renderer);
+}
+
 static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     VkBuffer readback, int *presented) {
     *presented = 0;
-    if (renderer->broken) return NX_ERROR_STATE;
+    if (renderer->broken || renderer->closing) return NX_ERROR_STATE;
     if (!renderer->image_count) return NX_OK;
     VkDevice device = renderer->native.logical;
-    VkResult status = vkWaitForFences(device, 1, &renderer->fence, VK_TRUE, NX_VK_WAIT_NS);
-    if (status == VK_TIMEOUT) return NX_OK;
-    if (status != VK_SUCCESS) goto fatal;
-    uint32_t index = 0;
-    status = vkAcquireNextImageKHR(device, renderer->swapchain, NX_VK_WAIT_NS,
-                                   renderer->acquired, VK_NULL_HANDLE, &index);
-    if (status == VK_TIMEOUT || status == VK_NOT_READY) return NX_OK;
-    if (status == VK_ERROR_OUT_OF_DATE_KHR) { renderer->dirty = 1; return NX_OK; }
-    if (status != VK_SUCCESS && status != VK_SUBOPTIMAL_KHR) goto fatal;
-    if (status == VK_SUBOPTIMAL_KHR) renderer->dirty = 1;
+    nx_result submission_result = nx_vk_wait_submission(renderer);
+    if (submission_result == NX_ERROR_LIMIT) return NX_OK;
+    if (submission_result != NX_OK) return submission_result;
+    if (readback == VK_NULL_HANDLE && renderer->readback_buffer != VK_NULL_HANDLE)
+        nx_vk_free_readback(renderer);
+    VkResult status;
+    if (!renderer->has_acquired) {
+        status = vkResetFences(device, 1, &renderer->acquire_fence);
+        if (status != VK_SUCCESS) goto fatal;
+        status = vkAcquireNextImageKHR(device, renderer->swapchain, NX_VK_WAIT_NS,
+            renderer->acquired, renderer->acquire_fence, &renderer->acquired_index);
+        if (status == VK_ERROR_DEVICE_LOST) renderer->acquire_pending = 1;
+        if (status == VK_TIMEOUT || status == VK_NOT_READY) return NX_OK;
+        if (status == VK_ERROR_OUT_OF_DATE_KHR) { renderer->dirty = 1; return NX_OK; }
+        if (status != VK_SUCCESS && status != VK_SUBOPTIMAL_KHR) goto fatal;
+        renderer->has_acquired = renderer->acquire_pending = 1;
+        if (status == VK_SUBOPTIMAL_KHR) renderer->dirty = 1;
+    }
+    uint32_t index = renderer->acquired_index;
     if (index >= renderer->image_count) { status = VK_ERROR_UNKNOWN; goto fatal; }
+    if (renderer->acquire_pending) {
+        status = vkWaitForFences(device, 1, &renderer->acquire_fence, VK_TRUE, NX_VK_WAIT_NS);
+        if (status == VK_TIMEOUT) return NX_OK;
+        if (status != VK_SUCCESS) goto fatal;
+        renderer->acquire_pending = 0;
+    }
+    if (renderer->present_pending[index]) {
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        if (renderer->test_faults[NX_VK_TEST_PRESENT_WAIT_TIMEOUT]) {
+            renderer->test_faults[NX_VK_TEST_PRESENT_WAIT_TIMEOUT] = 0;
+            return NX_OK;
+        }
+#endif
+        status = vkWaitForFences(device, 1, &renderer->present_fences[index], VK_TRUE, NX_VK_WAIT_NS);
+        if (status == VK_TIMEOUT) return NX_OK;
+        if (status != VK_SUCCESS) goto fatal;
+        renderer->present_pending[index] = 0;
+        ++renderer->completed_present_fences;
+    }
     status = vkResetCommandBuffer(renderer->commands, 0);
     if (status != VK_SUCCESS) goto fatal;
     VkCommandBufferBeginInfo begin = {0};
@@ -436,7 +603,9 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     submit.signalSemaphoreCount = 1;
     submit.pSignalSemaphores = &renderer->finished[index];
     status = vkQueueSubmit(renderer->native.graphics_queue, 1, &submit, renderer->fence);
+    if (status == VK_ERROR_DEVICE_LOST) renderer->submission_pending = 1;
     if (status != VK_SUCCESS) goto fatal;
+    renderer->submission_pending = 1;
     VkPresentInfoKHR present = {0};
     present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present.waitSemaphoreCount = 1;
@@ -444,7 +613,42 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     present.swapchainCount = 1;
     present.pSwapchains = &renderer->swapchain;
     present.pImageIndices = &index;
+    VkSwapchainPresentFenceInfoEXT present_fence = {0};
+    if (renderer->present_support != NX_VK_PRESENT_FENCES_NONE) {
+        status = vkResetFences(device, 1, &renderer->present_fences[index]);
+        if (status != VK_SUCCESS) goto fatal;
+        present_fence.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT;
+        present_fence.swapchainCount = 1;
+        present_fence.pFences = &renderer->present_fences[index];
+        present.pNext = &present_fence;
+    }
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (renderer->test_faults[NX_VK_TEST_PRESENT_OOM]) {
+        renderer->test_faults[NX_VK_TEST_PRESENT_OOM] = 0;
+        status = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto fatal; /* No present call: the fence must not be awaited. */
+    }
+#endif
     status = vkQueuePresentKHR(renderer->native.present_queue, &present);
+    if (status == VK_ERROR_DEVICE_LOST) {
+        if (renderer->present_support != NX_VK_PRESENT_FENCES_NONE)
+            renderer->present_pending[index] = 1;
+        else renderer->legacy_presented = 1;
+    }
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if ((status == VK_SUCCESS || status == VK_SUBOPTIMAL_KHR) &&
+        renderer->test_faults[NX_VK_TEST_PRESENT_OUT_OF_DATE]) {
+        renderer->test_faults[NX_VK_TEST_PRESENT_OUT_OF_DATE] = 0;
+        status = VK_ERROR_OUT_OF_DATE_KHR; /* Real operation was enqueued. */
+    }
+#endif
+    if (status != VK_ERROR_OUT_OF_HOST_MEMORY && status != VK_ERROR_OUT_OF_DEVICE_MEMORY &&
+        status != VK_ERROR_DEVICE_LOST) {
+        renderer->has_acquired = 0;
+        if (renderer->present_support != NX_VK_PRESENT_FENCES_NONE)
+            renderer->present_pending[index] = 1;
+        else renderer->legacy_presented = 1;
+    }
     if (status == VK_ERROR_OUT_OF_DATE_KHR || status == VK_SUBOPTIMAL_KHR)
         renderer->dirty = 1;
     else if (status != VK_SUCCESS) goto fatal;
@@ -455,6 +659,7 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     return NX_OK;
 fatal:
     renderer->broken = 1;
+    if (status == VK_ERROR_DEVICE_LOST) renderer->device_lost = 1;
     return nx_vk_status(status);
 }
 
@@ -488,26 +693,38 @@ nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
     out_info->presented_frames = renderer->presented_frames;
     out_info->swapchain_generation = renderer->swapchain_generation;
     out_info->readback_supported = renderer->readback;
+    out_info->completed_present_fences = renderer->completed_present_fences;
+    out_info->has_acquired_image = renderer->has_acquired;
+    out_info->closing = renderer->closing;
+    out_info->pending_readback = renderer->readback_buffer != VK_NULL_HANDLE;
+    for (uint32_t i = 0; i < renderer->image_count; ++i)
+        if (renderer->present_pending[i]) ++out_info->pending_present_fences;
     return NX_OK;
 }
 
 nx_result nx_vulkan_renderer_recover(nx_vulkan_renderer *renderer) {
     if (!renderer) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
-    nx_vk_drop_native(renderer);
+    if (renderer->closing) return NX_ERROR_STATE;
     renderer->broken = 1;
-    nx_result result = nx_vk_open_native(renderer);
+    nx_result result = nx_vk_drop_native(renderer);
+    if (result != NX_OK) return result;
+    result = nx_vk_open_native(renderer);
     if (result == NX_OK) renderer->broken = 0;
     return result;
 }
 
-void nx_vulkan_renderer_destroy(nx_vulkan_renderer *renderer) {
-    if (!nx_vk_renderer_owner(renderer)) return;
-    nx_vk_drop_native(renderer);
+nx_result nx_vulkan_renderer_destroy(nx_vulkan_renderer *renderer) {
+    if (!renderer) return NX_OK;
+    if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    renderer->closing = 1;
+    nx_result result = nx_vk_drop_native(renderer);
+    if (result != NX_OK) return result;
     if (renderer->leased)
         (void)nx_window_renderer_release(renderer->window, renderer);
     nx_allocator allocator = renderer->allocator;
     allocator.deallocate(allocator.user, renderer, sizeof(*renderer));
+    return NX_OK;
 }
 
 static nx_result nx_vk_driver_resize(void *user, nx_render_target target,
@@ -543,7 +760,7 @@ static nx_result nx_vk_driver_recover(void *user) {
     return nx_vulkan_renderer_recover(user);
 }
 
-static void nx_vk_driver_destroy(void *user) { nx_vulkan_renderer_destroy(user); }
+static nx_result nx_vk_driver_destroy(void *user) { return nx_vulkan_renderer_destroy(user); }
 
 nx_result nx_vulkan_driver_open(nx_window *window, nx_renderer_driver *driver) {
     if (!driver || driver->open) return NX_ERROR_ARGUMENT;
@@ -558,9 +775,21 @@ nx_result nx_vulkan_driver_open(nx_window *window, nx_renderer_driver *driver) {
 }
 
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
+nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
+                                   nx_vulkan_test_fault fault) {
+    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT)
+        return NX_ERROR_ARGUMENT;
+    if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    /* Readback checks submission once for copying and once during cleanup.
+       Hold both waits to exercise ownership across the entire failed call. */
+    renderer->test_faults[fault] = fault == NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT ? 2 : 1;
+    return NX_OK;
+}
+
 nx_result nx_vulkan_test_invalidate(nx_vulkan_renderer *renderer, int broken) {
     if (!renderer) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    if (renderer->closing) return NX_ERROR_STATE;
     renderer->dirty = 1;
     if (broken) renderer->broken = 1;
     return NX_OK;
@@ -570,6 +799,12 @@ nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
                                  uint8_t *pixels, size_t stride) {
     if (!renderer || !pixels || !nx_valid_color(clear)) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    if (renderer->closing) return NX_ERROR_STATE;
+    if (renderer->readback_buffer != VK_NULL_HANDLE) {
+        nx_result pending = nx_vk_wait_submission(renderer);
+        if (pending != NX_OK) return pending;
+        nx_vk_free_readback(renderer);
+    }
     uint32_t width, height;
     nx_result result = nx_vk_window_target(renderer, &width, &height);
     nx_render_outcome outcome;
@@ -585,6 +820,7 @@ nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
     VkDevice device = renderer->native.logical;
     VkBuffer buffer = VK_NULL_HANDLE;
     VkDeviceMemory memory = VK_NULL_HANDLE;
+    int adopted = 0;
     VkBufferCreateInfo create = {0};
     create.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     create.size = (VkDeviceSize)width * height * 4u;
@@ -611,11 +847,14 @@ nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
     if (status != VK_SUCCESS) { memory = VK_NULL_HANDLE; result = nx_vk_status(status); goto cleanup; }
     status = vkBindBufferMemory(device, buffer, memory, 0);
     if (status != VK_SUCCESS) { result = nx_vk_status(status); goto cleanup; }
+    renderer->readback_buffer = buffer;
+    renderer->readback_memory = memory;
+    adopted = 1;
     int presented;
     result = nx_vk_present(renderer, clear, buffer, &presented);
     if (result != NX_OK || !presented) { if (result == NX_OK) result = NX_ERROR_STATE; goto cleanup; }
-    status = vkWaitForFences(device, 1, &renderer->fence, VK_TRUE, NX_VK_WAIT_NS);
-    if (status != VK_SUCCESS) { result = nx_vk_status(status); goto cleanup; }
+    result = nx_vk_wait_submission(renderer);
+    if (result != NX_OK) goto cleanup;
     void *mapped = NULL;
     status = vkMapMemory(device, memory, 0, requirements.size, 0, &mapped);
     if (status != VK_SUCCESS) { result = nx_vk_status(status); goto cleanup; }
@@ -633,11 +872,14 @@ nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
     vkUnmapMemory(device, memory);
     result = NX_OK;
 cleanup:
-    /* Includes failed/timed-out submissions; never free a buffer still read
-       or written by the queue. CTest bounds a nonresponsive driver's wait. */
-    (void)vkDeviceWaitIdle(device);
-    if (buffer != VK_NULL_HANDLE) vkDestroyBuffer(device, buffer, NULL);
-    if (memory != VK_NULL_HANDLE) vkFreeMemory(device, memory, NULL);
+    if (adopted) {
+        nx_result pending = nx_vk_wait_submission(renderer);
+        if (pending == NX_OK || !renderer->submission_pending) nx_vk_free_readback(renderer);
+        else return pending; /* Keep the in-flight allocation on the renderer. */
+    } else {
+        if (buffer != VK_NULL_HANDLE) vkDestroyBuffer(device, buffer, NULL);
+        if (memory != VK_NULL_HANDLE) vkFreeMemory(device, memory, NULL);
+    }
     return result;
 }
 #endif

@@ -7,8 +7,10 @@ Vulkan to the core or installed package. A per-window renderer lease prevents
 competing renderers and suppresses Wayland SHM background commits while Vulkan
 owns presentation. Selection, allocator, synchronization and owner-thread
 rules are documented in [the Vulkan contract](docs/concepts/vulkan.md).
-Command rendering and release-grade presentation retirement remain V03–V09
-work.
+Strict retirement negotiates KHR/EXT present fences and retains resources on
+bounded wait failure. The private driver preserves backend ownership across a
+failed close. Command rendering and broader integration remain V04–V09 work;
+hardware-GPU and device-removal acceptance remain open.
 
 NexaUI exposes a C17 ABI. Each `nx_context` owns its frame command buffer, hierarchical ID scope, allocator, and counters. No context state is global. A context is mutated by one UI thread at a time; callers may own different contexts on different threads. Command pointers returned by `nx_frame_commands` are borrowed and remain valid until the next `nx_begin_frame` or context destruction. The caller must finish any renderer use before either action.
 

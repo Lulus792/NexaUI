@@ -5,11 +5,24 @@
 
 typedef struct nx_vk_device nx_vk_device;
 
+typedef enum nx_vk_present_fence_policy {
+    NX_VK_PRESENT_FENCES_DISABLED = 0,
+    NX_VK_PRESENT_FENCES_OPTIONAL = 1,
+    NX_VK_PRESENT_FENCES_REQUIRED = 2
+} nx_vk_present_fence_policy;
+
+typedef enum nx_vk_present_fence_support {
+    NX_VK_PRESENT_FENCES_NONE = 0,
+    NX_VK_PRESENT_FENCES_EXT = 1,
+    NX_VK_PRESENT_FENCES_KHR = 2
+} nx_vk_present_fence_support;
+
 typedef struct nx_vk_device_desc {
     nx_allocator allocator; /* Zero selects malloc/free for NexaUI storage. */
     const char *const *instance_extensions; /* Borrowed during create only. */
     uint32_t instance_extension_count; /* At most 64 unique names. */
     int require_swapchain;
+    nx_vk_present_fence_policy present_fences;
 } nx_vk_device_desc;
 
 typedef enum nx_vk_device_kind {
@@ -28,12 +41,15 @@ typedef struct nx_vk_device_info {
     int swapchain_enabled;
     uint32_t present_queue_family;
     int has_surface;
+    nx_vk_present_fence_support present_fences;
 } nx_vk_device_info;
 
 /* Private Linux Vulkan bootstrap, not an installed consumer API. No window,
    surface or swap chain is created yet. Enables VK_KHR_surface without opening
-   a display connection. Requests Vulkan 1.0 with no optional
-   device features. Prefers discrete, integrated, virtual, other, then CPU
+   a display connection. Requests Vulkan 1.0; present_fences can enable the
+   KHR/EXT swapchain-maintenance feature and its instance dependencies.
+   The default policy enables no optional device features.
+   Prefers discrete, integrated, virtual, other, then CPU
    adapters with a nonempty graphics queue; enumeration order breaks ties.
    An adapter that cannot create a logical device is skipped, but allocation
    failures are reported immediately. The swapchain extension is enabled

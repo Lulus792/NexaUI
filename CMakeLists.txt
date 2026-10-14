@@ -161,7 +161,7 @@ endif()
 if(UNIX AND NOT APPLE)
     option(NEXAUI_BUILD_VULKAN "Build the private Linux Vulkan backend" ON)
     if(NEXAUI_BUILD_VULKAN)
-        find_package(Vulkan REQUIRED)
+        find_package(Vulkan 1.3.250 REQUIRED)
         add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c
             renderers/vulkan/renderer.c)
         target_include_directories(nexaui_renderer_vulkan PRIVATE
