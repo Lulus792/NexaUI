@@ -171,7 +171,7 @@ if(UNIX AND NOT APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
         target_link_libraries(nexaui_renderer_vulkan PRIVATE
             NexaUI::NexaUI Vulkan::Vulkan Threads::Threads X11::X11
-            PkgConfig::WAYLAND_CLIENT)
+            PkgConfig::WAYLAND_CLIENT m)
         set_target_properties(nexaui_renderer_vulkan PROPERTIES
             C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
         target_compile_options(nexaui_renderer_vulkan PRIVATE
@@ -389,6 +389,9 @@ if(NEXAUI_BUILD_TESTS)
             NexaUI::NexaUI nexaui_renderer_d3d12)
         add_test(NAME nexaui_d3d12_smoke COMMAND nexaui_d3d12_smoke_tests)
         set_tests_properties(nexaui_d3d12_smoke PROPERTIES TIMEOUT 30)
+        add_test(NAME nexaui_d3d12_warp_smoke COMMAND nexaui_d3d12_smoke_tests)
+        set_tests_properties(nexaui_d3d12_warp_smoke PROPERTIES TIMEOUT 60
+            ENVIRONMENT "NEXAUI_TEST_FORCE_WARP=1" RESOURCE_LOCK native_display)
         add_executable(nexaui_d3d12_widget_tests tests/test_d3d12_widgets.c)
         target_compile_definitions(nexaui_d3d12_widget_tests PRIVATE
             NEXAUI_D3D12_TEST_HOOKS)
@@ -681,6 +684,17 @@ if(NEXAUI_BUILD_TESTS)
         NEXAUI_BIDI_TYPE_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/BidiTest.txt")
     add_test(NAME nexaui_bidi_types COMMAND nexaui_bidi_type_tests)
     set_tests_properties(nexaui_bidi_types PROPERTIES TIMEOUT 90)
+    # Test sources use C math directly. A shared core keeps its own libm
+    # dependency private, so executables must declare theirs explicitly.
+    if(UNIX AND NOT APPLE)
+        get_property(_nexaui_test_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+        foreach(_target IN LISTS _nexaui_test_targets)
+            get_target_property(_type ${_target} TYPE)
+            if(_type STREQUAL "EXECUTABLE")
+                target_link_libraries(${_target} PRIVATE m)
+            endif()
+        endforeach()
+    endif()
 endif()
 
 if(NEXAUI_BUILD_EXAMPLES)

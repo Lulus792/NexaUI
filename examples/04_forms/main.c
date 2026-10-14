@@ -107,7 +107,7 @@ static int semantic_field(demo *app, uint64_t id, const char *expected,
            view.role == NX_ROLE_TEXT_FIELD && view.parent_id == 2 &&
            !!(view.state & NX_SEM_INVALID) == !!invalid &&
            view.value.length == strlen(expected) &&
-           memcmp(view.value.data, expected, view.value.length) == 0;
+           (!view.value.length || memcmp(view.value.data, expected, view.value.length) == 0);
 }
 
 static int inspect(demo *app) {

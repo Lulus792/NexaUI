@@ -1,5 +1,8 @@
 add_executable(nexaui_themes_example main.c)
 target_link_libraries(nexaui_themes_example PRIVATE NexaUI::NexaUI)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(nexaui_themes_example PRIVATE m)
+endif()
 if(WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET nexaui_themes_example POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

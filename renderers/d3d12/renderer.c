@@ -102,6 +102,7 @@ struct nx_d3d12_renderer {
     int device_lost;
     int work_pending;
 #ifdef NEXAUI_D3D12_TEST_HOOKS
+    int test_force_warp;
     int test_fail_next_rebuild;
 #endif
 };
@@ -1370,8 +1371,14 @@ static nx_result nx_d3d12_build_objects(nx_d3d12_renderer *r) {
     if (!r->height) r->height = 1;
     if (FAILED(CreateDXGIFactory2(0, &IID_IDXGIFactory4,
                                    (void **)&r->factory))) goto fail;
-    HRESULT hr = D3D12CreateDevice(NULL, D3D_FEATURE_LEVEL_11_0,
+    HRESULT hr;
+#ifdef NEXAUI_D3D12_TEST_HOOKS
+    hr = r->test_force_warp ? E_FAIL : D3D12CreateDevice(NULL, D3D_FEATURE_LEVEL_11_0,
                                    &IID_ID3D12Device, (void **)&r->device);
+#else
+    hr = D3D12CreateDevice(NULL, D3D_FEATURE_LEVEL_11_0,
+                                   &IID_ID3D12Device, (void **)&r->device);
+#endif
     if (FAILED(hr)) {
         if (FAILED(IDXGIFactory4_EnumWarpAdapter(r->factory,
             &IID_IDXGIAdapter, (void **)&warp))) goto fail;
@@ -1451,6 +1458,9 @@ nx_result nx_d3d12_renderer_create(nx_window *window,
     if (!r) return NX_ERROR_MEMORY;
     r->hwnd = hwnd;
     r->owner_thread = GetCurrentThreadId();
+#ifdef NEXAUI_D3D12_TEST_HOOKS
+    r->test_force_warp = GetEnvironmentVariableW(L"NEXAUI_TEST_FORCE_WARP", NULL, 0) != 0;
+#endif
     nx_result result = nx_d3d12_build_objects(r);
     if (result != NX_OK) {
         free(r);
@@ -2235,6 +2245,11 @@ nx_result nx_d3d12_test_remove_device(nx_d3d12_renderer *r) {
     HRESULT hr = ID3D12Device_QueryInterface(r->device,
         &IID_ID3D12Device5, (void **)&device5);
     if (FAILED(hr)) return NX_ERROR_UNSUPPORTED;
+    /* Deterministic test removal: finish this renderer's prior work before
+       faulting the device. WARP can otherwise still be executing on a worker
+       when recovery releases its objects. This is not a physical-loss test. */
+    nx_result retired = nx_d3d12_wait_gpu(r);
+    if (retired != NX_OK) { ID3D12Device5_Release(device5); return retired; }
     ID3D12Device5_RemoveDevice(device5);
     ID3D12Device5_Release(device5);
     return NX_OK;

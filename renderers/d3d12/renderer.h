@@ -51,7 +51,10 @@ nx_result nx_d3d12_driver_open(nx_window *window,
                                 nx_renderer_driver *out_driver);
 
 #ifdef NEXAUI_D3D12_TEST_HOOKS
-/* Forces a real D3D12 device-removal event where ID3D12Device5 is supported. */
+/* Test builds may select WARP per created renderer with the process setting
+   NEXAUI_TEST_FORCE_WARP=1. Production builds ignore this setting.
+   Controlled removal drains prior work before ID3D12Device5::RemoveDevice;
+   this exercises recovery, not unexpected physical GPU removal. */
 nx_result nx_d3d12_test_remove_device(nx_d3d12_renderer *renderer);
 /* Fail once after the replacement swap chain exists to test cleanup/retry. */
 nx_result nx_d3d12_test_fail_next_rebuild(nx_d3d12_renderer *renderer);

@@ -89,3 +89,21 @@ revealed three portability failures that local builds did not expose:
 
 These are build/check compatibility fixes and do not add a native macOS window
 or full Linux scene renderer.
+
+The follow-up run completed both macOS static/shared jobs, including the portable
+NexaCloud workflow and installed-package checks, and the Ubuntu static job.
+It exposed three further checks: direct math calls in shared-build test/example
+executables needed their own `libm` links; the Forms example compared a null,
+empty semantic span with `memcmp`; and WARP crashed during controlled removal
+with prior work outstanding. Math users now declare the system library and
+the empty span bypasses `memcmp`. The Forms reproducer passes Clang ASan/UBSan.
+
+The WARP failure was reproduced locally in `d3d10warp.dll` with MSVC ASan. The
+test-only removal hook now drains this renderer's previous work before faulting
+the device. A removed device signals all fences to `UINT64_MAX`, so waiting on
+those values after removal cannot distinguish normally completed work; see
+[Microsoft's RemoveDevice contract](https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12device5-removedevice).
+The controlled WARP reproducer passes with MSVC ASan, and the default/WARP/widget
+tests pass in static and shared Windows Debug builds. An explicit WARP smoke
+case now preserves this coverage on hardware-equipped hosts too. Unexpected
+hardware removal remains separate acceptance work.

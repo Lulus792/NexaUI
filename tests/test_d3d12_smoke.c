@@ -30,6 +30,7 @@ static int pixels_match(const uint8_t *gpu, const uint8_t *reference,
 }
 
 int main(void) {
+    setvbuf(stdout, NULL, _IONBF, 0);
     nx_window_desc desc = {0};
     desc.title_utf8 = "NexaUI D3D12 smoke";
     desc.width = 320;
@@ -52,6 +53,7 @@ int main(void) {
     CHECK(nx_d3d12_renderer_get_info(renderer, &before) == NX_OK);
     CHECK(before.pixel_width > 0 && before.pixel_height > 0 &&
           before.submitted_frames == 0);
+    printf("D3D12 smoke: WARP=%d, %ux%u\n", before.using_warp, before.pixel_width, before.pixel_height);
     for (unsigned frame = 0; frame < 5; ++frame) {
         CHECK(nx_d3d12_clear_present(renderer, blue, &presented) == NX_OK);
         CHECK(nx_window_poll(window, 0) == NX_OK);
