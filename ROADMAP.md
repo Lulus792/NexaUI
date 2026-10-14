@@ -377,3 +377,12 @@ callbacks and ownership have authored macOS tests; their execution is pending.
 Full-document IME/reconversion and Command editor actions remain M04 work, and
 Metal/native NexaCloud rendering remains A01–A08 work. Windows/Linux build and
 shared-input checks do not count as macOS validation. See [the AppKit report](docs/concepts/macos.md).
+
+An initial A01/A02 Metal target now owns a main-thread device/queue, an AppKit
+CAMetalLayer and a BGRA8 canvas. Clear/readback/presentation and retryable
+retirement have authored native tests, with a plain C17 example. Pending GPU
+work and timed-out readback retain their storage; drawable acquisition and
+command retirement are bounded. Native SDK/runtime execution remains pending.
+This is not command-stream or NexaCloud rendering: A03–A05 shapes, clips, alpha
+and textures remain next, followed by batching/profiling and hardware acceptance.
+See [the Metal contract](docs/concepts/metal.md).

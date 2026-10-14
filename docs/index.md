@@ -11,3 +11,6 @@ The guide will expand with each public API slice. Pages for unimplemented capabi
 The initial [AppKit window adapter](concepts/macos.md) now has implementation and
 authored native checks. Its native macOS execution evidence is pending; Metal and
 the full macOS NexaCloud runner are not yet available.
+
+The initial [Metal clear/present backend](concepts/metal.md) also has implementation
+and authored native tests. SDK/GPU execution and command rendering remain pending.

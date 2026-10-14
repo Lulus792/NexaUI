@@ -1,5 +1,21 @@
 # Decisions
 
+## 2026-10-15 — Keep Metal submission ownership until terminal status
+
+The initial A01/A02 Metal backend uses an owned BGRA8 canvas, a CAMetalLayer and
+the existing F11 boundary. It retains one command buffer at a time and polls
+terminal status with a one-second bound. Timeouts preserve all GPU storage and
+the AppKit window lease; callers retry close. No completion block captures a C
+renderer that could be freed before callback delivery. Metal/Core Animation own
+their presentation references, and our autorelease pool drops the drawable
+reference promptly after commit, following Apple's layer contract.
+
+Readback uses an owned shared buffer, never a retained caller output pointer.
+The layer declares sRGB; canvas byte comparison does not prove display color
+management. Command-stream drawing follows after this surface/retirement base.
+Apple SDK compilation, GPU execution and physical acceptance are still required;
+authored tests or a no-device skip do not establish native support.
+
 ## 2026-10-15 — Preserve Command identity in native input
 
 The initial AppKit adapter emits Command as `NX_MOD_SUPER`; it does not relabel

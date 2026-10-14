@@ -1,5 +1,23 @@
 # Native renderer examples
 
+## macOS Metal clear/present
+
+The initial Apple example uses a plain C17 entry point, an AppKit window and the
+private Metal driver. It clears/presents a changing background for three seconds;
+`--smoke` bounds this to a quarter second and requires a submitted frame. It does
+not yet draw shapes or widgets. See the [Metal contract](../../docs/concepts/metal.md)
+for native validation status and remaining work.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target nexaui_native_clear
+./build/examples/10_native_clear/nexaui_native_clear
+```
+
+A smoke without a Metal device returns skip code 77 unless
+`NEXAUI_REQUIRE_METAL=1`. Authored/skipped cases are not GPU acceptance.
+Native Apple SDK build/runtime evidence is still pending.
+
 ## Linux Vulkan shapes
 
 The Linux `nexaui_native_clear` opens a native window for up to three seconds

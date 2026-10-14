@@ -63,7 +63,7 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 | --- | --- | --- |
 | Windows | Win32 backend, clipboard, file drops and initial IME integration | Software renderer and initial D3D12 backend |
 | Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Software renderer and Vulkan shapes, RGBA8 images and A8 masks with nested clips and straight alpha |
-| macOS | Initial AppKit adapter added; native validation pending | Headless software renderer; Metal pending |
+| macOS | Initial AppKit adapter added; native validation pending | Headless renderer and initial Metal clear/present implementation; native validation and drawing commands pending |
 
 On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one.
 

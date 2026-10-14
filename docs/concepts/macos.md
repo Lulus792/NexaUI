@@ -73,8 +73,10 @@ executed as portable C under Linux ASan/UBSan (two passing model/field probes).
 That probe is a Linux executable with the policy branch selected; it is not an
 Apple SDK build or macOS runtime result. Actual Apple CI remains required.
 
-Metal and a native NexaCloud macOS runner remain pending. A blank native window
-or successful headless scene is not complete macOS UI acceptance.
+An initial [Metal clear/present target](metal.md) has implementation and authored
+tests; native validation and drawing commands remain pending. A native NexaCloud
+macOS runner is not yet available. A blank window or headless scene is not
+complete macOS UI acceptance.
 
 ## Primary references
 
