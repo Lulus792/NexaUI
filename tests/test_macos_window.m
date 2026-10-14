@@ -169,8 +169,20 @@ int main(void) {
         CHECK(nx_window_renderer_release(w,&other) == NX_ERROR_STATE && nx_window_renderer_release(w,&owner) == NX_OK);
         CHECK(test_clipboard(w) == 0 && test_drop(w) == 0);
         NSView *retained = [nx_window_native_nsview(second) retain];
+        id<NSTextInputClient> client = (id<NSTextInputClient>)retained;
+        CHECK(nx_window_set_ime_enabled(second,1) == NX_OK);
+        [client setMarkedText:@"stale α" selectedRange:NSMakeRange(7,0) replacementRange:NSMakeRange(NSNotFound,0)];
+        CHECK([client hasMarkedText]);
+        h.fail_on = h.calls + 1;
+        [client setMarkedText:@"rejected" selectedRange:NSMakeRange(8,0) replacementRange:NSMakeRange(NSNotFound,0)];
+        h.fail_on = 0;
+        CHECK(nx_window_poll(second,0) == NX_ERROR_MEMORY);
+        char preedit[32]; size_t length; int32_t begin, end;
+        CHECK(nx_window_get_ime_preedit(second,preedit,sizeof(preedit),&length,&begin,&end) == NX_OK &&
+            !strcmp(preedit,"stale \xce\xb1") && begin == 8 && end == 8);
         nx_window_destroy(second);
-        [(id<NSTextInputClient>)retained insertText:@"late callback" replacementRange:NSMakeRange(NSNotFound,0)];
+        CHECK(![client hasMarkedText] && [client markedRange].location == NSNotFound && [client selectedRange].location == NSNotFound);
+        [client insertText:@"late callback" replacementRange:NSMakeRange(NSNotFound,0)];
         [retained release];
         [nx_window_native_nswindow(w) performClose:nil];
         CHECK(nx_window_get_info(w,&info) == NX_OK && info.should_close);

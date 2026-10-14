@@ -264,9 +264,9 @@ static void nx_mac_focus(nx_window *w, int focused);
     }
     return NO;
 }
-- (BOOL)hasMarkedText { return [marked length] != 0; }
-- (NSRange)markedRange { return [marked length] ? NSMakeRange(0, [marked length]) : NSMakeRange(NSNotFound, 0); }
-- (NSRange)selectedRange { return [marked length] ? marked_selection : NSMakeRange(0, 0); }
+- (BOOL)hasMarkedText { return owner && [marked length] != 0; }
+- (NSRange)markedRange { return owner && [marked length] ? NSMakeRange(0, [marked length]) : NSMakeRange(NSNotFound, 0); }
+- (NSRange)selectedRange { return !owner ? NSMakeRange(NSNotFound,0) : [marked length] ? marked_selection : NSMakeRange(0,0); }
 - (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText { return @[]; }
 - (void)setMarkedText:(id)value selectedRange:(NSRange)selected replacementRange:(NSRange)replacement {
     if (!owner || !owner->ime_enabled) return;
@@ -578,6 +578,7 @@ void nx_window_destroy(nx_window *w) {
         nx_window **slot = &nx_macos_windows;
         while (*slot && *slot != w) slot = &(*slot)->next;
         if (*slot) *slot = w->next;
+        if (w->view && w->view->owner == w) nx_mac_discard(w);
         if (w->view) w->view->owner = NULL;
         if (w->delegate) w->delegate->owner = NULL;
         [w->native setDelegate:nil]; [w->native setContentView:nil]; [w->native close];
