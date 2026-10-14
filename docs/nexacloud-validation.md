@@ -114,3 +114,61 @@ time of this report, both macOS jobs are still queued. The preceding run's
 successful macOS jobs remain the available package/core evidence; neither run
 implements or validates a Cocoa/Metal NexaCloud window. The subsequent Linux
 clip/alpha increment has its own [local validation report](concepts/vulkan.md#v05-local-validation--2026-10-15).
+
+## Native Linux Vulkan scene — 2026-10-15
+
+Alpine 3.24 under WSLg, GCC 15.2 / Clang 22.1.3, Vulkan 1.4.347 and Mesa 26.1.6
+Lavapipe (LLVM 22.1.3) render the common NexaCloud scene through the native X11
+and Wayland adapters. No full-frame CPU upload substitutes for GPU rendering.
+The screenshot capture compares the GPU canvas against the software reference
+after the same frame is recorded; all RGBA8 bytes must match before writing it.
+
+| View | Native client size | Commands | Distinct bitmaps | Atlas |
+| --- | --- | --- | --- | --- |
+| Overview | 1440×1040 | 1490 | 73 | 1024×256 |
+| Files and inspector | 1440×1040 | 662 | 96 | 1024×1024 |
+| Compact files | 820×700 | 437 | 31 | 1024×1024 |
+
+Both backends passed every comparison. The captured
+[overview](images/nexacloud-linux-overview.png), [file browser](images/nexacloud-linux-files.png)
+and [compact view](images/nexacloud-linux-compact.png) were visually inspected for
+legible labels, thumbnails, ordering, selected files and compact navigation.
+They are captures of NexaUI's implementation, not copies of the supplied mockups.
+
+The complete static Debug suite passed 90/90 tests in 138.23 seconds. The shared
+build passed all eight Vulkan tests and both native NexaCloud cases in 128.99
+seconds (10/10). Clang ASan/UBSan/LeakSanitizer plus core and synchronization
+validation passed those ten cases and the queued Wayland offer regression in
+122.42 seconds (11/11). The source/header shader check and Vulkan 1.0 SPIR-V
+validation pass. The Windows MSVC native NexaCloud target also reconfigured,
+built and passed its existing D3D12 smoke after the CMake extension.
+
+The final row-buffered PPM capture writer was rebuilt and rechecked in both
+native cases, statically (2/2, 63.86 seconds) and with sanitizers (2/2, 68.65
+seconds). Its size check also avoids an always-false comparison on 64-bit hosts.
+The test-disabled Release configuration built both native Linux examples; its
+basic Vulkan sample presented RGBA8/A8 frames on X11 (four) and Wayland (six).
+
+Upload tests cover padded RGBA8/A8 rows, generated glyph coverage, mutable source
+pixels, exact tint/alpha rounding, clipping and fractional sampling at
+1×/1.5×/2×. Allocation faults hit initial/growing host tables, texture images and
+staging storage; prior streams remain usable. Atlas budget errors return before
+image acquisition. Borrowed source storage is released while submitted work is
+retained, with no subsequent CPU access; submission fences prevent overwriting
+its owned upload. Rebuild/recovery, reuse and retryable close are checked.
+
+The native scene smoke uses normalized pointer/key events and checks selection
+semantics. It creates a separate compact native window; it does not prove a
+physical Wayland resize or installed compositor input/IME behavior. Actual
+hardware GPU performance, native keyboard/IME walkthroughs, physical HiDPI/4K,
+200% large-text reflow, screenreaders and macOS remain open. Readback agreement
+also does not prove compositor color management or a visible-frame latency
+budget. Vulkan's final canvas-to-swapchain copy is separately covered by X11
+displayed-pixel tests.
+
+```sh
+NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 \
+VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_VALIDATION_VALIDATE_SYNC=1 \
+NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a \
+ctest --test-dir out/vulkan-clean --output-on-failure --timeout 180
+```

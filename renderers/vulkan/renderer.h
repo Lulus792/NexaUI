@@ -29,6 +29,8 @@ typedef struct nx_vulkan_renderer_info {
     int drawing_supported;
     uint64_t vertex_capacity_bytes, vertex_buffer_allocations;
     uint32_t last_submitted_vertices;
+    uint32_t atlas_width, atlas_height, unique_bitmaps;
+    uint64_t bitmap_upload_capacity_bytes, bitmap_upload_allocations, atlas_allocations;
 } nx_vulkan_renderer_info;
 
 /* Private Linux clear/present and initial drawing path. The window must outlive the renderer;
@@ -49,8 +51,7 @@ nx_result nx_vulkan_renderer_create_config(nx_window *window,
    A fatal submission error latches the renderer until explicit recovery. */
 nx_result nx_vulkan_clear_present(nx_vulkan_renderer *renderer,
                                   nx_color clear, int *out_presented);
-/* Filled/stroked rectangles, rounded fills, lines and triangles with straight
-   alpha and nested clips. Bitmaps remain unsupported. Entire
+/* Core shapes and RGBA8/A8 bitmaps with straight alpha and nested clips. Entire
    streams are validated before acquisition; unsupported command types fail.
    Logical coordinates are multiplied by the supplied backing scale. */
 nx_result nx_vulkan_render(nx_vulkan_renderer *renderer,
@@ -88,7 +89,10 @@ typedef enum nx_vulkan_test_fault {
     NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT,
     NX_VK_TEST_PIPELINE_MEMORY,
     NX_VK_TEST_VERTEX_MEMORY,
-    NX_VK_TEST_DRAW_MEMORY
+    NX_VK_TEST_DRAW_MEMORY,
+    NX_VK_TEST_BITMAP_RECORD_MEMORY,
+    NX_VK_TEST_ATLAS_MEMORY,
+    NX_VK_TEST_BITMAP_UPLOAD_MEMORY
 } nx_vulkan_test_fault;
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault);

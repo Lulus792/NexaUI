@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added Vulkan RGBA8/A8 image and glyph-mask uploads through a bounded reusable atlas, per-frame source-view deduplication, exact RGBA8 tint/compositing and retained storage across submission timeouts. NexaCloud now has an X11/Wayland native runner; full overview/file/compact GPU captures match its software reference.
 - Added Vulkan nested clips and integer straight-alpha composition through an owned canvas/history pair, plus analytic rounded fills, inside strokes and round-capped lines. GPU output matches the tested headless reference at 1×/1.5×/2×; native examples, allocation/retirement regressions and sanitizer checks cover both X11 and Wayland. Bitmap/glyph rendering and native macOS remain pending.
 - Fixed Wayland teardown losing already-decoded server-created data offers when another reader leaves them queued; a mock-compositor regression verifies adoption and cleanup before listener destruction.
 - Added an initial Linux Vulkan SPIR-V pipeline for opaque filled rectangles and triangles, embedded validated shaders with a regeneration tool, bounded/reusable vertex uploads, per-image render targets and an animated native example. Byte-exact X11/Wayland readback covers scaling, fractional/shared edges, large-coordinate cancellation, allocation failure, resize/recovery and independent windows. Vulkan clips, alpha blending and other command types remain pending.

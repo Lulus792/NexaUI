@@ -5,8 +5,10 @@ layout(location = 1) flat in vec2 shape_a;
 layout(location = 2) flat in vec2 shape_b;
 layout(location = 3) flat in vec2 shape_c;
 layout(location = 4) flat in uint shape_kind;
+layout(location = 5) flat in vec2 bitmap_size;
 layout(location = 0) out vec4 output_color;
 layout(set = 0, binding = 0) uniform sampler2D previous_color;
+layout(set = 0, binding = 1) uniform sampler2D bitmap_atlas;
 
 // Keep the rounding remainder when two large edge products nearly cancel.
 // This needs only Vulkan 1.0 float32 operations, not shaderFloat64.
@@ -112,14 +114,36 @@ bool shape_contains(vec2 p) {
     return true;
 }
 
+int sample_axis(float position, float origin, float extent, float texels) {
+    vec2 local = difference(position, origin);
+    if (!less_pair(vec2(0.0), local)) return 0;
+    if (!less_pair(local, vec2(extent, 0.0))) return int(texels) - 1;
+    vec2 numerator = multiply_pair(local, vec2(texels, 0.0));
+    precise float high = numerator.x / extent;
+    vec2 remainder = add_pair(numerator, -multiply_pair(vec2(high, 0.0), vec2(extent, 0.0)));
+    precise float low = (remainder.x + remainder.y) / extent;
+    vec2 quotient = add_pair(vec2(high, 0.0), vec2(low, 0.0));
+    float value = floor(quotient.x);
+    if (value == quotient.x && quotient.y < 0.0) value -= 1.0;
+    return int(clamp(value, 0.0, texels - 1.0));
+}
+
 void main() {
     if (!shape_contains(gl_FragCoord.xy)) discard;
     uvec4 src = uvec4(floor(fragment_color * 255.0 + 0.5));
-    if (src.a == 255u) { output_color = fragment_color; return; }
+    if (shape_kind == 5u) {
+        ivec2 sample_pixel = ivec2(shape_c) + ivec2(
+            sample_axis(gl_FragCoord.x, shape_a.x, shape_b.x, bitmap_size.x),
+            sample_axis(gl_FragCoord.y, shape_a.y, shape_b.y, bitmap_size.y));
+        sample_pixel = clamp(sample_pixel, ivec2(0), textureSize(bitmap_atlas, 0) - 1);
+        uvec4 sample_color = uvec4(floor(texelFetch(bitmap_atlas, sample_pixel, 0) * 255.0 + 0.5));
+        src = (sample_color * src + 127u) / 255u;
+    }
+    if (src.a == 255u) { output_color = vec4(src) / 255.0; return; }
     ivec2 pixel = clamp(ivec2(gl_FragCoord.xy), ivec2(0), textureSize(previous_color, 0) - 1);
     uvec4 dst = uvec4(floor(texelFetch(previous_color, pixel, 0) * 255.0 + 0.5));
     if (src.a == 0u) { output_color = vec4(dst) / 255.0; return; }
-    if (dst.a == 0u) { output_color = fragment_color; return; }
+    if (dst.a == 0u) { output_color = vec4(src) / 255.0; return; }
     uint inverse = 255u - src.a;
     uint alpha_numerator = src.a * 255u + dst.a * inverse;
     uvec3 numerator = src.rgb * src.a * 255u + dst.rgb * dst.a * inverse;

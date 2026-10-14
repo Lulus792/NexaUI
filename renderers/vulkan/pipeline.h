@@ -9,6 +9,11 @@ typedef struct nx_vk_draw {
     int composite;
 } nx_vk_draw;
 
+typedef struct nx_vk_bitmap {
+    nx_bitmap_view view; /* Borrowed only during prepare; never read by record. */
+    uint32_t x, y;
+} nx_vk_bitmap;
+
 /* Set allocator before first use; preflight before prepare. All storage
    belongs to one renderer. The caller retires its submission
    before prepare/destroy and its presentations before destroying the images. */
@@ -27,6 +32,18 @@ typedef struct nx_vk_painter {
     VkDescriptorPool descriptor_pool;
     VkDescriptorSet descriptor;
     VkSampler sampler;
+    VkImage atlas;
+    VkDeviceMemory atlas_memory;
+    VkImageView atlas_view;
+    VkExtent2D atlas_extent, bitmap_extent;
+    int atlas_initialized;
+    VkBuffer bitmap_upload;
+    VkDeviceMemory bitmap_memory;
+    void *bitmap_mapped;
+    VkDeviceSize bitmap_capacity;
+    uint64_t atlas_allocations, bitmap_allocations;
+    nx_vk_bitmap *bitmaps;
+    size_t bitmap_count, bitmap_record_capacity;
     nx_vk_draw *draws;
     size_t draw_capacity, draw_count;
     int history_initialized;
@@ -38,11 +55,12 @@ typedef struct nx_vk_painter {
     uint32_t vertex_count;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     int fail_framebuffer, fail_vertex_memory, fail_draw_memory;
+    int fail_bitmap_records, fail_atlas_memory, fail_bitmap_upload;
 #endif
 } nx_vk_painter;
 
-/* Validates the entire stream before image acquisition. Supports core shapes,
-   straight alpha and balanced nested rectangular clips; bitmaps remain open. */
+/* Validates the entire stream before image acquisition. Bitmap source bytes
+   are staged during prepare, before its caller returns a successful submit. */
 nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
                                  double scale);
 nx_result nx_vk_painter_prepare(nx_vk_painter *painter,

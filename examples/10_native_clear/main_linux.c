@@ -55,7 +55,10 @@ int main(int argc, char **argv) {
         nx_render_target target = {(uint32_t)width, (uint32_t)height, info.scale};
         float phase = (float)((current - started) / duration);
         nx_color clear = {0.08f + 0.14f * phase, 0.16f, 0.28f + 0.32f * phase, 1};
-        nx_command commands[9] = {{0}};
+        static const uint8_t rgba[24] = {255,0,0,255, 0,255,0,128, 0,0,255,255,
+            255,255,0,64, 0,255,255,255, 255,255,255,0};
+        static const uint8_t mask[6] = {0,128,255, 255,64,0};
+        nx_command commands[11] = {{0}};
         commands[0].type = NX_COMMAND_FILL_ROUND_RECT;
         commands[0].radius = 18;
         commands[0].rect = (nx_rect){24, 24, info.width * 0.6f, info.height * 0.45f};
@@ -82,8 +85,15 @@ int main(int argc, char **argv) {
         commands[8].points[1] = (nx_point){info.width - 48, info.height * .6f};
         commands[8].thickness = 5;
         commands[8].color = (nx_color){.1f,1,.7f,.75f};
+        commands[9].type = commands[10].type = NX_COMMAND_BITMAP;
+        commands[9].rect = (nx_rect){info.width - 160, 32, 120, 80};
+        commands[9].color = (nx_color){1,1,1,.8f};
+        commands[9].bitmap = (nx_bitmap_view){rgba,3,2,12,NX_BITMAP_RGBA8};
+        commands[10].rect = (nx_rect){info.width - 160, 132, 120, 80};
+        commands[10].color = (nx_color){.3f,.8f,1,.8f};
+        commands[10].bitmap = (nx_bitmap_view){mask,3,2,3,NX_BITMAP_A8};
         nx_render_outcome outcome;
-        result = nx_renderer_run(&renderer, target, commands, 9, clear, &outcome);
+        result = nx_renderer_run(&renderer, target, commands, 11, clear, &outcome);
         if (result != NX_OK) { status = 1; break; }
         if (outcome == NX_RENDER_DEVICE_LOST) {
             if (nx_renderer_recover(&renderer) != NX_OK) { status = 1; break; }

@@ -46,7 +46,7 @@ struct nx_vulkan_renderer {
     uint32_t last_submitted_vertices;
     uint64_t completed_present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
-    unsigned char test_faults[NX_VK_TEST_DRAW_MEMORY + 1];
+    unsigned char test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY + 1];
 #endif
     uint64_t presented_frames;
     uint64_t swapchain_generation;
@@ -520,9 +520,15 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         renderer->painter.fail_framebuffer = renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY];
         renderer->painter.fail_vertex_memory = renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY];
         renderer->painter.fail_draw_memory = renderer->test_faults[NX_VK_TEST_DRAW_MEMORY];
+        renderer->painter.fail_bitmap_records = renderer->test_faults[NX_VK_TEST_BITMAP_RECORD_MEMORY];
+        renderer->painter.fail_atlas_memory = renderer->test_faults[NX_VK_TEST_ATLAS_MEMORY];
+        renderer->painter.fail_bitmap_upload = renderer->test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY];
         renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY] = 0;
         renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY] = 0;
         renderer->test_faults[NX_VK_TEST_DRAW_MEMORY] = 0;
+        renderer->test_faults[NX_VK_TEST_BITMAP_RECORD_MEMORY] = 0;
+        renderer->test_faults[NX_VK_TEST_ATLAS_MEMORY] = 0;
+        renderer->test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY] = 0;
     }
 #endif
     nx_result prepared = nx_vk_painter_prepare(&renderer->painter, &renderer->native,
@@ -774,6 +780,12 @@ nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
     out_info->vertex_capacity_bytes = renderer->painter.capacity;
     out_info->vertex_buffer_allocations = renderer->painter.allocations;
     out_info->last_submitted_vertices = renderer->last_submitted_vertices;
+    out_info->atlas_width = renderer->painter.atlas_extent.width;
+    out_info->atlas_height = renderer->painter.atlas_extent.height;
+    out_info->unique_bitmaps = (uint32_t)renderer->painter.bitmap_count;
+    out_info->bitmap_upload_capacity_bytes = renderer->painter.bitmap_capacity;
+    out_info->bitmap_upload_allocations = renderer->painter.bitmap_allocations;
+    out_info->atlas_allocations = renderer->painter.atlas_allocations;
     for (uint32_t i = 0; i < renderer->image_count; ++i)
         if (renderer->present_pending[i]) ++out_info->pending_present_fences;
     return NX_OK;
@@ -854,7 +866,7 @@ nx_result nx_vulkan_driver_open(nx_window *window, nx_renderer_driver *driver) {
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault) {
-    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_DRAW_MEMORY)
+    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_BITMAP_UPLOAD_MEMORY)
         return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
     /* Readback checks submission once for copying and once during cleanup.

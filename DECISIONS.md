@@ -1,5 +1,28 @@
 # Decisions
 
+## 2026-10-15 — Stage borrowed Vulkan bitmap views before submit returns
+
+V06 packs distinct views into an owned RGBA8 UNORM atlas and copies source rows
+into host-coherent staging storage before successful submit returns. RGBA8
+channels remain straight-alpha; A8 becomes white RGB plus coverage alpha. One
+shader performs nearest sampling, integer tint and the existing exact source-over
+rounding. This extends the command stream without a public Vulkan type or a
+full-frame CPU fallback.
+
+Both axes respect the physical device limit and a 16384-pixel cap. A 4096-view
+limit and 64 MiB texel/upload budgets bound bookkeeping and storage. Shelf packing
+retries wider when height overflows and reports an error if the complete set
+cannot fit. Previous graphics work retires before any storage overwrite or
+replacement; timeouts retain the renderer/window lease. Allocation errors can be
+retried with prior input. The atlas is repopulated per frame, so mutable borrowed
+pixels are observed without a persistent cache invalidation API. V07 can add
+rings, compact mask formats and batching after profiling.
+
+The NexaCloud Linux runner uses the common C17 scene and this native GPU path.
+Its smoke compares complete canvas readbacks with headless output and exercises
+normalized scene input. It does not claim compositor-native physical input,
+hardware GPU performance, monitor/DPI or screenreader acceptance.
+
 ## 2026-10-15 — Compose Vulkan shapes over an owned canvas
 
 V05 replaces V04's per-swapchain-image framebuffers with one owned canvas and

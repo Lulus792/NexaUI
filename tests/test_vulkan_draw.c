@@ -412,6 +412,131 @@ static int test_shapes(nx_window *window) {
     return 0;
 }
 
+static nx_command bitmap(float x, float y, float w, float h, nx_bitmap_view view, nx_color tint) {
+    nx_command c = rect(x, y, w, h, tint); c.type = NX_COMMAND_BITMAP; c.bitmap = view; return c;
+}
+
+static int test_bitmaps(nx_window *window) {
+    heap h = {0}; nx_allocator allocator = {&h, tracked_allocate, tracked_free};
+    nx_vulkan_renderer *renderer;
+    CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_OK);
+    uint8_t rgba[32] = {255,0,0,255, 0,255,0,128, 0,0,255,0, 17,18,19,20,
+        255,255,0,64, 0,255,255,255, 255,255,255,0, 21,22,23,24};
+    uint8_t mask[10] = {0,64,255,19,20, 128,255,32,21,22};
+    nx_bitmap_view image = {rgba, 3, 2, 16, NX_BITMAP_RGBA8};
+    nx_bitmap_view coverage = {mask, 3, 2, 5, NX_BITMAP_A8};
+    nx_command first = bitmap(3.5f, 4.25f, 91.5f, 57.25f, image, (nx_color){1,.5f,.75f,.8f});
+    const nx_vulkan_test_fault faults[] = {NX_VK_TEST_BITMAP_RECORD_MEMORY, NX_VK_TEST_ATLAS_MEMORY, NX_VK_TEST_BITMAP_UPLOAD_MEMORY};
+    int presented;
+    for (unsigned i = 0; i < 3; ++i) {
+        CHECK(nx_vulkan_test_fail_next(renderer, faults[i]) == NX_OK);
+        CHECK(nx_vulkan_render(renderer, &first, 1, 1, (nx_color){0}, &presented) == NX_ERROR_MEMORY && !presented);
+        nx_vulkan_renderer_info info;
+        CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && !info.has_acquired_image && !info.presented_frames);
+    }
+    CHECK(compare(window, renderer, &first, 1, 1, (nx_color){0}) == 0);
+    nx_glyph_point glyph_points[8] = {{0,0,1},{4,0,1},{4,4,1},{0,4,1}, {1,1,1},{1,3,1},{3,3,1},{3,1,1}};
+    uint16_t ends[2] = {3,7};
+    nx_glyph_outline_buffer outline = {0};
+    outline.points = glyph_points; outline.point_count = outline.point_capacity = 8;
+    outline.contour_ends = ends; outline.contour_count = outline.contour_capacity = 2;
+    uint8_t glyph[64] = {0};
+    CHECK(nx_rasterize_glyph_a8(&outline, 2, 0, 8, glyph, 8, 8, 8, sizeof(glyph), NULL) == NX_OK);
+    CHECK(glyph[0] == 255 && glyph[27] == 0);
+    nx_command commands[] = {
+        clip(9.5f, 6.25f, 137, 93), first,
+        bitmap(32.25f, 22.75f, 81.5f, 55.5f, coverage, (nx_color){.8f,.2f,.1f,.7f}),
+        round_rect(62, 39, 64, 28, 8, (nx_color){.1f,.8f,.4f,.5f}),
+        bitmap(70.5f, 50.5f, 61, 41, image, (nx_color){1,1,1,1}),
+        {.type = NX_COMMAND_POP_CLIP},
+        bitmap(-8.25f, 90.5f, 21.5f, 20.25f, image, (nx_color){1,1,1,1}),
+        bitmap(112, 9, 32, 32, (nx_bitmap_view){glyph,8,8,8,NX_BITMAP_A8}, (nx_color){.9f,.8f,1,.8f}),
+        bitmap(0, 0, 160, 112, image, (nx_color){1,1,1,0}),
+        bitmap(0, 0, 0, 20, coverage, (nx_color){1,1,1,1})
+    };
+    const double scales[] = {1, 1.5, 2};
+    const nx_color clears[] = {{0},{.03f,.07f,.11f,.26f},{.04f,.08f,.12f,1}};
+    for (unsigned i = 0; i < 3; ++i) for (unsigned j = 0; j < 3; ++j)
+        CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), scales[i], clears[j]) == 0);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[2]) == 0);
+    CHECK(displayed_pixels(window, renderer, commands, sizeof(commands)/sizeof(*commands), clears[2]) == 0);
+    rgba[3] = 0; mask[1] = 255;
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[1]) == 0);
+    CHECK(compare(window, renderer, NULL, 0, 1, clears[0]) == 0);
+    nx_command clipped[] = {clip(-20,-20,1,1), first, {.type = NX_COMMAND_POP_CLIP}};
+    CHECK(compare(window, renderer, clipped, 3, 1, clears[1]) == 0);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[2]) == 0);
+    for (unsigned i = 0; i < 24; ++i) {
+        float offset = (float)i / 1000.f;
+        nx_command edges[] = {
+            bitmap(10.50001f + offset, 6.49999f - offset, 99.00001f, 60.00001f, image, (nx_color){1,1,1,1}),
+            bitmap(-1000000, 55.5f, 1000050, 33.75f, coverage, (nx_color){.2f,.8f,1,.6f}),
+            bitmap(110.25f + offset, 50.5f, .3f, .7f, image, (nx_color){1,1,1,1})
+        };
+        CHECK(compare(window, renderer, edges, 3, scales[i % 3], clears[i % 3]) == 0);
+    }
+    uint8_t sources[40][4]; nx_command many[80];
+    for (unsigned i = 0; i < 40; ++i) {
+        sources[i][0] = (uint8_t)(i * 23u); sources[i][1] = (uint8_t)(i * 31u);
+        sources[i][2] = (uint8_t)(i * 47u); sources[i][3] = (uint8_t)(i * 17u);
+        many[i] = bitmap((i * 17u) % 140u, (i * 31u) % 100u, 21.5f, 19.25f,
+            (nx_bitmap_view){sources[i],1,1,4,NX_BITMAP_RGBA8}, (nx_color){.8f,.4f,.9f,.8f});
+        many[i + 40] = many[i];
+    }
+    nx_vulkan_renderer_info before, after;
+    CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_BITMAP_RECORD_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, many, 80, 1, clears[0], &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[0]) == 0);
+    CHECK(compare(window, renderer, many, 80, 1.5, clears[1]) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && after.unique_bitmaps == 40);
+    CHECK(after.atlas_allocations == before.atlas_allocations && after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    /* Larger dimensions force both GPU storage classes to grow; each failure
+       leaves the previously usable stream and upload allocations intact. */
+    uint8_t *large = malloc(2049u * 3u); CHECK(large);
+    for (size_t i = 0; i < 2049u * 3u; ++i) large[i] = (uint8_t)(i * 37u);
+    nx_command growing = bitmap(2.25f, 1.75f, 150, 100, (nx_bitmap_view){large,2049,3,2049,NX_BITMAP_A8}, (nx_color){.8f,.4f,1,.7f});
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_ATLAS_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, &growing, 1, 1, clears[0], &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(compare(window, renderer, &first, 1, 1, clears[0]) == 0);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_BITMAP_UPLOAD_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, &growing, 1, 1, clears[0], &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(compare(window, renderer, &first, 1, 1, clears[0]) == 0);
+    CHECK(compare(window, renderer, &growing, 1, 1, clears[1]) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK && before.atlas_width >= 2049);
+    for (unsigned i = 0; i < 4; ++i) CHECK(compare(window, renderer, &growing, 1, 1.5, clears[2]) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && after.atlas_allocations == before.atlas_allocations &&
+          after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    uint8_t *budget_pixels = calloc(1024u * 1024u + 17u, 1); CHECK(budget_pixels);
+    nx_command over_budget[17];
+    for (unsigned i = 0; i < 17; ++i) over_budget[i] = bitmap(0,0,10,10,
+        (nx_bitmap_view){budget_pixels+i,1024,1024,1024,NX_BITMAP_A8}, (nx_color){1,1,1,1});
+    CHECK(nx_vulkan_render(renderer, over_budget, 17, 1, clears[0], &presented) == NX_ERROR_LIMIT && !presented);
+    free(budget_pixels);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK && !after.has_acquired_image &&
+          after.atlas_allocations == before.atlas_allocations && after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    CHECK(compare(window, renderer, &growing, 1, 1, clears[1]) == 0);
+    /* Successful submission stages borrowed bytes. Retire asynchronously after
+       freeing the command/source, without exposing them to the GPU. */
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, &growing, 1, 1, clears[1], &presented) == NX_OK && presented);
+    free(large); growing = (nx_command){0};
+    for (unsigned i = 0; i < 2; ++i) {
+        CHECK(nx_vulkan_render(renderer, many, 80, 1, clears[0], &presented) == NX_OK && !presented);
+        CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK &&
+              after.atlas_allocations == before.atlas_allocations && after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    }
+    CHECK(compare(window, renderer, many, 80, 2, clears[1]) == 0);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[0]) == 0);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
+    CHECK(compare(window, renderer, many, 80, 1, clears[1]) == 0);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK && !h.live);
+    return 0;
+}
+
 static int test_preflight_and_driver(nx_window *window) {
     nx_renderer_driver driver = {0};
     CHECK(nx_vulkan_driver_open(window, &driver) == NX_OK);
@@ -426,7 +551,8 @@ static int test_preflight_and_driver(nx_window *window) {
     commands[1].type = NX_COMMAND_BITMAP;
     commands[1].bitmap = (nx_bitmap_view){source_pixel, 1, 1, 4, NX_BITMAP_RGBA8};
     nx_render_outcome outcome;
-    CHECK(nx_renderer_run(&driver, target, commands, 2, (nx_color){0,0,0,1}, &outcome) == NX_ERROR_UNSUPPORTED);
+    commands[1].bitmap.stride_bytes = 1;
+    CHECK(nx_renderer_run(&driver, target, commands, 2, (nx_color){0,0,0,1}, &outcome) == NX_ERROR_COMMAND);
     nx_vulkan_renderer_info before, after;
     CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK &&
           !before.presented_frames && !before.has_acquired_image && !before.vertex_capacity_bytes);
@@ -446,6 +572,8 @@ static int test_preflight_and_driver(nx_window *window) {
     enormous = line(-1.0e20f, 0, 1.0e20f, 1, 1, (nx_color){1,1,1,1});
     CHECK(nx_vulkan_render(renderer, &enormous, 1, 1, (nx_color){0}, &presented) == NX_ERROR_LIMIT);
     enormous = round_rect(-1.0e30f, 0, 1.0e30f, 20, 1, (nx_color){1,1,1,1});
+    CHECK(nx_vulkan_render(renderer, &enormous, 1, 1, (nx_color){0}, &presented) == NX_ERROR_LIMIT);
+    enormous = bitmap(0,0,10,10, (nx_bitmap_view){source_pixel,16385,1,65540,NX_BITMAP_RGBA8}, (nx_color){1,1,1,1});
     CHECK(nx_vulkan_render(renderer, &enormous, 1, 1, (nx_color){0}, &presented) == NX_ERROR_LIMIT);
     CHECK(nx_renderer_run(&driver, target, commands, 1, (nx_color){0,0,0,1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_READY);
@@ -495,12 +623,14 @@ int main(int argc, char **argv) {
     if (argc == 2) {
         int selected = !strcmp(argv[1], "alpha") ? test_clips_and_alpha(window) :
             !strcmp(argv[1], "storage") ? test_owned_storage(window) :
-            !strcmp(argv[1], "shapes") ? test_shapes(window) : 1;
+            !strcmp(argv[1], "shapes") ? test_shapes(window) :
+            !strcmp(argv[1], "bitmaps") ? test_bitmaps(window) : 1;
         nx_window_destroy(window); return selected;
     }
     int status = test_draws(window);
     if (!status) status = test_clips_and_alpha(window);
     if (!status) status = test_shapes(window);
+    if (!status) status = test_bitmaps(window);
     if (!status) status = test_owned_storage(window);
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);

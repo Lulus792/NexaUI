@@ -5,8 +5,8 @@ and an initial V02 Wayland/X11 surface, swapchain and clear/present path, with
 V03 presentation-fence retirement and retryable teardown/recovery, plus a
 V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alpha
 composition through the private renderer driver. The pipeline also draws stroked
-rectangles, rounded fills and round-capped lines. Images and text remain V06
-work; batching, profiling,
+rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
+glyph masks through a staged texture atlas. Batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
 ## Build boundary
@@ -67,8 +67,8 @@ submissions must be retired by the caller.
 
 `nx_vulkan_render` accepts logical coordinates and a backing scale. The F11
 adapter passes the same command stream and scale to it. The initial pipeline
-supports filled/stroked rectangles, rounded fills, triangles and lines, straight-alpha
-paints, and balanced `PUSH_CLIP`/`POP_CLIP` scopes up to `NX_MAX_CLIP_DEPTH`.
+supports filled/stroked rectangles, rounded fills, triangles, lines, RGBA8/A8
+bitmaps, straight-alpha paints, and balanced `PUSH_CLIP`/`POP_CLIP` scopes up to `NX_MAX_CLIP_DEPTH`.
 Empty streams still clear/present. It validates the whole stream before image
 acquisition and returns `NX_ERROR_UNSUPPORTED` for other command types. Clear
 colors can contain alpha. Shape drawing needs color-attachment and sampling
@@ -141,13 +141,56 @@ The image above is an actual Vulkan canvas readback, byte-equal to its software
 reference. Tests additionally compare displayed X11 window RGB pixels to verify
 the final swapchain copy and presentation. Wayland is checked through GPU readback
 and validation; a compositor screenshot is separate acceptance work.
-Antialiasing and bitmap/glyph drawing remain
-pending Vulkan work; unsupported streams are rejected explicitly.
+Antialiasing remains pending Vulkan work. Invalid commands are rejected before
+acquisition; atlas/geometry limits return explicit errors.
 
 ![GPU rounded fills, stroke and round-capped line](../images/vulkan-shapes.png)
 
 This second GPU capture adds a rounded panel, inside stroke, round-capped line
 and disk; every RGBA8 byte also matches the software reference.
+
+## Bitmap and glyph upload
+
+The painter deduplicates identical source views within each frame and shelf-packs
+them into one reusable RGBA8 UNORM texture. Source identity includes pointer,
+format, dimensions and stride, so subviews remain distinct. A8 bytes become white
+RGB with coverage in alpha; RGBA8 bytes retain their straight-alpha channels.
+The fragment shader samples at pixel centers with nearest-neighbor selection,
+multiplies source and quantized tint with integer RGBA8 rounding, then composites
+through the existing canvas/history path. Compensated quotient evaluation keeps
+the tested fractional sampling boundaries aligned with the software reference.
+
+Packing respects both `maxImageDimension2D` axes, an additional 16384-pixel axis
+cap, 4096 unique views and a 64 MiB RGBA8 atlas budget. If a shelf exceeds the
+height limit, the packer widens and retries the entire set. Input dimensions and
+area are checked before pixel access; incomplete packs return `NX_ERROR_LIMIT`.
+The growable upload buffer has at most 64 MiB logical capacity. Vulkan memory-requirement alignment overhead is additional. This is a bounded initial
+atlas, not an unbounded image store or a persistent content cache.
+
+Preparation copies all used source rows into an owned mapped host-coherent
+staging buffer before successful submit returns. Caller pixels and commands may
+then be released; GPU work reads only owned staging/texture storage. A graphics
+fence retires that work before the next preparation, upload overwrite, growth or
+destruction. A timeout leaves those resources alive. Each replacement keeps its
+old object until replacement allocation succeeds. A later preparation failure
+can leave a grown atlas allocated; retry repopulates it before use. Preparation
+errors do not acquire/present an image, and callers can retry with the prior
+input stream. Atlas and staging growth have separate failure
+tests, as does the exact-size caller-allocator-owned view table.
+
+The upload records a transfer-destination transition, buffer-to-image copy and
+transfer-write-to-fragment-read transition. Reuse also orders preceding shader
+reads before the next transfer. Host-coherent writes need no flush; submission
+performs their host-to-device dependency, while image layouts still need barriers.
+See the [Khronos upload synchronization example](https://docs.vulkan.org/guide/latest/synchronization_examples.html).
+There is no runtime shader compiler or full-frame CPU-render-and-upload path.
+Persistent texture caching, compact R8-only masks, upload rings and batching
+remain optimization work.
+
+The [NexaCloud native Linux runner](../../examples/nexacloud/README.md) consumes
+this same stream and renders the overview, file thumbnails, text and compact
+layout. Its GPU captures compare every RGBA8 byte to the software reference;
+this checks renderer equivalence, not pixel equality with the user's mockups.
 
 ### Embedded shaders
 
@@ -462,6 +505,31 @@ was visually inspected. The regenerated SPIR-V passes Vulkan 1.0 validation and
 the source/header check. No hardware performance or every-coordinate guarantee
 is inferred from these cases.
 
+### V06 local validation — 2026-10-15
+
+The complete static Linux Debug suite passed 90/90 tests. The shared build's
+eight Vulkan cases and two native NexaCloud cases passed 10/10; Clang
+ASan/UBSan/LeakSanitizer and core/synchronization validation passed those cases
+and the queued-offer regression (11/11). The final capture-writer change was
+retested on X11/Wayland both statically and with sanitizers (2/2 each).
+
+Tests cover padded source rows, generated glyph masks, transparent/translucent
+targets, exact tint rounding, mutable source data, fractional sampling at
+1×/1.5×/2×, deduplication, allocation failure, atlas budget rejection, growth/reuse,
+borrowed-source release with pending work, rebuild/recovery and retryable close.
+X11 displayed bitmap pixels match the software reference too.
+
+All six complete NexaCloud overview/file/compact comparisons (three per backend)
+match the software renderer. See [the scene report](../nexacloud-validation.md#native-linux-vulkan-scene--2026-10-15)
+for dimensions, command/atlas counts, timings and reviewed captures. A Release
+build with tests disabled compiled both native examples and presented tinted
+RGBA8/A8 sample frames under X11 (four) and Wayland (six). Embedded shaders pass
+the source check and SPIR-V validation for Vulkan 1.0. The Windows native scene
+still configures/builds and passes its existing D3D12 smoke.
+
+These are the documented Lavapipe/WSLg results, not hardware performance,
+physical input/DPI, compositor color management or native macOS acceptance.
+
 ## Specification references
 
 - [Instance creation](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateInstance.html)
@@ -482,6 +550,9 @@ is inferred from these cases.
 - [Shader instruction semantics](https://registry.khronos.org/SPIR-V/specs/unified1/GLSL.std.450.html)
 - [Vulkan shader arithmetic precision](https://docs.vulkan.org/spec/latest/appendices/spirvenv.html#spirvenv-precision-operation)
 - [Synchronization validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/syncval_usage.md)
+- [Texture upload synchronization](https://docs.vulkan.org/guide/latest/synchronization_examples.html)
+- [Buffer-to-image copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBufferToImage.html)
+- [Physical image limits](https://docs.vulkan.org/spec/latest/chapters/limits.html#limits-maxImageDimension2D)
 
 NexaUI command rendering and hardware GPU acceptance remain open. CPU-driver
 presentation is evidence of the tested WSI path, not GPU performance.

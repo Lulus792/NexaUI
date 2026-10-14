@@ -5,7 +5,8 @@
 The Linux `nexaui_native_clear` opens a native window for up to three seconds
 and draws a rounded opaque panel plus a translucent moving rectangle and triangle
 inside two nested clips, over a changing clear color through the SPIR-V
-pipeline, followed by an inside stroke and round-capped line. Resize it or close it
+pipeline, followed by an inside stroke, round-capped line, tinted RGBA8 image
+and A8 mask. Resize it or close it
 early to exercise the renderer driver. It uses the chosen Linux window
 backend and requires a Vulkan driver supporting presentation to that surface
 and KHR or EXT swapchain-maintenance present fences. The default F11 adapter
@@ -21,7 +22,8 @@ NEXAUI_PLATFORM=x11 ./build/examples/10_native_clear/nexaui_native_clear
 frame was presented. CTest registers both backend variants; an unavailable
 display skips the corresponding smoke test unless explicitly required.
 The V04/V05 pipeline accepts filled/stroked rectangles, rounded fills, triangles
-and lines with nested clips and straight-alpha composition. Images and text remain Vulkan work;
+and lines with nested clips and straight-alpha composition. V06 adds RGBA8/A8
+bitmap upload, also used by the NexaCloud example's text stamps;
 see [the Vulkan contract](../../docs/concepts/vulkan.md).
 
 The example checks `nx_renderer_close` and retries a retirement timeout while

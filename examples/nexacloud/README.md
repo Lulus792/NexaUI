@@ -31,6 +31,20 @@ The native Windows runner uses a real Win32 window and the existing D3D12 driver
 The OS supplies window decorations and backing scale. The shared scene does not
 draw platform-specific window buttons.
 
+On Linux, build the Vulkan target and select either native window backend:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target nexaui_nexacloud_native --parallel 4
+NEXAUI_PLATFORM=wayland ./build/examples/nexacloud/nexaui_nexacloud_native /path/to/font.ttf
+NEXAUI_PLATFORM=x11 ./build/examples/nexacloud/nexaui_nexacloud_native /path/to/font.ttf
+```
+
+This uses the private Vulkan renderer with strict presentation-fence retirement;
+see its [driver requirements](../../docs/concepts/vulkan.md). It requires a usable
+display and Vulkan driver. Configure `NEXAUI_BUILD_VULKAN=OFF` for core/headless
+builds without that backend.
+
 ![NexaCloud file browser, actual D3D12 back-buffer capture](../../docs/images/nexacloud-files.png)
 
 The portable workflow writes PPM previews and exercises the same normalized
@@ -46,6 +60,17 @@ example font is found. Set `NEXAUI_EXAMPLE_FONT` explicitly on systems where the
 default font paths are unavailable. With tests enabled, the Windows native runner
 also accepts `--smoke FONT.ttf OUTPUT_PREFIX`; its `native-*` captures are actual
 D3D12 back-buffer readbacks, rather than software-rendered approximations.
+
+The Linux native runner also accepts that smoke form when tests are enabled.
+Its `linux-*` captures are Vulkan canvas readbacks compared byte-for-byte against
+the shared scene's software reference. The finished canvas is copied to the
+swapchain for presentation. The smoke navigates with normalized pointer/key
+events and checks selection semantics; it does not inject compositor-native
+input. It creates a second 820×700 native window for the compact case, rather
+than asserting a Wayland compositor resize. Window/input/resize adapters have
+separate native tests; physical input, IME and display acceptance remain open.
+
+![NexaCloud file browser, actual Linux Vulkan canvas capture](../../docs/images/nexacloud-linux-files.png)
 
 ## Interaction and layout
 
@@ -80,7 +105,7 @@ injected creation failure.
 | Platform | Current evidence | Remaining native work |
 | --- | --- | --- |
 | Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
-| Linux | Local Alpine/WSL portable scene, component and Vulkan shape/clip/alpha tests | Bitmap/glyph textures before this full scene runs natively |
+| Linux | Local X11/Wayland Vulkan overview/file/compact captures equal the software reference; component and renderer regressions | Hardware GPU/performance, physical input/IME, HiDPI, AT-SPI and release acceptance |
 | macOS | CI static/shared core, portable scene and installed-package jobs passed in `cffbcf8` | Cocoa window/input, Metal rendering, actual native runtime acceptance |
 
 Large text at 200%, physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI

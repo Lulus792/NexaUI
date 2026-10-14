@@ -129,10 +129,11 @@ static int test_driver(nx_window *window) {
     static const uint8_t source_pixel[4] = {255,255,255,255};
     unsupported.type = NX_COMMAND_BITMAP;
     unsupported.bitmap = (nx_bitmap_view){source_pixel, 1, 1, 4, NX_BITMAP_RGBA8};
+    unsupported.bitmap.stride_bytes = 1;
     unsupported.rect = (nx_rect){0, 0, 10, 10};
     unsupported.color = (nx_color){1, 1, 1, 1};
     CHECK(nx_renderer_run(&driver, target, &unsupported, 1,
-                          (nx_color){0, 0, 0, 1}, &outcome) == NX_ERROR_UNSUPPORTED);
+                          (nx_color){0, 0, 0, 1}, &outcome) == NX_ERROR_COMMAND);
     nx_vulkan_renderer_info before, after;
     CHECK(nx_vulkan_renderer_get_info(driver.backend.user, &before) == NX_OK);
     CHECK(!before.presented_frames);
