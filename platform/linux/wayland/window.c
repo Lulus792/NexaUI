@@ -2551,6 +2551,11 @@ nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
 
 void nx_wayland_window_destroy(nx_wayland_window *window) {
     if (!window || !nx_wayland_on_owner_thread(window)) return;
+    /* Another reader of this display can have decoded default-queue new-id
+       events without invoking our listeners. Adopt those objects while their
+       parents/listener data are alive, then destroy them below. This reads no
+       new socket data and does not wait for the compositor. */
+    if (window->display) (void)wl_display_dispatch_pending(window->display);
     nx_wayland_window **thread_slot = &nx_wayland_thread_windows;
     while (*thread_slot && *thread_slot != window)
         thread_slot = &(*thread_slot)->thread_next;

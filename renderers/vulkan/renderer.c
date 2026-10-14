@@ -46,7 +46,7 @@ struct nx_vulkan_renderer {
     uint32_t last_submitted_vertices;
     uint64_t completed_present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
-    unsigned char test_faults[NX_VK_TEST_VERTEX_MEMORY + 1];
+    unsigned char test_faults[NX_VK_TEST_DRAW_MEMORY + 1];
 #endif
     uint64_t presented_frames;
     uint64_t swapchain_generation;
@@ -368,8 +368,10 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
     create.imageExtent = extent;
     create.imageArrayLayers = 1;
     create.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    renderer->drawing = (caps.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0;
-    if (renderer->drawing) create.imageUsage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VkFormatProperties format_properties;
+    vkGetPhysicalDeviceFormatProperties(renderer->native.physical, format.format, &format_properties);
+    VkFormatFeatureFlags drawing_features = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;
+    renderer->drawing = (format_properties.optimalTilingFeatures & drawing_features) == drawing_features;
     renderer->readback = (caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
     if (renderer->readback) create.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     uint32_t families[] = {renderer->native.graphics_queue_family,
@@ -481,6 +483,7 @@ nx_result nx_vulkan_renderer_create_config(nx_window *window,
     if (!renderer) return NX_ERROR_MEMORY;
     *renderer = (nx_vulkan_renderer){0};
     renderer->allocator = a;
+    renderer->painter.allocator = a;
     renderer->owner = pthread_self();
     renderer->window = window;
     renderer->retirement = options.retirement;
@@ -516,13 +519,14 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     if (draw_count) {
         renderer->painter.fail_framebuffer = renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY];
         renderer->painter.fail_vertex_memory = renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY];
+        renderer->painter.fail_draw_memory = renderer->test_faults[NX_VK_TEST_DRAW_MEMORY];
         renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY] = 0;
         renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY] = 0;
+        renderer->test_faults[NX_VK_TEST_DRAW_MEMORY] = 0;
     }
 #endif
     nx_result prepared = nx_vk_painter_prepare(&renderer->painter, &renderer->native,
-        renderer->format, renderer->extent, renderer->images, renderer->image_count,
-        draw_commands, draw_count, scale);
+        renderer->format, renderer->extent, draw_commands, draw_count, scale);
     if (prepared != NX_OK) {
         if (prepared == NX_ERROR_STATE) renderer->broken = renderer->device_lost = 1;
         return prepared;
@@ -575,7 +579,9 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = renderer->images[index];
+    int buffered = renderer->painter.canvas != VK_NULL_HANDLE;
+    VkImage target = buffered ? renderer->painter.canvas : renderer->images[index];
+    barrier.image = target;
     barrier.subresourceRange = (VkImageSubresourceRange){VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -584,7 +590,7 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         floorf(clear.g * 255.0f + 0.5f) / 255.0f,
         floorf(clear.b * 255.0f + 0.5f) / 255.0f,
         floorf(clear.a * 255.0f + 0.5f) / 255.0f}};
-    vkCmdClearColorImage(renderer->commands, renderer->images[index],
+    vkCmdClearColorImage(renderer->commands, target,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &color, 1, &barrier.subresourceRange);
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -594,33 +600,53 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
-        nx_vk_painter_record(&renderer->painter, renderer->commands, index, renderer->extent);
+        nx_vk_painter_record(&renderer->painter, renderer->commands, renderer->extent);
         barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        source_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+        source_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
     }
-    if (readback != VK_NULL_HANDLE) {
+    if (readback != VK_NULL_HANDLE || buffered) {
         barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         vkCmdPipelineBarrier(renderer->commands, source_stage,
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
-        VkBufferImageCopy copy = {0};
-        copy.imageSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-        copy.imageExtent = (VkExtent3D){renderer->extent.width, renderer->extent.height, 1};
-        vkCmdCopyImageToBuffer(renderer->commands, renderer->images[index],
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readback, 1, &copy);
-        VkBufferMemoryBarrier host = {0};
-        host.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-        host.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        host.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
-        host.srcQueueFamilyIndex = host.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        host.buffer = readback;
-        host.size = VK_WHOLE_SIZE;
-        vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_HOST_BIT, 0, 0, NULL, 1, &host, 0, NULL);
+        if (readback != VK_NULL_HANDLE) {
+            VkBufferImageCopy copy = {0};
+            copy.imageSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+            copy.imageExtent = (VkExtent3D){renderer->extent.width, renderer->extent.height, 1};
+            vkCmdCopyImageToBuffer(renderer->commands, target,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readback, 1, &copy);
+            VkBufferMemoryBarrier host = {0};
+            host.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            host.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            host.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+            host.srcQueueFamilyIndex = host.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            host.buffer = readback;
+            host.size = VK_WHOLE_SIZE;
+            vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_PIPELINE_STAGE_HOST_BIT, 0, 0, NULL, 1, &host, 0, NULL);
+        }
         barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         source_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    if (buffered) {
+        VkImageMemoryBarrier destination = barrier;
+        destination.image = renderer->images[index];
+        destination.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        destination.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        destination.srcAccessMask = 0;
+        destination.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &destination);
+        VkImageCopy copy = {0};
+        copy.srcSubresource = copy.dstSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+        copy.extent = (VkExtent3D){renderer->extent.width, renderer->extent.height, 1};
+        vkCmdCopyImage(renderer->commands, target, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            renderer->images[index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+        barrier = destination;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     }
     barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     barrier.dstAccessMask = 0;
@@ -828,7 +854,7 @@ nx_result nx_vulkan_driver_open(nx_window *window, nx_renderer_driver *driver) {
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault) {
-    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_VERTEX_MEMORY)
+    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_DRAW_MEMORY)
         return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
     /* Readback checks submission once for copying and once during cleanup.

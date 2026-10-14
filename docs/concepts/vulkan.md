@@ -2,10 +2,10 @@
 
 The private `nexaui_renderer_vulkan` target implements V01 device selection
 and an initial V02 Wayland/X11 surface, swapchain and clear/present path, with
-V03 presentation-fence retirement and retryable teardown/recovery, plus an
-initial V04 SPIR-V drawing pipeline for opaque filled rectangles and triangles
-through the private renderer driver. Other shapes, clipping, alpha blending,
-images and text remain V04–V06 work; batching, profiling,
+V03 presentation-fence retirement and retryable teardown/recovery, plus a
+V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alpha
+composition through the private renderer driver. Other shapes, images and text
+remain V04–V06 work; batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
 ## Build boundary
@@ -66,22 +66,31 @@ submissions must be retired by the caller.
 
 `nx_vulkan_render` accepts logical coordinates and a backing scale. The F11
 adapter passes the same command stream and scale to it. The initial pipeline
-supports opaque `NX_COMMAND_FILL_RECT` and `NX_COMMAND_FILL_TRIANGLE`; empty
-streams still clear/present. It validates the whole stream before image
-acquisition and returns `NX_ERROR_UNSUPPORTED` for other types or nonopaque
-paints. Clear colors can still contain alpha. Shapes need swapchain color-
-attachment usage; transfer-only surfaces retain the clear path. The public
-installed API and core dependency boundary are unchanged.
+supports `NX_COMMAND_FILL_RECT` and `NX_COMMAND_FILL_TRIANGLE`, straight-alpha
+paints, and balanced `PUSH_CLIP`/`POP_CLIP` scopes up to `NX_MAX_CLIP_DEPTH`.
+Empty streams still clear/present. It validates the whole stream before image
+acquisition and returns `NX_ERROR_UNSUPPORTED` for other command types. Clear
+colors can contain alpha. Shape drawing needs color-attachment and sampling
+support for owned optimal images in the selected UNORM format; the swapchain
+itself needs only transfer-destination usage. The public installed API and core
+dependency boundary are unchanged.
 
 The painter lazily creates Vulkan 1.0 shader modules, a render pass, pipeline,
-image views and per-image framebuffers. Explicit barriers connect transfer
-clear, color-attachment writes, optional readback and presentation. All native
-objects retire with their swapchain under the V03 rules. Vertex storage is a
+one owned canvas/framebuffer and a sampled history image. A combined-image
+sampler descriptor reads the previous color. Explicit barriers connect transfer
+clear, clipped history copies, shader reads, attachment writes, optional readback
+and a full canvas-to-swapchain copy before presentation. Both images use the same
+format, so that final copy does not reinterpret channel order. Initial clear-only
+frames retain the direct swapchain transfer path. All native objects retire with
+their swapchain under the V03 rules. Vertex storage is a
 mapped host-visible/coherent buffer, replaced only after graphics submission
 completion. Growth first creates a replacement, preserving the old buffer
 if allocation fails. Current frames serialize; rings and broader batching
 remain V07 work. Diagnostics expose capacity, allocation count and the latest
-submitted vertex count.
+submitted vertex count. A reusable caller-allocator-owned array holds per-draw
+scissors and vertex ranges. Allocation failure and in-flight submission waits
+do not invalidate the previous GPU upload. Destroy/rebuild releases host storage
+with its exact original allocation size.
 
 Rectangles snap bounds to the reference renderer's half-open pixel-center
 coverage. Triangles draw a snapped bounding quad and evaluate their original
@@ -99,9 +108,24 @@ count, NDC conversion, viewport and framebuffer limits are checked too.
 Hardware-driver precision and performance acceptance remain open.
 
 Colors, including transfer clears, are quantized to the headless RGBA8 rule
-before Vulkan UNORM conversion. Antialiasing, translucent composition, nested
-clips, strokes, rounded rectangles, lines and bitmap/glyph drawing are pending
-Vulkan work; unsupported streams are rejected explicitly.
+before Vulkan UNORM conversion. Clips intersect their ancestors after half-open
+pixel-center conversion and become dynamic scissors. Empty clips and paints
+whose quantized alpha is zero emit no draw. For each translucent primitive the
+painter ends the current pass, copies its clipped bounds from canvas to history,
+transitions both images, and resumes a LOAD/STORE pass. The shader uses integer
+straight-alpha source-over arithmetic, including destination alpha and the same
+division/rounding as `src/headless.c`. It applies no fixed-function blending.
+Opaque draws need no history copy. This is a correctness-oriented serial path;
+broader batching and GPU timing remain V07 work.
+
+![GPU clipping and alpha reference image](../images/vulkan-clips-alpha.png)
+
+The image above is an actual Vulkan canvas readback, byte-equal to its software
+reference. Tests additionally compare displayed X11 window RGB pixels to verify
+the final swapchain copy and presentation. Wayland is checked through GPU readback
+and validation; a compositor screenshot is separate acceptance work.
+Antialiasing, strokes, rounded rectangles, lines and bitmap/glyph drawing remain
+pending Vulkan work; unsupported streams are rejected explicitly.
 
 ### Embedded shaders
 
@@ -239,14 +263,30 @@ across submission timeouts. The F11 mock and real adapters verify failed close
 preserves ownership and blocks new work until a successful retry.
 
 The drawing tests compare every output byte, including row padding, against
-the headless renderer at 1×, 1.5× and 2×. They cover overlapping opaque paint
+the headless renderer at 1×, 1.5× and 2×. They cover overlapping opaque/translucent paint
 order, both triangle windings, shared edges, degenerates, offscreen geometry,
 near-center fractional vertices and large-coordinate cancellation, 24 skewed
 triangle variants and a reused/growing 256-command upload. Native Wayland
 output scaling, independent windows, swapchain rebuild, recovery, submission
 timeouts and failed close exercise the new native resources. Failure hooks
-inject OOM after partial pipeline/image-view creation and during vertex growth;
+inject OOM after partial pipeline/image-view creation, during vertex growth and
+while growing host draw records;
 the next draw must succeed without leaking or losing the prior upload.
+
+V05 cases cover 64 nested clips, empty and offscreen clips, clip-only/empty frames
+after canvas creation, quantized alpha endpoints, transparent and translucent
+backgrounds, shared translucent triangle edges and 96 mixed overlapping draws.
+Submission/readback timeouts retain the canvas/history and pending buffer; caller
+output stays untouched until completion. Custom allocators check exact-size host
+cleanup across growth, rebuild and recovery. A retryable close is exercised with
+translucent work in flight.
+
+Wayland teardown drains already-decoded default-queue events before destroying
+their listener data and parents. A second reader such as WSI can have read a
+server-created data offer into that queue without dispatching it. The mock
+compositor regression enqueues one through a separate roundtrip queue and proves
+the offer is adopted and freed during window destruction. The test failed before
+the fix; ASan/LeakSanitizer checks cover the corrected path.
 
 The Wayland presentation tests skip if no compositor is available; set
 `NEXAUI_REQUIRE_VULKAN_WAYLAND=1` together with `NEXAUI_REQUIRE_VULKAN=1` to
@@ -356,6 +396,31 @@ NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 \
 The required Wayland cases need a running compositor. These results cover
 the tested CPU driver and do not establish hardware-GPU performance or full
 Vulkan command support.
+
+### V05 local validation — 2026-10-15
+
+The same Alpine/WSLg environment, Mesa 26.1.6 Lavapipe, GCC 15.2 and
+Clang 22.1.3 were used for this increment:
+
+- Complete static and shared Debug builds each passed all 88 tests with
+  required Vulkan X11/Wayland execution, core validation and synchronization
+  validation. The final suites took 69.87 and 52.28 seconds respectively.
+- The complete Clang ASan/UBSan/LeakSanitizer suite passed all 88 tests in
+  113.61 seconds, including the queued Wayland data-offer regression.
+- A Release build with tests disabled built and ran the native example's
+  X11 and Wayland smoke modes. The examples presented 37 and 13 frames.
+- Regenerated embedded shaders passed `spirv-val --target-env vulkan1.0` and
+  the source/header reproducibility check. A fresh 320×200 GPU capture was
+  byte-identical to the software reference and visually inspected; it is the
+  [clip/alpha illustration](../images/vulkan-clips-alpha.png) above.
+- Windows MSVC Debug passed 86 tests with one clipboard skip (87 registered).
+  This checks portability of the shared code; Windows does not execute this
+  Vulkan backend.
+
+These results cover the tested CPU Vulkan driver. Native NexaCloud on Linux
+still needs rounded rectangles, strokes, lines and bitmap/glyph rendering.
+Physical GPU performance, mixed-DPI displays and the full macOS backend remain
+open acceptance work.
 
 ## Specification references
 

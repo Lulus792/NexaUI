@@ -6,6 +6,7 @@ layout(location = 2) flat in vec2 triangle_b;
 layout(location = 3) flat in vec2 triangle_c;
 layout(location = 4) flat in uint triangle_kind;
 layout(location = 0) out vec4 output_color;
+layout(set = 0, binding = 0) uniform sampler2D previous_color;
 
 // Keep the rounding remainder when two large edge products nearly cancel.
 // This needs only Vulkan 1.0 float32 operations, not shaderFloat64.
@@ -54,5 +55,15 @@ void main() {
         !(inside_edge(triangle_a, triangle_b, gl_FragCoord.xy) &&
           inside_edge(triangle_b, triangle_c, gl_FragCoord.xy) &&
           inside_edge(triangle_c, triangle_a, gl_FragCoord.xy))) discard;
-    output_color = fragment_color;
+    uvec4 src = uvec4(floor(fragment_color * 255.0 + 0.5));
+    if (src.a == 255u) { output_color = fragment_color; return; }
+    ivec2 pixel = clamp(ivec2(gl_FragCoord.xy), ivec2(0), textureSize(previous_color, 0) - 1);
+    uvec4 dst = uvec4(floor(texelFetch(previous_color, pixel, 0) * 255.0 + 0.5));
+    if (src.a == 0u) { output_color = vec4(dst) / 255.0; return; }
+    if (dst.a == 0u) { output_color = fragment_color; return; }
+    uint inverse = 255u - src.a;
+    uint alpha_numerator = src.a * 255u + dst.a * inverse;
+    uvec3 numerator = src.rgb * src.a * 255u + dst.rgb * dst.a * inverse;
+    uvec3 rgb = (numerator + alpha_numerator / 2u) / alpha_numerator;
+    output_color = vec4(uvec4(rgb, (alpha_numerator + 127u) / 255u)) / 255.0;
 }

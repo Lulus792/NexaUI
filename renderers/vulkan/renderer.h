@@ -49,8 +49,8 @@ nx_result nx_vulkan_renderer_create_config(nx_window *window,
    A fatal submission error latches the renderer until explicit recovery. */
 nx_result nx_vulkan_clear_present(nx_vulkan_renderer *renderer,
                                   nx_color clear, int *out_presented);
-/* Initial drawing pipeline: opaque filled rectangles and triangles. Entire
-   streams are validated before acquisition; unsupported types/alpha fail.
+/* Filled rectangles and triangles with straight alpha and nested clips. Entire
+   streams are validated before acquisition; unsupported command types fail.
    Logical coordinates are multiplied by the supplied backing scale. */
 nx_result nx_vulkan_render(nx_vulkan_renderer *renderer,
     const nx_command *commands, size_t count, double scale,
@@ -68,8 +68,9 @@ nx_result nx_vulkan_driver_open(nx_window *window,
                                 nx_renderer_driver *out_driver);
 
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
-/* One clear frame copied from the actual swapchain image before presentation.
-   Output is tightly row-addressed RGBA8; stride may include padding. */
+/* Read the GPU render target before presentation: the owned canvas for drawn
+   frames, otherwise the swapchain image. The finished canvas is copied to the
+   swapchain without conversion. RGBA8 output; stride may include padding. */
 nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
                                  uint8_t *pixels, size_t stride_bytes);
 nx_result nx_vulkan_test_render_readback(nx_vulkan_renderer *renderer,
@@ -85,7 +86,8 @@ typedef enum nx_vulkan_test_fault {
     NX_VK_TEST_REBUILD_MEMORY,
     NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT,
     NX_VK_TEST_PIPELINE_MEMORY,
-    NX_VK_TEST_VERTEX_MEMORY
+    NX_VK_TEST_VERTEX_MEMORY,
+    NX_VK_TEST_DRAW_MEMORY
 } nx_vulkan_test_fault;
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault);

@@ -115,7 +115,7 @@ F0/F1 may run on any development OS. F2/F3 cannot be signed off until Windows, m
 | V02 | Vulkan Wayland and X11 surfaces/swap chains | V01 | clear/present on both |
 | V03 | Vulkan resource lifetime and surface recovery | V02 | teardown/recovery tests |
 | V04 | SPIR-V rectangle and triangle pipeline | V02,C14 | visual comparison with headless |
-| V05 | Vulkan clipping and blend state | V04,H03 | nested clip image comparison |
+| V05 | Vulkan clipping and straight-alpha composition | V04,H03 | nested clip and translucent image comparison |
 | V06 | Vulkan image/glyph texture upload | V03,V05,H04 | image/text image comparison |
 | V07 | Vulkan dynamic upload ring and batching | V06 | stress and timing data |
 | V08 | Vulkan GPU timestamps and diagnostics | V07,C16 | timing smoke test |
@@ -350,7 +350,9 @@ V02 has initial Wayland and Xlib surfaces, actual surface-compatible graphics/pr
 
 V03 now negotiates KHR/EXT swapchain maintenance and uses per-image presentation fences by default. Strict resize, recovery and teardown wait for acquisition, submission and pending presentations before releasing handles; a timeout retains the renderer and window lease for retry. Tests resume held acquired images, retain timed-out readback storage, clean partial rebuilds and distinguish unenqueued present OOM from enqueued out-of-date presentation. F11 close now returns a result and keeps the backend pointer on failure. Explicit compatibility/legacy modes retain the weaker unextended device-idle policy. Native fault coverage on Mesa Lavapipe is not physical GPU removal or cross-driver release acceptance.
 
-V04 has an initial Vulkan 1.0 SPIR-V pipeline for opaque filled rectangles and triangles. Authored shaders and validated embedded words require no runtime compiler. Pixel-center rectangle snapping and compensated analytic triangle edges match the tested headless output, including near-center fractional vertices, large offscreen cancellation, shared edges and 1×/1.5×/2× scale. Tests exercise growing/reused vertex storage, partial pipeline and upload OOM, submission timeouts, swapchain rebuild, recovery and independent windows under X11/Wayland. The Linux native example now draws moving shapes. Strokes, rounded rectangles, lines, V05 clipping/blending, V06 textures and hardware acceptance remain open.
+V04 has an initial Vulkan 1.0 SPIR-V pipeline for filled rectangles and triangles. Authored shaders and validated embedded words require no runtime compiler. Pixel-center rectangle snapping and compensated analytic triangle edges match the tested headless output, including near-center fractional vertices, large offscreen cancellation, shared edges and 1×/1.5×/2× scale. Tests exercise growing/reused vertex storage, partial pipeline and upload OOM, submission timeouts, swapchain rebuild, recovery and independent windows under X11/Wayland. V05 extends this pipeline as described below. Strokes, rounded rectangles, lines, V06 textures and hardware acceptance remain open.
+
+V05 now intersects up to 64 nested clips and composites quantized straight-alpha paints in a shader over an owned canvas/history pair. Clipped-area copies preserve painter order; the final canvas copies into the swapchain. GPU readbacks match headless for transparent/translucent targets, alpha endpoints, shared edges and 96 overlapping mixed draws at 1×/1.5×/2×. X11 displayed pixels also match the reference. Tests cover host-record and GPU-upload OOM, exact allocator sizes, rebuild/recovery, retained readback after timeouts, retryable close and independent translucent windows. The native Linux example exercises clipping and alpha. A mock Wayland compositor regression also fixes queued new-id data-offer ownership during teardown; the corrected tests pass sanitizers. This does not complete F3, V06 or native NexaCloud support on Linux.
 
 This plan does not imply that planned APIs or native backends already exist. Keep the table updated as tasks become verified.
 
@@ -362,6 +364,6 @@ and [reusable components](docs/concepts/cloud-components.md) include Midnight
 styling, rounded cards, action variants, icons, progress and cached text stamps.
 Windows has a runnable D3D12 version with native-input tests and GPU captures;
 the shared scene also passes local Linux software-rendered workflows.
-Finish Vulkan clips/blending/shapes/bitmaps for this full scene next, then native
+Finish remaining Vulkan shapes/bitmaps for this full scene next, then native
 Cocoa/Metal and the remaining per-OS accessibility, DPI, large-text, performance
 and release checks. [Delivery and acceptance scope](docs/nexacloud.md).

@@ -107,3 +107,10 @@ The controlled WARP reproducer passes with MSVC ASan, and the default/WARP/widge
 tests pass in static and shared Windows Debug builds. An explicit WARP smoke
 case now preserves this coverage on hardware-equipped hosts too. Unexpected
 hardware removal remains separate acceptance work.
+
+The [next published CI run](https://github.com/Lulus792/NexaUI/actions/runs/38640428162)
+passed both Windows and Ubuntu static/shared jobs and the sanitizer job. At the
+time of this report, both macOS jobs are still queued. The preceding run's
+successful macOS jobs remain the available package/core evidence; neither run
+implements or validates a Cocoa/Metal NexaCloud window. The subsequent Linux
+clip/alpha increment has its own [local validation report](concepts/vulkan.md#v05-local-validation--2026-10-15).

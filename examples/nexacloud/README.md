@@ -80,8 +80,8 @@ injected creation failure.
 | Platform | Current evidence | Remaining native work |
 | --- | --- | --- |
 | Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
-| Linux | Local Alpine/WSL GCC portable scene and component tests | Complete Vulkan clips/blending/shapes/textures before this full scene runs natively |
-| macOS | Shared scene and tests are included in existing macOS CI configurations | Cocoa window/input, Metal rendering, actual native runtime acceptance |
+| Linux | Local Alpine/WSL portable scene, component and Vulkan clip/alpha tests | Remaining Vulkan shapes and bitmap/glyph textures before this full scene runs natively |
+| macOS | CI static/shared core, portable scene and installed-package jobs passed in `cffbcf8` | Cocoa window/input, Metal rendering, actual native runtime acceptance |
 
 Large text at 200%, physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI
 screenreader tasks are still open. A successful portable render does not establish

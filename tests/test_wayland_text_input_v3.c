@@ -22,6 +22,8 @@
 typedef struct test_server {
     struct wl_display *display;
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
+    struct wl_resource *data_device;
+    atomic_int send_offer;
     int configured, enabled, pending_done;
     uint32_t commit_serial;
     char surrounding[4001];
@@ -41,7 +43,15 @@ static void resource_destroy(struct wl_client *client,
 static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
-    (void)client;
+    if (atomic_exchange(&server->send_offer, 0)) {
+        struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, 3, 0);
+        CHECK(offer && server->data_device);
+        static const struct wl_data_offer_interface implementation = {.destroy = resource_destroy};
+        wl_resource_set_implementation(offer, &implementation, server, NULL);
+        wl_data_device_send_data_offer(server->data_device, offer);
+        wl_data_offer_send_offer(offer, "text/plain;charset=utf-8");
+        wl_data_device_send_selection(server->data_device, offer);
+    }
     if (server->configured) {
         if (server->pending_done) {
             server->pending_done = 0;
@@ -301,6 +311,32 @@ static void bind_manager(struct wl_client *client, void *data,
                                    data, NULL);
 }
 
+static void get_data_device(struct wl_client *client, struct wl_resource *manager,
+                             uint32_t id, struct wl_resource *seat) {
+    (void)seat;
+    test_server *s = wl_resource_get_user_data(manager);
+    s->data_device = wl_resource_create(client, &wl_data_device_interface, 3, id);
+    CHECK(s->data_device);
+    static const struct wl_data_device_interface implementation = {.release = resource_destroy};
+    wl_resource_set_implementation(s->data_device, &implementation, s, NULL);
+}
+static void bind_data_manager(struct wl_client *client, void *data,
+                               uint32_t version, uint32_t id) {
+    struct wl_resource *manager = wl_resource_create(client, &wl_data_device_manager_interface, version, id);
+    CHECK(manager);
+    static const struct wl_data_device_manager_interface implementation = {.get_data_device = get_data_device};
+    wl_resource_set_implementation(manager, &implementation, data, NULL);
+}
+typedef struct window_heap { size_t calls, live; } window_heap;
+static void *window_allocate(void *user, size_t bytes) {
+    window_heap *h = user; void *p = malloc(bytes);
+    if (p) { ++h->calls; ++h->live; } return p;
+}
+static void window_free(void *user, void *p, size_t bytes) {
+    (void)bytes; window_heap *h = user;
+    CHECK(h->live); --h->live; free(p);
+}
+
 static void *run_server(void *data) {
     wl_display_run(((test_server *)data)->display);
     return NULL;
@@ -320,6 +356,8 @@ int main(void) {
                            &server, bind_shm));
     CHECK(wl_global_create(server.display, &wl_seat_interface, 5,
                            &server, bind_seat));
+    CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, 3,
+                           &server, bind_data_manager));
     CHECK(wl_global_create(server.display, &xdg_wm_base_interface, 1,
                            &server, bind_wm));
     CHECK(wl_global_create(server.display,
@@ -335,6 +373,8 @@ int main(void) {
     CHECK(pthread_create(&thread, NULL, run_server, &server) == 0);
 
     nx_window_desc desc = {0};
+    window_heap allocations = {0};
+    desc.allocator = (nx_allocator){&allocations, window_allocate, window_free};
     desc.width = 240;
     desc.height = 120;
     desc.flags = NX_WINDOW_HIDDEN;
@@ -517,7 +557,20 @@ int main(void) {
           server.surrounding_length == 3 &&
           memcmp(server.surrounding, "abc", 3) == 0);
     CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    /* A different client of the same display (such as Vulkan WSI) can read
+       new-id events into the default queue without dispatching that queue. */
+    struct wl_display *display = nx_window_wayland_display(window);
+    struct wl_event_queue *queue = wl_display_create_queue(display);
+    CHECK(queue);
+    size_t before_offer = allocations.calls;
+    atomic_store(&server.send_offer, 1);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip_queue(display, queue) >= 0);
+    CHECK(allocations.calls == before_offer); /* Offer callback is still pending. */
+    wl_event_queue_destroy(queue);
     nx_window_destroy(window);
+    CHECK(allocations.calls > before_offer && allocations.live == 0);
     wl_display_terminate(server.display);
     CHECK(pthread_join(thread, NULL) == 0);
     wl_display_destroy(server.display);

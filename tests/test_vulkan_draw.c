@@ -1,5 +1,7 @@
 #include "renderer.h"
 #include "wayland/window_internal.h"
+#include "x11/window_internal.h"
+#include <X11/Xutil.h>
 
 #include <float.h>
 #include <math.h>
@@ -47,12 +49,12 @@ static int compare(nx_window *window, nx_vulkan_renderer *renderer,
     CHECK(expected && actual && scaled);
     for (size_t i = 0; i < count; ++i) {
         scaled[i] = commands[i];
-        if (scaled[i].type == NX_COMMAND_FILL_RECT) {
+        if (scaled[i].type == NX_COMMAND_FILL_RECT || scaled[i].type == NX_COMMAND_PUSH_CLIP) {
             scaled[i].rect.x = (float)(scaled[i].rect.x * scale);
             scaled[i].rect.y = (float)(scaled[i].rect.y * scale);
             scaled[i].rect.width = (float)(scaled[i].rect.width * scale);
             scaled[i].rect.height = (float)(scaled[i].rect.height * scale);
-        } else {
+        } else if (scaled[i].type != NX_COMMAND_POP_CLIP) {
             for (unsigned j = 0; j < 3; ++j) {
                 scaled[i].points[j].x = (float)(scaled[i].points[j].x * scale);
                 scaled[i].points[j].y = (float)(scaled[i].points[j].y * scale);
@@ -109,6 +111,9 @@ static int test_draws(nx_window *window) {
     nx_vulkan_renderer_info info;
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && !info.has_acquired_image);
     CHECK(!info.vertex_capacity_bytes && !info.presented_frames);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_DRAW_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, commands, 10, 1, clear, &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && !info.has_acquired_image && !info.vertex_capacity_bytes);
     const double scales[] = {1, 1.5, 2};
     for (unsigned i = 0; i < 3; ++i) CHECK(compare(window, renderer, commands, 10, scales[i], clear) == 0);
     nx_command fractional = triangle((nx_point){10.50001f, 10.5f},
@@ -136,6 +141,11 @@ static int test_draws(nx_window *window) {
         many[i] = i % 2 ? rect(x, y, 15.25f, 11.5f, color)
             : triangle((nx_point){x,y}, (nx_point){x+13,y+3}, (nx_point){x+4,y+17}, color);
     }
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_DRAW_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, many, 256, 1, clear, &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK &&
+        info.vertex_buffer_allocations == allocations && info.vertex_capacity_bytes == capacity && !info.has_acquired_image);
+    CHECK(compare(window, renderer, commands, 10, 1, clear) == 0);
     CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_VERTEX_MEMORY) == NX_OK);
     CHECK(nx_vulkan_render(renderer, many, 256, 1, clear, &presented) == NX_ERROR_MEMORY);
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK &&
@@ -166,6 +176,157 @@ static int test_draws(nx_window *window) {
     return 0;
 }
 
+static nx_command clip(float x, float y, float width, float height) {
+    nx_command c = rect(x, y, width, height, (nx_color){0});
+    c.type = NX_COMMAND_PUSH_CLIP; return c;
+}
+
+static unsigned channel(unsigned long pixel, unsigned long mask) {
+    unsigned shift = 0;
+    while (!(mask & 1u)) { mask >>= 1u; ++shift; }
+    return (unsigned)((((pixel >> shift) & mask) * 255u + mask / 2u) / mask);
+}
+
+static int displayed_pixels(nx_window *window, nx_vulkan_renderer *renderer,
+                             const nx_command *commands, size_t count, nx_color clear) {
+    Display *display = nx_window_x11_display(window);
+    if (!display) return 0;
+    nx_vulkan_renderer_info info;
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
+    size_t bytes = (size_t)info.pixel_width * info.pixel_height * 4u;
+    uint8_t *expected = malloc(bytes); CHECK(expected);
+    CHECK(nx_headless_render(commands, count, expected, info.pixel_width,
+        info.pixel_height, (size_t)info.pixel_width * 4u, clear) == NX_OK);
+    int matches = 0;
+    for (unsigned retry = 0; retry < 20 && !matches; ++retry) {
+        CHECK(nx_window_poll(window, 10) == NX_OK);
+        XSync(display, False);
+        XImage *image = XGetImage(display, nx_window_x11_id(window), 0, 0,
+            info.pixel_width, info.pixel_height, AllPlanes, ZPixmap);
+        CHECK(image && image->red_mask && image->green_mask && image->blue_mask);
+        matches = 1;
+        for (uint32_t y = 0; y < info.pixel_height && matches; ++y)
+            for (uint32_t x = 0; x < info.pixel_width; ++x) {
+                unsigned long p = XGetPixel(image, (int)x, (int)y);
+                const uint8_t *e = expected + ((size_t)y * info.pixel_width + x) * 4u;
+                if (channel(p, image->red_mask) != e[0] || channel(p, image->green_mask) != e[1] ||
+                    channel(p, image->blue_mask) != e[2]) { matches = 0; break; }
+            }
+        XDestroyImage(image);
+    }
+    free(expected);
+    CHECK(matches); /* Includes the final canvas-to-swapchain copy and presentation. */
+    return 0;
+}
+
+static int test_clips_and_alpha(nx_window *window) {
+    nx_vulkan_renderer *renderer = NULL;
+    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    nx_command pop = {0}; pop.type = NX_COMMAND_POP_CLIP;
+    nx_command commands[] = {
+        rect(-10, -10, 200, 160, (nx_color){.3f,.6f,.9f,.13f}),
+        clip(7.5f, 10.25f, 71.25f, 63.5f),
+        rect(0, 0, 100, 100, (nx_color){.9f,.2f,.1f,.37f}),
+        clip(17.125f, 18.75f, 55.5f, 40.5f),
+        triangle((nx_point){9.3f,11.7f}, (nx_point){86.5f,22.5f}, (nx_point){30.1f,78.7f},
+            (nx_color){.7f,.3f,.8f,.61f}),
+        rect(18, 19, 43, 29, (nx_color){.2f,.9f,.4f,.5f/255}),
+        rect(13, 13, 61, 51, (nx_color){1,1,1,.499f/255}), pop,
+        rect(3.5f, 40.5f, 89, 36, (nx_color){.1f,.5f,.9f,254.499f/255}),
+        clip(22, 12, 0, 50), rect(0, 0, 120, 90, (nx_color){1,0,0,1}), pop, pop,
+        triangle((nx_point){40.5f,52.5f}, (nx_point){68.5f,52.5f}, (nx_point){40.5f,80.5f},
+            (nx_color){0,1,1,.51f}),
+        triangle((nx_point){68.5f,80.5f}, (nx_point){40.5f,80.5f}, (nx_point){68.5f,52.5f},
+            (nx_color){1,0,1,.51f}),
+        rect(0, 0, 8, 8, (nx_color){.4f,.3f,.8f,254.5f/255}),
+        rect(0, 0, 8, 8, (nx_color){1,1,1,0})
+    };
+    const double scales[] = {1, 1.5, 2};
+    const nx_color backgrounds[] = {{.2f,.4f,.7f,0}, {.7f,.3f,.1f,.26f}, {.1f,.2f,.3f,1}};
+    for (unsigned i = 0; i < 3; ++i)
+        CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), scales[i], backgrounds[i]) == 0);
+    nx_command deep[2 * NX_MAX_CLIP_DEPTH + 1];
+    for (unsigned i = 0; i < NX_MAX_CLIP_DEPTH; ++i) deep[i] = clip(i * .25f, i * .125f, 100, 80);
+    deep[NX_MAX_CLIP_DEPTH] = rect(0, 0, 130, 100, (nx_color){1,.1f,.3f,.43f});
+    for (unsigned i = 0; i < NX_MAX_CLIP_DEPTH; ++i) deep[NX_MAX_CLIP_DEPTH + 1 + i] = pop;
+    CHECK(compare(window, renderer, deep, sizeof(deep)/sizeof(*deep), 1.5, backgrounds[1]) == 0);
+    nx_command empty[] = {clip(-20, -20, 3, 3), pop};
+    CHECK(compare(window, renderer, empty, 2, 1, backgrounds[0]) == 0);
+    CHECK(compare(window, renderer, NULL, 0, 1, backgrounds[2]) == 0);
+    nx_command many[96];
+    for (unsigned i = 0; i < 96; ++i) {
+        float x = (float)((i * 17u) % 151u) - 9.25f, y = (float)((i * 29u) % 107u) - 8.5f;
+        nx_color c = {(i % 19u)/18.0f, (i % 23u)/22.0f, (i % 29u)/28.0f, (i % 31u)/30.0f};
+        many[i] = i % 2 ? rect(x,y,37.75f,22.5f,c) :
+            triangle((nx_point){x,y},(nx_point){x+49.25f,y+8.5f},(nx_point){x+7.75f,y+34.25f},c);
+    }
+    for (unsigned i = 0; i < 3; ++i) CHECK(compare(window, renderer, many, 96, scales[i], backgrounds[i]) == 0);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[2]) == 0);
+    CHECK(displayed_pixels(window, renderer, commands, sizeof(commands)/sizeof(*commands), backgrounds[2]) == 0);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[1]) == 0);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 2, backgrounds[0]) == 0);
+    nx_vulkan_renderer_info info;
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
+    size_t stride = (size_t)info.pixel_width * 4u + 9u;
+    size_t bytes = stride * info.pixel_height;
+    uint8_t *pending = malloc(bytes); CHECK(pending);
+    memset(pending, 0x6b, bytes);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_test_render_readback(renderer, commands, sizeof(commands)/sizeof(*commands),
+        1, backgrounds[1], pending, stride) == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && info.pending_readback);
+    for (size_t i = 0; i < bytes; ++i) CHECK(pending[i] == 0x6b);
+    free(pending);
+    int presented = 0;
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned retry = 0; retry < 2; ++retry) {
+        CHECK(nx_vulkan_render(renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[1], &presented) == NX_OK && !presented);
+        CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && info.pending_readback);
+    }
+    CHECK(nx_vulkan_render(renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[1], &presented) == NX_OK && presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK && !info.pending_readback);
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_RETIRE_TIMEOUT) == NX_OK);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_ERROR_LIMIT);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
+    return 0;
+}
+
+typedef struct block { void *pointer; size_t bytes; } block;
+typedef struct heap { block blocks[64]; size_t live; } heap;
+static void *tracked_allocate(void *user, size_t bytes) {
+    heap *h = user;
+    if (h->live == 64) abort();
+    void *p = malloc(bytes);
+    if (p) h->blocks[h->live++] = (block){p, bytes};
+    return p;
+}
+static void tracked_free(void *user, void *pointer, size_t bytes) {
+    heap *h = user; size_t i = 0;
+    while (i < h->live && h->blocks[i].pointer != pointer) ++i;
+    if (i == h->live || h->blocks[i].bytes != bytes) abort();
+    h->blocks[i] = h->blocks[--h->live]; free(pointer);
+}
+static int test_owned_storage(nx_window *window) {
+    heap h = {0}; nx_allocator allocator = {&h, tracked_allocate, tracked_free};
+    nx_vulkan_renderer *renderer;
+    CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_OK);
+    nx_command commands[80];
+    for (unsigned i = 0; i < 80; ++i) commands[i] = rect(i, i % 71u, 12, 9, (nx_color){1,.3f,.7f,.4f});
+    int presented;
+    CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_DRAW_MEMORY) == NX_OK);
+    CHECK(nx_vulkan_render(renderer, commands, 1, 1, (nx_color){0}, &presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(compare(window, renderer, commands, 1, 1, (nx_color){0}) == 0);
+    CHECK(compare(window, renderer, commands, 80, 1.5, (nx_color){0}) == 0);
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(compare(window, renderer, commands, 1, 1, (nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
+    CHECK(compare(window, renderer, commands, 80, 1, (nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK && h.live == 0);
+    return 0;
+}
+
 static int test_preflight_and_driver(nx_window *window) {
     nx_renderer_driver driver = {0};
     CHECK(nx_vulkan_driver_open(window, &driver) == NX_OK);
@@ -176,7 +337,7 @@ static int test_preflight_and_driver(nx_window *window) {
         (uint32_t)ceil(window_info.height * window_info.scale), window_info.scale};
     nx_command commands[2] = {rect(8, 8, 28, 20, (nx_color){0,1,0,1}), {0}};
     commands[1] = commands[0];
-    commands[1].color.a = 0.5f;
+    commands[1].type = NX_COMMAND_FILL_ROUND_RECT;
     nx_render_outcome outcome;
     CHECK(nx_renderer_run(&driver, target, commands, 2, (nx_color){0,0,0,1}, &outcome) == NX_ERROR_UNSUPPORTED);
     nx_vulkan_renderer_info before, after;
@@ -218,19 +379,19 @@ static int test_independent_windows(nx_window *first) {
     nx_vulkan_renderer *a = NULL, *b = NULL;
     CHECK(nx_vulkan_renderer_create(first, NULL, &a) == NX_OK);
     CHECK(nx_vulkan_renderer_create(second, NULL, &b) == NX_OK);
-    nx_command command = rect(7, 9, 47, 31, (nx_color){1,0,0,1});
+    nx_command command = rect(7, 9, 47, 31, (nx_color){1,0,0,.45f});
     CHECK(compare(first, a, &command, 1, 1, (nx_color){0,0,0,1}) == 0);
-    command.color = (nx_color){0,0,1,1};
+    command.color = (nx_color){0,0,1,.65f};
     CHECK(compare(second, b, &command, 1, 1, (nx_color){1,1,1,1}) == 0);
     CHECK(nx_vulkan_renderer_destroy(b) == NX_OK);
     nx_window_destroy(second);
-    command.color = (nx_color){0,1,0,1};
+    command.color = (nx_color){0,1,0,.35f};
     CHECK(compare(first, a, &command, 1, 1, (nx_color){0,0,0,1}) == 0);
     CHECK(nx_vulkan_renderer_destroy(a) == NX_OK);
     return 0;
 }
 
-int main(void) {
+int main(int argc, char **argv) {
     const char *backend = getenv("NEXAUI_PLATFORM");
     if (!backend) return 1;
     int required = getenv("NEXAUI_REQUIRE_VULKAN") &&
@@ -240,7 +401,14 @@ int main(void) {
     nx_result result = nx_window_create(&desc, &window);
     if (result == NX_ERROR_PLATFORM && !required) return 77;
     CHECK(result == NX_OK);
+    if (argc == 2) {
+        int selected = !strcmp(argv[1], "alpha") ? test_clips_and_alpha(window) :
+            !strcmp(argv[1], "storage") ? test_owned_storage(window) : 1;
+        nx_window_destroy(window); return selected;
+    }
     int status = test_draws(window);
+    if (!status) status = test_clips_and_alpha(window);
+    if (!status) status = test_owned_storage(window);
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);
     nx_window_destroy(window);
