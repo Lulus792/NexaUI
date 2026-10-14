@@ -1337,7 +1337,8 @@ typedef int (*nx_text_field_validate_fn)(nx_utf8_span text, void *user);
 
 /* Clipboard callbacks follow nx_window_clipboard_get/set_text: read(NULL,0)
    queries UTF-8 byte count, and a later read needs space for a terminating
-   NUL. The widget handles Ctrl+C/X/V when the relevant callback is present. */
+   NUL. The widget handles Ctrl+C/X/V, and Command+C/X/V on macOS, when the
+   relevant callback is present. */
 typedef struct nx_text_clipboard {
     void *user;
     nx_result (*read)(void *user, char *bytes, size_t capacity,
@@ -2121,7 +2122,8 @@ NX_API nx_result nx_text_buffer_undo(nx_text_buffer *buffer);
 NX_API nx_result nx_text_buffer_redo(nx_text_buffer *buffer);
 /* Apply backend-neutral key and text events to a focused multiline buffer.
    Handles printable text, Enter, grapheme/word navigation and deletion,
-   Home/End, Ctrl+A/Z/Y and Ctrl+Shift+Z. Other events are unhandled.
+   Home/End, Ctrl+A/Z/Y and Ctrl+Shift+Z. macOS additionally accepts Command+A/Z
+   and Command+Shift+Z. Other events are unhandled.
    Call only for the editor that owns focus; clipboard, IME composition,
    pointer selection and visual Up/Down navigation are handled elsewhere.
    On an edit error, buffer state is unchanged and out_handled is zero. */

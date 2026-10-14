@@ -35,10 +35,16 @@ discards it. The logical caret is converted into native screen coordinates.
 
 This is an initial composition slice. Full-document surrounding text and
 replacement, revision-bound reconversion, native key-binding actions, complete
-Command-based editor shortcuts and OS secure-input purpose remain M04 work.
+Command-based editor navigation and OS secure-input purpose remain M04 work.
 Only default/full-mark replacement is accepted; partial/document requests are
 ignored. Password purpose returns unsupported and blocks attributed-substring
 exposure. It does not claim OS secure keyboard capture.
+
+The common text model accepts Command+A/Z/Shift+Z on macOS, and text-field
+clipboard callbacks accept Command+C/X/V. Ctrl remains an explicit compatible
+binding; Command identity stays in the normalized event instead of being
+rewritten as Ctrl. Mixed Control+Command and Alt chords are not primary actions.
+Native word/line/paragraph key bindings remain separate work.
 
 The pasteboard transfers validated UTF-8 strings with a 1 MiB cap, preserving
 line endings. File URL drops copy complete UTF-8 path batches with logical
@@ -58,6 +64,14 @@ clipboard case snapshots/restores the original items. The C17 hello-window
 example is also enabled on Apple builds. Execution results will be recorded here;
 authored tests alone are not successful tests. In-process callbacks do not prove
 physical input/IME, monitor transitions or VoiceOver behavior.
+
+The dependency audit permits AppKit/objc only on Apple targets and checks
+Objective-C `#import` as well as C `#include`. Its positive/negative fixtures pass
+on Windows/Linux. Common text-buffer/field regressions pass on both hosts and
+under Linux ASan/UBSan. The Apple Command policy branch was also compiled and
+executed as portable C under Linux ASan/UBSan (two passing model/field probes).
+That probe is a Linux executable with the policy branch selected; it is not an
+Apple SDK build or macOS runtime result. Actual Apple CI remains required.
 
 Metal and a native NexaCloud macOS runner remain pending. A blank native window
 or successful headless scene is not complete macOS UI acceptance.

@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "edit_shortcuts.h"
 #include "secure_zero.h"
 
 #include <stdint.h>
@@ -5298,8 +5299,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                 field->submitted = 1;
                 field->vertical_x_valid = 0;
             } else if (event->type == NX_EVENT_KEY_DOWN &&
-                       (event->modifiers & NX_MOD_CONTROL) &&
-                       !(event->modifiers & (NX_MOD_ALT | NX_MOD_SUPER)) &&
+                       nx_edit_primary(event->modifiers) &&
                        (event->key == NX_KEY_C || event->key == NX_KEY_X ||
                         event->key == NX_KEY_V)) {
                 result = desc->password && event->key != NX_KEY_V ? NX_OK :

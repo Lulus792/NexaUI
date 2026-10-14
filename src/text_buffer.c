@@ -1,6 +1,7 @@
 #include "nexaui/nexaui.h"
 #include "secure_zero.h"
 #include "unicode_data.h"
+#include "edit_shortcuts.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -549,7 +550,9 @@ nx_result nx_text_buffer_apply_event(nx_text_buffer *buffer,
         if (buffer->sensitive) nx_private_secure_zero(bytes, sizeof(bytes));
     } else if (event->type == NX_EVENT_KEY_DOWN) {
         uint32_t modifiers = event->modifiers;
-        if (modifiers & (NX_MOD_ALT | NX_MOD_SUPER)) return NX_OK;
+        int primary = nx_edit_primary(modifiers);
+        if ((modifiers & NX_MOD_ALT) || ((modifiers & NX_MOD_SUPER) &&
+            (!primary || (event->key != NX_KEY_A && event->key != NX_KEY_Z)))) return NX_OK;
         int control = (modifiers & NX_MOD_CONTROL) != 0;
         int extend = (modifiers & NX_MOD_SHIFT) != 0;
         switch (event->key) {
@@ -589,12 +592,12 @@ nx_result nx_text_buffer_apply_event(nx_text_buffer *buffer,
             result = nx_text_buffer_replace(buffer, "\n", 1u);
             break;
         case NX_KEY_A:
-            if (!control) return NX_OK;
+            if (!primary) return NX_OK;
             result = nx_text_buffer_set_selection(buffer, 0u,
                                                    buffer->length);
             break;
         case NX_KEY_Z:
-            if (!control) return NX_OK;
+            if (!primary) return NX_OK;
             result = extend ? nx_text_buffer_redo(buffer) :
                               nx_text_buffer_undo(buffer);
             if (result == NX_ERROR_STATE) result = NX_OK;

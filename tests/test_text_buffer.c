@@ -334,6 +334,36 @@ static int test_sensitive_buffer(void) {
     return 0;
 }
 
+static int test_platform_primary_shortcuts(void) {
+    nx_text_buffer *buffer = NULL;
+    CHECK(nx_text_buffer_create("alpha",5,4096,&buffer) == NX_OK);
+    CHECK(nx_text_buffer_replace(buffer,"!",1) == NX_OK);
+    nx_event event = {0}; event.type = NX_EVENT_KEY_DOWN; event.key = NX_KEY_Z; event.modifiers = NX_MOD_SUPER;
+    int handled;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK);
+#if defined(__APPLE__)
+    CHECK(handled && expect_text(buffer,"alpha",5,5,5) == 0);
+    event.modifiers |= NX_MOD_SHIFT;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK && handled);
+    CHECK(expect_text(buffer,"alpha!",6,6,6) == 0);
+    event.key = NX_KEY_A; event.modifiers = NX_MOD_SUPER;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK && handled);
+    CHECK(expect_text(buffer,"alpha!",6,0,6) == 0);
+#else
+    CHECK(!handled && expect_text(buffer,"alpha!",6,6,6) == 0);
+    event.key = NX_KEY_A;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK && !handled);
+    CHECK(expect_text(buffer,"alpha!",6,6,6) == 0);
+#endif
+    CHECK(nx_text_buffer_set_selection(buffer,6,6) == NX_OK);
+    event.modifiers = NX_MOD_SUPER | NX_MOD_CONTROL;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK && !handled);
+    event.modifiers = NX_MOD_SUPER | NX_MOD_ALT;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled) == NX_OK && !handled);
+    CHECK(expect_text(buffer,"alpha!",6,6,6) == 0);
+    nx_text_buffer_destroy(buffer); return 0;
+}
+
 int main(void) {
     if (test_edit_and_history()) return 1;
     if (test_ime_delete_surrounding()) return 1;
@@ -343,6 +373,7 @@ int main(void) {
     if (test_history_budget_and_emoji()) return 1;
     if (test_event_bridge_and_selected_span()) return 1;
     if (test_sensitive_buffer()) return 1;
+    if (test_platform_primary_shortcuts()) return 1;
     puts("text buffer tests passed");
     return 0;
 }

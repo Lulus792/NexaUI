@@ -166,7 +166,7 @@ static nx_result write_clipboard(void *user, const char *bytes,
     return NX_OK;
 }
 
-static int test_clipboard_shortcuts(nx_font_collection *fonts) {
+static int test_clipboard_shortcuts(nx_font_collection *fonts, uint32_t primary) {
     nx_text_field *field = NULL;
     nx_context *ctx = NULL;
     test_clipboard clipboard = {0};
@@ -188,10 +188,10 @@ static int test_clipboard_shortcuts(nx_font_collection *fonts) {
                                &valid, &submitted) == NX_OK);
     CHECK(nx_end_frame(ctx) == NX_OK);
     CHECK(nx_focus_set(ctx, 1) == NX_OK);
-    CHECK(queue_key(ctx, NX_KEY_A, NX_MOD_CONTROL));
-    CHECK(queue_key(ctx, NX_KEY_C, NX_MOD_CONTROL));
-    CHECK(queue_key(ctx, NX_KEY_X, NX_MOD_CONTROL));
-    CHECK(queue_key(ctx, NX_KEY_V, NX_MOD_CONTROL));
+    CHECK(queue_key(ctx, NX_KEY_A, primary));
+    CHECK(queue_key(ctx, NX_KEY_C, primary));
+    CHECK(queue_key(ctx, NX_KEY_X, primary));
+    CHECK(queue_key(ctx, NX_KEY_V, primary));
     CHECK(nx_begin_frame(ctx, 100, 80, 0) == NX_OK);
     CHECK(nx_text_field_widget(ctx, &desc, field, &state,
                                &valid, &submitted) == NX_OK);
@@ -201,16 +201,16 @@ static int test_clipboard_shortcuts(nx_font_collection *fonts) {
     CHECK(clipboard.length == 2 && memcmp(clipboard.bytes, "15", 2) == 0);
     memcpy(clipboard.bytes, "5\r\n1", 4);
     clipboard.length = 4;
-    CHECK(queue_key(ctx, NX_KEY_A, NX_MOD_CONTROL));
-    CHECK(queue_key(ctx, NX_KEY_V, NX_MOD_CONTROL));
+    CHECK(queue_key(ctx, NX_KEY_A, primary));
+    CHECK(queue_key(ctx, NX_KEY_V, primary));
     CHECK(nx_begin_frame(ctx, 100, 80, 0) == NX_OK);
     CHECK(nx_text_field_widget(ctx, &desc, field, &state,
                                &valid, &submitted) == NX_OK);
     CHECK(nx_end_frame(ctx) == NX_OK);
     CHECK(expect_text(field, "5 1"));
     clipboard.unavailable = 1;
-    CHECK(queue_key(ctx, NX_KEY_A, NX_MOD_CONTROL));
-    CHECK(queue_key(ctx, NX_KEY_X, NX_MOD_CONTROL));
+    CHECK(queue_key(ctx, NX_KEY_A, primary));
+    CHECK(queue_key(ctx, NX_KEY_X, primary));
     CHECK(nx_begin_frame(ctx, 100, 80, 0) == NX_OK);
     CHECK(nx_text_field_widget(ctx, &desc, field, &state,
                                &valid, &submitted) == NX_OK);
@@ -221,7 +221,7 @@ static int test_clipboard_shortcuts(nx_font_collection *fonts) {
     clipboard.length = 3;
     desc.multiline = 1;
     CHECK(nx_text_field_set_text(field, NULL, 0) == NX_OK);
-    CHECK(queue_key(ctx, NX_KEY_V, NX_MOD_CONTROL));
+    CHECK(queue_key(ctx, NX_KEY_V, primary));
     CHECK(nx_begin_frame(ctx, 100, 80, 0) == NX_OK);
     CHECK(nx_text_field_widget(ctx, &desc, field, &state,
                                &valid, &submitted) == NX_OK);
@@ -496,8 +496,11 @@ int main(void) {
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
     if (test_single_line(fonts) || test_multiline(fonts) ||
         test_caret_scrolling(fonts) ||
-        test_clipboard_shortcuts(fonts) ||
+        test_clipboard_shortcuts(fonts, NX_MOD_CONTROL) ||
         test_password_field(fonts)) return 1;
+#if defined(__APPLE__)
+    if (test_clipboard_shortcuts(fonts, NX_MOD_SUPER)) return 1;
+#endif
     nx_font_collection_destroy(fonts);
     nx_font_close(font);
     puts("text field tests passed");

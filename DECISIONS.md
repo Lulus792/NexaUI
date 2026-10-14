@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-10-15 — Preserve Command identity in native input
+
+The initial AppKit adapter emits Command as `NX_MOD_SUPER`; it does not relabel
+native input as Ctrl. Shared text editing accepts Command+A/Z/Shift+Z on Apple
+builds and text-field clipboard callbacks accept Command+C/X/V. Existing explicit
+Ctrl bindings remain compatible. Alt and mixed Control+Command are excluded.
+This adds primary editor actions without changing Windows/Linux's Super behavior
+or implying complete Cocoa key-binding/navigation support. Committed text remains
+independent of shortcut modifiers. Native macOS execution is required separately
+from the portable model/field tests.
+
 ## 2026-10-15 — Stage borrowed Vulkan bitmap views before submit returns
 
 V06 packs distinct views into an owned RGBA8 UNORM atlas and copies source rows
