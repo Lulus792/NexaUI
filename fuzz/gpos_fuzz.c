@@ -1,0 +1,70 @@
+#include "nexaui/nexaui.h"
+#include "font_internal.h"
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+static void put16(uint8_t *p, uint16_t value) {
+    p[0] = (uint8_t)(value >> 8u);
+    p[1] = (uint8_t)value;
+}
+
+static void put32(uint8_t *p, uint32_t value) {
+    p[0] = (uint8_t)(value >> 24u);
+    p[1] = (uint8_t)(value >> 16u);
+    p[2] = (uint8_t)(value >> 8u);
+    p[3] = (uint8_t)value;
+}
+
+/* Mutate GPOS bytes inside a face with valid metrics. */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (size > (1u << 20u)) return 0;
+    uint8_t *bytes = malloc(248u + size);
+    if (!bytes) return 0;
+    memset(bytes, 0, 248u);
+    put32(bytes, UINT32_C(0x00010000));
+    put16(bytes + 4u, 5);
+    const uint32_t tags[5] = {
+        NX_SFNT_TAG('G','P','O','S'), NX_SFNT_TAG('h','e','a','d'),
+        NX_SFNT_TAG('h','h','e','a'), NX_SFNT_TAG('h','m','t','x'),
+        NX_SFNT_TAG('m','a','x','p')
+    };
+    const uint32_t offsets[5] = {248,92,180,216,148};
+    const uint32_t lengths[5] = {(uint32_t)size,54,36,32,32};
+    for (size_t i = 0; i < 5; ++i) {
+        put32(bytes + 12u + 16u * i, tags[i]);
+        put32(bytes + 20u + 16u * i, offsets[i]);
+        put32(bytes + 24u + 16u * i, lengths[i]);
+    }
+    put32(bytes + 92u, UINT32_C(0x00010000));
+    put32(bytes + 104u, UINT32_C(0x5f0f3cf5));
+    put16(bytes + 110u, 1000);
+    put32(bytes + 148u, UINT32_C(0x00010000));
+    put16(bytes + 152u, 8);
+    put32(bytes + 180u, UINT32_C(0x00010000));
+    put16(bytes + 184u, 800);
+    put16(bytes + 186u, (uint16_t)-200);
+    put16(bytes + 214u, 8);
+    for (size_t i = 0; i < 8; ++i) put16(bytes + 216u + 4u * i, 600);
+    if (size) memcpy(bytes + 248u, data, size);
+    nx_font *font = NULL;
+    if (nx_font_open(bytes, 248u + size, NULL, &font) == NX_OK) {
+        nx_shaped_glyph glyphs[32] = {0};
+        uint8_t pair_mask[32] = {0};
+        size_t count = size < 32u ? size : 32u;
+        for (size_t i = 0; i < count; ++i)
+            glyphs[i].glyph_index = data[i] & 7u;
+        if (count >= 2u) {
+            glyphs[0].glyph_index = 2;
+            glyphs[1].glyph_index = 3;
+        }
+        (void)nx_gpos_apply(font, NX_SFNT_TAG('L','a','t','n'),
+                            glyphs, count, 20.0, pair_mask);
+        (void)nx_gpos_apply(font, NX_SFNT_TAG('A','r','a','b'),
+                            glyphs, count, 20.0, pair_mask);
+        nx_font_close(font);
+    }
+    free(bytes);
+    return 0;
+}

@@ -1,0 +1,131 @@
+# Changelog
+
+## 0.1.0 — Foundation in progress
+
+- Added optional manual Windows ASan and five-target Clang fuzz CI jobs, an isolated campaign runner with failure/timeout tests, and actual MSVC static/shared sanitizer evidence with deliberate overflow counterexamples.
+- Added a reproducible text-layout fuzz campaign and fixed valid U+001C–U+001E bidi paragraph separators causing layout creation to fail; a regression covers all three controls.
+- Added reproducible SFNT and multilingual text fuzz seeds, a UTF-8/boundary/edit fuzzer, and a dated 40,000-input sanitizer campaign with script-presence and text-edit stress reports.
+- Added Wayland v1/v3 password input purpose with sensitive-content hints and no password surrounding text. Focused password fields mask preedit, accept committed IME text, and wipe NexaUI-owned composition scratch; private server and WSLg tests cover activation, masking and purpose transitions.
+- Added X11 callback-style XIM preedit for focused ordinary text fields, with character-to-UTF-8 byte cursor conversion, copy-out and redraw events. Native Xvfb tests cover Unicode replacement, invalid ranges and clearing; installed-IME interaction remains unverified.
+- Added Windows IMM preedit copy-out and in-field display for focused ordinary text fields, with UTF-16 cursor conversion, focus/end clearing and native message tests. Installed-IME interaction remains to be checked.
+- Added uncommitted preedit presentation for the Wayland text-input-v1 fallback, including cursor offsets, stale-serial rejection and clearing on commit or focus leave. A private compositor test checks v1 wire events and a WSLg test checks the API and text-field drawing.
+- Added Wayland text-input-v1 surrounding-text exchange and cursor-relative deletion before committed text. The private compositor test covers valid, malformed and withdrawn snapshots, text-field editing and stale revision rejection.
+- Added bounded Wayland text-input-v3 surrounding text and revision-checked deletion for focused text fields. A private compositor test covers the wire exchange and text-buffer tests cover UTF-8 boundaries and undo.
+- Added Wayland text-input-v3 preedit state and a copy-out API; focused text fields draw the uncommitted composition with an underline while preserving their committed draft. A private compositor test checks buffered delivery, redraw events and visual commands.
+- Added X11/Xdnd local-file drop reception with status/finished replies, direct and `INCR` selection transfers, and private Xvfb regression tests for accepted and rejected drops.
+- Added Wayland local-file drag-and-drop reception through `text/uri-list`, with percent-decoded UTF-8 paths, release coordinates and atomic batch queueing; parser and native queue tests cover malformed URIs, buffer sizing and allocation rollback.
+- Added Wayland UTF-8 clipboard sources and offers through `wl_data_device`, serial-gated selection ownership, bounded nonblocking pipe transfers, and same-thread cross-window pumping; native WSLg tests cover large transfers, cancellation, buffer sizes and malformed text under sanitizers.
+- Added X11 UTF-8 clipboard ownership and retrieval, `TARGETS` negotiation, incremental `INCR` transfer in both directions, same-thread cross-window transfer and allocation rollback; native Xvfb and sanitizer tests cover the exchange and an owner change during transfer.
+- Added Wayland output tracking and integer backing scale for shared-memory backgrounds and cursors; a native test checks 1×↔2× transitions, logical geometry, buffer extents and output leave under WSLg.
+- Added bounded Wayland key-repeat timing and all eleven native cursor shapes, with synthetic input integration, deterministic scheduler/cursor tests, sanitizer runs and a reviewed cursor image sheet.
+- Added an initial native Linux/Wayland xdg-shell window adapter with a shared-memory background, pointer and basic XKB keyboard events, per-window connections and runtime X11 fallback; native WSLg tests cover protocol setup and fallback.
+- Added an initial native Linux/X11 window adapter with Unicode window titles, close/resize/focus, pointer/wheel/basic key and text events, client cursors, per-window routing and a native Xwayland regression; Linux builds now link the system X11 client library.
+- Added per-window native cursor selection through a C API, Win32 client-area cursor handling, an all-shapes/two-window integration test, and crosshair feedback in the showcase plot.
+- Extracted the Win32 normalized-event and UTF-8 file-drop queues into private, OS-neutral platform modules, with tests for ordering, routing, buffer sizing, ownership and allocation rollback in static and shared builds.
+- Added an initial native Windows showcase dashboard with a live plot, tree, gain inspector, telemetry, toolbar and status bar; its hidden smoke exercises mouse, keyboard, resize and D3D12 rendering at wide and compact sizes.
+- Added the canonical `04_forms` example with text validation, confirmation, disabled-until-ready submission, semantic status checks and two reviewed headless frames.
+- Added the canonical `03_layout` progressive example with measured wide and narrow arrangements, UI panels, a button, geometry assertions and two visually reviewed frames.
+- Added the canonical `02_buttons_and_input` progressive example with native D3D12 controls, Win32 mouse and Space input, semantic-state checks and a visually reviewed smoke preview.
+- Added the canonical `01_hello_ui` progressive example with a native D3D12 UI context, semantic greeting, optional TrueType labels and a hidden render smoke mode.
+- Added the canonical `00_hello_window` progressive example with native size and scale reporting, normalized input logging, and a bounded Windows CTest mode.
+- Registered the 3D viewport shell as a direct example test and staged the runtime DLL for Windows shared builds.
+- Added the progressive simulation dashboard example with worker-published immutable snapshots, a bounded command/completion handoff, plot, telemetry, illustrative profiler values and optional labeled output.
+- Added the progressive real-time plot example with a wrapped 2,048-sample ring, moving viewport, cursor input checks and three headless frames.
+- Added the progressive headless accessibility example with verified semantic snapshots, keyboard traversal and activation, and readable tree output.
+- Added the progressive Windows multi-window example with separate UI contexts and D3D12 drivers, input isolation, independent close behavior, and a hidden CTest smoke mode.
+- Added the progressive docking editor example with tab movement, split dragging, selected-tab semantics, a rendered frame and a verified v1 snapshot roundtrip.
+- Moved the custom button and progress example to the required `examples/09_custom_widget` path, added keyboard activation and checked every frame's semantic progress value in static and shared builds.
+- Added the progressive theme-switching example with Dark, Light and High Contrast frames, selector keyboard/pointer input and scoped override checks. Built-in button labels now use accent-text color on the normal accent fill, fixing the High Contrast contrast defect.
+- Added the progressive text-editing example with validated single-line entry, multiline input, undo/redo, semantic assertions and a rendered light-theme frame.
+- Added the progressive sortable-table example with stable source-index sorting, semantic rows and cells, optional TrueType labels, and a checked headless output frame.
+- Added the progressive virtual scrolling example: 10,000 measured rows, visible-row widget creation, wheel input and headless PPM output. Its Windows shared build places the runtime DLL beside the example executable.
+- Added a budgeted virtual-list row visitor that passes stable keys and viewport positions directly to application widget callbacks.
+- Distinguished touch taps from scroll drags with an eight-pixel threshold; taps now activate and focus child or standalone widgets without changing mouse state.
+- Added backend-neutral touch contact events, captured drag scrolling for nested areas, and Win32 `WM_POINTER` touch translation with pointer-capture cancellation.
+- Added a transactional virtual-list rebuild callback with unique row keys, measured heights and scroll anchoring across insertion, reordering and removal.
+- Added optional draggable and keyboard-focusable scrollbar thumbs on both axes, child slider semantics, topmost thumb hit regions and retryable scroll-end allocation rollback.
+- Added no-history sensitive text buffers and a required password-field constructor; NexaUI-owned text copies and paste scratch are overwritten before release.
+- Added a single-line password presentation mode for text fields with grapheme-based masking, protected empty semantic values, suppressed copy/cut, and Unicode caret mapping tests.
+- Positioned OS-managed Win32 IME composition and candidate windows at the focused text field caret, with native placement and Unicode-commit tests.
+- Added Win32 filesystem-drop transfers with per-window UTF-8 queues, caller-buffer reads, batch metadata and native Unicode/failure tests.
+- Added a headless widget integration scene with six reviewed light/dark/high-contrast PPM baselines, semantic checks and exact pixel regression detection.
+- Gave unchecked checkboxes a theme-border outline so they remain visible on panel surfaces in all three presets.
+- Added a configure-time core dependency audit with positive and deliberately rejected CMake fixtures.
+- Added a two-slot simulation snapshot exchange with pinned read-only views, off-lock reclamation and concurrent lifetime tests.
+- Added a bounded UI command and simulation completion channel with reserved tickets, explicit backpressure and two-worker tests.
+- Added a borrowed time-series data view and caller-buffer pixel envelope decimator with visible-range search, spike preservation and a million-point benchmark.
+- Added a theme-aware real-time line plot with axes, grid, optional tick labels, pointer/keyboard cursor and headless visual baselines.
+- Added borrowed telemetry and profiler panels with visible-row work, semantic status and timing details, theme baselines and a 10,000-frame update stress test.
+- Added a typed property-row primitive with immutable input, edit proposals, same-frame semantic values and allocation-failure rollback, plus a hierarchy/inspector tool example.
+- Added an application-rendered viewport surface with physical resize, borrowed RGBA8 leases, explicit render completion, lifecycle tests and a software 3D shell example.
+- Added a private renderer backend driver with shared command preflight, target resize/suspension and device-loss recovery, backed by a mock renderer test.
+- Added a Windows D3D12 device, direct queue and two-buffer swap-chain clear/present path with resize smoke tests and an F11 adapter for empty frames.
+- Added D3D12 device-removal detection, complete private resource recreation, and direct/F11 recovery tests that force removal where supported.
+- Added an HLSL D3D12 rectangle/triangle pipeline, per-frame upload ownership, GPU readback comparison with headless RGBA8 at 1×/2×, and a native geometry example.
+- Added nested D3D12 scissor clips and a shader path for headless-equivalent straight-alpha compositing, checked by GPU readback on opaque and translucent targets.
+- Added D3D12 RGBA8 image and A8 glyph-mask uploads with nearest-texel tint/compositing, including readback checks after source changes, resize and device recreation.
+- Added reusable D3D12 bitmap staging, a bounded texture pool, a vertex upload ring and conservative opaque batching, with pixel stress tests and a local timing benchmark.
+- Added three D3D12 frame slots with separate command allocators and vertex rings, allowing two opaque or empty frames in flight under fence protection.
+- Added fence-safe D3D12 GPU timestamp diagnostics and restricted translucent previous-color copies to clipped shape bounds, with exact pixel regression and copy-area checks.
+- Batched adjacent non-overlapping D3D12 translucent shapes into one previous-color copy and draw, with exact pixel tests and completed-frame GPU timing samples.
+- Added a Win32/F11 D3D12 integration regression for simulated DPI change, zero-size suspension, physical resize and device recovery; the native example now retries after reported device loss.
+- Added D3D12 stroked and rounded rectangles and round-capped lines, completing the current core command stream with exact GPU/headless pixel checks at 1× and 2×.
+- Added a Windows D3D12 widget integration regression: layout-arranged controls and rasterized button text match headless pixels in idle and active frames across all three themes in static and shared builds.
+
+- Added C17 library packaging, independent contexts, frame commands and a headless RGBA8 renderer.
+- Added fixed-capacity scratch arenas and strict UTF-8 decoding/validation.
+- Added initial Win32 native window create/poll/query/destroy API and hidden-window smoke test.
+- Added a reusable measure/arrange layout tree for rows, columns, overlays and leaves.
+- Added one-child scroll layout with axis-specific unbounded measurement, viewport/extent queries and clamped offsets; nested frame clips now restrict interactive hit regions as well as drawing.
+- Added wrapping row and column layouts with measured greedy line breaks, separate line spacing and per-line flex distribution.
+- Added grid layout with copied fixed/auto/flex tracks, explicit child spans, deterministic intrinsic redistribution and bounded growth/shrink.
+- Added two-pane split layout with a mutable ratio, divider geometry and min/max-constrained allocation on either axis.
+- Added semantic color/metric tokens, dark/light/high-contrast presets, value-based overrides and frame-scoped theme inheritance.
+- Added custom widget registration that joins semantic nodes and optional hit regions by stable ID, plus a headless button and progress example.
+- Added label, image and separator display calls with semantic registration, plus fixed layout spacers and headless pixel tests.
+- Added theme-drawn button, checkbox, radio and toggle controls with pointer/keyboard activation, caller-owned state and synchronized semantics.
+- Added captured pointer movement to interaction states and horizontal slider/drag-value controls with keyboard range changes and semantic numeric values.
+- Added locale-independent numeric parsing and focused text-buffer event handling with editable invalid drafts and commit-on-Enter behavior.
+- Added a rendered numeric text field with caller-owned font collection, selection/caret drawing, pointer caret placement and semantic validation state.
+- Added single-line and multiline text fields with validation callbacks, visual vertical cursor navigation, selection painting and semantic draft values.
+- Added optional Ctrl+C/X/V support for text fields with a native-window clipboard adapter and deterministic callback tests.
+- Kept focused carets visible in long single-line and multiline fields with horizontal or vertical scroll offsets.
+- Added painted panels and groups, collapsible sections and selectable tabs with nested semantic trees and headless tests.
+- Added wheel-driven scroll areas and a variable-height virtual-list range index, including a million-row logical test.
+- Added table headers with semantic sort state, pointer and keyboard column sizing, stable row-index sorting, and visible row/cell registration.
+- Added preorder tree flattening, selectable and expandable tree items, and tree-table composition through table cells.
+- Added popup and modal overlay scopes with backdrop dismissal, focus trapping/restoration, programmatic close, and noninteractive tooltips.
+- Added semantic menu bars, menus, toolbars and status bars with arrow-key menu navigation and checkable items.
+- Added an interactive split divider and a validated docking tree with tab moves and versioned binary snapshots.
+- Added a command palette and searchable select popup with stable filtering, keyboard navigation, semantic results and activation IDs.
+- Added validated sRGB/HSV and hex conversions, a pointer/keyboard color picker and a dark/light/high-contrast preset selector.
+- Added normalized frame input events and Win32 pointer, keyboard and Unicode scalar event translation.
+- Added per-window event transfer to independent UI contexts with allocation-failure retry, plus a native two-window routing test.
+- Added frame-timed scalar transitions with retargeting, cancellation, easing and reduced-motion snapping, plus an optional animated toggle thumb; Win32 can read the client-area animation preference.
+- Added paint-only rich-text spans for color, background, underline and strike over shaped layouts, with grapheme/ligature boundary validation and a semantic rich label.
+- Added retained hit-region identity, pointer capture and keyboard focus traversal primitives.
+- Added a backend-independent accessibility semantics tree with copied UTF-8 strings and frame snapshots.
+- Added stroked and rounded rectangles, round-capped lines and top-left-rule triangles to the command stream and headless renderer.
+- Added borrowed RGBA8 bitmap and A8 glyph-mask commands with nearest-neighbor sampling and tint compositing.
+- Added bounded SFNT table-directory lookup and horizontal font metrics, with malformed-input tests and a font inspection example.
+- Added Unicode glyph lookup through bounded `cmap` format 4 and 12 tables, with source priority and malformed-table fallback.
+- Added bounded short/long `loca` and simple `glyf` outline decoding with caller-owned point buffers.
+- Added recursive composite `glyf` resolution with component transforms, cycle limits and allocator-backed atomic output.
+- Added bounded quadratic-outline flattening and 4×4 antialiased A8 glyph rasterization, with a PGM example.
+- Added a per-font, memory-bounded LRU cache for A8 glyph masks and baseline placement metrics.
+- Added an ordered, bounded font collection with Unicode-cmap fallback selection.
+- Added pinned Unicode 18.0.0 property data, a deterministic table generator and official extended-grapheme conformance tests.
+- Added a UTF-8 extended-grapheme iterator with atomic error handling.
+- Added a UTF-8 default word boundary iterator, including punctuation lookahead, ignored marks and emoji/flag rules.
+- Added pinned General_Category and East_Asian_Width tables required by Unicode 18 line breaking rules.
+- Added caller-buffer Unicode line break analysis with optional and mandatory opportunities, passing the full 18.0.0 line break corpus.
+- Added Unicode 18.0.0 single-line paragraph bidi levels and visual ordering, including explicit embeddings, isolates and paired brackets, passing both official bidi conformance corpora.
+- Added Unicode Script and default-ignorable property tables, horizontal legacy `kern` format-0 parsing, and an initial shaping run API with cluster-aware font fallback and nonspacing mark placement.
+- Added bounded GSUB script/feature/lookup selection with single substitution (type 1) and ligature substitution (type 4), synthetic malformed-font tests, and an optional libFuzzer target.
+- Added bounded GPOS single (type 1) and pair (type 2, glyph and class) positioning, legacy-kern fallback for unmatched pairs, malformed-font tests, and an optional libFuzzer target.
+- Added an initial multiline text layout object with Unicode wrap opportunities, hard-break lines, per-line glyph positions, grapheme-boundary carets, hit testing and selection rectangles, covered by synthetic layout cases.
+- Added line-local glyph-sequence replacement, frame-owned A8 text drawing, and a headless text image example.
+- Added a mutable UTF-8 text buffer with grapheme-aware selection, deletion and navigation, default word and line movement, and bounded undo/redo operations.
+- Added focused text event handling for normalized key/text events and a borrowed selected-text view for clipboard integration.
+- Added Win32 UTF-8 plain-text clipboard transfer through `CF_UNICODETEXT`, with Windows line-ending normalization.
+- Added architecture, dependency DAG and initial tests/example.

@@ -1,0 +1,16 @@
+set(NEXAUI_EXAMPLE_FONT "" CACHE FILEPATH
+    "TrueType font for font-dependent example tests")
+
+function(nexaui_find_example_font out_var)
+    set(_font "${NEXAUI_EXAMPLE_FONT}")
+    if(NOT _font)
+        if(WIN32 AND EXISTS "$ENV{WINDIR}/Fonts/arial.ttf")
+            set(_font "$ENV{WINDIR}/Fonts/arial.ttf")
+        elseif(APPLE AND EXISTS "/System/Library/Fonts/Supplemental/Arial.ttf")
+            set(_font "/System/Library/Fonts/Supplemental/Arial.ttf")
+        elseif(EXISTS "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+            set(_font "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+        endif()
+    endif()
+    set(${out_var} "${_font}" PARENT_SCOPE)
+endfunction()

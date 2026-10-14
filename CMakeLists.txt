@@ -1,0 +1,658 @@
+cmake_minimum_required(VERSION 3.21)
+project(NexaUI VERSION 0.1.0 LANGUAGES C)
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+option(NEXAUI_BUILD_TESTS "Build NexaUI tests" ON)
+option(NEXAUI_BUILD_EXAMPLES "Build NexaUI examples" ON)
+option(NEXAUI_BUILD_BENCHMARKS "Build NexaUI benchmarks" OFF)
+option(NEXAUI_BUILD_FUZZERS "Build Clang/libFuzzer targets" OFF)
+
+add_library(nexaui src/nexaui.c src/headless.c src/renderer_backend.c src/theme.c src/color.c src/utf8.c src/grapheme.c src/word.c src/line.c src/bidi.c src/shape.c src/gsub.c src/gpos.c src/text_layout.c src/text_buffer.c src/virtual_list.c src/table.c src/tree.c src/docking.c src/search.c src/snapshot.c src/sim_channel.c src/series.c src/arena.c src/layout.c src/font.c src/glyf.c src/raster.c src/glyph_cache.c src/font_collection.c src/unicode_data.c platform/common/event_queue.c platform/common/drop_queue.c platform/common/uri_list.c)
+target_include_directories(nexaui PRIVATE platform/common)
+if(WIN32)
+    target_sources(nexaui PRIVATE platform/windows/window.c platform/windows/snapshot_lock.c)
+    target_link_libraries(nexaui PRIVATE user32 shell32 imm32)
+elseif(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    find_package(Threads REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
+    pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+    pkg_check_modules(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
+    pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
+    find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
+    set(NEXAUI_WAYLAND_PROTOCOL_DIR
+        ${CMAKE_CURRENT_BINARY_DIR}/generated/wayland)
+    set(NEXAUI_XDG_SHELL_XML
+        ${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml)
+    set(NEXAUI_TEXT_INPUT_V1_XML
+        ${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v1.xml)
+    set(NEXAUI_TEXT_INPUT_V3_XML
+        ${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v3.xml)
+    add_custom_command(
+        OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-client-protocol.h
+               ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}
+        COMMAND ${WAYLAND_SCANNER} client-header ${NEXAUI_XDG_SHELL_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-client-protocol.h
+        COMMAND ${WAYLAND_SCANNER} private-code ${NEXAUI_XDG_SHELL_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+        DEPENDS ${NEXAUI_XDG_SHELL_XML}
+        VERBATIM)
+    add_custom_command(
+        OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-client-protocol.h
+               ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}
+        COMMAND ${WAYLAND_SCANNER} client-header ${NEXAUI_TEXT_INPUT_V1_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-client-protocol.h
+        COMMAND ${WAYLAND_SCANNER} private-code ${NEXAUI_TEXT_INPUT_V1_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
+        DEPENDS ${NEXAUI_TEXT_INPUT_V1_XML}
+        VERBATIM)
+    add_custom_command(
+        OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-client-protocol.h
+               ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}
+        COMMAND ${WAYLAND_SCANNER} client-header ${NEXAUI_TEXT_INPUT_V3_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-client-protocol.h
+        COMMAND ${WAYLAND_SCANNER} private-code ${NEXAUI_TEXT_INPUT_V3_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
+        DEPENDS ${NEXAUI_TEXT_INPUT_V3_XML}
+        VERBATIM)
+    target_sources(nexaui PRIVATE platform/linux/window.c
+        platform/linux/x11/window.c platform/linux/wayland/window.c
+        platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c
+        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
+        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
+        platform/posix/snapshot_lock.c)
+    target_include_directories(nexaui PRIVATE platform/linux/x11
+        ${NEXAUI_WAYLAND_PROTOCOL_DIR})
+    target_link_libraries(nexaui PRIVATE X11::X11 Threads::Threads
+        PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
+else()
+    target_sources(nexaui PRIVATE platform/unsupported/window.c platform/posix/snapshot_lock.c)
+    find_package(Threads REQUIRED)
+    target_link_libraries(nexaui PRIVATE Threads::Threads)
+endif()
+
+if(NEXAUI_BUILD_FUZZERS)
+    if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "NEXAUI_BUILD_FUZZERS requires Clang with libFuzzer")
+    endif()
+    add_executable(nexaui_sfnt_fuzz fuzz/sfnt_fuzz.c src/font.c src/glyf.c src/raster.c src/glyph_cache.c src/font_collection.c)
+    target_include_directories(nexaui_sfnt_fuzz PRIVATE include)
+    target_compile_features(nexaui_sfnt_fuzz PRIVATE c_std_17)
+    target_compile_options(nexaui_sfnt_fuzz PRIVATE -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer)
+    target_link_options(nexaui_sfnt_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(nexaui_sfnt_fuzz PRIVATE m)
+    endif()
+    add_executable(nexaui_gsub_fuzz fuzz/gsub_fuzz.c src/font.c src/gsub.c)
+    target_include_directories(nexaui_gsub_fuzz PRIVATE include src)
+    target_compile_features(nexaui_gsub_fuzz PRIVATE c_std_17)
+    target_compile_options(nexaui_gsub_fuzz PRIVATE -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer)
+    target_link_options(nexaui_gsub_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    add_executable(nexaui_gpos_fuzz fuzz/gpos_fuzz.c src/font.c src/gpos.c)
+    target_include_directories(nexaui_gpos_fuzz PRIVATE include src)
+    target_compile_features(nexaui_gpos_fuzz PRIVATE c_std_17)
+    target_compile_options(nexaui_gpos_fuzz PRIVATE -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer)
+    target_link_options(nexaui_gpos_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    add_executable(nexaui_text_fuzz fuzz/text_fuzz.c src/utf8.c src/grapheme.c
+        src/word.c src/line.c src/text_buffer.c src/unicode_data.c)
+    target_include_directories(nexaui_text_fuzz PRIVATE include src)
+    target_compile_features(nexaui_text_fuzz PRIVATE c_std_17)
+    target_compile_options(nexaui_text_fuzz PRIVATE -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer)
+    target_link_options(nexaui_text_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    add_executable(nexaui_layout_fuzz fuzz/layout_fuzz.c src/font.c
+        src/font_collection.c src/shape.c src/gsub.c src/gpos.c src/bidi.c
+        src/grapheme.c src/word.c src/line.c src/text_layout.c src/utf8.c
+        src/unicode_data.c)
+    target_include_directories(nexaui_layout_fuzz PRIVATE include src)
+    target_compile_features(nexaui_layout_fuzz PRIVATE c_std_17)
+    target_compile_options(nexaui_layout_fuzz PRIVATE -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer)
+    target_link_options(nexaui_layout_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(nexaui_layout_fuzz PRIVATE m)
+    endif()
+endif()
+add_library(NexaUI::NexaUI ALIAS nexaui)
+target_compile_features(nexaui PUBLIC c_std_17)
+set_target_properties(nexaui PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO
+    VERSION ${PROJECT_VERSION} SOVERSION 0 EXPORT_NAME NexaUI)
+target_include_directories(nexaui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(nexaui PRIVATE m)
+endif()
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(nexaui PRIVATE NEXAUI_BUILDING_SHARED PUBLIC NEXAUI_SHARED)
+endif()
+if(MSVC)
+    target_compile_options(nexaui PRIVATE /W4)
+else()
+    target_compile_options(nexaui PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(WIN32)
+    add_library(nexaui_renderer_d3d12 STATIC renderers/d3d12/renderer.c)
+    target_include_directories(nexaui_renderer_d3d12 PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(nexaui_renderer_d3d12 PRIVATE
+        NexaUI::NexaUI d3d12 d3dcompiler dxgi dxguid)
+    target_compile_features(nexaui_renderer_d3d12 PRIVATE c_std_17)
+    if(MSVC)
+        target_compile_options(nexaui_renderer_d3d12 PRIVATE /W4)
+    endif()
+endif()
+
+include(cmake/NexaUIDependencyAudit.cmake)
+nexaui_audit_core_target(nexaui)
+
+if(NEXAUI_BUILD_TESTS)
+    enable_testing()
+    add_executable(nexaui_platform_event_queue_tests
+        tests/test_platform_event_queue.c platform/common/event_queue.c)
+    target_include_directories(nexaui_platform_event_queue_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/common)
+    target_link_libraries(nexaui_platform_event_queue_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_platform_event_queue
+        COMMAND nexaui_platform_event_queue_tests)
+    set_tests_properties(nexaui_platform_event_queue PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_platform_drop_queue_tests
+        tests/test_platform_drop_queue.c platform/common/drop_queue.c)
+    target_include_directories(nexaui_platform_drop_queue_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/common)
+    target_link_libraries(nexaui_platform_drop_queue_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_platform_drop_queue
+        COMMAND nexaui_platform_drop_queue_tests)
+    set_tests_properties(nexaui_platform_drop_queue PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_uri_list_tests tests/test_uri_list.c
+        platform/common/uri_list.c platform/common/drop_queue.c)
+    target_include_directories(nexaui_uri_list_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/common)
+    target_link_libraries(nexaui_uri_list_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_uri_list COMMAND nexaui_uri_list_tests)
+    set_tests_properties(nexaui_uri_list PROPERTIES TIMEOUT 15)
+    if(UNIX AND NOT APPLE)
+        target_compile_definitions(nexaui PRIVATE
+            NEXAUI_WAYLAND_TEST_HOOKS NEXAUI_X11_TEST_HOOKS)
+        add_executable(nexaui_wayland_cursor_tests
+            tests/test_wayland_cursor.c platform/linux/wayland/cursor.c)
+        target_include_directories(nexaui_wayland_cursor_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/wayland
+            ${CMAKE_CURRENT_SOURCE_DIR}/include)
+        add_test(NAME nexaui_wayland_cursor
+            COMMAND nexaui_wayland_cursor_tests)
+        set_tests_properties(nexaui_wayland_cursor PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_wayland_repeat_tests
+            tests/test_wayland_repeat.c platform/linux/wayland/repeat.c)
+        target_include_directories(nexaui_wayland_repeat_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/wayland)
+        add_test(NAME nexaui_wayland_repeat
+            COMMAND nexaui_wayland_repeat_tests)
+        set_tests_properties(nexaui_wayland_repeat PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_wayland_window_tests
+            tests/test_wayland_window.c)
+        target_include_directories(nexaui_wayland_window_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+        target_compile_definitions(nexaui_wayland_window_tests PRIVATE
+            NEXAUI_WAYLAND_TEST_HOOKS)
+        target_link_libraries(nexaui_wayland_window_tests PRIVATE
+            NexaUI::NexaUI X11::X11 Threads::Threads
+            PkgConfig::WAYLAND_CLIENT)
+        add_test(NAME nexaui_wayland_window
+            COMMAND nexaui_wayland_window_tests)
+        set_tests_properties(nexaui_wayland_window PROPERTIES TIMEOUT 15
+            SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        pkg_check_modules(WAYLAND_SERVER QUIET IMPORTED_TARGET wayland-server)
+        if(WAYLAND_SERVER_FOUND)
+            add_custom_command(
+                OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                       ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
+                       ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h
+                COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_XDG_SHELL_XML}
+                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_TEXT_INPUT_V3_XML}
+                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h
+                COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_TEXT_INPUT_V1_XML}
+                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
+                DEPENDS ${NEXAUI_XDG_SHELL_XML} ${NEXAUI_TEXT_INPUT_V1_XML}
+                        ${NEXAUI_TEXT_INPUT_V3_XML}
+                VERBATIM)
+            add_executable(nexaui_wayland_text_input_v1_tests
+                tests/test_wayland_text_input_v1.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h)
+            target_include_directories(nexaui_wayland_text_input_v1_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_text_input_v1_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER
+                PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_text_input_v1
+                COMMAND nexaui_wayland_text_input_v1_tests)
+            set_tests_properties(nexaui_wayland_text_input_v1 PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_text_input_v3_tests
+                tests/test_wayland_text_input_v3.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h)
+            target_include_directories(nexaui_wayland_text_input_v3_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_text_input_v3_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER
+                PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_text_input_v3
+                COMMAND nexaui_wayland_text_input_v3_tests)
+            set_tests_properties(nexaui_wayland_text_input_v3 PROPERTIES TIMEOUT 15)
+        endif()
+        add_executable(nexaui_x11_window_tests tests/test_x11_window.c)
+        target_include_directories(nexaui_x11_window_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/x11)
+        target_compile_definitions(nexaui_x11_window_tests PRIVATE
+            NEXAUI_X11_TEST_HOOKS)
+        target_link_libraries(nexaui_x11_window_tests PRIVATE
+            NexaUI::NexaUI X11::X11 Threads::Threads)
+        add_test(NAME nexaui_x11_window COMMAND nexaui_x11_window_tests)
+        set_tests_properties(nexaui_x11_window PROPERTIES TIMEOUT 15
+            SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=x11"
+            RESOURCE_LOCK native_display)
+        find_package(Python3 COMPONENTS Interpreter QUIET)
+        find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
+        find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
+        if(Python3_Interpreter_FOUND AND NEXAUI_XVFB_EXECUTABLE
+                AND NEXAUI_XAUTH_EXECUTABLE)
+            add_test(NAME nexaui_x11_private
+                COMMAND ${Python3_EXECUTABLE}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                    $<TARGET_FILE:nexaui_x11_window_tests>)
+            set_tests_properties(nexaui_x11_private PROPERTIES TIMEOUT 80
+                ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+        endif()
+    endif()
+    if(WIN32)
+        add_executable(nexaui_d3d12_smoke_tests tests/test_d3d12_smoke.c)
+        target_compile_definitions(nexaui_renderer_d3d12 PRIVATE
+            NEXAUI_D3D12_TEST_HOOKS)
+        target_compile_definitions(nexaui_d3d12_smoke_tests PRIVATE
+            NEXAUI_D3D12_TEST_HOOKS)
+        target_include_directories(nexaui_d3d12_smoke_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/d3d12
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
+            ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        target_link_libraries(nexaui_d3d12_smoke_tests PRIVATE
+            NexaUI::NexaUI nexaui_renderer_d3d12)
+        add_test(NAME nexaui_d3d12_smoke COMMAND nexaui_d3d12_smoke_tests)
+        set_tests_properties(nexaui_d3d12_smoke PROPERTIES TIMEOUT 30)
+        add_executable(nexaui_d3d12_widget_tests tests/test_d3d12_widgets.c)
+        target_compile_definitions(nexaui_d3d12_widget_tests PRIVATE
+            NEXAUI_D3D12_TEST_HOOKS)
+        target_include_directories(nexaui_d3d12_widget_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/d3d12
+            ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        target_link_libraries(nexaui_d3d12_widget_tests PRIVATE
+            NexaUI::NexaUI nexaui_renderer_d3d12)
+        add_test(NAME nexaui_d3d12_widgets COMMAND nexaui_d3d12_widget_tests)
+        set_tests_properties(nexaui_d3d12_widgets PROPERTIES TIMEOUT 30)
+    endif()
+    add_executable(nexaui_renderer_backend_tests
+        tests/test_renderer_backend.c src/renderer_backend.c)
+    target_compile_definitions(nexaui_renderer_backend_tests PRIVATE
+        NEXAUI_RENDER_INTERNAL_IMPL)
+    target_include_directories(nexaui_renderer_backend_tests PRIVATE src)
+    target_link_libraries(nexaui_renderer_backend_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_renderer_backend COMMAND nexaui_renderer_backend_tests)
+    set_tests_properties(nexaui_renderer_backend PROPERTIES TIMEOUT 15)
+    add_test(NAME nexaui_dependency_audit
+        COMMAND ${CMAKE_COMMAND}
+            -DNEXAUI_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -DNEXAUI_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
+            -DNEXAUI_GENERATOR=${CMAKE_GENERATOR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/dependency_audit/verify.cmake)
+    set_tests_properties(nexaui_dependency_audit PROPERTIES TIMEOUT 60)
+    add_executable(nexaui_snapshot_tests tests/test_snapshot.c)
+    target_link_libraries(nexaui_snapshot_tests PRIVATE NexaUI::NexaUI)
+    if(NOT WIN32)
+        target_link_libraries(nexaui_snapshot_tests PRIVATE Threads::Threads)
+    endif()
+    add_test(NAME nexaui_snapshot COMMAND nexaui_snapshot_tests)
+    set_tests_properties(nexaui_snapshot PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_sim_channel_tests tests/test_sim_channel.c)
+    target_link_libraries(nexaui_sim_channel_tests PRIVATE NexaUI::NexaUI)
+    if(NOT WIN32)
+        target_link_libraries(nexaui_sim_channel_tests PRIVATE Threads::Threads)
+    endif()
+    add_test(NAME nexaui_sim_channel COMMAND nexaui_sim_channel_tests)
+    set_tests_properties(nexaui_sim_channel PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_series_tests tests/test_series.c)
+    target_link_libraries(nexaui_series_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_series COMMAND nexaui_series_tests)
+    set_tests_properties(nexaui_series PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_plot_tests tests/test_plot.c)
+    target_link_libraries(nexaui_plot_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_plot_tests PRIVATE
+        NEXAUI_PLOT_BASELINE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/baselines")
+    add_test(NAME nexaui_plot COMMAND nexaui_plot_tests)
+    set_tests_properties(nexaui_plot PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_telemetry_tests tests/test_telemetry.c)
+    target_link_libraries(nexaui_telemetry_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_telemetry_tests PRIVATE
+        NEXAUI_TELEMETRY_BASELINE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/baselines")
+    add_test(NAME nexaui_telemetry COMMAND nexaui_telemetry_tests)
+    set_tests_properties(nexaui_telemetry PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_property_tests tests/test_property.c)
+    target_link_libraries(nexaui_property_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_property COMMAND nexaui_property_tests)
+    set_tests_properties(nexaui_property PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_viewport_tests tests/test_viewport.c)
+    target_link_libraries(nexaui_viewport_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_viewport COMMAND nexaui_viewport_tests)
+    set_tests_properties(nexaui_viewport PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_tests tests/test_nexaui.c)
+    target_link_libraries(nexaui_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_core COMMAND nexaui_tests)
+    set_tests_properties(nexaui_core PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_layout_tests tests/test_layout.c)
+    target_link_libraries(nexaui_layout_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_layout COMMAND nexaui_layout_tests)
+    set_tests_properties(nexaui_layout PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_docking_tests tests/test_docking.c)
+    target_link_libraries(nexaui_docking_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_docking COMMAND nexaui_docking_tests)
+    set_tests_properties(nexaui_docking PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_theme_tests tests/test_theme.c)
+    target_link_libraries(nexaui_theme_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_theme COMMAND nexaui_theme_tests)
+    set_tests_properties(nexaui_theme PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_color_tests tests/test_color.c)
+    target_link_libraries(nexaui_color_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_color COMMAND nexaui_color_tests)
+    set_tests_properties(nexaui_color PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_animation_tests tests/test_animation.c)
+    target_link_libraries(nexaui_animation_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_animation COMMAND nexaui_animation_tests)
+    set_tests_properties(nexaui_animation PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_widget_tests tests/test_widget.c)
+    target_link_libraries(nexaui_widget_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_widget COMMAND nexaui_widget_tests)
+    set_tests_properties(nexaui_widget PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_display_widget_tests tests/test_display_widgets.c)
+    target_link_libraries(nexaui_display_widget_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_display_widget COMMAND nexaui_display_widget_tests)
+    set_tests_properties(nexaui_display_widget PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_control_tests tests/test_controls.c)
+    target_link_libraries(nexaui_control_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_controls COMMAND nexaui_control_tests)
+    set_tests_properties(nexaui_controls PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_visual_regression_tests tests/test_visual_regression.c)
+    target_link_libraries(nexaui_visual_regression_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_visual_regression_tests PRIVATE
+        NEXAUI_VISUAL_BASELINE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/baselines")
+    add_test(NAME nexaui_visual_regression COMMAND nexaui_visual_regression_tests)
+    set_tests_properties(nexaui_visual_regression PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_container_tests tests/test_containers.c)
+    target_link_libraries(nexaui_container_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_containers COMMAND nexaui_container_tests)
+    set_tests_properties(nexaui_containers PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_scroll_virtual_tests tests/test_scroll_virtual.c)
+    target_link_libraries(nexaui_scroll_virtual_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_scroll_virtual COMMAND nexaui_scroll_virtual_tests)
+    set_tests_properties(nexaui_scroll_virtual PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_table_tests tests/test_table.c)
+    target_link_libraries(nexaui_table_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_table COMMAND nexaui_table_tests)
+    set_tests_properties(nexaui_table PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_tree_tests tests/test_tree.c)
+    target_link_libraries(nexaui_tree_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_tree COMMAND nexaui_tree_tests)
+    set_tests_properties(nexaui_tree PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_overlay_tests tests/test_overlay.c)
+    target_link_libraries(nexaui_overlay_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_overlay COMMAND nexaui_overlay_tests)
+    set_tests_properties(nexaui_overlay PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_menu_tests tests/test_menu.c)
+    target_link_libraries(nexaui_menu_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_menu COMMAND nexaui_menu_tests)
+    set_tests_properties(nexaui_menu PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_search_tests tests/test_search.c)
+    target_link_libraries(nexaui_search_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_search COMMAND nexaui_search_tests)
+    set_tests_properties(nexaui_search PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_value_control_tests tests/test_value_controls.c)
+    target_link_libraries(nexaui_value_control_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_value_controls COMMAND nexaui_value_control_tests)
+    set_tests_properties(nexaui_value_controls PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_numeric_tests tests/test_numeric.c)
+    target_link_libraries(nexaui_numeric_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_numeric COMMAND nexaui_numeric_tests)
+    set_tests_properties(nexaui_numeric PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_numeric_field_tests tests/test_numeric_field.c)
+    target_link_libraries(nexaui_numeric_field_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_numeric_field COMMAND nexaui_numeric_field_tests)
+    set_tests_properties(nexaui_numeric_field PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_text_field_tests tests/test_text_field.c)
+    target_link_libraries(nexaui_text_field_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_text_field COMMAND nexaui_text_field_tests)
+    set_tests_properties(nexaui_text_field PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_input_tests tests/test_input.c)
+    target_link_libraries(nexaui_input_tests PRIVATE NexaUI::NexaUI)
+    if(WIN32)
+        target_link_libraries(nexaui_input_tests PRIVATE user32)
+        add_executable(nexaui_multi_window_tests tests/test_multi_window.c)
+        target_link_libraries(nexaui_multi_window_tests PRIVATE NexaUI::NexaUI user32)
+        add_test(NAME nexaui_multi_window COMMAND nexaui_multi_window_tests)
+        set_tests_properties(nexaui_multi_window PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_clipboard_tests tests/test_clipboard.c)
+        target_link_libraries(nexaui_clipboard_tests PRIVATE NexaUI::NexaUI user32)
+        add_test(NAME nexaui_clipboard COMMAND nexaui_clipboard_tests)
+        set_tests_properties(nexaui_clipboard PROPERTIES TIMEOUT 15
+            SKIP_RETURN_CODE 77)
+        add_executable(nexaui_file_drop_tests tests/test_file_drop.c)
+        target_include_directories(nexaui_file_drop_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows)
+        target_link_libraries(nexaui_file_drop_tests PRIVATE NexaUI::NexaUI
+            user32 shell32)
+        add_test(NAME nexaui_file_drop COMMAND nexaui_file_drop_tests)
+        set_tests_properties(nexaui_file_drop PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_cursor_tests tests/test_cursor.c)
+        target_link_libraries(nexaui_cursor_tests PRIVATE NexaUI::NexaUI user32)
+        add_test(NAME nexaui_cursor COMMAND nexaui_cursor_tests)
+        set_tests_properties(nexaui_cursor PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_ime_tests tests/test_ime.c)
+        target_include_directories(nexaui_ime_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows)
+        target_link_libraries(nexaui_ime_tests PRIVATE NexaUI::NexaUI
+            user32 imm32)
+        add_test(NAME nexaui_ime COMMAND nexaui_ime_tests)
+        set_tests_properties(nexaui_ime PROPERTIES TIMEOUT 15
+            SKIP_RETURN_CODE 77)
+    endif()
+    add_test(NAME nexaui_input COMMAND nexaui_input_tests)
+    set_tests_properties(nexaui_input PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_interaction_tests tests/test_interaction.c)
+    target_link_libraries(nexaui_interaction_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_interaction COMMAND nexaui_interaction_tests)
+    set_tests_properties(nexaui_interaction PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_semantics_tests tests/test_semantics.c)
+    target_link_libraries(nexaui_semantics_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_semantics COMMAND nexaui_semantics_tests)
+    set_tests_properties(nexaui_semantics PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_shapes_tests tests/test_shapes.c)
+    target_link_libraries(nexaui_shapes_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_shapes COMMAND nexaui_shapes_tests)
+    set_tests_properties(nexaui_shapes PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_bitmap_tests tests/test_bitmap.c)
+    target_link_libraries(nexaui_bitmap_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_bitmap COMMAND nexaui_bitmap_tests)
+    set_tests_properties(nexaui_bitmap PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_font_tests tests/test_font.c)
+    target_link_libraries(nexaui_font_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_font COMMAND nexaui_font_tests)
+    set_tests_properties(nexaui_font PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_kern_tests tests/test_kern.c)
+    target_link_libraries(nexaui_kern_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_kern COMMAND nexaui_kern_tests)
+    set_tests_properties(nexaui_kern PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_shape_tests tests/test_shape.c)
+    target_link_libraries(nexaui_shape_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_shape COMMAND nexaui_shape_tests)
+    set_tests_properties(nexaui_shape PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_text_layout_tests tests/test_text_layout.c)
+    target_link_libraries(nexaui_text_layout_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_text_layout COMMAND nexaui_text_layout_tests)
+    set_tests_properties(nexaui_text_layout PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_text_buffer_tests tests/test_text_buffer.c)
+    target_link_libraries(nexaui_text_buffer_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_text_buffer COMMAND nexaui_text_buffer_tests)
+    set_tests_properties(nexaui_text_buffer PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_gsub_tests tests/test_gsub.c)
+    target_link_libraries(nexaui_gsub_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_gsub COMMAND nexaui_gsub_tests)
+    set_tests_properties(nexaui_gsub PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_gpos_tests tests/test_gpos.c)
+    target_link_libraries(nexaui_gpos_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_gpos COMMAND nexaui_gpos_tests)
+    set_tests_properties(nexaui_gpos PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_cmap_tests tests/test_cmap.c)
+    target_link_libraries(nexaui_cmap_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_cmap COMMAND nexaui_cmap_tests)
+    set_tests_properties(nexaui_cmap PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_glyf_tests tests/test_glyf.c)
+    target_link_libraries(nexaui_glyf_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_glyf COMMAND nexaui_glyf_tests)
+    set_tests_properties(nexaui_glyf PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_raster_tests tests/test_raster.c)
+    target_link_libraries(nexaui_raster_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_raster COMMAND nexaui_raster_tests)
+    set_tests_properties(nexaui_raster PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_glyph_cache_tests tests/test_glyph_cache.c)
+    target_link_libraries(nexaui_glyph_cache_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_glyph_cache COMMAND nexaui_glyph_cache_tests)
+    set_tests_properties(nexaui_glyph_cache PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_font_collection_tests tests/test_font_collection.c)
+    target_link_libraries(nexaui_font_collection_tests PRIVATE NexaUI::NexaUI)
+    add_test(NAME nexaui_font_collection COMMAND nexaui_font_collection_tests)
+    set_tests_properties(nexaui_font_collection PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_unicode_data_tests tests/test_unicode_data.c src/unicode_data.c)
+    target_include_directories(nexaui_unicode_data_tests PRIVATE src)
+    target_compile_features(nexaui_unicode_data_tests PRIVATE c_std_17)
+    add_test(NAME nexaui_unicode_data COMMAND nexaui_unicode_data_tests)
+    set_tests_properties(nexaui_unicode_data PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_grapheme_tests tests/test_grapheme.c)
+    target_link_libraries(nexaui_grapheme_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_grapheme_tests PRIVATE
+        NEXAUI_GRAPHEME_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/auxiliary/GraphemeBreakTest.txt")
+    add_test(NAME nexaui_grapheme COMMAND nexaui_grapheme_tests)
+    set_tests_properties(nexaui_grapheme PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_word_tests tests/test_word.c)
+    target_link_libraries(nexaui_word_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_word_tests PRIVATE
+        NEXAUI_WORD_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/auxiliary/WordBreakTest.txt")
+    add_test(NAME nexaui_word COMMAND nexaui_word_tests)
+    set_tests_properties(nexaui_word PROPERTIES TIMEOUT 15)
+    add_executable(nexaui_line_tests tests/test_line.c)
+    target_link_libraries(nexaui_line_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_line_tests PRIVATE
+        NEXAUI_LINE_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/auxiliary/LineBreakTest.txt")
+    add_test(NAME nexaui_line COMMAND nexaui_line_tests)
+    set_tests_properties(nexaui_line PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_bidi_tests tests/test_bidi.c)
+    target_link_libraries(nexaui_bidi_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_bidi_tests PRIVATE
+        NEXAUI_BIDI_CHARACTER_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/BidiCharacterTest.txt")
+    add_test(NAME nexaui_bidi COMMAND nexaui_bidi_tests)
+    set_tests_properties(nexaui_bidi PROPERTIES TIMEOUT 60)
+    add_executable(nexaui_bidi_type_tests tests/test_bidi_types.c)
+    target_link_libraries(nexaui_bidi_type_tests PRIVATE NexaUI::NexaUI)
+    target_compile_definitions(nexaui_bidi_type_tests PRIVATE
+        NEXAUI_BIDI_TYPE_TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/unicode/18.0.0/BidiTest.txt")
+    add_test(NAME nexaui_bidi_types COMMAND nexaui_bidi_type_tests)
+    set_tests_properties(nexaui_bidi_types PROPERTIES TIMEOUT 90)
+endif()
+
+if(NEXAUI_BUILD_EXAMPLES)
+    add_subdirectory(examples/00_headless)
+    add_subdirectory(examples/02_layout_headless)
+    add_subdirectory(examples/03_layout)
+    add_subdirectory(examples/04_forms)
+    add_subdirectory(examples/03_interactive_region)
+    add_subdirectory(examples/04_font_inspect)
+    add_subdirectory(examples/05_scroll)
+    add_subdirectory(examples/06_tables)
+    add_subdirectory(examples/05_glyph_raster)
+    add_subdirectory(examples/06_font_fallback)
+    add_subdirectory(examples/07_text_headless)
+    add_subdirectory(examples/07_text_editing)
+    add_subdirectory(examples/08_themes)
+    add_subdirectory(examples/09_custom_widget)
+    add_subdirectory(examples/09_inspector_headless)
+    add_subdirectory(examples/10_docking_editor)
+    add_subdirectory(examples/12_accessibility)
+    add_subdirectory(examples/13_realtime_plot)
+    add_subdirectory(examples/14_simulation_dashboard)
+    add_subdirectory(examples/15_3d_viewport_shell)
+    if(WIN32 OR (UNIX AND NOT APPLE))
+        add_subdirectory(examples/00_hello_window)
+    endif()
+    if(WIN32)
+        add_subdirectory(examples/01_hello_window)
+        add_subdirectory(examples/01_hello_ui)
+        add_subdirectory(examples/02_buttons_and_input)
+        add_subdirectory(examples/showcase)
+        add_subdirectory(examples/10_native_clear)
+        add_subdirectory(examples/11_multi_window)
+    endif()
+endif()
+
+if(NEXAUI_BUILD_BENCHMARKS)
+    add_executable(nexaui_text_stress_bench benchmarks/text_stress_bench.c)
+    target_link_libraries(nexaui_text_stress_bench PRIVATE NexaUI::NexaUI)
+    add_executable(nexaui_layout_bench benchmarks/layout_bench.c)
+    target_link_libraries(nexaui_layout_bench PRIVATE NexaUI::NexaUI)
+    add_executable(nexaui_interaction_bench benchmarks/interaction_bench.c)
+    target_link_libraries(nexaui_interaction_bench PRIVATE NexaUI::NexaUI)
+    add_executable(nexaui_series_bench benchmarks/series_bench.c)
+    target_link_libraries(nexaui_series_bench PRIVATE NexaUI::NexaUI)
+    if(WIN32)
+        add_executable(nexaui_d3d12_bench benchmarks/d3d12_bench.c)
+        target_include_directories(nexaui_d3d12_bench PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/d3d12
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
+            ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        target_link_libraries(nexaui_d3d12_bench PRIVATE
+            NexaUI::NexaUI nexaui_renderer_d3d12)
+    endif()
+endif()
+
+install(TARGETS nexaui EXPORT NexaUITargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY include/nexaui DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES data/unicode/18.0.0/license.txt
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/NexaUI RENAME UNICODE-LICENSE.txt)
+install(EXPORT NexaUITargets NAMESPACE NexaUI:: FILE NexaUITargets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NexaUI)
+configure_package_config_file(cmake/NexaUIConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/NexaUIConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NexaUI)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/NexaUIConfigVersion.cmake
+    VERSION ${PROJECT_VERSION} COMPATIBILITY SameMinorVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/NexaUIConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/NexaUIConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NexaUI)

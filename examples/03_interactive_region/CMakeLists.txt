@@ -1,0 +1,2 @@
+add_executable(nexaui_interactive_region main.c)
+target_link_libraries(nexaui_interactive_region PRIVATE NexaUI::NexaUI)

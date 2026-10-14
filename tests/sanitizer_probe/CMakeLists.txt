@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.21)
+project(NexaUIAsanProbe LANGUAGES C)
+
+add_executable(asan_probe heap_overflow.c)
+target_compile_features(asan_probe PRIVATE c_std_17)
+if(MSVC)
+    target_compile_options(asan_probe PRIVATE /fsanitize=address /Zi)
+    target_link_options(asan_probe PRIVATE /INCREMENTAL:NO)
+else()
+    target_compile_options(asan_probe PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+    target_link_options(asan_probe PRIVATE -fsanitize=address)
+endif()
