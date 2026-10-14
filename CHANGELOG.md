@@ -2,6 +2,8 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Fixed parallel Linux builds racing over the shared Wayland test protocol headers by giving their generator one common dependency target.
+- Added the private Linux Vulkan device bootstrap: bounded device/extension enumeration, graphics-queue selection, hardware preference with CPU fallback, owner-thread checks, exact-size allocator failure coverage and native command-buffer/fence tests. Vulkan surfaces and presentation remain pending.
 - Added optional manual Windows ASan and five-target Clang fuzz CI jobs, an isolated campaign runner with failure/timeout tests, and actual MSVC static/shared sanitizer evidence with deliberate overflow counterexamples.
 - Added a reproducible text-layout fuzz campaign and fixed valid U+001C–U+001E bidi paragraph separators causing layout creation to fail; a regression covers all three controls.
 - Added reproducible SFNT and multilingual text fuzz seeds, a UTF-8/boundary/edit fuzzer, and a dated 40,000-input sanitizer campaign with script-presence and text-edit stress reports.

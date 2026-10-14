@@ -158,11 +158,51 @@ if(WIN32)
     endif()
 endif()
 
+if(UNIX AND NOT APPLE)
+    option(NEXAUI_BUILD_VULKAN "Build the private Linux Vulkan backend" ON)
+    if(NEXAUI_BUILD_VULKAN)
+        find_package(Vulkan REQUIRED)
+        add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c)
+        target_include_directories(nexaui_renderer_vulkan PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include)
+        target_link_libraries(nexaui_renderer_vulkan PRIVATE
+            Vulkan::Vulkan Threads::Threads)
+        set_target_properties(nexaui_renderer_vulkan PROPERTIES
+            C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+        target_compile_options(nexaui_renderer_vulkan PRIVATE
+            -Wall -Wextra -Wpedantic)
+    endif()
+endif()
+
 include(cmake/NexaUIDependencyAudit.cmake)
 nexaui_audit_core_target(nexaui)
 
 if(NEXAUI_BUILD_TESTS)
     enable_testing()
+    if(TARGET nexaui_renderer_vulkan)
+        target_compile_definitions(nexaui_renderer_vulkan PRIVATE
+            NEXAUI_VULKAN_TEST_HOOKS)
+        foreach(_vk_test device native)
+            add_executable(nexaui_vulkan_${_vk_test}_tests
+                tests/test_vulkan_${_vk_test}.c)
+            target_include_directories(nexaui_vulkan_${_vk_test}_tests PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+                ${CMAKE_CURRENT_SOURCE_DIR}/renderers/vulkan)
+            target_compile_definitions(nexaui_vulkan_${_vk_test}_tests PRIVATE
+                NEXAUI_VULKAN_TEST_HOOKS)
+            target_compile_options(nexaui_vulkan_${_vk_test}_tests PRIVATE
+                -Wall -Wextra -Wpedantic)
+            set_target_properties(nexaui_vulkan_${_vk_test}_tests PROPERTIES
+                C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            target_link_libraries(nexaui_vulkan_${_vk_test}_tests PRIVATE
+                nexaui_renderer_vulkan Vulkan::Vulkan Threads::Threads)
+            add_test(NAME nexaui_vulkan_${_vk_test}
+                COMMAND nexaui_vulkan_${_vk_test}_tests)
+            set_tests_properties(nexaui_vulkan_${_vk_test} PROPERTIES TIMEOUT 30)
+        endforeach()
+        set_tests_properties(nexaui_vulkan_native PROPERTIES SKIP_RETURN_CODE 77
+            FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
+    endif()
     add_executable(nexaui_platform_event_queue_tests
         tests/test_platform_event_queue.c platform/common/event_queue.c)
     target_include_directories(nexaui_platform_event_queue_tests PRIVATE
@@ -223,6 +263,8 @@ if(NEXAUI_BUILD_TESTS)
                 OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}
                 COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_XDG_SHELL_XML}
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
                 COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_TEXT_INPUT_V3_XML}
@@ -232,12 +274,18 @@ if(NEXAUI_BUILD_TESTS)
                 DEPENDS ${NEXAUI_XDG_SHELL_XML} ${NEXAUI_TEXT_INPUT_V1_XML}
                         ${NEXAUI_TEXT_INPUT_V3_XML}
                 VERBATIM)
+            # One producer owns shared outputs. Independent test targets must
+            # not race to run the same scanner command in a parallel build.
+            add_custom_target(nexaui_wayland_test_protocols DEPENDS
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h)
             add_executable(nexaui_wayland_text_input_v1_tests
                 tests/test_wayland_text_input_v1.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h)
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c)
+            add_dependencies(nexaui_wayland_text_input_v1_tests
+                nexaui_wayland_test_protocols)
             target_include_directories(nexaui_wayland_text_input_v1_tests PRIVATE
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
             target_link_libraries(nexaui_wayland_text_input_v1_tests PRIVATE
@@ -249,9 +297,9 @@ if(NEXAUI_BUILD_TESTS)
             add_executable(nexaui_wayland_text_input_v3_tests
                 tests/test_wayland_text_input_v3.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
-                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h)
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_text_input_v3_tests
+                nexaui_wayland_test_protocols)
             target_include_directories(nexaui_wayland_text_input_v3_tests PRIVATE
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
             target_link_libraries(nexaui_wayland_text_input_v3_tests PRIVATE

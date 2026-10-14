@@ -22,3 +22,9 @@ Review source additions and packaged artifacts as part of release acceptance.
 Build tools, test scripts and pinned Unicode data are outside the core runtime
 link boundary; their origins and licenses are tracked separately in the
 repository.
+
+The private Linux `nexaui_renderer_vulkan` target links the system
+`Vulkan::Vulkan` loader and `Threads::Threads`. Vulkan types stay in that
+backend, and neither the core target nor its installed package requires the
+Vulkan loader. See the [bootstrap contract](vulkan.md) for build options and
+current implementation limits.

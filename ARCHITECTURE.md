@@ -1,5 +1,12 @@
 # Architecture
 
+The Linux Vulkan renderer starts with a separate private device-bootstrap
+target, `nexaui_renderer_vulkan`. It owns its instance, selected adapter and
+graphics queue without adding Vulkan to the core or installed package. Its
+current selection, allocator and owner-thread rules are documented in
+[the Vulkan contract](docs/concepts/vulkan.md). Wayland/X11 surfaces, swap
+chains and command rendering remain separate V02–V09 work.
+
 NexaUI exposes a C17 ABI. Each `nx_context` owns its frame command buffer, hierarchical ID scope, allocator, and counters. No context state is global. A context is mutated by one UI thread at a time; callers may own different contexts on different threads. Command pointers returned by `nx_frame_commands` are borrowed and remain valid until the next `nx_begin_frame` or context destruction. The caller must finish any renderer use before either action.
 
 ```text

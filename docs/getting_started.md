@@ -1,6 +1,10 @@
 # Getting started
 
-Build with CMake and run the tests:
+Build with CMake and run the tests. Linux additionally needs Vulkan headers
+and the system loader (`libvulkan-dev` on Debian/Ubuntu) for the default
+private backend target. It can be disabled with `-DNEXAUI_BUILD_VULKAN=OFF`.
+See the [Vulkan bootstrap guide](concepts/vulkan.md) for driver and validation
+layer setup.
 
 ```sh
 cmake -S . -B build

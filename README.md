@@ -35,7 +35,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 ### Known limitations
 
-- Native macOS windows, additional GPU backends and direct GPU texture import are pending. The D3D12 driver is currently private to the build tree, with incomplete shape coverage.
+- Native macOS windows, Metal, Vulkan presentation and direct GPU texture import are pending. The D3D12 driver is currently private to the build tree. Linux has an initial [Vulkan device bootstrap](docs/concepts/vulkan.md).
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
@@ -46,13 +46,13 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 - A C17 compiler and **CMake 3.21 or newer**.
 - The platform SDK and a CMake build tool, such as Visual Studio/MSBuild, Ninja or Make.
-- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner` and `pkg-config`.
+- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner`, `pkg-config`, and Vulkan headers/loader for the private backend (disable with `-DNEXAUI_BUILD_VULKAN=OFF`).
 - Python 3 for Unicode table verification and Python-based development checks. The generated tables and their source data are already included.
 
 For Debian/Ubuntu, install the native build dependencies with:
 
 ```sh
-sudo apt-get install build-essential cmake pkg-config libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols
+sudo apt-get install build-essential cmake pkg-config libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols libvulkan-dev mesa-vulkan-drivers
 ```
 
 ### Build and test
@@ -158,6 +158,7 @@ Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`
 | `NEXAUI_BUILD_EXAMPLES` | `ON` | Build example applications |
 | `NEXAUI_BUILD_BENCHMARKS` | `OFF` | Build benchmarks |
 | `NEXAUI_BUILD_FUZZERS` | `OFF` | Build Clang/libFuzzer targets |
+| `NEXAUI_BUILD_VULKAN` (Linux) | `ON` | Build the private Vulkan device backend |
 
 ## Documentation
 
@@ -166,7 +167,7 @@ Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`
 | API and architecture | [Public C header](include/nexaui/nexaui.h) · [Core API](docs/api/core.md) · [Architecture](ARCHITECTURE.md) · [Threading](docs/concepts/threading.md) |
 | UI composition | [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md) · [Themes](docs/concepts/themes.md) · [Animation](docs/concepts/animation.md) |
 | Text and interaction | [Text](docs/concepts/text.md) · [Input](docs/concepts/input.md) · [Focus](docs/concepts/focus.md) · [Accessibility](docs/concepts/accessibility.md) |
-| Rendering | [Commands and software output](docs/concepts/rendering.md) · [Backend contract](docs/concepts/renderer-backend.md) · [D3D12](docs/concepts/d3d12.md) |
+| Rendering | [Commands and software output](docs/concepts/rendering.md) · [Backend contract](docs/concepts/renderer-backend.md) · [D3D12](docs/concepts/d3d12.md) · [Vulkan bootstrap](docs/concepts/vulkan.md) |
 | Simulation and tools | [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md) · [Time series](docs/concepts/series.md) · [Plotting](docs/concepts/plotting.md) · [Telemetry](docs/concepts/telemetry.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md) |
 | Quality and dependencies | [Visual baselines](tests/baselines/README.md) · [Sanitizers](docs/quality/sanitizers.md) · [Fuzzing](fuzz/README.md) · [Benchmarks](benchmarks/README.md) · [Dependency boundary](docs/concepts/dependencies.md) · [Unicode data](data/unicode/18.0.0/README.md) |
 | Project direction | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Decisions](DECISIONS.md) · [Full requirements](MASTER.md) |

@@ -1,5 +1,33 @@
 # Decisions
 
+## 2026-10-14 — Bootstrap Vulkan outside the core library
+
+V01 creates a Vulkan 1.0 instance and selects a graphics-capable adapter in a
+private Linux target. It enables `VK_KHR_surface` before the swapchain device
+extension, while requiring no display connection. Hardware is preferred over
+CPU adapters; failed logical-device creation can fall back, but allocation
+failures stop immediately. Driver lists are capped and retried finitely.
+NexaUI allocations use caller-provided allocation/deallocation pairs with
+their original byte sizes, including when enumeration shrinks.
+
+Dispatch is immutable and copied per object, allowing deterministic failure
+tests without a process-wide production override. The creating thread owns
+every operation and borrowed native handle. No Vulkan types or links enter
+the public C API or installed core package. Linux builds can disable the
+private target with `NEXAUI_BUILD_VULKAN=OFF`.
+
+The local native test submits actual command buffers on Mesa Lavapipe under
+Khronos validation, also with Clang ASan/UBSan and leak detection enabled.
+This proves device/queue lifetime on a CPU Vulkan implementation, not window
+presentation, hardware behavior or GPU performance. V02 will select for
+surface presentation compatibility before creating swap chains; V03 owns
+in-flight resource and recovery policy. See [the contract](docs/concepts/vulkan.md).
+
+The first clean parallel Linux build also exposed two independent test
+targets claiming the same generated Wayland server headers. A single custom
+target now owns that command, and both tests depend on it, following the
+[CMake shared-output rule](https://cmake.org/cmake/help/latest/command/add_custom_command.html#example-generating-files-for-multiple-targets).
+
 ## 2026-10-14 — Receive X11 file drops through Xdnd selections
 
 The X11 target advertises Xdnd version 5, accepts a `text/uri-list` type from inline types or `XdndTypeList`, and reports a copy action with `XdndStatus`. After `XdndDrop`, it converts `XdndSelection` using the source timestamp, handles direct properties or `INCR` chunks, parses local file URIs into the shared drop queue and sends `XdndFinished` only after the transfer. The parser accepts empty, `localhost` and current-machine authorities while rejecting other hosts. A five-second deadline and 32 MiB cap bound the wait; conversion failures send a failed finish. A private Xvfb CTest case uses a separate Xlib source to exercise direct transfer, a split `INCR` stream, extended type lists, local-host URIs and rejection. The protocol sequence follows the [freedesktop Xdnd specification](https://wiki.freedesktop.org/www/Specifications/XDND/). Physical desktop file-manager drag acceptance remains unverified.
