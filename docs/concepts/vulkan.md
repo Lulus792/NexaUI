@@ -90,6 +90,9 @@ tie rule. Direct hardware triangle rasterization rounded a vertex at
 `10.50001` to a pixel center in the regression. Compensated float32 differences
 and split products also preserve small edge differences for the tested
 million-coordinate offscreen triangle; a plain float determinant lost them.
+Vulkan assigns GLSL.std.450 `Fma` the precision inherited from multiply followed
+by add, so it cannot supply a guaranteed fused product-rounding residual.
+The shader uses split products and `NoContraction` for this calculation.
 This path requires no `shaderFloat64` feature. Scaled triangle coordinates
 beyond `sqrt(FLT_MAX)/8` return `NX_ERROR_LIMIT` to keep edge products finite;
 count, NDC conversion, viewport and framebuffer limits are checked too.
@@ -372,6 +375,7 @@ Vulkan command support.
 - [Viewport precision](https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#vertexpostproc-viewport)
 - [Graphics pipeline creation and partial cleanup](https://docs.vulkan.org/spec/latest/chapters/pipelines.html#pipelines-multiple)
 - [Shader instruction semantics](https://registry.khronos.org/SPIR-V/specs/unified1/GLSL.std.450.html)
+- [Vulkan shader arithmetic precision](https://docs.vulkan.org/spec/latest/appendices/spirvenv.html#spirvenv-precision-operation)
 - [Synchronization validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/syncval_usage.md)
 
 NexaUI command rendering and hardware GPU acceptance remain open. CPU-driver

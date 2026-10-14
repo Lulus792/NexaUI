@@ -27,6 +27,9 @@ float64 shader features. An Fma-based residual did not fix cancellation on
 the tested Lavapipe driver; the split-product version did. These tests do not
 prove every hardware driver's precision or performance. The native tests
 retain both reproducers and varied fractional/scaled triangles.
+The Vulkan SPIR-V environment gives GLSL.std.450 Fma precision inherited from
+multiply followed by add, rather than a guaranteed fused residual; see
+[the precision table](https://docs.vulkan.org/spec/latest/appendices/spirvenv.html#spirvenv-precision-operation).
 
 See the [pipeline contract and validation](docs/concepts/vulkan.md#shape-pipeline),
 [Vulkan viewport precision](https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#vertexpostproc-viewport)
