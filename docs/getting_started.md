@@ -6,6 +6,11 @@ private backend target. It can be disabled with `-DNEXAUI_BUILD_VULKAN=OFF`.
 See the [Vulkan bootstrap guide](concepts/vulkan.md) for driver and validation
 layer setup.
 
+With the Vulkan target enabled, Linux also builds `nexaui_native_clear`.
+Run `NEXAUI_PLATFORM=wayland ./build/examples/10_native_clear/nexaui_native_clear`
+or choose `NEXAUI_PLATFORM=x11` for a three-second native clear/present demo.
+This initial Vulkan path does not draw UI commands yet.
+
 ```sh
 cmake -S . -B build
 cmake --build build --config Debug

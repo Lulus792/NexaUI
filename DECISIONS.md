@@ -1,5 +1,33 @@
 # Decisions
 
+## 2026-10-14 — Create Vulkan surfaces before selecting presentation queues
+
+V02 extends the private bootstrap with a surface factory called after instance
+creation and before adapter selection. Queue selection queries the actual
+surface, prefers one graphics/present family and creates both queues when
+families differ. The swapchain uses concurrent sharing for separate families.
+Surface ownership stays with the device so destruction orders logical device,
+surface and instance. Failure tests cover surface creation/support errors and
+every NexaUI allocation with the surface alive.
+
+The renderer leases a native window on its owner thread. Wayland continues
+event handling and scaling but suppresses its SHM background while leased,
+preventing platform resize handlers from replacing Vulkan content. Release
+restores the background. All native handles remain in private headers.
+
+The initial clear path uses transfer operations into UNORM swapchain images,
+FIFO presentation, one serialized command buffer and one present semaphore
+per image. Bounded acquisition/fence waits avoid reusing unfinished command
+storage. Readback compares every RGBA8 byte to headless output, while X11
+also checks the displayed window. Native tests include resize, synthetic 2×
+Wayland scaling, injected cached-target invalidation and explicit recovery.
+
+This slice retains conventional device-idle swapchain teardown. The Vulkan
+specification does not formally guarantee present completion through that
+wait in unextended Vulkan; V03 must add presentation fences and an explicit
+retirement/fallback policy before release acceptance. Hardware removal and
+hardware GPU behavior are still unverified. See [the contract and sources](docs/concepts/vulkan.md).
+
 ## 2026-10-14 — Bootstrap Vulkan outside the core library
 
 V01 creates a Vulkan 1.0 instance and selects a graphics-capable adapter in a

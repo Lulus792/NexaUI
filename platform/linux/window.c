@@ -3,6 +3,7 @@
 #include "x11/window_internal.h"
 #include "wayland/backend.h"
 #include "wayland/window_internal.h"
+#include "window_internal.h"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@ struct nx_window {
     nx_allocator allocator;
     pthread_t owner_thread;
     nx_linux_backend backend;
+    const void *renderer_owner;
     union {
         nx_x11_window *x11;
         nx_wayland_window *wayland;
@@ -71,7 +73,10 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
         else nx_x11_window_destroy(x11);
         return NX_ERROR_MEMORY;
     }
-    *window = (nx_window){allocator, pthread_self(), backend, {0}};
+    *window = (nx_window){0};
+    window->allocator = allocator;
+    window->owner_thread = pthread_self();
+    window->backend = backend;
     if (wayland) window->native.wayland = wayland;
     else window->native.x11 = x11;
     *out_window = window;
@@ -90,6 +95,29 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     return window->backend == NX_LINUX_WAYLAND ?
         nx_wayland_window_get_info(window->native.wayland, out_info) :
         nx_x11_window_get_info(window->native.x11, out_info);
+}
+
+nx_result nx_window_renderer_acquire(nx_window *window, const void *owner) {
+    if (!window || !owner) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->renderer_owner)
+        return NX_ERROR_STATE;
+    if (window->backend == NX_LINUX_WAYLAND) {
+        nx_result result = nx_wayland_window_set_external_renderer(
+            window->native.wayland, 1);
+        if (result != NX_OK) return result;
+    }
+    window->renderer_owner = owner;
+    return NX_OK;
+}
+
+nx_result nx_window_renderer_release(nx_window *window, const void *owner) {
+    if (!window || !owner) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->renderer_owner != owner)
+        return NX_ERROR_STATE;
+    window->renderer_owner = NULL;
+    return window->backend == NX_LINUX_WAYLAND
+        ? nx_wayland_window_set_external_renderer(window->native.wayland, 0)
+        : NX_OK;
 }
 
 nx_result nx_window_set_cursor(nx_window *window, nx_cursor_shape shape) {

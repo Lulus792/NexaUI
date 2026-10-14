@@ -1,4 +1,24 @@
-# Native Windows D3D12 shapes
+# Native renderer examples
+
+## Linux Vulkan clear/present
+
+The Linux `nexaui_native_clear` opens a native window for up to three seconds
+and presents a changing clear color through Vulkan. Resize it or close it
+early to exercise the renderer driver. It uses the chosen Linux window
+backend and requires a Vulkan driver supporting presentation to that surface.
+
+```sh
+NEXAUI_PLATFORM=wayland ./build/examples/10_native_clear/nexaui_native_clear
+NEXAUI_PLATFORM=x11 ./build/examples/10_native_clear/nexaui_native_clear
+```
+
+`--smoke` limits the loop to a quarter second and checks that at least one
+frame was presented. CTest registers both backend variants; an unavailable
+display skips the corresponding smoke test unless explicitly required.
+This V02 path handles empty command streams only. Shapes, images and text
+remain later Vulkan tasks; see [the Vulkan contract](../../docs/concepts/vulkan.md).
+
+## Windows D3D12 shapes
 
 Run `nexaui_native_clear` on Windows. It opens a visible Win32 window for up to
 three seconds, clears its D3D12 swap chain, draws rectangles and a

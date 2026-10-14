@@ -162,11 +162,15 @@ if(UNIX AND NOT APPLE)
     option(NEXAUI_BUILD_VULKAN "Build the private Linux Vulkan backend" ON)
     if(NEXAUI_BUILD_VULKAN)
         find_package(Vulkan REQUIRED)
-        add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c)
+        add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c
+            renderers/vulkan/renderer.c)
         target_include_directories(nexaui_renderer_vulkan PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/include)
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
         target_link_libraries(nexaui_renderer_vulkan PRIVATE
-            Vulkan::Vulkan Threads::Threads)
+            NexaUI::NexaUI Vulkan::Vulkan Threads::Threads X11::X11
+            PkgConfig::WAYLAND_CLIENT)
         set_target_properties(nexaui_renderer_vulkan PROPERTIES
             C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
         target_compile_options(nexaui_renderer_vulkan PRIVATE
@@ -202,6 +206,25 @@ if(NEXAUI_BUILD_TESTS)
         endforeach()
         set_tests_properties(nexaui_vulkan_native PROPERTIES SKIP_RETURN_CODE 77
             FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
+        add_executable(nexaui_vulkan_present_tests tests/test_vulkan_present.c)
+        target_include_directories(nexaui_vulkan_present_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/vulkan
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+        target_compile_definitions(nexaui_vulkan_present_tests PRIVATE
+            NEXAUI_VULKAN_TEST_HOOKS NEXAUI_WAYLAND_TEST_HOOKS)
+        target_compile_options(nexaui_vulkan_present_tests PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_features(nexaui_vulkan_present_tests PRIVATE c_std_17)
+        target_link_libraries(nexaui_vulkan_present_tests PRIVATE
+            nexaui_renderer_vulkan NexaUI::NexaUI X11::X11 Threads::Threads
+            PkgConfig::WAYLAND_CLIENT)
+        foreach(_vk_platform x11 wayland)
+            add_test(NAME nexaui_vulkan_${_vk_platform}_present COMMAND nexaui_vulkan_present_tests)
+            set_tests_properties(nexaui_vulkan_${_vk_platform}_present PROPERTIES
+                TIMEOUT 90 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
+                ENVIRONMENT "NEXAUI_PLATFORM=${_vk_platform}"
+                FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
+        endforeach()
     endif()
     add_executable(nexaui_platform_event_queue_tests
         tests/test_platform_event_queue.c platform/common/event_queue.c)
@@ -664,6 +687,9 @@ if(NEXAUI_BUILD_EXAMPLES)
         add_subdirectory(examples/showcase)
         add_subdirectory(examples/10_native_clear)
         add_subdirectory(examples/11_multi_window)
+    endif()
+    if(TARGET nexaui_renderer_vulkan)
+        add_subdirectory(examples/10_native_clear)
     endif()
 endif()
 

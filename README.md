@@ -9,7 +9,7 @@
 
 NexaUI brings layout, widgets, text, rendering and native window integration behind a C API. Its core uses NexaUI code and the C standard library; platform and renderer modules call operating-system and graphics APIs directly. It does not use third-party UI, windowing, layout, shaping or font libraries.
 
-Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, an initial Windows D3D12 renderer, and primitives for moving simulation snapshots and commands between worker threads and the UI.
+Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, an initial Windows D3D12 renderer, a Linux Vulkan clear/present path, and primitives for moving simulation snapshots and commands between worker threads and the UI.
 
 > **Early development — 0.1.0.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
 
@@ -17,7 +17,7 @@ Applications own their data and compose each frame through independent UI contex
 
 - **Layout and widgets.** Rows, columns, wrapping, grids, overlays and split panes; buttons, toggles, text and numeric fields, tabs, menus, popups, tables, trees, docking and searchable controls. [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md)
 - **Text and fonts.** UTF-8 editing, TrueType outlines and rasterization, glyph caching and font fallback; Unicode 18.0.0 boundaries and bidi processing, initial OpenType shaping, multiline layout, caret geometry and rich-text drawing. [Text](docs/concepts/text.md)
-- **Rendering.** Clipped drawing commands, basic shapes, RGBA8 images and A8 glyph masks; deterministic headless output and an initial D3D12 path. [Rendering](docs/concepts/rendering.md) · [D3D12](docs/concepts/d3d12.md)
+- **Rendering.** Clipped drawing commands, basic shapes, RGBA8 images and A8 glyph masks; deterministic headless output, an initial D3D12 path and Vulkan clear/present. [Rendering](docs/concepts/rendering.md) · [D3D12](docs/concepts/d3d12.md) · [Vulkan](docs/concepts/vulkan.md)
 - **Themes and interaction.** Dark, light and high-contrast presets, local theme overrides, keyboard focus, input routing, clipboard and file-drop reception, plus interruptible transitions and reduced-motion state. [Themes](docs/concepts/themes.md) · [Input](docs/concepts/input.md) · [Animation](docs/concepts/animation.md)
 - **Tooling and data views.** Virtual lists, time-series decimation, real-time plots, telemetry and profiler panels, hierarchy and property inspectors, and application-rendered viewport images. [Plotting](docs/concepts/plotting.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md)
 - **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
@@ -28,14 +28,14 @@ Applications own their data and compose each frame through independent UI contex
 | Platform | Native window and input | Rendering |
 | --- | --- | --- |
 | Windows | Win32 backend, clipboard, file drops and initial IME integration | Software renderer and initial D3D12 backend |
-| Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Headless software renderer; native GPU renderer planned |
+| Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Software renderer and Vulkan clear/present; Vulkan drawing commands planned |
 | macOS | Native backend planned | Headless software renderer |
 
 On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one.
 
 ### Known limitations
 
-- Native macOS windows, Metal, Vulkan presentation and direct GPU texture import are pending. The D3D12 driver is currently private to the build tree. Linux has an initial [Vulkan device bootstrap](docs/concepts/vulkan.md).
+- Native macOS windows, Metal, Vulkan drawing commands and direct GPU texture import are pending. Native renderer drivers are currently private to the build tree. Linux has an initial [Vulkan surface and clear/present path](docs/concepts/vulkan.md).
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
@@ -108,6 +108,7 @@ Start with a small example, then explore the parts your application needs.
 | [Text editing](examples/07_text_editing/README.md) / [Themes](examples/08_themes/README.md) | Editable text and runtime theme switching |
 | [Custom widgets](examples/09_custom_widget/README.md) | Composing drawing, input and semantics |
 | [Docking editor](examples/10_docking_editor/README.md) | Docking state, tabs and a draggable split |
+| [Native renderer](examples/10_native_clear/README.md) | D3D12 drawing on Windows and Vulkan clear/present on Linux |
 | [Multiple windows](examples/11_multi_window/README.md) | Independent Windows UI contexts and renderers |
 | [Accessibility](examples/12_accessibility/README.md) | Keyboard traversal and semantic state |
 | [Real-time plot](examples/13_realtime_plot/README.md) | A moving time window with pointer and keyboard cursors |
@@ -158,7 +159,7 @@ Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`
 | `NEXAUI_BUILD_EXAMPLES` | `ON` | Build example applications |
 | `NEXAUI_BUILD_BENCHMARKS` | `OFF` | Build benchmarks |
 | `NEXAUI_BUILD_FUZZERS` | `OFF` | Build Clang/libFuzzer targets |
-| `NEXAUI_BUILD_VULKAN` (Linux) | `ON` | Build the private Vulkan device backend |
+| `NEXAUI_BUILD_VULKAN` (Linux) | `ON` | Build the private Vulkan device and presentation backend |
 
 ## Documentation
 
@@ -167,7 +168,7 @@ Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`
 | API and architecture | [Public C header](include/nexaui/nexaui.h) · [Core API](docs/api/core.md) · [Architecture](ARCHITECTURE.md) · [Threading](docs/concepts/threading.md) |
 | UI composition | [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md) · [Themes](docs/concepts/themes.md) · [Animation](docs/concepts/animation.md) |
 | Text and interaction | [Text](docs/concepts/text.md) · [Input](docs/concepts/input.md) · [Focus](docs/concepts/focus.md) · [Accessibility](docs/concepts/accessibility.md) |
-| Rendering | [Commands and software output](docs/concepts/rendering.md) · [Backend contract](docs/concepts/renderer-backend.md) · [D3D12](docs/concepts/d3d12.md) · [Vulkan bootstrap](docs/concepts/vulkan.md) |
+| Rendering | [Commands and software output](docs/concepts/rendering.md) · [Backend contract](docs/concepts/renderer-backend.md) · [D3D12](docs/concepts/d3d12.md) · [Vulkan](docs/concepts/vulkan.md) |
 | Simulation and tools | [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md) · [Time series](docs/concepts/series.md) · [Plotting](docs/concepts/plotting.md) · [Telemetry](docs/concepts/telemetry.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md) |
 | Quality and dependencies | [Visual baselines](tests/baselines/README.md) · [Sanitizers](docs/quality/sanitizers.md) · [Fuzzing](fuzz/README.md) · [Benchmarks](benchmarks/README.md) · [Dependency boundary](docs/concepts/dependencies.md) · [Unicode data](data/unicode/18.0.0/README.md) |
 | Project direction | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Decisions](DECISIONS.md) · [Full requirements](MASTER.md) |

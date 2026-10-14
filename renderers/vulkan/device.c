@@ -19,6 +19,7 @@ typedef struct nx_vk_candidate {
     VkPhysicalDevice physical;
     VkPhysicalDeviceProperties properties;
     uint32_t queue_family;
+    uint32_t present_family;
     unsigned rank;
     int has_swapchain;
 } nx_vk_candidate;
@@ -170,16 +171,30 @@ static nx_result nx_vk_inspect(nx_vk_device *device, VkPhysicalDevice physical,
     uint32_t written = count;
     device->api.get_queues(physical, &written, queues);
     uint32_t family = UINT32_MAX;
+    uint32_t present_family = UINT32_MAX, combined = UINT32_MAX;
+    nx_result queue_result = NX_OK;
     if (written <= count)
-        for (uint32_t i = 0; i < written; ++i)
-            if (queues[i].queueCount &&
-                (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
-                family = i;
-                break;
-            }
+        for (uint32_t i = 0; i < written; ++i) {
+            if (!queues[i].queueCount) continue;
+            int graphics = (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0;
+            VkBool32 present = VK_FALSE;
+            if (device->handles.surface != VK_NULL_HANDLE) {
+                VkResult status = device->api.surface_support(physical, i,
+                    device->handles.surface, &present);
+                if (status != VK_SUCCESS) {
+                    queue_result = nx_vk_result(status);
+                    break;
+                }
+            } else present = graphics ? VK_TRUE : VK_FALSE;
+            if (graphics && family == UINT32_MAX) family = i;
+            if (present && present_family == UINT32_MAX) present_family = i;
+            if (graphics && present && combined == UINT32_MAX) combined = i;
+        }
     nx_vk_deallocate(device, queues, bytes);
+    if (queue_result != NX_OK) return queue_result;
     if (written > count) return NX_ERROR_PLATFORM;
-    if (family == UINT32_MAX) return NX_OK;
+    if (family == UINT32_MAX || present_family == UINT32_MAX) return NX_OK;
+    if (combined != UINT32_MAX) family = present_family = combined;
     int swapchain = 0;
     nx_result result = nx_vk_swapchain_support(device, physical, &swapchain);
     if (result != NX_OK) return result;
@@ -188,6 +203,7 @@ static nx_result nx_vk_inspect(nx_vk_device *device, VkPhysicalDevice physical,
     if (candidate->properties.apiVersion < VK_API_VERSION_1_0) return NX_OK;
     candidate->physical = physical;
     candidate->queue_family = family;
+    candidate->present_family = present_family;
     candidate->has_swapchain = swapchain;
     candidate->rank = nx_vk_rank(candidate->properties.deviceType);
     return NX_OK;
@@ -220,16 +236,19 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain) {
         if (!best) break;
         best->rank = 0;
         float priority = 1.0f;
-        VkDeviceQueueCreateInfo queue = {0};
-        queue.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue.queueFamilyIndex = best->queue_family;
-        queue.queueCount = 1;
-        queue.pQueuePriorities = &priority;
+        VkDeviceQueueCreateInfo queues[2] = {{0}, {0}};
+        queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queues[0].queueFamilyIndex = best->queue_family;
+        queues[0].queueCount = 1;
+        queues[0].pQueuePriorities = &priority;
+        queues[1] = queues[0];
+        queues[1].queueFamilyIndex = best->present_family;
         const char *extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         VkDeviceCreateInfo create = {0};
         create.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        create.queueCreateInfoCount = 1;
-        create.pQueueCreateInfos = &queue;
+        create.queueCreateInfoCount = best->queue_family == best->present_family
+            ? 1u : 2u;
+        create.pQueueCreateInfos = queues;
         create.enabledExtensionCount = best->has_swapchain ? 1u : 0u;
         create.ppEnabledExtensionNames = best->has_swapchain ? &extension : NULL;
         VkDevice logical = VK_NULL_HANDLE;
@@ -242,7 +261,10 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain) {
         }
         VkQueue graphics = VK_NULL_HANDLE;
         device->api.get_queue(logical, best->queue_family, 0, &graphics);
-        if (graphics == VK_NULL_HANDLE) {
+        VkQueue present = graphics;
+        if (best->present_family != best->queue_family)
+            device->api.get_queue(logical, best->present_family, 0, &present);
+        if (graphics == VK_NULL_HANDLE || present == VK_NULL_HANDLE) {
             device->api.destroy_device(logical, NULL);
             result = NX_ERROR_PLATFORM;
             continue;
@@ -251,6 +273,8 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain) {
         device->handles.logical = logical;
         device->handles.graphics_queue = graphics;
         device->handles.graphics_queue_family = best->queue_family;
+        device->handles.present_queue = present;
+        device->handles.present_queue_family = best->present_family;
         memcpy(device->info.name, best->properties.deviceName,
                sizeof(device->info.name));
         device->info.name[sizeof(device->info.name) - 1u] = 0;
@@ -261,6 +285,8 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain) {
         device->info.kind = nx_vk_kind(best->properties.deviceType);
         device->info.graphics_queue_family = best->queue_family;
         device->info.swapchain_enabled = best->has_swapchain;
+        device->info.present_queue_family = best->present_family;
+        device->info.has_surface = device->handles.surface != VK_NULL_HANDLE;
         result = NX_OK;
         break;
     }
@@ -271,11 +297,14 @@ cleanup:
 }
 
 static nx_result nx_vk_create(const nx_vk_device_desc *desc,
-                               const nx_vk_api *api, nx_vk_device **out_device) {
+    const nx_vk_api *api, const nx_vk_surface_source *source,
+    nx_vk_device **out_device) {
     if (!out_device) return NX_ERROR_ARGUMENT;
     *out_device = NULL;
     nx_vk_device_desc options = desc ? *desc : (nx_vk_device_desc){0};
     if (!nx_vk_valid_api(api) ||
+        (source && (!source->create || !api->surface_support ||
+                     !api->destroy_surface)) ||
         ((options.allocator.allocate == NULL) !=
          (options.allocator.deallocate == NULL)) ||
         options.instance_extension_count > 64u ||
@@ -318,8 +347,17 @@ static nx_result nx_vk_create(const nx_vk_device_desc *desc,
     VkResult status = device->api.create_instance(&create, NULL,
                                                   &device->handles.instance);
     nx_result result = nx_vk_result(status);
+    if (result == NX_OK && source) {
+        VkResult surface_status = source->create(source->user,
+            device->handles.instance, &device->handles.surface);
+        result = nx_vk_result(surface_status);
+        if (surface_status != VK_SUCCESS)
+            device->handles.surface = VK_NULL_HANDLE;
+        else if (device->handles.surface == VK_NULL_HANDLE)
+            result = NX_ERROR_PLATFORM;
+    }
     if (result == NX_OK)
-        result = nx_vk_select(device, options.require_swapchain != 0);
+        result = nx_vk_select(device, source || options.require_swapchain != 0);
     if (result != NX_OK) {
         /* Failed Vulkan creation leaves the output handle undefined. */
         if (status != VK_SUCCESS) device->handles.instance = VK_NULL_HANDLE;
@@ -336,9 +374,26 @@ nx_result nx_vk_device_create(const nx_vk_device_desc *desc,
         vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices,
         vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceQueueFamilyProperties,
         vkEnumerateDeviceExtensionProperties, vkCreateDevice, vkDestroyDevice,
-        vkGetDeviceQueue, vkDeviceWaitIdle
+        vkGetDeviceQueue, vkDeviceWaitIdle,
+        vkGetPhysicalDeviceSurfaceSupportKHR, vkDestroySurfaceKHR
     };
-    return nx_vk_create(desc, &api, out_device);
+    return nx_vk_create(desc, &api, NULL, out_device);
+}
+
+nx_result nx_vk_device_create_for_surface(const nx_vk_device_desc *desc,
+    const nx_vk_surface_source *source, nx_vk_device **out_device) {
+    if (!source) {
+        if (out_device) *out_device = NULL;
+        return NX_ERROR_ARGUMENT;
+    }
+    const nx_vk_api api = {
+        vkCreateInstance, vkDestroyInstance, vkEnumeratePhysicalDevices,
+        vkGetPhysicalDeviceProperties, vkGetPhysicalDeviceQueueFamilyProperties,
+        vkEnumerateDeviceExtensionProperties, vkCreateDevice, vkDestroyDevice,
+        vkGetDeviceQueue, vkDeviceWaitIdle,
+        vkGetPhysicalDeviceSurfaceSupportKHR, vkDestroySurfaceKHR
+    };
+    return nx_vk_create(desc, &api, source, out_device);
 }
 
 nx_result nx_vk_device_get_info(nx_vk_device *device,
@@ -373,6 +428,9 @@ void nx_vk_device_destroy(nx_vk_device *device) {
         (void)device->api.wait_idle(device->handles.logical);
         device->api.destroy_device(device->handles.logical, NULL);
     }
+    if (device->handles.surface != VK_NULL_HANDLE)
+        device->api.destroy_surface(device->handles.instance,
+                                    device->handles.surface, NULL);
     if (device->handles.instance != VK_NULL_HANDLE)
         device->api.destroy_instance(device->handles.instance, NULL);
     nx_allocator allocator = device->allocator;
@@ -383,6 +441,12 @@ void nx_vk_device_destroy(nx_vk_device *device) {
 nx_result nx_vk_test_device_create(const nx_vk_device_desc *desc,
                                    const nx_vk_api *api,
                                    nx_vk_device **out_device) {
-    return nx_vk_create(desc, api, out_device);
+    return nx_vk_create(desc, api, NULL, out_device);
+}
+
+nx_result nx_vk_test_surface_device_create(const nx_vk_device_desc *desc,
+    const nx_vk_api *api, const nx_vk_surface_source *source,
+    nx_vk_device **out_device) {
+    return nx_vk_create(desc, api, source, out_device);
 }
 #endif

@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added Linux Vulkan Wayland/Xlib surfaces and clear/present swapchains, actual surface-compatible graphics/present queue selection, per-image presentation semaphores, owner-thread window render leases, resize/rebuild handling, exact headless readback comparisons and a native Linux example. Vulkan drawing and presentation-fence lifetime hardening remain pending.
 - Fixed parallel Linux builds racing over the shared Wayland test protocol headers by giving their generator one common dependency target.
 - Added the private Linux Vulkan device bootstrap: bounded device/extension enumeration, graphics-queue selection, hardware preference with CPU fallback, owner-thread checks, exact-size allocator failure coverage and native command-buffer/fence tests. Vulkan surfaces and presentation remain pending.
 - Added optional manual Windows ASan and five-target Clang fuzz CI jobs, an isolated campaign runner with failure/timeout tests, and actual MSVC static/shared sanitizer evidence with deliberate overflow counterexamples.

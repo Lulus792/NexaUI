@@ -28,6 +28,9 @@ typedef struct mock_state {
     unsigned create_order[8];
     int incomplete, extensions_incomplete, shrink, huge_queues, huge_devices;
     VkResult instance_result, enumerate_result, extension_result, wait_result;
+    VkResult surface_result, surface_support_result;
+    unsigned surfaces;
+    int present_mode;
 } mock_state;
 
 static mock_state mock;
@@ -54,7 +57,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(
 static VKAPI_ATTR void VKAPI_CALL destroy_instance(
     VkInstance instance, const VkAllocationCallbacks *allocator) {
     VERIFY(instance == HANDLE(VkInstance, 100u) && !allocator);
-    VERIFY(mock.instances);
+    VERIFY(mock.instances && !mock.surfaces);
     --mock.instances;
 }
 
@@ -134,10 +137,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(
     const VkAllocationCallbacks *allocator, VkDevice *device) {
     unsigned index = adapter_index(physical);
     VERIFY(!allocator && !create->pEnabledFeatures);
-    VERIFY(create->queueCreateInfoCount == 1);
+    VERIFY(create->queueCreateInfoCount ==
+           (mock.surfaces && mock.present_mode == 1 ? 2u : 1u));
     VERIFY(create->pQueueCreateInfos[0].queueFamilyIndex == 2);
     VERIFY(create->pQueueCreateInfos[0].queueCount == 1);
     VERIFY(create->pQueueCreateInfos[0].pQueuePriorities[0] == 1.0f);
+    if (create->queueCreateInfoCount == 2)
+        VERIFY(create->pQueueCreateInfos[1].queueFamilyIndex == 0);
     VERIFY(create->enabledExtensionCount ==
            (mock.adapters[index].swapchain ? 1u : 0u));
     if (create->enabledExtensionCount)
@@ -160,7 +166,8 @@ static VKAPI_ATTR void VKAPI_CALL destroy_device(
 static VKAPI_ATTR void VKAPI_CALL get_queue(
     VkDevice device, uint32_t family, uint32_t index, VkQueue *queue) {
     unsigned adapter_id = (unsigned)(uintptr_t)device - 200u;
-    VERIFY(family == 2u && !index && adapter_id < mock.count);
+    VERIFY((family == 2u || (mock.surfaces && mock.present_mode == 1 && !family)) &&
+           !index && adapter_id < mock.count);
     *queue = mock.adapters[adapter_id].null_queue ? VK_NULL_HANDLE
         : HANDLE(VkQueue, 300u + adapter_id);
 }
@@ -170,10 +177,37 @@ static VKAPI_ATTR VkResult VKAPI_CALL wait_idle(VkDevice device) {
     return mock.wait_result;
 }
 
+static VkResult create_surface(void *user, VkInstance instance,
+                                VkSurfaceKHR *surface) {
+    VERIFY(user == &mock && instance != VK_NULL_HANDLE && mock.instances);
+    *surface = HANDLE(VkSurfaceKHR, 400u);
+    if (mock.surface_result == VK_SUCCESS) ++mock.surfaces;
+    return mock.surface_result;
+}
+
+static VKAPI_ATTR void VKAPI_CALL destroy_surface(VkInstance instance,
+    VkSurfaceKHR surface, const VkAllocationCallbacks *allocator) {
+    VERIFY(instance != VK_NULL_HANDLE && surface == HANDLE(VkSurfaceKHR, 400u));
+    VERIFY(!allocator && mock.surfaces && !mock.devices);
+    --mock.surfaces;
+}
+
+static VKAPI_ATTR VkResult VKAPI_CALL surface_support(VkPhysicalDevice physical,
+    uint32_t family, VkSurfaceKHR surface, VkBool32 *supported) {
+    unsigned index = adapter_index(physical);
+    VERIFY(surface == HANDLE(VkSurfaceKHR, 400u) && mock.surfaces);
+    *supported = VK_FALSE;
+    if (mock.present_mode == 0) *supported = family == 2 ? VK_TRUE : VK_FALSE;
+    else if (mock.present_mode == 1) *supported = !family ? VK_TRUE : VK_FALSE;
+    else if (mock.present_mode == 3)
+        *supported = !index && family == 2 ? VK_TRUE : VK_FALSE;
+    return mock.surface_support_result;
+}
+
 static const nx_vk_api api = {
     create_instance, destroy_instance, enumerate_devices, get_properties,
     get_queues, enumerate_extensions, create_device, destroy_device,
-    get_queue, wait_idle
+    get_queue, wait_idle, surface_support, destroy_surface
 };
 
 typedef struct allocation { void *pointer; size_t size; } allocation;
@@ -420,10 +454,59 @@ static int arguments_and_ownership(void) {
     return 0;
 }
 
+static int presentation_selection(void) {
+    nx_vk_surface_source source = {&mock, create_surface};
+    nx_vk_device *device = NULL;
+    nx_vk_device_info info;
+    nx_vk_handles handles;
+    for (int mode = 0; mode < 4; ++mode) {
+        reset_mock();
+        mock.present_mode = mode;
+        nx_result result = nx_vk_test_surface_device_create(NULL, &api, &source, &device);
+        if (mode == 2) {
+            CHECK(result == NX_ERROR_UNSUPPORTED && !device);
+            CHECK(!mock.instances && !mock.surfaces && !mock.devices);
+            continue;
+        }
+        CHECK(result == NX_OK);
+        CHECK(nx_vk_device_get_info(device, &info) == NX_OK);
+        CHECK(info.has_surface && info.present_queue_family == (mode == 1 ? 0u : 2u));
+        CHECK(info.device_id == (mode == 3 ? 1u : 3u));
+        CHECK(nx_vk_device_get_handles(device, &handles) == NX_OK);
+        CHECK(handles.surface != VK_NULL_HANDLE && handles.present_queue != VK_NULL_HANDLE);
+        nx_vk_device_destroy(device);
+        CHECK(!mock.instances && !mock.surfaces && !mock.devices);
+    }
+    reset_mock();
+    mock.surface_result = VK_ERROR_OUT_OF_HOST_MEMORY;
+    CHECK(nx_vk_test_surface_device_create(NULL, &api, &source, &device) == NX_ERROR_MEMORY);
+    CHECK(!device && !mock.instances && !mock.surfaces);
+    reset_mock();
+    mock.surface_support_result = VK_ERROR_SURFACE_LOST_KHR;
+    CHECK(nx_vk_test_surface_device_create(NULL, &api, &source, &device) == NX_ERROR_PLATFORM);
+    CHECK(!device && !mock.instances && !mock.surfaces);
+    reset_mock();
+    tracker track = {0};
+    nx_vk_device_desc desc = {0};
+    desc.allocator = (nx_allocator){&track, track_allocate, track_deallocate};
+    CHECK(nx_vk_test_surface_device_create(&desc, &api, &source, &device) == NX_OK);
+    size_t calls = track.calls;
+    nx_vk_device_destroy(device);
+    for (size_t fail = 1; fail <= calls; ++fail) {
+        reset_mock();
+        track = (tracker){0};
+        track.fail_at = fail;
+        CHECK(nx_vk_test_surface_device_create(&desc, &api, &source, &device) == NX_ERROR_MEMORY);
+        CHECK(!device && !track.count && !mock.instances && !mock.surfaces && !mock.devices);
+    }
+    return 0;
+}
+
 int main(void) {
     CHECK(selection() == 0);
     CHECK(enumeration_and_capabilities() == 0);
     CHECK(failures_and_allocations() == 0);
     CHECK(arguments_and_ownership() == 0);
+    CHECK(presentation_selection() == 0);
     return 0;
 }

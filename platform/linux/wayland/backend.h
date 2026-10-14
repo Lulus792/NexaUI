@@ -5,6 +5,8 @@
 #include <wayland-client.h>
 
 typedef struct nx_wayland_window nx_wayland_window;
+nx_result nx_wayland_window_set_external_renderer(nx_wayland_window *window,
+                                                  int enabled);
 
 nx_result nx_wayland_window_create(const nx_window_desc *desc,
                                    nx_wayland_window **out_window);

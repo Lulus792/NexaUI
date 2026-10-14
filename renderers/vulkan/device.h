@@ -26,6 +26,8 @@ typedef struct nx_vk_device_info {
     uint32_t graphics_queue_family;
     nx_vk_device_kind kind;
     int swapchain_enabled;
+    uint32_t present_queue_family;
+    int has_surface;
 } nx_vk_device_info;
 
 /* Private Linux Vulkan bootstrap, not an installed consumer API. No window,

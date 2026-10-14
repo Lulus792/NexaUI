@@ -135,6 +135,7 @@ struct nx_wayland_window {
     int background_width, background_height, cursor_width, cursor_height;
     int pending_width, pending_height;
     int configured, should_close, hidden, buffer_attached;
+    int external_renderer;
     int pointer_inside;
     uint32_t pointer_serial;
     nx_cursor_shape cursor_shape;
@@ -1747,6 +1748,11 @@ platform_fail:
 }
 
 static nx_result nx_wayland_attach_background(nx_wayland_window *window) {
+    if (window->external_renderer) {
+        if (wl_surface_get_version(window->surface) >= 3)
+            wl_surface_set_buffer_scale(window->surface, window->scale);
+        return NX_OK;
+    }
     nx_wayland_buffer *buffer = NULL;
     if (window->scale > INT_MAX / window->width ||
         window->scale > INT_MAX / window->height) return NX_ERROR_LIMIT;
@@ -1850,7 +1856,7 @@ static void nx_wayland_surface_configure(void *data,
         nx_platform_event_queue_push(&window->event_queue, event);
     }
     window->configured = 1;
-    if (!window->hidden && window->error == NX_OK) {
+    if (!window->hidden && !window->external_renderer && window->error == NX_OK) {
         if (resized || !window->buffer_attached)
             window->error = nx_wayland_attach_background(window);
         else wl_surface_commit(window->surface);
@@ -2049,6 +2055,17 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                  (float)window->height, (float)window->scale,
                                  window->should_close};
     return NX_OK;
+}
+
+nx_result nx_wayland_window_set_external_renderer(nx_wayland_window *window,
+                                                  int enabled) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (enabled && window->error != NX_OK) return window->error;
+    window->external_renderer = enabled != 0;
+    if (!enabled && window->configured && !window->hidden && window->error == NX_OK)
+        window->error = nx_wayland_attach_background(window);
+    return window->error;
 }
 
 nx_result nx_wayland_window_set_cursor(nx_wayland_window *window,
