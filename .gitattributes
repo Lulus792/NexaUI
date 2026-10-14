@@ -1,0 +1,5 @@
+# Unicode inputs are hashed byte-for-byte against the published files.
+# Preserve their exact bytes even when a checkout enables core.autocrlf.
+/data/unicode/** -text
+/tests/baselines/*.ppm -text
+*.png -text

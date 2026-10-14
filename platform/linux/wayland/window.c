@@ -1316,21 +1316,27 @@ static void nx_wayland_ime_v3_done(void *data,
     nx_wayland_ime_clear_pending(window);
 }
 
+#ifdef ZWP_TEXT_INPUT_V3_ACTION_SINCE_VERSION
 static void nx_wayland_ime_v3_action(void *data,
     struct zwp_text_input_v3 *input, uint32_t action, uint32_t serial) {
     (void)data; (void)input; (void)action; (void)serial;
 }
+#endif
 
+#ifdef ZWP_TEXT_INPUT_V3_LANGUAGE_SINCE_VERSION
 static void nx_wayland_ime_v3_language(void *data,
     struct zwp_text_input_v3 *input, const char *language) {
     (void)data; (void)input; (void)language;
 }
+#endif
 
+#ifdef ZWP_TEXT_INPUT_V3_PREEDIT_HINT_SINCE_VERSION
 static void nx_wayland_ime_v3_preedit_hint(void *data,
     struct zwp_text_input_v3 *input, uint32_t start,
     uint32_t end, uint32_t hint) {
     (void)data; (void)input; (void)start; (void)end; (void)hint;
 }
+#endif
 
 static const struct zwp_text_input_v3_listener nx_wayland_ime_v3_listener = {
     .enter = nx_wayland_ime_v3_enter,
@@ -1339,9 +1345,15 @@ static const struct zwp_text_input_v3_listener nx_wayland_ime_v3_listener = {
     .commit_string = nx_wayland_ime_v3_commit,
     .delete_surrounding_text = nx_wayland_ime_v3_delete_surrounding,
     .done = nx_wayland_ime_v3_done,
+#ifdef ZWP_TEXT_INPUT_V3_ACTION_SINCE_VERSION
     .action = nx_wayland_ime_v3_action,
+#endif
+#ifdef ZWP_TEXT_INPUT_V3_LANGUAGE_SINCE_VERSION
     .language = nx_wayland_ime_v3_language,
-    .preedit_hint = nx_wayland_ime_v3_preedit_hint
+#endif
+#ifdef ZWP_TEXT_INPUT_V3_PREEDIT_HINT_SINCE_VERSION
+    .preedit_hint = nx_wayland_ime_v3_preedit_hint,
+#endif
 };
 
 static void nx_wayland_ime_v3_enable(nx_wayland_window *window) {

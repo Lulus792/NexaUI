@@ -67,3 +67,25 @@ Metal, large text at 200%, physical HiDPI/4K and monitor changes, native assisti
 technologies, visible-window performance distributions and release packaging.
 The [delivery plan](nexacloud.md) retains these items. No complete three-OS native
 support is claimed by these results.
+
+## CI compatibility follow-up
+
+The [previous published CI run](https://github.com/Lulus792/NexaUI/actions/runs/38615047096)
+revealed three portability failures that local builds did not expose:
+
+- A Windows checkout with `core.autocrlf=true` changed pinned Unicode bytes.
+  A reproduced `BidiBrackets.txt` checkout hashed to `5002128b…`; preserving the
+  data with `.gitattributes` restores the expected `4b3b62e4…`. The local full
+  Unicode generator check passes without changing pinned data or hashes.
+- The older Ubuntu protocol headers omit text-input-v3's version-2 listener
+  fields. Their no-op callbacks and initializer entries now compile only when
+  the generated event macros exist. The current local protocol build and eight
+  Wayland/Vulkan-Wayland tests pass; the older Ubuntu build is checked by CI.
+- The CI Unix build had no `CMAKE_BUILD_TYPE` while installation explicitly
+  requested `Debug`, omitting its imported target location. The core matrix
+  now configures Debug consistently. A fresh local Ninja Debug install and
+  installed-package consumer configure/build/run pass. The corresponding
+  macOS CI rerun remains the macOS package verification.
+
+These are build/check compatibility fixes and do not add a native macOS window
+or full Linux scene renderer.
