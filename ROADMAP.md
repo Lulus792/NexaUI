@@ -353,3 +353,15 @@ V03 now negotiates KHR/EXT swapchain maintenance and uses per-image presentation
 V04 has an initial Vulkan 1.0 SPIR-V pipeline for opaque filled rectangles and triangles. Authored shaders and validated embedded words require no runtime compiler. Pixel-center rectangle snapping and compensated analytic triangle edges match the tested headless output, including near-center fractional vertices, large offscreen cancellation, shared edges and 1×/1.5×/2× scale. Tests exercise growing/reused vertex storage, partial pipeline and upload OOM, submission timeouts, swapchain rebuild, recovery and independent windows under X11/Wayland. The Linux native example now draws moving shapes. Strokes, rounded rectangles, lines, V05 clipping/blending, V06 textures and hardware acceptance remain open.
 
 This plan does not imply that planned APIs or native backends already exist. Keep the table updated as tasks become verified.
+
+## NexaCloud integration priority
+
+The user-provided dashboard and file-browser designs now drive the next native
+integration work. [The shared reference scene](examples/nexacloud/README.md)
+and [reusable components](docs/concepts/cloud-components.md) include Midnight
+styling, rounded cards, action variants, icons, progress and cached text stamps.
+Windows has a runnable D3D12 version with native-input tests and GPU captures;
+the shared scene also passes local Linux software-rendered workflows.
+Finish Vulkan clips/blending/shapes/bitmaps for this full scene next, then native
+Cocoa/Metal and the remaining per-OS accessibility, DPI, large-text, performance
+and release checks. [Delivery and acceptance scope](docs/nexacloud.md).

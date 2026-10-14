@@ -34,3 +34,11 @@ Context theme state is confined to its UI thread, like frame and layout state. A
 `nx_theme_selector` paints three radio choices previewing the dark, light and high-contrast presets. Click, Enter/Space, Left/Right and Home/End change a caller-owned `nx_theme_kind`; focus follows keyboard selection. Optional caller-owned fonts paint localized choice names. To apply the chosen preset, call `nx_theme_preset` and `nx_context_set_theme` **between frames**. The selector does not replace a theme during frame construction. Native assistive action dispatch and a text-based hex editor remain later work.
 
 Built-in buttons use `NX_COLOR_ACCENT_TEXT` for their label on the normal accent fill. Hovered and pressed fills use `NX_COLOR_TEXT`, and disabled buttons use `NX_COLOR_DISABLED_TEXT`. This keeps the High Contrast preset's black label legible on its yellow accent background.
+
+## Midnight preset
+
+`NX_THEME_MIDNIGHT` supplies deep blue surfaces and cyan accents for interfaces
+such as the [NexaCloud example](../../examples/nexacloud/README.md). It follows
+the same semantic token and override contract as the three original presets.
+The existing three-choice theme selector retains Dark, Light and High Contrast;
+select Midnight explicitly with `nx_theme_preset`.

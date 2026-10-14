@@ -45,6 +45,7 @@ typedef struct nx_font nx_font;
 typedef struct nx_glyph_cache nx_glyph_cache;
 typedef struct nx_font_collection nx_font_collection;
 typedef struct nx_text_layout nx_text_layout;
+typedef struct nx_text_stamp nx_text_stamp;
 typedef struct nx_text_buffer nx_text_buffer;
 typedef struct nx_numeric_field nx_numeric_field;
 typedef struct nx_text_field nx_text_field;
@@ -1053,7 +1054,8 @@ typedef enum nx_metric_token {
 typedef enum nx_theme_kind {
     NX_THEME_DARK = 1,
     NX_THEME_LIGHT = 2,
-    NX_THEME_HIGH_CONTRAST = 3
+    NX_THEME_HIGH_CONTRAST = 3,
+    NX_THEME_MIDNIGHT = 4 /* Deep blue surfaces and cyan accents. */
 } nx_theme_kind;
 
 typedef struct nx_theme {
@@ -1137,6 +1139,69 @@ typedef struct nx_container_desc {
     nx_point label_origin;
     size_t glyph_cache_bytes; /* Positive when label_layout is present. */
 } nx_container_desc;
+
+/* Portable vector icons, drawn with the same commands as other UI content.
+   No font, native symbol set or image asset is required. Bounds are logical
+   pixels; stroke_width is finite and positive. NONE appends no commands. */
+typedef enum nx_icon {
+    NX_ICON_NONE = 0, NX_ICON_CLOUD, NX_ICON_HOME, NX_ICON_FOLDER,
+    NX_ICON_TRANSFER, NX_ICON_STAR, NX_ICON_TRASH, NX_ICON_SETTINGS,
+    NX_ICON_SEARCH, NX_ICON_GRID, NX_ICON_LIST, NX_ICON_MORE,
+    NX_ICON_CHEVRON_RIGHT, NX_ICON_CHEVRON_LEFT, NX_ICON_CLOSE,
+    NX_ICON_PLUS, NX_ICON_UPLOAD, NX_ICON_DOWNLOAD, NX_ICON_LINK,
+    NX_ICON_SHARE, NX_ICON_CHECK, NX_ICON_STORAGE, NX_ICON_THERMOMETER,
+    NX_ICON_WIFI, NX_ICON_ACTIVITY, NX_ICON_IMAGE, NX_ICON_EDIT,
+    NX_ICON_INFO, NX_ICON_SUN, NX_ICON_COUNT
+} nx_icon;
+
+NX_API nx_result nx_draw_icon(nx_context *context, nx_icon icon,
+                               nx_rect bounds, float stroke_width,
+                               nx_color color);
+
+typedef struct nx_surface_style {
+    nx_color background, border;
+    float radius, border_width; /* Border lies inside bounds; zero hides it. */
+} nx_surface_style;
+
+/* Rounded surface with a matching rounded inside border. Atomic on failure. */
+NX_API nx_result nx_draw_surface(nx_context *context, nx_rect bounds,
+                                  const nx_surface_style *style);
+/* Themed rounded content surface and PANEL semantics. Children use desc.id
+   as parent_id. Does not open a scope or clip its children. */
+NX_API nx_result nx_card(nx_context *context, const nx_container_desc *desc);
+
+typedef enum nx_action_variant {
+    NX_ACTION_PRIMARY = 1, NX_ACTION_SECONDARY, NX_ACTION_QUIET,
+    NX_ACTION_NAVIGATION, NX_ACTION_TILE
+} nx_action_variant;
+
+typedef struct nx_action_desc {
+    nx_control_desc control;
+    nx_action_variant variant;
+    nx_icon icon;
+    nx_rect icon_bounds; /* Ignored for NONE; inside control.bounds otherwise. */
+    int selected; /* Caller-owned selection; does not change on activation. */
+    const nx_text_stamp *label_stamp; /* Optional cached label, instead of
+        control.label_layout; uses control.label_origin. Borrowed through rendering. */
+} nx_action_desc;
+
+/* Buttons, navigation entries and selectable tiles share pointer, keyboard,
+   disabled and focus behavior. Navigation exposes TAB/SELECT semantics; tiles
+   expose LIST_ITEM/SELECT; others BUTTON/PRESS. The accessible name is required
+   even for an icon-only action. Paint, hit region and semantics roll back on
+   failure. out_state is cleared on failure. */
+NX_API nx_result nx_action(nx_context *context, const nx_action_desc *desc,
+                            nx_interaction_state *out_state);
+
+typedef struct nx_progress_desc {
+    uint64_t id, parent_id;
+    nx_rect bounds;
+    nx_utf8_span name;
+    double value; /* Finite fraction in [0,1]. Semantic value is a percentage. */
+} nx_progress_desc;
+
+/* Read-only determinate progress, using selection and accent theme colors. */
+NX_API nx_result nx_progress(nx_context *context, const nx_progress_desc *desc);
 
 typedef struct nx_scroll_area_desc {
     uint64_t id, parent_id;
@@ -1514,6 +1579,32 @@ NX_API nx_result nx_draw_text_layout(nx_context *context,
                                      const nx_text_layout *layout,
                                      nx_point origin, nx_color tint,
                                      size_t cache_bytes);
+
+/* Rasterize a monochrome layout once into an immutable, tightly bounded A8
+   stamp. It owns its pixels and copied text; fonts/layout may be released after
+   creation. Empty/whitespace-only layouts produce an empty stamp. Creation
+   uses the existing glyph rasterizer and software compositor, with a maximum
+   16384 pixels per dimension and 4194304 ink pixels. Allocator is optional.
+   This caches one pixel phase/size: recreate after changing font size. Drawing
+   is ordinary nearest-neighbor bitmap sampling; tint is applied after glyph
+   coverage is combined, unlike per-glyph tinted compositing at overlaps. */
+NX_API nx_result nx_text_stamp_create(const nx_text_layout *layout,
+                                       size_t glyph_cache_bytes,
+                                       const nx_allocator *allocator,
+                                       nx_text_stamp **out_stamp);
+NX_API void nx_text_stamp_destroy(nx_text_stamp *stamp);
+NX_API nx_result nx_text_stamp_text(const nx_text_stamp *stamp,
+                                     nx_utf8_span *out_text);
+/* View and offset from the original layout origin; a blank stamp returns a
+   zero view. Borrowed until destroy. Keep stamps alive until rendering ends. */
+NX_API nx_result nx_text_stamp_view(const nx_text_stamp *stamp,
+                                     nx_bitmap_view *out_view,
+                                     nx_point *out_offset);
+NX_API nx_result nx_draw_text_stamp(nx_context *context, const nx_text_stamp *stamp,
+                                     nx_point origin, nx_color tint);
+NX_API nx_result nx_label_stamp(nx_context *context, uint64_t id, uint64_t parent_id,
+                                 nx_rect bounds, const nx_text_stamp *stamp,
+                                 nx_point origin, nx_color tint);
 
 #define NX_TEXT_STYLE_FOREGROUND 1u
 #define NX_TEXT_STYLE_BACKGROUND 2u

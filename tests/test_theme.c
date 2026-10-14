@@ -30,7 +30,7 @@ static int same_color(nx_color a, nx_color b) {
 }
 
 static int test_presets_and_contrast(void) {
-    for (int kind = NX_THEME_DARK; kind <= NX_THEME_HIGH_CONTRAST; ++kind) {
+    for (int kind = NX_THEME_DARK; kind <= NX_THEME_MIDNIGHT; ++kind) {
         nx_theme theme;
         CHECK(nx_theme_preset((nx_theme_kind)kind, &theme) == NX_OK);
         CHECK(theme.color_mask == (UINT64_C(1) << NX_COLOR_TOKEN_COUNT) - 1u);
@@ -39,6 +39,8 @@ static int test_presets_and_contrast(void) {
                        theme.colors[NX_COLOR_TEXT]) >= 4.5);
         CHECK(contrast(theme.colors[NX_COLOR_SURFACE],
                        theme.colors[NX_COLOR_TEXT]) >= 4.5);
+        CHECK(contrast(theme.colors[NX_COLOR_SURFACE],
+                       theme.colors[NX_COLOR_TEXT_MUTED]) >= 4.5);
         CHECK(contrast(theme.colors[NX_COLOR_ACCENT],
                        theme.colors[NX_COLOR_ACCENT_TEXT]) >= 4.5);
         CHECK(contrast(theme.colors[NX_COLOR_SELECTION],

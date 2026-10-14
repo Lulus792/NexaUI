@@ -8,7 +8,7 @@
 _Static_assert(NX_COLOR_TOKEN_COUNT < 64 && NX_METRIC_TOKEN_COUNT < 64,
                "Theme masks require fewer than 64 tokens per group");
 
-static const nx_color nx_palettes[3][NX_COLOR_TOKEN_COUNT] = {
+static const nx_color nx_palettes[4][NX_COLOR_TOKEN_COUNT] = {
     {
         NX_RGB(18, 21, 27), NX_RGB(28, 33, 41), NX_RGB(38, 44, 54),
         NX_RGB(243, 245, 248), NX_RGB(181, 190, 202), NX_RGB(84, 95, 109),
@@ -35,13 +35,23 @@ static const nx_color nx_palettes[3][NX_COLOR_TOKEN_COUNT] = {
         NX_RGB(0, 255, 255), NX_RGB(255, 112, 112), NX_RGB(130, 255, 130),
         NX_RGB(255, 235, 59), NX_RGB(255, 235, 59), NX_RGB(0, 0, 0),
         NX_RGBA(0, 0, 0, 0.0f)
+    },
+    {
+        NX_RGB(2, 15, 28), NX_RGB(4, 25, 42), NX_RGB(7, 34, 56),
+        NX_RGB(237, 244, 255), NX_RGB(169, 191, 216), NX_RGB(22, 65, 94),
+        NX_RGB(0, 195, 255), NX_RGB(0, 18, 31), NX_RGB(9, 46, 75),
+        NX_RGB(12, 61, 96), NX_RGB(13, 32, 47), NX_RGB(134, 155, 176),
+        NX_RGB(93, 222, 255), NX_RGB(255, 126, 136), NX_RGB(0, 224, 179),
+        NX_RGB(255, 207, 108), NX_RGB(5, 47, 81), NX_RGB(211, 246, 255),
+        NX_RGBA(0, 3, 12, 0.5f)
     }
 };
 
-static const float nx_metrics[3][NX_METRIC_TOKEN_COUNT] = {
+static const float nx_metrics[4][NX_METRIC_TOKEN_COUNT] = {
     {4, 8, 12, 20, 32, 1, 2, 4, 8, 14, 4, 14, 20, 0.55f},
     {4, 8, 12, 20, 32, 1, 2, 4, 8, 14, 4, 14, 20, 0.55f},
-    {4, 8, 12, 20, 36, 2, 3, 0, 0, 0, 0, 16, 23, 1.0f}
+    {4, 8, 12, 20, 36, 2, 3, 0, 0, 0, 0, 16, 23, 1.0f},
+    {4, 8, 16, 24, 44, 1, 2, 6, 10, 0, 0, 15, 22, 0.6f}
 };
 
 static int nx_valid_metric(nx_metric_token token, float value) {
@@ -66,7 +76,7 @@ static int nx_valid_theme(const nx_theme *theme) {
 }
 
 nx_result nx_theme_preset(nx_theme_kind kind, nx_theme *out_theme) {
-    if (!out_theme || kind < NX_THEME_DARK || kind > NX_THEME_HIGH_CONTRAST)
+    if (!out_theme || kind < NX_THEME_DARK || kind > NX_THEME_MIDNIGHT)
         return NX_ERROR_ARGUMENT;
     nx_theme theme = {0};
     memcpy(theme.colors, nx_palettes[kind - 1], sizeof(theme.colors));

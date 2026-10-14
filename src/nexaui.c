@@ -2200,6 +2200,350 @@ nx_result nx_group(nx_context *ctx, const nx_container_desc *desc) {
     return nx_container_run(ctx, desc, NX_ROLE_GROUP);
 }
 
+/* The icon paths use a 24-unit square. Every operation goes through ordinary
+   validated commands, so native and software renderers share their geometry. */
+typedef struct nx_icon_pen {
+    nx_context *ctx;
+    nx_rect box;
+    float stroke;
+    nx_color color;
+    nx_result result;
+} nx_icon_pen;
+
+static void nx_icon_line(nx_icon_pen *p, float x0, float y0, float x1, float y1) {
+    if (p->result != NX_OK) return;
+    nx_point a = {p->box.x + x0 * p->box.width / 24.0f,
+                  p->box.y + y0 * p->box.height / 24.0f};
+    nx_point b = {p->box.x + x1 * p->box.width / 24.0f,
+                  p->box.y + y1 * p->box.height / 24.0f};
+    p->result = nx_draw_line(p->ctx, a, b, p->stroke, p->color);
+}
+
+static void nx_icon_arc(nx_icon_pen *p, float x, float y, float rx, float ry,
+                         float start, float end) {
+    const unsigned steps = 16;
+    for (unsigned i = 0; i < steps; ++i) {
+        float a = (start + (end - start) * i / steps) * 0.01745329252f;
+        float b = (start + (end - start) * (i + 1u) / steps) * 0.01745329252f;
+        nx_icon_line(p, x + rx * cosf(a), y + ry * sinf(a),
+                       x + rx * cosf(b), y + ry * sinf(b));
+    }
+}
+
+static void nx_icon_box(nx_icon_pen *p, float x, float y, float w, float h) {
+    nx_icon_line(p, x, y, x + w, y);
+    nx_icon_line(p, x + w, y, x + w, y + h);
+    nx_icon_line(p, x + w, y + h, x, y + h);
+    nx_icon_line(p, x, y + h, x, y);
+}
+
+nx_result nx_draw_icon(nx_context *ctx, nx_icon icon, nx_rect bounds,
+                        float stroke_width, nx_color color) {
+    if (!ctx || icon < NX_ICON_NONE || icon >= NX_ICON_COUNT ||
+        !nx_valid_rect(bounds) || !isfinite(stroke_width) || stroke_width <= 0 ||
+        !nx_valid_color(color)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    size_t old_count = ctx->command_count;
+    nx_icon_pen p = {ctx, bounds, stroke_width, color, NX_OK};
+    switch (icon) {
+    case NX_ICON_NONE: break;
+    case NX_ICON_CLOUD:
+        nx_icon_arc(&p, 6, 14, 4, 4, 90, 265);
+        nx_icon_arc(&p, 11, 9, 6, 6, 180, 355);
+        nx_icon_arc(&p, 18, 14, 4, 4, 265, 450);
+        nx_icon_line(&p, 6, 18, 9, 18); nx_icon_line(&p, 15, 18, 18, 18);
+        nx_icon_line(&p, 12, 21, 12, 12);
+        nx_icon_line(&p, 9, 15, 12, 12); nx_icon_line(&p, 12, 12, 15, 15); break;
+    case NX_ICON_HOME:
+        nx_icon_line(&p, 2, 11, 12, 3); nx_icon_line(&p, 12, 3, 22, 11);
+        nx_icon_line(&p, 5, 9, 5, 21); nx_icon_line(&p, 19, 9, 19, 21);
+        nx_icon_line(&p, 5, 21, 10, 21); nx_icon_line(&p, 14, 21, 19, 21);
+        nx_icon_box(&p, 10, 14, 4, 7); break;
+    case NX_ICON_FOLDER:
+        nx_icon_line(&p, 3, 7, 3, 21); nx_icon_line(&p, 3, 21, 21, 21);
+        nx_icon_line(&p, 21, 21, 21, 7); nx_icon_line(&p, 21, 7, 11, 7);
+        nx_icon_line(&p, 11, 7, 9, 4); nx_icon_line(&p, 9, 4, 3, 4);
+        nx_icon_line(&p, 3, 4, 3, 7); nx_icon_line(&p, 3, 10, 21, 10); break;
+    case NX_ICON_UPLOAD: case NX_ICON_DOWNLOAD: case NX_ICON_TRANSFER: {
+        float y0 = icon == NX_ICON_DOWNLOAD ? 4.0f : 17.0f;
+        float y1 = icon == NX_ICON_DOWNLOAD ? 17.0f : 4.0f;
+        float wing = icon == NX_ICON_DOWNLOAD ? 12.0f : 9.0f;
+        nx_icon_line(&p, 12, y0, 12, y1);
+        nx_icon_line(&p, 7, wing, 12, y1); nx_icon_line(&p, 12, y1, 17, wing);
+        nx_icon_line(&p, 3, 17, 3, 21); nx_icon_line(&p, 3, 21, 21, 21);
+        nx_icon_line(&p, 21, 21, 21, 17); break;
+    }
+    case NX_ICON_STAR: {
+        float px = 12, py = 2;
+        for (unsigned i = 1; i <= 10; ++i) {
+            float angle = (-90.0f + i * 36.0f) * 0.01745329252f;
+            float radius = i & 1u ? 4.3f : 10.0f;
+            float x = 12 + radius * cosf(angle), y = 12 + radius * sinf(angle);
+            nx_icon_line(&p, px, py, x, y); px = x; py = y;
+        } break;
+    }
+    case NX_ICON_TRASH:
+        nx_icon_line(&p, 3, 6, 21, 6); nx_icon_box(&p, 9, 3, 6, 3);
+        nx_icon_line(&p, 6, 6, 7, 21); nx_icon_line(&p, 7, 21, 17, 21);
+        nx_icon_line(&p, 17, 21, 18, 6);
+        nx_icon_line(&p, 10, 10, 10, 17); nx_icon_line(&p, 14, 10, 14, 17); break;
+    case NX_ICON_SETTINGS:
+        nx_icon_arc(&p, 12, 12, 4, 4, 0, 360);
+        for (unsigned i = 0; i < 8; ++i) {
+            float a = (float)i * 0.7853981634f;
+            nx_icon_line(&p, 12 + 8 * cosf(a), 12 + 8 * sinf(a),
+                             12 + 10 * cosf(a), 12 + 10 * sinf(a));
+            nx_icon_arc(&p, 12, 12, 8, 8, i * 45.0f + 10, i * 45.0f + 35);
+        } break;
+    case NX_ICON_SEARCH:
+        nx_icon_arc(&p, 10, 10, 6.5f, 6.5f, 0, 360);
+        nx_icon_line(&p, 15, 15, 21, 21); break;
+    case NX_ICON_GRID:
+        for (unsigned i = 0; i < 4; ++i)
+            nx_icon_box(&p, 4 + (i % 2) * 10.0f, 4 + (i / 2) * 10.0f, 6, 6);
+        break;
+    case NX_ICON_LIST:
+        for (unsigned i = 0; i < 3; ++i) {
+            float y = 5 + i * 7.0f;
+            nx_icon_line(&p, 3, y, 4, y); nx_icon_line(&p, 8, y, 21, y);
+        } break;
+    case NX_ICON_MORE:
+        for (unsigned i = 0; i < 3; ++i)
+            nx_icon_arc(&p, 5 + i * 7.0f, 12, 0.65f, 0.65f, 0, 360);
+        break;
+    case NX_ICON_CHEVRON_RIGHT: case NX_ICON_CHEVRON_LEFT: {
+        float x = icon == NX_ICON_CHEVRON_RIGHT ? 9.0f : 15.0f;
+        nx_icon_line(&p, x, 5, 24 - x, 12);
+        nx_icon_line(&p, 24 - x, 12, x, 19); break;
+    }
+    case NX_ICON_CLOSE:
+        nx_icon_line(&p, 5, 5, 19, 19); nx_icon_line(&p, 5, 19, 19, 5); break;
+    case NX_ICON_PLUS:
+        nx_icon_line(&p, 12, 4, 12, 20); nx_icon_line(&p, 4, 12, 20, 12); break;
+    case NX_ICON_LINK:
+        nx_icon_arc(&p, 8, 16, 5, 5, 45, 280);
+        nx_icon_arc(&p, 16, 8, 5, 5, 225, 460);
+        nx_icon_line(&p, 8, 16, 16, 8); break;
+    case NX_ICON_SHARE:
+        nx_icon_line(&p, 7, 12, 17, 5); nx_icon_line(&p, 7, 12, 17, 19);
+        nx_icon_arc(&p, 5, 12, 3, 3, 0, 360);
+        nx_icon_arc(&p, 19, 4, 3, 3, 0, 360);
+        nx_icon_arc(&p, 19, 20, 3, 3, 0, 360); break;
+    case NX_ICON_CHECK:
+        nx_icon_line(&p, 4, 12, 9, 17); nx_icon_line(&p, 9, 17, 20, 6); break;
+    case NX_ICON_STORAGE:
+        nx_icon_arc(&p, 12, 5, 8, 3, 0, 360);
+        nx_icon_arc(&p, 12, 12, 8, 3, 0, 180);
+        nx_icon_arc(&p, 12, 19, 8, 3, 0, 180);
+        nx_icon_line(&p, 4, 5, 4, 19); nx_icon_line(&p, 20, 5, 20, 19); break;
+    case NX_ICON_THERMOMETER:
+        nx_icon_arc(&p, 12, 17, 5, 5, -55, 235);
+        nx_icon_line(&p, 9, 13, 9, 5); nx_icon_line(&p, 15, 13, 15, 5);
+        nx_icon_arc(&p, 12, 5, 3, 3, 180, 360);
+        nx_icon_line(&p, 12, 9, 12, 18); break;
+    case NX_ICON_WIFI:
+        nx_icon_arc(&p, 12, 22, 20, 18, 240, 300);
+        nx_icon_arc(&p, 12, 22, 13, 12, 240, 300);
+        nx_icon_arc(&p, 12, 22, 6, 6, 240, 300);
+        nx_icon_arc(&p, 12, 21, 1, 1, 0, 360); break;
+    case NX_ICON_ACTIVITY:
+        nx_icon_line(&p, 1, 13, 6, 13); nx_icon_line(&p, 6, 13, 10, 3);
+        nx_icon_line(&p, 10, 3, 14, 22); nx_icon_line(&p, 14, 22, 18, 10);
+        nx_icon_line(&p, 18, 10, 20, 13); nx_icon_line(&p, 20, 13, 23, 13); break;
+    case NX_ICON_IMAGE:
+        nx_icon_box(&p, 3, 3, 18, 18); nx_icon_arc(&p, 16, 8, 2, 2, 0, 360);
+        nx_icon_line(&p, 3, 17, 9, 10); nx_icon_line(&p, 9, 10, 15, 17);
+        nx_icon_line(&p, 15, 17, 18, 14); nx_icon_line(&p, 18, 14, 21, 18); break;
+    case NX_ICON_EDIT:
+        nx_icon_line(&p, 4, 20, 6, 14); nx_icon_line(&p, 6, 14, 17, 3);
+        nx_icon_line(&p, 17, 3, 21, 7); nx_icon_line(&p, 21, 7, 10, 18);
+        nx_icon_line(&p, 10, 18, 4, 20); nx_icon_line(&p, 14, 6, 18, 10); break;
+    case NX_ICON_INFO:
+        nx_icon_arc(&p, 12, 12, 10, 10, 0, 360);
+        nx_icon_line(&p, 12, 7, 12, 7.3f); nx_icon_line(&p, 12, 11, 12, 17); break;
+    case NX_ICON_SUN:
+        nx_icon_arc(&p, 12, 12, 5, 5, 0, 360);
+        for (unsigned i = 0; i < 8; ++i) {
+            float a = i * 0.7853981634f;
+            nx_icon_line(&p, 12 + 8 * cosf(a), 12 + 8 * sinf(a),
+                             12 + 10 * cosf(a), 12 + 10 * sinf(a));
+        } break;
+    default: return NX_ERROR_ARGUMENT;
+    }
+    if (p.result != NX_OK) ctx->command_count = old_count;
+    return p.result;
+}
+
+nx_result nx_draw_surface(nx_context *ctx, nx_rect bounds,
+                           const nx_surface_style *style) {
+    if (!ctx || !style || !nx_valid_rect(bounds) ||
+        !nx_valid_color(style->background) || !nx_valid_color(style->border) ||
+        !isfinite(style->radius) || style->radius < 0 ||
+        !isfinite(style->border_width) || style->border_width < 0)
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    size_t old_count = ctx->command_count;
+    float border = fminf(style->border_width,
+                         0.5f * fminf(bounds.width, bounds.height));
+    nx_result result = nx_fill_round_rect(ctx, bounds, style->radius,
+                                          border > 0 ? style->border : style->background);
+    if (result == NX_OK && border > 0) {
+        nx_rect inner = {bounds.x + border, bounds.y + border,
+                          bounds.width - 2 * border, bounds.height - 2 * border};
+        result = nx_fill_round_rect(ctx, inner, fmaxf(0, style->radius - border),
+                                    style->background);
+    }
+    if (result != NX_OK) ctx->command_count = old_count;
+    return result;
+}
+
+nx_result nx_card(nx_context *ctx, const nx_container_desc *desc) {
+    if (!ctx || !nx_valid_container_desc(desc)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    nx_theme *t = &ctx->theme_stack[ctx->theme_depth];
+    nx_surface_style style = {t->colors[NX_COLOR_SURFACE], t->colors[NX_COLOR_BORDER],
+        t->metrics[NX_METRIC_RADIUS_MD], t->metrics[NX_METRIC_BORDER_WIDTH]};
+    size_t old_commands = ctx->command_count, old_text = ctx->semantics.text_count;
+    nx_owned_bitmap *old_bitmap = ctx->owned_bitmaps;
+    nx_result result = nx_display_register(ctx, desc->id, desc->parent_id,
+                                           NX_ROLE_PANEL, desc->bounds, desc->name);
+    if (result != NX_OK) return result;
+    result = nx_draw_surface(ctx, desc->bounds, &style);
+    if (result == NX_OK && desc->label_layout)
+        result = nx_draw_text_layout(ctx, desc->label_layout, desc->label_origin,
+                                      t->colors[NX_COLOR_TEXT], desc->glyph_cache_bytes);
+    if (result != NX_OK) {
+        ctx->command_count = old_commands;
+        nx_free_owned_bitmaps(ctx, old_bitmap);
+        nx_semantics_rollback_last(ctx, desc->id, old_text);
+    }
+    return result;
+}
+
+nx_result nx_draw_text_stamp(nx_context *ctx, const nx_text_stamp *stamp,
+                              nx_point origin, nx_color tint) {
+    if (!ctx || !stamp || !nx_valid_point(origin) || !nx_valid_color(tint)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    nx_bitmap_view view; nx_point offset;
+    nx_result result = nx_text_stamp_view(stamp, &view, &offset);
+    if (result != NX_OK || !view.width) return result;
+    return nx_draw_bitmap(ctx, (nx_rect){origin.x + offset.x, origin.y + offset.y,
+        (float)view.width, (float)view.height}, view, tint);
+}
+
+nx_result nx_label_stamp(nx_context *ctx, uint64_t id, uint64_t parent_id,
+                          nx_rect bounds, const nx_text_stamp *stamp,
+                          nx_point origin, nx_color tint) {
+    if (!ctx || !stamp) return NX_ERROR_ARGUMENT;
+    nx_utf8_span name;
+    nx_result result = nx_text_stamp_text(stamp, &name);
+    if (result != NX_OK) return result;
+    size_t old_text = ctx->semantics.text_count;
+    result = nx_display_register(ctx, id, parent_id, NX_ROLE_TEXT, bounds, name);
+    if (result != NX_OK) return result;
+    result = nx_draw_text_stamp(ctx, stamp, origin, tint);
+    if (result != NX_OK) nx_semantics_rollback_last(ctx, id, old_text);
+    return result;
+}
+
+nx_result nx_action(nx_context *ctx, const nx_action_desc *desc,
+                     nx_interaction_state *out_state) {
+    if (!out_state) return NX_ERROR_ARGUMENT;
+    *out_state = (nx_interaction_state){0};
+    if (!ctx || !desc || !desc->control.name.length ||
+        desc->variant < NX_ACTION_PRIMARY || desc->variant > NX_ACTION_TILE ||
+        desc->icon < NX_ICON_NONE || desc->icon >= NX_ICON_COUNT ||
+        (desc->control.label_layout && (!desc->control.glyph_cache_bytes || desc->label_stamp)))
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    const nx_control_desc *c = &desc->control;
+    if (desc->icon != NX_ICON_NONE && (!nx_valid_rect(desc->icon_bounds) ||
+        desc->icon_bounds.x < c->bounds.x || desc->icon_bounds.y < c->bounds.y ||
+        (double)desc->icon_bounds.x + desc->icon_bounds.width > (double)c->bounds.x + c->bounds.width ||
+        (double)desc->icon_bounds.y + desc->icon_bounds.height > (double)c->bounds.y + c->bounds.height))
+        return NX_ERROR_ARGUMENT;
+    int selectable = desc->variant == NX_ACTION_NAVIGATION || desc->variant == NX_ACTION_TILE;
+    nx_widget_desc widget = {0};
+    widget.semantic = (nx_semantic_desc){c->id, c->parent_id,
+        desc->variant == NX_ACTION_NAVIGATION ? NX_ROLE_TAB :
+        desc->variant == NX_ACTION_TILE ? NX_ROLE_LIST_ITEM : NX_ROLE_BUTTON,
+        c->bounds, c->name, {0}, {0},
+        (c->disabled ? NX_SEM_DISABLED : 0u) | (desc->selected ? NX_SEM_SELECTED : 0u),
+        NX_ACTION_FOCUS | (selectable ? NX_ACTION_SELECT : NX_ACTION_PRESS)};
+    widget.flags = NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
+    size_t old_text = ctx->semantics.text_count, old_commands = ctx->command_count;
+    nx_owned_bitmap *old_bitmap = ctx->owned_bitmaps;
+    nx_interaction_state state;
+    nx_result result = nx_widget_register(ctx, &widget, &state);
+    if (result != NX_OK) return result;
+    nx_theme *t = &ctx->theme_stack[ctx->theme_depth];
+    nx_color foreground = t->colors[c->disabled ? NX_COLOR_DISABLED_TEXT :
+        desc->variant == NX_ACTION_PRIMARY ? NX_COLOR_ACCENT_TEXT :
+        desc->selected ? NX_COLOR_SELECTION_TEXT : NX_COLOR_TEXT];
+    nx_color background = t->colors[c->disabled ? NX_COLOR_DISABLED_BACKGROUND :
+        state.held ? NX_COLOR_PRESSED : state.hovered ? NX_COLOR_HOVER :
+        desc->selected ? NX_COLOR_SELECTION : desc->variant == NX_ACTION_PRIMARY ?
+        NX_COLOR_ACCENT : NX_COLOR_SURFACE_RAISED];
+    nx_surface_style surface = {background, t->colors[desc->selected ? NX_COLOR_ACCENT : NX_COLOR_BORDER],
+        t->metrics[NX_METRIC_RADIUS_MD], t->metrics[NX_METRIC_BORDER_WIDTH]};
+    if (state.focused) {
+        surface.border = t->colors[NX_COLOR_FOCUS];
+        surface.border_width = t->metrics[NX_METRIC_FOCUS_WIDTH];
+    }
+    int quiet = desc->variant == NX_ACTION_QUIET || desc->variant == NX_ACTION_NAVIGATION;
+    if (!quiet || state.hovered || state.held || state.focused || desc->selected)
+        result = nx_draw_surface(ctx, c->bounds, &surface);
+    if (result == NX_OK && desc->icon != NX_ICON_NONE)
+        result = nx_draw_icon(ctx, desc->icon, desc->icon_bounds,
+            fmaxf(1, fminf(desc->icon_bounds.width, desc->icon_bounds.height) / 14), foreground);
+    if (result == NX_OK && (c->label_layout || desc->label_stamp)) {
+        result = nx_push_clip(ctx, c->bounds);
+        if (result == NX_OK) {
+            result = desc->label_stamp ? nx_draw_text_stamp(ctx, desc->label_stamp, c->label_origin, foreground) :
+                nx_draw_text_layout(ctx, c->label_layout, c->label_origin, foreground, c->glyph_cache_bytes);
+            nx_result popped = nx_pop_clip(ctx);
+            if (result == NX_OK) result = popped;
+        }
+    }
+    if (result != NX_OK) {
+        ctx->command_count = old_commands;
+        nx_free_owned_bitmaps(ctx, old_bitmap);
+        nx_region_rollback_last(ctx, c->id);
+        nx_semantics_rollback_last(ctx, c->id, old_text);
+        return result;
+    }
+    *out_state = state;
+    return NX_OK;
+}
+
+nx_result nx_progress(nx_context *ctx, const nx_progress_desc *desc) {
+    if (!ctx || !desc || !desc->name.length || !nx_valid_rect(desc->bounds) ||
+        !isfinite(desc->value) || desc->value < 0 || desc->value > 1)
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    char value[16];
+    int length = snprintf(value, sizeof(value), "%.0f%%", desc->value * 100);
+    if (length <= 0 || (size_t)length >= sizeof(value)) return NX_ERROR_LIMIT;
+    nx_semantic_desc node = {desc->id, desc->parent_id, NX_ROLE_PROGRESS,
+        desc->bounds, desc->name, {0}, {value, (size_t)length}, NX_SEM_READONLY, 0};
+    size_t old_text = ctx->semantics.text_count, old_commands = ctx->command_count;
+    nx_result result = nx_semantics_add(ctx, &node, NULL);
+    if (result != NX_OK) return result;
+    nx_theme *t = &ctx->theme_stack[ctx->theme_depth];
+    float radius = desc->bounds.height * 0.5f;
+    result = nx_fill_round_rect(ctx, desc->bounds, radius, t->colors[NX_COLOR_SELECTION]);
+    if (result == NX_OK && desc->value > 0) {
+        nx_rect fill = desc->bounds;
+        fill.width *= (float)desc->value;
+        result = nx_fill_round_rect(ctx, fill, radius, t->colors[NX_COLOR_ACCENT]);
+    }
+    if (result != NX_OK) {
+        ctx->command_count = old_commands;
+        nx_semantics_rollback_last(ctx, desc->id, old_text);
+    }
+    return result;
+}
+
 nx_result nx_scroll_area_begin(nx_context *ctx,
                                 const nx_scroll_area_desc *desc,
                                 float *offset_x, float *offset_y,

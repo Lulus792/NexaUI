@@ -49,6 +49,7 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 ## Features
 
 - **Layout and widgets.** Rows, columns, wrapping, grids, overlays and split panes; buttons, toggles, text and numeric fields, tabs, menus, popups, tables, trees, docking and searchable controls. [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md)
+- **Cloud-style interfaces.** Rounded cards, navigation and file-tile actions, vector icons, progress displays, a Midnight theme and reusable cached text stamps. The [NexaCloud example](examples/nexacloud/README.md) combines them into an overview and file browser; its native runner currently targets Windows/D3D12.
 - **Text and fonts.** UTF-8 editing, TrueType outlines and rasterization, glyph caching and font fallback; Unicode 18.0.0 boundaries and bidi processing, initial OpenType shaping, multiline layout, caret geometry and rich-text drawing. [Text](docs/concepts/text.md)
 - **Rendering.** Clipped drawing commands, basic shapes, RGBA8 images and A8 glyph masks; deterministic headless output, an initial D3D12 path and initial opaque Vulkan rectangles/triangles. [Rendering](docs/concepts/rendering.md) · [D3D12](docs/concepts/d3d12.md) · [Vulkan](docs/concepts/vulkan.md)
 - **Themes and interaction.** Dark, light and high-contrast presets, local theme overrides, keyboard focus, input routing, clipboard and file-drop reception, plus interruptible transitions and reduced-motion state. [Themes](docs/concepts/themes.md) · [Input](docs/concepts/input.md) · [Animation](docs/concepts/animation.md)
@@ -156,6 +157,11 @@ Start with a small example, then explore the parts your application needs.
 | [Simulation dashboard](examples/14_simulation_dashboard/README.md) | Worker snapshots, plots, telemetry and profiling |
 | [3D viewport shell](examples/15_3d_viewport_shell/README.md) | An application-rendered cube at multiple backing scales |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
+| [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows runner |
+
+NexaCloud's overview, captured from the native Windows D3D12 back buffer:
+
+![NexaCloud dashboard rendered by NexaUI](docs/images/nexacloud-overview.png)
 
 Some examples require a local TrueType font. You can select the font used by example tests at configure time with `-DNEXAUI_EXAMPLE_FONT=/path/to/font.ttf`.
 

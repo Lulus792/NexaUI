@@ -97,3 +97,11 @@ The query field keeps keyboard focus while typing. Up/Down move the highlighted 
 The color picker and preset selector are documented with the [theme controls](themes.md#color-and-theme-controls).
 
 Menu bar items navigate among enabled siblings with Left/Right; menu items use Up/Down. Home and End move to the first or last enabled sibling, and Enter/Space activate the focused item. Tab follows the general focus order and remains inside an active popup. An ordinary item reports `nx_interaction_state.clicked`. A checkable item takes a caller-owned boolean and toggles it after successful painting, exposing `NX_SEM_CHECKED` in the same frame. Disabled items are skipped during arrow navigation. The menu test covers hierarchy, navigation, focus return, rendering and allocation-failure retry. Accelerator dispatch, submenu hover behavior and native menu bridges remain pending.
+
+## Cards and cloud-style composition
+
+See [cards, actions, icons and cached text](cloud-components.md) for reusable
+surface/card, action-variant, progress, icon and text-stamp APIs. The
+[NexaCloud reference example](../../examples/nexacloud/README.md) demonstrates
+dashboard and file-browser composition with the existing input, scroll and
+modal systems.
