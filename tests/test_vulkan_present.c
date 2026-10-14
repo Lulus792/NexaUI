@@ -126,7 +126,7 @@ static int test_driver(nx_window *window) {
                           (nx_color){0, 0, 0, 1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_SUSPENDED);
     nx_command unsupported = {0};
-    unsupported.type = NX_COMMAND_FILL_RECT;
+    unsupported.type = NX_COMMAND_FILL_ROUND_RECT;
     unsupported.rect = (nx_rect){0, 0, 10, 10};
     unsupported.color = (nx_color){1, 1, 1, 1};
     CHECK(nx_renderer_run(&driver, target, &unsupported, 1,

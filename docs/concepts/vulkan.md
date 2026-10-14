@@ -2,9 +2,10 @@
 
 The private `nexaui_renderer_vulkan` target implements V01 device selection
 and an initial V02 Wayland/X11 surface, swapchain and clear/present path, with
-V03 presentation-fence retirement and retryable teardown/recovery. It
-accepts empty command streams through the private renderer driver. Drawing
-NexaUI shapes, images and text remains V04–V06 work; batching, profiling,
+V03 presentation-fence retirement and retryable teardown/recovery, plus an
+initial V04 SPIR-V drawing pipeline for opaque filled rectangles and triangles
+through the private renderer driver. Other shapes, clipping, alpha blending,
+images and text remain V04–V06 work; batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
 ## Build boundary
@@ -61,6 +62,63 @@ Vulkan driver allocations use the driver's own callbacks. Internal borrowed
 handles remain valid only until destruction. Their resources and external
 submissions must be retired by the caller.
 
+## Shape pipeline
+
+`nx_vulkan_render` accepts logical coordinates and a backing scale. The F11
+adapter passes the same command stream and scale to it. The initial pipeline
+supports opaque `NX_COMMAND_FILL_RECT` and `NX_COMMAND_FILL_TRIANGLE`; empty
+streams still clear/present. It validates the whole stream before image
+acquisition and returns `NX_ERROR_UNSUPPORTED` for other types or nonopaque
+paints. Clear colors can still contain alpha. Shapes need swapchain color-
+attachment usage; transfer-only surfaces retain the clear path. The public
+installed API and core dependency boundary are unchanged.
+
+The painter lazily creates Vulkan 1.0 shader modules, a render pass, pipeline,
+image views and per-image framebuffers. Explicit barriers connect transfer
+clear, color-attachment writes, optional readback and presentation. All native
+objects retire with their swapchain under the V03 rules. Vertex storage is a
+mapped host-visible/coherent buffer, replaced only after graphics submission
+completion. Growth first creates a replacement, preserving the old buffer
+if allocation fails. Current frames serialize; rings and broader batching
+remain V07 work. Diagnostics expose capacity, allocation count and the latest
+submitted vertex count.
+
+Rectangles snap bounds to the reference renderer's half-open pixel-center
+coverage. Triangles draw a snapped bounding quad and evaluate their original
+edges in the fragment shader, with normalized winding and the same top-left
+tie rule. Direct hardware triangle rasterization rounded a vertex at
+`10.50001` to a pixel center in the regression. Compensated float32 differences
+and split products also preserve small edge differences for the tested
+million-coordinate offscreen triangle; a plain float determinant lost them.
+This path requires no `shaderFloat64` feature. Scaled triangle coordinates
+beyond `sqrt(FLT_MAX)/8` return `NX_ERROR_LIMIT` to keep edge products finite;
+count, NDC conversion, viewport and framebuffer limits are checked too.
+Hardware-driver precision and performance acceptance remain open.
+
+Colors, including transfer clears, are quantized to the headless RGBA8 rule
+before Vulkan UNORM conversion. Antialiasing, translucent composition, nested
+clips, strokes, rounded rectangles, lines and bitmap/glyph drawing are pending
+Vulkan work; unsupported streams are rejected explicitly.
+
+### Embedded shaders
+
+The authored GLSL lives in `renderers/vulkan/shaders/`; its generated
+`shaders.h` embeds SPIR-V 1.0 words. Normal builds and applications do not
+invoke or link a shader compiler. To regenerate and validate:
+
+```sh
+python3 tools/generate_vulkan_shaders.py
+python3 tools/generate_vulkan_shaders.py --check
+```
+
+Development regeneration needs `glslangValidator` and `spirv-val`. The
+recorded generator is glslang 16.2.0; use that version for a byte-identical
+`--check`, or regenerate with another version and review the header changes.
+Each compilation explicitly targets Vulkan 1.0 and is validated with
+`spirv-val --target-env vulkan1.0`. The header records compiler version and
+normalized GLSL source hashes. Shader compilation tools are development
+dependencies only.
+
 `nx_vk_device_wait_idle` maps device loss to `NX_ERROR_STATE`. Destruction
 attempts an idle wait and releases the logical device before its instance,
 including after device loss. The renderer uses a separate private destroy
@@ -106,8 +164,8 @@ before creating its replacement. A failure after teardown leaves an empty target
 Fatal device/surface failures latch an unusable renderer until explicit
 recovery recreates the device and surface. Native tests exercise explicit
 rebuild and injected driver state; actual hardware removal is not yet forced.
-Empty zero-size driver targets suspend, and drawing commands are rejected
-before image acquisition. The visible [native clear example](../../examples/10_native_clear/README.md)
+Empty zero-size driver targets suspend, and unsupported drawing commands are rejected
+before image acquisition. The visible [native renderer example](../../examples/10_native_clear/README.md)
 runs this path on either Linux backend.
 
 ### Presentation retirement and close
@@ -176,6 +234,16 @@ timeouts, resume a held acquisition before rebuilding, clean a partial rebuild,
 distinguish unenqueued OOM from enqueued out-of-date, and retain readback storage
 across submission timeouts. The F11 mock and real adapters verify failed close
 preserves ownership and blocks new work until a successful retry.
+
+The drawing tests compare every output byte, including row padding, against
+the headless renderer at 1×, 1.5× and 2×. They cover overlapping opaque paint
+order, both triangle windings, shared edges, degenerates, offscreen geometry,
+near-center fractional vertices and large-coordinate cancellation, 24 skewed
+triangle variants and a reused/growing 256-command upload. Native Wayland
+output scaling, independent windows, swapchain rebuild, recovery, submission
+timeouts and failed close exercise the new native resources. Failure hooks
+inject OOM after partial pipeline/image-view creation and during vertex growth;
+the next draw must succeed without leaking or losing the prior upload.
 
 The Wayland presentation tests skip if no compositor is available; set
 `NEXAUI_REQUIRE_VULKAN_WAYLAND=1` together with `NEXAUI_REQUIRE_VULKAN=1` to
@@ -255,6 +323,37 @@ execution uses Mesa Lavapipe; it does not establish physical GPU removal,
 hardware performance or compatibility with every driver. Legacy fallback
 keeps its documented specification limitation.
 
+V04 local validation on the same environment:
+
+- Static Debug: 79/79 tests passed in 21.34 seconds. Shared Debug: 85/85 in
+  23.12 seconds, including its additional font-dependent example tests.
+- After the final viewport/framebuffer limit checks, all eight Vulkan tests
+  and example smokes passed with core and synchronization validation enabled,
+  both statically (7.23 seconds) and shared (6.53 seconds).
+- All six Vulkan device/presentation/drawing tests passed with Clang 22.1.3
+  ASan/UBSan, leak detection and synchronization validation in 7.35 seconds.
+  No sanitizer, leak, VUID or synchronization hazard was reported.
+- A fresh Release build with `NEXAUI_BUILD_TESTS=OFF` built the native example
+  and presented shapes in both X11 and Wayland smoke runs. Windows CMake
+  configuration still succeeded without configuring a Vulkan target.
+- glslang 16.2.0 regenerated both shaders; `--check` reproduced the embedded
+  words and SPIRV-Tools 2026.1 accepted them for Vulkan 1.0. A separate
+  320×200 swapchain capture matched headless RGBA8 byte-for-byte and was
+  visually inspected for paint order, shape coverage and orientation.
+
+Enable synchronization validation in addition to the core layer with:
+
+```sh
+NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 \
+  VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_VALIDATION_VALIDATE_SYNC=1 \
+  xvfb-run -a ctest --test-dir out/vulkan-clean -R nexaui_vulkan_ \
+  --output-on-failure --timeout 90
+```
+
+The required Wayland cases need a running compositor. These results cover
+the tested CPU driver and do not establish hardware-GPU performance or full
+Vulkan command support.
+
 ## Specification references
 
 - [Instance creation](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateInstance.html)
@@ -270,6 +369,10 @@ keeps its documented specification limitation.
 - [Presentation-fence lifetime](https://docs.vulkan.org/refpages/latest/refpages/source/VkSwapchainPresentFenceInfoKHR.html)
 - [Present enqueue errors](https://docs.vulkan.org/refpages/latest/refpages/source/vkQueuePresentKHR.html)
 - [Device loss and synchronization](https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devicelost)
+- [Viewport precision](https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#vertexpostproc-viewport)
+- [Graphics pipeline creation and partial cleanup](https://docs.vulkan.org/spec/latest/chapters/pipelines.html#pipelines-multiple)
+- [Shader instruction semantics](https://registry.khronos.org/SPIR-V/specs/unified1/GLSL.std.450.html)
+- [Synchronization validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/syncval_usage.md)
 
 NexaUI command rendering and hardware GPU acceptance remain open. CPU-driver
 presentation is evidence of the tested WSI path, not GPU performance.

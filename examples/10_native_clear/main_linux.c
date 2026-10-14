@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     nx_window *window = NULL;
-    nx_window_desc desc = {"NexaUI Vulkan clear/present", 640, 400, 0, {0}};
+    nx_window_desc desc = {"NexaUI Vulkan shapes", 640, 400, 0, {0}};
     nx_result result = nx_window_create(&desc, &window);
     if (result != NX_OK) {
         const char *platform = getenv("NEXAUI_PLATFORM");
@@ -55,8 +55,20 @@ int main(int argc, char **argv) {
         nx_render_target target = {(uint32_t)width, (uint32_t)height, info.scale};
         float phase = (float)((current - started) / duration);
         nx_color clear = {0.08f + 0.14f * phase, 0.16f, 0.28f + 0.32f * phase, 1};
+        nx_command commands[3] = {{0}};
+        commands[0].type = NX_COMMAND_FILL_RECT;
+        commands[0].rect = (nx_rect){24, 24, info.width * 0.6f, info.height * 0.45f};
+        commands[0].color = (nx_color){0.16f, 0.65f, 0.88f, 1};
+        commands[1].type = NX_COMMAND_FILL_RECT;
+        commands[1].rect = (nx_rect){48 + phase * 80, 56, 110, 60};
+        commands[1].color = (nx_color){0.95f, 0.65f, 0.18f, 1};
+        commands[2].type = NX_COMMAND_FILL_TRIANGLE;
+        commands[2].points[0] = (nx_point){info.width * 0.5f, info.height * 0.2f};
+        commands[2].points[1] = (nx_point){info.width * 0.85f, info.height * 0.75f};
+        commands[2].points[2] = (nx_point){info.width * 0.4f, info.height * 0.7f};
+        commands[2].color = (nx_color){0.75f, 0.25f, 0.4f, 1};
         nx_render_outcome outcome;
-        result = nx_renderer_run(&renderer, target, NULL, 0, clear, &outcome);
+        result = nx_renderer_run(&renderer, target, commands, 3, clear, &outcome);
         if (result != NX_OK) { status = 1; break; }
         if (outcome == NX_RENDER_DEVICE_LOST) {
             if (nx_renderer_recover(&renderer) != NX_OK) { status = 1; break; }

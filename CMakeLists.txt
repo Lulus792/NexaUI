@@ -163,7 +163,7 @@ if(UNIX AND NOT APPLE)
     if(NEXAUI_BUILD_VULKAN)
         find_package(Vulkan 1.3.250 REQUIRED)
         add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c
-            renderers/vulkan/renderer.c)
+            renderers/vulkan/renderer.c renderers/vulkan/pipeline.c)
         target_include_directories(nexaui_renderer_vulkan PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -221,6 +221,24 @@ if(NEXAUI_BUILD_TESTS)
         foreach(_vk_platform x11 wayland)
             add_test(NAME nexaui_vulkan_${_vk_platform}_present COMMAND nexaui_vulkan_present_tests)
             set_tests_properties(nexaui_vulkan_${_vk_platform}_present PROPERTIES
+                TIMEOUT 90 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
+                ENVIRONMENT "NEXAUI_PLATFORM=${_vk_platform}"
+                FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
+        endforeach()
+        add_executable(nexaui_vulkan_draw_tests tests/test_vulkan_draw.c)
+        target_include_directories(nexaui_vulkan_draw_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/vulkan
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+        target_compile_definitions(nexaui_vulkan_draw_tests PRIVATE
+            NEXAUI_VULKAN_TEST_HOOKS NEXAUI_WAYLAND_TEST_HOOKS)
+        target_compile_options(nexaui_vulkan_draw_tests PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_features(nexaui_vulkan_draw_tests PRIVATE c_std_17)
+        target_link_libraries(nexaui_vulkan_draw_tests PRIVATE
+            nexaui_renderer_vulkan NexaUI::NexaUI PkgConfig::WAYLAND_CLIENT)
+        foreach(_vk_platform x11 wayland)
+            add_test(NAME nexaui_vulkan_${_vk_platform}_draw COMMAND nexaui_vulkan_draw_tests)
+            set_tests_properties(nexaui_vulkan_${_vk_platform}_draw PROPERTIES
                 TIMEOUT 90 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
                 ENVIRONMENT "NEXAUI_PLATFORM=${_vk_platform}"
                 FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")

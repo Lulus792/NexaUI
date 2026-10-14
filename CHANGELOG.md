@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added an initial Linux Vulkan SPIR-V pipeline for opaque filled rectangles and triangles, embedded validated shaders with a regeneration tool, bounded/reusable vertex uploads, per-image render targets and an animated native example. Byte-exact X11/Wayland readback covers scaling, fractional/shared edges, large-coordinate cancellation, allocation failure, resize/recovery and independent windows. Vulkan clips, alpha blending and other command types remain pending.
 - Added Vulkan KHR/EXT present-fence negotiation, strict retirement by default, explicit compatibility modes, and retryable resize/recovery/close that retain resources on timeout. Readback storage survives submission timeouts. Private renderer close now returns a result and retains backend ownership on failure; public C APIs are unchanged.
 - Added Linux Vulkan Wayland/Xlib surfaces and clear/present swapchains, actual surface-compatible graphics/present queue selection, per-image presentation semaphores, owner-thread window render leases, resize/rebuild handling, exact headless readback comparisons and a native Linux example. Vulkan drawing remains pending.
 - Fixed parallel Linux builds racing over the shared Wayland test protocol headers by giving their generator one common dependency target.

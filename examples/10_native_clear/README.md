@@ -1,9 +1,10 @@
 # Native renderer examples
 
-## Linux Vulkan clear/present
+## Linux Vulkan shapes
 
 The Linux `nexaui_native_clear` opens a native window for up to three seconds
-and presents a changing clear color through Vulkan. Resize it or close it
+and draws two opaque rectangles and a triangle over a changing clear color
+through the SPIR-V pipeline. One rectangle moves. Resize it or close it
 early to exercise the renderer driver. It uses the chosen Linux window
 backend and requires a Vulkan driver supporting presentation to that surface
 and KHR or EXT swapchain-maintenance present fences. The default F11 adapter
@@ -18,8 +19,9 @@ NEXAUI_PLATFORM=x11 ./build/examples/10_native_clear/nexaui_native_clear
 `--smoke` limits the loop to a quarter second and checks that at least one
 frame was presented. CTest registers both backend variants; an unavailable
 display skips the corresponding smoke test unless explicitly required.
-This V02 path handles empty command streams only. Shapes, images and text
-remain later Vulkan tasks; see [the Vulkan contract](../../docs/concepts/vulkan.md).
+The initial V04 pipeline accepts opaque filled rectangles and triangles.
+Clipping, blending, other shapes, images and text remain later Vulkan work;
+see [the Vulkan contract](../../docs/concepts/vulkan.md).
 
 The example checks `nx_renderer_close` and retries a retirement timeout while
 keeping the native window alive. If retirement still fails, it exits with an

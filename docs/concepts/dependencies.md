@@ -29,3 +29,8 @@ targets used by its surface adapter. Vulkan types stay in that
 backend, and neither the core target nor its installed package requires the
 Vulkan loader. See the [bootstrap contract](vulkan.md) for build options and
 current implementation limits.
+
+The Vulkan backend includes authored GLSL and generated SPIR-V words.
+`glslangValidator` and `spirv-val` are optional development tools for shader
+regeneration/verification; normal builds and application runtime use the
+embedded arrays and link neither tool. See [shader regeneration](vulkan.md#embedded-shaders).

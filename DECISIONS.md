@@ -1,5 +1,37 @@
 # Decisions
 
+## 2026-10-14 — Embed Vulkan shaders and evaluate triangle coverage explicitly
+
+The initial V04 path uses a Vulkan 1.0 graphics pipeline, a LOAD/STORE render
+pass after transfer clear, per-image views/framebuffers and one serialized,
+mapped coherent vertex buffer. Growth preserves the previous buffer until a
+replacement is allocated, bound and mapped. Pending graphics fences prevent
+overwriting upload storage; swapchain retirement also owns the new targets.
+Public headers and the installed core acquire no Vulkan or compiler dependency.
+
+Opaque rectangles and triangles are the first accepted command types; other
+shapes, clips, nonopaque paints and textures return unsupported before image
+acquisition. This is an initial drawing slice, not complete widget rendering.
+Authored GLSL and generated SPIR-V 1.0 arrays are both tracked. The development
+generator compiles, validates and checks source provenance; normal builds
+need neither the compiler nor shader-file access at runtime.
+
+The headless reference samples half-open bounds at pixel centers. Direct
+hardware triangles failed a near-center `10.50001` regression, consistent
+with Vulkan's finite viewport subpixel precision. Triangles therefore use
+snapped bounding quads with explicit top-left edge tests in the fragment
+shader. A second regression with million-coordinate offscreen endpoints
+exposed cancellation in a plain float determinant. Compensated differences
+and split significand products fix both tested failures without optional
+float64 shader features. An Fma-based residual did not fix cancellation on
+the tested Lavapipe driver; the split-product version did. These tests do not
+prove every hardware driver's precision or performance. The native tests
+retain both reproducers and varied fractional/scaled triangles.
+
+See the [pipeline contract and validation](docs/concepts/vulkan.md#shape-pipeline),
+[Vulkan viewport precision](https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#vertexpostproc-viewport)
+and [SPIR-V GLSL instructions](https://registry.khronos.org/SPIR-V/specs/unified1/GLSL.std.450.html).
+
 ## 2026-10-14 — Retire Vulkan presentation explicitly and retain failed close
 
 V03 makes the private renderer's default policy require

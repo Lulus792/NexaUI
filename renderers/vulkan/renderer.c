@@ -2,6 +2,7 @@
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #include "device_internal.h"
 #include "renderer.h"
+#include "pipeline.h"
 #include "internal.h"
 #include "window_internal.h"
 #include "x11/window_internal.h"
@@ -41,13 +42,15 @@ struct nx_vulkan_renderer {
     int device_lost, closing, legacy_presented;
     nx_vulkan_retirement_policy retirement;
     nx_vk_present_fence_support present_support;
+    nx_vk_painter painter;
+    uint32_t last_submitted_vertices;
     uint64_t completed_present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
-    unsigned char test_faults[NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT + 1];
+    unsigned char test_faults[NX_VK_TEST_VERTEX_MEMORY + 1];
 #endif
     uint64_t presented_frames;
     uint64_t swapchain_generation;
-    int leased, dirty, broken, readback;
+    int leased, dirty, broken, readback, drawing;
 };
 
 static void *nx_vk_renderer_malloc(void *user, size_t size) {
@@ -172,6 +175,7 @@ static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
 }
 
 static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
+    nx_vk_painter_destroy(&renderer->painter);
     for (uint32_t i = 0; i < NX_VK_MAX_IMAGES; ++i) {
         if (renderer->finished[i] != VK_NULL_HANDLE)
             vkDestroySemaphore(renderer->native.logical, renderer->finished[i], NULL);
@@ -364,6 +368,8 @@ static nx_result nx_vk_resize(nx_vulkan_renderer *renderer, uint32_t width,
     create.imageExtent = extent;
     create.imageArrayLayers = 1;
     create.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    renderer->drawing = (caps.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0;
+    if (renderer->drawing) create.imageUsage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     renderer->readback = (caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
     if (renderer->readback) create.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     uint32_t families[] = {renderer->native.graphics_queue_family,
@@ -495,7 +501,8 @@ nx_result nx_vulkan_renderer_create(nx_window *window,
     return nx_vulkan_renderer_create_config(window, &desc, out_renderer);
 }
 
-static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
+static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
+    const nx_command *draw_commands, size_t draw_count, double scale, nx_color clear,
     VkBuffer readback, int *presented) {
     *presented = 0;
     if (renderer->broken || renderer->closing) return NX_ERROR_STATE;
@@ -504,6 +511,22 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     nx_result submission_result = nx_vk_wait_submission(renderer);
     if (submission_result == NX_ERROR_LIMIT) return NX_OK;
     if (submission_result != NX_OK) return submission_result;
+    if (draw_count && !renderer->drawing) return NX_ERROR_UNSUPPORTED;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (draw_count) {
+        renderer->painter.fail_framebuffer = renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY];
+        renderer->painter.fail_vertex_memory = renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY];
+        renderer->test_faults[NX_VK_TEST_PIPELINE_MEMORY] = 0;
+        renderer->test_faults[NX_VK_TEST_VERTEX_MEMORY] = 0;
+    }
+#endif
+    nx_result prepared = nx_vk_painter_prepare(&renderer->painter, &renderer->native,
+        renderer->format, renderer->extent, renderer->images, renderer->image_count,
+        draw_commands, draw_count, scale);
+    if (prepared != NX_OK) {
+        if (prepared == NX_ERROR_STATE) renderer->broken = renderer->device_lost = 1;
+        return prepared;
+    }
     if (readback == VK_NULL_HANDLE && renderer->readback_buffer != VK_NULL_HANDLE)
         nx_vk_free_readback(renderer);
     VkResult status;
@@ -557,15 +580,29 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
-    VkClearColorValue color = {{clear.r, clear.g, clear.b, clear.a}};
+    VkClearColorValue color = {{floorf(clear.r * 255.0f + 0.5f) / 255.0f,
+        floorf(clear.g * 255.0f + 0.5f) / 255.0f,
+        floorf(clear.b * 255.0f + 0.5f) / 255.0f,
+        floorf(clear.a * 255.0f + 0.5f) / 255.0f}};
     vkCmdClearColorImage(renderer->commands, renderer->images[index],
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &color, 1, &barrier.subresourceRange);
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    VkPipelineStageFlags source_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    if (renderer->painter.vertex_count) {
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
+        nx_vk_painter_record(&renderer->painter, renderer->commands, index, renderer->extent);
+        barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        source_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    }
     if (readback != VK_NULL_HANDLE) {
         barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        vkCmdPipelineBarrier(renderer->commands, source_stage,
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
         VkBufferImageCopy copy = {0};
         copy.imageSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
@@ -583,10 +620,11 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
             VK_PIPELINE_STAGE_HOST_BIT, 0, 0, NULL, 1, &host, 0, NULL);
         barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        source_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     }
     barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     barrier.dstAccessMask = 0;
-    vkCmdPipelineBarrier(renderer->commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
+    vkCmdPipelineBarrier(renderer->commands, source_stage,
         VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
     status = vkEndCommandBuffer(renderer->commands);
     if (status != VK_SUCCESS) goto fatal;
@@ -606,6 +644,7 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer, nx_color clear,
     if (status == VK_ERROR_DEVICE_LOST) renderer->submission_pending = 1;
     if (status != VK_SUCCESS) goto fatal;
     renderer->submission_pending = 1;
+    renderer->last_submitted_vertices = renderer->painter.vertex_count;
     VkPresentInfoKHR present = {0};
     present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present.waitSemaphoreCount = 1;
@@ -665,10 +704,18 @@ fatal:
 
 nx_result nx_vulkan_clear_present(nx_vulkan_renderer *renderer,
                                   nx_color clear, int *out_presented) {
+    return nx_vulkan_render(renderer, NULL, 0, 1.0, clear, out_presented);
+}
+
+nx_result nx_vulkan_render(nx_vulkan_renderer *renderer,
+    const nx_command *commands, size_t count, double scale,
+    nx_color clear, int *out_presented) {
     if (!out_presented) return NX_ERROR_ARGUMENT;
     *out_presented = 0;
     if (!renderer || !nx_valid_color(clear)) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    nx_result validation = nx_vk_painter_preflight(commands, count, scale);
+    if (validation != NX_OK) return validation;
     uint32_t width, height;
     nx_result result = nx_vk_window_target(renderer, &width, &height);
     nx_render_outcome outcome;
@@ -676,7 +723,7 @@ nx_result nx_vulkan_clear_present(nx_vulkan_renderer *renderer,
     if (result != NX_OK) return result;
     if (outcome == NX_RENDER_DEVICE_LOST) return NX_ERROR_STATE;
     return outcome == NX_RENDER_SUSPENDED ? NX_OK
-        : nx_vk_present(renderer, clear, VK_NULL_HANDLE, out_presented);
+        : nx_vk_present(renderer, commands, count, scale, clear, VK_NULL_HANDLE, out_presented);
 }
 
 nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
@@ -697,6 +744,10 @@ nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
     out_info->has_acquired_image = renderer->has_acquired;
     out_info->closing = renderer->closing;
     out_info->pending_readback = renderer->readback_buffer != VK_NULL_HANDLE;
+    out_info->drawing_supported = renderer->drawing;
+    out_info->vertex_capacity_bytes = renderer->painter.capacity;
+    out_info->vertex_buffer_allocations = renderer->painter.allocations;
+    out_info->last_submitted_vertices = renderer->last_submitted_vertices;
     for (uint32_t i = 0; i < renderer->image_count; ++i)
         if (renderer->present_pending[i]) ++out_info->pending_present_fences;
     return NX_OK;
@@ -737,8 +788,8 @@ static nx_result nx_vk_driver_resize(void *user, nx_render_target target,
 static nx_result nx_vk_driver_submit(void *user, nx_render_target target,
     const nx_command *commands, size_t count, nx_color clear,
     nx_render_outcome *outcome) {
-    (void)commands;
-    if (count) return NX_ERROR_UNSUPPORTED;
+    nx_result validation = nx_vk_painter_preflight(commands, count, target.scale);
+    if (validation != NX_OK) return validation;
     nx_vulkan_renderer *renderer = user;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
     /* Surface suboptimality can change without an application target change,
@@ -747,7 +798,7 @@ static nx_result nx_vk_driver_submit(void *user, nx_render_target target,
                                      target.pixel_height, outcome);
     if (result != NX_OK || *outcome != NX_RENDER_READY) return result;
     int presented = 0;
-    result = nx_vk_present(renderer, clear, VK_NULL_HANDLE, &presented);
+    result = nx_vk_present(renderer, commands, count, target.scale, clear, VK_NULL_HANDLE, &presented);
     if (renderer->broken) {
         *outcome = NX_RENDER_DEVICE_LOST;
         return result == NX_ERROR_MEMORY ? result : NX_OK;
@@ -777,7 +828,7 @@ nx_result nx_vulkan_driver_open(nx_window *window, nx_renderer_driver *driver) {
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault) {
-    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT)
+    if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_VERTEX_MEMORY)
         return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
     /* Readback checks submission once for copying and once during cleanup.
@@ -797,9 +848,17 @@ nx_result nx_vulkan_test_invalidate(nx_vulkan_renderer *renderer, int broken) {
 
 nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
                                  uint8_t *pixels, size_t stride) {
+    return nx_vulkan_test_render_readback(renderer, NULL, 0, 1.0, clear, pixels, stride);
+}
+
+nx_result nx_vulkan_test_render_readback(nx_vulkan_renderer *renderer,
+    const nx_command *commands, size_t count, double scale, nx_color clear,
+    uint8_t *pixels, size_t stride) {
     if (!renderer || !pixels || !nx_valid_color(clear)) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
     if (renderer->closing) return NX_ERROR_STATE;
+    nx_result validation = nx_vk_painter_preflight(commands, count, scale);
+    if (validation != NX_OK) return validation;
     if (renderer->readback_buffer != VK_NULL_HANDLE) {
         nx_result pending = nx_vk_wait_submission(renderer);
         if (pending != NX_OK) return pending;
@@ -851,7 +910,7 @@ nx_result nx_vulkan_test_readback(nx_vulkan_renderer *renderer, nx_color clear,
     renderer->readback_memory = memory;
     adopted = 1;
     int presented;
-    result = nx_vk_present(renderer, clear, buffer, &presented);
+    result = nx_vk_present(renderer, commands, count, scale, clear, buffer, &presented);
     if (result != NX_OK || !presented) { if (result == NX_OK) result = NX_ERROR_STATE; goto cleanup; }
     result = nx_vk_wait_submission(renderer);
     if (result != NX_OK) goto cleanup;

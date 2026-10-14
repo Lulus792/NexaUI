@@ -58,8 +58,10 @@ device removal where supported and submits again after recovery. A test-only
 GPU readback compares filled rectangle and triangle pixels with the headless
 reference at 1× and 2×, including layered alpha over an opaque clear.
 
-The Linux Vulkan adapter accepts empty streams and uses explicit per-image
+The Linux Vulkan adapter accepts empty streams and initial opaque filled
+rectangle/triangle streams, and uses explicit per-image
 presentation fences by default. Its native tests exercise close/recovery/resize
 timeouts after real submissions and verify that a pending close retains the
-window lease. See [the Vulkan contract](vulkan.md) for extension requirements
+window lease. Drawing tests compare exact headless pixels across scales,
+fractional/shared edges, failed upload growth and renderer rebuild. See [the Vulkan contract](vulkan.md) for extension requirements
 and explicit compatibility modes.
