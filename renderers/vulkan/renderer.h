@@ -49,7 +49,8 @@ nx_result nx_vulkan_renderer_create_config(nx_window *window,
    A fatal submission error latches the renderer until explicit recovery. */
 nx_result nx_vulkan_clear_present(nx_vulkan_renderer *renderer,
                                   nx_color clear, int *out_presented);
-/* Filled rectangles and triangles with straight alpha and nested clips. Entire
+/* Filled/stroked rectangles, rounded fills, lines and triangles with straight
+   alpha and nested clips. Bitmaps remain unsupported. Entire
    streams are validated before acquisition; unsupported command types fail.
    Logical coordinates are multiplied by the supplied backing scale. */
 nx_result nx_vulkan_render(nx_vulkan_renderer *renderer,

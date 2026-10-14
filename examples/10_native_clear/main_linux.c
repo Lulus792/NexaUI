@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     nx_window *window = NULL;
-    nx_window_desc desc = {"NexaUI Vulkan clips and alpha", 640, 400, 0, {0}};
+    nx_window_desc desc = {"NexaUI Vulkan shapes, clips and alpha", 640, 400, 0, {0}};
     nx_result result = nx_window_create(&desc, &window);
     if (result != NX_OK) {
         const char *platform = getenv("NEXAUI_PLATFORM");
@@ -55,8 +55,9 @@ int main(int argc, char **argv) {
         nx_render_target target = {(uint32_t)width, (uint32_t)height, info.scale};
         float phase = (float)((current - started) / duration);
         nx_color clear = {0.08f + 0.14f * phase, 0.16f, 0.28f + 0.32f * phase, 1};
-        nx_command commands[7] = {{0}};
-        commands[0].type = NX_COMMAND_FILL_RECT;
+        nx_command commands[9] = {{0}};
+        commands[0].type = NX_COMMAND_FILL_ROUND_RECT;
+        commands[0].radius = 18;
         commands[0].rect = (nx_rect){24, 24, info.width * 0.6f, info.height * 0.45f};
         commands[0].color = (nx_color){0.16f, 0.65f, 0.88f, 1};
         commands[1].type = NX_COMMAND_PUSH_CLIP;
@@ -72,8 +73,17 @@ int main(int argc, char **argv) {
         commands[4].points[2] = (nx_point){info.width * 0.4f, info.height * 0.7f};
         commands[4].color = (nx_color){0.75f, 0.25f, 0.4f, .6f};
         commands[5].type = commands[6].type = NX_COMMAND_POP_CLIP;
+        commands[7].type = NX_COMMAND_STROKE_RECT;
+        commands[7].rect = (nx_rect){20.5f, 20.5f, info.width * .6f + 7, info.height * .45f + 7};
+        commands[7].thickness = 1.5f;
+        commands[7].color = (nx_color){.7f,.9f,1,.6f};
+        commands[8].type = NX_COMMAND_LINE;
+        commands[8].points[0] = (nx_point){48, info.height - 40};
+        commands[8].points[1] = (nx_point){info.width - 48, info.height * .6f};
+        commands[8].thickness = 5;
+        commands[8].color = (nx_color){.1f,1,.7f,.75f};
         nx_render_outcome outcome;
-        result = nx_renderer_run(&renderer, target, commands, 7, clear, &outcome);
+        result = nx_renderer_run(&renderer, target, commands, 9, clear, &outcome);
         if (result != NX_OK) { status = 1; break; }
         if (outcome == NX_RENDER_DEVICE_LOST) {
             if (nx_renderer_recover(&renderer) != NX_OK) { status = 1; break; }

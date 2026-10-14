@@ -3,9 +3,9 @@
 ## Linux Vulkan shapes
 
 The Linux `nexaui_native_clear` opens a native window for up to three seconds
-and draws an opaque panel plus a translucent moving rectangle and triangle
+and draws a rounded opaque panel plus a translucent moving rectangle and triangle
 inside two nested clips, over a changing clear color through the SPIR-V
-pipeline. Resize it or close it
+pipeline, followed by an inside stroke and round-capped line. Resize it or close it
 early to exercise the renderer driver. It uses the chosen Linux window
 backend and requires a Vulkan driver supporting presentation to that surface
 and KHR or EXT swapchain-maintenance present fences. The default F11 adapter
@@ -20,8 +20,8 @@ NEXAUI_PLATFORM=x11 ./build/examples/10_native_clear/nexaui_native_clear
 `--smoke` limits the loop to a quarter second and checks that at least one
 frame was presented. CTest registers both backend variants; an unavailable
 display skips the corresponding smoke test unless explicitly required.
-The V04/V05 pipeline accepts filled rectangles and triangles with nested clips
-and straight-alpha composition. Other shapes, images and text remain Vulkan work;
+The V04/V05 pipeline accepts filled/stroked rectangles, rounded fills, triangles
+and lines with nested clips and straight-alpha composition. Images and text remain Vulkan work;
 see [the Vulkan contract](../../docs/concepts/vulkan.md).
 
 The example checks `nx_renderer_close` and retries a retirement timeout while

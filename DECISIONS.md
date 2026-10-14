@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-10-15 — Compose Vulkan shapes over an owned canvas
+
+V05 replaces V04's per-swapchain-image framebuffers with one owned canvas and
+sampled history image. Each translucent primitive copies its clipped region to
+history before an integer straight-alpha shader pass; opaque primitives need no
+copy. The completed canvas copies to the same-format swapchain image. This
+preserves the software reference's RGBA8 rounding and destination alpha without
+fixed-function blend approximation or a full-frame CPU rendering fallback.
+Resources remain subject to V03's bounded retirement and retryable ownership.
+
+The shape follow-up adds inside strokes, radius-clamped rounded fills and
+round-capped lines to V04's rectangles/triangles. Analytic coverage uses the
+existing bounding-quad path and compensated float32 arithmetic, with explicit
+coordinate/product headroom limits and no optional shaderFloat64 requirement.
+This supersedes the initial unsupported status below for shapes, clips and
+nonopaque paints. Bitmap/glyph textures are still unsupported. Batching,
+hardware performance and broader native acceptance remain separate work;
+[the Vulkan report](docs/concepts/vulkan.md) records executed comparisons and limits.
+
 ## 2026-10-14 — Embed Vulkan shaders and evaluate triangle coverage explicitly
 
 The initial V04 path uses a Vulkan 1.0 graphics pipeline, a LOAD/STORE render

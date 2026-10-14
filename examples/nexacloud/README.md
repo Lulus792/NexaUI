@@ -80,7 +80,7 @@ injected creation failure.
 | Platform | Current evidence | Remaining native work |
 | --- | --- | --- |
 | Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
-| Linux | Local Alpine/WSL portable scene, component and Vulkan clip/alpha tests | Remaining Vulkan shapes and bitmap/glyph textures before this full scene runs natively |
+| Linux | Local Alpine/WSL portable scene, component and Vulkan shape/clip/alpha tests | Bitmap/glyph textures before this full scene runs natively |
 | macOS | CI static/shared core, portable scene and installed-package jobs passed in `cffbcf8` | Cocoa window/input, Metal rendering, actual native runtime acceptance |
 
 Large text at 200%, physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI

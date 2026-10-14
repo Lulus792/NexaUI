@@ -10,8 +10,12 @@
 typedef struct nx_vk_vertex {
     float x, y;
     float rgba[4];
-    nx_point triangle[3];
-    uint32_t is_triangle;
+    /* Matches shape.vert/frag: 0 rect, 1 triangle, 2 inside stroke,
+       3 rounded fill, 4 round-capped line. Triangles carry three points;
+       strokes/rounds carry origin, size, inset/radius; lines carry endpoints
+       and half-thickness. All values are physical pixel coordinates. */
+    nx_point geometry[3];
+    uint32_t shape_kind;
 } nx_vk_vertex;
 
 static nx_result nx_vk_pipeline_status(VkResult status) {
@@ -35,24 +39,33 @@ nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
         const nx_command *command = &commands[i];
         if (command->type == NX_COMMAND_POP_CLIP) continue;
         if (command->type != NX_COMMAND_FILL_RECT && command->type != NX_COMMAND_FILL_TRIANGLE &&
-            command->type != NX_COMMAND_PUSH_CLIP)
+            command->type != NX_COMMAND_STROKE_RECT && command->type != NX_COMMAND_FILL_ROUND_RECT &&
+            command->type != NX_COMMAND_LINE && command->type != NX_COMMAND_PUSH_CLIP)
             return NX_ERROR_UNSUPPORTED;
         /* Bound NDC conversion even at a one-pixel target. No float overflow
            or optional shaderFloat64 requirement is hidden in the pipeline. */
-        double coords[6];
-        if (command->type != NX_COMMAND_FILL_TRIANGLE) {
+        double coords[8] = {0};
+        if (command->type != NX_COMMAND_FILL_TRIANGLE && command->type != NX_COMMAND_LINE) {
             coords[0] = command->rect.x;
             coords[1] = command->rect.y;
             coords[2] = (double)command->rect.x + command->rect.width;
             coords[3] = (double)command->rect.y + command->rect.height;
-            coords[4] = coords[5] = 0;
+            coords[4] = command->rect.width;
+            coords[5] = command->rect.height;
         } else {
-            for (unsigned j = 0; j < 3u; ++j) {
+            unsigned points = command->type == NX_COMMAND_LINE ? 2u : 3u;
+            for (unsigned j = 0; j < points; ++j) {
                 coords[j * 2u] = command->points[j].x;
                 coords[j * 2u + 1u] = command->points[j].y;
             }
         }
-        for (unsigned j = 0; j < 6u; ++j) {
+        if (command->type == NX_COMMAND_LINE || command->type == NX_COMMAND_STROKE_RECT)
+            coords[6] = command->thickness;
+        if (command->type == NX_COMMAND_FILL_ROUND_RECT) coords[7] = command->radius;
+        for (unsigned j = 0; j < 8u; ++j) {
+            /* Fields irrelevant to the command may contain arbitrary values. */
+            if (j == 6u && command->type != NX_COMMAND_LINE && command->type != NX_COMMAND_STROKE_RECT) continue;
+            if (j == 7u && command->type != NX_COMMAND_FILL_ROUND_RECT) continue;
             double scaled = coords[j] * scale * 2.0;
             if (!isfinite(scaled) || fabs(scaled) > (double)FLT_MAX / 2.0)
                 return NX_ERROR_LIMIT;
@@ -60,6 +73,10 @@ nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
                triangle is mostly outside the visible target. */
             if (command->type == NX_COMMAND_FILL_TRIANGLE &&
                 fabs(scaled) > sqrt((double)FLT_MAX) / 4.0) return NX_ERROR_LIMIT;
+            if (command->type == NX_COMMAND_LINE &&
+                fabs(scaled) > sqrt(sqrt((double)FLT_MAX)) / 16.0) return NX_ERROR_LIMIT;
+            if (command->type == NX_COMMAND_FILL_ROUND_RECT &&
+                fabs(scaled) > sqrt((double)FLT_MAX) / 8.0) return NX_ERROR_LIMIT;
         }
     }
     return NX_OK;
@@ -243,10 +260,10 @@ static nx_result nx_vk_painter_create(nx_vk_painter *painter,
     VkVertexInputAttributeDescription attributes[6] = {
         {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, x)},
         {1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(nx_vk_vertex, rgba)},
-        {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, triangle[0])},
-        {3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, triangle[1])},
-        {4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, triangle[2])},
-        {5, 0, VK_FORMAT_R32_UINT, offsetof(nx_vk_vertex, is_triangle)}
+        {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[0])},
+        {3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[1])},
+        {4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[2])},
+        {5, 0, VK_FORMAT_R32_UINT, offsetof(nx_vk_vertex, shape_kind)}
     };
     VkPipelineVertexInputStateCreateInfo vertex = {0};
     vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -395,8 +412,8 @@ static void nx_vk_write_vertex(nx_vk_vertex *vertex, double x, double y,
     vertex->rgba[1] = floorf(color.g * 255.0f + 0.5f) / 255.0f;
     vertex->rgba[2] = floorf(color.b * 255.0f + 0.5f) / 255.0f;
     vertex->rgba[3] = floorf(color.a * 255.0f + 0.5f) / 255.0f;
-    memset(vertex->triangle, 0, sizeof(vertex->triangle));
-    vertex->is_triangle = 0;
+    memset(vertex->geometry, 0, sizeof(vertex->geometry));
+    vertex->shape_kind = 0;
 }
 
 nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
@@ -435,12 +452,33 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
         if (command->type == NX_COMMAND_POP_CLIP) { --depth; continue; }
         double x0, y0, x1, y1;
         nx_point points[3] = {{0}};
-        if (command->type != NX_COMMAND_FILL_TRIANGLE) {
+        uint32_t kind = 0;
+        if (command->type == NX_COMMAND_LINE) {
+            kind = 4;
+            for (unsigned j = 0; j < 2; ++j)
+                points[j] = (nx_point){(float)(command->points[j].x * scale), (float)(command->points[j].y * scale)};
+            points[2].x = (float)(command->thickness * scale) * .5f;
+            x0 = nx_vk_pixel_edge(fmin(points[0].x, points[1].x) - points[2].x, 1, extent.width);
+            y0 = nx_vk_pixel_edge(fmin(points[0].y, points[1].y) - points[2].x, 1, extent.height);
+            x1 = nx_vk_pixel_edge(fmax(points[0].x, points[1].x) + points[2].x, 1, extent.width);
+            y1 = nx_vk_pixel_edge(fmax(points[0].y, points[1].y) + points[2].x, 1, extent.height);
+        } else if (command->type == NX_COMMAND_STROKE_RECT || command->type == NX_COMMAND_FILL_ROUND_RECT) {
+            kind = command->type == NX_COMMAND_STROKE_RECT ? 2u : 3u;
+            points[0] = (nx_point){(float)(command->rect.x * scale), (float)(command->rect.y * scale)};
+            points[1] = (nx_point){(float)(command->rect.width * scale), (float)(command->rect.height * scale)};
+            points[2].x = kind == 2 ? (float)(command->thickness * scale) :
+                fminf((float)(command->radius * scale), fminf(points[1].x, points[1].y) * .5f);
+            x0 = nx_vk_pixel_edge(points[0].x, 1, extent.width);
+            y0 = nx_vk_pixel_edge(points[0].y, 1, extent.height);
+            x1 = nx_vk_pixel_edge((double)points[0].x + points[1].x, 1, extent.width);
+            y1 = nx_vk_pixel_edge((double)points[0].y + points[1].y, 1, extent.height);
+        } else if (command->type != NX_COMMAND_FILL_TRIANGLE) {
             x0 = nx_vk_pixel_edge(command->rect.x, scale, extent.width);
             y0 = nx_vk_pixel_edge(command->rect.y, scale, extent.height);
             x1 = nx_vk_pixel_edge((double)command->rect.x + command->rect.width, scale, extent.width);
             y1 = nx_vk_pixel_edge((double)command->rect.y + command->rect.height, scale, extent.height);
         } else {
+            kind = 1;
             for (unsigned j = 0; j < 3u; ++j)
                 points[j] = (nx_point){(float)(command->points[j].x * scale),
                                        (float)(command->points[j].y * scale)};
@@ -470,9 +508,9 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
         for (unsigned j = 0; j < 6u; ++j) {
             nx_vk_vertex *vertex = &vertices[painter->vertex_count++];
             nx_vk_write_vertex(vertex, positions[j][0], positions[j][1], extent, command->color);
-            if (command->type == NX_COMMAND_FILL_TRIANGLE) {
-                memcpy(vertex->triangle, points, sizeof(points));
-                vertex->is_triangle = 1;
+            if (kind) {
+                memcpy(vertex->geometry, points, sizeof(points));
+                vertex->shape_kind = kind;
             }
         }
     }

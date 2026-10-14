@@ -41,8 +41,8 @@ typedef struct nx_vk_painter {
 #endif
 } nx_vk_painter;
 
-/* Validates the entire stream before image acquisition. Supports filled
-   rectangles/triangles, straight alpha and balanced nested rectangular clips. */
+/* Validates the entire stream before image acquisition. Supports core shapes,
+   straight alpha and balanced nested rectangular clips; bitmaps remain open. */
 nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
                                  double scale);
 nx_result nx_vk_painter_prepare(nx_vk_painter *painter,

@@ -4,8 +4,9 @@ The private `nexaui_renderer_vulkan` target implements V01 device selection
 and an initial V02 Wayland/X11 surface, swapchain and clear/present path, with
 V03 presentation-fence retirement and retryable teardown/recovery, plus a
 V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alpha
-composition through the private renderer driver. Other shapes, images and text
-remain V04–V06 work; batching, profiling,
+composition through the private renderer driver. The pipeline also draws stroked
+rectangles, rounded fills and round-capped lines. Images and text remain V06
+work; batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
 ## Build boundary
@@ -66,7 +67,7 @@ submissions must be retired by the caller.
 
 `nx_vulkan_render` accepts logical coordinates and a backing scale. The F11
 adapter passes the same command stream and scale to it. The initial pipeline
-supports `NX_COMMAND_FILL_RECT` and `NX_COMMAND_FILL_TRIANGLE`, straight-alpha
+supports filled/stroked rectangles, rounded fills, triangles and lines, straight-alpha
 paints, and balanced `PUSH_CLIP`/`POP_CLIP` scopes up to `NX_MAX_CLIP_DEPTH`.
 Empty streams still clear/present. It validates the whole stream before image
 acquisition and returns `NX_ERROR_UNSUPPORTED` for other command types. Clear
@@ -107,6 +108,22 @@ beyond `sqrt(FLT_MAX)/8` return `NX_ERROR_LIMIT` to keep edge products finite;
 count, NDC conversion, viewport and framebuffer limits are checked too.
 Hardware-driver precision and performance acceptance remain open.
 
+Rounded fills clamp the radius to half the smaller dimension; strokes are
+inside the rectangle and disappear into a solid fill when the inset consumes
+it. Lines use round caps, including a disk for coincident endpoints. A snapped
+bounding quad supplies fragments; shape coverage is evaluated in the shader.
+Compensated float32 differences/products preserve tested circle, thin-stroke
+and offscreen-line boundaries without optional float64. Line interior coverage
+compares squared cross distance with squared radius times length, avoiding a
+division; endpoint regions use the corresponding disk. Physical shape parameters
+are rounded to float32 after scaling, as in the software-reference tests.
+
+Preflight bounds scaled line coordinates and thickness by
+`sqrt(sqrt(FLT_MAX))/32`, and rounded-fill parameters by `sqrt(FLT_MAX)/16`,
+to leave finite headroom for their squared products. Oversized inputs fail
+before acquisition. These bounds prevent arithmetic overflow; they do not
+establish exact coverage for every possible float or hardware driver.
+
 Colors, including transfer clears, are quantized to the headless RGBA8 rule
 before Vulkan UNORM conversion. Clips intersect their ancestors after half-open
 pixel-center conversion and become dynamic scissors. Empty clips and paints
@@ -124,8 +141,13 @@ The image above is an actual Vulkan canvas readback, byte-equal to its software
 reference. Tests additionally compare displayed X11 window RGB pixels to verify
 the final swapchain copy and presentation. Wayland is checked through GPU readback
 and validation; a compositor screenshot is separate acceptance work.
-Antialiasing, strokes, rounded rectangles, lines and bitmap/glyph drawing remain
+Antialiasing and bitmap/glyph drawing remain
 pending Vulkan work; unsupported streams are rejected explicitly.
+
+![GPU rounded fills, stroke and round-capped line](../images/vulkan-shapes.png)
+
+This second GPU capture adds a rounded panel, inside stroke, round-capped line
+and disk; every RGBA8 byte also matches the software reference.
 
 ### Embedded shaders
 
@@ -418,9 +440,27 @@ Clang 22.1.3 were used for this increment:
   Vulkan backend.
 
 These results cover the tested CPU Vulkan driver. Native NexaCloud on Linux
-still needs rounded rectangles, strokes, lines and bitmap/glyph rendering.
+still needs bitmap/glyph rendering; core shapes were added in the next increment below.
 Physical GPU performance, mixed-DPI displays and the full macOS backend remain
 open acceptance work.
+
+### Core-shape follow-up — 2026-10-15
+
+On the same environment, the complete static Debug suite passed 88/88 tests in
+51.29 seconds. All eight Vulkan tests and example smokes passed in the shared
+Debug build in 28.54 seconds. The eight Vulkan cases plus the Wayland queued-offer
+regression passed Clang ASan/UBSan/LeakSanitizer and core/synchronization
+validation in 31.18 seconds (9/9). The test-disabled Release build ran both native
+example smokes, presenting four frames each.
+
+The shape comparisons cover 1×/1.5×/2×, 120 mixed overlapping draws, zero/clamped
+radii, consumed insets, coincident and reversed segments, thin strokes, exact
+3-4-5 circle boundaries, fractional near-center positions and million-coordinate
+offscreen shapes. Rebuild and explicit recovery repeat mixed-shape comparisons.
+The separate 320×200 shape capture above matches all reference RGBA8 bytes and
+was visually inspected. The regenerated SPIR-V passes Vulkan 1.0 validation and
+the source/header check. No hardware performance or every-coordinate guarantee
+is inferred from these cases.
 
 ## Specification references
 

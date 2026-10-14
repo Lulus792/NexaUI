@@ -35,9 +35,9 @@ the application releases them after renderer use ends.
 
 1. **Implemented:** reusable components and the shared overview/file scene;
    normalized-input workflow, native Windows runner and D3D12 captures.
-2. **In progress:** Vulkan nested clips and straight-alpha composition are
-   implemented and compared against the software reference. Remaining shapes
-   and bitmap/glyph drawing come next, followed by this exact scene on X11 and Wayland.
+2. **In progress:** Vulkan core shapes, nested clips and straight-alpha composition
+   are implemented and compared against the software reference. Bitmap/glyph
+   drawing comes next, followed by this exact scene on X11 and Wayland.
    Preserve the existing bounded acquisition/submission/presentation retirement
    rules and test allocation failures and resize/recovery.
 3. **Pending:** native Cocoa/AppKit input/window integration and Metal command

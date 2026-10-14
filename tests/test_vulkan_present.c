@@ -126,7 +126,9 @@ static int test_driver(nx_window *window) {
                           (nx_color){0, 0, 0, 1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_SUSPENDED);
     nx_command unsupported = {0};
-    unsupported.type = NX_COMMAND_FILL_ROUND_RECT;
+    static const uint8_t source_pixel[4] = {255,255,255,255};
+    unsupported.type = NX_COMMAND_BITMAP;
+    unsupported.bitmap = (nx_bitmap_view){source_pixel, 1, 1, 4, NX_BITMAP_RGBA8};
     unsupported.rect = (nx_rect){0, 0, 10, 10};
     unsupported.color = (nx_color){1, 1, 1, 1};
     CHECK(nx_renderer_run(&driver, target, &unsupported, 1,

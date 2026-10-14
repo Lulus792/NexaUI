@@ -49,7 +49,8 @@ static int compare(nx_window *window, nx_vulkan_renderer *renderer,
     CHECK(expected && actual && scaled);
     for (size_t i = 0; i < count; ++i) {
         scaled[i] = commands[i];
-        if (scaled[i].type == NX_COMMAND_FILL_RECT || scaled[i].type == NX_COMMAND_PUSH_CLIP) {
+        if (scaled[i].type != NX_COMMAND_FILL_TRIANGLE && scaled[i].type != NX_COMMAND_LINE &&
+            scaled[i].type != NX_COMMAND_POP_CLIP) {
             scaled[i].rect.x = (float)(scaled[i].rect.x * scale);
             scaled[i].rect.y = (float)(scaled[i].rect.y * scale);
             scaled[i].rect.width = (float)(scaled[i].rect.width * scale);
@@ -60,6 +61,10 @@ static int compare(nx_window *window, nx_vulkan_renderer *renderer,
                 scaled[i].points[j].y = (float)(scaled[i].points[j].y * scale);
             }
         }
+        if (scaled[i].type == NX_COMMAND_STROKE_RECT || scaled[i].type == NX_COMMAND_LINE)
+            scaled[i].thickness = (float)(scaled[i].thickness * scale);
+        if (scaled[i].type == NX_COMMAND_FILL_ROUND_RECT)
+            scaled[i].radius = (float)(scaled[i].radius * scale);
     }
     memset(expected, 0xa7, bytes);
     memset(actual, 0xa7, bytes);
@@ -327,6 +332,86 @@ static int test_owned_storage(nx_window *window) {
     return 0;
 }
 
+static nx_command round_rect(float x, float y, float w, float h, float radius, nx_color color) {
+    nx_command c = rect(x, y, w, h, color);
+    c.type = NX_COMMAND_FILL_ROUND_RECT; c.radius = radius; return c;
+}
+static nx_command stroke_rect(float x, float y, float w, float h, float thickness, nx_color color) {
+    nx_command c = rect(x, y, w, h, color);
+    c.type = NX_COMMAND_STROKE_RECT; c.thickness = thickness; return c;
+}
+static nx_command line(float ax, float ay, float bx, float by, float thickness, nx_color color) {
+    nx_command c = {0}; c.type = NX_COMMAND_LINE;
+    c.points[0] = (nx_point){ax, ay}; c.points[1] = (nx_point){bx, by};
+    c.thickness = thickness; c.color = color; return c;
+}
+
+static int test_shapes(nx_window *window) {
+    nx_vulkan_renderer *renderer;
+    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    nx_command commands[] = {
+        round_rect(3.25f, 4.5f, 59.5f, 41.25f, 12.5f, (nx_color){.2f,.7f,1,.63f}),
+        stroke_rect(12.5f, 10.5f, 62.25f, 47.5f, 1.5f, (nx_color){1,.2f,.7f,.47f}),
+        clip(5.5f, 8.25f, 138.25f, 85.5f),
+        line(-30, 11.5f, 120, 100.5f, 5.5f, (nx_color){.4f,1,.2f,.6f}),
+        line(70.5f, 22.5f, 70.5f, 22.5f, 19, (nx_color){1,.7f,.2f,1}),
+        line(90.5f, 4, 90.5f, 105, 1, (nx_color){1,1,1,.25f}),
+        line(3, 62.5f, 155, 62.5f, 1, (nx_color){.2f,1,1,.7f}),
+        round_rect(90.5f, 55.5f, 27, 18, 1000, (nx_color){1,.2f,1,.3f}),
+        round_rect(2, 76, 31, 25, 0, (nx_color){.3f,.1f,1,1}),
+        stroke_rect(41, 77, 31, 25, 40, (nx_color){.8f,.5f,1,.8f}),
+        round_rect(4, 4, 0, 30, 10, (nx_color){1,1,1,1}),
+        line(150, 5, 130, 90, .125f, (nx_color){1,1,1,1}),
+        { .type = NX_COMMAND_POP_CLIP }
+    };
+    const double scales[] = {1, 1.5, 2};
+    for (unsigned i = 0; i < 3; ++i)
+        CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), scales[i], (nx_color){.03f,.07f,.11f,.26f}) == 0);
+    /* Exact 3-4-5 circle boundaries, reversed segments and near-half-pixel
+       coordinates must not depend on float multiply/add contraction. */
+    nx_command boundaries[] = {
+        line(20.5f, 20.5f, 20.5f, 20.5f, 10, (nx_color){1,0,1,1}),
+        round_rect(40.5f, 10.5f, 20, 20, 5, (nx_color){0,1,1,.7f}),
+        line(12.50001f, 36.5f, 110.50001f, 36.5f, 10, (nx_color){1,1,0,.4f}),
+        stroke_rect(10.50001f, 12.5f, 30, 30, .00002f, (nx_color){1,1,1,1}),
+        line(110.50001f, 61.5f, 12.50001f, 61.5f, 10, (nx_color){0,1,0,.5f})
+    };
+    CHECK(compare(window, renderer, boundaries, sizeof(boundaries)/sizeof(*boundaries), 1, (nx_color){0}) == 0);
+    nx_command distant[] = {
+        line(-1000000, -1000000.0625f, 1000000, 999999.9375f, 1.25f, (nx_color){1,1,1,.45f}),
+        line(1000000, 80.5f, -1000000, 80.5f, 1, (nx_color){1,0,1,.65f}),
+        round_rect(-1000000, 12.5f, 1000050, 55.25f, 17.5f, (nx_color){1,.4f,.2f,.5f}),
+        stroke_rect(-1000000, 22.5f, 1000080, 46.5f, .5f, (nx_color){.1f,1,.2f,.4f})
+    };
+    CHECK(compare(window, renderer, distant, sizeof(distant)/sizeof(*distant), 1, (nx_color){0}) == 0);
+    nx_command many[120];
+    for (unsigned i = 0; i < 120; ++i) {
+        float x = (float)((i * 31u) % 170u) - 9.25f;
+        float y = (float)((i * 19u) % 130u) - 8.75f;
+        nx_color color = {(i % 17u)/16.f, (i % 23u)/22.f, (i % 29u)/28.f, (i % 11u)/10.f};
+        many[i] = i % 3u == 0 ? round_rect(x, y, 32.25f, 21.75f, (i % 13u) * .75f, color) :
+            i % 3u == 1 ? stroke_rect(x, y, 29.75f, 22.5f, .25f + (i % 7u), color) :
+            line(x, y, x + 19.25f, y - 13.75f, .5f + (i % 7u) * .75f, color);
+    }
+    for (unsigned i = 0; i < 3; ++i) CHECK(compare(window, renderer, many, 120, scales[i], (nx_color){0,0,0,1}) == 0);
+    for (unsigned i = 0; i < 24; ++i) {
+        float offset = (float)i / 1000.f;
+        nx_command skew[] = {
+            line(3.1401f + offset, 2.7182f - offset, 152.319f - offset, 105.079f + offset,
+                 1.001f + offset, (nx_color){1,.3f,.7f,.6f}),
+            round_rect(4.50001f + offset, 10.49999f - offset, 64.319f, 43.7182f, 21.1781f,
+                       (nx_color){.1f,1,.8f,.4f})
+        };
+        CHECK(compare(window, renderer, skew, 2, scales[i % 3], (nx_color){0}) == 0);
+    }
+    CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
+    CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, (nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
+    CHECK(compare(window, renderer, many, 120, 1.5, (nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
+    return 0;
+}
+
 static int test_preflight_and_driver(nx_window *window) {
     nx_renderer_driver driver = {0};
     CHECK(nx_vulkan_driver_open(window, &driver) == NX_OK);
@@ -337,7 +422,9 @@ static int test_preflight_and_driver(nx_window *window) {
         (uint32_t)ceil(window_info.height * window_info.scale), window_info.scale};
     nx_command commands[2] = {rect(8, 8, 28, 20, (nx_color){0,1,0,1}), {0}};
     commands[1] = commands[0];
-    commands[1].type = NX_COMMAND_FILL_ROUND_RECT;
+    static const uint8_t source_pixel[4] = {255,255,255,255};
+    commands[1].type = NX_COMMAND_BITMAP;
+    commands[1].bitmap = (nx_bitmap_view){source_pixel, 1, 1, 4, NX_BITMAP_RGBA8};
     nx_render_outcome outcome;
     CHECK(nx_renderer_run(&driver, target, commands, 2, (nx_color){0,0,0,1}, &outcome) == NX_ERROR_UNSUPPORTED);
     nx_vulkan_renderer_info before, after;
@@ -356,6 +443,10 @@ static int test_preflight_and_driver(nx_window *window) {
                                    (nx_point){0,0}, (nx_color){1,1,1,1});
     CHECK(nx_vulkan_render(renderer, &enormous, 1, 1,
                             (nx_color){0,0,0,1}, &presented) == NX_ERROR_LIMIT);
+    enormous = line(-1.0e20f, 0, 1.0e20f, 1, 1, (nx_color){1,1,1,1});
+    CHECK(nx_vulkan_render(renderer, &enormous, 1, 1, (nx_color){0}, &presented) == NX_ERROR_LIMIT);
+    enormous = round_rect(-1.0e30f, 0, 1.0e30f, 20, 1, (nx_color){1,1,1,1});
+    CHECK(nx_vulkan_render(renderer, &enormous, 1, 1, (nx_color){0}, &presented) == NX_ERROR_LIMIT);
     CHECK(nx_renderer_run(&driver, target, commands, 1, (nx_color){0,0,0,1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_READY);
     CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK &&
@@ -403,11 +494,13 @@ int main(int argc, char **argv) {
     CHECK(result == NX_OK);
     if (argc == 2) {
         int selected = !strcmp(argv[1], "alpha") ? test_clips_and_alpha(window) :
-            !strcmp(argv[1], "storage") ? test_owned_storage(window) : 1;
+            !strcmp(argv[1], "storage") ? test_owned_storage(window) :
+            !strcmp(argv[1], "shapes") ? test_shapes(window) : 1;
         nx_window_destroy(window); return selected;
     }
     int status = test_draws(window);
     if (!status) status = test_clips_and_alpha(window);
+    if (!status) status = test_shapes(window);
     if (!status) status = test_owned_storage(window);
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);
