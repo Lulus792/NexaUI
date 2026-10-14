@@ -1,101 +1,182 @@
 # NexaUI
 
-NexaUI is a planned native, self-contained C17 desktop UI framework. The repository currently contains its **foundation**, not a complete UI toolkit. The implemented API creates independent contexts, supplies a reusable scratch arena and UTF-8 validation, measures and arranges nested row/column/wrapping/overlay/grid/split/scroll layouts, processes frame input and clip-aware interactive hit regions, records accessibility semantics, builds render command streams, renders basic shapes, RGBA8 images and A8 masks to a deterministic RGBA8 buffer, and parses SFNT font directories, horizontal metrics, Unicode `cmap` formats 4/12 and simple/composite TrueType glyph outlines. It rasterizes outlines into A8 masks, reuses them through a bounded LRU cache, and resolves glyphs through an ordered font fallback collection. Unicode 18.0.0 property tables are reproducibly generated from pinned sources. Default grapheme, word and line boundaries and single-line paragraph bidi levels and ordering pass the official Unicode test corpora. An initial shaping path groups glyphs by font, script and bidi level and supports selected GSUB single and ligature substitutions, GPOS single and pair positioning, legacy kerning and combining marks. Initial multiline text layout exposes wrapping, hard-break lines, positioned glyphs, grapheme carets, hit testing and selection geometry; positioned glyphs can be added to a frame as A8 bitmap commands. Native window and basic input backends are available on Windows and Linux/Wayland or X11; Windows also has a D3D12 clear/present path that draws filled rectangles, triangles, RGBA8 images and A8 glyph masks with nested clips and alpha compositing. macOS, complete Wayland input, other GPU drawing and native accessibility bridges remain pending; text layout and script coverage remain incomplete. See [ROADMAP.md](ROADMAP.md) for the dependency-aware path to v1.0.
+**A native desktop UI framework written in C17, built for editors, simulation dashboards and developer tools.**
 
-The initial mutable text buffer supports grapheme-safe selection and deletion, word/line navigation, bounded undo/redo and normalized key/text events. Single-line and multiline text fields render and edit that buffer with validation semantics and optional clipboard shortcuts. Win32, X11 and Wayland plain-text clipboard and local-file drop reception are available. Win32 displays preedit in focused ordinary text fields and positions native IME candidate UI; X11 accepts composed UTF-8 through an optional XIM context and positions preedit UI when its input method supports that style. Wayland accepts committed UTF-8 through optional text-input-v3, with v1 as a fallback; a text-field widget with `ime_window` activates it according to frame focus. Preedit from Windows, X11 callback-style XIM, and Wayland v3/v1 is drawn by focused text fields without changing their committed draft; Wayland password fields display masked preedit. Focused ordinary text fields also advertise a bounded UTF-8 surrounding-text slice and apply valid v3 selection-relative or v1 cursor-relative deletion requests before committed text; X11 callback-style XIM still needs installed-IME acceptance, and macOS preedit remains planned.
+[![Build and test](https://github.com/Lulus792/NexaUI/actions/workflows/ci.yml/badge.svg)](https://github.com/Lulus792/NexaUI/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Semantic color and metric tokens have dark, light and high-contrast presets. Contexts can switch themes between frames and inherit local overrides through balanced frame scopes. See [the theme contract](docs/concepts/themes.md); complete widget styling is still planned.
+[Getting started](#getting-started) · [Examples](#examples) · [Integration](#integration) · [Documentation](#documentation) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
-Applications can compose custom widgets from layout, frame commands, interaction and accessibility semantics through `nx_widget_register`. See [the custom widget contract](docs/concepts/widgets.md) and the headless [button and progress example](examples/09_custom_widget/README.md).
+NexaUI brings layout, widgets, text, rendering and native window integration behind a C API. Its core uses NexaUI code and the C standard library; platform and renderer modules call operating-system and graphics APIs directly. It does not use third-party UI, windowing, layout, shaping or font libraries.
 
-Initial display widgets provide labels, images, separators and fixed layout spacers. Labels use an existing shaped text layout; images borrow their bitmap pixels through rendering. See [the display widget contract](docs/concepts/widgets.md#display-widgets).
+Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, an initial Windows D3D12 renderer, and primitives for moving simulation snapshots and commands between worker threads and the UI.
 
-An initial rich-text drawing path styles ranges of an existing text layout with foreground/background colors, underline and strike while preserving its grapheme, bidi and caret geometry. A rich label keeps the complete text as one accessible name. See [the text contract](docs/concepts/text.md).
+> **Early development — 0.1.0.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
 
-Basic theme-drawn buttons, checkboxes, radios and toggles handle pointer and keyboard activation with matching accessibility state. See [the control contract](docs/concepts/widgets.md#basic-controls).
+## Features
 
-Panels, groups, collapsible sections and tabs provide painted containers and nested accessibility semantics. See [the container contract](docs/concepts/widgets.md#containers-and-tabs).
+- **Layout and widgets.** Rows, columns, wrapping, grids, overlays and split panes; buttons, toggles, text and numeric fields, tabs, menus, popups, tables, trees, docking and searchable controls. [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md)
+- **Text and fonts.** UTF-8 editing, TrueType outlines and rasterization, glyph caching and font fallback; Unicode 18.0.0 boundaries and bidi processing, initial OpenType shaping, multiline layout, caret geometry and rich-text drawing. [Text](docs/concepts/text.md)
+- **Rendering.** Clipped drawing commands, basic shapes, RGBA8 images and A8 glyph masks; deterministic headless output and an initial D3D12 path. [Rendering](docs/concepts/rendering.md) · [D3D12](docs/concepts/d3d12.md)
+- **Themes and interaction.** Dark, light and high-contrast presets, local theme overrides, keyboard focus, input routing, clipboard and file-drop reception, plus interruptible transitions and reduced-motion state. [Themes](docs/concepts/themes.md) · [Input](docs/concepts/input.md) · [Animation](docs/concepts/animation.md)
+- **Tooling and data views.** Virtual lists, time-series decimation, real-time plots, telemetry and profiler panels, hierarchy and property inspectors, and application-rendered viewport images. [Plotting](docs/concepts/plotting.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md)
+- **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
+- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling and validation state. Native assistive-technology bridges remain planned. [Accessibility](docs/concepts/accessibility.md)
 
-Scroll areas route wheel input, clip their children, expose clamped offsets and optionally support draggable, keyboard-focusable scrollbar thumbs. A virtual-list height index computes visible ranges without creating offscreen rows; its measured-row rebuild keeps a stable keyed row anchored after data changes, and a budgeted visitor instantiates only visible rows. See [the scroll and virtualization contract](docs/concepts/layout.md#scroll-and-virtualization).
+## Platform status
 
-Tables now have sortable, keyboard-accessible headers, resizable columns and stable row-index sorting. Applications register only visible rows and cells. See [the table contract](docs/concepts/widgets.md#tables).
+| Platform | Native window and input | Rendering |
+| --- | --- | --- |
+| Windows | Win32 backend, clipboard, file drops and initial IME integration | Software renderer and initial D3D12 backend |
+| Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Headless software renderer; native GPU renderer planned |
+| macOS | Native backend planned | Headless software renderer |
 
-Trees now flatten expanded preorder data to visible indices and provide selectable, expandable items that also fit inside table cells. See [the tree contract](docs/concepts/widgets.md#trees-and-tree-tables).
+On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one.
 
-Popups and modals now provide a backdrop, Escape/outside dismissal, bounded keyboard focus and focus restoration. Named noninteractive tooltips are available. See [the overlay contract](docs/concepts/widgets.md#popups-modals-and-tooltips).
+### Known limitations
 
-Menu bars, menus, toolbars and status bars now expose semantic containers. Menu items support keyboard sibling navigation and optional checked state. See [the menu contract](docs/concepts/widgets.md#menus-and-bars).
+- Native macOS windows, additional GPU backends and direct GPU texture import are pending. The D3D12 driver is currently private to the build tree, with incomplete shape coverage.
+- Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
+- Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
+- Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
 
-Split panes now have a draggable, keyboard-accessible divider. A caller-buffer docking model supports split stacks, tab moves and a versioned binary layout snapshot. See [the split and docking contract](docs/concepts/layout.md#split-panes).
-The [docking editor example](examples/10_docking_editor/README.md) connects that model to tab widgets and a draggable two-pane layout.
+## Getting started
 
-A command palette and searchable select now share a filtered popup with keyboard, pointer and wheel navigation. The application owns command dispatch and the select trigger. See [the search widget contract](docs/concepts/widgets.md#command-palette-and-searchable-select).
+### Requirements
 
-Color controls now provide HSV and hex conversions, an interactive color picker and a three-preset theme selector. See [the color and theme contract](docs/concepts/themes.md#color-and-theme-controls).
+- A C17 compiler and **CMake 3.21 or newer**.
+- The platform SDK and a CMake build tool, such as Visual Studio/MSBuild, Ninja or Make.
+- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner` and `pkg-config`.
+- Python 3 for Unicode table verification and Python-based development checks. The generated tables and their source data are already included.
 
-On Windows, each native window can route its queued events to an independent UI context. A native two-window test covers focus, input isolation, transfer retry and closing one window while the other continues. See [the input contract](docs/concepts/input.md).
-
-Caller-owned scalar transitions now use frame time, linear or smoothstep easing, interruption from the current value and a per-context reduced-motion setting. Toggles can animate their thumb without delaying checked semantics. Windows can read the current system animation preference. See [the animation contract](docs/concepts/animation.md).
-
-Horizontal sliders and drag-value controls now clamp and snap caller-owned numbers, track pointer capture across bounds and expose their current value through accessibility semantics. See [the value-control contract](docs/concepts/widgets.md#value-controls).
-
-A [headless visual regression scene](tests/baselines/README.md) checks layout, multiple controls, interaction, semantics and all three theme presets against reviewed PPM images.
-
-A [two-slot snapshot exchange](docs/concepts/simulation.md) lets one simulation thread publish immutable data while the UI holds a read-only view through a frame, with deterministic reclamation and no data copy by the exchange.
-
-A [bounded command channel](docs/concepts/sim-channel.md) sends UI requests to simulation workers and returns ticketed completions with explicit ownership and backpressure.
-
-A [time-series data view](docs/concepts/series.md) borrows immutable points and decimates only the visible range into per-pixel envelopes retaining extrema and source order. A one-million-point Release benchmark records full and narrow-view costs.
-
-An initial [real-time plot widget](docs/concepts/plotting.md) renders one series with theme-aware axes, grid and optional numeric labels. It supports pointer and keyboard cursors and caller-owned state. Three headless theme baselines cover the visual output.
-
-Initial [telemetry and profiler panels](docs/concepts/telemetry.md) consume borrowed metric and timing arrays, render only visible rows, and expose names, values, ranges and status through semantics. A 10,000-frame update test covers 100,000 logical records without steady-state Context allocations.
-
-A [hierarchy and property inspector](docs/concepts/inspector.md) combines the existing tree primitives with typed property rows. Rows show immutable snapshot values and return boolean or numeric change proposals or an external-editor request. The [headless inspector example](examples/09_inspector_headless/README.md) exercises selection and a proposed edit.
-
-The initial [custom viewport surface](docs/concepts/viewport.md) embeds an application-rendered RGBA8 image with explicit physical resize and render-completion lifetime. A [software 3D shell](examples/15_3d_viewport_shell/README.md) demonstrates a cube preview at 1× and 2× backing scales. Direct GPU texture import remains planned with the native renderers.
-
-A [private renderer driver](docs/concepts/renderer-backend.md) validates complete command streams and defines resize, temporary suspension and device-loss recovery for backend implementations. The headless renderer uses the same command preflight. Windows now has an initial [D3D12 geometry, bitmap and clip path](docs/concepts/d3d12.md) with reusable upload storage, opaque batching, two bounded in-flight opaque frames, clipped-area translucent copies and GPU timestamp diagnostics, plus a [native sample](examples/10_native_clear/README.md). Remaining GPU shapes and more efficient translucent batching are planned.
-
-The numeric editor parses decimal input independently of locale and commits valid drafts on Enter while preserving incomplete text for correction. A rendered numeric field now draws its draft, selection and caret and exposes validation state to accessibility.
-
-## Build
-
-Optional Windows ASan and Clang fuzz jobs, local results and reproduction
-commands are in [the sanitizer report](docs/quality/sanitizers.md).
+For Debian/Ubuntu, install the native build dependencies with:
 
 ```sh
-cmake -S . -B build
-cmake --build build --config Debug
-ctest --test-dir build -C Debug --output-on-failure
+sudo apt-get install build-essential cmake pkg-config libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols
 ```
 
-`BUILD_SHARED_LIBS=ON` builds a shared library. `NEXAUI_BUILD_TESTS` and `NEXAUI_BUILD_EXAMPLES` control optional targets. The public target is `NexaUI::NexaUI` with `add_subdirectory` or after installation through `find_package(NexaUI CONFIG REQUIRED)`.
+### Build and test
 
-Linux builds require X11, Wayland and xkbcommon development headers and the Wayland protocol scanner. At runtime NexaUI chooses Wayland when available, then X11; `NEXAUI_PLATFORM` can force either backend. Headless core tests run without a display, while native integration tests skip if their display is absent.
+```sh
+git clone https://github.com/Lulus792/NexaUI.git
+cd NexaUI
+cmake -S . -B build
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure --timeout 30
+```
 
-The [core dependency boundary](docs/concepts/dependencies.md) is checked during CMake configuration and with negative CTest fixtures.
+Tests and examples are enabled by default. Multi-configuration generators such as Visual Studio use the `Debug` configuration above. With a single-configuration generator, add `-DCMAKE_BUILD_TYPE=Debug` to the configure command for a debug build.
 
-Unicode tables are generated from the checked-in [Unicode 18.0.0 data](data/unicode/18.0.0/README.md). Run `python tools/generate_unicode.py --check` to verify source hashes and generated output.
+### Run an example
 
-The headless samples in `examples/00_headless`, `examples/02_layout_headless`, `examples/03_interactive_region`, `examples/05_scroll`, `examples/06_tables`, `examples/07_text_editing` and `examples/08_themes` write PPM images. They demonstrate virtual scrolling, stable table sorting, text editing and runtime theme switching. On Windows, `examples/00_hello_window` introduces a native window, `examples/10_native_clear` exercises the private D3D12 clear/present path, and `examples/11_multi_window` runs two independent native UI contexts and renderers.
-`examples/04_font_inspect` reads a local TrueType/OpenType file and prints its checked table directory and horizontal metrics.
-`examples/07_text_headless` renders positioned text from a TrueType font into a PPM image, for example `nexaui_text_headless arial.ttf text.ppm`.
-`examples/09_custom_widget` renders a custom button and progress display across four frames, including pointer and keyboard activation.
-`examples/12_accessibility` verifies keyboard traversal and prints a semantic tree with focus, checked and disabled states.
-`examples/01_hello_ui` renders the first UI command stream in a native Windows window, with optional TrueType labels.
-`examples/02_buttons_and_input` adds a native button and checkbox with mouse, keyboard and semantic-state checks; it requires a local TrueType font.
-`examples/03_layout` shows wide and narrow layouts of the same headless UI, with geometry and semantic checks.
-`examples/04_forms` validates two text fields, requires confirmation, and saves invalid and submitted form states.
-`examples/13_realtime_plot` advances a ring-buffered signal, renders a moving time window and checks its pointer and keyboard cursor.
-`examples/14_simulation_dashboard` composes a plot, telemetry and profiler panels from worker-published immutable snapshots; its optional font displays labels and values.
-`examples/showcase` runs a native Windows D3D12 editor/dashboard with live oscillator data, scene selection, a gain inspector, telemetry and a responsive compact view.
+The headless example writes a 320 × 180 PPM image without opening a window.
 
-## Current contract
+**Windows / PowerShell (Visual Studio build):**
 
-- Public interface: [include/nexaui/nexaui.h](include/nexaui/nexaui.h).
-- Architecture and threading: [ARCHITECTURE.md](ARCHITECTURE.md).
-- Decisions and known gaps: [DECISIONS.md](DECISIONS.md).
-- Full project requirements: [MASTER.md](MASTER.md).
+```powershell
+.\build\examples\00_headless\Debug\nexaui_headless.exe nexaui.ppm
+```
 
-NexaUI does not depend on third-party UI, windowing, rendering, layout, text or font libraries. Native OS and graphics APIs remain behind internal platform and renderer modules.
+**Linux or macOS (single-configuration build):**
+
+```sh
+./build/examples/00_headless/nexaui_headless nexaui.ppm
+```
+
+Open `nexaui.ppm` in an image viewer that supports PPM. Executable directories depend on the CMake generator.
+
+For a native Windows demo, launch the Studio showcase with a local TrueType font:
+
+```powershell
+.\build\examples\showcase\Debug\nexaui_showcase.exe "$env:WINDIR\Fonts\arial.ttf"
+```
+
+The showcase combines a scene tree, a live oscillator plot, an editable gain property, telemetry and a responsive layout. See its [usage guide](examples/showcase/README.md) for controls and smoke-test options.
+
+## Examples
+
+Start with a small example, then explore the parts your application needs.
+
+| Example | What it demonstrates |
+| --- | --- |
+| [Headless drawing](examples/00_headless/README.md) | Basic shapes, clipping and image output |
+| [Hello UI](examples/01_hello_ui/README.md) | A native Windows window and rendered UI commands |
+| [Buttons and input](examples/02_buttons_and_input/README.md) | Pointer and keyboard interaction in a native Windows UI |
+| [Layout](examples/03_layout/README.md) | Wide and narrow arrangements of the same scene |
+| [Forms](examples/04_forms/README.md) | Text fields, validation and submission |
+| [Scrolling](examples/05_scroll/README.md) / [Tables](examples/06_tables/README.md) | Virtualized content, scrolling and stable sorting |
+| [Text editing](examples/07_text_editing/README.md) / [Themes](examples/08_themes/README.md) | Editable text and runtime theme switching |
+| [Custom widgets](examples/09_custom_widget/README.md) | Composing drawing, input and semantics |
+| [Docking editor](examples/10_docking_editor/README.md) | Docking state, tabs and a draggable split |
+| [Multiple windows](examples/11_multi_window/README.md) | Independent Windows UI contexts and renderers |
+| [Accessibility](examples/12_accessibility/README.md) | Keyboard traversal and semantic state |
+| [Real-time plot](examples/13_realtime_plot/README.md) | A moving time window with pointer and keyboard cursors |
+| [Simulation dashboard](examples/14_simulation_dashboard/README.md) | Worker snapshots, plots, telemetry and profiling |
+| [3D viewport shell](examples/15_3d_viewport_shell/README.md) | An application-rendered cube at multiple backing scales |
+| [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
+
+Some examples require a local TrueType font. You can select the font used by example tests at configure time with `-DNEXAUI_EXAMPLE_FONT=/path/to/font.ttf`.
+
+## Integration
+
+Include the public header as `#include <nexaui/nexaui.h>` and link the CMake target `NexaUI::NexaUI`.
+
+### Add to an existing CMake project
+
+Place the sources in `external/NexaUI`, then add:
+
+```cmake
+set(NEXAUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(NEXAUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(external/NexaUI)
+target_link_libraries(your_app PRIVATE NexaUI::NexaUI)
+```
+
+Replace `your_app` with your application's existing CMake target. A complete consumer is available in [tests/add_subdirectory_consumer](tests/add_subdirectory_consumer/CMakeLists.txt).
+
+### Use an installed package
+
+```sh
+cmake --install build --config Debug --prefix stage
+```
+
+In the consuming project:
+
+```cmake
+find_package(NexaUI CONFIG REQUIRED)
+target_link_libraries(your_app PRIVATE NexaUI::NexaUI)
+```
+
+Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`. See the [installed-package consumer](tests/package_consumer/CMakeLists.txt).
+
+### Build options
+
+| CMake option | Default | Purpose |
+| --- | --- | --- |
+| `BUILD_SHARED_LIBS` | `OFF` | Build a shared library instead of a static library |
+| `NEXAUI_BUILD_TESTS` | `ON` | Build and register tests |
+| `NEXAUI_BUILD_EXAMPLES` | `ON` | Build example applications |
+| `NEXAUI_BUILD_BENCHMARKS` | `OFF` | Build benchmarks |
+| `NEXAUI_BUILD_FUZZERS` | `OFF` | Build Clang/libFuzzer targets |
+
+## Documentation
+
+| Topic | Reference |
+| --- | --- |
+| API and architecture | [Public C header](include/nexaui/nexaui.h) · [Core API](docs/api/core.md) · [Architecture](ARCHITECTURE.md) · [Threading](docs/concepts/threading.md) |
+| UI composition | [Layout](docs/concepts/layout.md) · [Widgets](docs/concepts/widgets.md) · [Themes](docs/concepts/themes.md) · [Animation](docs/concepts/animation.md) |
+| Text and interaction | [Text](docs/concepts/text.md) · [Input](docs/concepts/input.md) · [Focus](docs/concepts/focus.md) · [Accessibility](docs/concepts/accessibility.md) |
+| Rendering | [Commands and software output](docs/concepts/rendering.md) · [Backend contract](docs/concepts/renderer-backend.md) · [D3D12](docs/concepts/d3d12.md) |
+| Simulation and tools | [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md) · [Time series](docs/concepts/series.md) · [Plotting](docs/concepts/plotting.md) · [Telemetry](docs/concepts/telemetry.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md) |
+| Quality and dependencies | [Visual baselines](tests/baselines/README.md) · [Sanitizers](docs/quality/sanitizers.md) · [Fuzzing](fuzz/README.md) · [Benchmarks](benchmarks/README.md) · [Dependency boundary](docs/concepts/dependencies.md) · [Unicode data](data/unicode/18.0.0/README.md) |
+| Project direction | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Decisions](DECISIONS.md) · [Full requirements](MASTER.md) |
+
+## Contributing
+
+Bug reports, focused fixes, examples and documentation improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for ownership, testing and dependency rules before making changes.
+
+Report bugs through [GitHub Issues](https://github.com/Lulus792/NexaUI/issues). Include a minimal reproduction, the commit you used, operating system, compiler, CMake options and relevant logs. For native input or rendering issues, include the windowing backend and graphics environment.
+
+## License
+
+NexaUI is available under the [MIT License](LICENSE). The bundled Unicode data has its own [license](data/unicode/18.0.0/license.txt).
