@@ -263,6 +263,7 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
     for (unsigned i=0;i<4;++i) { expected[i]=malloc(bytes); CHECK(expected[i]); }
     uint64_t tickets[4]; nx_metal_renderer_info before, after; int presented;
     for (unsigned cycle=0;cycle<9;++cycle) {
+        if (!cycle) CHECK(nx_metal_test_hold_gpu(r,1) == NX_OK);
         unsigned frames = cycle ? 4 : 3;
         for (unsigned frame=0;frame<frames;++frame) {
             unsigned seed=cycle*4+frame;
@@ -316,6 +317,15 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
                 CHECK(after.next_frame_slot == before.next_frame_slot && !memcmp(after.slots,before.slots,sizeof(after.slots)));
                 CHECK(after.last_frame.submission == before.last_frame.submission);
             }
+            /* A real GPU event still blocks all three command buffers. A
+               capture wait must time out within the renderer's finite budget
+               without writing any caller output or releasing a busy slot. */
+            memset(actual,0xa7,bytes);
+            CHECK(nx_metal_test_read_capture(r,tickets[2],actual,stride) == NX_ERROR_LIMIT);
+            for (size_t i=0;i<bytes;++i) CHECK(actual[i] == 0xa7);
+            CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 3 &&
+                after.completed_frames == before.completed_frames && after.pending_readback);
+            CHECK(nx_metal_test_hold_gpu(r,0) == NX_OK);
         } else {
             /* The fourth capture retired/reused the oldest slot. Its ticket
                expires, while each of the other three snapshots stays valid. */
@@ -359,7 +369,7 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
     CHECK(after.submitted_frames == after.completed_frames);
     CHECK(nx_metal_test_set_frame_limit(r,1) == NX_OK && compare(w,r,(nx_color){0}) == 0);
     free(actual); for (unsigned i=0;i<4;++i) free(expected[i]);
-    puts("Metal three-slot ring: mixed owned uploads, all-frame readback, wrap, bounded backpressure/recovery and reuse passed.");
+    puts("Metal three-slot ring: gated GPU with freed sources, actual timeout, all-frame readback, wrap, bounded backpressure/recovery and reuse passed.");
     return 0;
 }
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;

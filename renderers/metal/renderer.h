@@ -93,6 +93,9 @@ nx_result nx_metal_test_set_batching(nx_metal_renderer *renderer, int enabled);
    Test capture storage is owned, keyed by submission, and expires on slot
    reuse, resize, recovery or destruction. No caller output pointer is kept. */
 nx_result nx_metal_test_set_frame_limit(nx_metal_renderer *renderer, uint32_t limit);
+/* Test-only GPU gate. Enabling requires an empty ring; disabling signals the
+   shared event before releasing it. It never installs an asynchronous callback. */
+nx_result nx_metal_test_hold_gpu(nx_metal_renderer *renderer, int enabled);
 nx_result nx_metal_test_queue_capture(nx_metal_renderer *renderer,
     const nx_command *commands, size_t count, double scale, nx_color clear,
     uint64_t *out_submission);

@@ -52,6 +52,7 @@ struct nx_metal_renderer {
 #ifdef NEXAUI_METAL_TEST_HOOKS
     unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, atlas_memory, upload_memory, geometry_memory, wait_timeouts;
     int per_draw_bindings, disable_batching;
+    id<MTLSharedEvent> test_gate;
 #endif
 };
 
@@ -139,6 +140,9 @@ static nx_result nx_mtl_acquire_slot(nx_metal_renderer *r) {
     return NX_OK;
 }
 static void nx_mtl_slots_release(nx_metal_renderer *r) {
+#ifdef NEXAUI_METAL_TEST_HOOKS
+    [r->test_gate release]; r->test_gate = nil;
+#endif
     for (uint32_t i = 0; i < NX_METAL_FRAME_SLOTS; ++i) {
         nx_mtl_frame_slot *slot = &r->slots[i];
         [slot->atlas release]; [slot->bitmap_upload release];
@@ -356,6 +360,9 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     id<MTLCommandBuffer> commands = [r->queue commandBuffer];
     if (!commands) return NX_ERROR_MEMORY;
     commands.label = @"NexaUI shapes/present";
+#ifdef NEXAUI_METAL_TEST_HOOKS
+    if (r->test_gate) [commands encodeWaitForEvent:r->test_gate value:1];
+#endif
     if (r->bitmaps.count) {
         profile.bitmap_upload_bytes = (uint64_t)r->bitmaps.width*r->bitmaps.height*4u;
         id<MTLBlitCommandEncoder> upload = [commands blitCommandEncoder];
@@ -745,6 +752,17 @@ nx_result nx_metal_test_set_frame_limit(nx_metal_renderer *r, uint32_t limit) {
         if (result != NX_OK) return result;
         r->frame_limit = limit; r->next_slot = 0; return NX_OK;
     }
+}
+nx_result nx_metal_test_hold_gpu(nx_metal_renderer *r, int enabled) {
+    if (!r || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_mtl_owner(r)) return NX_ERROR_STATE;
+    if (enabled) {
+        if (r->closing || r->broken || r->pending_frames || r->test_gate) return NX_ERROR_STATE;
+        r->test_gate = [r->device newSharedEvent];
+        return r->test_gate ? NX_OK : NX_ERROR_UNSUPPORTED;
+    }
+    r->test_gate.signaledValue = 1;
+    [r->test_gate release]; r->test_gate = nil; return NX_OK;
 }
 
 #endif
