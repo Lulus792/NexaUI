@@ -134,6 +134,13 @@ installed consumer ran successfully.
 The newer A05 bitmap/full-scene GPU tests are pending. A virtual-device result
 is not physical hardware acceptance.
 
+The first A05 native jobs at `6140315` compiled the Objective-C/C targets but
+stopped at MSL compilation: direct `.x/.y` access on packed-vector members was
+rejected. The image branch now converts those arguments to regular `float2`
+values before accessing components, matching the already tested geometry path.
+The embedded source is regenerated. Native compilation/execution of this
+correction remains pending; the failed jobs produced no full-scene GPU captures.
+
 The separate `nexaui_metal_plan` test runs on Windows and Linux. It interprets
 prepared geometry through the independent headless renderer and checks every
 RGBA byte and padding byte at 1x/1.25x/1.5x/2x, including empty/intersecting clips,

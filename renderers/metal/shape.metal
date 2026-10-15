@@ -140,8 +140,9 @@ fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buff
     if (!shape_contains(in.position.xy, s)) discard_fragment();
     uint4 src = uint4(s.color[0],s.color[1],s.color[2],s.color[3]);
     if (s.kind == 5u) {
-        uint2 pixel = uint2(s.c) + uint2(sample_axis(in.position.x,s.a.x,s.b.x,s.bitmap_size.x),
-            sample_axis(in.position.y,s.a.y,s.b.y,s.bitmap_size.y));
+        float2 origin = float2(s.a), extent = float2(s.b), source_size = float2(s.bitmap_size);
+        uint2 pixel = uint2(float2(s.c)) + uint2(sample_axis(in.position.x,origin.x,extent.x,source_size.x),
+            sample_axis(in.position.y,origin.y,extent.y,source_size.y));
         uint4 sample_color = uint4(floor(atlas.read(pixel)*255.0+0.5));
         src = (sample_color*src+127u)/255u;
     }
