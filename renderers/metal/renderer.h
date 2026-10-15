@@ -11,6 +11,7 @@ typedef struct nx_metal_frame_profile {
     uint32_t pixel_width, pixel_height;
     double draw_scale;
     uint64_t submission, input_commands, draw_records, draw_calls, render_passes;
+    uint64_t bound_passes, fixed_state_bindings;
     uint64_t history_copies, history_copy_bytes, bitmap_upload_bytes;
     uint64_t draw_argument_bytes, present_copy_bytes;
     /* prepare: submit-local validation/pipeline/atlas preparation; encode:
@@ -18,6 +19,7 @@ typedef struct nx_metal_frame_profile {
        commit: present-copy encoding and asynchronous commit, not GPU time. */
     double prepare_ms, encode_ms, acquire_ms, commit_ms;
     int cpu_timing_valid;
+    int per_draw_bindings; /* Test baseline; production always uses per-pass state. */
 } nx_metal_frame_profile;
 typedef struct nx_metal_renderer_info {
     char device_name[256];
@@ -66,6 +68,9 @@ typedef enum nx_metal_test_fault {
 } nx_metal_test_fault;
 nx_result nx_metal_test_fail_next(nx_metal_renderer *renderer, nx_metal_test_fault fault);
 nx_result nx_metal_test_invalidate(nx_metal_renderer *renderer);
+/* Test-only A/B baseline for redundant invariant state bindings. Existing
+   pending commands are immutable; the mode affects subsequent encoding. */
+nx_result nx_metal_test_set_per_draw_bindings(nx_metal_renderer *renderer, int enabled);
 #endif
 
 #endif

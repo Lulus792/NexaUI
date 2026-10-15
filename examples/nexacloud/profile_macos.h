@@ -37,6 +37,7 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
         if (current.submitted_frames != previous.submitted_frames + 1 || p.submission != current.submitted_frames ||
             !p.cpu_timing_valid || p.input_commands != count || !p.draw_calls ||
             p.draw_calls > p.draw_records || p.render_passes != p.history_copies + 1 || p.history_copies > p.draw_records ||
+            p.bound_passes > p.render_passes || p.fixed_state_bindings != 5 * (p.per_draw_bindings ? p.draw_calls : p.bound_passes) ||
             p.draw_argument_bytes != p.draw_records * 100 ||
             p.present_copy_bytes != (uint64_t)p.pixel_width * p.pixel_height * 4u ||
             p.pixel_width != current.pixel_width || p.pixel_height != current.pixel_height ||
@@ -58,13 +59,14 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
     if (snprintf(path, sizeof(path), "%s-macos-profile-%s.csv", prefix, workload) >= (int)sizeof(path)) return 0;
     FILE *file = fopen(path, "wb");
     if (!file) return 0;
-    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,present_copy_bytes,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms\n") > 0;
+    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,bound_passes,fixed_state_bindings,per_draw_bindings,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,present_copy_bytes,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms\n") > 0;
     for (unsigned i = 0; okay && i < CLOUD_PROFILE_SAMPLES; ++i) {
         nx_metal_frame_profile p = samples[i].frame;
-        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
             workload, p.pixel_width, p.pixel_height, p.draw_scale, cloud_text_scale(scene),
             (unsigned long long)p.submission, (unsigned long long)p.input_commands, (unsigned long long)p.draw_records, (unsigned long long)p.draw_calls,
-            (unsigned long long)p.render_passes, (unsigned long long)p.history_copies,
+            (unsigned long long)p.render_passes, (unsigned long long)p.bound_passes,
+            (unsigned long long)p.fixed_state_bindings, p.per_draw_bindings, (unsigned long long)p.history_copies,
             (unsigned long long)p.history_copy_bytes, (unsigned long long)p.bitmap_upload_bytes,
             (unsigned long long)p.draw_argument_bytes, (unsigned long long)p.present_copy_bytes,
             p.prepare_ms, p.encode_ms, p.acquire_ms, p.commit_ms, (double)samples[i].retirement_ns / 1.e6, samples[i].wall_ms) > 0;
@@ -87,4 +89,18 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
     putchar('\n');
     if (!okay || snprintf(path, sizeof(path), "%s-macos-profile-%s.ppm", prefix, workload) >= (int)sizeof(path)) return 0;
     return capture(window, scene, renderer, path);
+}
+
+static int profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
+                            const char *prefix, const char *workload) {
+    /* A/B/B/A keeps both paths on the same device, scene, allocations and build.
+       Each block warms independently so retirement samples belong to its mode. */
+    static const int per_draw[] = {1,0,0,1};
+    for (unsigned block = 0; block < 4; ++block) {
+        char name[80];
+        if (snprintf(name, sizeof(name), "%s-%s-%u", workload, per_draw[block] ? "per-draw" : "per-pass", block) >= (int)sizeof(name) ||
+            nx_metal_test_set_per_draw_bindings(renderer->backend.user,per_draw[block]) != NX_OK ||
+            !profile_workload(window,scene,renderer,prefix,name)) return 0;
+    }
+    return nx_metal_test_set_per_draw_bindings(renderer->backend.user,0) == NX_OK;
 }

@@ -136,12 +136,29 @@ They also state the Metal device and actual canvas size. A post-workload
 GPU/reference capture verifies output after repeated submission. Atlas/upload
 allocations must stay stable after warmup; there is no portable time threshold.
 
-This instrumentation and its native counter/rollback checks are authored;
-native execution of the new profile still needs a follow-up CI run. The
-portable C17 smoke source compiles on the Linux host with warnings as errors,
-which does not compile or execute the Objective-C renderer. A06 upload-ring
-and batching changes must be compared against this baseline on a matching
-workload/environment. A07 GPU timestamp work remains separate.
+At `f870b29`, both native macOS variants pass 80/80 tests, including profile
+counts, discarded-submission behavior and the three measured workloads.
+The [preserved CSV baseline](../../benchmarks/baselines/metal-f870b29/README.md)
+records actual distributions, payloads, environment and artifact digests.
+The portable C17 smoke also compiles on Linux with warnings as errors; this
+host compile does not execute the Objective-C renderer. A07 GPU timestamp
+work remains separate.
+
+The first A06 change binds pipeline, culling, viewport and the two fragment
+textures only before the first draw in each render encoder. Restarting a pass
+after a history copy invalidates that local state. Scissors, vertices and shape
+arguments remain per draw, and ordering/composition stay unchanged. Diagnostics
+count nonempty bound passes and the five invariant API bindings. Empty clear
+passes bind no pipeline. A test-only switch retains the old per-draw path for
+comparison; production has no baseline switch.
+
+The native smoke now measures A/B/B/A blocks for each workload, with A being
+per-draw and B per-pass. Each block warms four frames, records 32 rows and
+checks its output against headless afterward. This keeps the comparison on
+the same device, build and scene; repeated blocks expose some scheduling drift.
+The initial target is fewer invariant calls and a lower median CPU encode
+interval; actual A/B results are still pending native CI. Upload rings and
+draw batching remain open A06 work.
 
 ## Validation status
 

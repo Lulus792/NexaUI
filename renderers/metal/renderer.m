@@ -43,6 +43,7 @@ struct nx_metal_renderer {
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
     unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, atlas_memory, upload_memory, wait_timeouts;
+    int per_draw_bindings;
 #endif
 };
 
@@ -216,6 +217,13 @@ static nx_result nx_mtl_bitmaps_prepare(nx_metal_renderer *r, const nx_command *
        Borrowed source pixels are fully copied before successful return. */
     return nx_mtl_bitmaps_copy(&r->bitmaps,[r->bitmap_upload contents],r->bitmap_capacity,(size_t)width*4u);
 }
+static void nx_mtl_bind_pass(nx_metal_renderer *r, id<MTLRenderCommandEncoder> encoder) {
+    [encoder setRenderPipelineState:r->pipeline];
+    [encoder setCullMode:MTLCullModeNone];
+    [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
+    [encoder setFragmentTexture:r->history atIndex:0];
+    [encoder setFragmentTexture:(r->atlas ? r->atlas : r->history) atIndex:1];
+}
 static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, size_t count, double scale, nx_color clear,
     id<MTLBuffer> readback, size_t read_stride, int *presented) {
     *presented = 0;
@@ -224,6 +232,9 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     nx_metal_frame_profile profile = {0};
     profile.pixel_width = r->width; profile.pixel_height = r->height; profile.draw_scale = scale;
     profile.input_commands = count; profile.cpu_timing_valid = 1;
+#ifdef NEXAUI_METAL_TEST_HOOKS
+    profile.per_draw_bindings = r->per_draw_bindings;
+#endif
     uint64_t phase_start = nx_mtl_now();
     nx_mtl_plan plan;
     nx_result result = nx_mtl_plan_begin(&plan,stream,count,scale,r->width,r->height);
@@ -257,6 +268,7 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     id<MTLRenderCommandEncoder> encoder = [commands renderCommandEncoderWithDescriptor:pass];
     if (!encoder) return NX_ERROR_MEMORY;
     profile.render_passes = 1;
+    int bound = 0;
     if (count) {
         nx_mtl_draw draw;
         while (nx_mtl_plan_next(&plan,&draw)) {
@@ -278,13 +290,14 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
                 encoder = [commands renderCommandEncoderWithDescriptor:pass];
                 if (!encoder) return NX_ERROR_MEMORY;
                 ++profile.render_passes; ++profile.history_copies;
+                bound = 0;
                 profile.history_copy_bytes += (uint64_t)draw.scissor.width*draw.scissor.height*4u;
             }
-            [encoder setRenderPipelineState:r->pipeline];
-            [encoder setCullMode:MTLCullModeNone];
-            [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
-            [encoder setFragmentTexture:r->history atIndex:0];
-            [encoder setFragmentTexture:(r->atlas ? r->atlas : r->history) atIndex:1];
+            if (!bound) ++profile.bound_passes;
+            if (!bound || profile.per_draw_bindings) {
+                nx_mtl_bind_pass(r,encoder); profile.fixed_state_bindings += 5;
+            }
+            bound = 1;
             [encoder setScissorRect:(MTLScissorRect){draw.scissor.x,draw.scissor.y,draw.scissor.width,draw.scissor.height}];
             /* set*Bytes copies these bounded arguments into Metal storage.
                No pointer into the caller's command stream survives encoding. */
@@ -543,5 +556,10 @@ nx_result nx_metal_test_invalidate(nx_metal_renderer *r) {
     if (!r) return NX_ERROR_ARGUMENT;
     if (!nx_mtl_owner(r) || r->closing) return NX_ERROR_STATE;
     r->broken = 1; return NX_OK;
+}
+nx_result nx_metal_test_set_per_draw_bindings(nx_metal_renderer *r, int enabled) {
+    if (!r || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_mtl_owner(r) || r->closing || r->broken) return NX_ERROR_STATE;
+    r->per_draw_bindings = enabled; return NX_OK;
 }
 #endif

@@ -448,5 +448,9 @@ A06 measurement preparation now adds committed Metal submission counters and
 separate CPU prepare/encode/drawable/commit intervals, plus cumulative retirement
 polling time. The native NexaCloud smoke authors three workloads with four warmup
 and 32 measured frames each, raw CSV artifacts, distribution summaries and a
-post-run GPU/reference capture. Native profiling execution is still pending;
-this instrumentation does not complete A06 batching/upload rings or A07 GPU timing.
+post-run GPU/reference capture. Both macOS variants pass at `f870b29`; the
+[preserved baseline](benchmarks/baselines/metal-f870b29/README.md) shows CPU
+encoding and retirement costs on Apple's virtual device. The first bounded
+change retains invariant state within a render pass and authors an in-process
+A/B/B/A comparison. Its native result is pending. This does not complete A06
+batching/upload rings or A07 GPU timing.

@@ -177,6 +177,8 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
     nx_command stream[] = {
         {.type=NX_COMMAND_PUSH_CLIP,.rect={2,3,20,19}},
         {.type=NX_COMMAND_FILL_RECT,.rect={0,0,40,40},.color={1,0,0,1}},
+        {.type=NX_COMMAND_FILL_RECT,.rect={3,4,3,5},.color={0,0,1,1}},
+        {.type=NX_COMMAND_FILL_RECT,.rect={7,4,3,5},.color={1,0,1,1}},
         {.type=NX_COMMAND_FILL_RECT,.rect={5,7,9,11},.color={0,1,0,.5f}},
         {.type=NX_COMMAND_BITMAP,.rect={18,19,10,10},.color={1,1,1,1},.bitmap={pixel,1,1,4,NX_BITMAP_RGBA8}},
         {.type=NX_COMMAND_FILL_RECT,.rect={0,0,40,40},.color={1,1,1,0}},
@@ -184,18 +186,26 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
     };
     nx_metal_renderer_info before, after;
     CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
-    CHECK(compare_commands(w,r,stream,6,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_test_set_per_draw_bindings(r,-1) == NX_ERROR_ARGUMENT);
+    CHECK(compare_commands(w,r,stream,8,1,(nx_color){0}) == 0);
     CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
     nx_metal_frame_profile p = after.last_frame;
-    CHECK(p.submission == after.submitted_frames && p.input_commands == 6 && p.draw_records == 3 && p.draw_calls == 3);
+    CHECK(p.submission == after.submitted_frames && p.input_commands == 8 && p.draw_records == 5 && p.draw_calls == 5);
     CHECK(p.history_copies == 2 && p.render_passes == 3 && p.history_copy_bytes == 444);
-    CHECK(p.draw_argument_bytes == 300 && p.bitmap_upload_bytes == (uint64_t)after.atlas_width*after.atlas_height*4u);
+    CHECK(!p.per_draw_bindings && p.bound_passes == 3 && p.fixed_state_bindings == 15);
+    CHECK(p.draw_argument_bytes == 500 && p.bitmap_upload_bytes == (uint64_t)after.atlas_width*after.atlas_height*4u);
     CHECK(p.pixel_width == after.pixel_width && p.pixel_height == after.pixel_height && p.draw_scale == 1);
     CHECK(p.present_copy_bytes == (uint64_t)p.pixel_width*p.pixel_height*4u && p.cpu_timing_valid);
     CHECK(isfinite(p.prepare_ms) && p.prepare_ms >= 0 && isfinite(p.encode_ms) && p.encode_ms >= 0);
     CHECK(isfinite(p.acquire_ms) && p.acquire_ms >= 0 && isfinite(p.commit_ms) && p.commit_ms >= 0);
     CHECK(after.retirement_wait_calls > before.retirement_wait_calls && after.retirement_wait_ns >= before.retirement_wait_ns);
     CHECK(!after.retirement_clock_errors);
+    CHECK(nx_metal_test_set_per_draw_bindings(r,1) == NX_OK);
+    CHECK(compare_commands(w,r,stream,8,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
+    CHECK(after.last_frame.per_draw_bindings && after.last_frame.fixed_state_bindings == 25 && after.last_frame.bound_passes == 3);
+    CHECK(nx_metal_test_set_per_draw_bindings(r,0) == NX_OK);
+    p = after.last_frame;
     CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_DRAWABLE_UNAVAILABLE) == NX_OK);
     int presented;
     CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && !presented);
@@ -205,6 +215,7 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
     CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
     CHECK(!after.last_frame.input_commands && !after.last_frame.draw_calls && !after.last_frame.draw_argument_bytes);
     CHECK(after.last_frame.render_passes == 1 && !after.last_frame.history_copies && !after.last_frame.bitmap_upload_bytes);
+    CHECK(!after.last_frame.bound_passes && !after.last_frame.fixed_state_bindings && !after.last_frame.per_draw_bindings);
     return 0;
 }
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
