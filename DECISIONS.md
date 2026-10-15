@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-10-15 — Compose Metal RGBA8 explicitly before presentation
+
+Metal now follows the same integer straight-alpha formula as the headless and
+Vulkan renderers. Before each translucent draw, a blit copies only its clipped
+destination region into a separate history texture; the subsequent render pass
+loads the canvas and samples history. Standalone tracked device textures on the
+existing `MTLCommandQueue` order encoder dependencies. The shader never reads
+from its own render target. Both resize candidates must exist before the old
+canvas/history pair is released. Per-draw pass transitions prioritize a defined
+reference result first; batching/performance remain A06 work.
+
 ## 2026-10-15 — Start Metal geometry with explicit pixel coverage
 
 The initial opaque command path follows the same coverage rules as headless and

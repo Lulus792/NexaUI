@@ -98,6 +98,29 @@ static int test_shapes(nx_window *w, nx_metal_renderer *r) {
     }
     return 0;
 }
+static int test_alpha(nx_window *w, nx_metal_renderer *r) {
+    nx_command commands[41] = {0}; size_t n = 0;
+    commands[n++] = (nx_command){.type=NX_COMMAND_PUSH_CLIP,.rect={3.5f,4.5f,135,95}};
+    for (unsigned i = 0; i < 36; ++i) {
+        nx_command c = {.type=NX_COMMAND_FILL_RECT,.color={(i%7)/6.f,(i%11)/10.f,(i%13)/12.f,(i%9)/8.f}};
+        c.rect = (nx_rect){(float)((i*17)%121)-12.5f,(float)((i*11)%89)-10.25f,53.5f,41.25f};
+        if (i%3 == 1) { c.type = NX_COMMAND_FILL_ROUND_RECT; c.radius = 7.5f; }
+        if (i%3 == 2) {
+            c.type = NX_COMMAND_FILL_TRIANGLE;
+            c.points[0] = (nx_point){c.rect.x,c.rect.y}; c.points[1] = (nx_point){c.rect.x+51,c.rect.y+7};
+            c.points[2] = (nx_point){c.rect.x+8,c.rect.y+43};
+        }
+        commands[n++] = c;
+    }
+    commands[n++] = (nx_command){.type=NX_COMMAND_POP_CLIP};
+    const double scales[] = {1,1.5,2};
+    const nx_color clear[] = {{0},{.03f,.07f,.11f,.26f},{.2f,.3f,.4f,1}};
+    for (unsigned i = 0; i < 3; ++i)
+        CHECK(compare_commands(w,r,commands,n,scales[i],clear[i]) == 0);
+    nx_command low = {.type=NX_COMMAND_FILL_RECT,.rect={.5f,.5f,79,61},.color={.5f,.2f,.7f,1.f/255.f}};
+    CHECK(compare_commands(w,r,&low,1,1,(nx_color){1,.4f,.2f,1.f/255.f}) == 0);
+    return 0;
+}
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
 static void *wrong_thread(void *user) {
     wrong *w = user; nx_metal_renderer_info info; int presented;
@@ -149,7 +172,9 @@ int main(void) {
         nx_window_destroy(window); nx_window_info wi; CHECK(nx_window_get_info(window,&wi) == NX_OK);
         nx_metal_renderer_info before, after;
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && !before.pending && !before.submitted_frames);
-        nx_command shape = {0}; shape.type = NX_COMMAND_FILL_RECT; shape.rect = (nx_rect){1,2,3,4}; shape.color = (nx_color){1,1,1,.5f};
+        const uint8_t pixel[] = {255,255,255,255};
+        nx_command shape = {.type=NX_COMMAND_BITMAP,.rect={1,2,3,4},.color={1,1,1,1},
+            .bitmap={pixel,1,1,4,NX_BITMAP_RGBA8}};
         int presented;
         CHECK(nx_metal_render(r,&shape,1,1,(nx_color){0},&presented) == NX_ERROR_UNSUPPORTED && !presented);
         shape.type = NX_COMMAND_POP_CLIP;
@@ -167,10 +192,13 @@ int main(void) {
             {.5f/255.f,82.5f/255.f,190.5f/255.f,92.5f/255.f}};
         for (unsigned i = 0; i < 15; ++i) CHECK(compare(window,r,colors[i%5]) == 0);
         CHECK(test_shapes(window,r) == 0);
+        CHECK(test_alpha(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);
         CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_CANVAS_MEMORY) == NX_OK);
+        CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+        CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_HISTORY_MEMORY) == NX_OK);
         CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
         CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pixel_width == before.pixel_width && after.pixel_height == before.pixel_height);
         CHECK(compare(window,r,colors[4]) == 0);
@@ -191,7 +219,7 @@ int main(void) {
         CHECK(nx_metal_test_invalidate(r) == NX_OK);
         CHECK(nx_metal_render(r,NULL,0,1,colors[0],&presented) == NX_ERROR_STATE);
         CHECK(nx_metal_renderer_recover(r) == NX_OK && compare(window,r,colors[2]) == 0);
-        nx_command recovered = {.type=NX_COMMAND_FILL_ROUND_RECT,.rect={9.5f,7.5f,91,67},.radius=12,.color={0,1,1,1}};
+        nx_command recovered = {.type=NX_COMMAND_FILL_ROUND_RECT,.rect={9.5f,7.5f,91,67},.radius=12,.color={0,1,1,.5f}};
         CHECK(compare_commands(window,r,&recovered,1,1.5,(nx_color){0}) == 0);
         printf("Metal %s: %ux%u; %llu submitted, %llu retired\n",after.device_name,after.pixel_width,after.pixel_height,
             (unsigned long long)after.submitted_frames,(unsigned long long)after.completed_frames);

@@ -82,8 +82,9 @@ That probe is a Linux executable with the policy branch selected; it is not an
 Apple SDK build or macOS runtime result. The actual native CI jobs above also
 passed text-buffer and text-field checks; physical Command/IME acceptance remains open.
 
-An initial [Metal target](metal.md) implements clear/present and opaque geometry
-with nested clips; native validation, alpha and image commands remain pending. A native NexaCloud
+An initial [Metal target](metal.md) implements clear/present, geometry, nested
+clips and straight alpha. Opaque GPU comparisons have executed; full lifecycle,
+alpha validation and image commands remain pending. A native NexaCloud
 macOS runner is not yet available. A blank window or headless scene is not
 complete macOS UI acceptance.
 

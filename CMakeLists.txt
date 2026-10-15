@@ -173,7 +173,8 @@ if(APPLE)
         target_include_directories(nexaui_renderer_metal PRIVATE
             ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/platform/macos)
         target_link_libraries(nexaui_renderer_metal PRIVATE NexaUI::NexaUI
-            "-framework Metal" "-framework QuartzCore" "-framework CoreGraphics" objc)
+            "-framework Metal" "-framework QuartzCore" "-framework CoreGraphics"
+            "-framework Foundation" objc)
         target_compile_options(nexaui_renderer_metal PRIVATE
             $<$<COMPILE_LANGUAGE:OBJC>:-fno-objc-arc> -Wall -Wextra -Wpedantic)
         set_target_properties(nexaui_renderer_metal PROPERTIES

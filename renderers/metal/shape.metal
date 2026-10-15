@@ -1,4 +1,4 @@
-// NexaUI opaque geometry. Matches draw_plan.h; no shader translation library.
+// NexaUI geometry/composition. Matches draw_plan.h; no shader translation library.
 #include <metal_stdlib>
 using namespace metal;
 #pragma STDC FP_CONTRACT OFF
@@ -120,7 +120,17 @@ bool shape_contains(float2 p, constant Shape &s) {
     return true;
 }
 
-fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buffer(0)]]) {
+fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buffer(0)]],
+    texture2d<float, access::read> history [[texture(0)]]) {
     if (!shape_contains(in.position.xy, s)) discard_fragment();
-    return float4(s.color[0],s.color[1],s.color[2],s.color[3]) / 255.0;
+    uint4 src = uint4(s.color[0],s.color[1],s.color[2],s.color[3]);
+    if (src.a == 255u) return float4(src) / 255.0;
+    uint4 dst = uint4(floor(history.read(uint2(in.position.xy)) * 255.0 + 0.5));
+    if (src.a == 0u) return float4(dst) / 255.0;
+    if (dst.a == 0u) return float4(src) / 255.0;
+    uint inverse = 255u - src.a;
+    uint alpha_numerator = src.a * 255u + dst.a * inverse;
+    uint3 numerator = src.rgb * src.a * 255u + dst.rgb * dst.a * inverse;
+    uint3 rgb = (numerator + alpha_numerator / 2u) / alpha_numerator;
+    return float4(uint4(rgb,(alpha_numerator + 127u) / 255u)) / 255.0;
 }

@@ -1,14 +1,15 @@
 # Initial macOS Metal backend
 
 The private `nexaui_renderer_metal` target implements initial A01/A02 clear/present
-and A03 opaque geometry for the [AppKit adapter](macos.md), with nested scissor
-clips. Native SDK/GPU execution is still pending. Straight-alpha composition
-and image/glyph upload remain A04/A05 work before native NexaCloud rendering.
+and A03/A04 geometry/composition for the [AppKit adapter](macos.md), with nested
+scissor clips. Initial opaque GPU comparisons have executed on Apple's virtual
+Metal device; full native tests and image/glyph upload remain required before
+native NexaCloud rendering.
 
 ## Build and ownership
 
 Apple builds enable `NEXAUI_BUILD_METAL`; disable it for a core/window-only build.
-The target directly links OS Metal, QuartzCore and CoreGraphics. Its build-tree
+The target directly links OS Metal, QuartzCore, CoreGraphics and Foundation. Its build-tree
 C header exposes an opaque renderer and diagnostics, with no Objective-C/Metal
 types. The installed core has no direct Metal dependency.
 
@@ -38,7 +39,7 @@ pool promptly releases the caller's drawable reference after commit; Metal/Core
 Animation retain their own presentation resources. GPU completion is not proof
 that a frame has become visible on screen.
 
-## Initial opaque geometry
+## Initial geometry and composition
 
 The first command path handles filled rectangles and triangles, inside strokes,
 rounded fills and round-capped lines. A plain C draw iterator validates the full
@@ -54,10 +55,20 @@ once per device, without an external shader translation library or runtime
 source-file lookup. `fastMathEnabled=NO` and `FP_CONTRACT OFF` preserve the
 split-product operations. This initial path copies small per-draw vertex and
 shape arguments with Metal's `set*Bytes` API. Upload rings and batching are A06
-work. Color output is quantized RGBA8; blending is disabled. Alpha values that
-quantize to zero are skipped, and those that quantize to 255 are opaque.
-Other alpha and all valid bitmap commands return `NX_ERROR_UNSUPPORTED` before
-drawable acquisition. They are never silently rendered as opaque shapes.
+work. Color output is quantized RGBA8; fixed-function blending is disabled.
+Alpha values that quantize to zero are skipped, and those that quantize to 255
+are opaque. All valid bitmap commands return `NX_ERROR_UNSUPPORTED` before
+drawable acquisition until A05 is implemented.
+
+For each translucent draw the encoder first ends the previous render pass,
+copies the clipped destination rectangle to an owned history texture, then
+loads the canvas and draws with integer straight-alpha composition in MSL.
+No shader simultaneously reads and writes the same texture. Standalone device
+textures use Metal's default hazard tracking with the existing `MTLCommandQueue`;
+it orders the render/blit/read transitions between encoders. Resize allocates
+both replacement textures before releasing either old texture. History-allocation
+failure releases the candidate canvas and preserves the previous pair. This
+simple first composition path still needs A06 batching/performance work.
 
 `tools/embed_metal_shader.py --check` verifies source/header correspondence;
 it does not compile MSL. CI runs this check on all three platforms. Pipeline
@@ -71,15 +82,26 @@ The initial clear/present renderer from `aa42f01` compiled with AppleClang 21.0.
 in [macOS CI](https://github.com/Lulus792/NexaUI/actions/runs/38656947313/job/116168845559).
 The overall build stopped at the test target's missing public-header include
 path; its direct `NexaUI::NexaUI` dependency is now explicit. That build did not
-execute Metal tests. SDK compilation of the newer opaque pipeline and any
-Metal GPU execution remain pending. Source and authored tests do not establish
-GPU success.
+execute Metal tests.
+
+At `083cf94`, the [static macOS job](https://github.com/Lulus792/NexaUI/actions/runs/38767168136/job/116533287565)
+compiled the MSL with Apple's OS compiler and executed on `Apple Paravirtual
+device`. The clear/opaque geometry/clip/readback and recovery comparisons all
+reached completion (36 submitted/retired frames) before the test failed its
+post-destruction layer-state assertion. The destructor now disables layer
+backing before restoring the saved layer, avoiding an automatically created
+replacement when restoring nil. The Metal clear/present example passed.
+The [shared job](https://github.com/Lulus792/NexaUI/actions/runs/38767168136/job/116533287566)
+failed to link the C example's Foundation symbols: the Metal target now names
+its own Foundation dependency explicitly instead of relying on the static core's
+AppKit link closure. Full static/shared tests and the newer alpha GPU comparisons
+must still pass. A virtual-device result is not physical hardware acceptance.
 
 The separate `nexaui_metal_plan` test runs on Windows and Linux. It interprets
 prepared geometry through the independent headless renderer and checks every
 RGBA byte and padding byte at 1x/1.25x/1.5x/2x, including empty/intersecting clips,
-all five opaque shape types and a distant triangle. It also checks the Metal
-NDC orientation, invalid streams, unsupported alpha/images, range limits and
+all five shape types, overlapping alpha and a distant triangle. It also checks the Metal
+NDC orientation, invalid streams, unsupported images, range limits and
 zero-size suspension. Windows MSVC Debug passed; Linux Clang ASan/UBSan with
 leak detection passed. These are CPU preparation results, not Metal execution.
 
@@ -89,7 +111,9 @@ allocation faults, drawable unavailability, thread/lease rules, retained readbac
 recovery and retryable driver close. Authored shape comparisons cover mixed
 opaque shapes, fractional scales, nested clips, both triangle windings, shared
 diagonals, degenerate geometry, large-coordinate cancellation and pipeline
-allocation failure/recreation. It and the example skip explicitly only if
+allocation failure/recreation. Additional alpha cases cover overlapping rects,
+rounded fills and triangles over transparent/translucent/opaque destinations,
+one-byte alpha, history allocation failure and recovery. It and the example skip explicitly only if
 there is no Metal device. `NEXAUI_REQUIRE_METAL=1` makes absence fail on required
 hardware runs. Tests enable the Metal debug layer; actual results will be recorded
 here. A skip never establishes native GPU support.
@@ -111,3 +135,4 @@ hardware performance, physical DPI/input and native NexaCloud remain open.
 - [Metal math compile options](https://developer.apple.com/documentation/metal/mtlcompileoptions/fastmathenabled)
 - [MSL specification, section 1.6.3: FP contraction](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
 - [Metal coordinate systems](https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Render-Ctx/Render-Ctx.html)
+- [Metal resource synchronization](https://developer.apple.com/documentation/metal/resource-synchronization)

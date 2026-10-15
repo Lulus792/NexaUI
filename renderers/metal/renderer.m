@@ -26,14 +26,14 @@ struct nx_metal_renderer {
     CAMetalLayer *layer;
     CALayer *previous_layer;
     BOOL previous_wants_layer;
-    id<MTLTexture> canvas;
+    id<MTLTexture> canvas, history;
     id<MTLCommandBuffer> pending;
     id<MTLBuffer> readback;
     uint32_t width, height;
     uint64_t submitted, completed;
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
-    unsigned drawable_unavailable, canvas_memory, command_memory, pipeline_memory, wait_timeouts;
+    unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, wait_timeouts;
 #endif
 };
 
@@ -107,7 +107,7 @@ static nx_result nx_mtl_pipeline(nx_metal_renderer *r) {
     id<MTLFunction> vertex = [library newFunctionWithName:@"nx_mtl_vertex"];
     id<MTLFunction> fragment = [library newFunctionWithName:@"nx_mtl_fragment"];
     MTLRenderPipelineDescriptor *desc = [[MTLRenderPipelineDescriptor alloc] init];
-    desc.label = @"NexaUI opaque shapes";
+    desc.label = @"NexaUI shape composition";
     desc.vertexFunction = vertex; desc.fragmentFunction = fragment;
     desc.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     desc.colorAttachments[0].blendingEnabled = NO;
@@ -127,7 +127,7 @@ static nx_result nx_mtl_resize(nx_metal_renderer *r, uint32_t width, uint32_t he
     nx_result result = nx_mtl_retire(r,0);
     if (result != NX_OK) return result;
     if (width != r->width || height != r->height) {
-        id<MTLTexture> texture = nil;
+        id<MTLTexture> texture = nil, history = nil;
         if (width) {
 #ifdef NEXAUI_METAL_TEST_HOOKS
             if (r->canvas_memory) { r->canvas_memory = 0; return NX_ERROR_MEMORY; }
@@ -139,8 +139,18 @@ static nx_result nx_mtl_resize(nx_metal_renderer *r, uint32_t width, uint32_t he
             texture = [r->device newTextureWithDescriptor:desc];
             if (!texture) return NX_ERROR_MEMORY;
             [texture setLabel:@"NexaUI owned canvas"];
+            /* Standalone device textures use tracked hazards with this
+               MTLCommandQueue. Copy/read order spans successive encoders. */
+            desc.usage = MTLTextureUsageShaderRead;
+#ifdef NEXAUI_METAL_TEST_HOOKS
+            if (r->history_memory) { r->history_memory = 0; [texture release]; return NX_ERROR_MEMORY; }
+#endif
+            history = [r->device newTextureWithDescriptor:desc];
+            if (!history) { [texture release]; return NX_ERROR_MEMORY; }
+            [history setLabel:@"NexaUI prior destination"];
         }
-        [r->canvas release]; r->canvas = texture; r->width = width; r->height = height;
+        [r->canvas release]; [r->history release];
+        r->canvas = texture; r->history = history; r->width = width; r->height = height;
     }
     NSView *view = nx_window_native_nsview(r->window);
     [r->layer setFrame:[view bounds]]; [r->layer setContentsScale:scale];
@@ -170,11 +180,25 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     id<MTLRenderCommandEncoder> encoder = [commands renderCommandEncoderWithDescriptor:pass];
     if (!encoder) return NX_ERROR_MEMORY;
     if (count) {
-        [encoder setRenderPipelineState:r->pipeline];
-        [encoder setCullMode:MTLCullModeNone];
-        [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
         nx_mtl_draw draw;
         while (nx_mtl_plan_next(&plan,&draw)) {
+            if (draw.shape.color[3] < 255u) {
+                [encoder endEncoding];
+                id<MTLBlitCommandEncoder> history_copy = [commands blitCommandEncoder];
+                if (!history_copy) return NX_ERROR_MEMORY;
+                MTLOrigin origin = MTLOriginMake(draw.scissor.x,draw.scissor.y,0);
+                [history_copy copyFromTexture:r->canvas sourceSlice:0 sourceLevel:0 sourceOrigin:origin
+                    sourceSize:MTLSizeMake(draw.scissor.width,draw.scissor.height,1) toTexture:r->history
+                    destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
+                [history_copy endEncoding];
+                pass.colorAttachments[0].loadAction = MTLLoadActionLoad;
+                encoder = [commands renderCommandEncoderWithDescriptor:pass];
+                if (!encoder) return NX_ERROR_MEMORY;
+            }
+            [encoder setRenderPipelineState:r->pipeline];
+            [encoder setCullMode:MTLCullModeNone];
+            [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
+            [encoder setFragmentTexture:r->history atIndex:0];
             [encoder setScissorRect:(MTLScissorRect){draw.scissor.x,draw.scissor.y,draw.scissor.width,draw.scissor.height}];
             /* set*Bytes copies these bounded arguments into Metal storage.
                No pointer into the caller's command stream survives encoding. */
@@ -289,6 +313,7 @@ nx_result nx_metal_renderer_recover(nx_metal_renderer *r) {
         nx_result result = nx_mtl_retire(r,0);
         if (r->pending) return result;
         [r->canvas release]; r->canvas = nil; r->width = r->height = 0;
+        [r->history release]; r->history = nil;
         [r->pipeline release]; r->pipeline = nil;
         r->layer.device = nil; [r->queue release]; r->queue = nil; [r->device release]; r->device = nil;
         result = nx_mtl_device(r);
@@ -305,9 +330,12 @@ nx_result nx_metal_renderer_destroy(nx_metal_renderer *r) {
         if (r->pending) return result;
         NSView *view = nx_window_native_nsview(r->window);
         if (r->layer && [view layer] == r->layer) {
-            [view setLayer:r->previous_layer]; [view setWantsLayer:r->previous_wants_layer];
+            /* Disabling first avoids AppKit manufacturing a replacement
+               backing layer when restoring an originally nil layer. */
+            [view setWantsLayer:NO]; [view setLayer:r->previous_layer];
+            if (r->previous_wants_layer) [view setWantsLayer:YES];
         }
-        [r->previous_layer release]; [r->layer release]; [r->canvas release];
+        [r->previous_layer release]; [r->layer release]; [r->canvas release]; [r->history release];
         [r->readback release]; [r->pipeline release]; [r->queue release]; [r->device release];
         if (r->leased) (void)nx_window_renderer_release(r->window,r);
         nx_allocator a = r->allocator; a.deallocate(a.user,r,sizeof(*r)); return NX_OK;
@@ -398,6 +426,7 @@ nx_result nx_metal_test_fail_next(nx_metal_renderer *r, nx_metal_test_fault faul
     switch (fault) {
     case NX_MTL_TEST_DRAWABLE_UNAVAILABLE: r->drawable_unavailable = 1; break;
     case NX_MTL_TEST_CANVAS_MEMORY: r->canvas_memory = 1; break;
+    case NX_MTL_TEST_HISTORY_MEMORY: r->history_memory = 1; break;
     case NX_MTL_TEST_COMMAND_MEMORY: r->command_memory = 1; break;
     case NX_MTL_TEST_PIPELINE_MEMORY: r->pipeline_memory = 1; break;
     case NX_MTL_TEST_WAIT_TIMEOUT: r->wait_timeouts = 2; break;

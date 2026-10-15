@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added initial Metal integer straight-alpha composition through a tracked GPU canvas/history pair, transactional resize and history-allocation regression. Native opaque readbacks have executed on Apple's virtual GPU; complete lifecycle/alpha checks remain pending. Fixed the Metal C example's explicit Foundation linkage and restore order for an originally absent AppKit layer.
 - Added initial private Metal opaque shapes/clips, embedded authored MSL and portable C draw preparation. Windows and Linux sanitizer tests validate CPU preparation against headless output; Apple shader compilation/GPU execution, alpha and image upload remain pending.
 - Added initial private Metal clear/present ownership, finite command retirement, GPU readback diagnostics, recovery and a C17 native example. Native SDK/GPU tests are authored; execution and complete UI command rendering remain pending.
 - Added the initial private AppKit window/input adapter and native callback/ownership tests. Main-thread windows, preedit, UTF-8 pasteboard and file URL drops pass dedicated static/shared macOS CI checks; full integration and physical acceptance remain pending.

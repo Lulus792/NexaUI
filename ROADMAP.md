@@ -400,3 +400,11 @@ was the only failing core test (73/74 passed); its lifecycle branch now includes
 Apple. The first Metal object also compiled at `aa42f01`; its test target's
 missing core usage requirements are fixed. Follow-up full/native GPU results
 remain required. Physical input, DPI, IME and assistive acceptance remain open.
+
+At `083cf94`, Apple's static CI build compiled MSL and executed the opaque
+readback comparisons on Apple Paravirtual device (36 submitted/retired frames).
+The test then exposed saved-layer restoration, and the shared C example exposed
+missing explicit Foundation linkage; both have corrections awaiting CI. Initial
+A04 integer straight-alpha composition now has implementation and authored GPU
+tests. Windows/Linux sanitizer CPU preparation comparisons pass with overlapping
+alpha; GPU alpha and complete lifecycle validation still require the follow-up.

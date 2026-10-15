@@ -22,10 +22,6 @@ nx_result nx_mtl_plan_begin(nx_mtl_plan *p, const nx_command *commands,
         if (c->type != NX_COMMAND_PUSH_CLIP && c->type != NX_COMMAND_FILL_RECT &&
             c->type != NX_COMMAND_FILL_TRIANGLE && c->type != NX_COMMAND_STROKE_RECT &&
             c->type != NX_COMMAND_FILL_ROUND_RECT && c->type != NX_COMMAND_LINE) return NX_ERROR_UNSUPPORTED;
-        if (c->type != NX_COMMAND_PUSH_CLIP) {
-            float alpha = floorf(c->color.a * 255.f + .5f);
-            if (alpha != 0 && alpha != 255) return NX_ERROR_UNSUPPORTED;
-        }
         double values[8] = {0};
         if (c->type == NX_COMMAND_FILL_TRIANGLE || c->type == NX_COMMAND_LINE) {
             unsigned n = c->type == NX_COMMAND_LINE ? 2u : 3u;

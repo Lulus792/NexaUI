@@ -4,7 +4,7 @@
 #include "renderer_backend.h"
 
 /* Plain C preparation, independently testable without an Apple SDK. This
-   initial path accepts opaque shapes and clips; image/alpha drawing follows. */
+   initial path accepts shapes and clips; image drawing follows. */
 typedef struct nx_mtl_shape {
     nx_point a, b, c;
     uint32_t kind;

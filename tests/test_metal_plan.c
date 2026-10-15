@@ -74,7 +74,7 @@ int main(void) {
         nx_command c = rect((nx_command_type)(i%5 == 0 ? NX_COMMAND_FILL_RECT : i%5 == 1 ?
             NX_COMMAND_STROKE_RECT : i%5 == 2 ? NX_COMMAND_FILL_ROUND_RECT : i%5 == 3 ? NX_COMMAND_LINE : NX_COMMAND_FILL_TRIANGLE),
             (nx_rect){(float)((i*17)%105)-12.5f,(float)((i*11)%90)-10.25f,19.5f,16.25f},
-            (nx_color){(i%17)/16.f,(i%23)/22.f,(i%29)/28.f,1});
+            (nx_color){(i%17)/16.f,(i%23)/22.f,(i%29)/28.f,(i%7)/6.f});
         c.radius = 4.5f; c.thickness = 2.5f;
         c.points[0] = (nx_point){c.rect.x,c.rect.y}; c.points[1] = (nx_point){c.rect.x+19,c.rect.y+3};
         c.points[2] = (nx_point){c.rect.x+4,c.rect.y+20};
@@ -97,7 +97,8 @@ int main(void) {
     nx_command bad = {.type=NX_COMMAND_POP_CLIP};
     CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_ERROR_COMMAND);
     bad = stream[0]; bad.color.a = .5f;
-    CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_ERROR_UNSUPPORTED);
+    CHECK(nx_mtl_plan_begin(&p,&bad,1,1,97,83) == NX_OK && nx_mtl_plan_next(&p,&d) && d.shape.color[3] == 128);
+    CHECK(compare(&bad,1,1) == 0);
     bad.color.a = 1; bad.rect.x = FLT_MAX;
     CHECK(nx_mtl_plan_begin(&p,&bad,1,4,1,1) == NX_ERROR_LIMIT);
     const uint8_t pixel[] = {255,255,255,255};
