@@ -149,7 +149,14 @@ the shared overview has no net prepare+encode median improvement in that first
 run, and wall tails do not improve uniformly. A follow-up preflights count and
 atlas mappings together, writes records in a second traversal and reuses the
 validated group iterator. It preserves capacity rollback and removes repeated
-walks/validation. Its native performance result is pending.
+walks/validation. At `bbf3474`, both native variants again pass 81/81 tests.
+The [two-pass measurement](../../benchmarks/baselines/metal-bbf3474/README.md)
+preserves another 768 samples and 24 byte-identical GPU captures. Within that
+run, pooled median CPU prepare+encode decreases by 7.1–59.8% relative to the
+unbatched mode. The static overview's small gain overlaps substantial block
+drift, and wall-time tails still do not improve uniformly. Separate CI runs
+cannot isolate a preparation speedup by subtracting their timings. Concurrent
+upload rings, GPU timestamps and physical Release acceptance remain open.
 
 ## CPU cost baseline before A06
 

@@ -467,5 +467,10 @@ At `c31c92e`, both macOS variants pass 81/81 including MSL, 10000-record GPU
 comparison, staging lifetime and all A/B blocks. The [first measurement](benchmarks/baselines/metal-c31c92e/README.md)
 shows 343/396/366 calls reduced to 28/30/9 with identical pixels, but identifies
 CPU preparation overhead and inconsistent wall-time gains. A follow-up caches
-validated preparation in a borrowed plan and fills storage in a second walk;
-its native result is pending. Concurrent upload rings and A07 remain open.
+validated preparation in a borrowed plan and fills storage in a second walk.
+At `bbf3474`, all six desktop variants and Linux sanitizers pass; both macOS
+suites pass 81/81. The [follow-up measurement](benchmarks/baselines/metal-bbf3474/README.md)
+retains 768 samples and 24 byte-identical GPU captures. In-run median CPU
+prepare+encode decreases by 7.1–59.8% against the unbatched path, with substantial
+block drift and inconsistent wall-time tails. Concurrent upload rings and A07
+remain open; this does not establish physical Release/FPS acceptance.
