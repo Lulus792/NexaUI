@@ -243,7 +243,15 @@ identity, bounded history wrap and stale completion rejection. Windows MSVC
 Debug and Linux Clang ASan/UBSan/leak checks pass. Authored native cases check
 gated pending frames with no premature timing, 67 committed frames over journal
 wrap, tail collection, retryable timeouts, recovery reset and thread ownership.
-Actual native timing results are pending.
+At `e66d5af`, all six desktop core variants and Linux sanitizers pass. Both
+macOS variants pass 82/82, each with 64/64 valid retained IDs in the native
+journal test. All 768 measured workload rows have valid GPU and kernel pairs,
+including the ring tail, with exact CPU/GPU submission/slot association. All
+24 mode/block images remain byte-identical to the earlier reference. The
+[GPU timing baseline](../../benchmarks/baselines/metal-e66d5af/README.md) preserves
+raw data, artifact hashes and distributions. Substantial cross-VM variation and
+mixed serial/ring outcomes do not establish a uniform performance gain; physical
+GPU/Release and display-latency acceptance remain open.
 
 ## CPU cost baseline before A06
 
