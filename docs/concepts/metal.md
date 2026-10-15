@@ -72,7 +72,8 @@ textures use Metal's default hazard tracking with the existing `MTLCommandQueue`
 it orders the render/blit/read transitions between encoders. Resize allocates
 both replacement textures before releasing either old texture. History-allocation
 failure releases the candidate canvas and preserves the previous pair. This
-simple first composition path still needs A06 batching/performance work.
+composition path retains conservative per-reader history copies; physical
+performance acceptance remains open.
 
 ## Image and glyph uploads
 
@@ -122,7 +123,10 @@ buffer and atlas. Only that slot's terminal command buffer permits CPU overwrite
 or growth. Two other retained submissions may remain pending while the next slot
 is prepared. The test-only serial baseline uses a limit of one; production uses
 three. Discarded/unavailable submissions do not advance the cursor or publish a
-profile. This ring's native validation result is pending.
+profile. At `a7c907b`, both macOS variants pass 81/81 native tests, including
+the three-slot lifecycle cases below; all six desktop variants and Linux
+sanitizers pass. The [ring comparison](../../benchmarks/baselines/metal-a7c907b/README.md)
+preserves 768 measured frames and 24 byte-identical mode/block GPU captures.
 
 Canvas and history remain shared GPU-only tracked textures, directly bound on
 one legacy `MTLCommandQueue`; Metal's tracked-resource hazards order their GPU
@@ -143,6 +147,17 @@ close. These require actual macOS execution. The current diagnostic workload
 compares serial/ring/ring/serial with batching and pass-state reuse enabled in
 both modes. It records slot, in-flight limit and pending counts, checks allocation
 stability after warmup, and preserves the same post-block pixel comparisons.
+The measurement shows shorter slot-retirement polling, with wait moving mostly
+to drawable acquisition. CPU prepare+encode rises in five of six comparisons;
+wall-time p95 worsens in two. This is a bounded ownership/overlap improvement,
+not a uniform frame-latency or hardware performance result. A subsequent test-only
+shared-event gate holds the GPU before upload/render passes so freed sources and
+a real finite readback timeout can be tested deterministically. At `29eb9c1`,
+both native macOS variants pass 81/81 with that gate: caller output remains
+untouched during an actual one-second polling timeout, all slots stay owned,
+and CPU signaling permits every captured frame to complete correctly. The final
+native log records 100 submitted/100 retired frames. Both variants' 24 mode/block
+captures still match the pre-batching baseline. See the ring report for hashes.
 
 A batch starts with at most one destination-reading record (an image/mask or
 quantized alpha below 255), followed by opaque records. The next destination
@@ -182,8 +197,9 @@ preserves another 768 samples and 24 byte-identical GPU captures. Within that
 run, pooled median CPU prepare+encode decreases by 7.1–59.8% relative to the
 unbatched mode. The static overview's small gain overlaps substantial block
 drift, and wall-time tails still do not improve uniformly. Separate CI runs
-cannot isolate a preparation speedup by subtracting their timings. Concurrent
-upload rings, GPU timestamps and physical Release acceptance remain open.
+cannot isolate a preparation speedup by subtracting their timings. At that
+revision, concurrent upload rings, GPU timestamps and physical Release acceptance
+remained open; the subsequent ring work above addresses upload ownership.
 
 ## CPU cost baseline before A06
 
@@ -242,8 +258,8 @@ All mode/block GPU images match headless, each other and the preceding baseline.
 The [raw A/B comparison](../../benchmarks/baselines/metal-a364f2d/README.md)
 records distributions, artifact digests and limits. Overall frame times and
 tails do not improve uniformly; this is a CPU encode result, not an FPS or
-physical Release-latency guarantee. Upload rings and draw batching remain open
-A06 work. The subsequent batching experiment above compares the previous
+physical Release-latency guarantee. Upload rings and draw batching were subsequent
+A06 work. The later batching experiment above compares the previous
 per-pass unbatched path against the new draw-record path; its extra CSV fields
 identify record upload bytes, buffer bindings and the batching mode.
 
@@ -338,4 +354,7 @@ hardware performance, physical DPI/input and native NexaCloud remain open.
 - [Metal coordinate systems](https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Render-Ctx/Render-Ctx.html)
 - [Metal resource synchronization](https://developer.apple.com/documentation/metal/resource-synchronization)
 - [Shared storage access](https://developer.apple.com/documentation/metal/mtlstoragemode/shared)
+- [Triple-buffer ownership](https://developer.apple.com/library/archive/documentation/3DDrawing/Conceptual/MTLBestPracticesGuide/TripleBuffering.html)
+- [Command-buffer retained resources](https://developer.apple.com/documentation/metal/mtlcommandbuffer/retainedreferences)
+- [Shared-event CPU signaling](https://developer.apple.com/documentation/metal/mtlsharedevent/signaledvalue)
 - [Blit encoder buffer/texture copies](https://developer.apple.com/documentation/metal/mtlblitcommandencoder)

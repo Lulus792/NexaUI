@@ -482,5 +482,14 @@ native cases cover distinct all-frame GPU captures after source release,
 wrap/reuse, busy-peer allocation failure, bounded full-ring/resize/recovery and
 three-slot close. Profiling compares serial/ring/ring/serial with batching fixed
 on, including per-slot/capacity diagnostics. Host C17 compilation and Windows /
-Linux sanitizer preparation tests pass. Actual macOS execution is pending;
-A06 performance/hardware acceptance and A07 remain open.
+Linux sanitizer preparation tests pass. At `a7c907b`, all six desktop variants
+and Linux sanitizers pass; both macOS variants execute 81/81 tests. The
+[ring measurement](benchmarks/baselines/metal-a7c907b/README.md) preserves 768
+samples and 24 byte-identical mode/block GPU captures. Shorter retirement polls
+mostly shift wait into drawable acquisition, with mixed CPU/wall-time outcomes.
+A test-only shared-event GPU gate strengthens pending-source and real-timeout
+coverage. At `29eb9c1`, both native macOS suites again pass 81/81: actual gated
+GPU work preserves all three slots and caller output across a one-second timeout;
+after CPU signaling, all captured frames match headless. The final native logs
+record 100 submitted/100 retired frames; all 24 workload images remain byte-equal.
+A06 physical performance/hardware acceptance and A07 remain open.
