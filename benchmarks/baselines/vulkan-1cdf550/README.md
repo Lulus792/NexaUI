@@ -121,10 +121,10 @@ Both Linux CI core jobs pass all executed tests: 98 registered, 92 executed and
 six explicit Wayland display skips under Xvfb (present, draw, ring, window,
 NexaCloud and native example). Local WSLg runs execute those native paths. Static
 CI also passes twenty untraced X11 presentation lifecycle repetitions; Linux CI
-sanitizers and both profiling targets pass. Windows static/shared and macOS static
-jobs also pass. The macOS shared job is still queued at this report's publication;
-it is not counted as executed acceptance. No macOS backend code changed in this
-increment; the conditional build changes still require that queued job's result.
+sanitizers and both profiling targets pass. All six desktop core jobs, including
+Windows and macOS static/shared builds and installed consumers, finish
+successfully at the source revision. No macOS backend code changed in this
+increment; its jobs verify the conditional build changes on the native runner.
 
 ## Preserved artifacts
 

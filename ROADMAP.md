@@ -536,6 +536,5 @@ native cases with synchronization validation. The
 [ring measurement](benchmarks/baselines/vulkan-1cdf550/README.md) retains 768
 serial/ring/ring/serial frames and 24 equal images with unchanged prior scene
 pixels. Software-driver wall medians rise slightly; this is no speedup claim.
-Both Linux and Windows CI variants, Linux sanitizers and static macOS pass at
-`1cdf550`; shared macOS is queued. V08 GPU timestamps and physical acceptance
-remain open.
+All six desktop CI variants and Linux sanitizers pass at `1cdf550`, including
+installed consumers. V08 GPU timestamps and physical acceptance remain open.
