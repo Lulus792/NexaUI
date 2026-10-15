@@ -112,6 +112,15 @@ CPU intervals, not GPU timestamps. See the
 [preserved comparison](../../benchmarks/baselines/vulkan-d4a2508/README.md) for
 raw data, environment and mixed timing results.
 
+To compare serial and three-slot upload pacing with batching held on, use
+`--profile-ring FONT.ttf OUTPUT_PREFIX` or build the separate
+`nexaui_nexacloud_vulkan_ring_profile` target. It runs serial/ring/ring/serial
+blocks with the same input and full-image gates, adding frame-slot identity,
+retirement/pending counts and upload capacity columns. Production uses three
+slots; both comparison modes are diagnostic test-build options. A faster CPU
+retirement interval may shift waiting into acquisition/presentation, so the
+complete CPU distributions need to be assessed together.
+
 ## Interaction and layout
 
 - Tab/Shift+Tab move focus; Enter/Space activate named actions and file tiles.

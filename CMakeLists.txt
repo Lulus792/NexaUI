@@ -276,6 +276,22 @@ if(NEXAUI_BUILD_TESTS)
                 FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
         endforeach()
     endif()
+    if(TARGET nexaui_renderer_vulkan)
+        add_executable(nexaui_vulkan_ring_tests tests/test_vulkan_ring.c)
+        target_include_directories(nexaui_vulkan_ring_tests PRIVATE
+            ${PROJECT_SOURCE_DIR}/renderers/vulkan ${PROJECT_SOURCE_DIR}/src)
+        target_compile_definitions(nexaui_vulkan_ring_tests PRIVATE NEXAUI_VULKAN_TEST_HOOKS)
+        target_compile_options(nexaui_vulkan_ring_tests PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_features(nexaui_vulkan_ring_tests PRIVATE c_std_17)
+        target_link_libraries(nexaui_vulkan_ring_tests PRIVATE nexaui_renderer_vulkan NexaUI::NexaUI)
+        foreach(_vk_platform x11 wayland)
+            add_test(NAME nexaui_vulkan_${_vk_platform}_ring COMMAND nexaui_vulkan_ring_tests)
+            set_tests_properties(nexaui_vulkan_${_vk_platform}_ring PROPERTIES
+                TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
+                ENVIRONMENT "NEXAUI_PLATFORM=${_vk_platform};NEXAUI_VULKAN_TEST_TIMELINE=1"
+                FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
+        endforeach()
+    endif()
     add_executable(nexaui_metal_plan_tests tests/test_metal_plan.c renderers/metal/draw_plan.c)
     target_include_directories(nexaui_metal_plan_tests PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/renderers/metal)
     target_link_libraries(nexaui_metal_plan_tests PRIVATE NexaUI::NexaUI)

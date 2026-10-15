@@ -39,7 +39,8 @@ static nx_result nx_vk_pipeline_status(VkResult status) {
 nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
                                  double scale) {
     if (!isfinite(scale) || scale <= 0) return NX_ERROR_ARGUMENT;
-    if (count > UINT32_MAX / 6u || count > SIZE_MAX / sizeof(nx_vk_vertex) ||
+    if (count > NX_VK_UPLOAD_BYTES / sizeof(nx_vk_vertex) ||
+        count > UINT32_MAX / 6u || count > SIZE_MAX / sizeof(nx_vk_vertex) ||
         count > SIZE_MAX / sizeof(nx_vk_draw))
         return NX_ERROR_LIMIT;
     nx_result result = nx_render_validate_commands(commands, count);
@@ -99,21 +100,27 @@ nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
 }
 
 static void nx_vk_vertex_buffer_destroy(nx_vk_painter *painter) {
-    if (painter->mapped) vkUnmapMemory(painter->device, painter->memory);
-    if (painter->vertices) vkDestroyBuffer(painter->device, painter->vertices, NULL);
-    if (painter->memory) vkFreeMemory(painter->device, painter->memory, NULL);
-    painter->mapped = NULL;
-    painter->vertices = VK_NULL_HANDLE;
-    painter->memory = VK_NULL_HANDLE;
-    painter->capacity = 0;
+    if (painter->upload->mapped) vkUnmapMemory(painter->device, painter->upload->memory);
+    if (painter->upload->vertices) vkDestroyBuffer(painter->device, painter->upload->vertices, NULL);
+    if (painter->upload->memory) vkFreeMemory(painter->device, painter->upload->memory, NULL);
+    painter->upload->mapped = NULL;
+    painter->upload->vertices = VK_NULL_HANDLE;
+    painter->upload->memory = VK_NULL_HANDLE;
+    painter->upload->capacity = 0;
 }
 
 void nx_vk_painter_destroy(nx_vk_painter *painter) {
     if (painter->device) {
-        nx_vk_vertex_buffer_destroy(painter);
-        if (painter->bitmap_mapped) vkUnmapMemory(painter->device, painter->bitmap_memory);
-        if (painter->bitmap_upload) vkDestroyBuffer(painter->device, painter->bitmap_upload, NULL);
-        if (painter->bitmap_memory) vkFreeMemory(painter->device, painter->bitmap_memory, NULL);
+        for (unsigned i = 0; i < NX_VK_FRAME_SLOTS; ++i) {
+            painter->upload = &painter->uploads[i];
+            nx_vk_vertex_buffer_destroy(painter);
+            if (painter->upload->bitmap_mapped) vkUnmapMemory(painter->device, painter->upload->bitmap_memory);
+            if (painter->upload->bitmap_upload) vkDestroyBuffer(painter->device, painter->upload->bitmap_upload, NULL);
+            if (painter->upload->bitmap_memory) vkFreeMemory(painter->device, painter->upload->bitmap_memory, NULL);
+            if (painter->upload->atlas_view) vkDestroyImageView(painter->device, painter->upload->atlas_view, NULL);
+            if (painter->upload->atlas) vkDestroyImage(painter->device, painter->upload->atlas, NULL);
+            if (painter->upload->atlas_memory) vkFreeMemory(painter->device, painter->upload->atlas_memory, NULL);
+        }
         if (painter->frame) vkDestroyFramebuffer(painter->device, painter->frame, NULL);
         if (painter->pipeline) vkDestroyPipeline(painter->device, painter->pipeline, NULL);
         if (painter->layout) vkDestroyPipelineLayout(painter->device, painter->layout, NULL);
@@ -123,13 +130,10 @@ void nx_vk_painter_destroy(nx_vk_painter *painter) {
         if (painter->sampler) vkDestroySampler(painter->device, painter->sampler, NULL);
         if (painter->canvas_view) vkDestroyImageView(painter->device, painter->canvas_view, NULL);
         if (painter->history_view) vkDestroyImageView(painter->device, painter->history_view, NULL);
-        if (painter->atlas_view) vkDestroyImageView(painter->device, painter->atlas_view, NULL);
         if (painter->canvas) vkDestroyImage(painter->device, painter->canvas, NULL);
         if (painter->history) vkDestroyImage(painter->device, painter->history, NULL);
-        if (painter->atlas) vkDestroyImage(painter->device, painter->atlas, NULL);
         if (painter->canvas_memory) vkFreeMemory(painter->device, painter->canvas_memory, NULL);
         if (painter->history_memory) vkFreeMemory(painter->device, painter->history_memory, NULL);
-        if (painter->atlas_memory) vkFreeMemory(painter->device, painter->atlas_memory, NULL);
     }
     if (painter->draws) painter->allocator.deallocate(painter->allocator.user,
         painter->draws, painter->draw_capacity * sizeof(*painter->draws));
@@ -143,6 +147,7 @@ void nx_vk_painter_destroy(nx_vk_painter *painter) {
     painter->atlas_allocations = atlas_allocations;
     painter->bitmap_allocations = bitmap_allocations;
     painter->allocator = allocator;
+    painter->upload = &painter->uploads[0];
 }
 
 static VkResult nx_vk_painter_image(nx_vk_painter *painter, VkFormat format,
@@ -186,15 +191,15 @@ static VkResult nx_vk_painter_image(nx_vk_painter *painter, VkFormat format,
 }
 
 static void nx_vk_atlas_descriptor(nx_vk_painter *painter) {
-    VkDescriptorImageInfo image = {painter->sampler, painter->atlas_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    VkDescriptorImageInfo image = {painter->sampler, painter->upload->atlas_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     VkWriteDescriptorSet write = {0}; write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstSet = painter->descriptor; write.dstBinding = 1; write.descriptorCount = 1;
+    write.dstSet = painter->upload->descriptor; write.dstBinding = 1; write.descriptorCount = 1;
     write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; write.pImageInfo = &image;
     vkUpdateDescriptorSets(painter->device, 1, &write, 0, NULL);
 }
 
 static nx_result nx_vk_atlas_reserve(nx_vk_painter *painter, VkExtent2D extent) {
-    if (extent.width <= painter->atlas_extent.width && extent.height <= painter->atlas_extent.height) return NX_OK;
+    if (extent.width <= painter->upload->atlas_extent.width && extent.height <= painter->upload->atlas_extent.height) return NX_OK;
     VkImage image = VK_NULL_HANDLE;
     VkDeviceMemory memory = VK_NULL_HANDLE;
     VkImageView view = VK_NULL_HANDLE;
@@ -210,19 +215,19 @@ static nx_result nx_vk_atlas_reserve(nx_vk_painter *painter, VkExtent2D extent) 
         if (memory) vkFreeMemory(painter->device, memory, NULL);
         return nx_vk_pipeline_status(status);
     }
-    if (painter->atlas_view) vkDestroyImageView(painter->device, painter->atlas_view, NULL);
-    if (painter->atlas) vkDestroyImage(painter->device, painter->atlas, NULL);
-    if (painter->atlas_memory) vkFreeMemory(painter->device, painter->atlas_memory, NULL);
-    painter->atlas = image; painter->atlas_memory = memory; painter->atlas_view = view;
-    painter->atlas_extent = extent; painter->atlas_initialized = 0;
+    if (painter->upload->atlas_view) vkDestroyImageView(painter->device, painter->upload->atlas_view, NULL);
+    if (painter->upload->atlas) vkDestroyImage(painter->device, painter->upload->atlas, NULL);
+    if (painter->upload->atlas_memory) vkFreeMemory(painter->device, painter->upload->atlas_memory, NULL);
+    painter->upload->atlas = image; painter->upload->atlas_memory = memory; painter->upload->atlas_view = view;
+    painter->upload->atlas_extent = extent; painter->upload->atlas_initialized = 0;
     ++painter->atlas_allocations;
     nx_vk_atlas_descriptor(painter);
     return NX_OK;
 }
 
 static nx_result nx_vk_bitmap_upload_reserve(nx_vk_painter *painter, VkDeviceSize bytes) {
-    if (bytes <= painter->bitmap_capacity) return NX_OK;
-    VkDeviceSize capacity = painter->bitmap_capacity ? painter->bitmap_capacity : 4096u;
+    if (bytes <= painter->upload->bitmap_capacity) return NX_OK;
+    VkDeviceSize capacity = painter->upload->bitmap_capacity ? painter->upload->bitmap_capacity : 4096u;
     while (capacity < bytes) capacity *= 2u; /* bytes is bounded by NX_VK_ATLAS_BYTES. */
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     if (painter->fail_bitmap_upload) { painter->fail_bitmap_upload = 0; return NX_ERROR_MEMORY; }
@@ -252,11 +257,11 @@ static nx_result nx_vk_bitmap_upload_reserve(nx_vk_painter *painter, VkDeviceSiz
     void *mapped = NULL;
     status = vkMapMemory(painter->device, memory, 0, VK_WHOLE_SIZE, 0, &mapped);
     if (status != VK_SUCCESS) goto fail;
-    if (painter->bitmap_mapped) vkUnmapMemory(painter->device, painter->bitmap_memory);
-    if (painter->bitmap_upload) vkDestroyBuffer(painter->device, painter->bitmap_upload, NULL);
-    if (painter->bitmap_memory) vkFreeMemory(painter->device, painter->bitmap_memory, NULL);
-    painter->bitmap_upload = buffer; painter->bitmap_memory = memory;
-    painter->bitmap_mapped = mapped; painter->bitmap_capacity = capacity;
+    if (painter->upload->bitmap_mapped) vkUnmapMemory(painter->device, painter->upload->bitmap_memory);
+    if (painter->upload->bitmap_upload) vkDestroyBuffer(painter->device, painter->upload->bitmap_upload, NULL);
+    if (painter->upload->bitmap_memory) vkFreeMemory(painter->device, painter->upload->bitmap_memory, NULL);
+    painter->upload->bitmap_upload = buffer; painter->upload->bitmap_memory = memory;
+    painter->upload->bitmap_mapped = mapped; painter->upload->bitmap_capacity = capacity;
     ++painter->bitmap_allocations;
     return NX_OK;
 fail:
@@ -281,7 +286,7 @@ static nx_result nx_vk_bitmaps_prepare(nx_vk_painter *painter, const nx_command 
     vkGetPhysicalDeviceProperties(painter->physical, &properties);
     uint32_t limit = properties.limits.maxImageDimension2D;
     if (limit > 16384u) limit = 16384u;
-    uint32_t width = painter->atlas_extent.width > 1 ? painter->atlas_extent.width : (limit < 1024u ? limit : 1024u);
+    uint32_t width = painter->upload->atlas_extent.width > 1 ? painter->upload->atlas_extent.width : (limit < 1024u ? limit : 1024u);
     for (size_t i = 0; i < count; ++i) {
         if (commands[i].type != NX_COMMAND_BITMAP || commands[i].rect.width == 0 ||
             commands[i].rect.height == 0 || floorf(commands[i].color.a * 255.f + .5f) == 0) continue;
@@ -322,7 +327,7 @@ static nx_result nx_vk_bitmaps_prepare(nx_vk_painter *painter, const nx_command 
         if (width == limit) return NX_ERROR_LIMIT;
         width = nx_vk_grow_axis(width + 1u, width, limit);
     }
-    VkExtent2D extent = {width, nx_vk_grow_axis(height, painter->atlas_extent.height, limit)};
+    VkExtent2D extent = {width, nx_vk_grow_axis(height, painter->upload->atlas_extent.height, limit)};
     if ((uint64_t)extent.width * extent.height > NX_VK_ATLAS_BYTES / 4u) return NX_ERROR_LIMIT;
     nx_result result = nx_vk_atlas_reserve(painter, extent);
     if (result != NX_OK) return result;
@@ -330,11 +335,11 @@ static nx_result nx_vk_bitmaps_prepare(nx_vk_painter *painter, const nx_command 
     if (result != NX_OK) return result;
     painter->bitmap_extent = (VkExtent2D){width, height};
     size_t stride = (size_t)width * 4u;
-    memset(painter->bitmap_mapped, 0, stride * height);
+    memset(painter->upload->bitmap_mapped, 0, stride * height);
     for (size_t i = 0; i < painter->bitmap_count; ++i) {
         nx_vk_bitmap *entry = &painter->bitmaps[i];
         for (uint32_t y = 0; y < entry->view.height; ++y) {
-            uint8_t *dst = (uint8_t *)painter->bitmap_mapped + (size_t)(entry->y + y) * stride + entry->x * 4u;
+            uint8_t *dst = (uint8_t *)painter->upload->bitmap_mapped + (size_t)(entry->y + y) * stride + entry->x * 4u;
             const uint8_t *src = entry->view.pixels + (size_t)y * entry->view.stride_bytes;
             if (entry->view.format == NX_BITMAP_RGBA8) memcpy(dst, src, (size_t)entry->view.width * 4u);
             else for (uint32_t x = 0; x < entry->view.width; ++x) {
@@ -375,12 +380,6 @@ static nx_result nx_vk_painter_create(nx_vk_painter *painter,
     if (!(atlas_format.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
         status = VK_ERROR_FORMAT_NOT_SUPPORTED; goto fail;
     }
-    /* A valid descriptor is required even for shaders taking a shape branch. */
-    status = nx_vk_painter_image(painter, VK_FORMAT_R8G8B8A8_UNORM, (VkExtent2D){1, 1},
-        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-        &painter->atlas, &painter->atlas_memory, &painter->atlas_view);
-    if (status != VK_SUCCESS) goto fail;
-    painter->atlas_extent = (VkExtent2D){1, 1}; ++painter->atlas_allocations;
     VkSamplerCreateInfo sampler = {0}; sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     sampler.magFilter = sampler.minFilter = VK_FILTER_NEAREST;
     sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
@@ -395,22 +394,23 @@ static nx_result nx_vk_painter_create(nx_vk_painter *painter,
     descriptor_layout.bindingCount = 2; descriptor_layout.pBindings = binding_info;
     status = vkCreateDescriptorSetLayout(native->logical, &descriptor_layout, NULL, &painter->descriptor_layout);
     if (status != VK_SUCCESS) { painter->descriptor_layout = VK_NULL_HANDLE; goto fail; }
-    VkDescriptorPoolSize pool_size = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2};
+    VkDescriptorPoolSize pool_size = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2u * NX_VK_FRAME_SLOTS};
     VkDescriptorPoolCreateInfo pool = {0}; pool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool.maxSets = pool.poolSizeCount = 1; pool.pPoolSizes = &pool_size;
+    pool.maxSets = NX_VK_FRAME_SLOTS; pool.poolSizeCount = 1; pool.pPoolSizes = &pool_size;
     status = vkCreateDescriptorPool(native->logical, &pool, NULL, &painter->descriptor_pool);
     if (status != VK_SUCCESS) { painter->descriptor_pool = VK_NULL_HANDLE; goto fail; }
     VkDescriptorSetAllocateInfo set = {0}; set.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     set.descriptorPool = painter->descriptor_pool; set.descriptorSetCount = 1;
     set.pSetLayouts = &painter->descriptor_layout;
-    status = vkAllocateDescriptorSets(native->logical, &set, &painter->descriptor);
-    if (status != VK_SUCCESS) goto fail;
-    VkDescriptorImageInfo sampled = {painter->sampler, painter->history_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-    VkWriteDescriptorSet write = {0}; write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstSet = painter->descriptor; write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; write.pImageInfo = &sampled;
-    vkUpdateDescriptorSets(native->logical, 1, &write, 0, NULL);
-    nx_vk_atlas_descriptor(painter);
+    for (unsigned i = 0; i < NX_VK_FRAME_SLOTS; ++i) {
+        status = vkAllocateDescriptorSets(native->logical, &set, &painter->uploads[i].descriptor);
+        if (status != VK_SUCCESS) goto fail;
+        VkDescriptorImageInfo sampled = {painter->sampler, painter->history_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        VkWriteDescriptorSet write = {0}; write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = painter->uploads[i].descriptor; write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; write.pImageInfo = &sampled;
+        vkUpdateDescriptorSets(native->logical, 1, &write, 0, NULL);
+    }
     VkAttachmentDescription attachment = {0};
     attachment.format = format;
     attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -542,8 +542,9 @@ fail:
 }
 
 static nx_result nx_vk_painter_reserve(nx_vk_painter *painter, VkDeviceSize bytes) {
-    if (bytes <= painter->capacity) return NX_OK;
-    VkDeviceSize capacity = painter->capacity ? painter->capacity : 4096u;
+    if (bytes > NX_VK_UPLOAD_BYTES) return NX_ERROR_LIMIT;
+    if (bytes <= painter->upload->capacity) return NX_OK;
+    VkDeviceSize capacity = painter->upload->capacity ? painter->upload->capacity : 4096u;
     while (capacity < bytes) {
         if (capacity > UINT64_MAX / 2u) { capacity = bytes; break; }
         capacity *= 2u;
@@ -590,10 +591,10 @@ static nx_result nx_vk_painter_reserve(nx_vk_painter *painter, VkDeviceSize byte
     status = vkMapMemory(painter->device, memory, 0, VK_WHOLE_SIZE, 0, &mapped);
     if (status != VK_SUCCESS) goto fail;
     nx_vk_vertex_buffer_destroy(painter);
-    painter->vertices = buffer;
-    painter->memory = memory;
-    painter->mapped = mapped;
-    painter->capacity = capacity;
+    painter->upload->vertices = buffer;
+    painter->upload->memory = memory;
+    painter->upload->mapped = mapped;
+    painter->upload->capacity = capacity;
     ++painter->allocations;
     return NX_OK;
 fail:
@@ -638,7 +639,11 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
         nx_result result = nx_vk_painter_create(painter, native, format, extent);
         if (result != NX_OK) return result;
     }
-    nx_result result = nx_vk_bitmaps_prepare(painter, commands, count);
+    /* Shape branches still need a valid atlas descriptor. Create it lazily for
+       this retired slot, never update another slot's pending descriptor. */
+    nx_result result = nx_vk_atlas_reserve(painter, (VkExtent2D){1, 1});
+    if (result != NX_OK) return result;
+    result = nx_vk_bitmaps_prepare(painter, commands, count);
     if (result != NX_OK) return result;
     if (count > painter->draw_capacity) {
         size_t capacity = painter->draw_capacity ? painter->draw_capacity : 64u;
@@ -657,7 +662,7 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
     }
     result = nx_vk_painter_reserve(painter, (VkDeviceSize)count * sizeof(nx_vk_vertex));
     if (result != NX_OK) return result;
-    nx_vk_vertex *vertices = painter->mapped;
+    nx_vk_vertex *vertices = painter->upload->mapped;
     VkRect2D clips[NX_MAX_CLIP_DEPTH + 1u];
     clips[0] = (VkRect2D){{0, 0}, extent};
     unsigned depth = 0;
@@ -750,9 +755,9 @@ static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands
     vkCmdBeginRenderPass(commands, &begin, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, painter->pipeline);
     vkCmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, painter->layout,
-        0, 1, &painter->descriptor, 0, NULL);
+        0, 1, &painter->upload->descriptor, 0, NULL);
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(commands, 0, 1, &painter->vertices, &offset);
+    vkCmdBindVertexBuffers(commands, 0, 1, &painter->upload->vertices, &offset);
     VkViewport viewport = {0, 0, (float)extent.width, (float)extent.height, 0, 1};
     vkCmdSetViewport(commands, 0, 1, &viewport);
 }
@@ -760,11 +765,11 @@ static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands
 void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkExtent2D extent) {
     VkImageMemoryBarrier atlas = {0}; atlas.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     atlas.srcQueueFamilyIndex = atlas.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    atlas.image = painter->atlas;
+    atlas.image = painter->upload->atlas;
     atlas.subresourceRange = (VkImageSubresourceRange){VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    atlas.oldLayout = painter->atlas_initialized ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
-    atlas.srcAccessMask = painter->atlas_initialized ? VK_ACCESS_SHADER_READ_BIT : 0;
-    VkPipelineStageFlags atlas_stage = painter->atlas_initialized ? VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    atlas.oldLayout = painter->upload->atlas_initialized ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
+    atlas.srcAccessMask = painter->upload->atlas_initialized ? VK_ACCESS_SHADER_READ_BIT : 0;
+    VkPipelineStageFlags atlas_stage = painter->upload->atlas_initialized ? VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     if (painter->bitmap_extent.width) {
         atlas.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         atlas.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -772,17 +777,17 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
         VkBufferImageCopy copy = {0};
         copy.imageSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
         copy.imageExtent = (VkExtent3D){painter->bitmap_extent.width, painter->bitmap_extent.height, 1};
-        vkCmdCopyBufferToImage(commands, painter->bitmap_upload, painter->atlas,
+        vkCmdCopyBufferToImage(commands, painter->upload->bitmap_upload, painter->upload->atlas,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
         atlas.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         atlas.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         atlas_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     }
-    if (painter->bitmap_extent.width || !painter->atlas_initialized) {
+    if (painter->bitmap_extent.width || !painter->upload->atlas_initialized) {
         atlas.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         atlas.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         vkCmdPipelineBarrier(commands, atlas_stage, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &atlas);
-        painter->atlas_initialized = 1;
+        painter->upload->atlas_initialized = 1;
     }
     VkImageMemoryBarrier history = {0};
     history.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

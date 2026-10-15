@@ -7,8 +7,8 @@ V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alph
 composition through the private renderer driver. The pipeline also draws stroked
 rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
 glyph masks through a staged texture atlas. Initial V07 now adds per-instance
-uploads, ordered batching and CPU profiling. Concurrent upload rings, GPU timing,
-hardware device-loss acceptance and broader integration remain V07–V09 work.
+uploads, ordered batching, a three-slot upload ring and CPU profiling. GPU timing,
+hardware device-loss acceptance and broader integration remain V08–V09 work.
 
 ## Initial V07 instancing and ordered batching
 
@@ -27,8 +27,8 @@ writes preserve primitive order. The hardware scissor encloses the group, while
 each fragment also enforces its instance's exact clip. This uses standard
 instanced attributes and direct `vkCmdDraw` with `firstInstance`; it requires no
 storage-buffer descriptor path, indirect draw feature or relaxed raster order.
-The existing submission fence still protects CPU writes, buffer growth and
-destruction. A concurrent multi-frame upload ring remains separate work.
+The selected slot's submission fence protects CPU writes, buffer growth and
+destruction; the ring contract is described below.
 
 Committed CPU profiles identify submission/canvas/command scale and count input
 commands, visible records, API draws, render passes, history copies and one-way
@@ -68,7 +68,69 @@ preserves 1536 measured frames and verifies 48 identical mode/block images acros
 local X11/Wayland and CI static/shared builds. Geometry payload falls by 76.7%;
 the three scenes use 64.1–97.0% fewer draw calls. CPU results have mixed tails,
 including a worse X11 overview p95; these counters do not establish a uniform
-speedup. Concurrent upload rings, GPU timing and physical acceptance remain open.
+speedup. The ring follow-up below adds concurrent uploads; GPU timing and physical
+acceptance remain open.
+
+## Three-slot Vulkan upload ring
+
+Production keeps three fixed slots, each with its own mapped instance buffer,
+bitmap staging buffer, atlas, descriptor set, command buffer, acquisition
+semaphore and submission fence. CPU-only draw/bitmap planning storage is reused
+after encoding; borrowed bitmap pixels are copied before successful submission
+returns. Preparing the next slot waits only for that slot's prior submission.
+A timeout preserves its handles and pending state and returns without presenting
+or publishing a new profile. Successful submission advances the slot exactly once,
+including submissions whose subsequent presentation fails.
+
+Pipeline, sampler, framebuffer, canvas and history stay shared. A GPU-side
+all-commands dependency orders prior canvas accesses before the next discard and
+clear. Existing history copy/read dependencies keep their original boundaries
+across submissions. Descriptors are private to slots, so atlas growth never
+updates a pending peer's bindings. A command pool permits individual command
+buffer resets; it is destroyed only after aggregate retirement.
+
+Geometry capacity is capped at 64 MiB per slot, as are bitmap staging and atlas
+texels independently: up to 576 MiB of retained payload capacity across three
+slots, excluding shared canvas/history, driver allocation alignment and temporary
+growth candidates. Whole-stream preflight checks the geometry limit before
+allocating CPU plans. Growth adopts new Vulkan storage only after creation,
+binding and mapping succeed; the old selected-slot buffer survives failure.
+
+Swapchain recreation, recovery and close gather every pending submission,
+acquisition fence and presentation fence into one finite wait budget. A timeout
+keeps the renderer and window lease for retry. Acquisition fences remain distinct
+from per-slot submission fences; finished presentation semaphores/fences remain
+per swapchain image. The strict presentation-retirement contract is unchanged.
+Readback drains all affected submissions before releasing its retained buffer.
+Cached diagnostics report slot IDs, configured slot count, pending/retired counts
+and per-slot capacities without polling GPU completion.
+
+The dedicated native ring test uses a test-only `VK_KHR_timeline_semaphore` gate
+to queue three offscreen captures through the same production encoder while GPU
+execution is held. The optional feature is requested only with
+`NEXAUI_VULKAN_TEST_TIMELINE`; production adds no timeline requirement. Host
+signaling is valid with pending timeline waits. A host-set `VkEvent` was rejected
+by validation (`09543`) and removed: it cannot release already pending waits.
+Atlas capacities are warmed before holding the queue because the tested Lavapipe
+driver can synchronize `vkCreateImageView` with earlier queue work.
+
+The tests release distinct padded RGBA8/A8 source arrays after queueing, check
+real bounded full-ring/readback/resize/recovery/close timeouts and unchanged caller
+output, then signal and compare each GPU capture with its independent headless
+frame. They also cover reverse ID collection, wrap/reuse, a busy-peer allocation
+failure and successful retry, and window lease release. Existing single-slot
+fault regressions select serial pacing explicitly; normal native scene smokes
+exercise the default ring. Initial X11/Wayland gated cases pass with core and
+synchronization validation; complete shared/sanitizer and timing follow-up remain
+required before broader acceptance.
+
+Test builds offer `--profile-ring FONT.ttf OUTPUT_PREFIX` and the optional
+`nexaui_nexacloud_vulkan_ring_profile` target. Serial/ring/ring/serial blocks keep
+batching enabled, retain four warmup and 32 measured frames per block, verify slot
+cycling/stable allocations and keep the existing input/geometry/image gates.
+CSV rows add slot/count, retired/pending work and aggregate capacities. This is
+separate from validation. CPU waiting may move between retirement, acquisition
+and presentation; no GPU execution or display-latency claim follows from it.
 
 ## Validation-tool compatibility
 
@@ -642,6 +704,10 @@ physical input/DPI, compositor color management or native macOS acceptance.
 
 ## Specification references
 
+- [Timeline semaphore host signaling](https://docs.vulkan.org/refpages/latest/refpages/source/vkSignalSemaphore.html)
+- [Timeline submit values](https://docs.vulkan.org/refpages/latest/refpages/source/VkTimelineSemaphoreSubmitInfo.html)
+- [Timeline wait-before-signal example](https://docs.vulkan.org/samples/latest/samples/extensions/timeline_semaphore/README.html)
+- [Host event restrictions](https://docs.vulkan.org/refpages/latest/refpages/source/vkSetEvent.html)
 - [Instanced input layout](https://docs.vulkan.org/refpages/latest/refpages/source/VkVertexInputBindingDescription.html)
 - [Direct draw and instance indices](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdDraw.html)
 - [Primitive rasterization order](https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-order)

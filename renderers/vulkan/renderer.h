@@ -12,7 +12,7 @@ typedef struct nx_vulkan_renderer nx_vulkan_renderer;
 typedef struct nx_vulkan_frame_profile {
     uint64_t submission, input_commands, draw_records, draw_calls, render_passes;
     uint64_t history_copies, history_copy_bytes, vertex_upload_bytes, bitmap_upload_bytes, present_copy_bytes;
-    uint32_t pixel_width, pixel_height;
+    uint32_t pixel_width, pixel_height, frame_slot, frames_in_flight;
     double draw_scale, retirement_ms, prepare_ms, acquire_ms, encode_ms, submit_ms, present_ms;
     int cpu_timing_valid, batched;
 } nx_vulkan_frame_profile;
@@ -43,6 +43,9 @@ typedef struct nx_vulkan_renderer_info {
     uint32_t atlas_width, atlas_height, unique_bitmaps;
     uint64_t bitmap_upload_capacity_bytes, bitmap_upload_allocations, atlas_allocations;
     uint64_t submitted_frames;
+    uint64_t retired_frames;
+    uint32_t frame_slots, pending_submissions, pending_captures;
+    uint64_t slot_vertex_capacity_bytes[3], slot_bitmap_capacity_bytes[3];
     nx_vulkan_frame_profile last_frame;
 } nx_vulkan_renderer_info;
 
@@ -112,6 +115,19 @@ nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
 /* Subsequent encoding only; pending commands remain immutable. Production
    always batches. Both test modes use the same per-instance vertex format. */
 nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled);
+/* Drains before changing the diagnostic pacing mode. Production uses 3 slots. */
+nx_result nx_vulkan_test_set_frame_slots(nx_vulkan_renderer *renderer, unsigned slots);
+/* Native queue work through the production encoder, without a swapchain wait.
+   A host-signaled timeline holds GPU work for lifetime tests. It is enabled only
+   by NEXAUI_VULKAN_TEST_TIMELINE during test-device creation, never production.
+   Captures retain their buffers until collection/resize/recovery/close. */
+nx_result nx_vulkan_test_gate_begin(nx_vulkan_renderer *renderer);
+nx_result nx_vulkan_test_gate_signal(nx_vulkan_renderer *renderer);
+nx_result nx_vulkan_test_queue_capture(nx_vulkan_renderer *renderer,
+    const nx_command *commands, size_t count, double scale, nx_color clear,
+    uint64_t *out_submission);
+nx_result nx_vulkan_test_collect_capture(nx_vulkan_renderer *renderer,
+    uint64_t submission, uint8_t *pixels, size_t stride_bytes);
 #endif
 
 #endif

@@ -32,6 +32,9 @@ typedef struct nx_vk_handles {
     VkSurfaceKHR surface;
     VkQueue present_queue;
     uint32_t present_queue_family;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    int test_timeline;
+#endif
 } nx_vk_handles;
 
 typedef struct nx_vk_surface_source {

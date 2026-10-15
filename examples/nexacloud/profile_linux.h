@@ -3,6 +3,7 @@
 #define CLOUD_VK_PROFILE_SAMPLES 32u
 typedef struct cloud_vk_profile_sample {
     nx_vulkan_frame_profile frame;
+    nx_vulkan_renderer_info info;
     double wall_ms;
 } cloud_vk_profile_sample;
 static int vk_profile_double_compare(const void *a, const void *b) {
@@ -32,6 +33,10 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
         (void)commands;
         if (current.submitted_frames != previous.submitted_frames+1 || p.submission != current.submitted_frames ||
             !p.cpu_timing_valid || p.input_commands != count || !p.draw_records || !p.draw_calls || p.draw_calls>p.draw_records ||
+            p.frames_in_flight != current.frame_slots || p.frame_slot >= current.frame_slots ||
+            p.frame_slot != (previous.last_frame.frame_slot+1u)%current.frame_slots ||
+            current.pending_submissions>current.frame_slots || current.pending_captures ||
+            p.frames_in_flight != geometry.frames_in_flight ||
             p.vertex_upload_bytes != p.draw_records*84u ||
             (p.batched ? p.draw_calls != p.render_passes : p.draw_calls != p.draw_records) ||
             p.render_passes<p.history_copies || p.render_passes>p.history_copies+1 ||
@@ -46,7 +51,7 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
         const double phases[]={p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms};
         double total=0;
         for (unsigned j=0;j<6;++j) { if (!isfinite(phases[j]) || phases[j]<0) return 0; total+=phases[j]; }
-        samples[i]=(cloud_vk_profile_sample){p,(end-start)*1000.};
+        samples[i]=(cloud_vk_profile_sample){p,current,(end-start)*1000.};
         if (total>samples[i].wall_ms+.01) return 0;
         previous=current;
     }
@@ -54,16 +59,19 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
     char path[1024];
     if (snprintf(path,sizeof(path),"%s-linux-profile-%s.csv",prefix,workload)>=(int)sizeof(path)) return 0;
     FILE *file=fopen(path,"wb"); if (!file) return 0;
-    int okay=fprintf(file,"workload,backend,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,history_copies,history_copy_bytes,vertex_upload_bytes,bitmap_upload_bytes,present_copy_bytes,batched,retirement_ms,prepare_ms,acquire_ms,encode_ms,submit_ms,present_ms,wall_ms\n")>0;
+    int okay=fprintf(file,"workload,backend,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,history_copies,history_copy_bytes,vertex_upload_bytes,bitmap_upload_bytes,present_copy_bytes,batched,retirement_ms,prepare_ms,acquire_ms,encode_ms,submit_ms,present_ms,wall_ms,frame_slot,frame_slots,retired_frames,pending_submissions,vertex_capacity_bytes,bitmap_capacity_bytes\n")>0;
     for (unsigned i=0;okay && i<CLOUD_VK_PROFILE_SAMPLES;++i) {
         nx_vulkan_frame_profile p=samples[i].frame;
-        okay=fprintf(file,"%s,%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+        nx_vulkan_renderer_info info=samples[i].info;
+        okay=fprintf(file,"%s,%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%u,%u,%llu,%u,%llu,%llu\n",
             workload,backend,p.pixel_width,p.pixel_height,p.draw_scale,cloud_text_scale(scene),
             (unsigned long long)p.submission,(unsigned long long)p.input_commands,(unsigned long long)p.draw_records,
             (unsigned long long)p.draw_calls,(unsigned long long)p.render_passes,(unsigned long long)p.history_copies,
             (unsigned long long)p.history_copy_bytes,(unsigned long long)p.vertex_upload_bytes,
             (unsigned long long)p.bitmap_upload_bytes,(unsigned long long)p.present_copy_bytes,p.batched,
-            p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms,samples[i].wall_ms)>0;
+            p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms,samples[i].wall_ms,
+            p.frame_slot,p.frames_in_flight,(unsigned long long)info.retired_frames,info.pending_submissions,
+            (unsigned long long)info.vertex_capacity_bytes,(unsigned long long)info.bitmap_upload_capacity_bytes)>0;
     }
     if (fclose(file)) okay=0;
     printf("Vulkan CPU baseline %s (%s): %s, %ux%u, 32 samples, 4 warmup, %llu records / %llu draws / %llu history copies / %llu vertex bytes.\n",
@@ -114,8 +122,10 @@ static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer
     char baseline[1200]={0};
     for (unsigned block=0;block<4;++block) {
         char name[80];
-        if (snprintf(name,sizeof(name),"%s-%s-%u",workload,batched[block] ? "batched" : "unbatched",block)>=(int)sizeof(name) ||
-            nx_vulkan_test_set_batching(renderer->backend.user,batched[block]) != NX_OK ||
+        const char *mode=cloud_vk_profile_ring ? (batched[block] ? "ring" : "serial") : (batched[block] ? "batched" : "unbatched");
+        if (snprintf(name,sizeof(name),"%s-%s-%u",workload,mode,block)>=(int)sizeof(name) ||
+            nx_vulkan_test_set_frame_slots(renderer->backend.user,cloud_vk_profile_ring && batched[block] ? 3u : 1u) != NX_OK ||
+            nx_vulkan_test_set_batching(renderer->backend.user,cloud_vk_profile_ring ? 1 : batched[block]) != NX_OK ||
             !vk_profile_workload(window,scene,renderer,prefix,name)) return 0;
         char capture_path[1200];
         if (snprintf(capture_path,sizeof(capture_path),"%s-linux-profile-%s.ppm",prefix,name)>=(int)sizeof(capture_path)) return 0;
@@ -125,5 +135,6 @@ static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer
             return 0;
         }
     }
-    return nx_vulkan_test_set_batching(renderer->backend.user,1) == NX_OK;
+    return nx_vulkan_test_set_batching(renderer->backend.user,1) == NX_OK &&
+        nx_vulkan_test_set_frame_slots(renderer->backend.user,3) == NX_OK;
 }

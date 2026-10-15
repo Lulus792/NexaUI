@@ -14,9 +14,26 @@ typedef struct nx_vk_bitmap {
     uint32_t x, y;
 } nx_vk_bitmap;
 
+#define NX_VK_FRAME_SLOTS 3u
+#define NX_VK_UPLOAD_BYTES (UINT64_C(64) * 1024u * 1024u)
+
+/* CPU-written payload and mutable descriptors are private to a retired slot.
+   Canvas/history/pipeline stay queue-owned and are ordered across submissions. */
+typedef struct nx_vk_upload {
+    VkBuffer vertices, bitmap_upload;
+    VkDeviceMemory memory, bitmap_memory, atlas_memory;
+    void *mapped, *bitmap_mapped;
+    VkDeviceSize capacity, bitmap_capacity;
+    VkImage atlas;
+    VkImageView atlas_view;
+    VkExtent2D atlas_extent;
+    VkDescriptorSet descriptor;
+    int atlas_initialized;
+} nx_vk_upload;
+
 /* Set allocator before first use; preflight before prepare. All storage
-   belongs to one renderer. The caller retires its submission
-   before prepare/destroy and its presentations before destroying the images. */
+   belongs to one renderer. The caller retires the selected slot before prepare,
+   all submissions before destroy, and presentations before destroying images. */
 typedef struct nx_vk_painter {
     nx_allocator allocator;
     VkDevice device;
@@ -30,27 +47,16 @@ typedef struct nx_vk_painter {
     VkFramebuffer frame;
     VkDescriptorSetLayout descriptor_layout;
     VkDescriptorPool descriptor_pool;
-    VkDescriptorSet descriptor;
     VkSampler sampler;
-    VkImage atlas;
-    VkDeviceMemory atlas_memory;
-    VkImageView atlas_view;
-    VkExtent2D atlas_extent, bitmap_extent;
-    int atlas_initialized;
-    VkBuffer bitmap_upload;
-    VkDeviceMemory bitmap_memory;
-    void *bitmap_mapped;
-    VkDeviceSize bitmap_capacity;
+    nx_vk_upload uploads[NX_VK_FRAME_SLOTS];
+    nx_vk_upload *upload;
+    VkExtent2D bitmap_extent;
     uint64_t atlas_allocations, bitmap_allocations;
     nx_vk_bitmap *bitmaps;
     size_t bitmap_count, bitmap_record_capacity;
     nx_vk_draw *draws;
     size_t draw_capacity, draw_count;
     int history_initialized;
-    VkBuffer vertices;
-    VkDeviceMemory memory;
-    void *mapped;
-    VkDeviceSize capacity;
     uint64_t allocations;
     uint32_t vertex_count;
     uint64_t recorded_draws, recorded_passes, recorded_history_copies, recorded_history_bytes;

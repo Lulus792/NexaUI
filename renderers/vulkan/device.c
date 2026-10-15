@@ -9,6 +9,7 @@
 #define NX_VK_EXT_SWAPCHAIN 1u
 #define NX_VK_EXT_PRESENT_EXT 2u
 #define NX_VK_EXT_PRESENT_KHR 4u
+#define NX_VK_EXT_TEST_TIMELINE 8u
 #define NX_VK_KHR_PRESENT_NAME "VK_KHR_swapchain_maintenance1"
 #define NX_VK_KHR_SURFACE_NAME "VK_KHR_surface_maintenance1"
 
@@ -20,6 +21,9 @@ struct nx_vk_device {
     pthread_t owner;
     unsigned maintenance_instance;
     PFN_vkGetPhysicalDeviceFeatures2KHR query_features;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    int test_timeline_requested;
+#endif
 };
 
 typedef struct nx_vk_candidate {
@@ -30,6 +34,9 @@ typedef struct nx_vk_candidate {
     unsigned rank;
     int has_swapchain;
     nx_vk_present_fence_support present_fences;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    int test_timeline;
+#endif
 } nx_vk_candidate;
 
 static void *nx_vk_malloc(void *user, size_t size) {
@@ -138,6 +145,10 @@ static nx_result nx_vk_extension_support(nx_vk_device *device,
                     *out_supported |= NX_VK_EXT_PRESENT_EXT;
                 if (!strcmp(extensions[i].extensionName, NX_VK_KHR_PRESENT_NAME))
                     *out_supported |= NX_VK_EXT_PRESENT_KHR;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+                if (!strcmp(extensions[i].extensionName, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME))
+                    *out_supported |= NX_VK_EXT_TEST_TIMELINE;
+#endif
             }
         }
         nx_vk_deallocate(device, extensions, bytes);
@@ -275,6 +286,21 @@ static nx_result nx_vk_inspect(nx_vk_device *device, VkPhysicalDevice physical,
     candidate->has_swapchain = swapchain;
     candidate->present_fences = support;
     candidate->rank = nx_vk_rank(candidate->properties.deviceType);
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (device->test_timeline_requested) {
+        if (!(extensions & NX_VK_EXT_TEST_TIMELINE) || !device->query_features) {
+            candidate->rank = 0; return NX_OK;
+        }
+        VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline = {0};
+        timeline.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR;
+        VkPhysicalDeviceFeatures2KHR features = {0};
+        features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+        features.pNext = &timeline;
+        device->query_features(physical, &features);
+        candidate->test_timeline = timeline.timelineSemaphore != 0;
+        if (!candidate->test_timeline) candidate->rank = 0;
+    }
+#endif
     return NX_OK;
 }
 
@@ -313,7 +339,7 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain,
         queues[0].pQueuePriorities = &priority;
         queues[1] = queues[0];
         queues[1].queueFamilyIndex = best->present_family;
-        const char *extensions[2] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        const char *extensions[3] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             best->present_fences == NX_VK_PRESENT_FENCES_KHR
                 ? NX_VK_KHR_PRESENT_NAME : VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME};
         VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT maintenance = {0};
@@ -330,6 +356,17 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain,
             ++create.enabledExtensionCount;
             create.pNext = &maintenance;
         }
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline = {0};
+        if (best->test_timeline) {
+            extensions[create.enabledExtensionCount++] = VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME;
+            create.ppEnabledExtensionNames = extensions;
+            timeline.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR;
+            timeline.timelineSemaphore = VK_TRUE;
+            timeline.pNext = (void *)create.pNext;
+            create.pNext = &timeline;
+        }
+#endif
         VkDevice logical = VK_NULL_HANDLE;
         VkResult status = device->api.create_device(best->physical, &create,
                                                      NULL, &logical);
@@ -354,6 +391,9 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain,
         device->handles.graphics_queue_family = best->queue_family;
         device->handles.present_queue = present;
         device->handles.present_queue_family = best->present_family;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        device->handles.test_timeline = best->test_timeline;
+#endif
         memcpy(device->info.name, best->properties.deviceName,
                sizeof(device->info.name));
         device->info.name[sizeof(device->info.name) - 1u] = 0;
@@ -410,6 +450,9 @@ static nx_result nx_vk_create(const nx_vk_device_desc *desc,
     device->allocator = allocator;
     device->api = *api;
     device->owner = pthread_self();
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    device->test_timeline_requested = getenv("NEXAUI_VULKAN_TEST_TIMELINE") != NULL;
+#endif
     nx_result result = NX_OK;
     if (options.present_fences != NX_VK_PRESENT_FENCES_DISABLED) {
         result = nx_vk_instance_support(device, &device->maintenance_instance);

@@ -15,6 +15,13 @@
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #expr); return 1; \
 } } while (0)
 
+static nx_result create_serial(nx_window *window, const nx_allocator *allocator,
+                                nx_vulkan_renderer **out_renderer) {
+    nx_result result = nx_vulkan_renderer_create(window, allocator, out_renderer);
+    if (result == NX_OK) result = nx_vulkan_test_set_frame_slots(*out_renderer, 1);
+    return result;
+}
+
 typedef struct allocation { void *pointer; size_t size; } allocation;
 typedef struct tracker { allocation blocks[32]; size_t live, calls, fail_at; } tracker;
 
@@ -109,7 +116,7 @@ static void *wrong_thread(void *user) {
     state->passed = nx_vulkan_renderer_get_info(state->renderer, &info) == NX_ERROR_STATE &&
         !info.pixel_width && nx_vulkan_clear_present(state->renderer,
             (nx_color){0, 0, 0, 1}, &presented) == NX_ERROR_STATE && !presented &&
-        nx_vulkan_renderer_create(state->window, NULL, &other) == NX_ERROR_STATE && !other;
+        create_serial(state->window, NULL, &other) == NX_ERROR_STATE && !other;
     if (nx_vulkan_renderer_destroy(state->renderer) != NX_ERROR_STATE) state->passed = 0;
     return NULL;
 }
@@ -168,14 +175,14 @@ static int test_renderer(nx_window *window) {
     tracker track = {0};
     nx_allocator allocator = {&track, allocate, deallocate};
     nx_vulkan_renderer *renderer = NULL;
-    CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_OK);
+    CHECK(create_serial(window, &allocator, &renderer) == NX_OK);
     size_t allocation_calls = track.calls;
     nx_vulkan_renderer_info info;
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
     CHECK(info.device.has_surface && !info.presented_frames && !info.image_count);
     CHECK(info.device.present_fences != NX_VK_PRESENT_FENCES_NONE);
     nx_vulkan_renderer *duplicate = NULL;
-    CHECK(nx_vulkan_renderer_create(window, NULL, &duplicate) == NX_ERROR_STATE && !duplicate);
+    CHECK(create_serial(window, NULL, &duplicate) == NX_ERROR_STATE && !duplicate);
     int token = 0;
     CHECK(nx_window_renderer_acquire(window, &token) == NX_ERROR_STATE);
     CHECK(nx_window_renderer_release(window, &token) == NX_ERROR_STATE);
@@ -239,7 +246,7 @@ static int test_renderer(nx_window *window) {
     for (size_t fail = 1; fail <= allocation_calls; ++fail) {
         track = (tracker){0};
         track.fail_at = fail;
-        CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_ERROR_MEMORY);
+        CHECK(create_serial(window, &allocator, &renderer) == NX_ERROR_MEMORY);
         CHECK(!renderer && !track.live);
     }
     CHECK(test_driver(window) == 0);
@@ -251,7 +258,7 @@ static int test_retirement_failures(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
     nx_vulkan_renderer_info before, after;
     const nx_color clear = {0.1f, 0.2f, 0.3f, 1};
-    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(create_serial(window, NULL, &renderer) == NX_OK);
     CHECK(show_frame(window, renderer, clear) == 0);
     CHECK(nx_vulkan_renderer_get_info(renderer, &before) == NX_OK);
     CHECK(before.pending_present_fences && before.device.present_fences);
@@ -303,7 +310,7 @@ static int test_retirement_failures(nx_window *window) {
     CHECK(nx_vulkan_clear_present(renderer, clear, &presented) == NX_ERROR_STATE);
     CHECK(nx_vulkan_renderer_recover(renderer) == NX_ERROR_STATE);
     nx_vulkan_renderer *other = NULL;
-    CHECK(nx_vulkan_renderer_create(window, NULL, &other) == NX_ERROR_STATE && !other);
+    CHECK(create_serial(window, NULL, &other) == NX_ERROR_STATE && !other);
     CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     for (int policy = NX_VULKAN_RETIRE_COMPATIBLE; policy <= NX_VULKAN_RETIRE_LEGACY; ++policy) {
         nx_vulkan_renderer_desc desc = {0};
@@ -317,7 +324,7 @@ static int test_retirement_failures(nx_window *window) {
         CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     }
     fprintf(stderr,"Vulkan presentation phase: readback timeout\n");
-    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(create_serial(window, NULL, &renderer) == NX_OK);
     CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
     /* The readback submits real GPU work before its two waits time out.
        Its private storage must survive the call and be retired on retry. */

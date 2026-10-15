@@ -13,6 +13,13 @@
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #expr); return 1; \
 } } while (0)
 
+static nx_result create_serial(nx_window *window, const nx_allocator *allocator,
+                                nx_vulkan_renderer **out_renderer) {
+    nx_result result = nx_vulkan_renderer_create(window, allocator, out_renderer);
+    if (result == NX_OK) result = nx_vulkan_test_set_frame_slots(*out_renderer, 1);
+    return result;
+}
+
 static nx_command rect(float x, float y, float width, float height, nx_color color) {
     nx_command command = {0};
     command.type = NX_COMMAND_FILL_RECT;
@@ -90,7 +97,7 @@ static int compare(nx_window *window, nx_vulkan_renderer *renderer,
 
 static int test_draws(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
-    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(create_serial(window, NULL, &renderer) == NX_OK);
     const nx_color clear = {0.5f / 255.0f, 82.5f / 255.0f, 190.5f / 255.0f, 92.5f / 255.0f};
     nx_command commands[] = {
         rect(-9, 3, 46, 23, (nx_color){0.5f, 0.25f, 0.75f, 1}),
@@ -226,7 +233,7 @@ static int displayed_pixels(nx_window *window, nx_vulkan_renderer *renderer,
 
 static int test_clips_and_alpha(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
-    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(create_serial(window, NULL, &renderer) == NX_OK);
     nx_command pop = {0}; pop.type = NX_COMMAND_POP_CLIP;
     nx_command commands[] = {
         rect(-10, -10, 200, 160, (nx_color){.3f,.6f,.9f,.13f}),
@@ -316,7 +323,7 @@ static void tracked_free(void *user, void *pointer, size_t bytes) {
 static int test_owned_storage(nx_window *window) {
     heap h = {0}; nx_allocator allocator = {&h, tracked_allocate, tracked_free};
     nx_vulkan_renderer *renderer;
-    CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_OK);
+    CHECK(create_serial(window, &allocator, &renderer) == NX_OK);
     nx_command commands[80];
     for (unsigned i = 0; i < 80; ++i) commands[i] = rect(i, i % 71u, 12, 9, (nx_color){1,.3f,.7f,.4f});
     int presented;
@@ -348,7 +355,7 @@ static nx_command line(float ax, float ay, float bx, float by, float thickness, 
 
 static int test_shapes(nx_window *window) {
     nx_vulkan_renderer *renderer;
-    CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
+    CHECK(create_serial(window, NULL, &renderer) == NX_OK);
     nx_command commands[] = {
         round_rect(3.25f, 4.5f, 59.5f, 41.25f, 12.5f, (nx_color){.2f,.7f,1,.63f}),
         stroke_rect(12.5f, 10.5f, 62.25f, 47.5f, 1.5f, (nx_color){1,.2f,.7f,.47f}),
@@ -419,7 +426,7 @@ static nx_command bitmap(float x, float y, float w, float h, nx_bitmap_view view
 static int test_bitmaps(nx_window *window) {
     heap h = {0}; nx_allocator allocator = {&h, tracked_allocate, tracked_free};
     nx_vulkan_renderer *renderer;
-    CHECK(nx_vulkan_renderer_create(window, &allocator, &renderer) == NX_OK);
+    CHECK(create_serial(window, &allocator, &renderer) == NX_OK);
     uint8_t rgba[32] = {255,0,0,255, 0,255,0,128, 0,0,255,0, 17,18,19,20,
         255,255,0,64, 0,255,255,255, 255,255,255,0, 21,22,23,24};
     uint8_t mask[10] = {0,64,255,19,20, 128,255,32,21,22};
@@ -593,7 +600,7 @@ static int test_preflight_and_driver(nx_window *window) {
 
 static int test_batches(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
-    CHECK(nx_vulkan_renderer_create(window,NULL,&renderer) == NX_OK);
+    CHECK(create_serial(window,NULL,&renderer) == NX_OK);
     const uint8_t mask[]={0,51,127,255,172,1};
     nx_command stream[]={
         rect(0,0,31,29,(nx_color){1,0,0,1}),
@@ -647,8 +654,8 @@ static int test_independent_windows(nx_window *first) {
     nx_window_desc desc = {"NexaUI independent Vulkan renderer", 128, 96, 0, {0}};
     CHECK(nx_window_create(&desc, &second) == NX_OK);
     nx_vulkan_renderer *a = NULL, *b = NULL;
-    CHECK(nx_vulkan_renderer_create(first, NULL, &a) == NX_OK);
-    CHECK(nx_vulkan_renderer_create(second, NULL, &b) == NX_OK);
+    CHECK(create_serial(first, NULL, &a) == NX_OK);
+    CHECK(create_serial(second, NULL, &b) == NX_OK);
     nx_command command = rect(7, 9, 47, 31, (nx_color){1,0,0,.45f});
     CHECK(compare(first, a, &command, 1, 1, (nx_color){0,0,0,1}) == 0);
     command.color = (nx_color){0,0,1,.65f};

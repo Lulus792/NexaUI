@@ -524,3 +524,14 @@ six X11/Wayland native cases with synchronization validation. The
 geometry-drift rejection. Upload bytes fall by 76.7% and draw calls by 64.1–97.0%;
 CPU/tail results remain mixed. Concurrent upload rings, V08 GPU timing and
 physical hardware acceptance remain open.
+
+V07 now adds three private Vulkan upload/atlas/descriptor/command/fence slots.
+Only the selected slot retires before CPU reuse; GPU barriers order the shared
+canvas/history. Geometry/staging/atlas payload capacity is bounded independently
+at 64 MiB per slot, with failure-safe growth and aggregate resize/recovery/close
+retirement. The new test-only timeline gate holds three actual GPU submissions,
+checks freed source storage and real bounded timeouts, then compares captured
+frames independently. Initial X11/Wayland gated tests pass with synchronization
+validation. A separate serial/ring/ring/serial native workload records CPU phases,
+slot IDs and capacities. Full follow-up measurements and shared/sanitizer checks
+are still required; V08 GPU timestamps and physical acceptance remain open.

@@ -68,7 +68,7 @@ jobs:
           if-no-files-found: ignore
       - name: Profile Linux native Vulkan without injected validation
         if: runner.os == 'Linux'
-        run: xvfb-run -a cmake --build build --target nexaui_nexacloud_vulkan_profile
+        run: xvfb-run -a cmake --build build --target nexaui_nexacloud_vulkan_ring_profile
       - name: Save Linux native GPU captures
         if: always() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
