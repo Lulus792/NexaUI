@@ -6,8 +6,55 @@ V03 presentation-fence retirement and retryable teardown/recovery, plus a
 V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alpha
 composition through the private renderer driver. The pipeline also draws stroked
 rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
-glyph masks through a staged texture atlas. Batching, profiling,
+glyph masks through a staged texture atlas. Initial V07 now adds per-instance
+uploads, ordered batching and CPU profiling. Concurrent upload rings, GPU timing,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
+
+## Initial V07 instancing and ordered batching
+
+The previous path uploads six repeated 60-byte vertices per visible quad. The
+new Vulkan 1.0 path uploads one 84-byte instance with NDC bounds, quantized color,
+analytic geometry, bitmap size/atlas offset and exact pixel clip. Eight ordinary
+vertex attributes use `VK_VERTEX_INPUT_RATE_INSTANCE`. Six shader-generated
+vertices preserve the original quad coordinates and triangle order. C size and
+offset assertions fix the input layout. Existing diagnostics still report six
+generated vertices per quad; `vertex_upload_bytes` counts actual instance bytes.
+
+A batch contains an optional destination-reading first instance followed by
+opaque instances. The next image/mask/translucent instance starts another group
+and keeps its original clipped history snapshot. Instances and attachment
+writes preserve primitive order. The hardware scissor encloses the group, while
+each fragment also enforces its instance's exact clip. This uses standard
+instanced attributes and direct `vkCmdDraw` with `firstInstance`; it requires no
+storage-buffer descriptor path, indirect draw feature or relaxed raster order.
+The existing submission fence still protects CPU writes, buffer growth and
+destruction. A concurrent multi-frame upload ring remains separate work.
+
+Committed CPU profiles identify submission/canvas/command scale and count input
+commands, visible records, API draws, render passes, history copies and one-way
+payload bytes. They separate submission retirement, preparation, acquisition,
+encoding, submit and present intervals. A discarded pre-submit attempt leaves
+the previous profile intact. These are CPU elapsed intervals, including waits
+and scheduling, not GPU timestamps. The
+[pre-instancing baseline](../../benchmarks/baselines/vulkan-19c07ba/README.md)
+retains 192 original measured frames with native GPU/reference checks.
+
+Native `--smoke` keeps correctness checks; the explicit test-build `--profile`
+mode adds unbatched/batched/batched/unbatched blocks for overview 100%, files
+100% and compact files 200%, four warmup and 32 measured frames per block.
+Both modes use the same instance layout. It checks allocation stability, clocks
+and counters, writes CSVs outside the measured interval, then compares all GPU
+pixels with headless. Run profiling separately from injected validation: live
+stacks in the original expanded smoke showed synchronization-validation barrier
+processing exceeding its time budget. The ordinary validation smoke remains
+intact. CI also retains Linux native captures, CSVs and test logs.
+
+Initial local X11/Wayland draw tests pass with core/synchronization validation,
+including all existing shape/bitmap/alpha checks plus new per-instance clip and
+history-boundary comparisons at 1/1.25/1.5/2 scale, allocation rollback/reuse and
+10000 ordered opaque instances in one API draw. Full-scene A/B data, shared and
+sanitizer follow-up are pending. Physical hardware/performance acceptance remains
+open.
 
 ## Validation-tool compatibility
 

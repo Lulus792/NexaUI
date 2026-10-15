@@ -52,6 +52,7 @@ struct nx_vulkan_renderer {
     uint64_t completed_present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     unsigned char test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY + 1];
+    int disable_batching;
 #endif
     uint64_t presented_frames;
     uint64_t submitted_frames;
@@ -545,6 +546,11 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     nx_vulkan_frame_profile profile = {0};
     profile.pixel_width = renderer->extent.width; profile.pixel_height = renderer->extent.height;
     profile.draw_scale = scale; profile.input_commands = draw_count; profile.cpu_timing_valid = 1;
+    profile.batched = 1;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    profile.batched = !renderer->disable_batching;
+    renderer->painter.disable_batching = renderer->disable_batching;
+#endif
     uint64_t phase = nx_vk_profile_now();
     VkDevice device = renderer->native.logical;
     nx_result submission_result = nx_vk_wait_submission(renderer);
@@ -933,6 +939,11 @@ nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
     return NX_OK;
 }
 
+nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled) {
+    if (!renderer || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_vk_renderer_owner(renderer) || renderer->closing || renderer->broken) return NX_ERROR_STATE;
+    renderer->disable_batching = !enabled; return NX_OK;
+}
 nx_result nx_vulkan_test_invalidate(nx_vulkan_renderer *renderer, int broken) {
     if (!renderer) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;

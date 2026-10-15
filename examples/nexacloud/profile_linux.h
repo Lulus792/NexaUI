@@ -32,6 +32,8 @@ static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_rendere
         (void)commands;
         if (current.submitted_frames != previous.submitted_frames+1 || p.submission != current.submitted_frames ||
             !p.cpu_timing_valid || p.input_commands != count || !p.draw_records || !p.draw_calls || p.draw_calls>p.draw_records ||
+            p.vertex_upload_bytes != p.draw_records*84u ||
+            (p.batched ? p.draw_calls != p.render_passes : p.draw_calls != p.draw_records) ||
             p.render_passes<p.history_copies || p.render_passes>p.history_copies+1 ||
             p.pixel_width != current.pixel_width || p.pixel_height != current.pixel_height ||
             p.present_copy_bytes != (uint64_t)p.pixel_width*p.pixel_height*4u ||
@@ -76,4 +78,16 @@ static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_rendere
     putchar('\n');
     if (!okay || snprintf(path,sizeof(path),"%s-linux-profile-%s.ppm",prefix,workload)>=(int)sizeof(path)) return 0;
     return capture(window,scene,renderer,path);
+}
+static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
+    const char *prefix, const char *workload) {
+    if (!cloud_vk_profile_enabled) return 1;
+    static const int batched[]={0,1,1,0};
+    for (unsigned block=0;block<4;++block) {
+        char name[80];
+        if (snprintf(name,sizeof(name),"%s-%s-%u",workload,batched[block] ? "batched" : "unbatched",block)>=(int)sizeof(name) ||
+            nx_vulkan_test_set_batching(renderer->backend.user,batched[block]) != NX_OK ||
+            !vk_profile_workload(window,scene,renderer,prefix,name)) return 0;
+    }
+    return nx_vulkan_test_set_batching(renderer->backend.user,1) == NX_OK;
 }

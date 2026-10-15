@@ -109,6 +109,9 @@ typedef enum nx_vulkan_test_fault {
 } nx_vulkan_test_fault;
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault);
+/* Subsequent encoding only; pending commands remain immutable. Production
+   always batches. Both test modes use the same per-instance vertex format. */
+nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled);
 #endif
 
 #endif

@@ -591,6 +591,57 @@ static int test_preflight_and_driver(nx_window *window) {
     return 0;
 }
 
+static int test_batches(nx_window *window) {
+    nx_vulkan_renderer *renderer = NULL;
+    CHECK(nx_vulkan_renderer_create(window,NULL,&renderer) == NX_OK);
+    const uint8_t mask[]={0,51,127,255,172,1};
+    nx_command stream[]={
+        rect(0,0,31,29,(nx_color){1,0,0,1}),
+        {.type=NX_COMMAND_PUSH_CLIP,.rect={2.5f,3.5f,80,70}},
+        rect(1,2,29,21,(nx_color){0,1,0,1}),
+        rect(5.5f,7.5f,57,45,(nx_color){.2f,.3f,.9f,.5f}),
+        round_rect(8,6,50,45,7,(nx_color){.6f,.9f,.1f,1}),
+        {.type=NX_COMMAND_POP_CLIP},
+        bitmap(3,4,61,73,(nx_bitmap_view){mask,3,2,3,NX_BITMAP_A8},(nx_color){.9f,.2f,.7f,.8f}),
+        triangle((nx_point){7.5f,8.5f},(nx_point){98.5f,11.5f},(nx_point){41.5f,83.5f},(nx_color){.1f,.4f,.7f,1}),
+        line(-4,4,100,79,2.5f,(nx_color){.2f,.9f,.6f,.7f})
+    };
+    const double scales[]={1,1.25,1.5,2};
+    nx_vulkan_renderer_info before,after;
+    CHECK(nx_vulkan_test_set_batching(renderer,2) == NX_ERROR_ARGUMENT);
+    for (unsigned i=0;i<4;++i) {
+        CHECK(nx_vulkan_test_set_batching(renderer,0) == NX_OK);
+        CHECK(compare(window,renderer,stream,9,scales[i],(nx_color){.1f,.2f,.3f,.4f}) == 0);
+        CHECK(nx_vulkan_renderer_get_info(renderer,&before) == NX_OK);
+        CHECK(!before.last_frame.batched && before.last_frame.draw_records == 7 && before.last_frame.draw_calls == 7);
+        CHECK(nx_vulkan_test_set_batching(renderer,1) == NX_OK);
+        CHECK(compare(window,renderer,stream,9,scales[i],(nx_color){.1f,.2f,.3f,.4f}) == 0);
+        CHECK(nx_vulkan_renderer_get_info(renderer,&after) == NX_OK);
+        CHECK(after.last_frame.batched && after.last_frame.input_commands == 9 && after.last_frame.draw_records == 7 && after.last_frame.draw_calls == 4);
+        CHECK(after.last_frame.vertex_upload_bytes == 7u*84u && after.last_frame.history_copies == 3 &&
+            after.last_frame.history_copy_bytes == before.last_frame.history_copy_bytes && after.last_frame.render_passes == before.last_frame.render_passes);
+        CHECK(after.last_frame.cpu_timing_valid && after.last_frame.submission == after.submitted_frames);
+    }
+    enum {COUNT=10000};
+    nx_command *many=calloc(COUNT,sizeof(*many)); CHECK(many);
+    for (unsigned i=0;i<COUNT;++i) many[i]=rect((float)((i*7)%151)+.5f,(float)((i*11)%103)+.5f,4,4,
+        (nx_color){(i%7)/6.f,(i%11)/10.f,(i%13)/12.f,1});
+    CHECK(nx_vulkan_renderer_get_info(renderer,&before) == NX_OK);
+    CHECK(nx_vulkan_test_fail_next(renderer,NX_VK_TEST_VERTEX_MEMORY) == NX_OK);
+    int presented;
+    CHECK(nx_vulkan_render(renderer,many,COUNT,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_vulkan_renderer_get_info(renderer,&after) == NX_OK && after.vertex_capacity_bytes == before.vertex_capacity_bytes);
+    CHECK(after.submitted_frames == before.submitted_frames && after.last_frame.submission == before.last_frame.submission);
+    CHECK(compare(window,renderer,many,COUNT,1,(nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer,&before) == NX_OK && before.last_frame.draw_records == COUNT && before.last_frame.draw_calls == 1);
+    CHECK(before.last_frame.vertex_upload_bytes == COUNT*84u && before.last_submitted_vertices == COUNT*6u);
+    CHECK(compare(window,renderer,many,COUNT,1,(nx_color){0}) == 0);
+    CHECK(nx_vulkan_renderer_get_info(renderer,&after) == NX_OK && after.vertex_buffer_allocations == before.vertex_buffer_allocations);
+    free(many);
+    CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
+    puts("Vulkan ordered instance batches: 10000 opaque records in one draw, mixed alpha/bitmap clips, history boundaries and rollback passed.");
+    return 0;
+}
 static int test_independent_windows(nx_window *first) {
     nx_window *second = NULL;
     nx_window_desc desc = {"NexaUI independent Vulkan renderer", 128, 96, 0, {0}};
@@ -624,7 +675,8 @@ int main(int argc, char **argv) {
         int selected = !strcmp(argv[1], "alpha") ? test_clips_and_alpha(window) :
             !strcmp(argv[1], "storage") ? test_owned_storage(window) :
             !strcmp(argv[1], "shapes") ? test_shapes(window) :
-            !strcmp(argv[1], "bitmaps") ? test_bitmaps(window) : 1;
+            !strcmp(argv[1], "bitmaps") ? test_bitmaps(window) :
+            !strcmp(argv[1], "batches") ? test_batches(window) : 1;
         nx_window_destroy(window); return selected;
     }
     int status = test_draws(window);
@@ -634,6 +686,7 @@ int main(int argc, char **argv) {
     if (!status) status = test_owned_storage(window);
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);
+    if (!status) status = test_batches(window);
     nx_window_destroy(window);
     return status;
 }

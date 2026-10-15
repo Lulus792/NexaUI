@@ -6,6 +6,7 @@ layout(location = 2) flat in vec2 shape_b;
 layout(location = 3) flat in vec2 shape_c;
 layout(location = 4) flat in uint shape_kind;
 layout(location = 5) flat in vec2 bitmap_size;
+layout(location = 6) flat in uvec4 pixel_clip;
 layout(location = 0) out vec4 output_color;
 layout(set = 0, binding = 0) uniform sampler2D previous_color;
 layout(set = 0, binding = 1) uniform sampler2D bitmap_atlas;
@@ -129,6 +130,9 @@ int sample_axis(float position, float origin, float extent, float texels) {
 }
 
 void main() {
+    uvec2 pixel_position = uvec2(gl_FragCoord.xy);
+    if (any(lessThan(pixel_position,pixel_clip.xy)) ||
+        any(greaterThanEqual(pixel_position,pixel_clip.xy+pixel_clip.zw))) discard;
     if (!shape_contains(gl_FragCoord.xy)) discard;
     uvec4 src = uvec4(floor(fragment_color * 255.0 + 0.5));
     if (shape_kind == 5u) {

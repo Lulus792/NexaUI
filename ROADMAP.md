@@ -508,3 +508,14 @@ All 24 mode/block GPU images remain byte-identical. The
 [preserved GPU timing baseline](benchmarks/baselines/metal-e66d5af/README.md)
 records distributions and limits. A07 now has native virtual-device smoke
 evidence; physical GPU timing, Release and broader A08 acceptance remain open.
+
+V07 now authors one 84-byte instanced upload per visible quad in place of six
+60-byte vertices. Ordered groups combine a destination-reading first instance
+and subsequent opaque instances, preserving each history copy and exact shader
+clip. Initial X11/Wayland draw suites pass with synchronization validation,
+including 10000 opaque instances in one draw. CPU submission profiling and an
+explicit native `--profile` mode retain a 192-frame
+[baseline](benchmarks/baselines/vulkan-19c07ba/README.md); performance workloads
+are separate from correctness/validation smokes. In-process A/B, shared and
+sanitizer follow-up are pending. Concurrent upload rings, V08 GPU timing and
+physical hardware acceptance remain open.

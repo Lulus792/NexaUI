@@ -58,6 +58,7 @@ typedef struct nx_vk_painter {
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     int fail_framebuffer, fail_vertex_memory, fail_draw_memory;
     int fail_bitmap_records, fail_atlas_memory, fail_bitmap_upload;
+    int disable_batching;
 #endif
 } nx_vk_painter;
 

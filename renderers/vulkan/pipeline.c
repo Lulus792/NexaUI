@@ -8,7 +8,7 @@
 #include <string.h>
 
 typedef struct nx_vk_vertex {
-    float x, y;
+    float x, y, right, bottom;
     float rgba[4];
     /* Matches shape.vert/frag: 0 rect, 1 triangle, 2 inside stroke,
        3 rounded fill, 4 round-capped line, 5 bitmap. Triangles carry three points;
@@ -17,7 +17,12 @@ typedef struct nx_vk_vertex {
     nx_point geometry[3];
     uint32_t shape_kind;
     nx_point bitmap_size;
+    uint32_t scissor[4];
 } nx_vk_vertex;
+_Static_assert(sizeof(nx_vk_vertex) == 84 && offsetof(nx_vk_vertex,rgba) == 16 &&
+    offsetof(nx_vk_vertex,geometry) == 32 && offsetof(nx_vk_vertex,shape_kind) == 56 &&
+    offsetof(nx_vk_vertex,bitmap_size) == 60 && offsetof(nx_vk_vertex,scissor) == 68,
+    "Vulkan per-instance vertex attribute layout");
 
 #define NX_VK_ATLAS_BYTES (64u * 1024u * 1024u)
 #define NX_VK_BITMAP_LIMIT 4096u
@@ -34,7 +39,7 @@ static nx_result nx_vk_pipeline_status(VkResult status) {
 nx_result nx_vk_painter_preflight(const nx_command *commands, size_t count,
                                  double scale) {
     if (!isfinite(scale) || scale <= 0) return NX_ERROR_ARGUMENT;
-    if (count > UINT32_MAX / 6u || count > SIZE_MAX / (6u * sizeof(nx_vk_vertex)) ||
+    if (count > UINT32_MAX / 6u || count > SIZE_MAX / sizeof(nx_vk_vertex) ||
         count > SIZE_MAX / sizeof(nx_vk_draw))
         return NX_ERROR_LIMIT;
     nx_result result = nx_render_validate_commands(commands, count);
@@ -452,21 +457,22 @@ static nx_result nx_vk_painter_create(nx_vk_painter *painter,
         stages[i].module = modules[i];
         stages[i].pName = "main";
     }
-    VkVertexInputBindingDescription binding = {0, sizeof(nx_vk_vertex), VK_VERTEX_INPUT_RATE_VERTEX};
-    VkVertexInputAttributeDescription attributes[7] = {
-        {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, x)},
+    VkVertexInputBindingDescription binding = {0, sizeof(nx_vk_vertex), VK_VERTEX_INPUT_RATE_INSTANCE};
+    VkVertexInputAttributeDescription attributes[8] = {
+        {0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(nx_vk_vertex, x)},
         {1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(nx_vk_vertex, rgba)},
         {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[0])},
         {3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[1])},
         {4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, geometry[2])},
         {5, 0, VK_FORMAT_R32_UINT, offsetof(nx_vk_vertex, shape_kind)},
-        {6, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, bitmap_size)}
+        {6, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(nx_vk_vertex, bitmap_size)},
+        {7, 0, VK_FORMAT_R32G32B32A32_UINT, offsetof(nx_vk_vertex, scissor)}
     };
     VkPipelineVertexInputStateCreateInfo vertex = {0};
     vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex.vertexBindingDescriptionCount = 1;
     vertex.pVertexBindingDescriptions = &binding;
-    vertex.vertexAttributeDescriptionCount = 7;
+    vertex.vertexAttributeDescriptionCount = 8;
     vertex.pVertexAttributeDescriptions = attributes;
     VkPipelineInputAssemblyStateCreateInfo assembly = {0};
     assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -601,10 +607,14 @@ static double nx_vk_pixel_edge(double coordinate, double scale, uint32_t limit) 
     return pixel < 0 ? 0 : pixel > limit ? limit : pixel;
 }
 
-static void nx_vk_write_vertex(nx_vk_vertex *vertex, double x, double y,
-                                VkExtent2D extent, nx_color color) {
+static void nx_vk_write_vertex(nx_vk_vertex *vertex, double x, double y, double right, double bottom,
+                                VkExtent2D extent, VkRect2D scissor, nx_color color) {
     vertex->x = (float)(x * 2.0 / extent.width - 1.0);
     vertex->y = (float)(y * 2.0 / extent.height - 1.0);
+    vertex->right = (float)(right * 2.0 / extent.width - 1.0);
+    vertex->bottom = (float)(bottom * 2.0 / extent.height - 1.0);
+    vertex->scissor[0] = (uint32_t)scissor.offset.x; vertex->scissor[1] = (uint32_t)scissor.offset.y;
+    vertex->scissor[2] = scissor.extent.width; vertex->scissor[3] = scissor.extent.height;
     vertex->rgba[0] = floorf(color.r * 255.0f + 0.5f) / 255.0f;
     vertex->rgba[1] = floorf(color.g * 255.0f + 0.5f) / 255.0f;
     vertex->rgba[2] = floorf(color.b * 255.0f + 0.5f) / 255.0f;
@@ -645,7 +655,7 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
             painter->draws, painter->draw_capacity * sizeof(*draws));
         painter->draws = draws; painter->draw_capacity = capacity;
     }
-    result = nx_vk_painter_reserve(painter, (VkDeviceSize)count * 6u * sizeof(nx_vk_vertex));
+    result = nx_vk_painter_reserve(painter, (VkDeviceSize)count * sizeof(nx_vk_vertex));
     if (result != NX_OK) return result;
     nx_vk_vertex *vertices = painter->mapped;
     VkRect2D clips[NX_MAX_CLIP_DEPTH + 1u];
@@ -717,18 +727,16 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
         nx_vk_draw *draw = &painter->draws[painter->draw_count++];
         *draw = (nx_vk_draw){scissor, painter->vertex_count, 6,
             kind == 5 || floorf(command->color.a * 255.0f + .5f) < 255};
-        const double positions[6][2] = {{x0,y0},{x1,y0},{x0,y1},{x1,y0},{x1,y1},{x0,y1}};
-        for (unsigned j = 0; j < 6u; ++j) {
-            nx_vk_vertex *vertex = &vertices[painter->vertex_count++];
-            nx_vk_write_vertex(vertex, positions[j][0], positions[j][1], extent, command->color);
-            if (kind) {
-                memcpy(vertex->geometry, points, sizeof(points));
-                vertex->shape_kind = kind;
-                vertex->bitmap_size = bitmap_size;
-            }
+        nx_vk_vertex *vertex = &vertices[painter->vertex_count/6u];
+        nx_vk_write_vertex(vertex,x0,y0,x1,y1,extent,scissor,command->color);
+        painter->vertex_count += 6u; /* Six generated vertices, one uploaded instance. */
+        if (kind) {
+            memcpy(vertex->geometry, points, sizeof(points));
+            vertex->shape_kind = kind;
+            vertex->bitmap_size = bitmap_size;
         }
     }
-    painter->vertex_upload_bytes = (uint64_t)painter->vertex_count * sizeof(nx_vk_vertex);
+    painter->vertex_upload_bytes = (uint64_t)(painter->vertex_count/6u) * sizeof(nx_vk_vertex);
     return NX_OK;
 }
 
@@ -828,9 +836,30 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
                 0, 0, NULL, 0, NULL, 2, barriers);
         }
         if (!open) { nx_vk_painter_begin(painter, commands, extent); open = 1; }
-        vkCmdSetScissor(commands, 0, 1, &draw->scissor);
-        vkCmdDraw(commands, draw->vertex_count, 1, draw->first_vertex, 0);
+        size_t end = i+1;
+        VkRect2D scissor = draw->scissor;
+        int batched = 1;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        batched = !painter->disable_batching;
+#endif
+        /* At most one destination reader, at the start. Its history copy above
+           is unchanged. Every following instance is opaque and keeps its own
+           shader clip, while attachment writes retain primitive order. */
+        while (batched && end < painter->draw_count && !painter->draws[end].composite) {
+            VkRect2D next = painter->draws[end++].scissor;
+            uint32_t right = (uint32_t)scissor.offset.x+scissor.extent.width;
+            uint32_t bottom = (uint32_t)scissor.offset.y+scissor.extent.height;
+            uint32_t nr = (uint32_t)next.offset.x+next.extent.width, nb = (uint32_t)next.offset.y+next.extent.height;
+            if (nr > right) right = nr;
+            if (nb > bottom) bottom = nb;
+            if (next.offset.x < scissor.offset.x) scissor.offset.x = next.offset.x;
+            if (next.offset.y < scissor.offset.y) scissor.offset.y = next.offset.y;
+            scissor.extent.width = right-(uint32_t)scissor.offset.x; scissor.extent.height = bottom-(uint32_t)scissor.offset.y;
+        }
+        vkCmdSetScissor(commands, 0, 1, &scissor);
+        vkCmdDraw(commands, 6, (uint32_t)(end-i), 0, draw->first_vertex/6u);
         ++painter->recorded_draws;
+        i = end-1;
     }
     if (open) vkCmdEndRenderPass(commands);
 }
