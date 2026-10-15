@@ -1,5 +1,17 @@
 # Decisions
 
+## 2026-10-15 — Pin the Vulkan validation tool without replacing the system SDK
+
+Ubuntu's 1.3.275 validation state tracker does not attach presentation fences
+to queued present work; a native trace reports in-use semaphores even after
+their associated fences signal. The 1.4.313 tracker includes that association.
+CI now prepares the corresponding SHA-256-pinned LunarG validation library in
+temporary storage, retaining the existing 1.3.275 headers and loader. Validation
+failure rules stay active. A controlled invalid-fence-flags probe must be
+rejected by the selected layer, and untraced lifecycle repetitions remain.
+This changes the test tool, with no production retirement shortcut. The next
+Ubuntu runtime results must confirm the source/trace diagnosis.
+
 ## 2026-10-15 — Bound Metal bitmap ownership before asynchronous execution
 
 The initial A05 atlas stores RGBA8 and expanded A8 masks together. A fixed limit

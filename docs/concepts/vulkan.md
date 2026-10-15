@@ -27,6 +27,35 @@ change validation-layer bookkeeping/timing, so a traced pass alone is weaker
 evidence than an untraced run. Test output labels strict, compatibility, legacy
 and readback teardown phases without introducing additional Vulkan queries.
 
+The trace at `19e5986` reproduced the error in strict and maintenance-enabled
+compatibility teardown on Ubuntu's validation package `1.3.275.0-1`, with all
+relevant present fences reporting `VK_SUCCESS` before semaphore destruction
+([job](https://github.com/Lulus792/NexaUI/actions/runs/38771065263/job/116546688591)).
+The [v1.3.275 state tracker](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.3.275/layers/state_tracker/state_tracker.cpp)
+does not associate `VkSwapchainPresentFenceInfoEXT` with its queued presentation.
+The [v1.4.313 implementation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.4.313/layers/state_tracker/state_tracker.cpp)
+explicitly attaches those fences to present submissions. This explains how old
+validation bookkeeping can retain an in-use semaphore after the API fence has
+completed. The pinned-layer CI rerun must still confirm that diagnosis.
+
+`tools/prepare_ci_validation.py` selects LunarG's noble x86_64 validation layer
+1.4.313 (SDK package `1.4.313.0~rc2-1lunarg24.04-1`), with the SHA-256 published
+in its [package index](https://packages.lunarg.com/vulkan/1.4.313/dists/noble/main/binary-amd64/Packages).
+It reads only the library and manifest, rewrites the library's absolute path
+inside the temporary CI directory and sets `VK_LAYER_PATH`. It does not install
+system packages or replace the Vulkan loader, headers, Mesa driver or production
+renderer. Ubuntu's 1.3.275 headers continue to exercise SDK compatibility.
+
+The new `nexaui_vulkan_validation` counterexample explicitly enables the layer,
+checks the selected version and requires it to reject reserved fence flags with
+`VK_ERROR_VALIDATION_FAILED_EXT`. Its error callback aborts the invalid call;
+no GPU work is submitted. The existing validation-error failure rules and the
+20 untraced presentation repetitions remain enabled. This probe passes locally
+with validation 1.4.343, including Clang ASan/UBSan/leak detection. The package
+preparer verifies the official archive hash and rejects modified input before
+extraction; local extraction/provenance checks pass. Running its glibc binary
+in Ubuntu CI is pending. These results do not yet clear the observed failure.
+
 ## Build boundary
 
 Linux builds enable `NEXAUI_BUILD_VULKAN` by default and require Vulkan SDK

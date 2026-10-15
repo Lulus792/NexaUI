@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Corrected MSL packed-vector component access in the new image shader after native compiler diagnostics. Pinned the CI-only Vulkan validation layer to a present-fence-aware version with checksum/provenance verification and an active-validation counterexample; system SDK headers and renderer retirement remain unchanged. Follow-up native results are pending.
 - Added initial Metal RGBA8/A8 uploads with bounded per-frame deduplication, owned staging, reusable atlas storage and allocation rollback, plus a C17 AppKit/Metal NexaCloud runner. CPU atlas/preparation tests pass on Windows and Linux sanitizers; new native image/full-scene tests await execution. Preceding shape/alpha/lifecycle checks pass in both macOS CI variants (77/77).
 - Added initial Metal integer straight-alpha composition through a tracked GPU canvas/history pair, transactional resize and history-allocation regression. Native opaque readbacks have executed on Apple's virtual GPU; complete lifecycle/alpha checks remain pending. Fixed the Metal C example's explicit Foundation linkage and restore order for an originally absent AppKit layer.
 - Added initial private Metal opaque shapes/clips, embedded authored MSL and portable C draw preparation. Windows and Linux sanitizer tests validate CPU preparation against headless output; Apple shader compilation/GPU execution, alpha and image upload remain pending.
