@@ -120,6 +120,9 @@ retirement/pending counts and upload capacity columns. Production uses three
 slots; both comparison modes are diagnostic test-build options. A faster CPU
 retirement interval may shift waiting into acquisition/presentation, so the
 complete CPU distributions need to be assessed together.
+The [ring report](../../benchmarks/baselines/vulkan-1cdf550/README.md) retains
+768 measured CI frames and the native gated-lifetime results; it records no
+software-driver frame-time improvement.
 
 ## Interaction and layout
 

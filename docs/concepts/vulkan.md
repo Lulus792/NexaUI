@@ -120,9 +120,14 @@ output, then signal and compare each GPU capture with its independent headless
 frame. They also cover reverse ID collection, wrap/reuse, a busy-peer allocation
 failure and successful retry, and window lease release. Existing single-slot
 fault regressions select serial pacing explicitly; normal native scene smokes
-exercise the default ring. Initial X11/Wayland gated cases pass with core and
-synchronization validation; complete shared/sanitizer and timing follow-up remain
-required before broader acceptance.
+exercise the default ring. X11/Wayland shared Debug and Clang
+ASan/UBSan/LeakSanitizer each pass all eight selected presentation/drawing/ring/scene
+cases with core and synchronization validation. The
+[ring comparison](../../benchmarks/baselines/vulkan-1cdf550/README.md) retains
+768 CI frames and 24 byte-identical mode images, also equal to the earlier
+normalized scene captures. These software-driver measurements show slightly
+higher wall medians with three slots; they establish no performance gain.
+V08 GPU timestamps and physical/Release acceptance remain open.
 
 Test builds offer `--profile-ring FONT.ttf OUTPUT_PREFIX` and the optional
 `nexaui_nexacloud_vulkan_ring_profile` target. Serial/ring/ring/serial blocks keep
