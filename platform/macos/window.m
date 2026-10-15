@@ -592,3 +592,8 @@ void nx_window_destroy(nx_window *w) {
         }
     }
 }
+
+nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
+    (void)context;
+    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+}

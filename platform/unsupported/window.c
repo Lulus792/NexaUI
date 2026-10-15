@@ -119,3 +119,8 @@ nx_result nx_window_clipboard_get_text(nx_window *window,
 void nx_window_destroy(nx_window *window) {
     (void)window;
 }
+
+nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
+    (void)context;
+    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+}

@@ -394,3 +394,8 @@ nx_result nx_window_wayland_test_ime_state(nx_window *window,
                                             requested, activated);
 }
 #endif
+
+nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
+    (void)context;
+    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+}

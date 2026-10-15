@@ -2,8 +2,13 @@
 
 NexaUI's core runtime uses its own C17 code and the C standard library.
 Platform adapters may link OS or GPU-driver libraries behind the public C API.
-The current direct system links are `user32` on Windows, `m` on non-Apple Unix,
-and CMake's `Threads::Threads` system-thread target on POSIX platforms.
+Windows window/input adapters use the OS `user32`, `shell32` and `imm32` libraries.
+The initial native accessibility bridge additionally uses `ole32` for COM and
+free-threaded marshalling, `oleaut32` for BSTR/SAFEARRAY ownership,
+`uiautomationcore` for UIA transport, and `uuid` for Windows SDK interface IDs.
+Those links are allowed only on Windows; layout, widgets and rendering remain
+NexaUI code. Non-Apple Unix uses `m`; POSIX adapters use CMake's
+`Threads::Threads` system-thread target.
 There is no third-party UI, windowing, rendering, layout, shaping or font
 runtime dependency in the core target.
 

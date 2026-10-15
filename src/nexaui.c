@@ -1,6 +1,7 @@
 #include "internal.h"
 #include "edit_shortcuts.h"
 #include "secure_zero.h"
+#include "context_identity.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -108,6 +109,9 @@ struct nx_context {
     unsigned theme_depth;
     unsigned state; /* 0 idle, 1 building, 2 finished */
     uint64_t frame_serial;
+#if defined(_WIN32)
+    uint64_t native_identity;
+#endif
     float width, height;
     double delta_seconds;
     int reduced_motion;
@@ -135,6 +139,8 @@ struct nx_context {
     nx_key key_active_key;
     int pointer_valid;
     nx_semantic_buffer semantics;
+    struct { uint64_t id; uint32_t action; } accessible_requests[64];
+    size_t accessible_request_count;
     size_t semantic_initial_capacity, semantic_text_initial_capacity;
 };
 
@@ -161,7 +167,7 @@ struct nx_text_field {
     double scroll_x, scroll_y;
 };
 
-static nx_region *nx_region_find(nx_region_buffer *buffer, uint64_t id);
+static nx_region *nx_region_find(const nx_region_buffer *buffer, uint64_t id);
 static nx_region *nx_hit_test(nx_region_buffer *buffer, float x, float y,
                               uint64_t overlay_id);
 static nx_region *nx_hit_test_scroll(nx_region_buffer *buffer, float x, float y,
@@ -239,6 +245,10 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
     if (!ctx) return NX_ERROR_MEMORY;
     memset(ctx, 0, sizeof(*ctx));
     ctx->allocator = a;
+#if defined(_WIN32)
+    ctx->native_identity = nx_native_next_identity();
+    if (!ctx->native_identity) { a.deallocate(a.user, ctx, sizeof(*ctx)); return NX_ERROR_LIMIT; }
+#endif
     (void)nx_theme_preset(NX_THEME_DARK, &ctx->base_theme);
     ctx->theme_stack[0] = ctx->base_theme;
     ctx->commands = (nx_command *)a.allocate(a.user, capacity * sizeof(nx_command));
@@ -254,6 +264,10 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
     *out_context = ctx;
     return NX_OK;
 }
+
+#if defined(_WIN32)
+uint64_t nx_context_identity(const nx_context *ctx) { return ctx ? ctx->native_identity : 0; }
+#endif
 
 void nx_context_destroy(nx_context *ctx) {
     if (!ctx) return;
@@ -558,6 +572,17 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         }
         nx_process_interaction(ctx, event);
     }
+    for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
+        uint64_t id = ctx->accessible_requests[i].id;
+        uint32_t action = ctx->accessible_requests[i].action;
+        nx_region *region = nx_region_find(&ctx->previous_regions, id);
+        if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+            (ctx->previous_overlay_id && region->overlay_id != ctx->previous_overlay_id)) continue;
+        if (action == NX_ACTION_FOCUS) {
+            if (region->flags & NX_REGION_FOCUSABLE) { ctx->focused_id = id; ctx->key_active_id = 0; }
+        } else if (region->clicks != UINT_MAX) ++region->clicks;
+    }
+    ctx->accessible_request_count = 0;
     return NX_OK;
 }
 
@@ -675,7 +700,7 @@ static size_t nx_region_slot(uint64_t id, size_t capacity) {
     return (size_t)id & (capacity - 1u);
 }
 
-static nx_region *nx_region_find(nx_region_buffer *buffer, uint64_t id) {
+static nx_region *nx_region_find(const nx_region_buffer *buffer, uint64_t id) {
     if (!buffer->slot_capacity || !id) return NULL;
     size_t slot = nx_region_slot(id, buffer->slot_capacity);
     for (;;) {
@@ -1376,6 +1401,9 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
     view->bounds = node->bounds;
     view->state = node->state | (ctx->focused_id == node->id ? NX_SEM_FOCUSED : 0u);
     view->actions = node->actions;
+    const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+    if (region && (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE) ||
+        (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))) view->state |= NX_SEM_DISABLED;
     view->name = (nx_utf8_span){node->name_length
                  ? ctx->semantics.text + node->name_offset : NULL, node->name_length};
     view->description = (nx_utf8_span){node->description_length
@@ -1383,6 +1411,28 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
                         node->description_length};
     view->value = (nx_utf8_span){node->value_length
                   ? ctx->semantics.text + node->value_offset : NULL, node->value_length};
+    return NX_OK;
+}
+
+nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t action) {
+    if (!ctx || !id) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 2u) return NX_ERROR_STATE;
+    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT)
+        return NX_ERROR_UNSUPPORTED;
+    uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
+    if (index == UINT32_MAX) return NX_ERROR_STATE;
+    const nx_semantic_record *node = &ctx->semantics.nodes[index];
+    const nx_region *region = nx_region_find(&ctx->current_regions, id);
+    if (!region || (node->state & NX_SEM_DISABLED) ||
+        (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+        (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id)) return NX_ERROR_STATE;
+    if (!(node->actions & action) || (action == NX_ACTION_FOCUS && !(region->flags & NX_REGION_FOCUSABLE)))
+        return NX_ERROR_UNSUPPORTED;
+    for (size_t i = 0; i < ctx->accessible_request_count; ++i)
+        if (ctx->accessible_requests[i].id == id && ctx->accessible_requests[i].action == action) return NX_ERROR_LIMIT;
+    if (ctx->accessible_request_count == 64u) return NX_ERROR_LIMIT;
+    ctx->accessible_requests[ctx->accessible_request_count].id = id;
+    ctx->accessible_requests[ctx->accessible_request_count++].action = action;
     return NX_OK;
 }
 

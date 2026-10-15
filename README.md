@@ -55,7 +55,7 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 - **Themes and interaction.** Dark, light and high-contrast presets, local theme overrides, keyboard focus, input routing, clipboard and file-drop reception, plus interruptible transitions and reduced-motion state. [Themes](docs/concepts/themes.md) · [Input](docs/concepts/input.md) · [Animation](docs/concepts/animation.md)
 - **Tooling and data views.** Virtual lists, time-series decimation, real-time plots, telemetry and profiler panels, hierarchy and property inspectors, and application-rendered viewport images. [Plotting](docs/concepts/plotting.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md)
 - **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
-- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling and validation state. Native assistive-technology bridges remain planned. [Accessibility](docs/concepts/accessibility.md)
+- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and an initial Windows UI Automation bridge for native queries, focus, Invoke and Toggle. Complete control-pattern/event coverage, screenreader acceptance and macOS/Linux transports remain open. [Accessibility](docs/concepts/accessibility.md)
 
 ## Platform status
 
@@ -72,7 +72,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 - The initial [AppKit adapter](docs/concepts/macos.md), [Metal command path](docs/concepts/metal.md) and native NexaCloud scene pass static/shared macOS CI checks. Physical hardware, display and assistive acceptance remain open. Direct GPU texture import is pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Linux Vulkan uses instanced geometry, ordered draw batching and three private upload slots. The [batching comparison](benchmarks/baselines/vulkan-d4a2508/README.md) records smaller geometry uploads and fewer draw calls; the [ring comparison](benchmarks/baselines/vulkan-1cdf550/README.md) verifies in-flight lifetime. [Submission-keyed GPU timestamps](benchmarks/baselines/vulkan-fa58bc1/README.md) now retain raw device timings and explicit unavailable states. Hardware performance acceptance remains open.
-- Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
+- Windows has an initial UIA bridge used by the native NexaCloud runner. Full UIA pattern/event coverage, real screenreader tasks, macOS AX and Linux AT-SPI remain pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
 
 ## Getting started

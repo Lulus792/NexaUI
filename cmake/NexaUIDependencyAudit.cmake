@@ -12,6 +12,11 @@ function(nexaui_audit_core_target target)
     # and the compositor-supplied XKB keymap; UI input routing stays in NexaUI.
     set(_allowed_links user32 shell32 imm32 m Threads::Threads X11::X11
         PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
+    # UIA, COM marshaling, BSTR/SAFEARRAY storage and SDK interface IDs are
+    # Windows accessibility services, not rendering/layout/widget dependencies.
+    if(WIN32)
+        list(APPEND _allowed_links ole32 oleaut32 uiautomationcore uuid)
+    endif()
     # AppKit supplies native macOS windows, input and pasteboard services.
     # objc is its OS runtime, needed when a plain C executable links the static
     # adapter. Neither entry is permitted on other target platforms.

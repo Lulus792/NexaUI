@@ -1542,6 +1542,20 @@ NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);
 NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
                                    uint32_t *out_index);
+/* Queue PRESS, FOCUS or SELECT against the completed semantic/interactive tree.
+   Delivered at the next begin_frame through the ordinary interaction state.
+   Disabled, inactive/modal-blocked and unsupported targets are rejected. A
+   duplicate request or full 64-entry queue returns LIMIT without accepting it.
+   Context-thread only, between frames. Other semantic actions remain unsupported. */
+NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
+/* Publish an owned native accessibility snapshot of a completed context frame.
+   Window/context owner thread only. The context may change or be destroyed after
+   return. Route window events through this context while it remains published;
+   a different context returns STATE before consuming events. Publishing a new
+   context invalidates prior element handles and queued native requests.
+   NULL context detaches the bridge. Windows initially supports UIA;
+   other adapters return UNSUPPORTED until their native transports are present. */
+NX_API nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context);
 
 /* IDs are stable across frames for identical hierarchy and byte sequences.
    Labels are borrowed only for the duration of the call and may contain any

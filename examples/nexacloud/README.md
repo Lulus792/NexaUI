@@ -173,7 +173,7 @@ injected creation failure.
 
 | Platform | Current evidence | Remaining native work |
 | --- | --- | --- |
-| Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
+| Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review; completed frames publish the initial UIA snapshot | Physical HiDPI monitor changes, native screenreader and release acceptance |
 | Linux | Local X11/Wayland Vulkan overview/file/compact captures equal the software reference; component and renderer regressions | Hardware GPU/performance, physical input/IME, HiDPI, AT-SPI and release acceptance |
 | macOS | Static/shared native tests pass at `e258f40` (80/80 each); seven GPU captures including files/details/settings at 200%, dialog focus flow and text matrix checked | Wide-display/Retina coverage, full physical keyboard/IME/AX walkthrough and release acceptance |
 

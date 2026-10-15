@@ -8,6 +8,7 @@
 
 #include "nexaui/nexaui.h"
 #include "window_internal.h"
+#include "accessibility.h"
 #include "event_queue.h"
 #include "drop_queue.h"
 
@@ -19,6 +20,7 @@
 struct nx_window {
     nx_allocator allocator;
     HWND hwnd;
+    nx_uia_bridge *accessibility;
     DWORD owner_thread;
     int should_close;
     float scale;
@@ -385,6 +387,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             return 0;
         }
         if (message == WM_SIZE) {
+            nx_uia_geometry(window->accessibility);
             nx_window_emit_resize(window);
             return 0;
         }
@@ -399,10 +402,12 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
                          suggested->right - suggested->left,
                          suggested->bottom - suggested->top,
                          SWP_NOZORDER | SWP_NOACTIVATE);
+            nx_uia_geometry(window->accessibility);
             nx_window_emit_resize(window);
             return 0;
         }
         if (message == WM_SETFOCUS || message == WM_KILLFOCUS) {
+            nx_uia_geometry(window->accessibility);
             nx_event event = {0};
             event.type = NX_EVENT_FOCUS;
             event.focused = message == WM_SETFOCUS;
@@ -535,6 +540,14 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             if (wparam == UNICODE_NOCHAR) return TRUE;
             nx_window_emit_text(window, (uint32_t)wparam);
             return 0;
+        }
+        if (message == WM_GETOBJECT && window->accessibility && nx_uia_object_id(lparam))
+            return nx_uia_get_object(window->accessibility,wparam,lparam);
+        if (message == WM_WINDOWPOSCHANGED || message == WM_SHOWWINDOW || message == WM_ACTIVATE)
+            nx_uia_geometry(window->accessibility);
+        if (message == WM_DESTROY && window->accessibility) {
+            nx_uia_bridge *bridge=window->accessibility; window->accessibility=NULL;
+            nx_uia_destroy(bridge);
         }
         if (message == WM_NCDESTROY) {
             window->hwnd = NULL;
@@ -854,8 +867,33 @@ nx_result nx_window_route_events(nx_window *window, nx_context *context,
     if (!window || !context) return NX_ERROR_ARGUMENT;
     if (GetCurrentThreadId() != window->owner_thread || !window->hwnd)
         return NX_ERROR_STATE;
-    return nx_platform_event_queue_route(&window->event_queue,
-                                          context, out_count);
+    if (!nx_uia_matches_context(window->accessibility,context)) return NX_ERROR_STATE;
+    nx_result result=nx_platform_event_queue_route(&window->event_queue,context,out_count);
+    if (result==NX_OK) {
+        size_t actions=0;
+        result=nx_uia_route(window->accessibility,context,&actions);
+        *out_count+=actions;
+    }
+    return result;
+}
+
+nx_result nx_window_publish_semantics(nx_window *window,const nx_context *context) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (GetCurrentThreadId()!=window->owner_thread || !window->hwnd) return NX_ERROR_STATE;
+    if (!context) {
+        nx_uia_bridge *bridge=window->accessibility; window->accessibility=NULL;
+        nx_uia_destroy(bridge); return NX_OK;
+    }
+    if (!window->accessibility) {
+        nx_uia_bridge *candidate=NULL;
+        nx_result result=nx_uia_create(window->hwnd,window->allocator,&candidate);
+        if (result!=NX_OK) return result;
+        window->accessibility=candidate;
+        result=nx_uia_publish(candidate,context);
+        if (result!=NX_OK) { window->accessibility=NULL; nx_uia_destroy(candidate); return result; }
+        return NX_OK;
+    }
+    return nx_uia_publish(window->accessibility,context);
 }
 
 nx_result nx_window_clipboard_set_text(nx_window *window,
@@ -1009,6 +1047,7 @@ void nx_window_destroy(nx_window *window) {
         DragAcceptFiles(window->hwnd, FALSE);
         DestroyWindow(window->hwnd);
     }
+    if (window->accessibility) { nx_uia_destroy(window->accessibility); window->accessibility=NULL; }
     nx_allocator a = window->allocator;
     if (window->ime_preedit)
         a.deallocate(a.user, window->ime_preedit,

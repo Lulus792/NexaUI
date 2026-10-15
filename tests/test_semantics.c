@@ -172,11 +172,98 @@ static int test_many_nodes_and_string_ownership(void) {
     return 0;
 }
 
+static int action_frame(nx_context *ctx, unsigned expected_clicks) {
+    CHECK(nx_begin_frame(ctx, 400, 400, 0) == NX_OK);
+    CHECK(nx_semantics_request_action(ctx, 1, NX_ACTION_PRESS) == NX_ERROR_STATE);
+    for (uint64_t id=1; id<=70; ++id) {
+        nx_widget_desc d = {0};
+        d.semantic = node(id, 0, NX_ROLE_BUTTON, "Action");
+        d.semantic.actions = NX_ACTION_PRESS | NX_ACTION_FOCUS | NX_ACTION_SELECT;
+        if (id==69) d.semantic.state = NX_SEM_DISABLED;
+        if (id==70) d.semantic.actions = NX_ACTION_FOCUS;
+        d.flags = NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
+        nx_interaction_state state;
+        CHECK(nx_widget_register(ctx, &d, &state) == NX_OK);
+        CHECK(state.clicked == (id<=64 ? expected_clicks : 0));
+        if (expected_clicks && id==2) CHECK(state.focused);
+    }
+    nx_semantic_desc label = node(71, 0, NX_ROLE_TEXT, "Read only");
+    CHECK(nx_semantics_add(ctx, &label, NULL) == NX_OK);
+    CHECK(nx_end_frame(ctx) == NX_OK);
+    return 0;
+}
+
+static int test_action_dispatch_and_backpressure(void) {
+    nx_context *ctx=NULL;
+    CHECK(nx_context_create(NULL, &ctx) == NX_OK);
+    CHECK(nx_semantics_request_action(NULL, 1, NX_ACTION_PRESS) == NX_ERROR_ARGUMENT);
+    CHECK(nx_semantics_request_action(ctx, 1, NX_ACTION_PRESS) == NX_ERROR_STATE);
+    CHECK(action_frame(ctx, 0)==0);
+    CHECK(nx_semantics_request_action(ctx, 0, NX_ACTION_PRESS) == NX_ERROR_ARGUMENT);
+    CHECK(nx_semantics_request_action(ctx, 1, NX_ACTION_PRESS | NX_ACTION_FOCUS) == NX_ERROR_UNSUPPORTED);
+    CHECK(nx_semantics_request_action(ctx, 1, NX_ACTION_INCREMENT) == NX_ERROR_UNSUPPORTED);
+    CHECK(nx_semantics_request_action(ctx, 99, NX_ACTION_PRESS) == NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx, 69, NX_ACTION_PRESS) == NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx, 70, NX_ACTION_PRESS) == NX_ERROR_UNSUPPORTED);
+    CHECK(nx_semantics_request_action(ctx, 71, NX_ACTION_PRESS) == NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx, 2, NX_ACTION_FOCUS) == NX_OK);
+    CHECK(nx_semantics_request_action(ctx, 2, NX_ACTION_FOCUS) == NX_ERROR_LIMIT);
+    CHECK(nx_semantics_request_action(ctx, 1, NX_ACTION_SELECT) == NX_OK);
+    for (uint64_t id=2; id<=63; ++id)
+        CHECK(nx_semantics_request_action(ctx, id, NX_ACTION_PRESS) == NX_OK);
+    CHECK(nx_semantics_request_action(ctx, 64, NX_ACTION_PRESS) == NX_ERROR_LIMIT);
+    CHECK(nx_begin_frame(ctx,400,400,0)==NX_OK);
+    for (uint64_t id=1; id<=70; ++id) {
+        nx_widget_desc d = {0}; d.semantic=node(id,0,NX_ROLE_BUTTON,"Action");
+        d.semantic.actions=NX_ACTION_PRESS | NX_ACTION_SELECT | NX_ACTION_FOCUS;
+        d.flags=NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
+        nx_interaction_state state;
+        CHECK(nx_widget_register(ctx,&d,&state)==NX_OK);
+        CHECK(state.clicked==(id<=63 ? 1u : 0u));
+        if (id==2) CHECK(state.focused);
+    }
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,64,NX_ACTION_PRESS)==NX_OK);
+    CHECK(nx_begin_frame(ctx,400,400,0)==NX_OK);
+    /* Removing a target consumes no click on a different ID. */
+    nx_widget_desc replacement={0}; replacement.semantic=node(80,0,NX_ROLE_BUTTON,"New");
+    replacement.semantic.actions=NX_ACTION_PRESS; replacement.flags=NX_WIDGET_INTERACTIVE;
+    nx_interaction_state state;
+    CHECK(nx_widget_register(ctx,&replacement,&state)==NX_OK && !state.clicked);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,64,NX_ACTION_PRESS)==NX_ERROR_STATE);
+    nx_context_destroy(ctx);
+    return 0;
+}
+
+static int test_modal_action_rejection(void) {
+    nx_context *ctx=NULL; CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK);
+    nx_control_desc underlay={0}; underlay.id=1; underlay.bounds=(nx_rect){0,0,200,120};
+    underlay.name=(nx_utf8_span){"Underlay",8}; nx_interaction_state state;
+    CHECK(nx_button(ctx,&underlay,&state)==NX_OK);
+    nx_overlay_desc overlay={0}; overlay.panel.id=10; overlay.backdrop_id=11;
+    overlay.panel.name=(nx_utf8_span){"Dialog",6}; overlay.panel.bounds=(nx_rect){30,20,140,80};
+    int dismissed=0; CHECK(nx_modal_begin(ctx,&overlay,&dismissed)==NX_OK);
+    nx_control_desc inner=underlay; inner.id=12; inner.parent_id=10; inner.bounds=(nx_rect){50,30,60,20};
+    CHECK(nx_button(ctx,&inner,&state)==NX_OK);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    uint32_t index; nx_semantic_view view;
+    CHECK(nx_semantics_find(ctx,1,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK);
+    CHECK(view.state & NX_SEM_DISABLED);
+    CHECK(nx_semantics_request_action(ctx,1,NX_ACTION_PRESS)==NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx,1,NX_ACTION_FOCUS)==NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx,12,NX_ACTION_PRESS)==NX_OK);
+    nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
     if (test_tree_and_focus()) return 1;
     if (test_validation_and_depth()) return 1;
     if (test_allocation_and_reuse()) return 1;
     if (test_many_nodes_and_string_ownership()) return 1;
+    if (test_action_dispatch_and_backpressure()) return 1;
+    if (test_modal_action_rejection()) return 1;
     puts("semantics tests passed");
     return 0;
 }
