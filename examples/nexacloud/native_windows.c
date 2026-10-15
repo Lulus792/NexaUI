@@ -50,6 +50,11 @@ static int capture(nx_window *window, cloud_scene *scene, nx_renderer_driver *re
     free(pixels); return okay;
 }
 
+static int reflow_frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer) {
+    return frame(window, scene, renderer);
+}
+#include "native_reflow.h"
+
 static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer, const char *prefix) {
     char path[1024]; nx_window_info info;
     if (!frame(window, scene, renderer) || nx_window_get_info(window, &info) != NX_OK) return 0;
@@ -88,7 +93,7 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
         "last GPU frame %.3f ms, %llu draw calls, WARP=%d\n",
         1000.0 * (double)(end.QuadPart - start.QuadPart) / (double)frequency.QuadPart / 30.0,
         gpu.last_gpu_frame_ms, (unsigned long long)gpu.last_draw_calls, gpu.using_warp);
-    return 1;
+    return native_reflow(window, scene, renderer, prefix, "native");
 }
 #endif
 

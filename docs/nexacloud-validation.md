@@ -247,3 +247,73 @@ sanitizer job. Optional manual Windows-ASan/fuzz jobs were not selected. Ubuntu
 uses the corrected, checksum-pinned validation layer and passes the active
 counterexample plus 20 untraced X11 lifecycle repetitions; five Wayland-display
 cases skip on its Xvfb-only desktop. See the [Vulkan investigation and resolution](concepts/vulkan.md#validation-tool-compatibility).
+
+## Text reflow — 2026-10-15
+
+The scene now exposes a 100/150/200% text preference in Settings. It changes
+font raster sizes independently of window density. Wrapped labels contribute
+their measured heights; file columns use measured filename/metadata widths.
+Preview dimensions are capped, narrow list rows and inspector metadata stack,
+and navigation/dialog content scrolls. Modal close stays outside the scrolling
+body. A newly focused control, or focus affected by resizing/text reflow, is
+revealed on the following frame. Ordinary wheel scrolling preserves its offset
+while focus stays unchanged.
+
+The bounded 512-entry text cache includes wrap width and raster size. It replaces
+only entries not referenced by the current frame, after creating a replacement
+successfully. The next frame begins before old stamps can be evicted; native
+renderers have already copied submitted bitmap data into owned upload storage.
+
+The new `nexaui_nexacloud_text_reflow` test exercises all six pages with three
+text sizes and five logical window sizes: 480×400, 640×480, 800×640, 1440×1040
+and 2560×1600. These are 90 page/font/window combinations with the example's
+existing data, plus separate grid/list and Midnight/Light workflows. The test
+checks raw text bounds against ancestor widths and content-panel heights,
+settings activation and Tab focus, fixed close visibility, Escape/focus return,
+description-field focus reveal, invalid preference values and 120 distinct
+resize widths. It reads every borrowed bitmap byte in the cache/resize probe
+so sanitizer runs also exercise pixels retained by the finished command stream.
+
+Counterexamples caught during development included a chart endpoint outside its
+card, an activity timestamp positioned with a fixed width, a 150% weather clock
+outside its fixed-height card, and a narrow 200% DejaVu Sans settings heading
+406.7 pixels wide in a 404-pixel viewport. They required measured positioning,
+scaled card geometry and the narrow-layout heading style; keeping the full
+semantic names alone would not have fixed the missing pixels.
+
+Local evidence uses MSVC Debug on Windows 11 and GCC/Clang on Alpine/WSLg:
+
+- Windows static/shared: portable workflow, text matrix and D3D12 native smoke.
+- Linux static: portable workflow, text matrix and X11/Wayland Vulkan native
+  smoke under validation and synchronization validation. GPU captures include
+  byte-for-byte comparisons against the shared software reference.
+- Linux shared: portable workflow and text matrix with DejaVu Sans. The local
+  static and sanitizer builds use the installed Windows Segoe UI font through
+  the WSL mount; font files are never redistributed.
+- Linux Clang ASan/UBSan with leak detection: portable workflow and text matrix.
+  A separate run also exercises the text matrix with DejaVu Sans.
+
+The native review exposed dark primary-action ink on dark hover/pressed
+backgrounds. The shared `nx_action` now chooses foreground tokens in the same
+state order as its background. A counterexample on the old code measured a
+1.563 contrast ratio in Dark/hover. The component regression checks normal,
+hovered, held and selected primary actions across all four theme presets,
+against the actual headless-rendered interior background. It requires at least
+4.5 for the shared icon/label foreground and passes after the correction.
+
+Reviewed native 200% captures are published as lossless RGB conversions of GPU
+readbacks: [Windows files, 804×661](images/nexacloud-windows-files-200.png),
+[Windows focused text preference, 804×661](images/nexacloud-windows-settings-200.png)
+and [Linux X11 files, 820×700](images/nexacloud-linux-files-200.png). These use
+text factor 2 with a 1× backing scale; they do not demonstrate physical 2× DPI.
+
+Native smokes additionally capture compact files, the details modal and the
+focused Settings text-size control at 200%. The macOS version of that new
+workflow is authored and requires a fresh native CI result; the earlier
+`2f70d68` macOS evidence above covers the previous standard-text scene.
+
+This is application-level reflow evidence for the sampled fonts, strings and
+states. Physical system text settings, Retina/4K/monitor changes, installed IME
+and full keyboard/screenreader acceptance remain open. The core text contract
+still allows an unbreakable segment to exceed its wrap width; arbitrary future
+server filenames and translations need their own overflow policy and tests.

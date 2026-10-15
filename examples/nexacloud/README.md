@@ -108,6 +108,12 @@ separate native tests; physical input, IME and display acceptance remain open.
   is 640×480 logical pixels. Very small windows show a resize hint.
 - Settings switch between Midnight and Light during runtime. Reduced motion is
   an explicit application preference; these scenes currently use direct changes.
+- Settings also cycle text size through 100%, 150% and 200%, independently of
+  backbuffer density. Cards and file columns reflow, metadata stacks, and dialog
+  bodies scroll while the close action stays fixed. Tab focus is revealed after
+  a text-size or window-size change. Narrow list rows stack their preview and
+  labels when needed. Cached text includes wrap width and safely evicts old
+  entries across frames during repeated resizing.
 
 The sample search performs ASCII case folding and byte matching for non-ASCII
 text. It is not a complete locale-aware cloud search implementation.
@@ -129,6 +135,10 @@ injected creation failure.
 | Linux | Local X11/Wayland Vulkan overview/file/compact captures equal the software reference; component and renderer regressions | Hardware GPU/performance, physical input/IME, HiDPI, AT-SPI and release acceptance |
 | macOS | Static/shared AppKit/Metal and full-scene native tests pass at `2f70d68` (79/79 each); four GPU captures and dialog focus flow checked | Wide-display/Retina coverage, full physical keyboard/IME/AX walkthrough and release acceptance |
 
-Large text at 200%, physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI
-screenreader tasks are still open. A successful portable render does not establish
-native support for an operating system. See the [NexaCloud delivery plan](../../docs/nexacloud.md).
+The `nexaui_nexacloud_text_reflow` test checks all six pages at 100/150/200% and
+five logical window sizes, plus preference activation, Tab focus, modal return,
+text bounds and repeated resize/cache ownership. Native test builds additionally
+capture files, details and settings at 200%. Current evidence and its limits are
+in the [large-text report](../../docs/nexacloud-validation.md#text-reflow--2026-10-15).
+Physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI screenreader tasks
+remain open. See the [NexaCloud delivery plan](../../docs/nexacloud.md).

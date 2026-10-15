@@ -101,6 +101,11 @@ static int capture(nx_window *window, cloud_scene *scene, nx_renderer_driver *re
     free(row); free(scaled); free(reference); free(pixels); return okay;
 }
 
+static int reflow_frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer) {
+    return frame(window, scene, renderer, 0);
+}
+#include "native_reflow.h"
+
 static int queue_click(cloud_scene *scene, float x, float y) {
     nx_event event = {0}; event.type = NX_EVENT_POINTER_DOWN; event.button = NX_BUTTON_LEFT;
     event.x = x; event.y = y;
@@ -163,7 +168,7 @@ int main(int argc, char **argv) {
             char path[1024];
             okay = frame(window, scene, &renderer, 0) && frame(window, scene, &renderer, 0) &&
                 snprintf(path, sizeof(path), "%s-linux-compact.ppm", argv[3]) < (int)sizeof(path) &&
-                capture(window, scene, &renderer, path);
+                capture(window, scene, &renderer, path) && native_reflow(window, scene, &renderer, argv[3], "linux");
         }
     }
 #else

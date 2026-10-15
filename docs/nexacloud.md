@@ -23,7 +23,7 @@ remain separate from the common scene.
 | Search | Existing text-field widget | owned draft, empty results, IME/clipboard adapter when native |
 | Rate chart | Existing line/triangle primitives | two named series with separate colors |
 | Dialog | Existing modal/focus trap | Escape/outside dismissal, trigger focus return |
-| Appearance | Semantic theme tokens | Midnight/Light runtime switch, direct reduced-motion behavior |
+| Appearance | Semantic theme tokens and multiline text layout | Midnight/Light runtime switch, 100/150/200% text preference, direct reduced-motion behavior |
 
 Text colors and accent/selection pairs are covered by the theme contrast tests.
 Status also has names and values; color is not the sole indicator. Icons are
@@ -49,7 +49,11 @@ the application releases them after renderer use ends.
    Wide-display,
    Retina and physical/assistive acceptance remain open; public APIs have no
    platform types.
-4. **Pending:** large-text reflow, physical DPI/monitor and 4K checks, full native
+4. **Implemented initial text reflow:** the example exposes a 100/150/200% text
+   preference, measured wrapped labels, responsive columns, stacked metadata,
+   scrollable navigation/dialog content and focus reveal. The portable matrix
+   and native large-text captures have their own [validation record](nexacloud-validation.md#text-reflow--2026-10-15).
+5. **Pending:** physical DPI/monitor and 4K checks, full native
    keyboard walkthroughs, OS accessibility bridges/screenreaders, performance
    budgets, packaging and release acceptance on each supported OS.
 

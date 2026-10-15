@@ -20,6 +20,8 @@ in that order.
 `nx_action` combines a named, focusable hit region with optional vector icon,
 label and selection. Primary, Secondary, Quiet, Navigation and Tile variants
 use the current theme, including hover, held, disabled and focused states.
+Foreground tokens follow the painted background: normal text on hovered/pressed
+surfaces, selection text on selection, and accent text on an idle primary action.
 Navigation exposes TAB/SELECT and tiles LIST_ITEM/SELECT. Other actions expose
 BUTTON/PRESS. Selection belongs to the application: inspect `state.clicked`,
 update your model and supply the new state in subsequent composition. Tab and

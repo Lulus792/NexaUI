@@ -2479,8 +2479,9 @@ nx_result nx_action(nx_context *ctx, const nx_action_desc *desc,
     if (result != NX_OK) return result;
     nx_theme *t = &ctx->theme_stack[ctx->theme_depth];
     nx_color foreground = t->colors[c->disabled ? NX_COLOR_DISABLED_TEXT :
-        desc->variant == NX_ACTION_PRIMARY ? NX_COLOR_ACCENT_TEXT :
-        desc->selected ? NX_COLOR_SELECTION_TEXT : NX_COLOR_TEXT];
+        state.held || state.hovered ? NX_COLOR_TEXT :
+        desc->selected ? NX_COLOR_SELECTION_TEXT :
+        desc->variant == NX_ACTION_PRIMARY ? NX_COLOR_ACCENT_TEXT : NX_COLOR_TEXT];
     nx_color background = t->colors[c->disabled ? NX_COLOR_DISABLED_BACKGROUND :
         state.held ? NX_COLOR_PRESSED : state.hovered ? NX_COLOR_HOVER :
         desc->selected ? NX_COLOR_SELECTION : desc->variant == NX_ACTION_PRIMARY ?

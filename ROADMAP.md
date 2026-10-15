@@ -433,3 +433,12 @@ selecting the present-fence-aware tool; five Wayland display cases explicitly
 skip in its Xvfb-only environment. This resolves the reproduced old-layer CI
 failure without a production lifetime shortcut. Hardware, text/reflow,
 assistive bridges, profiling and the remaining roadmap are still open.
+
+The NexaCloud scene now has an initial 100/150/200% text preference and reflow:
+measured wrapping and file columns, bounded previews, stacked narrow metadata,
+scrollable navigation/dialogs, fixed modal close and focus reveal after text or
+window changes. A separate text matrix covers six pages at three text sizes and
+five window sizes, plus cache/resize, theme and keyboard workflows. Windows
+D3D12 and Linux X11/Wayland Vulkan add native 200% captures; the new macOS case
+awaits CI. This does not close physical display or assistive acceptance. See the
+[reflow validation record](docs/nexacloud-validation.md#text-reflow--2026-10-15).

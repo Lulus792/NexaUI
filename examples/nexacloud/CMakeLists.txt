@@ -60,6 +60,22 @@ if(NEXAUI_BUILD_TESTS)
     include("${PROJECT_SOURCE_DIR}/cmake/NexaUIExampleFont.cmake")
     nexaui_find_example_font(_cloud_font)
     if(EXISTS "${_cloud_font}")
+        add_executable(nexaui_nexacloud_reflow reflow_test.c)
+        target_link_libraries(nexaui_nexacloud_reflow PRIVATE nexacloud_scene)
+        target_compile_features(nexaui_nexacloud_reflow PRIVATE c_std_17)
+        if(MSVC)
+            target_compile_options(nexaui_nexacloud_reflow PRIVATE /W4 /utf-8)
+        else()
+            target_compile_options(nexaui_nexacloud_reflow PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+        if(WIN32 AND BUILD_SHARED_LIBS)
+            add_custom_command(TARGET nexaui_nexacloud_reflow POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:nexaui> $<TARGET_FILE_DIR:nexaui_nexacloud_reflow> VERBATIM)
+        endif()
+        add_test(NAME nexaui_nexacloud_text_reflow COMMAND nexaui_nexacloud_reflow
+            "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud-reflow")
+        set_tests_properties(nexaui_nexacloud_text_reflow PROPERTIES TIMEOUT 120)
         add_test(NAME nexaui_nexacloud_example COMMAND nexaui_nexacloud --smoke
             "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud")
         set_tests_properties(nexaui_nexacloud_example PROPERTIES TIMEOUT 60)

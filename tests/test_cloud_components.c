@@ -63,6 +63,47 @@ static int icons_and_surface(void) {
     free(pixels); nx_context_destroy(ui); return 0;
 }
 
+static double linear(double c) { return c <= .04045 ? c / 12.92 : pow((c + .055) / 1.055, 2.4); }
+static double luminance(nx_color c) {
+    return .2126 * linear(c.r) + .7152 * linear(c.g) + .0722 * linear(c.b);
+}
+static int primary_contrast(void) {
+    for (int kind = NX_THEME_DARK; kind <= NX_THEME_MIDNIGHT; ++kind)
+        for (unsigned phase = 0; phase < 4; ++phase) {
+            nx_context *ui; nx_theme theme; nx_interaction_state state;
+            CHECK(nx_context_create(NULL, &ui) == NX_OK);
+            CHECK(nx_theme_preset((nx_theme_kind)kind, &theme) == NX_OK);
+            CHECK(nx_context_set_theme(ui, &theme) == NX_OK);
+            nx_action_desc d = action(1); d.variant = NX_ACTION_PRIMARY; d.selected = phase == 3;
+            CHECK(nx_begin_frame(ui, 120, 100, 0) == NX_OK);
+            CHECK(nx_action(ui, &d, &state) == NX_OK); CHECK(nx_end_frame(ui) == NX_OK);
+            if (phase == 1 || phase == 2) {
+                nx_event e = {0}; e.type = phase == 1 ? NX_EVENT_POINTER_MOVE : NX_EVENT_POINTER_DOWN;
+                e.button = NX_BUTTON_LEFT; e.x = e.y = 20;
+                CHECK(nx_context_queue_event(ui, &e) == NX_OK);
+            }
+            CHECK(nx_begin_frame(ui, 120, 100, 0) == NX_OK);
+            CHECK(nx_action(ui, &d, &state) == NX_OK); CHECK(nx_end_frame(ui) == NX_OK);
+            if (phase == 1) CHECK(state.hovered);
+            if (phase == 2) CHECK(state.held);
+            const nx_command *commands; size_t count;
+            CHECK(nx_frame_commands(ui, &commands, &count) == NX_OK);
+            uint8_t pixels[120 * 100 * 4];
+            CHECK(nx_headless_render(commands, count, pixels, 120, 100, 120 * 4, (nx_color){0,0,0,1}) == NX_OK);
+            const uint8_t *p = pixels + (25 * 120 + 65) * 4;
+            nx_color background = {p[0] / 255.f, p[1] / 255.f, p[2] / 255.f, 1};
+            unsigned strokes = 0;
+            for (size_t i = 0; i < count; ++i) if (commands[i].type == NX_COMMAND_LINE) {
+                double a = luminance(background), b = luminance(commands[i].color);
+                double ratio = (fmax(a,b) + .05) / (fmin(a,b) + .05);
+                if (ratio < 4.5) fprintf(stderr, "primary theme %d phase %u contrast %.3f\n", kind, phase, ratio);
+                CHECK(ratio >= 4.5); ++strokes;
+            }
+            CHECK(strokes); nx_context_destroy(ui);
+        }
+    return 0;
+}
+
 typedef struct fail_allocator { size_t calls, fail; } fail_allocator;
 static void *allocate(void *user, size_t size) {
     fail_allocator *a = user; if (++a->calls == a->fail) return NULL; return malloc(size);
@@ -96,4 +137,4 @@ static int rollback(void) {
     }
     CHECK(failures >= 4); return 0;
 }
-int main(void) { return controls() || icons_and_surface() || rollback(); }
+int main(void) { return controls() || icons_and_surface() || primary_contrast() || rollback(); }
