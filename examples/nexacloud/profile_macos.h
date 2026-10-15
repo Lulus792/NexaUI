@@ -37,6 +37,8 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
         (void)commands;
         if (current.submitted_frames != previous.submitted_frames + 1 || p.submission != current.submitted_frames ||
             !p.cpu_timing_valid || p.input_commands != count || !p.draw_calls ||
+            !p.frame_limit || p.frame_limit > NX_METAL_FRAME_SLOTS || p.frame_slot >= p.frame_limit ||
+            p.pending_frames != current.pending_frames || p.pending_frames > p.frame_limit ||
             p.draw_calls > p.draw_records || p.render_passes != p.history_copies + 1 || p.history_copies > p.draw_records ||
             p.bound_passes > p.render_passes || p.fixed_state_bindings != 5 * (p.per_draw_bindings ? p.draw_calls : p.bound_passes) ||
             (p.batched ? p.record_upload_bytes != p.draw_records * 116 || p.draw_argument_bytes ||
@@ -63,10 +65,10 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
     if (snprintf(path, sizeof(path), "%s-macos-profile-%s.csv", prefix, workload) >= (int)sizeof(path)) return 0;
     FILE *file = fopen(path, "wb");
     if (!file) return 0;
-    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,bound_passes,fixed_state_bindings,per_draw_bindings,batched,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,record_upload_bytes,record_buffer_bindings,present_copy_bytes,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms\n") > 0;
+    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,bound_passes,fixed_state_bindings,per_draw_bindings,batched,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,record_upload_bytes,record_buffer_bindings,present_copy_bytes,frame_slot,frame_limit,pending_frames,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms\n") > 0;
     for (unsigned i = 0; okay && i < CLOUD_PROFILE_SAMPLES; ++i) {
         nx_metal_frame_profile p = samples[i].frame;
-        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%u,%u,%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
             workload, p.pixel_width, p.pixel_height, p.draw_scale, cloud_text_scale(scene),
             (unsigned long long)p.submission, (unsigned long long)p.input_commands, (unsigned long long)p.draw_records, (unsigned long long)p.draw_calls,
             (unsigned long long)p.render_passes, (unsigned long long)p.bound_passes,
@@ -74,6 +76,7 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
             (unsigned long long)p.history_copy_bytes, (unsigned long long)p.bitmap_upload_bytes,
             (unsigned long long)p.draw_argument_bytes, (unsigned long long)p.record_upload_bytes,
             (unsigned long long)p.record_buffer_bindings, (unsigned long long)p.present_copy_bytes,
+            p.frame_slot, p.frame_limit, p.pending_frames,
             p.prepare_ms, p.encode_ms, p.acquire_ms, p.commit_ms, (double)samples[i].retirement_ns / 1.e6, samples[i].wall_ms) > 0;
     }
     if (fclose(file)) okay = 0;
@@ -98,16 +101,17 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
 
 static int profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
                             const char *prefix, const char *workload) {
-    /* Unbatched/batched/batched/unbatched keeps both paths on the same device,
+    /* Serial/ring/ring/serial keeps both paths on the same device,
        scene and build, with allocation stability checked after each warmup.
        Each block warms independently so retirement samples belong to its mode. */
-    static const int batched[] = {0,1,1,0};
+    static const uint32_t limits[] = {1,3,3,1};
     for (unsigned block = 0; block < 4; ++block) {
         char name[80];
-        if (snprintf(name, sizeof(name), "%s-%s-%u", workload, batched[block] ? "batched" : "unbatched", block) >= (int)sizeof(name) ||
+        if (snprintf(name, sizeof(name), "%s-%s-%u", workload, limits[block] == 3 ? "ring" : "serial", block) >= (int)sizeof(name) ||
             nx_metal_test_set_per_draw_bindings(renderer->backend.user,0) != NX_OK ||
-            nx_metal_test_set_batching(renderer->backend.user,batched[block]) != NX_OK ||
+            nx_metal_test_set_batching(renderer->backend.user,1) != NX_OK ||
+            nx_metal_test_set_frame_limit(renderer->backend.user,limits[block]) != NX_OK ||
             !profile_workload(window,scene,renderer,prefix,name)) return 0;
     }
-    return nx_metal_test_set_batching(renderer->backend.user,1) == NX_OK;
+    return nx_metal_test_set_frame_limit(renderer->backend.user,3) == NX_OK;
 }

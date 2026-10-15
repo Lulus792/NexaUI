@@ -250,6 +250,118 @@ static int test_batch_storage(nx_window *w, nx_metal_renderer *r) {
     CHECK(compare(w,r,(nx_color){0}) == 0);
     return 0;
 }
+static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
+    CHECK(nx_metal_renderer_recover(r) == NX_OK);
+    CHECK(nx_metal_test_set_frame_limit(r,0) == NX_ERROR_ARGUMENT);
+    CHECK(nx_metal_test_set_frame_limit(r,4) == NX_ERROR_ARGUMENT);
+    CHECK(nx_metal_test_set_frame_limit(r,3) == NX_OK);
+    nx_window_info window; CHECK(nx_window_get_info(w,&window) == NX_OK);
+    uint32_t width = (uint32_t)ceil((double)window.width*window.scale);
+    uint32_t height = (uint32_t)ceil((double)window.height*window.scale);
+    size_t stride = (size_t)width*4u+17, bytes = stride*height;
+    uint8_t *actual = malloc(bytes), *expected[4]; CHECK(actual);
+    for (unsigned i=0;i<4;++i) { expected[i]=malloc(bytes); CHECK(expected[i]); }
+    uint64_t tickets[4]; nx_metal_renderer_info before, after; int presented;
+    for (unsigned cycle=0;cycle<9;++cycle) {
+        unsigned frames = cycle ? 4 : 3;
+        for (unsigned frame=0;frame<frames;++frame) {
+            unsigned seed=cycle*4+frame;
+            uint8_t *rgba=malloc(34), *mask=malloc(21); nx_command *c=calloc(8,sizeof(*c)); CHECK(rgba && mask && c);
+            for (unsigned i=0;i<34;++i) rgba[i]=(uint8_t)(i*17+seed*29);
+            for (unsigned i=0;i<21;++i) mask[i]=(uint8_t)(i*31+seed*11);
+            c[0]=(nx_command){.type=NX_COMMAND_PUSH_CLIP,.rect={1.5f,2.5f,149,103}};
+            c[1]=(nx_command){.type=NX_COMMAND_FILL_RECT,.rect={3+(float)seed,4,61,77},.color={.2f,.5f,.9f,1}};
+            c[2]=(nx_command){.type=NX_COMMAND_FILL_ROUND_RECT,.rect={11,13+(float)frame,95,67},.radius=7,.color={.9f,.1f,.3f,.4f}};
+            c[3]=(nx_command){.type=NX_COMMAND_BITMAP,.rect={7.5f,9.5f,81,61},.color={.8f,.4f,.9f,.8f},.bitmap={rgba,3,2,17,NX_BITMAP_RGBA8}};
+            c[4]=(nx_command){.type=NX_COMMAND_BITMAP,.rect={51.5f,31.5f,89,71},.color={.3f,.9f,.6f,.7f},.bitmap={mask,5,3,7,NX_BITMAP_A8}};
+            c[5]=(nx_command){.type=NX_COMMAND_FILL_RECT,.rect={23,37,13+(float)seed,17},.color={(seed%7)/6.f,.1f,.6f,1}};
+            c[6]=(nx_command){.type=NX_COMMAND_STROKE_RECT,.rect={41,19,51,61},.thickness=2.5f,.color={.4f,.7f,.2f,.5f}};
+            c[7]=(nx_command){.type=NX_COMMAND_POP_CLIP};
+            nx_color clear={(seed%5)/4.f,.07f,.11f,.26f};
+            memset(expected[frame],0xa7,bytes);
+            CHECK(nx_headless_render(c,8,expected[frame],width,height,stride,clear) == NX_OK);
+            if (!cycle && frame==2) {
+                CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.pending_frames == 2);
+                CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_UPLOAD_MEMORY) == NX_OK);
+                CHECK(nx_metal_test_queue_capture(r,c,8,1,clear,&tickets[frame]) == NX_ERROR_MEMORY && !tickets[frame]);
+                CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 2);
+                CHECK(!memcmp(after.slots,before.slots,sizeof(after.slots)) && after.atlas_allocations == before.atlas_allocations);
+                CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_GEOMETRY_MEMORY) == NX_OK);
+                CHECK(nx_metal_test_queue_capture(r,c,8,1,clear,&tickets[frame]) == NX_ERROR_MEMORY && !tickets[frame]);
+                CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 2);
+                CHECK(!memcmp(after.slots,before.slots,2*sizeof(after.slots[0])) && !after.slots[2].record_capacity_bytes);
+                CHECK(after.last_frame.submission == before.last_frame.submission && after.submitted_frames == before.submitted_frames);
+            }
+            nx_result result=NX_ERROR_STATE;
+            for (unsigned retry=0;retry<10 && result==NX_ERROR_STATE;++retry) {
+                CHECK(nx_window_poll(w,10) == NX_OK);
+                result=nx_metal_test_queue_capture(r,c,8,1,clear,&tickets[frame]);
+            }
+            CHECK(result == NX_OK && tickets[frame]);
+            /* All GPU uploads must be owned before returning, across all slots. */
+            memset(rgba,0,34); memset(mask,0,21); memset(c,0,8*sizeof(*c)); free(rgba); free(mask); free(c);
+            CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.frame_limit == 3);
+            CHECK(after.pending_frames == (frame<3 ? frame+1 : 3));
+            CHECK(after.submitted_frames-after.completed_frames == after.pending_frames);
+            CHECK(after.last_frame.frame_slot < 3 && after.last_frame.frame_limit == 3);
+            CHECK(after.slots[after.last_frame.frame_slot].submission == tickets[frame]);
+        }
+        if (!cycle) {
+            before=after;
+            CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+            for (unsigned retry=0;retry<2;++retry) {
+                CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && !presented);
+                CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 3);
+                CHECK(after.submitted_frames == before.submitted_frames && after.completed_frames == before.completed_frames);
+                CHECK(after.next_frame_slot == before.next_frame_slot && !memcmp(after.slots,before.slots,sizeof(after.slots)));
+                CHECK(after.last_frame.submission == before.last_frame.submission);
+            }
+        } else {
+            /* The fourth capture retired/reused the oldest slot. Its ticket
+               expires, while each of the other three snapshots stays valid. */
+            CHECK(nx_metal_test_read_capture(r,tickets[0],actual,stride) == NX_ERROR_STATE);
+        }
+        /* Read newest first: retirement must preserve older owned captures. */
+        for (unsigned n=frames;n>(cycle ? 1u : 0u);--n) {
+            unsigned i=n-1;
+            memset(actual,0xa7,bytes);
+            CHECK(nx_metal_test_read_capture(r,tickets[i],actual,stride) == NX_OK);
+            CHECK(!memcmp(actual,expected[i],bytes));
+            CHECK(nx_metal_test_read_capture(r,tickets[i],actual,stride) == NX_ERROR_STATE);
+        }
+        CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && !after.pending && !after.pending_readback);
+        if (cycle==1) before=after;
+        if (cycle>1) CHECK(after.record_upload_allocations == before.record_upload_allocations &&
+            after.atlas_allocations == before.atlas_allocations && after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    }
+    CHECK(after.peak_pending_frames == 3);
+    for (unsigned i=0;i<3;++i) CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && presented);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.pending_frames == 3);
+    [nx_window_native_nswindow(w) setContentSize:NSMakeSize(window.width+17,window.height+13)];
+    CHECK(nx_window_poll(w,0) == NX_OK);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned i=0;i<2;++i) {
+        CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && !presented);
+        CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 3 &&
+            after.pixel_width == before.pixel_width && after.pixel_height == before.pixel_height);
+    }
+    CHECK(compare(w,r,(nx_color){.1f,.2f,.3f,.4f}) == 0);
+    for (unsigned i=0;i<3;++i) CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && presented);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.pending_frames == 3);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned i=0;i<2;++i) {
+        CHECK(nx_metal_renderer_recover(r) == NX_ERROR_LIMIT);
+        CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 3 &&
+            after.record_capacity_bytes == before.record_capacity_bytes && after.bitmap_capacity_bytes == before.bitmap_capacity_bytes);
+    }
+    CHECK(nx_metal_renderer_recover(r) == NX_OK);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && !after.pending && !after.record_capacity_bytes && !after.bitmap_capacity_bytes);
+    CHECK(after.submitted_frames == after.completed_frames);
+    CHECK(nx_metal_test_set_frame_limit(r,1) == NX_OK && compare(w,r,(nx_color){0}) == 0);
+    free(actual); for (unsigned i=0;i<4;++i) free(expected[i]);
+    puts("Metal three-slot ring: mixed owned uploads, all-frame readback, wrap, bounded backpressure/recovery and reuse passed.");
+    return 0;
+}
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
 static void *wrong_thread(void *user) {
     wrong *w = user; nx_metal_renderer_info info; int presented;
@@ -271,6 +383,8 @@ static int test_driver(nx_window *window) {
     CHECK(nx_renderer_run(&driver,target,NULL,0,(nx_color){0},&outcome) == NX_OK && outcome == NX_RENDER_DEVICE_LOST);
     CHECK(nx_renderer_recover(&driver) == NX_OK);
     CHECK(nx_renderer_run(&driver,target,NULL,0,(nx_color){0,0,1,1},&outcome) == NX_OK && outcome == NX_RENDER_READY);
+    for (unsigned i=0;i<2;++i) CHECK(nx_renderer_run(&driver,target,NULL,0,(nx_color){0},&outcome) == NX_OK && outcome == NX_RENDER_READY);
+    nx_metal_renderer_info pending; CHECK(nx_metal_renderer_get_info(r,&pending) == NX_OK && pending.pending_frames == 3);
     CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
     CHECK(nx_renderer_close(&driver) == NX_ERROR_LIMIT && driver.open && driver.closing);
     CHECK(nx_renderer_close(&driver) == NX_ERROR_LIMIT);
@@ -295,6 +409,7 @@ int main(void) {
             puts("No Metal device on this runner; GPU execution skipped (not accepted)."); return 77;
         }
         CHECK(result == NX_OK && r && h.live == 1);
+        CHECK(nx_metal_test_set_frame_limit(r,1) == NX_OK);
         CHECK([view layer] && [view layer] != original_layer && [view wantsLayer]);
         nx_metal_renderer *competing = NULL;
         CHECK(nx_metal_renderer_create(window,NULL,&competing) == NX_ERROR_STATE && !competing);
@@ -325,6 +440,7 @@ int main(void) {
         CHECK(test_bitmaps(window,r) == 0);
         CHECK(test_profile(window,r) == 0);
         CHECK(test_batch_storage(window,r) == 0);
+        CHECK(test_frame_ring(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);

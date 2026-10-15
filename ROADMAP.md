@@ -474,3 +474,13 @@ retains 768 samples and 24 byte-identical GPU captures. In-run median CPU
 prepare+encode decreases by 7.1–59.8% against the unbatched path, with substantial
 block drift and inconsistent wall-time tails. Concurrent upload rings and A07
 remain open; this does not establish physical Release/FPS acceptance.
+
+A06 now authors three fixed Metal frame slots with independent record buffers,
+bitmap staging and atlases. The full ring retires the oldest submission before
+reuse; resize/recovery/close drain all slots within one polling budget. New
+native cases cover distinct all-frame GPU captures after source release,
+wrap/reuse, busy-peer allocation failure, bounded full-ring/resize/recovery and
+three-slot close. Profiling compares serial/ring/ring/serial with batching fixed
+on, including per-slot/capacity diagnostics. Host C17 compilation and Windows /
+Linux sanitizer preparation tests pass. Actual macOS execution is pending;
+A06 performance/hardware acceptance and A07 remain open.

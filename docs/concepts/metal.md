@@ -25,9 +25,12 @@ replacement before dropping the prior canvas and checks an initial conservative
 
 ## Finite retirement
 
-The renderer retains the pending command buffer, which retains its encoded
-resources. It polls status for at most one second instead of an unbounded
-`waitUntilCompleted`. No asynchronous callback dereferences the C renderer.
+The renderer retains up to three pending command buffers, each in a fixed frame
+slot with owned record/bitmap uploads and a private atlas. A full ring retires
+its oldest submission before reusing that slot. Resize to different dimensions,
+recovery and close drain all slots. Status polling shares a one-second budget
+across a drain instead of using an unbounded `waitUntilCompleted`.
+No asynchronous callback dereferences the C renderer.
 A timeout suspends rendering; close returns `NX_ERROR_LIMIT` with resources and
 the window lease intact. Retry close rather than freeing them. Terminal command
 errors latch the renderer until explicit recovery, which retires work before
@@ -55,7 +58,7 @@ once per device, without an external shader translation library or runtime
 source-file lookup. `fastMathEnabled=NO` and `FP_CONTRACT OFF` preserve the
 split-product operations. The original unbatched path copies per-draw arguments
 with `set*Bytes`; the new A06 path below uses owned draw records and keeps that
-original path only for native comparisons. Concurrent upload rings remain open.
+original path only for native comparisons. The three-slot upload ring is described below.
 Color output is quantized RGBA8; fixed-function blending is disabled.
 Alpha values that quantize to zero are skipped, and those that quantize to 255
 are opaque. Bitmap draws sample a private RGBA8 atlas and apply integer tint
@@ -85,11 +88,12 @@ preserves fractional-scale source-cell boundaries.
 
 Before encoding, the renderer copies the packed bytes to its own shared Metal
 buffer, then a blit uploads them into a private shader-read texture. Atlas rows
-are multiples of 4096 bytes. The prior command buffer must be terminal before
-the shared staging storage is overwritten or grown. Pending GPU work never reads
+are multiples of 4096 bytes. Each frame slot owns its upload buffer and atlas;
+that slot's command buffer must be terminal before its shared storage is
+overwritten or grown. Pending GPU work never reads
 caller pixels or command storage. Allocation failure retains the previous atlas
 and upload buffer; candidates are installed only after both allocations succeed.
-Current atlas storage and staging capacity each stay within 64 MiB; transactional
+Each slot's atlas texels and staging capacity each stay within 64 MiB; transactional
 growth temporarily retains both previous and candidate resources. Borrowed image
 storage remains the caller's responsibility until submission returns.
 
@@ -113,9 +117,32 @@ The authored production path packs each visible quad, shape and exact scissor
 into a 116-byte C/MSL record in a reusable shared Metal buffer. Records contain
 no source pointers. Capacity grows transactionally to at most 64 MiB; the prior
 buffer is retained on allocation failure. A replacement temporarily coexists
-with the old buffer. The prior command buffer is still retired before CPU
-writes, growth, recovery or destruction. This is serialized owned staging,
-not a concurrent multi-frame upload ring.
+with the old buffer. Each of three slots now owns a record buffer, bitmap staging
+buffer and atlas. Only that slot's terminal command buffer permits CPU overwrite
+or growth. Two other retained submissions may remain pending while the next slot
+is prepared. The test-only serial baseline uses a limit of one; production uses
+three. Discarded/unavailable submissions do not advance the cursor or publish a
+profile. This ring's native validation result is pending.
+
+Canvas and history remain shared GPU-only tracked textures, directly bound on
+one legacy `MTLCommandQueue`; Metal's tracked-resource hazards order their GPU
+reads/writes across the committed buffers. CPU upload data never shares a busy
+slot. This relies on neither Metal-4 queue behavior nor untracked heap resources.
+The three record/upload/atlas payload capacities sum to at most 576 MiB at their
+individual 64 MiB caps, excluding canvas/history, temporary growth candidates
+and Metal allocation overhead. Resources allocate on demand. Diagnostics expose
+summed capacities and each slot's capacity/submission. A pending count describes
+retained submissions awaiting CPU retirement, not a claim that the GPU is still
+executing every one.
+
+New native tests queue distinct mixed-alpha/RGBA/A8 captures, erase/free every
+source after submit, and compare all retained GPU snapshots against headless,
+including reverse-order reads and ring wrap. They author full-ring backpressure,
+busy-peer allocation rollback, resize/recovery timeouts and retryable three-slot
+close. These require actual macOS execution. The current diagnostic workload
+compares serial/ring/ring/serial with batching and pass-state reuse enabled in
+both modes. It records slot, in-flight limit and pending counts, checks allocation
+stability after warmup, and preserves the same post-block pixel comparisons.
 
 A batch starts with at most one destination-reading record (an image/mask or
 quantized alpha below 255), followed by opaque records. The next destination

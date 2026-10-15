@@ -5,6 +5,7 @@
 #include "renderer_backend.h"
 
 typedef struct nx_metal_renderer nx_metal_renderer;
+#define NX_METAL_FRAME_SLOTS 3u
 /* CPU-side submission measurements, published only after commit. Copy byte
    counts are one-way payloads, not estimates of physical GPU memory traffic. */
 typedef struct nx_metal_frame_profile {
@@ -22,7 +23,14 @@ typedef struct nx_metal_frame_profile {
     int cpu_timing_valid;
     int per_draw_bindings; /* Test baseline; production always uses per-pass state. */
     int batched;
+    uint32_t frame_slot, frame_limit, pending_frames;
 } nx_metal_frame_profile;
+
+typedef struct nx_metal_slot_info {
+    uint64_t submission, record_capacity_bytes, bitmap_capacity_bytes;
+    uint32_t atlas_width, atlas_height;
+    int pending, owns_readback;
+} nx_metal_slot_info;
 typedef struct nx_metal_renderer_info {
     char device_name[256];
     uint32_t pixel_width, pixel_height;
@@ -31,6 +39,11 @@ typedef struct nx_metal_renderer_info {
     uint32_t atlas_width, atlas_height, unique_bitmaps;
     uint64_t bitmap_capacity_bytes, atlas_allocations, bitmap_upload_allocations;
     uint64_t record_capacity_bytes, record_upload_allocations;
+    /* Capacity fields above sum all slots; atlas dimensions describe the last
+       committed slot. Pending counts retained submissions, which may already
+       be GPU-terminal but have not yet been inspected/retired on this thread. */
+    uint32_t frame_limit, pending_frames, peak_pending_frames, next_frame_slot;
+    nx_metal_slot_info slots[NX_METAL_FRAME_SLOTS];
     nx_metal_frame_profile last_frame;
     /* Cumulative CPU polling time across successful/timeout retirements,
        preserved through recovery. No-pending calls add no wait sample. */
@@ -76,6 +89,15 @@ nx_result nx_metal_test_invalidate(nx_metal_renderer *renderer);
    pending commands are immutable; the mode affects subsequent encoding. */
 nx_result nx_metal_test_set_per_draw_bindings(nx_metal_renderer *renderer, int enabled);
 nx_result nx_metal_test_set_batching(nx_metal_renderer *renderer, int enabled);
+/* Drains before changing the in-flight limit; production always uses three.
+   Test capture storage is owned, keyed by submission, and expires on slot
+   reuse, resize, recovery or destruction. No caller output pointer is kept. */
+nx_result nx_metal_test_set_frame_limit(nx_metal_renderer *renderer, uint32_t limit);
+nx_result nx_metal_test_queue_capture(nx_metal_renderer *renderer,
+    const nx_command *commands, size_t count, double scale, nx_color clear,
+    uint64_t *out_submission);
+nx_result nx_metal_test_read_capture(nx_metal_renderer *renderer,
+    uint64_t submission, uint8_t *pixels, size_t stride);
 #endif
 
 #endif
