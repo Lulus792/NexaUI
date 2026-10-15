@@ -618,6 +618,8 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
     const nx_vk_handles *native, VkFormat format, VkExtent2D extent,
     const nx_command *commands, size_t count, double scale) {
     painter->vertex_count = 0;
+    painter->recorded_draws = painter->recorded_passes = painter->recorded_history_copies = painter->recorded_history_bytes = 0;
+    painter->vertex_upload_bytes = 0;
     painter->draw_count = 0;
     painter->bitmap_count = 0;
     painter->bitmap_extent = (VkExtent2D){0};
@@ -726,10 +728,12 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
             }
         }
     }
+    painter->vertex_upload_bytes = (uint64_t)painter->vertex_count * sizeof(nx_vk_vertex);
     return NX_OK;
 }
 
 static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands, VkExtent2D extent) {
+    ++painter->recorded_passes;
     VkRenderPassBeginInfo begin = {0};
     begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     begin.renderPass = painter->render_pass;
@@ -789,6 +793,8 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
     for (size_t i = 0; i < painter->draw_count; ++i) {
         nx_vk_draw *draw = &painter->draws[i];
         if (draw->composite) {
+            ++painter->recorded_history_copies;
+            painter->recorded_history_bytes += (uint64_t)draw->scissor.extent.width * draw->scissor.extent.height * 4u;
             if (open) { vkCmdEndRenderPass(commands); open = 0; }
             VkImageMemoryBarrier barriers[2] = {history, history};
             barriers[0].image = painter->canvas;
@@ -824,6 +830,7 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
         if (!open) { nx_vk_painter_begin(painter, commands, extent); open = 1; }
         vkCmdSetScissor(commands, 0, 1, &draw->scissor);
         vkCmdDraw(commands, draw->vertex_count, 1, draw->first_vertex, 0);
+        ++painter->recorded_draws;
     }
     if (open) vkCmdEndRenderPass(commands);
 }

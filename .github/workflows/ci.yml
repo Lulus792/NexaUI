@@ -66,6 +66,16 @@ jobs:
             build/examples/nexacloud/*-macos-profile-*.csv
             build/Testing/Temporary
           if-no-files-found: ignore
+      - name: Save Linux native GPU captures
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-gpu-captures-shared-${{ matrix.shared }}
+          path: |
+            build/examples/nexacloud/*-linux-*.ppm
+            build/examples/nexacloud/*-linux-profile-*.csv
+            build/Testing/Temporary
+          if-no-files-found: ignore
       - name: Install
         run: cmake --install build --config Debug --prefix stage
       - name: Configure installed consumer

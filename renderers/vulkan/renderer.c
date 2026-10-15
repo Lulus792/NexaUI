@@ -1,5 +1,6 @@
 #define VK_USE_PLATFORM_XLIB_KHR
 #define VK_USE_PLATFORM_WAYLAND_KHR
+#define _POSIX_C_SOURCE 200809L
 #include "device_internal.h"
 #include "renderer.h"
 #include "pipeline.h"
@@ -11,6 +12,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
 #include <stdio.h>
 #endif
@@ -52,9 +54,21 @@ struct nx_vulkan_renderer {
     unsigned char test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY + 1];
 #endif
     uint64_t presented_frames;
+    uint64_t submitted_frames;
+    nx_vulkan_frame_profile last_frame;
     uint64_t swapchain_generation;
     int leased, dirty, broken, readback, drawing;
 };
+
+static uint64_t nx_vk_profile_now(void) {
+    struct timespec t;
+    if (clock_gettime(CLOCK_MONOTONIC,&t)) return 0;
+    return (uint64_t)t.tv_sec*UINT64_C(1000000000)+(uint64_t)t.tv_nsec;
+}
+static double nx_vk_profile_ms(uint64_t start, uint64_t end, int *valid) {
+    if (!start || !end || end < start) { *valid = 0; return 0; }
+    return (double)(end-start)/1.e6;
+}
 
 static void *nx_vk_renderer_malloc(void *user, size_t size) {
     (void)user;
@@ -527,10 +541,17 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     *presented = 0;
     if (renderer->broken || renderer->closing) return NX_ERROR_STATE;
     if (!renderer->image_count) return NX_OK;
+    if (renderer->submitted_frames == UINT64_MAX) return NX_ERROR_LIMIT;
+    nx_vulkan_frame_profile profile = {0};
+    profile.pixel_width = renderer->extent.width; profile.pixel_height = renderer->extent.height;
+    profile.draw_scale = scale; profile.input_commands = draw_count; profile.cpu_timing_valid = 1;
+    uint64_t phase = nx_vk_profile_now();
     VkDevice device = renderer->native.logical;
     nx_result submission_result = nx_vk_wait_submission(renderer);
     if (submission_result == NX_ERROR_LIMIT) return NX_OK;
     if (submission_result != NX_OK) return submission_result;
+    profile.retirement_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
+    phase = nx_vk_profile_now();
     if (draw_count && !renderer->drawing) return NX_ERROR_UNSUPPORTED;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     if (draw_count) {
@@ -554,6 +575,8 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         if (prepared == NX_ERROR_STATE) renderer->broken = renderer->device_lost = 1;
         return prepared;
     }
+    profile.prepare_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
+    phase = nx_vk_profile_now();
     if (readback == VK_NULL_HANDLE && renderer->readback_buffer != VK_NULL_HANDLE)
         nx_vk_free_readback(renderer);
     VkResult status;
@@ -590,6 +613,8 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         renderer->present_pending[index] = 0;
         ++renderer->completed_present_fences;
     }
+    profile.acquire_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
+    phase = nx_vk_profile_now();
     status = vkResetCommandBuffer(renderer->commands, 0);
     if (status != VK_SUCCESS) goto fatal;
     VkCommandBufferBeginInfo begin = {0};
@@ -677,6 +702,8 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
     status = vkEndCommandBuffer(renderer->commands);
     if (status != VK_SUCCESS) goto fatal;
+    profile.encode_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
+    phase = nx_vk_profile_now();
     status = vkResetFences(device, 1, &renderer->fence);
     if (status != VK_SUCCESS) goto fatal;
     VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -693,6 +720,18 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     if (status == VK_ERROR_DEVICE_LOST) renderer->submission_pending = 1;
     if (status != VK_SUCCESS) goto fatal;
     renderer->submission_pending = 1;
+    profile.submission = ++renderer->submitted_frames;
+    profile.draw_records = renderer->painter.vertex_count/6u;
+    profile.draw_calls = renderer->painter.recorded_draws;
+    profile.render_passes = renderer->painter.recorded_passes;
+    profile.history_copies = renderer->painter.recorded_history_copies;
+    profile.history_copy_bytes = renderer->painter.recorded_history_bytes;
+    profile.vertex_upload_bytes = renderer->painter.vertex_upload_bytes;
+    profile.bitmap_upload_bytes = (uint64_t)renderer->painter.bitmap_extent.width*renderer->painter.bitmap_extent.height*4u;
+    profile.present_copy_bytes = buffered ? (uint64_t)renderer->extent.width*renderer->extent.height*4u : 0;
+    profile.submit_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
+    renderer->last_frame = profile;
+    phase = nx_vk_profile_now();
     renderer->last_submitted_vertices = renderer->painter.vertex_count;
     VkPresentInfoKHR present = {0};
     present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -718,6 +757,7 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     }
 #endif
     status = vkQueuePresentKHR(renderer->native.present_queue, &present);
+    renderer->last_frame.present_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&renderer->last_frame.cpu_timing_valid);
     if (status == VK_ERROR_DEVICE_LOST) {
         if (renderer->present_support != NX_VK_PRESENT_FENCES_NONE)
             renderer->present_pending[index] = 1;
@@ -787,6 +827,7 @@ nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
     out_info->pixel_height = renderer->extent.height;
     out_info->image_count = renderer->image_count;
     out_info->presented_frames = renderer->presented_frames;
+    out_info->submitted_frames = renderer->submitted_frames; out_info->last_frame = renderer->last_frame;
     out_info->swapchain_generation = renderer->swapchain_generation;
     out_info->readback_supported = renderer->readback;
     out_info->completed_present_fences = renderer->completed_present_fences;

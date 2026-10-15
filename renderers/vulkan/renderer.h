@@ -6,6 +6,17 @@
 
 typedef struct nx_vulkan_renderer nx_vulkan_renderer;
 
+/* Published after a successful queue submission, even if presentation later
+   fails. CPU durations include driver waits/scheduling, never GPU execution.
+   Byte counters describe one-way authored payloads, not physical GPU traffic. */
+typedef struct nx_vulkan_frame_profile {
+    uint64_t submission, input_commands, draw_records, draw_calls, render_passes;
+    uint64_t history_copies, history_copy_bytes, vertex_upload_bytes, bitmap_upload_bytes, present_copy_bytes;
+    uint32_t pixel_width, pixel_height;
+    double draw_scale, retirement_ms, prepare_ms, acquire_ms, encode_ms, submit_ms, present_ms;
+    int cpu_timing_valid, batched;
+} nx_vulkan_frame_profile;
+
 typedef enum nx_vulkan_retirement_policy {
     NX_VULKAN_RETIRE_STRICT = 0, /* Requires KHR or EXT present fences. */
     NX_VULKAN_RETIRE_COMPATIBLE = 1, /* Prefer fences, allow legacy fallback. */
@@ -31,6 +42,8 @@ typedef struct nx_vulkan_renderer_info {
     uint32_t last_submitted_vertices;
     uint32_t atlas_width, atlas_height, unique_bitmaps;
     uint64_t bitmap_upload_capacity_bytes, bitmap_upload_allocations, atlas_allocations;
+    uint64_t submitted_frames;
+    nx_vulkan_frame_profile last_frame;
 } nx_vulkan_renderer_info;
 
 /* Private Linux clear/present and initial drawing path. The window must outlive the renderer;

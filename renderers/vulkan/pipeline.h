@@ -53,6 +53,8 @@ typedef struct nx_vk_painter {
     VkDeviceSize capacity;
     uint64_t allocations;
     uint32_t vertex_count;
+    uint64_t recorded_draws, recorded_passes, recorded_history_copies, recorded_history_bytes;
+    uint64_t vertex_upload_bytes;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     int fail_framebuffer, fail_vertex_memory, fail_draw_memory;
     int fail_bitmap_records, fail_atlas_memory, fail_bitmap_upload;
