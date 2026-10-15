@@ -93,6 +93,13 @@ if(NEXAUI_BUILD_TESTS)
                 ENVIRONMENT "MTL_DEBUG_LAYER=1")
         endif()
         if(TARGET nexaui_renderer_vulkan)
+            add_custom_target(nexaui_nexacloud_vulkan_profile
+                COMMAND ${CMAKE_COMMAND} -E env NEXAUI_PLATFORM=x11 NEXAUI_REQUIRE_VULKAN=1
+                    $<TARGET_FILE:nexaui_nexacloud_native> --profile
+                    "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud-profile-x11"
+                DEPENDS nexaui_nexacloud_native
+                COMMENT "Profile native Vulkan separately from validation-layer correctness tests"
+                USES_TERMINAL VERBATIM)
             foreach(_cloud_platform IN ITEMS x11 wayland)
                 add_test(NAME nexaui_nexacloud_${_cloud_platform}_native_example COMMAND nexaui_nexacloud_native
                     --smoke "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud-${_cloud_platform}")

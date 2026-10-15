@@ -15,6 +15,7 @@ static void vk_profile_distribution(const char *name, double *values) {
 }
 static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
     const char *prefix, const char *workload) {
+    if (!cloud_vk_profile_enabled) return 1;
     for (unsigned i=0;i<4;++i) if (!frame(window,scene,renderer,0)) return 0;
     nx_vulkan_renderer_info previous,current;
     if (nx_vulkan_renderer_get_info(renderer->backend.user,&previous) != NX_OK) return 0;

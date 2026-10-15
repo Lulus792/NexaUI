@@ -45,6 +45,7 @@ static int close_renderer(nx_window *window, nx_renderer_driver *renderer) {
 }
 
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
+static int cloud_vk_profile_enabled;
 static int capture(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer, const char *path) {
     nx_window_info info; nx_vulkan_renderer_info gpu;
     const nx_command *commands; size_t count;
@@ -144,9 +145,9 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
 #endif
 
 int main(int argc, char **argv) {
-    int testing = argc == 4 && !strcmp(argv[1], "--smoke");
+    int testing = argc == 4 && (!strcmp(argv[1], "--smoke") || !strcmp(argv[1], "--profile"));
     if (argc != 2 && !testing) {
-        fputs("usage: nexaui_nexacloud_native FONT.ttf | --smoke FONT.ttf OUTPUT_PREFIX\n", stderr); return 2;
+        fputs("usage: nexaui_nexacloud_native FONT.ttf | --smoke FONT.ttf OUTPUT_PREFIX | --profile FONT.ttf OUTPUT_PREFIX\n", stderr); return 2;
     }
     cloud_scene *scene = cloud_create(argv[testing ? 2 : 1]);
     if (!scene) { fputs("Cannot open the TrueType font.\n", stderr); return 1; }
@@ -160,6 +161,7 @@ int main(int argc, char **argv) {
     int okay = created == NX_OK && nx_vulkan_driver_open(window, &renderer) == NX_OK;
     if (okay) cloud_set_window(scene, window);
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
+    cloud_vk_profile_enabled = testing && !strcmp(argv[1],"--profile");
     if (okay && testing) okay = smoke(window, scene, &renderer, argv[3]);
     if (okay && testing) {
         if (!close_renderer(window, &renderer)) return 1; /* Retain scene/window until process exits. */
