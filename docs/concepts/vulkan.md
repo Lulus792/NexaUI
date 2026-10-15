@@ -202,8 +202,15 @@ after each block, outside CPU measurement intervals. CSV output adds explicit
 GPU state, raw ticks, period/width, elapsed duration and readback scope. Missing
 values are not averaged as zeros; `NEXAUI_REQUIRE_VULKAN_TIMING=1` makes them fail
 the native timing test and profiling workload. CI enables that requirement.
-Complete native/sanitizer regression and preserved timing distributions remain
-required before broader V08 acceptance.
+At `fa58bc1`, all six desktop CI variants and Linux sanitizers pass. The
+[preserved timestamp baseline](../../benchmarks/baselines/vulkan-fa58bc1/README.md)
+retains 768/768 ready GPU pairs joined to CPU IDs, with raw ticks and observation
+bounds; all 24 mode images remain equal to the previous ring captures. The local
+static suite passes 101/101, followed by the final focused timing cases. Shared
+Debug passes all 12 selected native/device/math cases with synchronization
+validation; Clang ASan/UBSan/LeakSanitizer passes those 12 cases too, including
+native Wayland and partial query-pool recovery. Physical GPU/Release timing,
+device loss and broader V09 acceptance remain open.
 
 ## Validation-tool compatibility
 

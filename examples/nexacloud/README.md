@@ -132,6 +132,8 @@ averaged as zero. Set `NEXAUI_REQUIRE_VULKAN_TIMING=1` to require valid results.
 The GPU interval covers the whole command buffer and its GPU-side waits, uploads,
 rendering and final copies. It does not measure visible presentation latency or
 GPU busy-only time. See the [timestamp contract](../../docs/concepts/vulkan.md#v08-submission-keyed-gpu-timestamps).
+The [GPU baseline](../../benchmarks/baselines/vulkan-fa58bc1/README.md) preserves
+768 valid per-submission timestamp pairs and the corresponding CPU distributions.
 
 ## Interaction and layout
 
