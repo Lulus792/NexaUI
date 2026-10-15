@@ -101,6 +101,7 @@ static VKAPI_ATTR void VKAPI_CALL get_properties(
     properties->driverVersion = 42;
     properties->vendorID = 123;
     properties->deviceID = index + 1u;
+    properties->limits.timestampPeriod = 1.25f;
     properties->deviceType = mock.adapters[index].type;
     (void)snprintf(properties->deviceName, sizeof(properties->deviceName),
                    "Adapter %u", index + 1u);
@@ -118,9 +119,11 @@ static VKAPI_ATTR void VKAPI_CALL get_queues(
     memset(queues, 0, 3u * sizeof(*queues));
     queues[0].queueCount = 1;
     queues[0].queueFlags = VK_QUEUE_COMPUTE_BIT;
+    queues[0].timestampValidBits = 36;
     /* An empty graphics family must not be selected. */
     queues[1].queueFlags = VK_QUEUE_GRAPHICS_BIT;
     queues[2].queueCount = 1;
+    queues[2].timestampValidBits = 48;
     queues[2].queueFlags = mock.adapters[index].graphics
         ? VK_QUEUE_GRAPHICS_BIT : VK_QUEUE_TRANSFER_BIT;
     *count = 3;
@@ -320,6 +323,7 @@ static int selection(void) {
     CHECK(nx_vk_device_get_handles(device, &handles) == NX_OK);
     CHECK(handles.physical == HANDLE(VkPhysicalDevice, 3));
     CHECK(handles.graphics_queue != VK_NULL_HANDLE);
+    CHECK(handles.timestamp_valid_bits == 48 && handles.timestamp_period_ns == 1.25);
     CHECK(nx_vk_device_wait_idle(device) == NX_OK);
     nx_vk_device_destroy(device);
     CHECK(!mock.instances && !mock.devices);

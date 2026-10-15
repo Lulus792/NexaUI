@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "renderer.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -111,9 +112,12 @@ static int run_ring(nx_window *window,int required) {
             CHECK(after.last_frame.frame_slot<3 && after.last_frame.frames_in_flight==3);
             CHECK(after.submitted_frames==before.submitted_frames+i+1 && after.pending_submissions==i+1);
             CHECK(after.pending_captures==i+1 && after.retired_frames==before.retired_frames);
+            nx_vulkan_gpu_timing timing;
+            CHECK(nx_vulkan_renderer_get_gpu_timing(renderer,ids[i],&timing)==NX_OK && timing.state==NX_VK_TIMING_PENDING);
         }
         CHECK(nx_vulkan_test_gate_begin(renderer)==NX_ERROR_STATE);
         if (!round) {
+            CHECK(nx_vulkan_renderer_wait_gpu(renderer)==NX_ERROR_LIMIT);
             CHECK(nx_vulkan_test_set_frame_slots(renderer,1)==NX_ERROR_LIMIT);
             memset(actual,0xa7,bytes);
             double start=now();
@@ -133,6 +137,10 @@ static int run_ring(nx_window *window,int required) {
             memset(actual,0xa7,bytes);
             CHECK(nx_vulkan_test_collect_capture(renderer,ids[i],actual,stride)==NX_OK);
             CHECK(memcmp(actual,expected[i],bytes)==0);
+            nx_vulkan_gpu_timing timing;
+            CHECK(nx_vulkan_renderer_get_gpu_timing(renderer,ids[i],&timing)==NX_OK && timing.includes_readback);
+            CHECK(timing.state==(after.gpu_timing_supported ? NX_VK_TIMING_READY : NX_VK_TIMING_UNAVAILABLE));
+            CHECK(isfinite(timing.gpu_ms) && timing.gpu_ms>=0);
             CHECK(nx_vulkan_test_collect_capture(renderer,ids[i],actual,stride)==NX_ERROR_STATE);
         }
         CHECK(nx_vulkan_renderer_get_info(renderer,&after)==NX_OK);

@@ -32,6 +32,7 @@ typedef struct nx_vk_candidate {
     uint32_t queue_family;
     uint32_t present_family;
     unsigned rank;
+    uint32_t timestamp_valid_bits;
     int has_swapchain;
     nx_vk_present_fence_support present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
@@ -253,6 +254,11 @@ static nx_result nx_vk_inspect(nx_vk_device *device, VkPhysicalDevice physical,
             if (present && present_family == UINT32_MAX) present_family = i;
             if (graphics && present && combined == UINT32_MAX) combined = i;
         }
+    uint32_t timestamp_bits = 0;
+    if (written <= count && family != UINT32_MAX) {
+        uint32_t selected = combined != UINT32_MAX ? combined : family;
+        timestamp_bits = queues[selected].timestampValidBits;
+    }
     nx_vk_deallocate(device, queues, bytes);
     if (queue_result != NX_OK) return queue_result;
     if (written > count) return NX_ERROR_PLATFORM;
@@ -286,6 +292,7 @@ static nx_result nx_vk_inspect(nx_vk_device *device, VkPhysicalDevice physical,
     candidate->has_swapchain = swapchain;
     candidate->present_fences = support;
     candidate->rank = nx_vk_rank(candidate->properties.deviceType);
+    candidate->timestamp_valid_bits = timestamp_bits;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     if (device->test_timeline_requested) {
         if (!(extensions & NX_VK_EXT_TEST_TIMELINE) || !device->query_features) {
@@ -391,6 +398,8 @@ static nx_result nx_vk_select(nx_vk_device *device, int require_swapchain,
         device->handles.graphics_queue_family = best->queue_family;
         device->handles.present_queue = present;
         device->handles.present_queue_family = best->present_family;
+        device->handles.timestamp_valid_bits = best->timestamp_valid_bits;
+        device->handles.timestamp_period_ns = best->properties.limits.timestampPeriod;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
         device->handles.test_timeline = best->test_timeline;
 #endif

@@ -17,6 +17,23 @@ typedef struct nx_vulkan_frame_profile {
     int cpu_timing_valid, batched;
 } nx_vulkan_frame_profile;
 
+#define NX_VULKAN_TIMING_HISTORY 64u
+typedef enum nx_vulkan_timing_state {
+    NX_VK_TIMING_PENDING = 1,
+    NX_VK_TIMING_READY,
+    NX_VK_TIMING_UNAVAILABLE,
+    NX_VK_TIMING_FAILED
+} nx_vulkan_timing_state;
+/* Whole command-buffer elapsed GPU interval, not busy-only or display latency.
+   Raw device ticks have no CPU clock epoch. Zero ticks/duration can be valid. */
+typedef struct nx_vulkan_gpu_timing {
+    uint64_t submission, start_tick, end_tick, observation_ns;
+    uint32_t frame_slot, pixel_width, pixel_height, timestamp_valid_bits;
+    nx_vulkan_timing_state state;
+    double timestamp_period_ns, gpu_ms;
+    int includes_readback;
+} nx_vulkan_gpu_timing;
+
 typedef enum nx_vulkan_retirement_policy {
     NX_VULKAN_RETIRE_STRICT = 0, /* Requires KHR or EXT present fences. */
     NX_VULKAN_RETIRE_COMPATIBLE = 1, /* Prefer fences, allow legacy fallback. */
@@ -47,6 +64,10 @@ typedef struct nx_vulkan_renderer_info {
     uint32_t frame_slots, pending_submissions, pending_captures;
     uint64_t slot_vertex_capacity_bytes[3], slot_bitmap_capacity_bytes[3];
     nx_vulkan_frame_profile last_frame;
+    int gpu_timing_supported;
+    uint32_t timestamp_valid_bits;
+    double timestamp_period_ns;
+    nx_vulkan_gpu_timing last_completed_gpu;
 } nx_vulkan_renderer_info;
 
 /* Private Linux clear/present and initial drawing path. The window must outlive the renderer;
@@ -75,6 +96,14 @@ nx_result nx_vulkan_render(nx_vulkan_renderer *renderer,
     nx_color clear, int *out_presented);
 nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
                                      nx_vulkan_renderer_info *out_info);
+/* Cached lookup only; no fence or query-pool polling and no pacing change.
+   Unknown/expired IDs return STATE. Pending, unavailable and failed are explicit.
+   IDs remain monotonic across recovery, which clears the old timing journal. */
+nx_result nx_vulkan_renderer_get_gpu_timing(nx_vulkan_renderer *renderer,
+    uint64_t submission, nx_vulkan_gpu_timing *out_timing);
+/* Bounded drain of submitted GPU commands and timing collection. This does not
+   establish presentation retirement or display completion. Timeout retains work. */
+nx_result nx_vulkan_renderer_wait_gpu(nx_vulkan_renderer *renderer);
 nx_result nx_vulkan_renderer_recover(nx_vulkan_renderer *renderer);
 /* Failure retains the renderer/window lease. Retry after pending work completes.
    While close is pending only diagnostics and another destroy are permitted. */
@@ -108,7 +137,10 @@ typedef enum nx_vulkan_test_fault {
     NX_VK_TEST_DRAW_MEMORY,
     NX_VK_TEST_BITMAP_RECORD_MEMORY,
     NX_VK_TEST_ATLAS_MEMORY,
-    NX_VK_TEST_BITMAP_UPLOAD_MEMORY
+    NX_VK_TEST_BITMAP_UPLOAD_MEMORY,
+    NX_VK_TEST_TIMING_UNAVAILABLE,
+    NX_VK_TEST_TIMING_FAILED,
+    NX_VK_TEST_QUERY_POOL_MEMORY
 } nx_vulkan_test_fault;
 nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
                                    nx_vulkan_test_fault fault);
@@ -117,6 +149,8 @@ nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
 nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled);
 /* Drains before changing the diagnostic pacing mode. Production uses 3 slots. */
 nx_result nx_vulkan_test_set_frame_slots(nx_vulkan_renderer *renderer, unsigned slots);
+/* Future submissions only; pending pools/commands remain immutable. */
+nx_result nx_vulkan_test_set_gpu_timing(nx_vulkan_renderer *renderer, int enabled);
 /* Native queue work through the production encoder, without a swapchain wait.
    A host-signaled timeline holds GPU work for lifetime tests. It is enabled only
    by NEXAUI_VULKAN_TEST_TIMELINE during test-device creation, never production.

@@ -4,6 +4,7 @@
 typedef struct cloud_vk_profile_sample {
     nx_vulkan_frame_profile frame;
     nx_vulkan_renderer_info info;
+    nx_vulkan_gpu_timing gpu;
     double wall_ms;
 } cloud_vk_profile_sample;
 static int vk_profile_double_compare(const void *a, const void *b) {
@@ -51,19 +52,33 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
         const double phases[]={p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms};
         double total=0;
         for (unsigned j=0;j<6;++j) { if (!isfinite(phases[j]) || phases[j]<0) return 0; total+=phases[j]; }
-        samples[i]=(cloud_vk_profile_sample){p,current,(end-start)*1000.};
+        samples[i]=(cloud_vk_profile_sample){.frame=p,.info=current,.wall_ms=(end-start)*1000.};
         if (total>samples[i].wall_ms+.01) return 0;
         previous=current;
+    }
+    /* Tail collection and ID joining are outside every measured CPU interval.
+       Cached timing lookup never waits or changes rendering cadence. */
+    if (nx_vulkan_renderer_wait_gpu(renderer->backend.user) != NX_OK) return 0;
+    unsigned gpu_ready=0;
+    for (unsigned i=0;i<CLOUD_VK_PROFILE_SAMPLES;++i) {
+        nx_vulkan_frame_profile p=samples[i].frame;
+        nx_vulkan_gpu_timing *gpu=&samples[i].gpu;
+        if (nx_vulkan_renderer_get_gpu_timing(renderer->backend.user,p.submission,gpu) != NX_OK ||
+            gpu->frame_slot != p.frame_slot || gpu->pixel_width != p.pixel_width || gpu->pixel_height != p.pixel_height ||
+            gpu->includes_readback || !isfinite(gpu->gpu_ms) || gpu->gpu_ms<0) return 0;
+        if (gpu->state == NX_VK_TIMING_READY) ++gpu_ready;
+        else if (gpu->state != NX_VK_TIMING_UNAVAILABLE || getenv("NEXAUI_REQUIRE_VULKAN_TIMING")) return 0;
     }
     const char *backend=getenv("NEXAUI_PLATFORM"); if (!backend) backend="auto";
     char path[1024];
     if (snprintf(path,sizeof(path),"%s-linux-profile-%s.csv",prefix,workload)>=(int)sizeof(path)) return 0;
     FILE *file=fopen(path,"wb"); if (!file) return 0;
-    int okay=fprintf(file,"workload,backend,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,history_copies,history_copy_bytes,vertex_upload_bytes,bitmap_upload_bytes,present_copy_bytes,batched,retirement_ms,prepare_ms,acquire_ms,encode_ms,submit_ms,present_ms,wall_ms,frame_slot,frame_slots,retired_frames,pending_submissions,vertex_capacity_bytes,bitmap_capacity_bytes\n")>0;
+    int okay=fprintf(file,"workload,backend,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,history_copies,history_copy_bytes,vertex_upload_bytes,bitmap_upload_bytes,present_copy_bytes,batched,retirement_ms,prepare_ms,acquire_ms,encode_ms,submit_ms,present_ms,wall_ms,frame_slot,frame_slots,retired_frames,pending_submissions,vertex_capacity_bytes,bitmap_capacity_bytes,gpu_state,gpu_start_tick,gpu_end_tick,gpu_valid_bits,gpu_period_ns,gpu_ms,gpu_includes_readback,gpu_observation_ns\n")>0;
     for (unsigned i=0;okay && i<CLOUD_VK_PROFILE_SAMPLES;++i) {
         nx_vulkan_frame_profile p=samples[i].frame;
         nx_vulkan_renderer_info info=samples[i].info;
-        okay=fprintf(file,"%s,%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%u,%u,%llu,%u,%llu,%llu\n",
+        nx_vulkan_gpu_timing gpu=samples[i].gpu;
+        okay=fprintf(file,"%s,%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%u,%u,%llu,%u,%llu,%llu,%d,%llu,%llu,%u,%.17g,%.12g,%d,%llu\n",
             workload,backend,p.pixel_width,p.pixel_height,p.draw_scale,cloud_text_scale(scene),
             (unsigned long long)p.submission,(unsigned long long)p.input_commands,(unsigned long long)p.draw_records,
             (unsigned long long)p.draw_calls,(unsigned long long)p.render_passes,(unsigned long long)p.history_copies,
@@ -71,7 +86,9 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
             (unsigned long long)p.bitmap_upload_bytes,(unsigned long long)p.present_copy_bytes,p.batched,
             p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms,samples[i].wall_ms,
             p.frame_slot,p.frames_in_flight,(unsigned long long)info.retired_frames,info.pending_submissions,
-            (unsigned long long)info.vertex_capacity_bytes,(unsigned long long)info.bitmap_upload_capacity_bytes)>0;
+            (unsigned long long)info.vertex_capacity_bytes,(unsigned long long)info.bitmap_upload_capacity_bytes,
+            gpu.state,(unsigned long long)gpu.start_tick,(unsigned long long)gpu.end_tick,gpu.timestamp_valid_bits,
+            gpu.timestamp_period_ns,gpu.gpu_ms,gpu.includes_readback,(unsigned long long)gpu.observation_ns)>0;
     }
     if (fclose(file)) okay=0;
     printf("Vulkan CPU baseline %s (%s): %s, %ux%u, 32 samples, 4 warmup, %llu records / %llu draws / %llu history copies / %llu vertex bytes.\n",
@@ -87,6 +104,11 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
         }
         static const char *names[]={"wall","retirement","prepare","acquire","encode","submit","present"};
         vk_profile_distribution(names[phase],values);
+    }
+    printf(" GPU timestamp pairs ready=%u/%u;",gpu_ready,CLOUD_VK_PROFILE_SAMPLES);
+    if (gpu_ready==CLOUD_VK_PROFILE_SAMPLES) {
+        for (unsigned i=0;i<CLOUD_VK_PROFILE_SAMPLES;++i) values[i]=samples[i].gpu.gpu_ms;
+        vk_profile_distribution("gpu command-buffer elapsed",values);
     }
     putchar('\n');
     if (!okay || snprintf(path,sizeof(path),"%s-linux-profile-%s.ppm",prefix,workload)>=(int)sizeof(path)) return 0;

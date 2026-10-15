@@ -108,7 +108,7 @@ and synchronization validation separate. Three workloads run four warmup and
 holds normalized input constant, rejects counter/geometry drift, checks stable
 GPU allocations and compares all mode images with each other and headless.
 CSV output and GPU readback occur outside measured intervals. Timings are elapsed
-CPU intervals, not GPU timestamps. See the
+CPU intervals. See the
 [preserved comparison](../../benchmarks/baselines/vulkan-d4a2508/README.md) for
 raw data, environment and mixed timing results.
 
@@ -123,6 +123,15 @@ complete CPU distributions need to be assessed together.
 The [ring report](../../benchmarks/baselines/vulkan-1cdf550/README.md) retains
 768 measured CI frames and the native gated-lifetime results; it records no
 software-driver frame-time improvement.
+
+Vulkan profiling also records GPU state, raw device ticks, timestamp period and
+counter width, elapsed GPU milliseconds and readback scope. After each block it
+drains the tail outside CPU measurement and joins each GPU result by submission
+ID and slot. Missing timestamps remain explicitly unavailable; they are not
+averaged as zero. Set `NEXAUI_REQUIRE_VULKAN_TIMING=1` to require valid results.
+The GPU interval covers the whole command buffer and its GPU-side waits, uploads,
+rendering and final copies. It does not measure visible presentation latency or
+GPU busy-only time. See the [timestamp contract](../../docs/concepts/vulkan.md#v08-submission-keyed-gpu-timestamps).
 
 ## Interaction and layout
 

@@ -538,3 +538,13 @@ serial/ring/ring/serial frames and 24 equal images with unchanged prior scene
 pixels. Software-driver wall medians rise slightly; this is no speedup claim.
 All six desktop CI variants and Linux sanitizers pass at `1cdf550`, including
 installed consumers. V08 GPU timestamps and physical acceptance remain open.
+
+Initial V08 now records a whole-command-buffer GPU timestamp pair in each Vulkan
+slot's own query pool. Results are read only after its submission fence, without
+query waits, into a fixed 64-ID journal with pending/ready/unavailable/failed
+states. Counter width, period, finite conversion and ambiguous wraps are checked;
+recovery clears old-device data while IDs remain monotonic. Portable math/history
+tests and required-timing native X11/Wayland checks pass initially. Native workload
+CSVs join GPU records to all measured CPU IDs after a bounded tail drain. Complete
+shared/sanitizer regression, preserved distributions and physical acceptance
+remain required; whole-command-buffer elapsed time is not GPU busy/display time.

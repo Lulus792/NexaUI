@@ -20,6 +20,8 @@ permissions:
 jobs:
   core:
     timeout-minutes: 20
+    env:
+      NEXAUI_REQUIRE_VULKAN_TIMING: '1'
     strategy:
       fail-fast: false
       matrix:
@@ -104,6 +106,7 @@ jobs:
     timeout-minutes: 20
     env:
       UBSAN_OPTIONS: halt_on_error=1
+      NEXAUI_REQUIRE_VULKAN_TIMING: '1'
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux native dependencies

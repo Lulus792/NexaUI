@@ -7,8 +7,9 @@ V04 SPIR-V rectangle/triangle pipeline and V05 nested clipping and straight-alph
 composition through the private renderer driver. The pipeline also draws stroked
 rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
 glyph masks through a staged texture atlas. Initial V07 now adds per-instance
-uploads, ordered batching, a three-slot upload ring and CPU profiling. GPU timing,
-hardware device-loss acceptance and broader integration remain V08–V09 work.
+uploads, ordered batching, a three-slot upload ring and CPU profiling. Initial
+V08 adds submission-keyed GPU timestamps. Physical GPU/device-loss acceptance
+and broader integration remain open.
 
 ## Initial V07 instancing and ordered batching
 
@@ -136,6 +137,73 @@ cycling/stable allocations and keep the existing input/geometry/image gates.
 CSV rows add slot/count, retired/pending work and aggregate capacities. This is
 separate from validation. CPU waiting may move between retirement, acquisition
 and presentation; no GPU execution or display-latency claim follows from it.
+
+## V08 submission-keyed GPU timestamps
+
+Each supported graphics queue uses three private two-query timestamp pools, one
+per upload slot. Support comes from the selected graphics family's
+`timestampValidBits` (36–64, or zero for unsupported) and a finite positive
+`timestampPeriod` in nanoseconds per tick. This is Vulkan 1.0 functionality and
+adds no optional feature/extension requirement. Unsupported queues still render
+and produce explicitly unavailable timing records after completion.
+
+After that slot's previous fence completes, its next command buffer records
+`vkCmdResetQueryPool`, a top-of-pipe start timestamp, all normal rendering/copy
+commands, and a bottom-of-pipe end timestamp. Results are read only after the
+same submission fence succeeds, using 64-bit result/availability pairs without
+`WAIT_BIT` or partial results. A pool is never reset or destroyed while its slot
+is pending. Resize drains before reuse; device recovery/close drain before
+destroying pools. No asynchronous callback owns a C renderer pointer.
+
+Only successful queue submission creates a pending journal entry. A fixed
+64-entry journal joins submission ID, frame slot, canvas dimensions, raw ticks,
+counter width, period, elapsed GPU milliseconds and a readback-scope flag.
+`nx_vulkan_renderer_get_gpu_timing` reads cached state without querying Vulkan or
+waiting; pending, ready, unavailable and failed states are distinct. The highest
+completed ID is separate from the latest CPU submission. A submitted frame whose
+presentation later fails can still have valid GPU timing. Failed pre-submit
+attempts publish no new ID. Successful recovery clears old-device entries while
+the submission sequence stays monotonic.
+
+Available zero-valued/equal timestamps are valid. Counter differences use the
+advertised width with unsigned modular arithmetic, including a 64-bit wrap.
+Impossible high bits, invalid periods and nonfinite conversions are rejected.
+A CPU monotonic interval sampled before Submit and after fence observation bounds
+the possible GPU duration; it is not subtracted from a device-clock epoch. If a
+whole counter wrap could fit in that upper bound, the wrap count is ambiguous
+and the result is unavailable. The decoded duration must also fit that bound,
+allowing one tick of quantization. A long-delayed collection can therefore lose
+a narrow-counter measurement even when GPU work itself was short.
+
+`nx_vulkan_renderer_wait_gpu` drains all submitted GPU work with one finite wait
+budget and collects the ring tail. Timeout preserves pending entries and storage.
+This API does not establish WSI presentation retirement or visible display
+completion; the separate strict present-fence contract still applies.
+
+The interval covers the whole command buffer: GPU-side dependencies, clear,
+atlas upload, history snapshots, rendering, final copy/transitions and any
+test-only readback. It is not per-pass timing or GPU busy-only time. Start writes
+may occur later than the requested stage, and a top-of-pipe start may precede a
+later-stage acquisition wait. GPU absolute ticks must not be compared to CPU
+clock epochs, and overlapping CPU/GPU durations must not be added as end-to-end
+latency. No calibrated-timestamp extension or clock correlation is claimed.
+
+Portable tests cover 36/64-bit wraps, ambiguity, zero timestamps, invalid input,
+failure states, out-of-order completion and journal expiration. Native X11 and
+Wayland tests check the last 64 of 67 submissions, cached pending lookups,
+timeout/retry, disabled sampling, unavailable/failed query results, readback,
+recovery and presentation-failure distinction. Their initial required-GPU-timing
+runs pass on Lavapipe with 64 valid bits and a 1 ns period. The timeline-gated
+ring cases additionally inspect pending timing entries while GPU work is really
+held, then validate the collected capture timings after release.
+
+Native `--profile`/`--profile-ring` workloads drain and join all 32 measured IDs
+after each block, outside CPU measurement intervals. CSV output adds explicit
+GPU state, raw ticks, period/width, elapsed duration and readback scope. Missing
+values are not averaged as zeros; `NEXAUI_REQUIRE_VULKAN_TIMING=1` makes them fail
+the native timing test and profiling workload. CI enables that requirement.
+Complete native/sanitizer regression and preserved timing distributions remain
+required before broader V08 acceptance.
 
 ## Validation-tool compatibility
 
@@ -709,6 +777,11 @@ physical input/DPI, compositor color management or native macOS acceptance.
 
 ## Specification references
 
+- [Timestamp writes and stage scope](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdWriteTimestamp.html)
+- [Query reset and reuse](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdResetQueryPool.html)
+- [64-bit results and availability](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetQueryPoolResults.html)
+- [Queue timestamp counter width](https://docs.vulkan.org/refpages/latest/refpages/source/VkQueueFamilyProperties.html)
+- [Timestamp period](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceLimits.html)
 - [Timeline semaphore host signaling](https://docs.vulkan.org/refpages/latest/refpages/source/vkSignalSemaphore.html)
 - [Timeline submit values](https://docs.vulkan.org/refpages/latest/refpages/source/VkTimelineSemaphoreSubmitInfo.html)
 - [Timeline wait-before-signal example](https://docs.vulkan.org/samples/latest/samples/extensions/timeline_semaphore/README.html)
