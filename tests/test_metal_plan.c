@@ -48,6 +48,9 @@ static int compare(const nx_command *stream, size_t count, double scale) {
             c.points[0] = d.shape.a; c.points[1] = d.shape.b; c.points[2] = d.shape.c;
         } else if (d.shape.kind == 4) {
             c.type = NX_COMMAND_LINE; c.points[0] = d.shape.a; c.points[1] = d.shape.b; c.thickness = d.shape.c.x*2;
+        } else if (d.shape.kind == 5) {
+            c.type = NX_COMMAND_BITMAP; c.bitmap = d.bitmap;
+            c.rect = (nx_rect){d.shape.a.x,d.shape.a.y,d.shape.b.x,d.shape.b.y};
         } else {
             c.type = d.shape.kind == 2 ? NX_COMMAND_STROKE_RECT : NX_COMMAND_FILL_ROUND_RECT;
             c.rect = (nx_rect){d.shape.a.x,d.shape.a.y,d.shape.b.x,d.shape.b.y};
@@ -104,7 +107,15 @@ int main(void) {
     const uint8_t pixel[] = {255,255,255,255};
     bad = (nx_command){.type=NX_COMMAND_BITMAP,.rect={0,0,1,1},.color={1,1,1,1},
         .bitmap={pixel,1,1,4,NX_BITMAP_RGBA8}};
-    CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_ERROR_UNSUPPORTED);
+    CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_OK);
+    const uint8_t image[] = {21,83,203,255,231,13,73,93, 1,2,3,0,4,5,6,213};
+    bad.bitmap = (nx_bitmap_view){image,2,2,8,NX_BITMAP_RGBA8}; bad.rect = (nx_rect){-.5f,.5f,37.25f,29.5f};
+    bad.color = (nx_color){.7f,.3f,.8f,.6f};
+    for (unsigned i = 0; i < 4; ++i) CHECK(compare(&bad,1,scales[i]) == 0);
+    bad.bitmap = (nx_bitmap_view){image,3,2,4,NX_BITMAP_A8};
+    for (unsigned i = 0; i < 4; ++i) CHECK(compare(&bad,1,scales[i]) == 0);
+    bad.bitmap.stride_bytes = 1;
+    CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_ERROR_COMMAND);
     bad = (nx_command){.type=NX_COMMAND_FILL_TRIANGLE,.color={1,1,1,1}};
     CHECK(nx_mtl_plan_begin(&p,&bad,1,1,1,1) == NX_OK && !nx_mtl_plan_next(&p,&d));
     bad.points[0] = (nx_point){-1000000,-1000000.0625f};

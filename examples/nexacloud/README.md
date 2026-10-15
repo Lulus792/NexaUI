@@ -45,6 +45,23 @@ see its [driver requirements](../../docs/concepts/vulkan.md). It requires a usab
 display and Vulkan driver. Configure `NEXAUI_BUILD_VULKAN=OFF` for core/headless
 builds without that backend.
 
+On macOS, the initial AppKit/Metal runner uses the same scene:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target nexaui_nexacloud_native --parallel 4
+./build/examples/nexacloud/nexaui_nexacloud_native /System/Library/Fonts/Supplemental/Arial.ttf
+```
+
+This runner and its RGBA8/A8 atlas are implemented; their first full-scene native
+validation is pending. The preceding Metal shapes, clipping, straight alpha and
+resource lifecycle tests pass in static/shared macOS CI. Test builds accept
+`--smoke FONT.ttf OUTPUT_PREFIX` and compare GPU overview/file/compact captures
+against the software reference before writing `macos-*` PPM files. CI saves
+these artifacts with its native test logs. A missing Metal device skips the
+smoke explicitly; `NEXAUI_REQUIRE_METAL=1` makes absence fail. Physical input,
+display behavior and assistive acceptance remain separate requirements.
+
 ![NexaCloud file browser, actual D3D12 back-buffer capture](../../docs/images/nexacloud-files.png)
 
 The portable workflow writes PPM previews and exercises the same normalized
@@ -106,7 +123,7 @@ injected creation failure.
 | --- | --- | --- |
 | Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
 | Linux | Local X11/Wayland Vulkan overview/file/compact captures equal the software reference; component and renderer regressions | Hardware GPU/performance, physical input/IME, HiDPI, AT-SPI and release acceptance |
-| macOS | CI static/shared core, portable scene and installed-package jobs passed in `cffbcf8` | Cocoa window/input, Metal rendering, actual native runtime acceptance |
+| macOS | Static/shared AppKit and Metal shapes/alpha/lifecycle tests passed at `74aa8ec`; image/full-scene runner implemented | Execute the new RGBA8/A8 and native NexaCloud tests, review GPU captures, physical/AX/display acceptance |
 
 Large text at 200%, physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI
 screenreader tasks are still open. A successful portable render does not establish

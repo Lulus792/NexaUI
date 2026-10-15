@@ -121,6 +121,57 @@ static int test_alpha(nx_window *w, nx_metal_renderer *r) {
     CHECK(compare_commands(w,r,&low,1,1,(nx_color){1,.4f,.2f,1.f/255.f}) == 0);
     return 0;
 }
+static int test_bitmaps(nx_window *w, nx_metal_renderer *r) {
+    uint8_t rgba[] = {17,83,201,255,243,31,5,93,0xee,0xee,0xee,0xee,
+        0,255,127,0,71,133,19,213,0xee,0xee,0xee,0xee};
+    uint8_t masks[] = {0,1,64,128,255,0xee, 255,213,128,93,0,0xee,
+        1,2,3,4,5,0xee, 255,0,255,0,255,0xee};
+    nx_command commands[] = {
+        {.type=NX_COMMAND_PUSH_CLIP,.rect={3.5f,4.5f,131,89}},
+        {.type=NX_COMMAND_BITMAP,.rect={-.5f,.5f,41.25f,33.5f},.color={.8f,.4f,.9f,.8f},
+            .bitmap={rgba,2,2,12,NX_BITMAP_RGBA8}},
+        {.type=NX_COMMAND_BITMAP,.rect={19.5f,17.5f,53.25f,43.5f},.color={.2f,.8f,.3f,1},
+            .bitmap={masks,5,4,6,NX_BITMAP_A8}},
+        {.type=NX_COMMAND_BITMAP,.rect={31.5f,29.5f,61.25f,51.5f},.color={1,1,1,1},
+            .bitmap={rgba,2,2,12,NX_BITMAP_RGBA8}},
+        {.type=NX_COMMAND_POP_CLIP}
+    };
+    int presented;
+    nx_metal_renderer_info before, after;
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_ATLAS_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,commands,5,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && !before.atlas_width && !before.atlas_allocations);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_UPLOAD_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,commands,5,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && !after.atlas_width && !after.atlas_allocations);
+    const double scales[] = {1,1.25,1.5,2};
+    for (unsigned i = 0; i < 4; ++i)
+        CHECK(compare_commands(w,r,commands,5,scales[i],(nx_color){.03f,.07f,.11f,.26f}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.unique_bitmaps == 2 && before.atlas_width && before.bitmap_capacity_bytes);
+    CHECK(compare_commands(w,r,commands,5,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.atlas_allocations == before.atlas_allocations &&
+        after.bitmap_upload_allocations == before.bitmap_upload_allocations);
+    uint8_t *large = malloc(128u*64u*4u); CHECK(large); memset(large,213,128u*64u*4u);
+    nx_command growing = {.type=NX_COMMAND_BITMAP,.rect={3.5f,4.5f,117,93},.color={.8f,.4f,.9f,.8f},
+        .bitmap={large,128,64,128u*4u,NX_BITMAP_RGBA8}};
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_ATLAS_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,&growing,1,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_UPLOAD_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,&growing,1,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.atlas_width == before.atlas_width &&
+        after.atlas_height == before.atlas_height && after.bitmap_capacity_bytes == before.bitmap_capacity_bytes);
+    CHECK(compare_commands(w,r,&growing,1,1.5,(nx_color){0}) == 0);
+    CHECK(nx_metal_render(r,&growing,1,1,(nx_color){0},&presented) == NX_OK && presented);
+    free(large); growing = (nx_command){0};
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned i = 0; i < 2; ++i) {
+        CHECK(nx_metal_render(r,commands,5,1,(nx_color){0},&presented) == NX_OK && !presented);
+    }
+    CHECK(compare_commands(w,r,commands,5,2,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_recover(r) == NX_OK);
+    CHECK(compare_commands(w,r,commands,5,1,(nx_color){0}) == 0);
+    return 0;
+}
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
 static void *wrong_thread(void *user) {
     wrong *w = user; nx_metal_renderer_info info; int presented;
@@ -174,9 +225,9 @@ int main(void) {
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && !before.pending && !before.submitted_frames);
         const uint8_t pixel[] = {255,255,255,255};
         nx_command shape = {.type=NX_COMMAND_BITMAP,.rect={1,2,3,4},.color={1,1,1,1},
-            .bitmap={pixel,1,1,4,NX_BITMAP_RGBA8}};
+            .bitmap={pixel,1,1,1,NX_BITMAP_RGBA8}};
         int presented;
-        CHECK(nx_metal_render(r,&shape,1,1,(nx_color){0},&presented) == NX_ERROR_UNSUPPORTED && !presented);
+        CHECK(nx_metal_render(r,&shape,1,1,(nx_color){0},&presented) == NX_ERROR_COMMAND && !presented);
         shape.type = NX_COMMAND_POP_CLIP;
         CHECK(nx_metal_render(r,&shape,1,1,(nx_color){0},&presented) == NX_ERROR_COMMAND);
         CHECK(nx_metal_render(r,NULL,1,1,(nx_color){0},&presented) == NX_ERROR_ARGUMENT);
@@ -193,6 +244,7 @@ int main(void) {
         for (unsigned i = 0; i < 15; ++i) CHECK(compare(window,r,colors[i%5]) == 0);
         CHECK(test_shapes(window,r) == 0);
         CHECK(test_alpha(window,r) == 0);
+        CHECK(test_bitmaps(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);

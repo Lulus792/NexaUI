@@ -1,5 +1,20 @@
 # Decisions
 
+## 2026-10-15 — Bound Metal bitmap ownership before asynchronous execution
+
+The initial A05 atlas stores RGBA8 and expanded A8 masks together. A fixed limit
+of 4096 source-view records and a 64 MiB atlas budget bound preparation; shelf
+packing widens within an 8192-pixel axis cap. One owned shared staging buffer
+is reused only after the prior command buffer reaches terminal status. Its
+bytes are copied from borrowed pixels before submission returns, and a GPU
+blit fills a private texture. No CPU-rendered frame replaces native GPU drawing.
+
+Atlas/staging growth installs candidates together after allocation succeeds.
+Tests distinguish plain C packing/copy checks from Apple GPU execution, and the
+native NexaCloud smoke compares complete GPU frames before saving its captures.
+The initial per-draw encoding and history copies still need A06 profiling and
+batching; native GPU import is separate future work.
+
 ## 2026-10-15 — Compose Metal RGBA8 explicitly before presentation
 
 Metal now follows the same integer straight-alpha formula as the headless and

@@ -40,6 +40,17 @@ if(TARGET nexaui_renderer_vulkan)
         target_compile_definitions(nexaui_nexacloud_native PRIVATE NEXAUI_VULKAN_TEST_HOOKS)
     endif()
 endif()
+if(TARGET nexaui_renderer_metal)
+    add_executable(nexaui_nexacloud_native native_macos.c)
+    target_include_directories(nexaui_nexacloud_native PRIVATE
+        ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/renderers/metal)
+    target_link_libraries(nexaui_nexacloud_native PRIVATE nexacloud_scene nexaui_renderer_metal)
+    target_compile_features(nexaui_nexacloud_native PRIVATE c_std_17)
+    target_compile_options(nexaui_nexacloud_native PRIVATE -Wall -Wextra -Wpedantic)
+    if(NEXAUI_BUILD_TESTS)
+        target_compile_definitions(nexaui_nexacloud_native PRIVATE NEXAUI_METAL_TEST_HOOKS)
+    endif()
+endif()
 if(WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET nexaui_nexacloud POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -57,6 +68,13 @@ if(NEXAUI_BUILD_TESTS)
                 --smoke "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud")
             set_tests_properties(nexaui_nexacloud_native_example PROPERTIES TIMEOUT 120
                 RESOURCE_LOCK native_display)
+        endif()
+        if(TARGET nexaui_renderer_metal)
+            add_test(NAME nexaui_nexacloud_metal_native_example COMMAND nexaui_nexacloud_native
+                --smoke "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud")
+            set_tests_properties(nexaui_nexacloud_metal_native_example PROPERTIES
+                TIMEOUT 180 RESOURCE_LOCK native_display SKIP_RETURN_CODE 77
+                ENVIRONMENT "MTL_DEBUG_LAYER=1")
         endif()
         if(TARGET nexaui_renderer_vulkan)
             foreach(_cloud_platform IN ITEMS x11 wayland)

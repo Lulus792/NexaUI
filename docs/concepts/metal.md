@@ -1,10 +1,10 @@
 # Initial macOS Metal backend
 
 The private `nexaui_renderer_metal` target implements initial A01/A02 clear/present
-and A03/A04 geometry/composition for the [AppKit adapter](macos.md), with nested
-scissor clips. Initial opaque GPU comparisons have executed on Apple's virtual
-Metal device; full native tests and image/glyph upload remain required before
-native NexaCloud rendering.
+and A03–A05 geometry, clipping, composition and RGBA8/A8 uploads for the
+[AppKit adapter](macos.md). Shape/alpha/lifecycle tests pass on Apple's virtual
+Metal device. Image uploads and the new native NexaCloud runner have an
+implementation with native execution pending.
 
 ## Build and ownership
 
@@ -57,8 +57,8 @@ split-product operations. This initial path copies small per-draw vertex and
 shape arguments with Metal's `set*Bytes` API. Upload rings and batching are A06
 work. Color output is quantized RGBA8; fixed-function blending is disabled.
 Alpha values that quantize to zero are skipped, and those that quantize to 255
-are opaque. All valid bitmap commands return `NX_ERROR_UNSUPPORTED` before
-drawable acquisition until A05 is implemented.
+are opaque. Bitmap draws sample a private RGBA8 atlas and apply integer tint
+and the same straight-alpha formula.
 
 For each translucent draw the encoder first ends the previous render pass,
 copies the clipped destination rectangle to an owned history texture, then
@@ -69,6 +69,36 @@ it orders the render/blit/read transitions between encoders. Resize allocates
 both replacement textures before releasing either old texture. History-allocation
 failure releases the candidate canvas and preserves the previous pair. This
 simple first composition path still needs A06 batching/performance work.
+
+## Image and glyph uploads
+
+The A05 atlas shares RGBA8 images and A8 glyph masks. A plain C planner deduplicates
+complete source views (pointer, dimensions, stride and format), packs shelves,
+widens/retries within an 8192-pixel axis cap and enforces a 64 MiB pixel budget.
+Metadata has a fixed limit of 4096 distinct views per frame. Zero-size destinations
+and zero quantized alpha need no source entry. The planner validates metadata
+without reading pixel bytes; copying requires valid pixels from a successful plan.
+RGBA8 copies exclude source row padding. A8 becomes white RGB plus source coverage;
+the shader applies the command's RGBA tint. Compensated nearest-neighbor sampling
+preserves fractional-scale source-cell boundaries.
+
+Before encoding, the renderer copies the packed bytes to its own shared Metal
+buffer, then a blit uploads them into a private shader-read texture. Atlas rows
+are multiples of 4096 bytes. The prior command buffer must be terminal before
+the shared staging storage is overwritten or grown. Pending GPU work never reads
+caller pixels or command storage. Allocation failure retains the previous atlas
+and upload buffer; candidates are installed only after both allocations succeed.
+Current atlas storage and staging capacity each stay within 64 MiB; transactional
+growth temporarily retains both previous and candidate resources. Borrowed image
+storage remains the caller's responsibility until submission returns.
+
+The [NexaCloud macOS runner](../../examples/nexacloud/native_macos.c) uses the same
+C17 scene as Windows/Linux. Its authored smoke compares every GPU RGBA8 byte
+against headless for overview, file browser and a second compact window, then
+writes `*-macos-*.ppm` captures. Normalized pointer/key events test scene state;
+physical AppKit input and display acceptance remain separate. CI saves captures
+and CTest logs for static/shared macOS jobs. A native run is still required
+before these new full-scene images can be claimed as validated.
 
 `tools/embed_metal_shader.py --check` verifies source/header correspondence;
 it does not compile MSL. CI runs this check on all three platforms. Pipeline
@@ -94,16 +124,29 @@ replacement when restoring nil. The Metal clear/present example passed.
 The [shared job](https://github.com/Lulus792/NexaUI/actions/runs/38767168136/job/116533287566)
 failed to link the C example's Foundation symbols: the Metal target now names
 its own Foundation dependency explicitly instead of relying on the static core's
-AppKit link closure. Full static/shared tests and the newer alpha GPU comparisons
-must still pass. A virtual-device result is not physical hardware acceptance.
+AppKit link closure. These failures are resolved at `74aa8ec`: both
+[static](https://github.com/Lulus792/NexaUI/actions/runs/38768396552/job/116537519079)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/38768396552/job/116537519309)
+macOS 26 ARM64 / AppleClang 21 CI jobs passed all 77 tests, including Metal
+shape/alpha/readback/retirement/recovery and the native clear example. Metal ran
+rather than skipping. Installed and subdirectory C consumers also built; the
+installed consumer ran successfully.
+The newer A05 bitmap/full-scene GPU tests are pending. A virtual-device result
+is not physical hardware acceptance.
 
 The separate `nexaui_metal_plan` test runs on Windows and Linux. It interprets
 prepared geometry through the independent headless renderer and checks every
 RGBA byte and padding byte at 1x/1.25x/1.5x/2x, including empty/intersecting clips,
 all five shape types, overlapping alpha and a distant triangle. It also checks the Metal
-NDC orientation, invalid streams, unsupported images, range limits and
+NDC orientation, invalid streams, image metadata, range limits and
 zero-size suspension. Windows MSVC Debug passed; Linux Clang ASan/UBSan with
 leak detection passed. These are CPU preparation results, not Metal execution.
+
+The new `nexaui_metal_bitmaps` CPU test also passes on both hosts, with Linux
+ASan/UBSan/LeakSanitizer. It checks deduplication, padded RGBA/A8 copies, untouched
+output padding, shelf widening, maximum count/budget failures and invalid views.
+The macOS runner's entry point compiles as portable C17 on Linux; that compile
+does not link AppKit/Metal or establish native rendering.
 
 `nexaui_metal` is authored to compare every GPU canvas RGBA8 byte with the software
 reference, including alpha, quantization ties and row padding. It checks resize,
@@ -113,7 +156,10 @@ opaque shapes, fractional scales, nested clips, both triangle windings, shared
 diagonals, degenerate geometry, large-coordinate cancellation and pipeline
 allocation failure/recreation. Additional alpha cases cover overlapping rects,
 rounded fills and triangles over transparent/translucent/opaque destinations,
-one-byte alpha, history allocation failure and recovery. It and the example skip explicitly only if
+one-byte alpha, history allocation failure and recovery. New authored A05 cases
+cover tinted RGBA/A8, repeated views, fractional sampling, reusable capacities,
+atlas/upload allocation rollback and freeing borrowed pixels while an owned
+upload remains pending. They and the native examples skip explicitly only if
 there is no Metal device. `NEXAUI_REQUIRE_METAL=1` makes absence fail on required
 hardware runs. Tests enable the Metal debug layer; actual results will be recorded
 here. A skip never establishes native GPU support.
@@ -136,3 +182,5 @@ hardware performance, physical DPI/input and native NexaCloud remain open.
 - [MSL specification, section 1.6.3: FP contraction](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
 - [Metal coordinate systems](https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Render-Ctx/Render-Ctx.html)
 - [Metal resource synchronization](https://developer.apple.com/documentation/metal/resource-synchronization)
+- [Shared storage access](https://developer.apple.com/documentation/metal/mtlstoragemode/shared)
+- [Blit encoder buffer/texture copies](https://developer.apple.com/documentation/metal/mtlblitcommandencoder)

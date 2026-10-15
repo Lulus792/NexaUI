@@ -47,6 +47,15 @@ jobs:
       - name: Test (Windows and macOS)
         if: runner.os != 'Linux'
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 20
+      - name: Save macOS native GPU captures
+        if: always() && runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-gpu-captures-shared-${{ matrix.shared }}
+          path: |
+            build/examples/nexacloud/*-macos-*.ppm
+            build/Testing/Temporary
+          if-no-files-found: ignore
       - name: Install
         run: cmake --install build --config Debug --prefix stage
       - name: Configure installed consumer

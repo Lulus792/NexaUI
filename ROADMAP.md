@@ -408,3 +408,11 @@ missing explicit Foundation linkage; both have corrections awaiting CI. Initial
 A04 integer straight-alpha composition now has implementation and authored GPU
 tests. Windows/Linux sanitizer CPU preparation comparisons pass with overlapping
 alpha; GPU alpha and complete lifecycle validation still require the follow-up.
+
+At `74aa8ec`, static/shared macOS CI passes 77/77 tests, including GPU alpha,
+layer restoration, retirement/recovery and installed-package integration.
+Initial A05 now implements a bounded RGBA8/A8 atlas, owned reusable staging,
+nearest-cell sampling, integer tint and transactional growth. CPU preparation
+and atlas tests pass on Windows and under Linux ASan/UBSan/leak detection. A
+plain C17 AppKit/Metal NexaCloud runner and native overview/file/compact smoke
+are authored; image/full-scene execution and visual review remain pending.

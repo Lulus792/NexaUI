@@ -7,8 +7,9 @@ struct Shape {
     packed_float2 a, b, c;
     uint kind;
     uint color[4];
+    packed_float2 bitmap_size;
 };
-static_assert(sizeof(Shape) == 44, "C/MSL shape layout");
+static_assert(sizeof(Shape) == 52, "C/MSL shape layout");
 struct Raster { float4 position [[position]]; };
 vertex Raster nx_mtl_vertex(uint index [[vertex_id]], constant packed_float2 *vertices [[buffer(0)]]) {
     Raster out;
@@ -120,10 +121,30 @@ bool shape_contains(float2 p, constant Shape &s) {
     return true;
 }
 
+int sample_axis(float position, float origin, float extent, float texels) {
+    float2 local = difference(position, origin);
+    if (!less_pair(float2(0.0), local)) return 0;
+    if (!less_pair(local, float2(extent, 0.0))) return int(texels) - 1;
+    float2 numerator = multiply_pair(local, float2(texels, 0.0));
+    float high = numerator.x / extent;
+    float2 remainder = add_pair(numerator, -multiply_pair(float2(high, 0.0), float2(extent, 0.0)));
+    float low = (remainder.x + remainder.y) / extent;
+    float2 quotient = add_pair(float2(high, 0.0), float2(low, 0.0));
+    float value = floor(quotient.x);
+    if (value == quotient.x && quotient.y < 0.0) value -= 1.0;
+    return int(clamp(value, 0.0, texels - 1.0));
+}
+
 fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buffer(0)]],
-    texture2d<float, access::read> history [[texture(0)]]) {
+    texture2d<float, access::read> history [[texture(0)]], texture2d<float, access::read> atlas [[texture(1)]]) {
     if (!shape_contains(in.position.xy, s)) discard_fragment();
     uint4 src = uint4(s.color[0],s.color[1],s.color[2],s.color[3]);
+    if (s.kind == 5u) {
+        uint2 pixel = uint2(s.c) + uint2(sample_axis(in.position.x,s.a.x,s.b.x,s.bitmap_size.x),
+            sample_axis(in.position.y,s.a.y,s.b.y,s.bitmap_size.y));
+        uint4 sample_color = uint4(floor(atlas.read(pixel)*255.0+0.5));
+        src = (sample_color*src+127u)/255u;
+    }
     if (src.a == 255u) return float4(src) / 255.0;
     uint4 dst = uint4(floor(history.read(uint2(in.position.xy)) * 255.0 + 0.5));
     if (src.a == 0u) return float4(dst) / 255.0;

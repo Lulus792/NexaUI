@@ -10,12 +10,14 @@ typedef struct nx_metal_renderer_info {
     uint32_t pixel_width, pixel_height;
     uint64_t submitted_frames, completed_frames;
     int pending, pending_readback, closing, broken;
+    uint32_t atlas_width, atlas_height, unique_bitmaps;
+    uint64_t bitmap_capacity_bytes, atlas_allocations, bitmap_upload_allocations;
 } nx_metal_renderer_info;
 
 /* Private AppKit/Metal backend. Every call requires the main thread. The
    renderer leases its window until successful destruction; native objects
    never appear in the public installed C API. Initial drawing supports shapes,
-   nested clips and straight alpha. Image commands fail before drawable acquisition. */
+   nested clips, straight alpha and owned RGBA8/A8 uploads. */
 nx_result nx_metal_renderer_create(nx_window *window, const nx_allocator *allocator,
     nx_metal_renderer **out_renderer);
 nx_result nx_metal_render(nx_metal_renderer *renderer, const nx_command *commands,
@@ -40,6 +42,8 @@ typedef enum nx_metal_test_fault {
     NX_MTL_TEST_HISTORY_MEMORY,
     NX_MTL_TEST_COMMAND_MEMORY,
     NX_MTL_TEST_PIPELINE_MEMORY,
+    NX_MTL_TEST_ATLAS_MEMORY,
+    NX_MTL_TEST_UPLOAD_MEMORY,
     NX_MTL_TEST_WAIT_TIMEOUT
 } nx_metal_test_fault;
 nx_result nx_metal_test_fail_next(nx_metal_renderer *renderer, nx_metal_test_fault fault);

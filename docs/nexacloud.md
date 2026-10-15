@@ -41,8 +41,11 @@ the application releases them after renderer use ends.
    reference byte-for-byte. Bounded retirement, upload allocation failures and
    rebuild/recovery remain covered. Hardware, physical-input/IME and display
    acceptance are still required.
-3. **Pending:** native Cocoa/AppKit input/window integration and Metal command
-   rendering, with the common scene and no public platform types.
+3. **Implemented, full-scene execution pending:** AppKit window/input and Metal
+   shape/alpha/lifecycle tests pass in static/shared native CI. RGBA8/A8 uploads
+   and a C17 Metal NexaCloud runner now use the common scene, with authored
+   overview/file/compact GPU comparisons awaiting execution. No public platform
+   types are introduced; physical/assistive acceptance remains open.
 4. **Pending:** large-text reflow, physical DPI/monitor and 4K checks, full native
    keyboard walkthroughs, OS accessibility bridges/screenreaders, performance
    budgets, packaging and release acceptance on each supported OS.

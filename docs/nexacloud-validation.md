@@ -172,3 +172,22 @@ VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_VALIDATION_VALIDATE_SYNC=1 \
 NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a \
 ctest --test-dir out/vulkan-clean --output-on-failure --timeout 180
 ```
+
+## Initial macOS native path — 2026-10-15
+
+At `74aa8ec`, both macOS 26 ARM64 / AppleClang 21 CI jobs passed all 77 tests,
+including AppKit callback/lifecycle, Metal shapes/clips/straight alpha, exact
+readbacks, recovery/retirement and the native clear example
+([static](https://github.com/Lulus792/NexaUI/actions/runs/38768396552/job/116537519079),
+[shared](https://github.com/Lulus792/NexaUI/actions/runs/38768396552/job/116537519309)).
+These Metal tests ran rather than skipping; the runner uses Apple's virtual
+GPU. Both consumer variants built, and the installed C consumer ran.
+
+The subsequent A05 change implements RGBA8/A8 atlas uploads and a native
+AppKit/Metal NexaCloud runner. Its authored smoke captures the shared overview,
+file browser and a second compact window only after each GPU frame equals its
+headless reference. The new image/full-scene GPU execution and visual review
+remain pending. CPU atlas/preparation tests pass in Windows static/shared Debug
+and Linux Clang ASan/UBSan/LeakSanitizer; the new entry point compiles as plain
+C17 on Linux. Neither result establishes native GPU image rendering. The CI
+workflow saves macOS captures and CTest logs for subsequent inspection.

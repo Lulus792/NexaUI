@@ -5,7 +5,8 @@
 
 /* The MSL struct uses packed_float2 and uint[4], not SIMD-aligned float2/uint4. */
 _Static_assert(sizeof(nx_point) == 8, "Metal vertex layout");
-_Static_assert(sizeof(nx_mtl_shape) == 44 && offsetof(nx_mtl_shape,color) == 28,
+_Static_assert(sizeof(nx_mtl_shape) == 52 && offsetof(nx_mtl_shape,color) == 28 &&
+    offsetof(nx_mtl_shape,bitmap_size) == 44,
     "Metal shape argument layout");
 
 nx_result nx_mtl_plan_begin(nx_mtl_plan *p, const nx_command *commands,
@@ -18,10 +19,11 @@ nx_result nx_mtl_plan_begin(nx_mtl_plan *p, const nx_command *commands,
     for (size_t i = 0; i < count; ++i) {
         const nx_command *c = &commands[i];
         if (c->type == NX_COMMAND_POP_CLIP) continue;
-        if (c->type == NX_COMMAND_BITMAP) return NX_ERROR_UNSUPPORTED;
         if (c->type != NX_COMMAND_PUSH_CLIP && c->type != NX_COMMAND_FILL_RECT &&
             c->type != NX_COMMAND_FILL_TRIANGLE && c->type != NX_COMMAND_STROKE_RECT &&
-            c->type != NX_COMMAND_FILL_ROUND_RECT && c->type != NX_COMMAND_LINE) return NX_ERROR_UNSUPPORTED;
+            c->type != NX_COMMAND_FILL_ROUND_RECT && c->type != NX_COMMAND_LINE && c->type != NX_COMMAND_BITMAP) return NX_ERROR_UNSUPPORTED;
+        if (c->type == NX_COMMAND_BITMAP && (c->bitmap.width > 8192u || c->bitmap.height > 8192u ||
+            (uint64_t)c->bitmap.width*c->bitmap.height > (64u*1024u*1024u)/4u)) return NX_ERROR_LIMIT;
         double values[8] = {0};
         if (c->type == NX_COMMAND_FILL_TRIANGLE || c->type == NX_COMMAND_LINE) {
             unsigned n = c->type == NX_COMMAND_LINE ? 2u : 3u;
@@ -40,6 +42,7 @@ nx_result nx_mtl_plan_begin(nx_mtl_plan *p, const nx_command *commands,
             if (c->type == NX_COMMAND_FILL_TRIANGLE && fabs(scaled) > sqrt((double)FLT_MAX)/4) return NX_ERROR_LIMIT;
             if (c->type == NX_COMMAND_LINE && fabs(scaled) > sqrt(sqrt((double)FLT_MAX))/16) return NX_ERROR_LIMIT;
             if (c->type == NX_COMMAND_FILL_ROUND_RECT && fabs(scaled) > sqrt((double)FLT_MAX)/8) return NX_ERROR_LIMIT;
+            if (c->type == NX_COMMAND_BITMAP && fabs(scaled) > sqrt((double)FLT_MAX)/32768) return NX_ERROR_LIMIT;
         }
     }
     p->commands = commands; p->count = count; p->scale = scale; p->width = width; p->height = height;
@@ -74,11 +77,14 @@ int nx_mtl_plan_next(nx_mtl_plan *p, nx_mtl_draw *out) {
             if (orient < 0) { nx_point swap = s.b; s.b = s.c; s.c = swap; }
             x0 = edge(fmin(s.a.x,fmin(s.b.x,s.c.x)),1,p->width); y0 = edge(fmin(s.a.y,fmin(s.b.y,s.c.y)),1,p->height);
             x1 = edge(fmax(s.a.x,fmax(s.b.x,s.c.x)),1,p->width); y1 = edge(fmax(s.a.y,fmax(s.b.y,s.c.y)),1,p->height);
-        } else if (c->type == NX_COMMAND_STROKE_RECT || c->type == NX_COMMAND_FILL_ROUND_RECT) {
-            s.kind = c->type == NX_COMMAND_STROKE_RECT ? 2u : 3u;
+        } else if (c->type == NX_COMMAND_STROKE_RECT || c->type == NX_COMMAND_FILL_ROUND_RECT || c->type == NX_COMMAND_BITMAP) {
+            s.kind = c->type == NX_COMMAND_STROKE_RECT ? 2u : c->type == NX_COMMAND_FILL_ROUND_RECT ? 3u : 5u;
             s.a = (nx_point){(float)(c->rect.x*p->scale),(float)(c->rect.y*p->scale)};
             s.b = (nx_point){(float)(c->rect.width*p->scale),(float)(c->rect.height*p->scale)};
-            s.c.x = s.kind == 2 ? (float)(c->thickness*p->scale) : fminf((float)(c->radius*p->scale),fminf(s.b.x,s.b.y)*.5f);
+            if (s.kind == 5) {
+                if (!s.b.x || !s.b.y) continue;
+                s.bitmap_size = (nx_point){(float)c->bitmap.width,(float)c->bitmap.height};
+            } else s.c.x = s.kind == 2 ? (float)(c->thickness*p->scale) : fminf((float)(c->radius*p->scale),fminf(s.b.x,s.b.y)*.5f);
             x0 = edge(s.a.x,1,p->width); y0 = edge(s.a.y,1,p->height);
             x1 = edge((double)s.a.x+s.b.x,1,p->width); y1 = edge((double)s.a.y+s.b.y,1,p->height);
         } else {
@@ -93,6 +99,7 @@ int nx_mtl_plan_next(nx_mtl_plan *p, nx_mtl_draw *out) {
         if (c->type == NX_COMMAND_PUSH_CLIP) { p->clips[++p->depth] = box; continue; }
         if (!box.width || !box.height || floorf(c->color.a*255.f+.5f) == 0) continue;
         *out = (nx_mtl_draw){0}; out->scissor = box; out->shape = s;
+        if (s.kind == 5) out->bitmap = c->bitmap;
         const float channels[] = {c->color.r,c->color.g,c->color.b,c->color.a};
         for (unsigned j = 0; j < 4; ++j) out->shape.color[j] = (uint32_t)floorf(channels[j]*255.f+.5f);
         double xy[6][2] = {{x0,y0},{x1,y0},{x0,y1},{x1,y0},{x1,y1},{x0,y1}};

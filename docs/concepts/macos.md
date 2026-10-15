@@ -82,11 +82,11 @@ That probe is a Linux executable with the policy branch selected; it is not an
 Apple SDK build or macOS runtime result. The actual native CI jobs above also
 passed text-buffer and text-field checks; physical Command/IME acceptance remains open.
 
-An initial [Metal target](metal.md) implements clear/present, geometry, nested
-clips and straight alpha. Opaque GPU comparisons have executed; full lifecycle,
-alpha validation and image commands remain pending. A native NexaCloud
-macOS runner is not yet available. A blank window or headless scene is not
-complete macOS UI acceptance.
+The [Metal target](metal.md) now passes all native shape/clip/alpha/lifecycle
+checks in static/shared macOS CI at `74aa8ec` (77/77 tests in each job). Both
+consumer variants build, and the installed consumer runs. The newer image/glyph
+atlas and native NexaCloud runner have implementation and authored tests but
+still await execution. Physical input, IME, DPI and VoiceOver remain open.
 
 ## Primary references
 
