@@ -84,9 +84,11 @@ passed text-buffer and text-field checks; physical Command/IME acceptance remain
 
 The [Metal target](metal.md) now passes all native shape/clip/alpha/lifecycle
 checks in static/shared macOS CI at `74aa8ec` (77/77 tests in each job). Both
-consumer variants build, and the installed consumer runs. The newer image/glyph
-atlas and native NexaCloud runner have implementation and authored tests but
-still await execution. Physical input, IME, DPI and VoiceOver remain open.
+consumer variants build, and the installed consumer runs. At `fb80bd0`, both
+variants pass 79/79 tests, including RGBA8/A8 uploads and native NexaCloud GPU
+comparisons. The three static/shared scene captures are byte-identical and
+reviewed; [actual client sizes and limits](../nexacloud-validation.md#native-macos-scene--2026-10-15)
+are recorded. Physical input, IME, DPI and VoiceOver remain open.
 
 ## Primary references
 

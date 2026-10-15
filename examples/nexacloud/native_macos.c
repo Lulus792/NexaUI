@@ -133,6 +133,23 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
     return nx_semantics_find(cloud_context(scene), 1001, &index) == NX_OK &&
         nx_semantics_get(cloud_context(scene), index, &view) == NX_OK && (view.state & NX_SEM_SELECTED);
 }
+static int compact_details(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer, const char *prefix) {
+    uint32_t index; nx_semantic_view view; char path[1024];
+    if (nx_semantics_find(cloud_context(scene),203,&index) != NX_OK ||
+        nx_semantics_get(cloud_context(scene),index,&view) != NX_OK ||
+        !queue_click(scene,view.bounds.x+view.bounds.width*.5f,view.bounds.y+view.bounds.height*.5f) ||
+        !frame(window,scene,renderer,0) || !frame(window,scene,renderer,0) ||
+        nx_semantics_find(cloud_context(scene),500,&index) != NX_OK ||
+        snprintf(path,sizeof(path),"%s-macos-compact-details.ppm",prefix) >= (int)sizeof(path) ||
+        !capture(window,scene,renderer,path)) return 0;
+    nx_event event = {0}; event.type = NX_EVENT_KEY_DOWN; event.key = NX_KEY_ESCAPE;
+    if (nx_context_queue_event(cloud_context(scene),&event) != NX_OK) return 0;
+    event.type = NX_EVENT_KEY_UP;
+    if (nx_context_queue_event(cloud_context(scene),&event) != NX_OK ||
+        !frame(window,scene,renderer,0) || !frame(window,scene,renderer,0)) return 0;
+    return nx_semantics_find(cloud_context(scene),500,&index) != NX_OK &&
+        nx_focus_id(cloud_context(scene)) == 203;
+}
 #endif
 
 int main(int argc, char **argv) {
@@ -164,7 +181,7 @@ int main(int argc, char **argv) {
             char path[1024];
             okay = frame(window, scene, &renderer, 0) && frame(window, scene, &renderer, 0) &&
                 snprintf(path, sizeof(path), "%s-macos-compact.ppm", argv[3]) < (int)sizeof(path) &&
-                capture(window, scene, &renderer, path);
+                capture(window, scene, &renderer, path) && compact_details(window,scene,&renderer,argv[3]);
         }
     }
 #else

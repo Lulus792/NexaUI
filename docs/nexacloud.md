@@ -41,11 +41,13 @@ the application releases them after renderer use ends.
    reference byte-for-byte. Bounded retirement, upload allocation failures and
    rebuild/recovery remain covered. Hardware, physical-input/IME and display
    acceptance are still required.
-3. **Implemented, full-scene execution pending:** AppKit window/input and Metal
-   shape/alpha/lifecycle tests pass in static/shared native CI. RGBA8/A8 uploads
-   and a C17 Metal NexaCloud runner now use the common scene, with authored
-   overview/file/compact GPU comparisons awaiting execution. No public platform
-   types are introduced; physical/assistive acceptance remains open.
+3. **Implemented initial native scene:** AppKit window/input and Metal
+   shape/alpha/image/lifecycle tests pass in static/shared native CI. The C17
+   Metal runner's overview/file/compact captures match headless and each other
+   across both variants; their actual 1024×642 / 820×645 client sizes were
+   visually reviewed. The compact-details case is newly authored. Wide-display,
+   Retina and physical/assistive acceptance remain open; public APIs have no
+   platform types.
 4. **Pending:** large-text reflow, physical DPI/monitor and 4K checks, full native
    keyboard walkthroughs, OS accessibility bridges/screenreaders, performance
    budgets, packaging and release acceptance on each supported OS.

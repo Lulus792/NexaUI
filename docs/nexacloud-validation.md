@@ -191,3 +191,37 @@ remain pending. CPU atlas/preparation tests pass in Windows static/shared Debug
 and Linux Clang ASan/UBSan/LeakSanitizer; the new entry point compiles as plain
 C17 on Linux. Neither result establishes native GPU image rendering. The CI
 workflow saves macOS captures and CTest logs for subsequent inspection.
+
+## Native macOS scene — 2026-10-15
+
+After correcting packed-vector access, `fb80bd0` passed all 79 tests in both
+[static](https://github.com/Lulus792/NexaUI/actions/runs/38773070623/job/116553624423)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/38773070623/job/116553624411)
+macOS 26 ARM64 / AppleClang 21 CI jobs. The AppKit/Metal NexaCloud test executed
+with Metal validation enabled; it did not skip. Every RGBA8 canvas byte matched
+the headless reference before capture.
+
+| View | Actual GPU canvas | Commands | Distinct bitmaps | Atlas |
+| --- | --- | --- | --- | --- |
+| Overview | 1024×642 | 1306 | 64 | 1024×128 |
+| Files | 1024×642 | 501 | 46 | 1024×1024 |
+| Compact files | 820×645 | 409 | 23 | 1024×1024 |
+
+The virtual desktop constrained the requested 1440×1040 and 820×700 windows to
+these actual client sizes. The narrower layout scrolls content and exposes file
+details through its dialog rather than the wide side inspector. An additional
+native compact-details capture and Escape/focus check is authored but not yet
+executed. These captures do not establish a 1440-pixel-wide macOS inspector test.
+
+The [overview](images/nexacloud-macos-overview.png), [files](images/nexacloud-macos-files.png)
+and [compact view](images/nexacloud-macos-compact.png) were inspected for readable
+labels, selection, thumbnails, chart/transfer ordering and compact navigation.
+The static/shared PPM files are byte-identical. These PNGs are direct lossless
+conversions of the GPU captures, with no visual retouching. Artifact ZIP SHA-256:
+static `9ee7e57d7f5d9022bd0b4541bdafc11e004e2259e29c0343498e1b5ea90896d3`;
+shared `5434bc0d16140e95f95d51cbebc5251c04b088427a2d00ca34dfba8455f5f2c6`.
+They include the full native test logs and belong to run `38773070623`.
+
+This is Apple Paravirtual GPU evidence. Actual hardware performance, physical
+input/IME, 200% text, Retina/4K/monitor transitions and VoiceOver acceptance
+remain separate open requirements.

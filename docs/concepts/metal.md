@@ -3,8 +3,8 @@
 The private `nexaui_renderer_metal` target implements initial A01/A02 clear/present
 and A03–A05 geometry, clipping, composition and RGBA8/A8 uploads for the
 [AppKit adapter](macos.md). Shape/alpha/lifecycle tests pass on Apple's virtual
-Metal device. Image uploads and the new native NexaCloud runner have an
-implementation with native execution pending.
+Metal device. Image uploads and the native NexaCloud overview/file/compact runner
+also pass the static/shared native CI suite at `fb80bd0` (79/79 tests each).
 
 ## Build and ownership
 
@@ -97,8 +97,10 @@ C17 scene as Windows/Linux. Its authored smoke compares every GPU RGBA8 byte
 against headless for overview, file browser and a second compact window, then
 writes `*-macos-*.ppm` captures. Normalized pointer/key events test scene state;
 physical AppKit input and display acceptance remain separate. CI saves captures
-and CTest logs for static/shared macOS jobs. A native run is still required
-before these new full-scene images can be claimed as validated.
+and CTest logs for static/shared macOS jobs. The first three captured views now
+pass; see the [native scene report](../nexacloud-validation.md#native-macos-scene--2026-10-15).
+An additional compact-details dialog capture and Escape/focus-restoration check
+is authored and awaits the next native run.
 
 `tools/embed_metal_shader.py --check` verifies source/header correspondence;
 it does not compile MSL. CI runs this check on all three platforms. Pipeline
@@ -131,15 +133,20 @@ macOS 26 ARM64 / AppleClang 21 CI jobs passed all 77 tests, including Metal
 shape/alpha/readback/retirement/recovery and the native clear example. Metal ran
 rather than skipping. Installed and subdirectory C consumers also built; the
 installed consumer ran successfully.
-The newer A05 bitmap/full-scene GPU tests are pending. A virtual-device result
-is not physical hardware acceptance.
+A virtual-device result is not physical hardware acceptance.
 
 The first A05 native jobs at `6140315` compiled the Objective-C/C targets but
 stopped at MSL compilation: direct `.x/.y` access on packed-vector members was
 rejected. The image branch now converts those arguments to regular `float2`
 values before accessing components, matching the already tested geometry path.
-The embedded source is regenerated. Native compilation/execution of this
-correction remains pending; the failed jobs produced no full-scene GPU captures.
+The embedded source is regenerated. This correction passes in both macOS jobs
+at `fb80bd0`: [static](https://github.com/Lulus792/NexaUI/actions/runs/38773070623/job/116553624423)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/38773070623/job/116553624411)
+each passed 79/79 tests. The RGBA/A8, allocation/retirement and complete native
+scene tests ran with Metal validation enabled. The three static/shared PPM
+captures are byte-identical and were visually reviewed after verifying artifact
+digests. Physical GPU performance, Retina/monitor transitions and assistive
+acceptance remain open.
 
 The separate `nexaui_metal_plan` test runs on Windows and Linux. It interprets
 prepared geometry through the independent headless renderer and checks every

@@ -12,6 +12,7 @@ The initial [AppKit window adapter](concepts/macos.md) has passing native CI
 callback/lifecycle checks. Full macOS integration, physical acceptance and the
 macOS NexaCloud runner remain pending.
 
-The initial [Metal backend](concepts/metal.md) passes native static/shared shape,
-clip, alpha and lifecycle tests on Apple's virtual device. New RGBA8/A8 uploads
-and a macOS NexaCloud runner are implemented, with native execution pending.
+The initial [Metal backend](concepts/metal.md) and macOS NexaCloud runner pass
+static/shared native shape, alpha, image/glyph, lifecycle and full-scene tests
+on Apple's virtual device. The [GPU captures](nexacloud-validation.md#native-macos-scene--2026-10-15)
+are reviewed; physical display/input and assistive acceptance remain open.

@@ -416,3 +416,11 @@ nearest-cell sampling, integer tint and transactional growth. CPU preparation
 and atlas tests pass on Windows and under Linux ASan/UBSan/leak detection. A
 plain C17 AppKit/Metal NexaCloud runner and native overview/file/compact smoke
 are authored; image/full-scene execution and visual review remain pending.
+
+At `fb80bd0`, both macOS variants pass 79/79 tests, including the A05 image/glyph
+path and native NexaCloud smoke. The actual 1024×642 overview/files and 820×645
+compact GPU captures match headless and are byte-identical across static/shared
+jobs. They are visually reviewed and published with artifact digests in the
+native report. The virtual desktop limits wider/Retina acceptance. A native
+compact-details modal capture with Escape/focus restoration is the next authored
+case; A06 batching, A07 timing and physical platform acceptance remain open.

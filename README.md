@@ -63,13 +63,13 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 | --- | --- | --- |
 | Windows | Win32 backend, clipboard, file drops and initial IME integration | Software renderer and initial D3D12 backend |
 | Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Software renderer and Vulkan shapes, RGBA8 images and A8 masks with nested clips and straight alpha |
-| macOS | AppKit callback/lifecycle CI checks pass; physical input acceptance pending | Metal shapes/clips/alpha tests pass; RGBA8/A8 uploads and the native NexaCloud runner await native validation |
+| macOS | AppKit callback/lifecycle CI checks pass; physical input acceptance pending | Metal shapes, clips, alpha, RGBA8/A8 uploads and native NexaCloud GPU/reference checks pass in static/shared CI |
 
 On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one.
 
 ### Known limitations
 
-- The initial [AppKit adapter](docs/concepts/macos.md) and [Metal shapes/clips/alpha](docs/concepts/metal.md) pass static/shared macOS CI checks. The newer Metal image uploads and full NexaCloud scene still need native validation; physical acceptance remains open. Direct GPU texture import is pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
+- The initial [AppKit adapter](docs/concepts/macos.md), [Metal command path](docs/concepts/metal.md) and native NexaCloud scene pass static/shared macOS CI checks. Physical hardware, display and assistive acceptance remain open. Direct GPU texture import is pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
