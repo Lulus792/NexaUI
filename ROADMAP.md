@@ -424,3 +424,12 @@ jobs. They are visually reviewed and published with artifact digests in the
 native report. The virtual desktop limits wider/Retina acceptance. A native
 compact-details modal capture with Escape/focus restoration is the next authored
 case; A06 batching, A07 timing and physical platform acceptance remain open.
+
+At `2f70d68`, all six static/shared OS core jobs and Linux sanitizers pass.
+The macOS compact-details GPU capture, Escape dismissal and focus restoration
+also pass, with four byte-identical static/shared captures. Ubuntu's active
+validation counterexample and 20 untraced X11 lifecycle repetitions pass after
+selecting the present-fence-aware tool; five Wayland display cases explicitly
+skip in its Xvfb-only environment. This resolves the reproduced old-layer CI
+failure without a production lifetime shortcut. Hardware, text/reflow,
+assistive bridges, profiling and the remaining roadmap are still open.

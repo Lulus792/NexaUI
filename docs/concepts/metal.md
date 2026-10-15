@@ -99,8 +99,8 @@ writes `*-macos-*.ppm` captures. Normalized pointer/key events test scene state;
 physical AppKit input and display acceptance remain separate. CI saves captures
 and CTest logs for static/shared macOS jobs. The first three captured views now
 pass; see the [native scene report](../nexacloud-validation.md#native-macos-scene--2026-10-15).
-An additional compact-details dialog capture and Escape/focus-restoration check
-is authored and awaits the next native run.
+The additional compact-details dialog capture and Escape/focus-restoration check
+also pass in static/shared CI at `2f70d68`; its GPU image is published in that report.
 
 `tools/embed_metal_shader.py --check` verifies source/header correspondence;
 it does not compile MSL. CI runs this check on all three platforms. Pipeline

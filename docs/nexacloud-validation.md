@@ -225,3 +225,25 @@ They include the full native test logs and belong to run `38773070623`.
 This is Apple Paravirtual GPU evidence. Actual hardware performance, physical
 input/IME, 200% text, Retina/4K/monitor transitions and VoiceOver acceptance
 remain separate open requirements.
+
+### Compact details and complete CI matrix
+
+At `2f70d68`, both macOS jobs again pass 79/79 tests, now including opening the
+compact details dialog, exact GPU/reference comparison, Escape dismissal and
+focus restoration to the details action. The [dialog capture](images/nexacloud-macos-compact-details.png)
+was reviewed for readable title/file labels, preview, scrollable content and
+the fixed close action. Its canvas is 820×645, with 537 commands, 44 distinct
+bitmaps and the reusable 1024×1024 atlas. All four static/shared PPM files are
+byte-identical. The scrollable dialog capture does not prove access to every
+offscreen field; a full physical keyboard/IME/assistive walkthrough remains open.
+
+Artifact SHA-256 for run `38775104288`: static
+`ea4fe4c419ed14b38a6629890ac92aea837627729482f9cd1d3c5e454f4465f5`, shared
+`ecf278b96ad1fd175ff25df92e1807b8220254960c7262fd8b287043d7b04bc8`.
+
+The [complete run](https://github.com/Lulus792/NexaUI/actions/runs/38775104288)
+passes all six Windows/macOS/Ubuntu static/shared core jobs and the Linux
+sanitizer job. Optional manual Windows-ASan/fuzz jobs were not selected. Ubuntu
+uses the corrected, checksum-pinned validation layer and passes the active
+counterexample plus 20 untraced X11 lifecycle repetitions; five Wayland-display
+cases skip on its Xvfb-only desktop. See the [Vulkan investigation and resolution](concepts/vulkan.md#validation-tool-compatibility).

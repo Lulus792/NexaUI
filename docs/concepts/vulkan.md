@@ -9,65 +9,54 @@ rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
 glyph masks through a staged texture atlas. Batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
-## Current investigation
+## Validation-tool compatibility
 
-At `083cf94`, one Ubuntu static CI job reported
-`VUID-vkDestroySemaphore-semaphore-05149` in `nexaui_vulkan_x11_present`
-([job log](https://github.com/Lulus792/NexaUI/actions/runs/38767168136/job/116533287285)).
-Its shared job and sanitizer job passed. On the local Alpine/Mesa 26.1.6 system,
-20 consecutive X11 presentation lifecycle runs with validation and synchronization
-validation passed. This does not explain or clear the CI failure. The test-only
-`NEXAUI_VULKAN_TRACE_RETIRE` diagnostic now records retirement policy, semaphore
-handles and present-fence status when dropping a swapchain; Linux CI enables it
-so a recurrence can be assigned to the exact teardown path. The validation-error
-failure rule remains enabled. No production lifetime behavior has been changed
-on the basis of an unverified cause. CI also repeats the static X11 lifecycle
-20 times without this diagnostic: the trace's extra fence-status queries can
-change validation-layer bookkeeping/timing, so a traced pass alone is weaker
-evidence than an untraced run. Test output labels strict, compatibility, legacy
-and readback teardown phases without introducing additional Vulkan queries.
+The reported CI semaphore-lifetime failure is resolved for the reproduced
+configuration at `2f70d68`. Ubuntu's
+[static](https://github.com/Lulus792/NexaUI/actions/runs/38775104288/job/116560596895)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/38775104288/job/116560596979)
+jobs and Linux sanitizers pass. All executed tests in the 93-case core jobs
+pass; five Wayland-display cases skip explicitly on their Xvfb-only desktop.
+The static job also passes 20 untraced X11 lifecycle repetitions (5.05 seconds).
+Production retirement and validation-error failure rules are unchanged.
 
-The trace at `19e5986` reproduced the error in strict and maintenance-enabled
-compatibility teardown on Ubuntu's validation package `1.3.275.0-1`, with all
-relevant present fences reporting `VK_SUCCESS` before semaphore destruction
-([job](https://github.com/Lulus792/NexaUI/actions/runs/38771065263/job/116546688591)).
-The [v1.3.275 state tracker](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.3.275/layers/state_tracker/state_tracker.cpp)
-does not associate `VkSwapchainPresentFenceInfoEXT` with its queued presentation.
-The [v1.4.313 implementation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.4.313/layers/state_tracker/state_tracker.cpp)
-explicitly attaches those fences to present submissions. This explains how old
-validation bookkeeping can retain an in-use semaphore after the API fence has
-completed. The pinned-layer CI rerun must still confirm that diagnosis.
+The earlier [native trace](https://github.com/Lulus792/NexaUI/actions/runs/38771065263/job/116546688591)
+reported `VUID-vkDestroySemaphore-semaphore-05149` under validation package
+`1.3.275.0-1` despite signaled presentation fences in strict and
+maintenance-enabled compatibility teardown. The
+[v1.3.275 tracker](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.3.275/layers/state_tracker/state_tracker.cpp)
+does not associate `VkSwapchainPresentFenceInfoEXT` with queued presentation;
+the [v1.4.313 tracker](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/v1.4.313/layers/state_tracker/state_tracker.cpp)
+attaches those fences to present submissions. The missing association explains
+old bookkeeping retaining an in-use semaphore after API fence completion.
 
-`tools/prepare_ci_validation.py` selects LunarG's noble x86_64 validation layer
-1.4.313 (SDK package `1.4.313.0~rc2-1lunarg24.04-1`), with the SHA-256 published
-in its [package index](https://packages.lunarg.com/vulkan/1.4.313/dists/noble/main/binary-amd64/Packages).
-It reads only the library and manifest, rewrites the library's absolute path
-inside the temporary CI directory and sets `VK_LAYER_PATH`. It does not install
-system packages or replace the Vulkan loader, headers, Mesa driver or production
-renderer. Ubuntu's 1.3.275 headers continue to exercise SDK compatibility.
+`tools/prepare_ci_validation.py` prepares the present-fence-aware LunarG noble
+x86_64 layer 1.4.313 (package `1.4.313.0~rc2-1lunarg24.04-1`), verifying the SHA-256
+from its [official index](https://packages.lunarg.com/vulkan/1.4.313/dists/noble/main/binary-amd64/Packages).
+It reads only the library and manifest, rewrites the library path inside the CI
+temporary directory and sets `VK_LAYER_PATH`. System loader, Mesa driver and
+1.3.275 headers stay in use, preserving the older-SDK build check. The upstream
+server rejected urllib's default client with HTTP 403/1010; an explicit project
+identifier fixes that download without weakening the checksum requirement.
+The binary package is a CI tool for Ubuntu x86_64 with glibc >=2.38 and
+libstdc++ >=13.1, not a runtime dependency of NexaUI.
 
-The new `nexaui_vulkan_validation` counterexample explicitly enables the layer,
-checks the selected version and requires it to reject reserved fence flags with
-`VK_ERROR_VALIDATION_FAILED_EXT`. Its error callback aborts the invalid call;
-no GPU work is submitted. The existing validation-error failure rules and the
-20 untraced presentation repetitions remain enabled. This probe passes locally
-with validation 1.4.343, including Clang ASan/UBSan/leak detection. The package
-preparer verifies the official archive hash and rejects modified input before
-extraction; local extraction/provenance checks pass. Running its glibc binary
-in Ubuntu CI is pending. These results do not yet clear the observed failure.
+`nexaui_vulkan_validation` explicitly selects the layer, checks its expected
+version and requires reserved fence flags to be rejected with
+`VK_ERROR_VALIDATION_FAILED_EXT`. Its error callback requests abort before
+driver dispatch; no GPU work is submitted. This counterexample passes with the
+selected 1.4.313 layer in CI and with local 1.4.343, including Clang sanitizers.
+Modified packages are rejected before extraction. The 20 untraced repetitions
+avoid depending on the trace's extra fence-status queries or their timing.
 
-The first pinned-layer job stopped before execution because the download server
-returned HTTP 403/1010 to urllib's default client identifier. That response was
-reproduced locally; the explicitly identified `NexaUI-CI/1.0` client receives the
-same package successfully, with its expected SHA-256. The preparer now sends
-that identifier, without changing the hash requirement. Its Ubuntu run remains
-the next validation gate.
-
-The private test-only `NEXAUI_VULKAN_TEST_FORCE_EXT=1` switch now exercises EXT
-negotiation on drivers which also advertise KHR. On local Mesa 26.1.6 with
-validation 1.4.343 and synchronization validation, this path passed 20 consecutive
-X11 lifecycle runs (17.59 seconds). This matches the CI's EXT negotiation path
-while retaining modern tracking. The switch is absent from production builds.
+The private test-only `NEXAUI_VULKAN_TEST_FORCE_EXT=1` switch exercises EXT even
+on drivers also advertising KHR; a missing EXT implementation stays unsupported
+under strict policy. On Mesa 26.1.6 / validation 1.4.343 with synchronization
+validation, 20 forced-EXT X11 lifecycle runs pass (17.59 seconds), and a separate
+trace confirms EXT selection. This switch is absent from production builds.
+`NEXAUI_VULKAN_TRACE_RETIRE=1` records policy, semaphore handles and fence status
+in test builds. Neither diagnostic proves physical GPU, DPI or performance
+acceptance; local Wayland results elsewhere in this report remain separate.
 
 ## Build boundary
 

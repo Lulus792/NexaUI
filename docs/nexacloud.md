@@ -45,7 +45,8 @@ the application releases them after renderer use ends.
    shape/alpha/image/lifecycle tests pass in static/shared native CI. The C17
    Metal runner's overview/file/compact captures match headless and each other
    across both variants; their actual 1024×642 / 820×645 client sizes were
-   visually reviewed. The compact-details case is newly authored. Wide-display,
+   visually reviewed. Compact-details capture and Escape/focus restoration pass.
+   Wide-display,
    Retina and physical/assistive acceptance remain open; public APIs have no
    platform types.
 4. **Pending:** large-text reflow, physical DPI/monitor and 4K checks, full native

@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Verified the complete static/shared Windows/macOS/Ubuntu CI matrix and Linux sanitizers at `2f70d68`. macOS compact-details GPU capture and Escape/focus flow pass. Ubuntu's active-validation counterexample and 20 untraced presentation repeats confirm the pinned-layer correction for the reported false positive; production retirement is unchanged.
 - Verified and published macOS NexaCloud GPU captures: 79/79 static/shared tests pass at `fb80bd0`, with byte-identical overview/file/compact artifacts and exact headless comparisons. Added a compact-details modal/Escape/focus case awaiting its native run. Added test-only EXT negotiation coverage and corrected the CI package download's client identifier after a reproducible HTTP 403.
 - Corrected MSL packed-vector component access in the new image shader after native compiler diagnostics. Pinned the CI-only Vulkan validation layer to a present-fence-aware version with checksum/provenance verification and an active-validation counterexample; system SDK headers and renderer retirement remain unchanged. Follow-up native results are pending.
 - Added initial Metal RGBA8/A8 uploads with bounded per-frame deduplication, owned staging, reusable atlas storage and allocation rollback, plus a C17 AppKit/Metal NexaCloud runner. CPU atlas/preparation tests pass on Windows and Linux sanitizers; new native image/full-scene tests await execution. Preceding shape/alpha/lifecycle checks pass in both macOS CI variants (77/77).
