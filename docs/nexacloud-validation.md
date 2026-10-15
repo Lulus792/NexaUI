@@ -308,9 +308,28 @@ and [Linux X11 files, 820×700](images/nexacloud-linux-files-200.png). These use
 text factor 2 with a 1× backing scale; they do not demonstrate physical 2× DPI.
 
 Native smokes additionally capture compact files, the details modal and the
-focused Settings text-size control at 200%. The macOS version of that new
-workflow is authored and requires a fresh native CI result; the earlier
-`2f70d68` macOS evidence above covers the previous standard-text scene.
+focused Settings text-size control at 200%. At `e258f40`, the
+[complete CI run](https://github.com/Lulus792/NexaUI/actions/runs/38781266606)
+passes all six static/shared OS jobs and Linux sanitizers. Each macOS variant
+passes 80/80 tests, including the text matrix and native large-text workflow.
+The seven macOS PPM captures are byte-identical across both variants and equal
+the software reference. The three 200% captures were visually reviewed and
+published: [files](images/nexacloud-macos-files-200.png),
+[details](images/nexacloud-macos-details-200.png) and
+[focused text preference](images/nexacloud-macos-settings-200.png).
+
+| macOS 200% view | Actual canvas | Commands | Distinct bitmaps | Retained atlas |
+| --- | --- | --- | --- | --- |
+| Files | 820×645 | 376 | 8 | 1024×1024 |
+| Details | 820×645 | 504 | 29 | 1024×1024 |
+| Settings | 820×645 | 338 | 11 | 1024×1024 |
+
+Artifact ZIP SHA-256: static
+`775a5328d94f7f96684bf4355da49962524f5cd2fe6c4343302b286ef5a73b8b`;
+shared `ccd4fb3579a905f940bcaae8bf0bd96e3c894a6ca69d69ad4ee016ac3852c9aa`.
+These are Apple Paravirtual GPU / macOS 26 ARM64 captures with Arial, a 1×
+backing scale and text factor 2. Ubuntu CI still explicitly skips five cases
+that require a Wayland display; local WSLg Wayland execution is separate.
 
 This is application-level reflow evidence for the sampled fonts, strings and
 states. Physical system text settings, Retina/4K/monitor changes, installed IME

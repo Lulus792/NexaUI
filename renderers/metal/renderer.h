@@ -5,6 +5,20 @@
 #include "renderer_backend.h"
 
 typedef struct nx_metal_renderer nx_metal_renderer;
+/* CPU-side submission measurements, published only after commit. Copy byte
+   counts are one-way payloads, not estimates of physical GPU memory traffic. */
+typedef struct nx_metal_frame_profile {
+    uint32_t pixel_width, pixel_height;
+    double draw_scale;
+    uint64_t submission, input_commands, draw_records, draw_calls, render_passes;
+    uint64_t history_copies, history_copy_bytes, bitmap_upload_bytes;
+    uint64_t draw_argument_bytes, present_copy_bytes;
+    /* prepare: submit-local validation/pipeline/atlas preparation; encode:
+       draw/upload/history encoding; acquire: layer flush + nextDrawable;
+       commit: present-copy encoding and asynchronous commit, not GPU time. */
+    double prepare_ms, encode_ms, acquire_ms, commit_ms;
+    int cpu_timing_valid;
+} nx_metal_frame_profile;
 typedef struct nx_metal_renderer_info {
     char device_name[256];
     uint32_t pixel_width, pixel_height;
@@ -12,6 +26,10 @@ typedef struct nx_metal_renderer_info {
     int pending, pending_readback, closing, broken;
     uint32_t atlas_width, atlas_height, unique_bitmaps;
     uint64_t bitmap_capacity_bytes, atlas_allocations, bitmap_upload_allocations;
+    nx_metal_frame_profile last_frame;
+    /* Cumulative CPU polling time across successful/timeout retirements,
+       preserved through recovery. No-pending calls add no wait sample. */
+    uint64_t retirement_wait_ns, retirement_wait_calls, retirement_clock_errors;
 } nx_metal_renderer_info;
 
 /* Private AppKit/Metal backend. Every call requires the main thread. The

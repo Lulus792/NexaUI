@@ -106,6 +106,43 @@ also pass in static/shared CI at `2f70d68`; its GPU image is published in that r
 it does not compile MSL. CI runs this check on all three platforms. Pipeline
 compilation and GPU byte comparisons still require a Metal device.
 
+## CPU cost baseline before A06
+
+The private renderer diagnostics now publish a profile only after a command
+buffer is committed. It identifies that submission, canvas size and command
+scale, and counts input commands, visible draw records, actual draw calls,
+render passes, destination-history copies, one-way copy payload bytes and the
+bytes passed to `setVertexBytes`/`setFragmentBytes`. A discarded or suspended
+submission leaves the previous profile intact. The counts describe authored
+API work; they do not estimate physical memory traffic, driver allocation or
+GPU execution time.
+
+Four monotonic CPU intervals separate submit-local validation/pipeline/atlas
+preparation, encoder construction, layer flush/drawable acquisition, and final
+present-copy encoding plus asynchronous commit. The first API/driver preflight
+and application frame construction are outside these intervals. A validity
+flag distinguishes clock failure from a measured zero. Retirement exposes
+cumulative CPU polling time and sample/error counts, including real timeout
+polls. No-pending calls and injected no-wait timeout faults add no sample.
+These diagnostics do not change serial retirement or resource ownership.
+
+The native NexaCloud smoke now records three fixed workloads: overview at
+100%, files at 100%, and compact files at 200%. Each warms four frames and
+collects 32 subsequent frames, without readback/file I/O in the timed interval.
+Raw `*-macos-profile-*.csv` artifacts retain per-frame stage, retirement and
+whole-call wall times, geometry and payload counts. Log summaries use the
+ordinary even-sample median and nearest-rank p95 (sorted index 30 of 32).
+They also state the Metal device and actual canvas size. A post-workload
+GPU/reference capture verifies output after repeated submission. Atlas/upload
+allocations must stay stable after warmup; there is no portable time threshold.
+
+This instrumentation and its native counter/rollback checks are authored;
+native execution of the new profile still needs a follow-up CI run. The
+portable C17 smoke source compiles on the Linux host with warnings as errors,
+which does not compile or execute the Objective-C renderer. A06 upload-ring
+and batching changes must be compared against this baseline on a matching
+workload/environment. A07 GPU timestamp work remains separate.
+
 ## Validation status
 
 The Windows/Linux host cannot compile or execute Objective-C Metal code. Its C17

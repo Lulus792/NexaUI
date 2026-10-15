@@ -38,6 +38,8 @@ struct nx_metal_renderer {
     id<MTLBuffer> readback;
     uint32_t width, height;
     uint64_t submitted, completed;
+    nx_metal_frame_profile last_frame;
+    uint64_t retirement_wait_ns, retirement_wait_calls, retirement_clock_errors;
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
     unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, atlas_memory, upload_memory, wait_timeouts;
@@ -57,6 +59,20 @@ static uint64_t nx_mtl_now(void) {
     if (clock_gettime(CLOCK_MONOTONIC,&t)) return 0;
     return (uint64_t)t.tv_sec * UINT64_C(1000000000) + (uint64_t)t.tv_nsec;
 }
+static double nx_mtl_elapsed_ms(uint64_t start, uint64_t end, int *valid) {
+    if (!start || !end || end < start) { *valid = 0; return 0; }
+    return (double)(end - start) / 1.e6;
+}
+static nx_result nx_mtl_wait_finished(nx_metal_renderer *r, uint64_t start, nx_result result) {
+    uint64_t end = nx_mtl_now();
+    ++r->retirement_wait_calls;
+    if (!end || end < start) ++r->retirement_clock_errors;
+    else {
+        uint64_t elapsed = end - start;
+        r->retirement_wait_ns = elapsed > UINT64_MAX - r->retirement_wait_ns ? UINT64_MAX : r->retirement_wait_ns + elapsed;
+    }
+    return result;
+}
 /* Poll a retained command buffer instead of an unbounded waitUntilCompleted.
    No asynchronous callback retains or dereferences the C renderer. */
 static nx_result nx_mtl_retire(nx_metal_renderer *r, int keep_readback) {
@@ -68,19 +84,19 @@ static nx_result nx_mtl_retire(nx_metal_renderer *r, int keep_readback) {
     if (r->wait_timeouts) { --r->wait_timeouts; return NX_ERROR_LIMIT; }
 #endif
     uint64_t start = nx_mtl_now();
-    if (!start) return NX_ERROR_PLATFORM;
+    if (!start) { ++r->retirement_clock_errors; return NX_ERROR_PLATFORM; }
     for (;;) {
         MTLCommandBufferStatus status = [r->pending status];
         if (status == MTLCommandBufferStatusCompleted || status == MTLCommandBufferStatusError) {
             [r->pending release]; r->pending = nil;
             if (!keep_readback || status == MTLCommandBufferStatusError) { [r->readback release]; r->readback = nil; }
             ++r->completed;
-            if (status == MTLCommandBufferStatusError) { r->broken = 1; return NX_ERROR_STATE; }
-            return NX_OK;
+            if (status == MTLCommandBufferStatusError) { r->broken = 1; return nx_mtl_wait_finished(r,start,NX_ERROR_STATE); }
+            return nx_mtl_wait_finished(r,start,NX_OK);
         }
         uint64_t now = nx_mtl_now();
-        if (!now) return NX_ERROR_PLATFORM;
-        if (now - start >= NX_MTL_WAIT_NS) return NX_ERROR_LIMIT;
+        if (!now) return nx_mtl_wait_finished(r,start,NX_ERROR_PLATFORM);
+        if (now - start >= NX_MTL_WAIT_NS) return nx_mtl_wait_finished(r,start,NX_ERROR_LIMIT);
         struct timespec pause = {0,1000000}; nanosleep(&pause,NULL);
     }
 }
@@ -205,12 +221,18 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     *presented = 0;
     if (r->closing || r->broken) return NX_ERROR_STATE;
     if (!r->width || !r->height) return NX_OK;
+    nx_metal_frame_profile profile = {0};
+    profile.pixel_width = r->width; profile.pixel_height = r->height; profile.draw_scale = scale;
+    profile.input_commands = count; profile.cpu_timing_valid = 1;
+    uint64_t phase_start = nx_mtl_now();
     nx_mtl_plan plan;
     nx_result result = nx_mtl_plan_begin(&plan,stream,count,scale,r->width,r->height);
     if (result != NX_OK) return result;
     if (count && (result = nx_mtl_pipeline(r)) != NX_OK) return result;
     result = nx_mtl_bitmaps_prepare(r,stream,count);
     if (result != NX_OK) return result;
+    profile.prepare_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
+    phase_start = nx_mtl_now();
 #ifdef NEXAUI_METAL_TEST_HOOKS
     if (r->command_memory) { r->command_memory = 0; return NX_ERROR_MEMORY; }
 #endif
@@ -218,6 +240,7 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     if (!commands) return NX_ERROR_MEMORY;
     commands.label = @"NexaUI shapes/present";
     if (r->bitmaps.count) {
+        profile.bitmap_upload_bytes = (uint64_t)r->bitmaps.width*r->bitmaps.height*4u;
         id<MTLBlitCommandEncoder> upload = [commands blitCommandEncoder];
         if (!upload) return NX_ERROR_MEMORY;
         size_t stride = (size_t)r->bitmaps.width*4u;
@@ -233,6 +256,7 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     pass.colorAttachments[0].clearColor = MTLClearColorMake(nx_mtl_byte(clear.r), nx_mtl_byte(clear.g), nx_mtl_byte(clear.b), nx_mtl_byte(clear.a));
     id<MTLRenderCommandEncoder> encoder = [commands renderCommandEncoderWithDescriptor:pass];
     if (!encoder) return NX_ERROR_MEMORY;
+    profile.render_passes = 1;
     if (count) {
         nx_mtl_draw draw;
         while (nx_mtl_plan_next(&plan,&draw)) {
@@ -253,6 +277,8 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
                 pass.colorAttachments[0].loadAction = MTLLoadActionLoad;
                 encoder = [commands renderCommandEncoderWithDescriptor:pass];
                 if (!encoder) return NX_ERROR_MEMORY;
+                ++profile.render_passes; ++profile.history_copies;
+                profile.history_copy_bytes += (uint64_t)draw.scissor.width*draw.scissor.height*4u;
             }
             [encoder setRenderPipelineState:r->pipeline];
             [encoder setCullMode:MTLCullModeNone];
@@ -265,6 +291,8 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
             [encoder setVertexBytes:draw.vertices length:sizeof(draw.vertices) atIndex:0];
             [encoder setFragmentBytes:&draw.shape length:sizeof(draw.shape) atIndex:0];
             [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:6];
+            ++profile.draw_records; ++profile.draw_calls;
+            profile.draw_argument_bytes += sizeof(draw.vertices) + sizeof(draw.shape);
         }
     }
     [encoder endEncoding];
@@ -274,13 +302,17 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
         sourceSize:MTLSizeMake(r->width,r->height,1) toBuffer:readback destinationOffset:0
         destinationBytesPerRow:read_stride destinationBytesPerImage:read_stride * r->height];
     [copy endEncoding];
+    profile.encode_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
 #ifdef NEXAUI_METAL_TEST_HOOKS
     if (r->drawable_unavailable) { r->drawable_unavailable = 0; return NX_OK; }
 #endif
+    phase_start = nx_mtl_now();
     [CATransaction flush]; /* Commit layer geometry in manually pumped C apps. */
     id<CAMetalDrawable> drawable = [r->layer nextDrawable];
+    profile.acquire_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
     if (!drawable) return NX_OK; /* Layer acquisition has a one-second timeout. */
     if (drawable.texture.width != r->width || drawable.texture.height != r->height) return NX_OK;
+    phase_start = nx_mtl_now();
     copy = [commands blitCommandEncoder];
     if (!copy) return NX_ERROR_MEMORY;
     [copy copyFromTexture:r->canvas sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(0,0,0)
@@ -291,6 +323,9 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     r->pending = [commands retain];
     if (readback) r->readback = [readback retain];
     [commands commit]; ++r->submitted; r->last_bitmaps = r->bitmaps.count; *presented = 1;
+    profile.commit_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
+    profile.present_copy_bytes = (uint64_t)r->width*r->height*4u;
+    profile.submission = r->submitted; r->last_frame = profile;
     /* The autorelease pool promptly releases our drawable reference. Metal /
        Core Animation retain their own presentation resources. */
     return NX_OK;
@@ -366,6 +401,9 @@ nx_result nx_metal_renderer_get_info(nx_metal_renderer *r, nx_metal_renderer_inf
         out->atlas_width = r->atlas_width; out->atlas_height = r->atlas_height; out->unique_bitmaps = r->last_bitmaps;
         out->bitmap_capacity_bytes = r->bitmap_capacity; out->atlas_allocations = r->atlas_allocations;
         out->bitmap_upload_allocations = r->bitmap_allocations;
+        out->last_frame = r->last_frame;
+        out->retirement_wait_ns = r->retirement_wait_ns; out->retirement_wait_calls = r->retirement_wait_calls;
+        out->retirement_clock_errors = r->retirement_clock_errors;
         out->closing = r->closing; out->broken = r->broken; return NX_OK;
     }
 }

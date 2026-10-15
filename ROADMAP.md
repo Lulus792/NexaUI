@@ -440,5 +440,13 @@ scrollable navigation/dialogs, fixed modal close and focus reveal after text or
 window changes. A separate text matrix covers six pages at three text sizes and
 five window sizes, plus cache/resize, theme and keyboard workflows. Windows
 D3D12 and Linux X11/Wayland Vulkan add native 200% captures; the new macOS case
-awaits CI. This does not close physical display or assistive acceptance. See the
+passes at `e258f40` in both macOS variants (80/80 tests each), with three reviewed
+200% GPU captures. This does not close physical display or assistive acceptance. See the
 [reflow validation record](docs/nexacloud-validation.md#text-reflow--2026-10-15).
+
+A06 measurement preparation now adds committed Metal submission counters and
+separate CPU prepare/encode/drawable/commit intervals, plus cumulative retirement
+polling time. The native NexaCloud smoke authors three workloads with four warmup
+and 32 measured frames each, raw CSV artifacts, distribution summaries and a
+post-run GPU/reference capture. Native profiling execution is still pending;
+this instrumentation does not complete A06 batching/upload rings or A07 GPU timing.

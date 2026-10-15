@@ -105,6 +105,7 @@ static int reflow_frame(nx_window *window, cloud_scene *scene, nx_renderer_drive
     return frame(window, scene, renderer, 0);
 }
 #include "native_reflow.h"
+#include "profile_macos.h"
 
 static int queue_click(cloud_scene *scene, float x, float y) {
     nx_event event = {0}; event.type = NX_EVENT_POINTER_DOWN; event.button = NX_BUTTON_LEFT;
@@ -124,12 +125,14 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
         nx_semantics_get(cloud_context(scene), index, &view) != NX_OK) return 0;
     if (snprintf(path, sizeof(path), "%s-macos-overview.ppm", prefix) >= (int)sizeof(path) ||
         !capture(window, scene, renderer, path) ||
+        !profile_workload(window, scene, renderer, prefix, "overview-100") ||
         !queue_click(scene, view.bounds.x + view.bounds.width * .5f, view.bounds.y + view.bounds.height * .5f) ||
         !frame(window, scene, renderer, 0) || !frame(window, scene, renderer, 0)) return 0;
     if (nx_semantics_find(cloud_context(scene), 1000, &index) != NX_OK ||
         nx_semantics_get(cloud_context(scene), index, &view) != NX_OK || !(view.state & NX_SEM_SELECTED)) return 0;
     if (snprintf(path, sizeof(path), "%s-macos-files.ppm", prefix) >= (int)sizeof(path) ||
-        !capture(window, scene, renderer, path) || nx_focus_set(cloud_context(scene), 1001) != NX_OK) return 0;
+        !capture(window, scene, renderer, path) || !profile_workload(window, scene, renderer, prefix, "files-100") ||
+        nx_focus_set(cloud_context(scene), 1001) != NX_OK) return 0;
     nx_event event = {0}; event.type = NX_EVENT_KEY_DOWN; event.key = NX_KEY_SPACE;
     if (nx_context_queue_event(cloud_context(scene), &event) != NX_OK) return 0;
     event.type = NX_EVENT_KEY_UP;
@@ -188,6 +191,8 @@ int main(int argc, char **argv) {
                 snprintf(path, sizeof(path), "%s-macos-compact.ppm", argv[3]) < (int)sizeof(path) &&
                 capture(window, scene, &renderer, path) && compact_details(window,scene,&renderer,argv[3]) &&
                 native_reflow(window, scene, &renderer, argv[3], "macos");
+            if (okay) okay = nx_focus_set(cloud_context(scene),11) == NX_OK && reflow_key(scene,NX_KEY_ENTER) &&
+                reflow_frames(window,scene,&renderer) && profile_workload(window,scene,&renderer,argv[3],"files-200");
         }
     }
 #else

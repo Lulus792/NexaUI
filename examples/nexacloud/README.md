@@ -133,7 +133,7 @@ injected creation failure.
 | --- | --- | --- |
 | Windows | Local MSVC Debug native D3D12 smoke and visual back-buffer review | Physical HiDPI monitor changes, native screenreader and release acceptance |
 | Linux | Local X11/Wayland Vulkan overview/file/compact captures equal the software reference; component and renderer regressions | Hardware GPU/performance, physical input/IME, HiDPI, AT-SPI and release acceptance |
-| macOS | Static/shared AppKit/Metal and full-scene native tests pass at `2f70d68` (79/79 each); four GPU captures and dialog focus flow checked | Wide-display/Retina coverage, full physical keyboard/IME/AX walkthrough and release acceptance |
+| macOS | Static/shared native tests pass at `e258f40` (80/80 each); seven GPU captures including files/details/settings at 200%, dialog focus flow and text matrix checked | Wide-display/Retina coverage, full physical keyboard/IME/AX walkthrough and release acceptance |
 
 The `nexaui_nexacloud_text_reflow` test checks all six pages at 100/150/200% and
 five logical window sizes, plus preference activation, Tab focus, modal return,
