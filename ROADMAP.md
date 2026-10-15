@@ -493,3 +493,12 @@ GPU work preserves all three slots and caller output across a one-second timeout
 after CPU signaling, all captured frames match headless. The final native logs
 record 100 submitted/100 retired frames; all 24 workload images remain byte-equal.
 A06 physical performance/hardware acceptance and A07 remain open.
+
+A07 now authors completed-command-buffer GPU timestamps and a separate CPU-driver
+scheduling pair. A fixed 64-entry journal keys pending/ready/unavailable/failed
+results by submission ID, slot and canvas size. Cached lookup does not wait;
+bounded idle collection gathers the three-slot tail, and successful recovery
+clears stale records. Portable finite-value/history tests pass on Windows and
+under Linux sanitizers. Native cases and workload CSVs require actual valid GPU
+times in macOS CI, with per-submission joining after each measured block.
+Native execution and physical GPU timing acceptance are pending.

@@ -5,6 +5,7 @@ typedef struct cloud_profile_sample {
     nx_metal_frame_profile frame;
     double wall_ms;
     uint64_t retirement_ns;
+    nx_metal_gpu_timing gpu;
 } cloud_profile_sample;
 
 static int profile_double_compare(const void *a, const void *b) {
@@ -12,10 +13,11 @@ static int profile_double_compare(const void *a, const void *b) {
     return (x > y) - (x < y);
 }
 
-static void profile_distribution(const char *name, double *values) {
-    qsort(values, CLOUD_PROFILE_SAMPLES, sizeof(*values), profile_double_compare);
+static void profile_distribution(const char *name, double *values, unsigned count) {
+    if (!count) { printf(" %s unavailable;",name); return; }
+    qsort(values, count, sizeof(*values), profile_double_compare);
     printf(" %s median=%.3f p95=%.3f min=%.3f max=%.3f ms;", name,
-        (values[15] + values[16]) * .5, values[30], values[0], values[31]);
+        (values[(count-1)/2] + values[count/2]) * .5, values[(95u*count+99u)/100u-1u], values[0], values[count-1]);
 }
 
 static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
@@ -57,18 +59,42 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
             phase_total += phases[j];
         }
         samples[i] = (cloud_profile_sample){p, (end - start) * 1000,
-            current.retirement_wait_ns - previous.retirement_wait_ns};
+            current.retirement_wait_ns - previous.retirement_wait_ns,{0}};
         if (phase_total > samples[i].wall_ms + .01) return 0;
         previous = current;
+    }
+    /* No extra synchronization inside the measured frame interval. Drain the
+       final tail afterward, then join GPU results by immutable submission ID.
+       The fixed history retains all 32 samples, including the three-slot tail. */
+    double drain_start = now();
+    if (drain_start < 0 || nx_metal_renderer_wait_idle(renderer->backend.user) != NX_OK) return 0;
+    double drain_end = now();
+    if (drain_end < drain_start) return 0;
+    const char *require = getenv("NEXAUI_REQUIRE_METAL_TIMING");
+    unsigned valid_gpu = 0, valid_kernel = 0;
+    for (unsigned i = 0; i < CLOUD_PROFILE_SAMPLES; ++i) {
+        nx_metal_gpu_timing *gpu = &samples[i].gpu;
+        nx_metal_frame_profile p = samples[i].frame;
+        if (nx_metal_renderer_get_timing(renderer->backend.user,p.submission,gpu) != NX_OK ||
+            gpu->submission != p.submission || gpu->frame_slot != p.frame_slot ||
+            gpu->pixel_width != p.pixel_width || gpu->pixel_height != p.pixel_height ||
+            (gpu->state != NX_MTL_TIMING_READY && gpu->state != NX_MTL_TIMING_UNAVAILABLE)) return 0;
+        if (gpu->state == NX_MTL_TIMING_READY) ++valid_gpu;
+        if (gpu->kernel_timing_valid) ++valid_kernel;
+    }
+    if (require && !strcmp(require,"1") && valid_gpu != CLOUD_PROFILE_SAMPLES) {
+        fprintf(stderr,"Metal GPU timestamps required: only %u/%u valid in %s\n",valid_gpu,CLOUD_PROFILE_SAMPLES,workload);
+        return 0;
     }
     char path[1024];
     if (snprintf(path, sizeof(path), "%s-macos-profile-%s.csv", prefix, workload) >= (int)sizeof(path)) return 0;
     FILE *file = fopen(path, "wb");
     if (!file) return 0;
-    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,bound_passes,fixed_state_bindings,per_draw_bindings,batched,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,record_upload_bytes,record_buffer_bindings,present_copy_bytes,frame_slot,frame_limit,pending_frames,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms\n") > 0;
+    int okay = fprintf(file, "workload,pixel_width,pixel_height,draw_scale,text_scale,submission,input_commands,draw_records,draw_calls,render_passes,bound_passes,fixed_state_bindings,per_draw_bindings,batched,history_copies,history_copy_bytes,bitmap_upload_bytes,draw_argument_bytes,record_upload_bytes,record_buffer_bindings,present_copy_bytes,frame_slot,frame_limit,pending_frames,prepare_ms,encode_ms,acquire_ms,commit_ms,retirement_ms,wall_ms,gpu_submission,gpu_frame_slot,gpu_state,gpu_start_seconds,gpu_end_seconds,gpu_ms,kernel_timing_valid,kernel_start_seconds,kernel_end_seconds,kernel_ms\n") > 0;
     for (unsigned i = 0; okay && i < CLOUD_PROFILE_SAMPLES; ++i) {
         nx_metal_frame_profile p = samples[i].frame;
-        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%u,%u,%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+        nx_metal_gpu_timing gpu = samples[i].gpu;
+        okay = fprintf(file, "%s,%u,%u,%.6f,%.6f,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%u,%u,%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%llu,%u,%d,%.9f,%.9f,%.6f,%d,%.9f,%.9f,%.6f\n",
             workload, p.pixel_width, p.pixel_height, p.draw_scale, cloud_text_scale(scene),
             (unsigned long long)p.submission, (unsigned long long)p.input_commands, (unsigned long long)p.draw_records, (unsigned long long)p.draw_calls,
             (unsigned long long)p.render_passes, (unsigned long long)p.bound_passes,
@@ -77,10 +103,13 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
             (unsigned long long)p.draw_argument_bytes, (unsigned long long)p.record_upload_bytes,
             (unsigned long long)p.record_buffer_bindings, (unsigned long long)p.present_copy_bytes,
             p.frame_slot, p.frame_limit, p.pending_frames,
-            p.prepare_ms, p.encode_ms, p.acquire_ms, p.commit_ms, (double)samples[i].retirement_ns / 1.e6, samples[i].wall_ms) > 0;
+            p.prepare_ms, p.encode_ms, p.acquire_ms, p.commit_ms, (double)samples[i].retirement_ns / 1.e6, samples[i].wall_ms,
+            (unsigned long long)gpu.submission, gpu.frame_slot, (int)gpu.state,
+            gpu.gpu_start_seconds,gpu.gpu_end_seconds,gpu.gpu_ms,gpu.kernel_timing_valid,
+            gpu.kernel_start_seconds,gpu.kernel_end_seconds,gpu.kernel_ms) > 0;
     }
     if (fclose(file)) okay = 0;
-    printf("Metal CPU baseline %s: %s, %ux%u, %u samples, 4 warmup, last frame %llu draws / %llu history copies / %llu atlas bytes.\n",
+    printf("Metal CPU/GPU baseline %s: %s, %ux%u, %u samples, 4 warmup, last frame %llu draws / %llu history copies / %llu atlas bytes.\n",
         workload, previous.device_name, previous.pixel_width, previous.pixel_height, CLOUD_PROFILE_SAMPLES,
         (unsigned long long)previous.last_frame.draw_calls, (unsigned long long)previous.last_frame.history_copies,
         (unsigned long long)previous.last_frame.bitmap_upload_bytes);
@@ -92,8 +121,18 @@ static int profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_d
                 phase == 3 ? p.acquire_ms : phase == 4 ? p.commit_ms : (double)samples[i].retirement_ns / 1.e6;
         }
         static const char *names[] = {"wall", "prepare", "encode", "acquire", "commit", "retirement"};
-        profile_distribution(names[phase], values);
+        profile_distribution(names[phase], values,CLOUD_PROFILE_SAMPLES);
     }
+    unsigned count = 0;
+    for (unsigned i = 0; i < CLOUD_PROFILE_SAMPLES; ++i)
+        if (samples[i].gpu.state == NX_MTL_TIMING_READY) values[count++] = samples[i].gpu.gpu_ms;
+    profile_distribution("GPU command buffer",values,count);
+    count = 0;
+    for (unsigned i = 0; i < CLOUD_PROFILE_SAMPLES; ++i)
+        if (samples[i].gpu.kernel_timing_valid) values[count++] = samples[i].gpu.kernel_ms;
+    profile_distribution("CPU driver scheduling",values,count);
+    printf(" GPU valid=%u/%u, kernel valid=%u/%u; tail drain=%.3f ms (outside measurement);",
+        valid_gpu,CLOUD_PROFILE_SAMPLES,valid_kernel,CLOUD_PROFILE_SAMPLES,(drain_end-drain_start)*1000.);
     putchar('\n');
     if (!okay || snprintf(path, sizeof(path), "%s-macos-profile-%s.ppm", prefix, workload) >= (int)sizeof(path)) return 0;
     return capture(window, scene, renderer, path);

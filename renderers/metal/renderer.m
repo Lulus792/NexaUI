@@ -7,6 +7,7 @@
 #include "draw_plan.h"
 #include "bitmap_plan.h"
 #include "batch_plan.h"
+#include "timing_history.h"
 #include "shader_source.h"
 
 #include <math.h>
@@ -47,6 +48,7 @@ struct nx_metal_renderer {
     uint32_t width, height;
     uint64_t submitted, completed;
     nx_metal_frame_profile last_frame;
+    nx_mtl_timing_history timings;
     uint64_t retirement_wait_ns, retirement_wait_calls, retirement_clock_errors;
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
@@ -103,6 +105,16 @@ static nx_result nx_mtl_retire_slot(nx_metal_renderer *r, uint32_t index, int ke
     for (;;) {
         MTLCommandBufferStatus status = [slot->pending status];
         if (status == MTLCommandBufferStatusCompleted || status == MTLCommandBufferStatusError) {
+            /* Completed means GPU work is terminal. Read optional timing only
+               here, before releasing the command buffer; never while pending.
+               Missing/invalid pairs remain explicitly unavailable. */
+            int failed = status == MTLCommandBufferStatusError;
+            double gs = 0, ge = 0, ks = 0, ke = 0;
+            if (!failed) {
+                gs = slot->pending.GPUStartTime; ge = slot->pending.GPUEndTime;
+                ks = slot->pending.kernelStartTime; ke = slot->pending.kernelEndTime;
+            }
+            (void)nx_mtl_timing_finish(&r->timings,slot->submission,failed,gs,ge,ks,ke);
             [slot->pending release]; slot->pending = nil;
             if (!keep_readback || status == MTLCommandBufferStatusError) { [slot->readback release]; slot->readback = nil; }
             ++r->completed; --r->pending_frames;
@@ -470,6 +482,7 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     profile.frame_slot = r->next_slot; profile.frame_limit = r->frame_limit; profile.pending_frames = r->pending_frames;
     r->last_slot = r->next_slot; r->next_slot = (r->next_slot + 1) % r->frame_limit;
     profile.submission = r->submitted; r->last_frame = profile;
+    nx_mtl_timing_begin(&r->timings,&profile);
     /* The autorelease pool promptly releases our drawable reference. Metal /
        Core Animation retain their own presentation resources. */
     return NX_OK;
@@ -555,10 +568,23 @@ nx_result nx_metal_renderer_get_info(nx_metal_renderer *r, nx_metal_renderer_inf
                 slot->atlas_width,slot->atlas_height,slot->pending != nil,slot->readback != nil};
         }
         out->last_frame = r->last_frame;
+        out->last_completed_timing = r->timings.last_completed;
         out->retirement_wait_ns = r->retirement_wait_ns; out->retirement_wait_calls = r->retirement_wait_calls;
         out->retirement_clock_errors = r->retirement_clock_errors;
         out->closing = r->closing; out->broken = r->broken; return NX_OK;
     }
+}
+nx_result nx_metal_renderer_get_timing(nx_metal_renderer *r, uint64_t submission, nx_metal_gpu_timing *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_metal_gpu_timing){0};
+    if (!r || !submission) return NX_ERROR_ARGUMENT;
+    if (!nx_mtl_owner(r)) return NX_ERROR_STATE;
+    return nx_mtl_timing_find(&r->timings,submission,out);
+}
+nx_result nx_metal_renderer_wait_idle(nx_metal_renderer *r) {
+    if (!r) return NX_ERROR_ARGUMENT;
+    if (!nx_mtl_owner(r)) return NX_ERROR_STATE;
+    @autoreleasepool { return nx_mtl_retire(r,0); }
 }
 nx_result nx_metal_renderer_recover(nx_metal_renderer *r) {
     if (!r) return NX_ERROR_ARGUMENT;
@@ -566,6 +592,7 @@ nx_result nx_metal_renderer_recover(nx_metal_renderer *r) {
     @autoreleasepool {
         nx_result result = nx_mtl_retire(r,0);
         if (r->pending_frames) return result;
+        r->timings = (nx_mtl_timing_history){0};
         [r->canvas release]; r->canvas = nil; r->width = r->height = 0;
         [r->history release]; r->history = nil;
         nx_mtl_slots_release(r); r->last_bitmaps = 0; r->bitmaps.count = 0;

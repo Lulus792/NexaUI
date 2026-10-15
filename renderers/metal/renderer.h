@@ -6,6 +6,7 @@
 
 typedef struct nx_metal_renderer nx_metal_renderer;
 #define NX_METAL_FRAME_SLOTS 3u
+#define NX_METAL_TIMING_HISTORY 64u
 /* CPU-side submission measurements, published only after commit. Copy byte
    counts are one-way payloads, not estimates of physical GPU memory traffic. */
 typedef struct nx_metal_frame_profile {
@@ -26,6 +27,24 @@ typedef struct nx_metal_frame_profile {
     uint32_t frame_slot, frame_limit, pending_frames;
 } nx_metal_frame_profile;
 
+typedef enum nx_metal_timing_state {
+    NX_MTL_TIMING_PENDING = 1, /* Committed, not yet collected at retirement. */
+    NX_MTL_TIMING_READY,
+    NX_MTL_TIMING_UNAVAILABLE, /* Successful work, absent/invalid GPU timestamps. */
+    NX_MTL_TIMING_FAILED
+} nx_metal_timing_state;
+typedef struct nx_metal_gpu_timing {
+    uint64_t submission;
+    uint32_t frame_slot, pixel_width, pixel_height;
+    nx_metal_timing_state state;
+    /* Command-buffer GPU elapsed time, not CPU time or display latency.
+       Absolute seconds use Metal's clock; never subtract the CPU profile clock.
+       Invalid pairs remain zero, distinguished by state/kernel_timing_valid. */
+    double gpu_start_seconds, gpu_end_seconds, gpu_ms;
+    double kernel_start_seconds, kernel_end_seconds, kernel_ms;
+    int kernel_timing_valid; /* CPU driver scheduling, separate from GPU work. */
+} nx_metal_gpu_timing;
+
 typedef struct nx_metal_slot_info {
     uint64_t submission, record_capacity_bytes, bitmap_capacity_bytes;
     uint32_t atlas_width, atlas_height;
@@ -45,6 +64,7 @@ typedef struct nx_metal_renderer_info {
     uint32_t frame_limit, pending_frames, peak_pending_frames, next_frame_slot;
     nx_metal_slot_info slots[NX_METAL_FRAME_SLOTS];
     nx_metal_frame_profile last_frame;
+    nx_metal_gpu_timing last_completed_timing;
     /* Cumulative CPU polling time across successful/timeout retirements,
        preserved through recovery. No-pending calls add no wait sample. */
     uint64_t retirement_wait_ns, retirement_wait_calls, retirement_clock_errors;
@@ -60,6 +80,14 @@ nx_result nx_metal_render(nx_metal_renderer *renderer, const nx_command *command
     size_t count, double scale, nx_color clear, int *out_presented);
 nx_result nx_metal_renderer_get_info(nx_metal_renderer *renderer,
     nx_metal_renderer_info *out_info);
+/* Cached nonblocking lookup for the latest 64 committed submissions. PENDING
+   means not collected; it does not inspect GPU status or wait. Missing/expired
+   IDs return STATE with zero output. Recovery clears the timing history. */
+nx_result nx_metal_renderer_get_timing(nx_metal_renderer *renderer,
+    uint64_t submission, nx_metal_gpu_timing *out_timing);
+/* Collect tail submissions within the same bounded retirement budget used by
+   close. Failure retains resources. This does not wait for visible display. */
+nx_result nx_metal_renderer_wait_idle(nx_metal_renderer *renderer);
 nx_result nx_metal_renderer_recover(nx_metal_renderer *renderer);
 /* Bounded wait failure retains the renderer and window lease. Retry close;
    do not destroy the window or free the renderer's allocator state meanwhile. */

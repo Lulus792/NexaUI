@@ -201,6 +201,50 @@ cannot isolate a preparation speedup by subtracting their timings. At that
 revision, concurrent upload rings, GPU timestamps and physical Release acceptance
 remained open; the subsequent ring work above addresses upload ownership.
 
+## A07 command-buffer GPU timing
+
+The private C diagnostics now retain a fixed journal of the latest 64 committed
+submission IDs. Each entry includes its canvas dimensions and frame slot, and
+is `PENDING` until retirement inspects a terminal command buffer. Only successful
+`MTLCommandBufferStatusCompleted` work contributes `GPUStartTime`/`GPUEndTime`.
+Positive finite ordered timestamps produce a `READY` duration; absent or invalid
+pairs produce `UNAVAILABLE`. Command-buffer errors produce `FAILED`, without
+reusing an earlier frame's duration. Equal positive timestamps are valid zero
+elapsed time; zero timestamps mean unavailable. The kernel start/end pair is
+validated independently and describes CPU driver scheduling, not GPU execution.
+
+`nx_metal_renderer_get_timing` is a cached, nonblocking lookup. It does not poll,
+retire slots or change pacing. Expired/missing IDs return `STATE` with zero
+output. `last_completed_timing` identifies the highest collected submission,
+which can lag `last_frame`. The bounded `nx_metal_renderer_wait_idle` collects
+the ring tail when an application needs it, without waiting for visible display.
+Recovery clears the journal only after pending work is retired; IDs continue
+monotonically. No asynchronous callback accesses the C renderer.
+
+The GPU duration covers the entire submitted command buffer: bitmap upload,
+clear/composition/history copies and the final drawable blit. Test captures can
+also include their readback copy. It is not a per-pass breakdown, GPU busy-only
+counter, CPU duration or input-to-display latency. Absolute Metal seconds must
+not be subtracted from the `CLOCK_MONOTONIC` CPU profile. GPU timestamps are
+optional diagnostics; unavailable timing does not disable rendering.
+
+The native workload still measures serial/ring/ring/serial. After its timed
+32-frame block, it drains the last pending frames within the finite budget and
+joins every GPU result by submission ID and slot. The drain and file I/O stay
+outside timed CPU intervals. Raw CSV adds GPU timestamps/state/duration and
+independent kernel timestamps/validity/duration; summaries report availability
+instead of averaging unavailable zero placeholders. macOS CI now requires a
+Metal device and valid GPU timing for every measured sample through
+`NEXAUI_REQUIRE_METAL=1` and `NEXAUI_REQUIRE_METAL_TIMING=1`.
+
+The new portable `nexaui_metal_timing` test checks pending/error/unavailable
+states, nonfinite/reversed/overflowing pairs, valid zero duration, delayed frame
+identity, bounded history wrap and stale completion rejection. Windows MSVC
+Debug and Linux Clang ASan/UBSan/leak checks pass. Authored native cases check
+gated pending frames with no premature timing, 67 committed frames over journal
+wrap, tail collection, retryable timeouts, recovery reset and thread ownership.
+Actual native timing results are pending.
+
 ## CPU cost baseline before A06
 
 The private renderer diagnostics now publish a profile only after a command
@@ -357,4 +401,8 @@ hardware performance, physical DPI/input and native NexaCloud remain open.
 - [Triple-buffer ownership](https://developer.apple.com/library/archive/documentation/3DDrawing/Conceptual/MTLBestPracticesGuide/TripleBuffering.html)
 - [Command-buffer retained resources](https://developer.apple.com/documentation/metal/mtlcommandbuffer/retainedreferences)
 - [Shared-event CPU signaling](https://developer.apple.com/documentation/metal/mtlsharedevent/signaledvalue)
+- [GPU start time](https://developer.apple.com/documentation/metal/mtlcommandbuffer/gpustarttime)
+- [GPU end time](https://developer.apple.com/documentation/metal/mtlcommandbuffer/gpuendtime)
+- [CPU driver scheduling time](https://developer.apple.com/documentation/metal/mtlcommandbuffer/kernelstarttime)
+- [Successful terminal command-buffer state](https://developer.apple.com/documentation/metal/mtlcommandbufferstatus/completed)
 - [Blit encoder buffer/texture copies](https://developer.apple.com/documentation/metal/mtlblitcommandencoder)

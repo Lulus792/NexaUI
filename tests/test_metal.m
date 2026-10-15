@@ -8,6 +8,28 @@
 #include <string.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
+
+static int check_completed_timing(nx_metal_renderer *r, uint64_t submission) {
+    nx_metal_gpu_timing t;
+    CHECK(nx_metal_renderer_get_timing(r,submission,&t) == NX_OK && t.submission == submission);
+    CHECK(t.frame_slot < NX_METAL_FRAME_SLOTS && t.pixel_width && t.pixel_height);
+    CHECK(t.state == NX_MTL_TIMING_READY || t.state == NX_MTL_TIMING_UNAVAILABLE);
+    const char *require = getenv("NEXAUI_REQUIRE_METAL_TIMING");
+    if (require && !strcmp(require,"1") && t.state != NX_MTL_TIMING_READY) {
+        fprintf(stderr,"Metal GPU timing required but unavailable for frame %llu\n",(unsigned long long)submission);
+        return 1;
+    }
+    if (t.state == NX_MTL_TIMING_READY) {
+        CHECK(isfinite(t.gpu_start_seconds) && t.gpu_start_seconds > 0 && isfinite(t.gpu_end_seconds));
+        CHECK(t.gpu_end_seconds >= t.gpu_start_seconds && isfinite(t.gpu_ms) && t.gpu_ms >= 0);
+        CHECK(fabs(t.gpu_ms-(t.gpu_end_seconds-t.gpu_start_seconds)*1000.) < .000001);
+    } else CHECK(!t.gpu_start_seconds && !t.gpu_end_seconds && !t.gpu_ms);
+    if (t.kernel_timing_valid) {
+        CHECK(isfinite(t.kernel_start_seconds) && t.kernel_start_seconds > 0 && isfinite(t.kernel_end_seconds));
+        CHECK(t.kernel_end_seconds >= t.kernel_start_seconds && isfinite(t.kernel_ms) && t.kernel_ms >= 0);
+    } else CHECK(!t.kernel_start_seconds && !t.kernel_end_seconds && !t.kernel_ms);
+    return 0;
+}
 typedef struct heap { void *p; size_t size, live; int fail; } heap;
 static void *allocate(void *user, size_t size) {
     heap *h = user; if (h->fail) return NULL; if (h->live) abort();
@@ -325,6 +347,11 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
             for (size_t i=0;i<bytes;++i) CHECK(actual[i] == 0xa7);
             CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == 3 &&
                 after.completed_frames == before.completed_frames && after.pending_readback);
+            for (unsigned i=0;i<3;++i) {
+                nx_metal_gpu_timing timing;
+                CHECK(nx_metal_renderer_get_timing(r,tickets[i],&timing) == NX_OK && timing.state == NX_MTL_TIMING_PENDING);
+                CHECK(!timing.gpu_ms && !timing.gpu_start_seconds && !timing.kernel_timing_valid);
+            }
             CHECK(nx_metal_test_hold_gpu(r,0) == NX_OK);
         } else {
             /* The fourth capture retired/reused the oldest slot. Its ticket
@@ -337,6 +364,7 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
             memset(actual,0xa7,bytes);
             CHECK(nx_metal_test_read_capture(r,tickets[i],actual,stride) == NX_OK);
             CHECK(!memcmp(actual,expected[i],bytes));
+            CHECK(check_completed_timing(r,tickets[i]) == 0);
             CHECK(nx_metal_test_read_capture(r,tickets[i],actual,stride) == NX_ERROR_STATE);
         }
         CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && !after.pending && !after.pending_readback);
@@ -372,10 +400,58 @@ static int test_frame_ring(nx_window *w, nx_metal_renderer *r) {
     puts("Metal three-slot ring: gated GPU with freed sources, actual timeout, all-frame readback, wrap, bounded backpressure/recovery and reuse passed.");
     return 0;
 }
-typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
+static int test_gpu_timing(nx_window *w, nx_metal_renderer *r) {
+    CHECK(nx_metal_test_set_frame_limit(r,3) == NX_OK);
+    nx_metal_renderer_info before, after;
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
+    uint64_t first = before.submitted_frames+1;
+    for (unsigned i=0;i<NX_METAL_TIMING_HISTORY+3;++i) {
+        int presented = 0;
+        for (unsigned retry=0;retry<10 && !presented;++retry) {
+            CHECK(nx_window_poll(w,10) == NX_OK);
+            CHECK(nx_metal_render(r,NULL,0,1,(nx_color){(i%5)/4.f,.2f,.3f,1},&presented) == NX_OK);
+        }
+        CHECK(presented);
+    }
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.pending_frames == 3);
+    nx_metal_gpu_timing value;
+    CHECK(nx_metal_renderer_get_timing(r,0,&value) == NX_ERROR_ARGUMENT && !value.submission);
+    CHECK(nx_metal_renderer_get_timing(r,first,&value) == NX_ERROR_STATE && !value.submission);
+    CHECK(nx_metal_renderer_get_timing(r,before.submitted_frames+1,&value) == NX_ERROR_STATE);
+    CHECK(nx_metal_renderer_get_timing(r,before.submitted_frames,&value) == NX_OK && value.state == NX_MTL_TIMING_PENDING);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned i=0;i<2;++i) {
+        CHECK(nx_metal_renderer_wait_idle(r) == NX_ERROR_LIMIT);
+        CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pending_frames == before.pending_frames);
+        CHECK(after.last_completed_timing.submission == before.last_completed_timing.submission);
+        CHECK(nx_metal_renderer_get_timing(r,before.submitted_frames,&value) == NX_OK && value.state == NX_MTL_TIMING_PENDING);
+    }
+    CHECK(nx_metal_renderer_wait_idle(r) == NX_OK);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && !after.pending && after.submitted_frames == after.completed_frames);
+    CHECK(after.last_completed_timing.submission == after.submitted_frames);
+    unsigned ready = 0;
+    for (uint64_t id=after.submitted_frames-NX_METAL_TIMING_HISTORY+1;id<=after.submitted_frames;++id) {
+        CHECK(check_completed_timing(r,id) == 0);
+        CHECK(nx_metal_renderer_get_timing(r,id,&value) == NX_OK);
+        ready += value.state == NX_MTL_TIMING_READY;
+    }
+    CHECK(nx_metal_renderer_wait_idle(r) == NX_OK);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && before.retirement_wait_calls == after.retirement_wait_calls);
+    printf("Metal GPU timing: %u/%u valid retained IDs; latest GPU %.6f ms, CPU driver %.6f ms; tail, wrap and timeout checks passed.\n",
+        ready,NX_METAL_TIMING_HISTORY,after.last_completed_timing.gpu_ms,after.last_completed_timing.kernel_ms);
+    CHECK(nx_metal_renderer_recover(r) == NX_OK);
+    CHECK(nx_metal_renderer_get_timing(r,after.submitted_frames,&value) == NX_ERROR_STATE);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && !before.last_completed_timing.submission);
+    CHECK(nx_metal_test_set_frame_limit(r,1) == NX_OK && compare(w,r,(nx_color){0}) == 0);
+    return 0;
+}
+typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy, timing, idle; } wrong;
 static void *wrong_thread(void *user) {
     wrong *w = user; nx_metal_renderer_info info; int presented;
     w->query = nx_metal_renderer_get_info(w->renderer,&info);
+    nx_metal_gpu_timing timing;
+    w->timing = nx_metal_renderer_get_timing(w->renderer,1,&timing);
+    w->idle = nx_metal_renderer_wait_idle(w->renderer);
     w->render = nx_metal_render(w->renderer,NULL,0,1,(nx_color){0,0,0,1},&presented);
     w->destroy = nx_metal_renderer_destroy(w->renderer); return NULL;
 }
@@ -451,6 +527,7 @@ int main(void) {
         CHECK(test_profile(window,r) == 0);
         CHECK(test_batch_storage(window,r) == 0);
         CHECK(test_frame_ring(window,r) == 0);
+        CHECK(test_gpu_timing(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);
@@ -460,9 +537,10 @@ int main(void) {
         CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
         CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.pixel_width == before.pixel_width && after.pixel_height == before.pixel_height);
         CHECK(compare(window,r,colors[4]) == 0);
-        wrong w = {r,0,0,0}; pthread_t thread;
+        wrong w = {r,0,0,0,0,0}; pthread_t thread;
         CHECK(!pthread_create(&thread,NULL,wrong_thread,&w) && !pthread_join(thread,NULL));
-        CHECK(w.query == NX_ERROR_STATE && w.render == NX_ERROR_STATE && w.destroy == NX_ERROR_STATE);
+        CHECK(w.query == NX_ERROR_STATE && w.render == NX_ERROR_STATE && w.destroy == NX_ERROR_STATE &&
+            w.timing == NX_ERROR_STATE && w.idle == NX_ERROR_STATE);
         CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
         size_t stride = (size_t)after.pixel_width*4u, bytes = stride*after.pixel_height;
         uint8_t *untouched = malloc(bytes); CHECK(untouched); memset(untouched,0x6b,bytes);

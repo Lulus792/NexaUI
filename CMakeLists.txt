@@ -170,7 +170,8 @@ if(APPLE)
     option(NEXAUI_BUILD_METAL "Build the private macOS Metal backend" ON)
     if(NEXAUI_BUILD_METAL)
         add_library(nexaui_renderer_metal STATIC renderers/metal/renderer.m
-            renderers/metal/draw_plan.c renderers/metal/bitmap_plan.c renderers/metal/batch_plan.c)
+            renderers/metal/draw_plan.c renderers/metal/bitmap_plan.c renderers/metal/batch_plan.c
+            renderers/metal/timing_history.c)
         target_include_directories(nexaui_renderer_metal PRIVATE
             ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/platform/macos)
         target_link_libraries(nexaui_renderer_metal PRIVATE NexaUI::NexaUI
@@ -294,6 +295,12 @@ if(NEXAUI_BUILD_TESTS)
     target_compile_features(nexaui_metal_batch_tests PRIVATE c_std_17)
     add_test(NAME nexaui_metal_batches COMMAND nexaui_metal_batch_tests)
     set_tests_properties(nexaui_metal_batches PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_metal_timing_tests tests/test_metal_timing.c renderers/metal/timing_history.c)
+    target_include_directories(nexaui_metal_timing_tests PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/renderers/metal)
+    target_link_libraries(nexaui_metal_timing_tests PRIVATE NexaUI::NexaUI)
+    target_compile_features(nexaui_metal_timing_tests PRIVATE c_std_17)
+    add_test(NAME nexaui_metal_timing COMMAND nexaui_metal_timing_tests)
+    set_tests_properties(nexaui_metal_timing PROPERTIES TIMEOUT 20)
     add_executable(nexaui_platform_event_queue_tests
         tests/test_platform_event_queue.c platform/common/event_queue.c)
     target_include_directories(nexaui_platform_event_queue_tests PRIVATE

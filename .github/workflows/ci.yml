@@ -52,6 +52,9 @@ jobs:
         run: NEXAUI_REQUIRE_VULKAN=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a ctest --test-dir build -C Debug -R '^nexaui_vulkan_x11_present$' --repeat until-fail:20 --no-tests=error --output-on-failure --timeout 90
       - name: Test (Windows and macOS)
         if: runner.os != 'Linux'
+        env:
+          NEXAUI_REQUIRE_METAL: '1'
+          NEXAUI_REQUIRE_METAL_TIMING: '1'
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 20
       - name: Save macOS native GPU captures
         if: always() && runner.os == 'macOS'
