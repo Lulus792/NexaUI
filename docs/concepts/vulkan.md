@@ -56,6 +56,19 @@ preparer verifies the official archive hash and rejects modified input before
 extraction; local extraction/provenance checks pass. Running its glibc binary
 in Ubuntu CI is pending. These results do not yet clear the observed failure.
 
+The first pinned-layer job stopped before execution because the download server
+returned HTTP 403/1010 to urllib's default client identifier. That response was
+reproduced locally; the explicitly identified `NexaUI-CI/1.0` client receives the
+same package successfully, with its expected SHA-256. The preparer now sends
+that identifier, without changing the hash requirement. Its Ubuntu run remains
+the next validation gate.
+
+The private test-only `NEXAUI_VULKAN_TEST_FORCE_EXT=1` switch now exercises EXT
+negotiation on drivers which also advertise KHR. On local Mesa 26.1.6 with
+validation 1.4.343 and synchronization validation, this path passed 20 consecutive
+X11 lifecycle runs (17.59 seconds). This matches the CI's EXT negotiation path
+while retaining modern tracking. The switch is absent from production builds.
+
 ## Build boundary
 
 Linux builds enable `NEXAUI_BUILD_VULKAN` by default and require Vulkan SDK

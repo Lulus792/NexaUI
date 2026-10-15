@@ -413,6 +413,12 @@ static nx_result nx_vk_create(const nx_vk_device_desc *desc,
     nx_result result = NX_OK;
     if (options.present_fences != NX_VK_PRESENT_FENCES_DISABLED) {
         result = nx_vk_instance_support(device, &device->maintenance_instance);
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        /* Exercise the EXT path even when a newer driver also advertises KHR.
+           A missing EXT implementation remains unsupported under strict policy. */
+        if (result == NX_OK && getenv("NEXAUI_VULKAN_TEST_FORCE_EXT"))
+            device->maintenance_instance &= NX_VK_EXT_PRESENT_EXT;
+#endif
         if (result == NX_OK && options.present_fences == NX_VK_PRESENT_FENCES_REQUIRED &&
             !device->maintenance_instance) result = NX_ERROR_UNSUPPORTED;
         if (result != NX_OK) { nx_vk_device_destroy(device); return result; }

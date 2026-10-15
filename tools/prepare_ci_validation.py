@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 VERSION = '1.4.313'
 URL = ('https://packages.lunarg.com/vulkan/1.4.313/pool/main/v/vulkan-validationlayers/'
@@ -37,7 +37,8 @@ def prepare(destination, archive_path=None):
     if archive_path:
         archive = archive_path.read_bytes()
     else:
-        with urlopen(URL, timeout=30) as response:
+        request = Request(URL, headers={'User-Agent': 'NexaUI-CI/1.0 (+https://github.com/Lulus792/NexaUI)'})
+        with urlopen(request, timeout=30) as response:
             archive = response.read(8 * 1024 * 1024 + 1)
     if hashlib.sha256(archive).hexdigest() != SHA256:
         raise ValueError('Validation-layer package SHA-256 mismatch')
