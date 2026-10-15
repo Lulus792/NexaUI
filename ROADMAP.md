@@ -457,3 +457,11 @@ frames show 55.2–73.0% lower median CPU encode intervals on the virtual device
 with identical GPU output. The [comparison](benchmarks/baselines/metal-a364f2d/README.md)
 also records wall-time/tail limitations. This does not complete A06
 batching/upload rings or A07 GPU timing.
+
+Initial A06 batching now has authored C17 record packing/group preparation and
+a shared Metal draw-record buffer, with a 64 MiB capacity cap and transactional
+growth. Each group preserves primitive order and exact per-record clips;
+destination-reading images/alpha retain their history-copy boundaries. Windows
+static/shared and Linux sanitizer CPU checks pass, including 10000 records.
+Native MSL/pixel/staging lifetime tests and matching unbatched/batched A/B/B/A
+measurements await CI. Concurrent upload rings and A07 remain open.

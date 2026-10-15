@@ -53,9 +53,10 @@ rounds and lines. It uses no optional double-precision shader support.
 Authored MSL is embedded as source; Apple's OS compiler creates the pipeline
 once per device, without an external shader translation library or runtime
 source-file lookup. `fastMathEnabled=NO` and `FP_CONTRACT OFF` preserve the
-split-product operations. This initial path copies small per-draw vertex and
-shape arguments with Metal's `set*Bytes` API. Upload rings and batching are A06
-work. Color output is quantized RGBA8; fixed-function blending is disabled.
+split-product operations. The original unbatched path copies per-draw arguments
+with `set*Bytes`; the new A06 path below uses owned draw records and keeps that
+original path only for native comparisons. Concurrent upload rings remain open.
+Color output is quantized RGBA8; fixed-function blending is disabled.
 Alpha values that quantize to zero are skipped, and those that quantize to 255
 are opaque. Bitmap draws sample a private RGBA8 atlas and apply integer tint
 and the same straight-alpha formula.
@@ -106,13 +107,48 @@ also pass in static/shared CI at `2f70d68`; its GPU image is published in that r
 it does not compile MSL. CI runs this check on all three platforms. Pipeline
 compilation and GPU byte comparisons still require a Metal device.
 
+## A06 draw-record buffer and ordered batches
+
+The authored production path packs each visible quad, shape and exact scissor
+into a 116-byte C/MSL record in a reusable shared Metal buffer. Records contain
+no source pointers. Capacity grows transactionally to at most 64 MiB; the prior
+buffer is retained on allocation failure. A replacement temporarily coexists
+with the old buffer. The prior command buffer is still retired before CPU
+writes, growth, recovery or destruction. This is serialized owned staging,
+not a concurrent multi-frame upload ring.
+
+A batch starts with at most one destination-reading record (an image/mask or
+quantized alpha below 255), followed by opaque records. The next destination
+reader starts a new group and gets the same history snapshot as before. Records
+and primitives keep their source order. A batch uses the union scissor, while
+its fragment shader also checks each record's own pixel scissor. Vertex IDs
+select records at `vertexStart / 6`; two triangles per record keep the same
+quad coordinates as the previous path. Opaque followers never read history.
+
+The plain C packer/group iterator is testable without an Apple SDK. Host tests
+check mixed geometry/bitmaps/alpha against independent headless output at
+1/1.25/1.5/2 scale, capacity rollback, output padding and a 10000-record group.
+Windows static/shared and Linux Clang ASan/UBSan/leak checks pass. MSL compilation
+and native execution of this new path remain pending CI. Authored native cases
+add the same 10000-draw pixel comparison, allocation rollback/reuse, source
+release during a pending submission and an unbatched/batched/batched/unbatched
+workload. Each block still warms four frames, records 32 and checks GPU pixels.
+The comparison holds per-pass state reuse enabled in both modes.
+
+The ordering contract follows Apple's [resource synchronization](https://developer.apple.com/documentation/metal/resource-synchronization)
+primitive-order guarantee for render-pass attachments; the shader reads a
+separate history texture, not its render attachment. The [draw command](https://developer.apple.com/documentation/metal/mtlrendercommandencoder/drawprimitives(type:vertexstart:vertexcount:))
+defines vertex IDs starting at `vertexStart`. Its DocC source and the relevant
+MSL packed-layout rules were inspected during implementation. Native pixel
+comparisons are still required for acceptance.
+
 ## CPU cost baseline before A06
 
 The private renderer diagnostics now publish a profile only after a command
 buffer is committed. It identifies that submission, canvas size and command
 scale, and counts input commands, visible draw records, actual draw calls,
-render passes, destination-history copies, one-way copy payload bytes and the
-bytes passed to `setVertexBytes`/`setFragmentBytes`. A discarded or suspended
+render passes, destination-history copies, one-way copy payload bytes, legacy
+`set*Bytes` arguments and new draw-record upload/binding costs. A discarded or suspended
 submission leaves the previous profile intact. The counts describe authored
 API work; they do not estimate physical memory traffic, driver allocation or
 GPU execution time.
@@ -164,7 +200,9 @@ The [raw A/B comparison](../../benchmarks/baselines/metal-a364f2d/README.md)
 records distributions, artifact digests and limits. Overall frame times and
 tails do not improve uniformly; this is a CPU encode result, not an FPS or
 physical Release-latency guarantee. Upload rings and draw batching remain open
-A06 work.
+A06 work. The subsequent batching experiment above compares the previous
+per-pass unbatched path against the new draw-record path; its extra CSV fields
+identify record upload bytes, buffer bindings and the batching mode.
 
 ## Validation status
 

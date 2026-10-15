@@ -6,6 +6,7 @@
 #include "window_internal.h"
 #include "draw_plan.h"
 #include "bitmap_plan.h"
+#include "batch_plan.h"
 #include "shader_source.h"
 
 #include <math.h>
@@ -23,13 +24,16 @@ struct nx_metal_renderer {
     nx_window *window;
     id<MTLDevice> device;
     id<MTLCommandQueue> queue;
-    id<MTLRenderPipelineState> pipeline;
+    id<MTLRenderPipelineState> pipeline, batch_pipeline;
     CAMetalLayer *layer;
     CALayer *previous_layer;
     BOOL previous_wants_layer;
     id<MTLTexture> canvas, history;
     id<MTLTexture> atlas;
     id<MTLBuffer> bitmap_upload;
+    id<MTLBuffer> geometry;
+    size_t geometry_capacity;
+    uint64_t geometry_allocations;
     nx_mtl_bitmap_plan bitmaps;
     size_t bitmap_capacity;
     uint32_t atlas_width, atlas_height, last_bitmaps;
@@ -42,8 +46,8 @@ struct nx_metal_renderer {
     uint64_t retirement_wait_ns, retirement_wait_calls, retirement_clock_errors;
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
-    unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, atlas_memory, upload_memory, wait_timeouts;
-    int per_draw_bindings;
+    unsigned drawable_unavailable, canvas_memory, history_memory, command_memory, pipeline_memory, atlas_memory, upload_memory, geometry_memory, wait_timeouts;
+    int per_draw_bindings, disable_batching;
 #endif
 };
 
@@ -109,8 +113,23 @@ static nx_result nx_mtl_device(nx_metal_renderer *r) {
     [r->queue setLabel:@"NexaUI UI queue"];
     return NX_OK;
 }
+static id<MTLRenderPipelineState> nx_mtl_make_pipeline(nx_metal_renderer *r, id<MTLLibrary> library,
+    NSString *vertex_name, NSString *fragment_name, NSError **error) {
+    id<MTLFunction> vertex = [library newFunctionWithName:vertex_name];
+    id<MTLFunction> fragment = [library newFunctionWithName:fragment_name];
+    MTLRenderPipelineDescriptor *desc = [[MTLRenderPipelineDescriptor alloc] init];
+    id<MTLRenderPipelineState> pipeline = nil;
+    if (desc && vertex && fragment) {
+        desc.label = @"NexaUI shape composition";
+        desc.vertexFunction = vertex; desc.fragmentFunction = fragment;
+        desc.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+        desc.colorAttachments[0].blendingEnabled = NO;
+        pipeline = [r->device newRenderPipelineStateWithDescriptor:desc error:error];
+    }
+    [desc release]; [fragment release]; [vertex release]; return pipeline;
+}
 static nx_result nx_mtl_pipeline(nx_metal_renderer *r) {
-    if (r->pipeline) return NX_OK;
+    if (r->batch_pipeline) return NX_OK;
 #ifdef NEXAUI_METAL_TEST_HOOKS
     if (r->pipeline_memory) { r->pipeline_memory = 0; return NX_ERROR_MEMORY; }
 #endif
@@ -128,20 +147,19 @@ static nx_result nx_mtl_pipeline(nx_metal_renderer *r) {
         fprintf(stderr,"NexaUI Metal shader compilation: %s\n",message ? message : "no library returned");
         return NX_ERROR_PLATFORM;
     }
-    id<MTLFunction> vertex = [library newFunctionWithName:@"nx_mtl_vertex"];
-    id<MTLFunction> fragment = [library newFunctionWithName:@"nx_mtl_fragment"];
-    MTLRenderPipelineDescriptor *desc = [[MTLRenderPipelineDescriptor alloc] init];
-    desc.label = @"NexaUI shape composition";
-    desc.vertexFunction = vertex; desc.fragmentFunction = fragment;
-    desc.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
-    desc.colorAttachments[0].blendingEnabled = NO;
-    if (vertex && fragment) r->pipeline = [r->device newRenderPipelineStateWithDescriptor:desc error:&error];
-    [desc release]; [fragment release]; [vertex release]; [library release];
-    if (!r->pipeline) {
+    id<MTLRenderPipelineState> batch = nx_mtl_make_pipeline(r,library,@"nx_mtl_batch_vertex",@"nx_mtl_batch_fragment",&error);
+    id<MTLRenderPipelineState> legacy = nil;
+#ifdef NEXAUI_METAL_TEST_HOOKS
+    if (batch) legacy = nx_mtl_make_pipeline(r,library,@"nx_mtl_vertex",@"nx_mtl_fragment",&error);
+    if (!legacy) { [batch release]; batch = nil; }
+#endif
+    [library release];
+    if (!batch) {
         const char *message = [[error localizedDescription] UTF8String];
         fprintf(stderr,"NexaUI Metal shape pipeline: %s\n",message ? message : "missing function or pipeline");
         return NX_ERROR_PLATFORM;
     }
+    r->pipeline = legacy; r->batch_pipeline = batch;
     return NX_OK;
 }
 static nx_result nx_mtl_resize(nx_metal_renderer *r, uint32_t width, uint32_t height, double scale) {
@@ -217,12 +235,44 @@ static nx_result nx_mtl_bitmaps_prepare(nx_metal_renderer *r, const nx_command *
        Borrowed source pixels are fully copied before successful return. */
     return nx_mtl_bitmaps_copy(&r->bitmaps,[r->bitmap_upload contents],r->bitmap_capacity,(size_t)width*4u);
 }
-static void nx_mtl_bind_pass(nx_metal_renderer *r, id<MTLRenderCommandEncoder> encoder) {
-    [encoder setRenderPipelineState:r->pipeline];
+static nx_result nx_mtl_geometry_prepare(nx_metal_renderer *r, const nx_mtl_plan *plan, size_t *out_count) {
+    size_t count = 0, bytes = 0;
+    nx_result result = nx_mtl_records_measure(plan,&count);
+    if (result == NX_OK) result = nx_mtl_record_bytes(count,&bytes);
+    if (result != NX_OK) return result;
+    id<MTLBuffer> candidate = nil;
+    size_t capacity = r->geometry_capacity;
+    if (bytes > capacity) {
+#ifdef NEXAUI_METAL_TEST_HOOKS
+        if (r->geometry_memory) { r->geometry_memory = 0; return NX_ERROR_MEMORY; }
+#endif
+        capacity = capacity ? capacity : 4096;
+        while (capacity < bytes) capacity *= 2;
+        candidate = [r->device newBufferWithLength:capacity options:MTLResourceStorageModeShared];
+        if (!candidate) return NX_ERROR_MEMORY;
+        candidate.label = @"NexaUI owned draw records";
+    }
+    id<MTLBuffer> buffer = candidate ? candidate : r->geometry;
+    size_t written;
+    result = nx_mtl_records_write(plan,&r->bitmaps,[buffer contents],capacity / sizeof(nx_mtl_record),&written);
+    nx_mtl_batches check;
+    if (result == NX_OK) result = nx_mtl_batches_begin(&check,[buffer contents],written,r->width,r->height);
+    if (result != NX_OK) { [candidate release]; return result; }
+    if (candidate) {
+        [r->geometry release]; r->geometry = candidate; r->geometry_capacity = capacity; ++r->geometry_allocations;
+    }
+    *out_count = written; return NX_OK;
+}
+static void nx_mtl_bind_pass(nx_metal_renderer *r, id<MTLRenderCommandEncoder> encoder, int batched) {
+    [encoder setRenderPipelineState:batched ? r->batch_pipeline : r->pipeline];
     [encoder setCullMode:MTLCullModeNone];
     [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
     [encoder setFragmentTexture:r->history atIndex:0];
     [encoder setFragmentTexture:(r->atlas ? r->atlas : r->history) atIndex:1];
+    if (batched) {
+        [encoder setVertexBuffer:r->geometry offset:0 atIndex:0];
+        [encoder setFragmentBuffer:r->geometry offset:0 atIndex:0];
+    }
 }
 static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, size_t count, double scale, nx_color clear,
     id<MTLBuffer> readback, size_t read_stride, int *presented) {
@@ -232,8 +282,10 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     nx_metal_frame_profile profile = {0};
     profile.pixel_width = r->width; profile.pixel_height = r->height; profile.draw_scale = scale;
     profile.input_commands = count; profile.cpu_timing_valid = 1;
+    profile.batched = 1;
 #ifdef NEXAUI_METAL_TEST_HOOKS
     profile.per_draw_bindings = r->per_draw_bindings;
+    profile.batched = !r->disable_batching;
 #endif
     uint64_t phase_start = nx_mtl_now();
     nx_mtl_plan plan;
@@ -242,6 +294,17 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     if (count && (result = nx_mtl_pipeline(r)) != NX_OK) return result;
     result = nx_mtl_bitmaps_prepare(r,stream,count);
     if (result != NX_OK) return result;
+    size_t record_count = 0;
+    if (profile.batched) {
+        result = nx_mtl_geometry_prepare(r,&plan,&record_count);
+        if (result != NX_OK) return result;
+        profile.record_upload_bytes = record_count * sizeof(nx_mtl_record);
+    }
+    nx_mtl_batches batches = {0};
+    if (profile.batched) {
+        result = nx_mtl_batches_begin(&batches,[r->geometry contents],record_count,r->width,r->height);
+        if (result != NX_OK) return result;
+    }
     profile.prepare_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
     phase_start = nx_mtl_now();
 #ifdef NEXAUI_METAL_TEST_HOOKS
@@ -270,20 +333,23 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     profile.render_passes = 1;
     int bound = 0;
     if (count) {
-        nx_mtl_draw draw;
-        while (nx_mtl_plan_next(&plan,&draw)) {
-            if (draw.shape.kind == 5) {
+        nx_mtl_draw draw = {0}; nx_mtl_batch batch = {0};
+        while (profile.batched ? nx_mtl_batches_next(&batches,&batch) : nx_mtl_plan_next(&plan,&draw)) {
+            if (!profile.batched && draw.shape.kind == 5) {
                 uint32_t entry = nx_mtl_bitmap_find(&r->bitmaps,draw.bitmap);
                 if (entry == r->bitmaps.count) { [encoder endEncoding]; return NX_ERROR_STATE; }
                 draw.shape.c = (nx_point){(float)r->bitmaps.entries[entry].x,(float)r->bitmaps.entries[entry].y};
             }
-            if (draw.shape.kind == 5 || draw.shape.color[3] < 255u) {
+            nx_mtl_box scissor = profile.batched ? batch.scissor : draw.scissor;
+            int history = profile.batched ? batch.needs_history : draw.shape.kind == 5 || draw.shape.color[3] < 255u;
+            if (history) {
+                nx_mtl_box history_box = profile.batched ? batch.history_box : scissor;
                 [encoder endEncoding];
                 id<MTLBlitCommandEncoder> history_copy = [commands blitCommandEncoder];
                 if (!history_copy) return NX_ERROR_MEMORY;
-                MTLOrigin origin = MTLOriginMake(draw.scissor.x,draw.scissor.y,0);
+                MTLOrigin origin = MTLOriginMake(history_box.x,history_box.y,0);
                 [history_copy copyFromTexture:r->canvas sourceSlice:0 sourceLevel:0 sourceOrigin:origin
-                    sourceSize:MTLSizeMake(draw.scissor.width,draw.scissor.height,1) toTexture:r->history
+                    sourceSize:MTLSizeMake(history_box.width,history_box.height,1) toTexture:r->history
                     destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
                 [history_copy endEncoding];
                 pass.colorAttachments[0].loadAction = MTLLoadActionLoad;
@@ -291,21 +357,28 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
                 if (!encoder) return NX_ERROR_MEMORY;
                 ++profile.render_passes; ++profile.history_copies;
                 bound = 0;
-                profile.history_copy_bytes += (uint64_t)draw.scissor.width*draw.scissor.height*4u;
+                profile.history_copy_bytes += (uint64_t)history_box.width*history_box.height*4u;
             }
             if (!bound) ++profile.bound_passes;
             if (!bound || profile.per_draw_bindings) {
-                nx_mtl_bind_pass(r,encoder); profile.fixed_state_bindings += 5;
+                nx_mtl_bind_pass(r,encoder,profile.batched); profile.fixed_state_bindings += 5;
+                if (profile.batched) profile.record_buffer_bindings += 2;
             }
             bound = 1;
-            [encoder setScissorRect:(MTLScissorRect){draw.scissor.x,draw.scissor.y,draw.scissor.width,draw.scissor.height}];
+            [encoder setScissorRect:(MTLScissorRect){scissor.x,scissor.y,scissor.width,scissor.height}];
             /* set*Bytes copies these bounded arguments into Metal storage.
                No pointer into the caller's command stream survives encoding. */
-            [encoder setVertexBytes:draw.vertices length:sizeof(draw.vertices) atIndex:0];
-            [encoder setFragmentBytes:&draw.shape length:sizeof(draw.shape) atIndex:0];
-            [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:6];
-            ++profile.draw_records; ++profile.draw_calls;
-            profile.draw_argument_bytes += sizeof(draw.vertices) + sizeof(draw.shape);
+            if (profile.batched) {
+                [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:(NSUInteger)batch.first*6u vertexCount:(NSUInteger)batch.count*6u];
+                profile.draw_records += batch.count;
+            } else {
+                [encoder setVertexBytes:draw.vertices length:sizeof(draw.vertices) atIndex:0];
+                [encoder setFragmentBytes:&draw.shape length:sizeof(draw.shape) atIndex:0];
+                [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:6];
+                ++profile.draw_records;
+                profile.draw_argument_bytes += sizeof(draw.vertices) + sizeof(draw.shape);
+            }
+            ++profile.draw_calls;
         }
     }
     [encoder endEncoding];
@@ -414,6 +487,7 @@ nx_result nx_metal_renderer_get_info(nx_metal_renderer *r, nx_metal_renderer_inf
         out->atlas_width = r->atlas_width; out->atlas_height = r->atlas_height; out->unique_bitmaps = r->last_bitmaps;
         out->bitmap_capacity_bytes = r->bitmap_capacity; out->atlas_allocations = r->atlas_allocations;
         out->bitmap_upload_allocations = r->bitmap_allocations;
+        out->record_capacity_bytes = r->geometry_capacity; out->record_upload_allocations = r->geometry_allocations;
         out->last_frame = r->last_frame;
         out->retirement_wait_ns = r->retirement_wait_ns; out->retirement_wait_calls = r->retirement_wait_calls;
         out->retirement_clock_errors = r->retirement_clock_errors;
@@ -430,7 +504,8 @@ nx_result nx_metal_renderer_recover(nx_metal_renderer *r) {
         [r->history release]; r->history = nil;
         [r->atlas release]; r->atlas = nil; [r->bitmap_upload release]; r->bitmap_upload = nil;
         r->atlas_width = r->atlas_height = r->last_bitmaps = 0; r->bitmap_capacity = 0; r->bitmaps.count = 0;
-        [r->pipeline release]; r->pipeline = nil;
+        [r->pipeline release]; r->pipeline = nil; [r->batch_pipeline release]; r->batch_pipeline = nil;
+        [r->geometry release]; r->geometry = nil; r->geometry_capacity = 0;
         r->layer.device = nil; [r->queue release]; r->queue = nil; [r->device release]; r->device = nil;
         result = nx_mtl_device(r);
         if (result == NX_OK) r->layer.device = r->device;
@@ -453,7 +528,8 @@ nx_result nx_metal_renderer_destroy(nx_metal_renderer *r) {
         }
         [r->previous_layer release]; [r->layer release]; [r->canvas release]; [r->history release];
         [r->atlas release]; [r->bitmap_upload release];
-        [r->readback release]; [r->pipeline release]; [r->queue release]; [r->device release];
+        [r->readback release]; [r->pipeline release]; [r->batch_pipeline release]; [r->geometry release];
+        [r->queue release]; [r->device release];
         if (r->leased) (void)nx_window_renderer_release(r->window,r);
         nx_allocator a = r->allocator; a.deallocate(a.user,r,sizeof(*r)); return NX_OK;
     }
@@ -548,6 +624,7 @@ nx_result nx_metal_test_fail_next(nx_metal_renderer *r, nx_metal_test_fault faul
     case NX_MTL_TEST_PIPELINE_MEMORY: r->pipeline_memory = 1; break;
     case NX_MTL_TEST_ATLAS_MEMORY: r->atlas_memory = 1; break;
     case NX_MTL_TEST_UPLOAD_MEMORY: r->upload_memory = 1; break;
+    case NX_MTL_TEST_GEOMETRY_MEMORY: r->geometry_memory = 1; break;
     case NX_MTL_TEST_WAIT_TIMEOUT: r->wait_timeouts = 2; break;
     }
     return NX_OK;
@@ -561,5 +638,10 @@ nx_result nx_metal_test_set_per_draw_bindings(nx_metal_renderer *r, int enabled)
     if (!r || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
     if (!nx_mtl_owner(r) || r->closing || r->broken) return NX_ERROR_STATE;
     r->per_draw_bindings = enabled; return NX_OK;
+}
+nx_result nx_metal_test_set_batching(nx_metal_renderer *r, int enabled) {
+    if (!r || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_mtl_owner(r) || r->closing || r->broken) return NX_ERROR_STATE;
+    r->disable_batching = !enabled; return NX_OK;
 }
 #endif

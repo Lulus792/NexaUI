@@ -11,6 +11,15 @@ struct Shape {
 };
 static_assert(sizeof(Shape) == 52, "C/MSL shape layout");
 struct Raster { float4 position [[position]]; };
+struct DrawRecord { packed_float2 vertices[6]; Shape shape; uint scissor[4]; };
+static_assert(sizeof(DrawRecord) == 116, "C/MSL draw record layout");
+struct BatchRaster { float4 position [[position]]; uint draw_index [[flat]]; };
+vertex BatchRaster nx_mtl_batch_vertex(uint index [[vertex_id]], device const DrawRecord *records [[buffer(0)]]) {
+    BatchRaster out;
+    out.draw_index = index / 6u;
+    out.position = float4(float2(records[out.draw_index].vertices[index % 6u]), 0.0, 1.0);
+    return out;
+}
 vertex Raster nx_mtl_vertex(uint index [[vertex_id]], constant packed_float2 *vertices [[buffer(0)]]) {
     Raster out;
     out.position = float4(float2(vertices[index]), 0.0, 1.0);
@@ -84,7 +93,7 @@ bool disk_contains(float2 dx, float2 dy, float radius) {
     return !less_pair(multiply_pair(float2(radius, 0.0), float2(radius, 0.0)), distance2);
 }
 
-bool shape_contains(float2 p, constant Shape &s) {
+bool shape_contains(float2 p, thread const Shape &s) {
     if (s.kind == 1u)
         return inside_edge(float2(s.a), float2(s.b), p) &&
                inside_edge(float2(s.b), float2(s.c), p) &&
@@ -135,19 +144,19 @@ int sample_axis(float position, float origin, float extent, float texels) {
     return int(clamp(value, 0.0, texels - 1.0));
 }
 
-fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buffer(0)]],
-    texture2d<float, access::read> history [[texture(0)]], texture2d<float, access::read> atlas [[texture(1)]]) {
-    if (!shape_contains(in.position.xy, s)) discard_fragment();
+float4 shade(float2 position, thread const Shape &s,
+    texture2d<float, access::read> history, texture2d<float, access::read> atlas) {
+    if (!shape_contains(position, s)) discard_fragment();
     uint4 src = uint4(s.color[0],s.color[1],s.color[2],s.color[3]);
     if (s.kind == 5u) {
         float2 origin = float2(s.a), extent = float2(s.b), source_size = float2(s.bitmap_size);
-        uint2 pixel = uint2(float2(s.c)) + uint2(sample_axis(in.position.x,origin.x,extent.x,source_size.x),
-            sample_axis(in.position.y,origin.y,extent.y,source_size.y));
+        uint2 pixel = uint2(float2(s.c)) + uint2(sample_axis(position.x,origin.x,extent.x,source_size.x),
+            sample_axis(position.y,origin.y,extent.y,source_size.y));
         uint4 sample_color = uint4(floor(atlas.read(pixel)*255.0+0.5));
         src = (sample_color*src+127u)/255u;
     }
     if (src.a == 255u) return float4(src) / 255.0;
-    uint4 dst = uint4(floor(history.read(uint2(in.position.xy)) * 255.0 + 0.5));
+    uint4 dst = uint4(floor(history.read(uint2(position)) * 255.0 + 0.5));
     if (src.a == 0u) return float4(dst) / 255.0;
     if (dst.a == 0u) return float4(src) / 255.0;
     uint inverse = 255u - src.a;
@@ -155,4 +164,18 @@ fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &s [[buff
     uint3 numerator = src.rgb * src.a * 255u + dst.rgb * dst.a * inverse;
     uint3 rgb = (numerator + alpha_numerator / 2u) / alpha_numerator;
     return float4(uint4(rgb,(alpha_numerator + 127u) / 255u)) / 255.0;
+}
+fragment float4 nx_mtl_fragment(Raster in [[stage_in]], constant Shape &source [[buffer(0)]],
+    texture2d<float, access::read> history [[texture(0)]], texture2d<float, access::read> atlas [[texture(1)]]) {
+    Shape s = source;
+    return shade(in.position.xy,s,history,atlas);
+}
+fragment float4 nx_mtl_batch_fragment(BatchRaster in [[stage_in]], device const DrawRecord *records [[buffer(0)]],
+    texture2d<float, access::read> history [[texture(0)]], texture2d<float, access::read> atlas [[texture(1)]]) {
+    uint2 pixel = uint2(in.position.xy);
+    device const DrawRecord &r = records[in.draw_index];
+    if (pixel.x < r.scissor[0] || pixel.y < r.scissor[1] ||
+        pixel.x >= r.scissor[0]+r.scissor[2] || pixel.y >= r.scissor[1]+r.scissor[3]) discard_fragment();
+    Shape s = r.shape;
+    return shade(in.position.xy,s,history,atlas);
 }

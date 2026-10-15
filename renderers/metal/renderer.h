@@ -14,12 +14,14 @@ typedef struct nx_metal_frame_profile {
     uint64_t bound_passes, fixed_state_bindings;
     uint64_t history_copies, history_copy_bytes, bitmap_upload_bytes;
     uint64_t draw_argument_bytes, present_copy_bytes;
+    uint64_t record_upload_bytes, record_buffer_bindings;
     /* prepare: submit-local validation/pipeline/atlas preparation; encode:
        draw/upload/history encoding; acquire: layer flush + nextDrawable;
        commit: present-copy encoding and asynchronous commit, not GPU time. */
     double prepare_ms, encode_ms, acquire_ms, commit_ms;
     int cpu_timing_valid;
     int per_draw_bindings; /* Test baseline; production always uses per-pass state. */
+    int batched;
 } nx_metal_frame_profile;
 typedef struct nx_metal_renderer_info {
     char device_name[256];
@@ -28,6 +30,7 @@ typedef struct nx_metal_renderer_info {
     int pending, pending_readback, closing, broken;
     uint32_t atlas_width, atlas_height, unique_bitmaps;
     uint64_t bitmap_capacity_bytes, atlas_allocations, bitmap_upload_allocations;
+    uint64_t record_capacity_bytes, record_upload_allocations;
     nx_metal_frame_profile last_frame;
     /* Cumulative CPU polling time across successful/timeout retirements,
        preserved through recovery. No-pending calls add no wait sample. */
@@ -64,6 +67,7 @@ typedef enum nx_metal_test_fault {
     NX_MTL_TEST_PIPELINE_MEMORY,
     NX_MTL_TEST_ATLAS_MEMORY,
     NX_MTL_TEST_UPLOAD_MEMORY,
+    NX_MTL_TEST_GEOMETRY_MEMORY,
     NX_MTL_TEST_WAIT_TIMEOUT
 } nx_metal_test_fault;
 nx_result nx_metal_test_fail_next(nx_metal_renderer *renderer, nx_metal_test_fault fault);
@@ -71,6 +75,7 @@ nx_result nx_metal_test_invalidate(nx_metal_renderer *renderer);
 /* Test-only A/B baseline for redundant invariant state bindings. Existing
    pending commands are immutable; the mode affects subsequent encoding. */
 nx_result nx_metal_test_set_per_draw_bindings(nx_metal_renderer *renderer, int enabled);
+nx_result nx_metal_test_set_batching(nx_metal_renderer *renderer, int enabled);
 #endif
 
 #endif

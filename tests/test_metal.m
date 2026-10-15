@@ -185,6 +185,7 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
         {.type=NX_COMMAND_POP_CLIP}
     };
     nx_metal_renderer_info before, after;
+    CHECK(nx_metal_test_set_batching(r,0) == NX_OK);
     CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
     CHECK(nx_metal_test_set_per_draw_bindings(r,-1) == NX_ERROR_ARGUMENT);
     CHECK(compare_commands(w,r,stream,8,1,(nx_color){0}) == 0);
@@ -205,6 +206,12 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
     CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
     CHECK(after.last_frame.per_draw_bindings && after.last_frame.fixed_state_bindings == 25 && after.last_frame.bound_passes == 3);
     CHECK(nx_metal_test_set_per_draw_bindings(r,0) == NX_OK);
+    CHECK(nx_metal_test_set_batching(r,1) == NX_OK);
+    CHECK(compare_commands(w,r,stream,8,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK);
+    CHECK(after.last_frame.batched && after.last_frame.draw_records == 5 && after.last_frame.draw_calls == 3);
+    CHECK(after.last_frame.record_upload_bytes == 5u*116u && !after.last_frame.draw_argument_bytes);
+    CHECK(after.last_frame.record_buffer_bindings == 6 && after.record_capacity_bytes >= 5u*116u);
     p = after.last_frame;
     CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_DRAWABLE_UNAVAILABLE) == NX_OK);
     int presented;
@@ -216,6 +223,31 @@ static int test_profile(nx_window *w, nx_metal_renderer *r) {
     CHECK(!after.last_frame.input_commands && !after.last_frame.draw_calls && !after.last_frame.draw_argument_bytes);
     CHECK(after.last_frame.render_passes == 1 && !after.last_frame.history_copies && !after.last_frame.bitmap_upload_bytes);
     CHECK(!after.last_frame.bound_passes && !after.last_frame.fixed_state_bindings && !after.last_frame.per_draw_bindings);
+    return 0;
+}
+static int test_batch_storage(nx_window *w, nx_metal_renderer *r) {
+    enum { COUNT=10000 };
+    nx_command *stream = calloc(COUNT,sizeof(*stream)); CHECK(stream);
+    for (unsigned i=0;i<COUNT;++i) stream[i]=(nx_command){.type=NX_COMMAND_FILL_RECT,
+        .rect={(float)((i*7)%151)+1,(float)((i*11)%103)+1,4,4},
+        .color={(i%7)/6.f,(i%11)/10.f,(i%13)/12.f,1}};
+    nx_metal_renderer_info before, after; int presented;
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
+    CHECK(nx_metal_test_set_batching(r,2) == NX_ERROR_ARGUMENT);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_GEOMETRY_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,stream,COUNT,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.record_capacity_bytes == before.record_capacity_bytes);
+    CHECK(after.submitted_frames == before.submitted_frames && after.last_frame.submission == before.last_frame.submission);
+    CHECK(compare_commands(w,r,stream,COUNT,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
+    CHECK(before.last_frame.draw_records == COUNT && before.last_frame.draw_calls == 1 && before.last_frame.record_upload_bytes == COUNT*116u);
+    CHECK(compare_commands(w,r,stream,COUNT,1,(nx_color){0}) == 0);
+    CHECK(nx_metal_renderer_get_info(r,&after) == NX_OK && after.record_upload_allocations == before.record_upload_allocations);
+    CHECK(nx_metal_render(r,stream,COUNT,1,(nx_color){0},&presented) == NX_OK && presented);
+    free(stream);
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_WAIT_TIMEOUT) == NX_OK);
+    for (unsigned i=0;i<2;++i) CHECK(nx_metal_render(r,NULL,0,1,(nx_color){0},&presented) == NX_OK && !presented);
+    CHECK(compare(w,r,(nx_color){0}) == 0);
     return 0;
 }
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
@@ -292,6 +324,7 @@ int main(void) {
         CHECK(test_alpha(window,r) == 0);
         CHECK(test_bitmaps(window,r) == 0);
         CHECK(test_profile(window,r) == 0);
+        CHECK(test_batch_storage(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);
