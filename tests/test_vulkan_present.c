@@ -232,6 +232,7 @@ static int test_renderer(nx_window *window) {
         getenv("NEXAUI_PLATFORM"), info.device.name, info.pixel_width,
         info.pixel_height, info.image_count, (unsigned long long)info.presented_frames,
         info.device.graphics_queue_family, info.device.present_queue_family);
+    fprintf(stderr,"Vulkan presentation phase: main renderer destruction\n");
     CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     CHECK(!track.live);
     /* Fail each bookkeeping allocation, then reacquire the same window. */
@@ -246,6 +247,7 @@ static int test_renderer(nx_window *window) {
 }
 
 static int test_retirement_failures(nx_window *window) {
+    fprintf(stderr,"Vulkan presentation phase: strict retirement faults\n");
     nx_vulkan_renderer *renderer = NULL;
     nx_vulkan_renderer_info before, after;
     const nx_color clear = {0.1f, 0.2f, 0.3f, 1};
@@ -311,8 +313,10 @@ static int test_retirement_failures(nx_window *window) {
         CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK);
         CHECK((after.device.present_fences == NX_VK_PRESENT_FENCES_NONE) ==
               (policy == NX_VULKAN_RETIRE_LEGACY));
+        fprintf(stderr,"Vulkan presentation phase: policy=%d support=%d teardown\n",policy,(int)after.device.present_fences);
         CHECK(nx_vulkan_renderer_destroy(renderer) == NX_OK);
     }
+    fprintf(stderr,"Vulkan presentation phase: readback timeout\n");
     CHECK(nx_vulkan_renderer_create(window, NULL, &renderer) == NX_OK);
     CHECK(nx_vulkan_test_fail_next(renderer, NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT) == NX_OK);
     /* The readback submits real GPU work before its two waits time out.

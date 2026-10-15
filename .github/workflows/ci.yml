@@ -44,6 +44,9 @@ jobs:
       - name: Test (Linux X11)
         if: runner.os == 'Linux'
         run: NEXAUI_REQUIRE_VULKAN=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation NEXAUI_TEST_PRIVATE_X11=1 NEXAUI_VULKAN_TRACE_RETIRE=1 xvfb-run -a ctest --test-dir build -C Debug --output-on-failure --timeout 30
+      - name: Repeat Linux presentation lifecycle without retirement tracing
+        if: runner.os == 'Linux' && matrix.shared == 'OFF'
+        run: NEXAUI_REQUIRE_VULKAN=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a ctest --test-dir build -C Debug -R '^nexaui_vulkan_x11_present$' --repeat until-fail:20 --no-tests=error --output-on-failure --timeout 90
       - name: Test (Windows and macOS)
         if: runner.os != 'Linux'
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 20

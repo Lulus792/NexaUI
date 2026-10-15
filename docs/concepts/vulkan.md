@@ -21,7 +21,11 @@ validation passed. This does not explain or clear the CI failure. The test-only
 handles and present-fence status when dropping a swapchain; Linux CI enables it
 so a recurrence can be assigned to the exact teardown path. The validation-error
 failure rule remains enabled. No production lifetime behavior has been changed
-on the basis of an unverified cause.
+on the basis of an unverified cause. CI also repeats the static X11 lifecycle
+20 times without this diagnostic: the trace's extra fence-status queries can
+change validation-layer bookkeeping/timing, so a traced pass alone is weaker
+evidence than an untraced run. Test output labels strict, compatibility, legacy
+and readback teardown phases without introducing additional Vulkan queries.
 
 ## Build boundary
 
