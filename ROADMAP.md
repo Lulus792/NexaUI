@@ -463,5 +463,9 @@ a shared Metal draw-record buffer, with a 64 MiB capacity cap and transactional
 growth. Each group preserves primitive order and exact per-record clips;
 destination-reading images/alpha retain their history-copy boundaries. Windows
 static/shared and Linux sanitizer CPU checks pass, including 10000 records.
-Native MSL/pixel/staging lifetime tests and matching unbatched/batched A/B/B/A
-measurements await CI. Concurrent upload rings and A07 remain open.
+At `c31c92e`, both macOS variants pass 81/81 including MSL, 10000-record GPU
+comparison, staging lifetime and all A/B blocks. The [first measurement](benchmarks/baselines/metal-c31c92e/README.md)
+shows 343/396/366 calls reduced to 28/30/9 with identical pixels, but identifies
+CPU preparation overhead and inconsistent wall-time gains. A follow-up caches
+validated preparation in a borrowed plan and fills storage in a second walk;
+its native result is pending. Concurrent upload rings and A07 remain open.

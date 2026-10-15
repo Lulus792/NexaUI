@@ -235,10 +235,10 @@ static nx_result nx_mtl_bitmaps_prepare(nx_metal_renderer *r, const nx_command *
        Borrowed source pixels are fully copied before successful return. */
     return nx_mtl_bitmaps_copy(&r->bitmaps,[r->bitmap_upload contents],r->bitmap_capacity,(size_t)width*4u);
 }
-static nx_result nx_mtl_geometry_prepare(nx_metal_renderer *r, const nx_mtl_plan *plan, size_t *out_count) {
-    size_t count = 0, bytes = 0;
-    nx_result result = nx_mtl_records_measure(plan,&count);
-    if (result == NX_OK) result = nx_mtl_record_bytes(count,&bytes);
+static nx_result nx_mtl_geometry_prepare(nx_metal_renderer *r, const nx_mtl_plan *plan, nx_mtl_batches *out_batches) {
+    nx_mtl_record_plan prepared; size_t bytes = 0;
+    nx_result result = nx_mtl_records_begin(&prepared,plan,&r->bitmaps);
+    if (result == NX_OK) result = nx_mtl_record_bytes(prepared.count,&bytes);
     if (result != NX_OK) return result;
     id<MTLBuffer> candidate = nil;
     size_t capacity = r->geometry_capacity;
@@ -254,14 +254,14 @@ static nx_result nx_mtl_geometry_prepare(nx_metal_renderer *r, const nx_mtl_plan
     }
     id<MTLBuffer> buffer = candidate ? candidate : r->geometry;
     size_t written;
-    result = nx_mtl_records_write(plan,&r->bitmaps,[buffer contents],capacity / sizeof(nx_mtl_record),&written);
+    result = nx_mtl_records_write(&prepared,[buffer contents],capacity / sizeof(nx_mtl_record),&written);
     nx_mtl_batches check;
     if (result == NX_OK) result = nx_mtl_batches_begin(&check,[buffer contents],written,r->width,r->height);
     if (result != NX_OK) { [candidate release]; return result; }
     if (candidate) {
         [r->geometry release]; r->geometry = candidate; r->geometry_capacity = capacity; ++r->geometry_allocations;
     }
-    *out_count = written; return NX_OK;
+    *out_batches = check; return NX_OK;
 }
 static void nx_mtl_bind_pass(nx_metal_renderer *r, id<MTLRenderCommandEncoder> encoder, int batched) {
     [encoder setRenderPipelineState:batched ? r->batch_pipeline : r->pipeline];
@@ -294,16 +294,11 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, s
     if (count && (result = nx_mtl_pipeline(r)) != NX_OK) return result;
     result = nx_mtl_bitmaps_prepare(r,stream,count);
     if (result != NX_OK) return result;
-    size_t record_count = 0;
-    if (profile.batched) {
-        result = nx_mtl_geometry_prepare(r,&plan,&record_count);
-        if (result != NX_OK) return result;
-        profile.record_upload_bytes = record_count * sizeof(nx_mtl_record);
-    }
     nx_mtl_batches batches = {0};
     if (profile.batched) {
-        result = nx_mtl_batches_begin(&batches,[r->geometry contents],record_count,r->width,r->height);
+        result = nx_mtl_geometry_prepare(r,&plan,&batches);
         if (result != NX_OK) return result;
+        profile.record_upload_bytes = (uint64_t)batches.count * sizeof(nx_mtl_record);
     }
     profile.prepare_ms = nx_mtl_elapsed_ms(phase_start,nx_mtl_now(),&profile.cpu_timing_valid);
     phase_start = nx_mtl_now();

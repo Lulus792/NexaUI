@@ -128,9 +128,9 @@ quad coordinates as the previous path. Opaque followers never read history.
 The plain C packer/group iterator is testable without an Apple SDK. Host tests
 check mixed geometry/bitmaps/alpha against independent headless output at
 1/1.25/1.5/2 scale, capacity rollback, output padding and a 10000-record group.
-Windows static/shared and Linux Clang ASan/UBSan/leak checks pass. MSL compilation
-and native execution of this new path remain pending CI. Authored native cases
-add the same 10000-draw pixel comparison, allocation rollback/reuse, source
+Windows static/shared and Linux Clang ASan/UBSan/leak checks pass. At `c31c92e`,
+both native macOS variants pass 81/81 tests, including MSL compilation and the
+10000-draw pixel comparison, allocation rollback/reuse, source
 release during a pending submission and an unbatched/batched/batched/unbatched
 workload. Each block still warms four frames, records 32 and checks GPU pixels.
 The comparison holds per-pass state reuse enabled in both modes.
@@ -140,7 +140,16 @@ primitive-order guarantee for render-pass attachments; the shader reads a
 separate history texture, not its render attachment. The [draw command](https://developer.apple.com/documentation/metal/mtlrendercommandencoder/drawprimitives(type:vertexstart:vertexcount:))
 defines vertex IDs starting at `vertexStart`. Its DocC source and the relevant
 MSL packed-layout rules were inspected during implementation. Native pixel
-comparisons are still required for acceptance.
+comparisons remain required on other physical target devices.
+
+The [first native batching measurement](../../benchmarks/baselines/metal-c31c92e/README.md)
+preserves 768 samples and artifact digests. Draw calls fall from 343/396/366 to
+28/30/9, with byte-identical images. CPU preparation offsets some encode gains;
+the shared overview has no net prepare+encode median improvement in that first
+run, and wall tails do not improve uniformly. A follow-up preflights count and
+atlas mappings together, writes records in a second traversal and reuses the
+validated group iterator. It preserves capacity rollback and removes repeated
+walks/validation. Its native performance result is pending.
 
 ## CPU cost baseline before A06
 

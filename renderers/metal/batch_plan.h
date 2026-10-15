@@ -22,15 +22,22 @@ typedef struct nx_mtl_batches {
     const nx_mtl_record *records;
     uint32_t count, index;
 } nx_mtl_batches;
+typedef struct nx_mtl_record_plan {
+    nx_mtl_plan draws;
+    const nx_mtl_bitmap_plan *bitmaps;
+    size_t count;
+} nx_mtl_record_plan;
 
 nx_result nx_mtl_record_bytes(size_t count, size_t *out_bytes);
-/* The input plan must come from successful plan_begin and stay unchanged.
-   These helpers iterate a copy, without advancing it or reading source pixels. */
-nx_result nx_mtl_records_measure(const nx_mtl_plan *plan, size_t *out_count);
-/* Preflights capacity and all atlas mappings before writing any output. LIMIT
-   returns the required count; other failures leave count zero. Row padding is
-   not involved: records are a tightly packed array with a 116-byte stride. */
-nx_result nx_mtl_records_write(const nx_mtl_plan *plan, const nx_mtl_bitmap_plan *bitmaps,
+/* One preflight counts visible records and checks atlas mappings. The input
+   draw plan must come from successful plan_begin; its commands and the bitmap
+   plan stay borrowed and unchanged through records_write. No pixels are read. */
+nx_result nx_mtl_records_begin(nx_mtl_record_plan *out, const nx_mtl_plan *draws,
+    const nx_mtl_bitmap_plan *bitmaps);
+/* Capacity is checked before writing, then the preflighted source is traversed
+   once. LIMIT returns the required count and leaves storage untouched. Other
+   valid-plan failures leave count zero. Record stride is exactly 116 bytes. */
+nx_result nx_mtl_records_write(const nx_mtl_record_plan *plan,
     nx_mtl_record *records, size_t capacity, size_t *out_count);
 /* records come from records_write; begin additionally checks bounded clips and
    colors before grouping, rather than accepting arbitrary GPU byte buffers. */

@@ -13,34 +13,34 @@ nx_result nx_mtl_record_bytes(size_t count, size_t *out_bytes) {
     *out_bytes = count * sizeof(nx_mtl_record); return NX_OK;
 }
 
-nx_result nx_mtl_records_measure(const nx_mtl_plan *plan, size_t *out_count) {
-    if (!out_count) return NX_ERROR_ARGUMENT;
-    *out_count = 0;
-    if (!plan) return NX_ERROR_ARGUMENT;
-    nx_mtl_plan copy = *plan; nx_mtl_draw draw; size_t n = 0, bytes;
+nx_result nx_mtl_records_begin(nx_mtl_record_plan *out, const nx_mtl_plan *draws,
+    const nx_mtl_bitmap_plan *bitmaps) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_mtl_record_plan){0};
+    if (!draws) return NX_ERROR_ARGUMENT;
+    nx_mtl_plan copy = *draws; nx_mtl_draw draw; size_t n = 0, bytes;
     while (nx_mtl_plan_next(&copy,&draw)) {
         if (nx_mtl_record_bytes(++n,&bytes) != NX_OK) return NX_ERROR_LIMIT;
+        if (draw.shape.kind == 5 && (!bitmaps || nx_mtl_bitmap_find(bitmaps,draw.bitmap) == bitmaps->count))
+            return NX_ERROR_STATE;
     }
-    *out_count = n; return NX_OK;
+    out->draws = *draws; out->bitmaps = bitmaps; out->count = n; return NX_OK;
 }
 
-nx_result nx_mtl_records_write(const nx_mtl_plan *plan, const nx_mtl_bitmap_plan *bitmaps,
+nx_result nx_mtl_records_write(const nx_mtl_record_plan *plan,
     nx_mtl_record *records, size_t capacity, size_t *out_count) {
     if (!out_count) return NX_ERROR_ARGUMENT;
     *out_count = 0;
     if (!plan || (!records && capacity)) return NX_ERROR_ARGUMENT;
-    size_t count; nx_result result = nx_mtl_records_measure(plan,&count);
-    if (result != NX_OK) return result;
-    nx_mtl_plan copy = *plan; nx_mtl_draw draw;
-    while (nx_mtl_plan_next(&copy,&draw)) if (draw.shape.kind == 5) {
-        if (!bitmaps || nx_mtl_bitmap_find(bitmaps,draw.bitmap) == bitmaps->count) return NX_ERROR_STATE;
-    }
-    if (count > capacity) { *out_count = count; return NX_ERROR_LIMIT; }
-    copy = *plan; size_t index = 0;
+    if (plan->count > capacity) { *out_count = plan->count; return NX_ERROR_LIMIT; }
+    nx_mtl_plan copy = plan->draws; nx_mtl_draw draw; size_t index = 0;
     while (nx_mtl_plan_next(&copy,&draw)) {
+        if (index == plan->count) return NX_ERROR_STATE; /* Borrowed source was invalidated. */
         if (draw.shape.kind == 5) {
-            uint32_t entry = nx_mtl_bitmap_find(bitmaps,draw.bitmap);
-            draw.shape.c = (nx_point){(float)bitmaps->entries[entry].x,(float)bitmaps->entries[entry].y};
+            if (!plan->bitmaps) return NX_ERROR_STATE;
+            uint32_t entry = nx_mtl_bitmap_find(plan->bitmaps,draw.bitmap);
+            if (entry == plan->bitmaps->count) return NX_ERROR_STATE;
+            draw.shape.c = (nx_point){(float)plan->bitmaps->entries[entry].x,(float)plan->bitmaps->entries[entry].y};
         }
         nx_mtl_record record = {0};
         memcpy(record.vertices,draw.vertices,sizeof(record.vertices)); record.shape = draw.shape;
@@ -48,6 +48,7 @@ nx_result nx_mtl_records_write(const nx_mtl_plan *plan, const nx_mtl_bitmap_plan
         record.scissor[2] = draw.scissor.width; record.scissor[3] = draw.scissor.height;
         records[index++] = record;
     }
+    if (index != plan->count) return NX_ERROR_STATE;
     *out_count = index; return NX_OK;
 }
 
