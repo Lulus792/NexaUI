@@ -17,6 +17,8 @@ Windows 11 build 26200, Visual Studio 2022, MSVC C17 compiler 19.38.33145.0, Win
 | Installed Windows static C consumer | Installed, configured, built and ran successfully |
 | C17 SDK duplicate-definition counterexample | Expected LNK2005 failures reproduced for UIA_NamePropertyId and UIA_ScrollPatternNoScroll |
 
+The full Windows suites above were executed on `188043a`. Its [six-platform-build matrix and Linux sanitizer job](https://github.com/Lulus792/NexaUI/actions/runs/38812796259) also succeeded. A subsequent native host-disablement counterexample and its final targeted regression results are recorded below; Linux and the portable core were unchanged by that follow-up.
+
 The clipboard fixture declined to use the current clipboard; it was not forced to clear or replace the user's contents. Windows ASan does not establish general COM/OS allocation leak freedom. Local results do not establish macOS AX, Linux AT-SPI, physical GPU performance or physical monitor/DPI acceptance.
 
 ## Independent native client
@@ -26,7 +28,7 @@ The clipboard fixture declined to use the current clipboard; it was not forced t
 The same client runs against a caller-owned STA (`nexaui_uia`), a caller-owned MTA (`nexaui_uia_mta`), and NexaUI-managed COM (`nexaui_uia_owned_com`). The fixture briefly displays/focuses its own window. The checks cover:
 
 - UTF-8 to UTF-16 names, a surrogate-pair folder symbol and a 1600-character native title; source strings are changed after widget construction.
-- Button/checkbox types, disabled invocation rejection, protected empty values and an offscreen control; physical client bounds track a 40-by-30-pixel window move.
+- Button/checkbox types, disabled-control and native-disabled-host invocation rejection, protected empty values and an offscreen control; physical client bounds track a 40-by-30-pixel window move.
 - Real Invoke and Toggle patterns, ordinary model changes on the next frame, the final requested focus target and truthfully reported native focus.
 - Simultaneous owner-thread publication/routing and client queries/actions; the host compares accepted requests with actual model clicks.
 - A full 64-entry context queue and a full native queue, preserving every accepted press until dispatch. UIA's own focus requests share that native bound; repeated focus requests coalesce to the latest target.
@@ -35,6 +37,14 @@ The same client runs against a caller-owned STA (`nexaui_uia`), a caller-owned M
 - Native structure-change callbacks and native focus-change callbacks when the OS reports the test window focused. Event handlers run in the independent MTA client and query the sender through UIA.
 
 The HWND can disappear while its COM apartment is still alive. The fixture continues pumping that owner thread until the client has finished; merely destroying its visible window is not a reason to stop servicing apartment calls.
+
+## Native host disablement follow-up
+
+An added independent-client case first calls Win32 `EnableWindow(FALSE)` on the owner thread. Against `188043a`, querying the native root's IsEnabled property still returned true, so the probe failed before attempting another activation. A semantic control's own disabled flag did not account for a disabled HWND.
+
+The adapter now captures `IsWindowEnabled` with its native geometry/state and refreshes that copy on `WM_ENABLE`. Root and descendant queries report disabled state, new actions are rejected, and buffered native requests are discarded before forwarding to the core. The client queues a press before disablement, confirms both disabled properties and rejection of another Invoke, advances a frame, re-enables the HWND and confirms that no canceled click is replayed.
+
+The follow-up passed all three UIA host variants and the native NexaCloud smoke in static and shared Debug builds (four targeted cases per configuration). The updated MTA client also passed MSVC ASan in both static and shared builds with no finding. The failing counterexample and final results are retained in local `out/uia-disabled-*.log` files. This narrows an actual native-state gap without adding a window-state dependency to portable contexts.
 
 ## C17 SDK linkage boundary
 

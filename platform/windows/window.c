@@ -543,7 +543,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
         }
         if (message == WM_GETOBJECT && window->accessibility && nx_uia_object_id(lparam))
             return nx_uia_get_object(window->accessibility,wparam,lparam);
-        if (message == WM_WINDOWPOSCHANGED || message == WM_SHOWWINDOW || message == WM_ACTIVATE)
+        if (message == WM_WINDOWPOSCHANGED || message == WM_SHOWWINDOW || message == WM_ACTIVATE || message == WM_ENABLE)
             nx_uia_geometry(window->accessibility);
         if (message == WM_DESTROY && window->accessibility) {
             nx_uia_bridge *bridge=window->accessibility; window->accessibility=NULL;

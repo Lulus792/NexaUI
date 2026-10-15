@@ -198,6 +198,9 @@ static int run(const WCHAR *client) {
                 nx_context_destroy(s.ctx); s.ctx=NULL;
             } else if (request==UIA_TEST_DETACH) {
                 CHECK(nx_window_publish_semantics(window,NULL)==NX_OK);
+            } else if (request==UIA_TEST_DISABLE_HOST || request==UIA_TEST_ENABLE_HOST) {
+                EnableWindow(hwnd,request==UIA_TEST_ENABLE_HOST);
+                CHECK(!!IsWindowEnabled(hwnd)==(request==UIA_TEST_ENABLE_HOST));
             } else if (request==UIA_TEST_REATTACH) {
                 CHECK(nx_context_create(NULL,&s.ctx)==NX_OK); CHECK(frame(&s)==0);
                 CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);

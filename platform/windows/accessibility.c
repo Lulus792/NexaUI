@@ -53,7 +53,7 @@ struct nx_uia_bridge {
     int published_native_focus;
     POINT origin;
     double scale, width, height;
-    int visible, focused, publishing, com_balance;
+    int visible, enabled, focused, publishing, com_balance;
     WCHAR *title;
     nx_uia_request requests[64];
     size_t request_count;
@@ -208,7 +208,7 @@ static HRESULT STDMETHODCALLTYPE simple_property(IRawElementProviderSimple *self
     nx_uia_element *e=simple_object(self); nx_uia_bridge *b=e->bridge; nx_uia_node *n;
     AcquireSRWLockShared(&b->lock); HRESULT hr=current(e,&n);
     if (FAILED(hr)) { ReleaseSRWLockShared(&b->lock); return hr; }
-    uint32_t state=n ? n->state : 0,actions=n ? n->actions : NX_ACTION_FOCUS;
+    uint32_t state=(n ? n->state : 0) | (b->enabled ? 0u : NX_SEM_DISABLED),actions=n ? n->actions : NX_ACTION_FOCUS;
     if (property==NX_UIA_NamePropertyId) { hr=string_value(out,n ? n->name : b->title);
     } else if (property==NX_UIA_HelpTextPropertyId) { hr=string_value(out,n ? n->help : L"");
     } else if (property==NX_UIA_ValueValuePropertyId) { hr=string_value(out,n && !(state&NX_SEM_PROTECTED) ? n->value : L"");
@@ -294,7 +294,7 @@ static HRESULT STDMETHODCALLTYPE fragment_embedded(IRawElementProviderFragment *
 static HRESULT request(nx_uia_element *e,uint32_t action) {
     nx_uia_bridge *b=e->bridge; nx_uia_node *n; HWND hwnd=NULL;
     AcquireSRWLockExclusive(&b->lock); HRESULT hr=current(e,&n);
-    if (SUCCEEDED(hr) && n && (n->state&NX_SEM_DISABLED)) hr=UIA_E_ELEMENTNOTENABLED;
+    if (SUCCEEDED(hr) && (!b->enabled || (n && (n->state&NX_SEM_DISABLED)))) hr=UIA_E_ELEMENTNOTENABLED;
     if (SUCCEEDED(hr) && n && !(n->actions&action)) hr=UIA_E_NOTSUPPORTED;
     if (SUCCEEDED(hr) && !n && action!=NX_ACTION_FOCUS) hr=UIA_E_NOTSUPPORTED;
     if (SUCCEEDED(hr)) {
@@ -390,9 +390,10 @@ void nx_uia_geometry(nx_uia_bridge *b) {
     RECT r; POINT origin={0,0};
     if (!GetClientRect(hwnd,&r) || !ClientToScreen(hwnd,&origin)) return;
     UINT dpi=GetDpiForWindow(hwnd); if (!dpi) dpi=96;
-    int visible=IsWindowVisible(hwnd) && !IsIconic(hwnd),focused=GetFocus()==hwnd && GetForegroundWindow()==hwnd;
+    int visible=IsWindowVisible(hwnd) && !IsIconic(hwnd),enabled=IsWindowEnabled(hwnd);
+    int focused=enabled && GetFocus()==hwnd && GetForegroundWindow()==hwnd;
     AcquireSRWLockExclusive(&b->lock); b->origin=origin; b->scale=(double)dpi/96.;
-    b->width=r.right-r.left; b->height=r.bottom-r.top; b->visible=visible; b->focused=focused;
+    b->width=r.right-r.left; b->height=r.bottom-r.top; b->visible=visible; b->enabled=enabled; b->focused=focused;
     ReleaseSRWLockExclusive(&b->lock);
 }
 nx_result nx_uia_create(HWND hwnd,nx_allocator allocator,nx_uia_bridge **out) {
@@ -514,7 +515,7 @@ nx_result nx_uia_route(nx_uia_bridge *b,nx_context *context,size_t *count) {
         AcquireSRWLockExclusive(&b->lock);
         if (!b->request_count) { ReleaseSRWLockExclusive(&b->lock); break; }
         nx_uia_request r=b->requests[0]; uint32_t index=find(b->snapshot,r.id);
-        int valid=!r.id || (index!=NX_UIA_NONE && b->snapshot->nodes[index].incarnation==r.incarnation);
+        int valid=b->enabled && (!r.id || (index!=NX_UIA_NONE && b->snapshot->nodes[index].incarnation==r.incarnation));
         nx_result result=valid && r.id ? nx_semantics_request_action(context,r.id,r.action) : NX_OK;
         if (result==NX_ERROR_LIMIT) { ReleaseSRWLockExclusive(&b->lock); return NX_OK; } /* Retry after the next frame consumes core work. */
         /* Active-frame errors also retain work; stale/disabled targets are dropped

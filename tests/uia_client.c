@@ -144,6 +144,15 @@ static int run(HWND hwnd) {
         stress_accepted+=(unsigned)invoke(button,1);
     }
     CHECK(host(UIA_TEST_STRESS_STOP,&reply)==0 && stress_accepted>0 && reply==stress_accepted);
+    /* Native owner disablement must block both new and still-buffered requests. */
+    CHECK(invoke(button,1)); CHECK(host(UIA_TEST_DISABLE_HOST,&reply)==0);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(root,&value)); CHECK(!value);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(button,&value)); CHECK(!value);
+    CHECK(invoke(button,0));
+    CHECK(host(UIA_TEST_APPLY,&reply)==0 && !(reply&1u));
+    CHECK(host(UIA_TEST_ENABLE_HOST,&reply)==0);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(button,&value)); CHECK(value);
+    CHECK(host(UIA_TEST_APPLY,&reply)==0 && !(reply&1u));
     /* Real invocation, duplicate rejection, toggle and owner-thread focus dispatch. */
     CHECK(invoke(button,1)); CHECK(invoke(button,0));
     IUIAutomationTogglePattern *toggle_pattern=NULL;
