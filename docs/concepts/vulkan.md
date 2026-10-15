@@ -59,9 +59,16 @@ intact. CI also retains Linux native captures, CSVs and test logs.
 Initial local X11/Wayland draw tests pass with core/synchronization validation,
 including all existing shape/bitmap/alpha checks plus new per-instance clip and
 history-boundary comparisons at 1/1.25/1.5/2 scale, allocation rollback/reuse and
-10000 ordered opaque instances in one API draw. Full-scene A/B data, shared and
-sanitizer follow-up are pending. Physical hardware/performance acceptance remains
-open.
+10000 ordered opaque instances in one API draw. Shared Debug and Clang
+ASan/UBSan/LeakSanitizer each pass six native presentation/drawing/scene cases
+with core/synchronization validation. All six desktop CI variants and Linux
+sanitizers pass at `d4a2508`. The
+[controlled comparison](../../benchmarks/baselines/vulkan-d4a2508/README.md)
+preserves 1536 measured frames and verifies 48 identical mode/block images across
+local X11/Wayland and CI static/shared builds. Geometry payload falls by 76.7%;
+the three scenes use 64.1–97.0% fewer draw calls. CPU results have mixed tails,
+including a worse X11 overview p95; these counters do not establish a uniform
+speedup. Concurrent upload rings, GPU timing and physical acceptance remain open.
 
 ## Validation-tool compatibility
 
@@ -635,6 +642,9 @@ physical input/DPI, compositor color management or native macOS acceptance.
 
 ## Specification references
 
+- [Instanced input layout](https://docs.vulkan.org/refpages/latest/refpages/source/VkVertexInputBindingDescription.html)
+- [Direct draw and instance indices](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdDraw.html)
+- [Primitive rasterization order](https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-order)
 - [Instance creation](https://docs.vulkan.org/refpages/latest/refpages/source/vkCreateInstance.html)
 - [Physical-device enumeration](https://docs.vulkan.org/refpages/latest/refpages/source/vkEnumeratePhysicalDevices.html)
 - [Graphics queue families](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetPhysicalDeviceQueueFamilyProperties.html)

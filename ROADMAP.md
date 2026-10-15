@@ -516,6 +516,11 @@ clip. Initial X11/Wayland draw suites pass with synchronization validation,
 including 10000 opaque instances in one draw. CPU submission profiling and an
 explicit native `--profile` mode retain a 192-frame
 [baseline](benchmarks/baselines/vulkan-19c07ba/README.md); performance workloads
-are separate from correctness/validation smokes. In-process A/B, shared and
-sanitizer follow-up are pending. Concurrent upload rings, V08 GPU timing and
+are separate from correctness/validation smokes. At `d4a2508`, all six desktop CI
+variants and Linux sanitizers pass. Local shared and sanitizer runs each execute
+six X11/Wayland native cases with synchronization validation. The
+[controlled comparison](benchmarks/baselines/vulkan-d4a2508/README.md) preserves
+1536 samples and 48 byte-identical mode/block captures, with held input and
+geometry-drift rejection. Upload bytes fall by 76.7% and draw calls by 64.1–97.0%;
+CPU/tail results remain mixed. Concurrent upload rings, V08 GPU timing and
 physical hardware acceptance remain open.

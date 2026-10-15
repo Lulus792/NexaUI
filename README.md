@@ -71,6 +71,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 - The initial [AppKit adapter](docs/concepts/macos.md), [Metal command path](docs/concepts/metal.md) and native NexaCloud scene pass static/shared macOS CI checks. Physical hardware, display and assistive acceptance remain open. Direct GPU texture import is pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
+- Linux Vulkan now uses instanced geometry and ordered draw batching. The [native comparison](benchmarks/baselines/vulkan-d4a2508/README.md) records smaller geometry uploads, fewer draw calls and mixed CPU timing results across X11/Wayland; hardware performance acceptance remains open.
 - Accessibility semantics are recorded internally; operating-system accessibility bridges are pending.
 - Widget styling and toolkit coverage are still evolving. See the [roadmap](ROADMAP.md), [architectural decisions](DECISIONS.md) and [text contract](docs/concepts/text.md) for details.
 

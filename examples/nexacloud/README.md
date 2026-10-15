@@ -93,6 +93,25 @@ separate native tests; physical input, IME and display acceptance remain open.
 
 ![NexaCloud file browser, actual Linux Vulkan canvas capture](../../docs/images/nexacloud-linux-files.png)
 
+Linux test builds also provide a separate profiling target:
+
+```sh
+cmake --build build --target nexaui_nexacloud_vulkan_profile
+# Or select a native display and output prefix explicitly:
+NEXAUI_PLATFORM=wayland ./build/examples/nexacloud/nexaui_nexacloud_native \
+  --profile /path/to/font.ttf /tmp/nexacloud-profile
+```
+
+Run profiling without injected validation layers; keep correctness `--smoke`
+and synchronization validation separate. Three workloads run four warmup and
+32 measured frames in each unbatched/batched/batched/unbatched block. The runner
+holds normalized input constant, rejects counter/geometry drift, checks stable
+GPU allocations and compares all mode images with each other and headless.
+CSV output and GPU readback occur outside measured intervals. Timings are elapsed
+CPU intervals, not GPU timestamps. See the
+[preserved comparison](../../benchmarks/baselines/vulkan-d4a2508/README.md) for
+raw data, environment and mixed timing results.
+
 ## Interaction and layout
 
 - Tab/Shift+Tab move focus; Enter/Space activate named actions and file tiles.
