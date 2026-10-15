@@ -9,6 +9,20 @@ rectangles, rounded fills and round-capped lines. V06 adds RGBA8 images and A8
 glyph masks through a staged texture atlas. Batching, profiling,
 hardware device-loss acceptance and broader integration remain V07–V09 work.
 
+## Current investigation
+
+At `083cf94`, one Ubuntu static CI job reported
+`VUID-vkDestroySemaphore-semaphore-05149` in `nexaui_vulkan_x11_present`
+([job log](https://github.com/Lulus792/NexaUI/actions/runs/38767168136/job/116533287285)).
+Its shared job and sanitizer job passed. On the local Alpine/Mesa 26.1.6 system,
+20 consecutive X11 presentation lifecycle runs with validation and synchronization
+validation passed. This does not explain or clear the CI failure. The test-only
+`NEXAUI_VULKAN_TRACE_RETIRE` diagnostic now records retirement policy, semaphore
+handles and present-fence status when dropping a swapchain; Linux CI enables it
+so a recurrence can be assigned to the exact teardown path. The validation-error
+failure rule remains enabled. No production lifetime behavior has been changed
+on the basis of an unverified cause.
+
 ## Build boundary
 
 Linux builds enable `NEXAUI_BUILD_VULKAN` by default and require Vulkan SDK

@@ -43,7 +43,7 @@ jobs:
         run: cmake --build build --config Debug --parallel 4
       - name: Test (Linux X11)
         if: runner.os == 'Linux'
-        run: NEXAUI_REQUIRE_VULKAN=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a ctest --test-dir build -C Debug --output-on-failure --timeout 30
+        run: NEXAUI_REQUIRE_VULKAN=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation NEXAUI_TEST_PRIVATE_X11=1 NEXAUI_VULKAN_TRACE_RETIRE=1 xvfb-run -a ctest --test-dir build -C Debug --output-on-failure --timeout 30
       - name: Test (Windows and macOS)
         if: runner.os != 'Linux'
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 20

@@ -11,6 +11,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+#include <stdio.h>
+#endif
 
 #define NX_VK_MAX_IMAGES 64u
 #define NX_VK_MAX_FORMATS 256u
@@ -176,7 +179,21 @@ static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
 
 static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
     nx_vk_painter_destroy(&renderer->painter);
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    int trace = getenv("NEXAUI_VULKAN_TRACE_RETIRE") != NULL;
+    if (trace) fprintf(stderr,"Vulkan drop: policy=%d support=%d generation=%llu acquired=%d acquisition_pending=%d submission_pending=%d legacy=%d\n",
+        (int)renderer->retirement,(int)renderer->present_support,
+        (unsigned long long)renderer->swapchain_generation,renderer->has_acquired,
+        renderer->acquire_pending,renderer->submission_pending,renderer->legacy_presented);
+#endif
     for (uint32_t i = 0; i < NX_VK_MAX_IMAGES; ++i) {
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+        if (trace && renderer->finished[i] != VK_NULL_HANDLE) fprintf(stderr,
+            "  image=%u finished=0x%llx present_pending=%u present_fence_status=%d\n",i,
+            (unsigned long long)(uint64_t)renderer->finished[i],(unsigned)renderer->present_pending[i],
+            renderer->present_fences[i] != VK_NULL_HANDLE ?
+                (int)vkGetFenceStatus(renderer->native.logical,renderer->present_fences[i]) : -999);
+#endif
         if (renderer->finished[i] != VK_NULL_HANDLE)
             vkDestroySemaphore(renderer->native.logical, renderer->finished[i], NULL);
         renderer->finished[i] = VK_NULL_HANDLE;
