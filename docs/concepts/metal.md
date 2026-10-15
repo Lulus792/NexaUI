@@ -156,9 +156,15 @@ The native smoke now measures A/B/B/A blocks for each workload, with A being
 per-draw and B per-pass. Each block warms four frames, records 32 rows and
 checks its output against headless afterward. This keeps the comparison on
 the same device, build and scene; repeated blocks expose some scheduling drift.
-The initial target is fewer invariant calls and a lower median CPU encode
-interval; actual A/B results are still pending native CI. Upload rings and
-draw batching remain open A06 work.
+At `a364f2d`, both variants pass 80/80 tests. Across 768 measured frames,
+the median CPU encode interval drops by 55.2–73.0% in these virtual-device
+workloads. The five invariant calls fall from 1715/1980/1830 to 140/150/45.
+All mode/block GPU images match headless, each other and the preceding baseline.
+The [raw A/B comparison](../../benchmarks/baselines/metal-a364f2d/README.md)
+records distributions, artifact digests and limits. Overall frame times and
+tails do not improve uniformly; this is a CPU encode result, not an FPS or
+physical Release-latency guarantee. Upload rings and draw batching remain open
+A06 work.
 
 ## Validation status
 

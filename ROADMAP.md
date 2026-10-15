@@ -452,5 +452,8 @@ post-run GPU/reference capture. Both macOS variants pass at `f870b29`; the
 [preserved baseline](benchmarks/baselines/metal-f870b29/README.md) shows CPU
 encoding and retirement costs on Apple's virtual device. The first bounded
 change retains invariant state within a render pass and authors an in-process
-A/B/B/A comparison. Its native result is pending. This does not complete A06
+A/B/B/A comparison. At `a364f2d`, both macOS suites pass 80/80; 768 measured
+frames show 55.2–73.0% lower median CPU encode intervals on the virtual device,
+with identical GPU output. The [comparison](benchmarks/baselines/metal-a364f2d/README.md)
+also records wall-time/tail limitations. This does not complete A06
 batching/upload rings or A07 GPU timing.
