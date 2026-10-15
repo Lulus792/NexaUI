@@ -44,7 +44,12 @@ mode adds unbatched/batched/batched/unbatched blocks for overview 100%, files
 100% and compact files 200%, four warmup and 32 measured frames per block.
 Both modes use the same instance layout. It checks allocation stability, clocks
 and counters, writes CSVs outside the measured interval, then compares all GPU
-pixels with headless. Run profiling separately from injected validation: live
+pixels with headless. During measured/warmup frames it discards native UI input
+and supplies an off-canvas normalized pointer, retaining native resize/close
+polling. This keeps hover/selection stable without warping the physical cursor;
+ordinary smoke/interactive input routing is unchanged. An initial cross-run
+capture comparison exposed hover differences and was rejected for that reason.
+Run profiling separately from injected validation: live
 stacks in the original expanded smoke showed synchronization-validation barrier
 processing exceeding its time budget. The ordinary validation smoke remains
 intact. CI also retains Linux native captures, CSVs and test logs.

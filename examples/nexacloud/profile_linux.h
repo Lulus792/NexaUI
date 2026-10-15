@@ -13,9 +13,8 @@ static void vk_profile_distribution(const char *name, double *values) {
     printf(" %s median=%.3f p95=%.3f min=%.3f max=%.3f ms;",name,
         (values[15]+values[16])*.5,values[30],values[0],values[31]);
 }
-static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
+static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
     const char *prefix, const char *workload) {
-    if (!cloud_vk_profile_enabled) return 1;
     for (unsigned i=0;i<4;++i) if (!frame(window,scene,renderer,0)) return 0;
     nx_vulkan_renderer_info previous,current;
     if (nx_vulkan_renderer_get_info(renderer->backend.user,&previous) != NX_OK) return 0;
@@ -78,6 +77,14 @@ static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_rendere
     putchar('\n');
     if (!okay || snprintf(path,sizeof(path),"%s-linux-profile-%s.ppm",prefix,workload)>=(int)sizeof(path)) return 0;
     return capture(window,scene,renderer,path);
+}
+static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
+    const char *prefix, const char *workload) {
+    if (!cloud_vk_profile_enabled) return 1;
+    cloud_vk_profile_active=1;
+    int result=vk_profile_measure(window,scene,renderer,prefix,workload);
+    cloud_vk_profile_active=0;
+    return result;
 }
 static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
     const char *prefix, const char *workload) {

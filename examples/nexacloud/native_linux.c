@@ -8,6 +8,9 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+static int cloud_vk_profile_active;
+#endif
 static double now(void) {
     struct timespec t;
     if (clock_gettime(CLOCK_MONOTONIC, &t)) return -1;
@@ -16,8 +19,19 @@ static double now(void) {
 
 static int frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer, double dt) {
     nx_window_info info; size_t routed;
-    if (nx_window_poll(window, 0) != NX_OK || nx_window_get_info(window, &info) != NX_OK ||
-        nx_window_route_events(window, cloud_context(scene), &routed) != NX_OK) return 0;
+    if (nx_window_poll(window, 0) != NX_OK || nx_window_get_info(window, &info) != NX_OK) return 0;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (cloud_vk_profile_active) {
+        /* Hold the workload's input constant without warping the real cursor.
+           Native polling still handles window size/close; physical UI events
+           cannot change measured hover/selection between comparison blocks. */
+        nx_event event; int available;
+        do { if (nx_window_next_event(window,&event,&available) != NX_OK) return 0; } while (available);
+        event=(nx_event){0}; event.type=NX_EVENT_POINTER_MOVE; event.x=event.y=-1000;
+        if (nx_context_queue_event(cloud_context(scene),&event) != NX_OK) return 0;
+    } else
+#endif
+    if (nx_window_route_events(window, cloud_context(scene), &routed) != NX_OK) return 0;
     if (info.should_close) return 1;
     if (info.width <= 0 || info.height <= 0) return nx_window_poll(window, 16) == NX_OK;
     if (!cloud_frame(scene, info.width, info.height, dt) ||
