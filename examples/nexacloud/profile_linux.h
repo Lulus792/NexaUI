@@ -18,6 +18,7 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
     for (unsigned i=0;i<4;++i) if (!frame(window,scene,renderer,0)) return 0;
     nx_vulkan_renderer_info previous,current;
     if (nx_vulkan_renderer_get_info(renderer->backend.user,&previous) != NX_OK) return 0;
+    nx_vulkan_frame_profile geometry=previous.last_frame;
     uint64_t vertices=previous.vertex_buffer_allocations, atlases=previous.atlas_allocations, uploads=previous.bitmap_upload_allocations;
     cloud_vk_profile_sample samples[CLOUD_VK_PROFILE_SAMPLES];
     for (unsigned i=0;i<CLOUD_VK_PROFILE_SAMPLES;++i) {
@@ -37,6 +38,11 @@ static int vk_profile_measure(nx_window *window, cloud_scene *scene, nx_renderer
             p.pixel_width != current.pixel_width || p.pixel_height != current.pixel_height ||
             p.present_copy_bytes != (uint64_t)p.pixel_width*p.pixel_height*4u ||
             current.vertex_buffer_allocations != vertices || current.atlas_allocations != atlases || current.bitmap_upload_allocations != uploads) return 0;
+        if (p.pixel_width != geometry.pixel_width || p.pixel_height != geometry.pixel_height || p.draw_scale != geometry.draw_scale ||
+            p.input_commands != geometry.input_commands || p.draw_records != geometry.draw_records || p.draw_calls != geometry.draw_calls ||
+            p.render_passes != geometry.render_passes || p.history_copies != geometry.history_copies ||
+            p.history_copy_bytes != geometry.history_copy_bytes || p.bitmap_upload_bytes != geometry.bitmap_upload_bytes ||
+            p.vertex_upload_bytes != geometry.vertex_upload_bytes || p.batched != geometry.batched) return 0;
         const double phases[]={p.retirement_ms,p.prepare_ms,p.acquire_ms,p.encode_ms,p.submit_ms,p.present_ms};
         double total=0;
         for (unsigned j=0;j<6;++j) { if (!isfinite(phases[j]) || phases[j]<0) return 0; total+=phases[j]; }
@@ -86,15 +92,38 @@ static int vk_profile_workload(nx_window *window, cloud_scene *scene, nx_rendere
     cloud_vk_profile_active=0;
     return result;
 }
+static int vk_profile_images_equal(const char *left_path, const char *right_path) {
+    FILE *left=fopen(left_path,"rb"), *right=fopen(right_path,"rb");
+    int okay=left && right;
+    if (okay) {
+        unsigned char a[4096],b[4096];
+        for (;;) {
+            size_t na=fread(a,1,sizeof(a),left), nb=fread(b,1,sizeof(b),right);
+            if (na!=nb || memcmp(a,b,na)) { okay=0; break; }
+            if (!na) { okay=!ferror(left) && !ferror(right); break; }
+        }
+    }
+    if (left && fclose(left)) okay=0;
+    if (right && fclose(right)) okay=0;
+    return okay;
+}
 static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
     const char *prefix, const char *workload) {
     if (!cloud_vk_profile_enabled) return 1;
     static const int batched[]={0,1,1,0};
+    char baseline[1200]={0};
     for (unsigned block=0;block<4;++block) {
         char name[80];
         if (snprintf(name,sizeof(name),"%s-%s-%u",workload,batched[block] ? "batched" : "unbatched",block)>=(int)sizeof(name) ||
             nx_vulkan_test_set_batching(renderer->backend.user,batched[block]) != NX_OK ||
             !vk_profile_workload(window,scene,renderer,prefix,name)) return 0;
+        char capture_path[1200];
+        if (snprintf(capture_path,sizeof(capture_path),"%s-linux-profile-%s.ppm",prefix,name)>=(int)sizeof(capture_path)) return 0;
+        if (!block) memcpy(baseline,capture_path,strlen(capture_path)+1);
+        else if (!vk_profile_images_equal(baseline,capture_path)) {
+            fprintf(stderr,"Vulkan benchmark scene drift: %s differs from its first block\n",name);
+            return 0;
+        }
     }
     return nx_vulkan_test_set_batching(renderer->backend.user,1) == NX_OK;
 }

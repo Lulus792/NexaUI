@@ -49,6 +49,8 @@ and supplies an off-canvas normalized pointer, retaining native resize/close
 polling. This keeps hover/selection stable without warping the physical cursor;
 ordinary smoke/interactive input routing is unchanged. An initial cross-run
 capture comparison exposed hover differences and was rejected for that reason.
+Each measured block also rejects geometry/counter drift, and the native runner
+compares all four mode images byte-for-byte before accepting a workload.
 Run profiling separately from injected validation: live
 stacks in the original expanded smoke showed synchronization-validation barrier
 processing exceeding its time budget. The ordinary validation smoke remains
