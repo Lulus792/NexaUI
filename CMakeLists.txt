@@ -169,12 +169,13 @@ endif()
 if(APPLE)
     option(NEXAUI_BUILD_METAL "Build the private macOS Metal backend" ON)
     if(NEXAUI_BUILD_METAL)
-        add_library(nexaui_renderer_metal STATIC renderers/metal/renderer.m)
+        add_library(nexaui_renderer_metal STATIC renderers/metal/renderer.m renderers/metal/draw_plan.c)
         target_include_directories(nexaui_renderer_metal PRIVATE
             ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/platform/macos)
         target_link_libraries(nexaui_renderer_metal PRIVATE NexaUI::NexaUI
             "-framework Metal" "-framework QuartzCore" "-framework CoreGraphics" objc)
-        target_compile_options(nexaui_renderer_metal PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
+        target_compile_options(nexaui_renderer_metal PRIVATE
+            $<$<COMPILE_LANGUAGE:OBJC>:-fno-objc-arc> -Wall -Wextra -Wpedantic)
         set_target_properties(nexaui_renderer_metal PROPERTIES
             OBJC_STANDARD 17 OBJC_STANDARD_REQUIRED YES OBJC_EXTENSIONS NO)
     endif()
@@ -266,6 +267,12 @@ if(NEXAUI_BUILD_TESTS)
                 FAIL_REGULAR_EXPRESSION "Validation Error;VUID-")
         endforeach()
     endif()
+    add_executable(nexaui_metal_plan_tests tests/test_metal_plan.c renderers/metal/draw_plan.c)
+    target_include_directories(nexaui_metal_plan_tests PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/renderers/metal)
+    target_link_libraries(nexaui_metal_plan_tests PRIVATE NexaUI::NexaUI)
+    target_compile_features(nexaui_metal_plan_tests PRIVATE c_std_17)
+    add_test(NAME nexaui_metal_plan COMMAND nexaui_metal_plan_tests)
+    set_tests_properties(nexaui_metal_plan PROPERTIES TIMEOUT 20)
     add_executable(nexaui_platform_event_queue_tests
         tests/test_platform_event_queue.c platform/common/event_queue.c)
     target_include_directories(nexaui_platform_event_queue_tests PRIVATE
@@ -619,7 +626,8 @@ if(NEXAUI_BUILD_TESTS)
             add_executable(nexaui_metal_tests tests/test_metal.m)
             target_include_directories(nexaui_metal_tests PRIVATE
                 ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/platform/macos ${PROJECT_SOURCE_DIR}/renderers/metal)
-            target_link_libraries(nexaui_metal_tests PRIVATE nexaui_renderer_metal "-framework AppKit" Threads::Threads)
+            target_link_libraries(nexaui_metal_tests PRIVATE NexaUI::NexaUI
+                nexaui_renderer_metal "-framework AppKit" Threads::Threads)
             target_compile_definitions(nexaui_metal_tests PRIVATE NEXAUI_METAL_TEST_HOOKS)
             target_compile_options(nexaui_metal_tests PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
             set_target_properties(nexaui_metal_tests PROPERTIES OBJC_STANDARD 17 OBJC_STANDARD_REQUIRED YES OBJC_EXTENSIONS NO)

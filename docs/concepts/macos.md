@@ -54,16 +54,24 @@ are unsupported. Receiving a path performs no filesystem operation.
 ## Validation status
 
 The development host is Windows/Linux. Both configurations still build, and
-shared event/drop/input/dependency tests pass. These results do **not** compile
-or validate Objective-C. macOS CI must execute before native support is claimed.
+shared event/drop/input/dependency tests pass. Host results do **not** compile
+or validate Objective-C.
 
 The authored `nexaui_macos_window` test creates real hidden AppKit windows and
 checks callbacks, Unicode/preedit, resize, two-window isolation, wrong-thread
 calls, allocator sizes, renderer leases, clipboard and file URL drops. Its
 clipboard case snapshots/restores the original items. The C17 hello-window
-example is also enabled on Apple builds. Execution results will be recorded here;
-authored tests alone are not successful tests. In-process callbacks do not prove
+example is also enabled on Apple builds. In-process callbacks do not prove
 physical input/IME, monitor transitions or VoiceOver behavior.
+
+On 2026-10-15, commit `addc4a6` compiled AppKit with AppleClang 21.0.0 and
+passed `nexaui_macos_window` on both static and shared macOS CI builds
+([static job](https://github.com/Lulus792/NexaUI/actions/runs/38654334451/job/116160404445),
+[shared job](https://github.com/Lulus792/NexaUI/actions/runs/38654334451/job/116160404563)).
+Each ran 74 tests with 73 passing. The sole failure was an outdated core-test
+conditional that still expected macOS window creation to be unsupported; it
+now exercises the same actual lifecycle checks as Windows/Linux. The follow-up
+full matrix must pass before claiming a green integration run.
 
 The dependency audit permits AppKit/objc only on Apple targets and checks
 Objective-C `#import` as well as C `#include`. Its positive/negative fixtures pass
@@ -71,10 +79,11 @@ on Windows/Linux. Common text-buffer/field regressions pass on both hosts and
 under Linux ASan/UBSan. The Apple Command policy branch was also compiled and
 executed as portable C under Linux ASan/UBSan (two passing model/field probes).
 That probe is a Linux executable with the policy branch selected; it is not an
-Apple SDK build or macOS runtime result. Actual Apple CI remains required.
+Apple SDK build or macOS runtime result. The actual native CI jobs above also
+passed text-buffer and text-field checks; physical Command/IME acceptance remains open.
 
-An initial [Metal clear/present target](metal.md) has implementation and authored
-tests; native validation and drawing commands remain pending. A native NexaCloud
+An initial [Metal target](metal.md) implements clear/present and opaque geometry
+with nested clips; native validation, alpha and image commands remain pending. A native NexaCloud
 macOS runner is not yet available. A blank window or headless scene is not
 complete macOS UI acceptance.
 

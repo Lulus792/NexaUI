@@ -164,7 +164,7 @@ int main(void) {
         CHECK(!pthread_create(&thread,NULL,wrong_thread,&t) && !pthread_join(thread,NULL));
         CHECK(t.poll == NX_ERROR_STATE && t.info == NX_ERROR_STATE && t.create == NX_ERROR_STATE);
         CHECK(nx_window_get_info(w,&info) == NX_OK);
-        int owner, other; CHECK(nx_window_renderer_acquire(w,&owner) == NX_OK && nx_window_renderer_acquire(w,&other) == NX_ERROR_STATE);
+        int owner = 0, other = 0; CHECK(nx_window_renderer_acquire(w,&owner) == NX_OK && nx_window_renderer_acquire(w,&other) == NX_ERROR_STATE);
         nx_window_destroy(w); CHECK(nx_window_get_info(w,&info) == NX_OK);
         CHECK(nx_window_renderer_release(w,&other) == NX_ERROR_STATE && nx_window_renderer_release(w,&owner) == NX_OK);
         CHECK(test_clipboard(w) == 0 && test_drop(w) == 0);

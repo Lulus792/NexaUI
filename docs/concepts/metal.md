@@ -1,8 +1,9 @@
 # Initial macOS Metal backend
 
 The private `nexaui_renderer_metal` target implements initial A01/A02 clear/present
-for the [AppKit adapter](macos.md). Shapes, clipping, composition and image/glyph
-upload remain A03–A05 work before native NexaCloud rendering is available.
+and A03 opaque geometry for the [AppKit adapter](macos.md), with nested scissor
+clips. Native SDK/GPU execution is still pending. Straight-alpha composition
+and image/glyph upload remain A04/A05 work before native NexaCloud rendering.
 
 ## Build and ownership
 
@@ -37,17 +38,58 @@ pool promptly releases the caller's drawable reference after commit; Metal/Core
 Animation retain their own presentation resources. GPU completion is not proof
 that a frame has become visible on screen.
 
+## Initial opaque geometry
+
+The first command path handles filled rectangles and triangles, inside strokes,
+rounded fills and round-capped lines. A plain C draw iterator validates the full
+stream before drawable acquisition, bounds float32 intermediate ranges, applies
+up to `NX_MAX_CLIP_DEPTH` nested clips and emits pixel-aligned bounding quads.
+Its NDC Y axis is inverted relative to the Vulkan path: Metal's viewport maps
+the top of the drawable to NDC +1. The fragment shader tests analytic coverage
+at pixel centers, with compensated float32 arithmetic for near-edge triangles,
+rounds and lines. It uses no optional double-precision shader support.
+
+Authored MSL is embedded as source; Apple's OS compiler creates the pipeline
+once per device, without an external shader translation library or runtime
+source-file lookup. `fastMathEnabled=NO` and `FP_CONTRACT OFF` preserve the
+split-product operations. This initial path copies small per-draw vertex and
+shape arguments with Metal's `set*Bytes` API. Upload rings and batching are A06
+work. Color output is quantized RGBA8; blending is disabled. Alpha values that
+quantize to zero are skipped, and those that quantize to 255 are opaque.
+Other alpha and all valid bitmap commands return `NX_ERROR_UNSUPPORTED` before
+drawable acquisition. They are never silently rendered as opaque shapes.
+
+`tools/embed_metal_shader.py --check` verifies source/header correspondence;
+it does not compile MSL. CI runs this check on all three platforms. Pipeline
+compilation and GPU byte comparisons still require a Metal device.
+
 ## Validation status
 
 The Windows/Linux host cannot compile or execute Objective-C Metal code. Its C17
 example entry point compiles as portable C; host configurations still build.
-Native Apple SDK compilation and Metal execution remain pending CI/hardware.
-Source and authored tests do not establish GPU success.
+The initial clear/present renderer from `aa42f01` compiled with AppleClang 21.0.0
+in [macOS CI](https://github.com/Lulus792/NexaUI/actions/runs/38656947313/job/116168845559).
+The overall build stopped at the test target's missing public-header include
+path; its direct `NexaUI::NexaUI` dependency is now explicit. That build did not
+execute Metal tests. SDK compilation of the newer opaque pipeline and any
+Metal GPU execution remain pending. Source and authored tests do not establish
+GPU success.
+
+The separate `nexaui_metal_plan` test runs on Windows and Linux. It interprets
+prepared geometry through the independent headless renderer and checks every
+RGBA byte and padding byte at 1x/1.25x/1.5x/2x, including empty/intersecting clips,
+all five opaque shape types and a distant triangle. It also checks the Metal
+NDC orientation, invalid streams, unsupported alpha/images, range limits and
+zero-size suspension. Windows MSVC Debug passed; Linux Clang ASan/UBSan with
+leak detection passed. These are CPU preparation results, not Metal execution.
 
 `nexaui_metal` is authored to compare every GPU canvas RGBA8 byte with the software
 reference, including alpha, quantization ties and row padding. It checks resize,
 allocation faults, drawable unavailability, thread/lease rules, retained readback,
-recovery and retryable driver close. It and the example skip explicitly only if
+recovery and retryable driver close. Authored shape comparisons cover mixed
+opaque shapes, fractional scales, nested clips, both triangle windings, shared
+diagonals, degenerate geometry, large-coordinate cancellation and pipeline
+allocation failure/recreation. It and the example skip explicitly only if
 there is no Metal device. `NEXAUI_REQUIRE_METAL=1` makes absence fail on required
 hardware runs. Tests enable the Metal debug layer; actual results will be recorded
 here. A skip never establishes native GPU support.
@@ -66,3 +108,6 @@ hardware performance, physical DPI/input and native NexaCloud remain open.
 - [Command buffer status](https://developer.apple.com/documentation/metal/mtlcommandbuffer)
 - [Unbounded waitUntilCompleted](https://developer.apple.com/documentation/metal/mtlcommandbuffer/waituntilcompleted%28%29?language=objc)
 - [Texture readback into a shared buffer](https://developer.apple.com/documentation/metal/reading-pixel-data-from-a-drawable-texture)
+- [Metal math compile options](https://developer.apple.com/documentation/metal/mtlcompileoptions/fastmathenabled)
+- [MSL specification, section 1.6.3: FP contraction](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
+- [Metal coordinate systems](https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/Render-Ctx/Render-Ctx.html)

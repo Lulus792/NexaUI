@@ -172,7 +172,7 @@ static int test_arena(void) {
 }
 
 static int test_window_lifecycle(void) {
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
     nx_window *window = NULL;
     nx_window_desc desc = {0};
     desc.title_utf8 = "NexaUI \xc3\xbc";

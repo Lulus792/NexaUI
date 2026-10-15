@@ -386,3 +386,17 @@ command retirement are bounded. Native SDK/runtime execution remains pending.
 This is not command-stream or NexaCloud rendering: A03–A05 shapes, clips, alpha
 and textures remain next, followed by batching/profiling and hardware acceptance.
 See [the Metal contract](docs/concepts/metal.md).
+
+Initial A03 opaque shapes and the scissor part of A04 now have an implementation.
+MSL is compiled once by the OS; the plain C iterator has passing Windows and
+Linux sanitizer/headless comparisons. Native GPU readback tests are authored
+but have no execution evidence yet. Alpha composition and image/glyph uploads
+remain A04/A05 work. Source embedding checks do not establish MSL compilation.
+
+Native CI now supplies initial AppKit execution evidence: the dedicated window
+test passes on static/shared AppleClang 21 builds at `addc4a6`, as do the common
+text models and C hello-window example. An obsolete macOS-unsupported assertion
+was the only failing core test (73/74 passed); its lifecycle branch now includes
+Apple. The first Metal object also compiled at `aa42f01`; its test target's
+missing core usage requirements are fixed. Follow-up full/native GPU results
+remain required. Physical input, DPI, IME and assistive acceptance remain open.

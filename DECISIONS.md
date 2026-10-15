@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-10-15 — Start Metal geometry with explicit pixel coverage
+
+The initial opaque command path follows the same coverage rules as headless and
+Vulkan, while using Metal's opposite NDC Y orientation. A plain C iterator emits
+bounded quads/scissors and packed shape arguments; authored MSL tests analytic
+coverage with compensated float32 arithmetic. We disable fast math and FP
+contraction explicitly. Apple's OS compiler builds the embedded source once per
+device; the embedding tool is not a shader compiler. Per-draw `set*Bytes` copies
+are a first implementation, with batching/upload rings still A06 work.
+
+Unsupported alpha and bitmap commands fail before drawable acquisition instead
+of producing an approximate result. Portable headless comparisons verify C
+preparation separately from pending Apple shader compilation/GPU tests.
+
 ## 2026-10-15 — Keep Metal submission ownership until terminal status
 
 The initial A01/A02 Metal backend uses an owned BGRA8 canvas, a CAMetalLayer and

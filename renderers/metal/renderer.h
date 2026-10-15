@@ -14,8 +14,8 @@ typedef struct nx_metal_renderer_info {
 
 /* Private AppKit/Metal backend. Every call requires the main thread. The
    renderer leases its window until successful destruction; native objects
-   never appear in the public installed C API. Initial A01/A02 supports clear
-   frames; other valid commands return unsupported before drawable acquisition. */
+   never appear in the public installed C API. Initial drawing supports opaque
+   shapes and nested clips. Alpha/image commands fail before drawable acquisition. */
 nx_result nx_metal_renderer_create(nx_window *window, const nx_allocator *allocator,
     nx_metal_renderer **out_renderer);
 nx_result nx_metal_render(nx_metal_renderer *renderer, const nx_command *commands,
@@ -31,10 +31,14 @@ nx_result nx_metal_driver_open(nx_window *window, nx_renderer_driver *out_driver
 #ifdef NEXAUI_METAL_TEST_HOOKS
 nx_result nx_metal_test_readback(nx_metal_renderer *renderer, nx_color clear,
     uint8_t *pixels, size_t stride);
+nx_result nx_metal_test_render_readback(nx_metal_renderer *renderer,
+    const nx_command *commands, size_t count, double scale, nx_color clear,
+    uint8_t *pixels, size_t stride);
 typedef enum nx_metal_test_fault {
     NX_MTL_TEST_DRAWABLE_UNAVAILABLE = 1,
     NX_MTL_TEST_CANVAS_MEMORY,
     NX_MTL_TEST_COMMAND_MEMORY,
+    NX_MTL_TEST_PIPELINE_MEMORY,
     NX_MTL_TEST_WAIT_TIMEOUT
 } nx_metal_test_fault;
 nx_result nx_metal_test_fail_next(nx_metal_renderer *renderer, nx_metal_test_fault fault);

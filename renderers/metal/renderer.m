@@ -4,6 +4,8 @@
 #import <QuartzCore/CATransaction.h>
 #include "renderer.h"
 #include "window_internal.h"
+#include "draw_plan.h"
+#include "shader_source.h"
 
 #include <math.h>
 #include <pthread.h>
@@ -20,6 +22,7 @@ struct nx_metal_renderer {
     nx_window *window;
     id<MTLDevice> device;
     id<MTLCommandQueue> queue;
+    id<MTLRenderPipelineState> pipeline;
     CAMetalLayer *layer;
     CALayer *previous_layer;
     BOOL previous_wants_layer;
@@ -30,7 +33,7 @@ struct nx_metal_renderer {
     uint64_t submitted, completed;
     int leased, closing, broken;
 #ifdef NEXAUI_METAL_TEST_HOOKS
-    unsigned drawable_unavailable, canvas_memory, command_memory, wait_timeouts;
+    unsigned drawable_unavailable, canvas_memory, command_memory, pipeline_memory, wait_timeouts;
 #endif
 };
 
@@ -82,6 +85,41 @@ static nx_result nx_mtl_device(nx_metal_renderer *r) {
     [r->queue setLabel:@"NexaUI UI queue"];
     return NX_OK;
 }
+static nx_result nx_mtl_pipeline(nx_metal_renderer *r) {
+    if (r->pipeline) return NX_OK;
+#ifdef NEXAUI_METAL_TEST_HOOKS
+    if (r->pipeline_memory) { r->pipeline_memory = 0; return NX_ERROR_MEMORY; }
+#endif
+    NSMutableString *source = [NSMutableString string];
+    for (size_t i = 0; i < sizeof(nx_mtl_shader_chunks)/sizeof(nx_mtl_shader_chunks[0]); ++i)
+        [source appendString:[NSString stringWithUTF8String:nx_mtl_shader_chunks[i]]];
+    MTLCompileOptions *options = [[MTLCompileOptions alloc] init];
+    options.fastMathEnabled = NO; /* Preserve split-product arithmetic. */
+    options.languageVersion = MTLLanguageVersion2_0;
+    NSError *error = nil;
+    id<MTLLibrary> library = [r->device newLibraryWithSource:source options:options error:&error];
+    [options release];
+    if (!library) {
+        const char *message = [[error localizedDescription] UTF8String];
+        fprintf(stderr,"NexaUI Metal shader compilation: %s\n",message ? message : "no library returned");
+        return NX_ERROR_PLATFORM;
+    }
+    id<MTLFunction> vertex = [library newFunctionWithName:@"nx_mtl_vertex"];
+    id<MTLFunction> fragment = [library newFunctionWithName:@"nx_mtl_fragment"];
+    MTLRenderPipelineDescriptor *desc = [[MTLRenderPipelineDescriptor alloc] init];
+    desc.label = @"NexaUI opaque shapes";
+    desc.vertexFunction = vertex; desc.fragmentFunction = fragment;
+    desc.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    desc.colorAttachments[0].blendingEnabled = NO;
+    if (vertex && fragment) r->pipeline = [r->device newRenderPipelineStateWithDescriptor:desc error:&error];
+    [desc release]; [fragment release]; [vertex release]; [library release];
+    if (!r->pipeline) {
+        const char *message = [[error localizedDescription] UTF8String];
+        fprintf(stderr,"NexaUI Metal shape pipeline: %s\n",message ? message : "missing function or pipeline");
+        return NX_ERROR_PLATFORM;
+    }
+    return NX_OK;
+}
 static nx_result nx_mtl_resize(nx_metal_renderer *r, uint32_t width, uint32_t height, double scale) {
     if (!isfinite(scale) || scale <= 0) return NX_ERROR_ARGUMENT;
     if (width > NX_MTL_MAX_AXIS || height > NX_MTL_MAX_AXIS) return NX_ERROR_LIMIT;
@@ -109,17 +147,21 @@ static nx_result nx_mtl_resize(nx_metal_renderer *r, uint32_t width, uint32_t he
     [r->layer setDrawableSize:CGSizeMake(width,height)];
     return NX_OK;
 }
-static nx_result nx_mtl_submit(nx_metal_renderer *r, nx_color clear,
+static nx_result nx_mtl_submit(nx_metal_renderer *r, const nx_command *stream, size_t count, double scale, nx_color clear,
     id<MTLBuffer> readback, size_t read_stride, int *presented) {
     *presented = 0;
     if (r->closing || r->broken) return NX_ERROR_STATE;
     if (!r->width || !r->height) return NX_OK;
+    nx_mtl_plan plan;
+    nx_result result = nx_mtl_plan_begin(&plan,stream,count,scale,r->width,r->height);
+    if (result != NX_OK) return result;
+    if (count && (result = nx_mtl_pipeline(r)) != NX_OK) return result;
 #ifdef NEXAUI_METAL_TEST_HOOKS
     if (r->command_memory) { r->command_memory = 0; return NX_ERROR_MEMORY; }
 #endif
     id<MTLCommandBuffer> commands = [r->queue commandBuffer];
     if (!commands) return NX_ERROR_MEMORY;
-    commands.label = @"NexaUI clear/present";
+    commands.label = @"NexaUI shapes/present";
     MTLRenderPassDescriptor *pass = [MTLRenderPassDescriptor renderPassDescriptor];
     pass.colorAttachments[0].texture = r->canvas;
     pass.colorAttachments[0].loadAction = MTLLoadActionClear;
@@ -127,6 +169,20 @@ static nx_result nx_mtl_submit(nx_metal_renderer *r, nx_color clear,
     pass.colorAttachments[0].clearColor = MTLClearColorMake(nx_mtl_byte(clear.r), nx_mtl_byte(clear.g), nx_mtl_byte(clear.b), nx_mtl_byte(clear.a));
     id<MTLRenderCommandEncoder> encoder = [commands renderCommandEncoderWithDescriptor:pass];
     if (!encoder) return NX_ERROR_MEMORY;
+    if (count) {
+        [encoder setRenderPipelineState:r->pipeline];
+        [encoder setCullMode:MTLCullModeNone];
+        [encoder setViewport:(MTLViewport){0,0,r->width,r->height,0,1}];
+        nx_mtl_draw draw;
+        while (nx_mtl_plan_next(&plan,&draw)) {
+            [encoder setScissorRect:(MTLScissorRect){draw.scissor.x,draw.scissor.y,draw.scissor.width,draw.scissor.height}];
+            /* set*Bytes copies these bounded arguments into Metal storage.
+               No pointer into the caller's command stream survives encoding. */
+            [encoder setVertexBytes:draw.vertices length:sizeof(draw.vertices) atIndex:0];
+            [encoder setFragmentBytes:&draw.shape length:sizeof(draw.shape) atIndex:0];
+            [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:6];
+        }
+    }
     [encoder endEncoding];
     id<MTLBlitCommandEncoder> copy = [commands blitCommandEncoder];
     if (!copy) return NX_ERROR_MEMORY;
@@ -198,10 +254,9 @@ nx_result nx_metal_render(nx_metal_renderer *r, const nx_command *commands, size
     *presented = 0;
     if (!r || !isfinite(scale) || scale <= 0 || !nx_mtl_color(clear)) return NX_ERROR_ARGUMENT;
     if (!nx_mtl_owner(r)) return NX_ERROR_STATE;
-    if (count > UINT32_MAX / 6u) return NX_ERROR_LIMIT;
-    nx_result result = nx_render_validate_commands(commands,count);
+    nx_mtl_plan preflight;
+    nx_result result = nx_mtl_plan_begin(&preflight,commands,count,scale,0,0);
     if (result != NX_OK) return result;
-    if (count) return NX_ERROR_UNSUPPORTED;
     if (r->closing || r->broken) return NX_ERROR_STATE;
     @autoreleasepool {
         nx_window_info info; result = nx_window_get_info(r->window,&info);
@@ -210,7 +265,7 @@ nx_result nx_metal_render(nx_metal_renderer *r, const nx_command *commands, size
         if (width > NX_MTL_MAX_AXIS || height > NX_MTL_MAX_AXIS) return NX_ERROR_LIMIT;
         result = nx_mtl_resize(r,(uint32_t)width,(uint32_t)height,info.scale);
         if (result == NX_ERROR_LIMIT) return NX_OK;
-        return result == NX_OK ? nx_mtl_submit(r,clear,nil,0,presented) : result;
+        return result == NX_OK ? nx_mtl_submit(r,commands,count,scale,clear,nil,0,presented) : result;
     }
 }
 nx_result nx_metal_renderer_get_info(nx_metal_renderer *r, nx_metal_renderer_info *out) {
@@ -234,6 +289,7 @@ nx_result nx_metal_renderer_recover(nx_metal_renderer *r) {
         nx_result result = nx_mtl_retire(r,0);
         if (r->pending) return result;
         [r->canvas release]; r->canvas = nil; r->width = r->height = 0;
+        [r->pipeline release]; r->pipeline = nil;
         r->layer.device = nil; [r->queue release]; r->queue = nil; [r->device release]; r->device = nil;
         result = nx_mtl_device(r);
         if (result == NX_OK) r->layer.device = r->device;
@@ -252,7 +308,7 @@ nx_result nx_metal_renderer_destroy(nx_metal_renderer *r) {
             [view setLayer:r->previous_layer]; [view setWantsLayer:r->previous_wants_layer];
         }
         [r->previous_layer release]; [r->layer release]; [r->canvas release];
-        [r->readback release]; [r->queue release]; [r->device release];
+        [r->readback release]; [r->pipeline release]; [r->queue release]; [r->device release];
         if (r->leased) (void)nx_window_renderer_release(r->window,r);
         nx_allocator a = r->allocator; a.deallocate(a.user,r,sizeof(*r)); return NX_OK;
     }
@@ -274,15 +330,15 @@ static nx_result nx_mtl_driver_submit(void *user, nx_render_target target, const
     nx_color clear, nx_render_outcome *outcome) {
     nx_metal_renderer *r = user; *outcome = NX_RENDER_SUSPENDED;
     if (!nx_mtl_owner(r) || r->closing) return NX_ERROR_STATE;
-    nx_result result = nx_render_validate_commands(commands,count);
+    nx_mtl_plan preflight;
+    nx_result result = nx_mtl_plan_begin(&preflight,commands,count,target.scale,target.pixel_width,target.pixel_height);
     if (result != NX_OK) return result;
-    if (count) return NX_ERROR_UNSUPPORTED;
     if (r->broken) { *outcome = NX_RENDER_DEVICE_LOST; return NX_OK; }
     @autoreleasepool {
         int presented = 0;
         result = nx_mtl_resize(r,target.pixel_width,target.pixel_height,target.scale);
         if (result == NX_ERROR_LIMIT) return NX_OK;
-        if (result == NX_OK) result = nx_mtl_submit(r,clear,nil,0,&presented);
+        if (result == NX_OK) result = nx_mtl_submit(r,commands,count,target.scale,clear,nil,0,&presented);
         *outcome = r->broken ? NX_RENDER_DEVICE_LOST : presented ? NX_RENDER_READY : NX_RENDER_SUSPENDED;
         return r->broken ? NX_OK : result;
     }
@@ -301,9 +357,13 @@ nx_result nx_metal_driver_open(nx_window *window, nx_renderer_driver *out) {
 }
 
 #ifdef NEXAUI_METAL_TEST_HOOKS
-nx_result nx_metal_test_readback(nx_metal_renderer *r, nx_color clear, uint8_t *pixels, size_t stride) {
+nx_result nx_metal_test_render_readback(nx_metal_renderer *r, const nx_command *stream, size_t count,
+    double scale, nx_color clear, uint8_t *pixels, size_t stride) {
     if (!r || !pixels || !nx_mtl_color(clear)) return NX_ERROR_ARGUMENT;
     if (!nx_mtl_owner(r) || r->closing || r->broken) return NX_ERROR_STATE;
+    nx_mtl_plan preflight;
+    nx_result validation = nx_mtl_plan_begin(&preflight,stream,count,scale,0,0);
+    if (validation != NX_OK) return validation;
     @autoreleasepool {
         nx_window_info info; nx_result result = nx_window_get_info(r->window,&info);
         if (result != NX_OK) return result;
@@ -316,7 +376,7 @@ nx_result nx_metal_test_readback(nx_metal_renderer *r, nx_color clear, uint8_t *
         size_t gpu_stride = (row + 255u) & ~(size_t)255u;
         id<MTLBuffer> readback = [r->device newBufferWithLength:gpu_stride * r->height options:MTLResourceStorageModeShared];
         if (!readback) return NX_ERROR_MEMORY;
-        int presented; result = nx_mtl_submit(r,clear,readback,gpu_stride,&presented);
+        int presented; result = nx_mtl_submit(r,stream,count,scale,clear,readback,gpu_stride,&presented);
         [readback release];
         if (result != NX_OK || !presented) return result != NX_OK ? result : NX_ERROR_STATE;
         result = nx_mtl_retire(r,1);
@@ -329,6 +389,9 @@ nx_result nx_metal_test_readback(nx_metal_renderer *r, nx_color clear, uint8_t *
         [r->readback release]; r->readback = nil; return NX_OK;
     }
 }
+nx_result nx_metal_test_readback(nx_metal_renderer *r, nx_color clear, uint8_t *pixels, size_t stride) {
+    return nx_metal_test_render_readback(r,NULL,0,1,clear,pixels,stride);
+}
 nx_result nx_metal_test_fail_next(nx_metal_renderer *r, nx_metal_test_fault fault) {
     if (!r || fault < NX_MTL_TEST_DRAWABLE_UNAVAILABLE || fault > NX_MTL_TEST_WAIT_TIMEOUT) return NX_ERROR_ARGUMENT;
     if (!nx_mtl_owner(r)) return NX_ERROR_STATE;
@@ -336,6 +399,7 @@ nx_result nx_metal_test_fail_next(nx_metal_renderer *r, nx_metal_test_fault faul
     case NX_MTL_TEST_DRAWABLE_UNAVAILABLE: r->drawable_unavailable = 1; break;
     case NX_MTL_TEST_CANVAS_MEMORY: r->canvas_memory = 1; break;
     case NX_MTL_TEST_COMMAND_MEMORY: r->command_memory = 1; break;
+    case NX_MTL_TEST_PIPELINE_MEMORY: r->pipeline_memory = 1; break;
     case NX_MTL_TEST_WAIT_TIMEOUT: r->wait_timeouts = 2; break;
     }
     return NX_OK;

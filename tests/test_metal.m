@@ -17,17 +17,32 @@ static void deallocate(void *user, void *p, size_t size) {
     heap *h = user; if (h->p != p || h->size != size || h->live != 1) abort();
     free(p); h->p = NULL; h->live = 0;
 }
-static int compare(nx_window *w, nx_metal_renderer *r, nx_color clear) {
+static int compare_commands(nx_window *w, nx_metal_renderer *r, const nx_command *commands,
+    size_t count, double scale, nx_color clear) {
     nx_window_info info; CHECK(nx_window_poll(w,0) == NX_OK && nx_window_get_info(w,&info) == NX_OK);
     uint32_t width = (uint32_t)ceil((double)info.width*info.scale), height = (uint32_t)ceil((double)info.height*info.scale);
     size_t stride = (size_t)width * 4u + 17u, bytes = stride * height;
     uint8_t *actual = malloc(bytes), *expected = malloc(bytes); CHECK(actual && expected);
+    nx_command *scaled = malloc((count ? count : 1)*sizeof(*scaled)); CHECK(scaled);
+    for (size_t i = 0; i < count; ++i) {
+        scaled[i] = commands[i]; nx_command *c = &scaled[i];
+        if (c->type == NX_COMMAND_FILL_TRIANGLE || c->type == NX_COMMAND_LINE) {
+            for (unsigned j = 0; j < 3; ++j) {
+                c->points[j].x = (float)(c->points[j].x*scale); c->points[j].y = (float)(c->points[j].y*scale);
+            }
+        } else if (c->type != NX_COMMAND_POP_CLIP) {
+            c->rect.x = (float)(c->rect.x*scale); c->rect.y = (float)(c->rect.y*scale);
+            c->rect.width = (float)(c->rect.width*scale); c->rect.height = (float)(c->rect.height*scale);
+        }
+        if (c->type == NX_COMMAND_LINE || c->type == NX_COMMAND_STROKE_RECT) c->thickness = (float)(c->thickness*scale);
+        if (c->type == NX_COMMAND_FILL_ROUND_RECT) c->radius = (float)(c->radius*scale);
+    }
     memset(actual,0xa7,bytes); memset(expected,0xa7,bytes);
-    CHECK(nx_headless_render(NULL,0,expected,width,height,stride,clear) == NX_OK);
+    CHECK(nx_headless_render(scaled,count,expected,width,height,stride,clear) == NX_OK);
     nx_result result = NX_ERROR_STATE;
     for (unsigned retry = 0; retry < 10 && result == NX_ERROR_STATE; ++retry) {
         CHECK(nx_window_poll(w,10) == NX_OK);
-        result = nx_metal_test_readback(r,clear,actual,stride);
+        result = nx_metal_test_render_readback(r,commands,count,scale,clear,actual,stride);
     }
     CHECK(result == NX_OK);
     if (memcmp(actual,expected,bytes)) {
@@ -36,7 +51,52 @@ static int compare(nx_window *w, nx_metal_renderer *r, nx_color clear) {
         }
         return 1;
     }
-    free(actual); free(expected); return 0;
+    free(scaled); free(actual); free(expected); return 0;
+}
+static int compare(nx_window *w, nx_metal_renderer *r, nx_color clear) {
+    return compare_commands(w,r,NULL,0,1,clear);
+}
+static int test_shapes(nx_window *w, nx_metal_renderer *r) {
+    nx_command commands[132] = {0}; size_t n = 0;
+    commands[n++] = (nx_command){.type=NX_COMMAND_PUSH_CLIP,.rect={3.5f,4.5f,135,95}};
+    commands[n++] = (nx_command){.type=NX_COMMAND_PUSH_CLIP,.rect={8.5f,7.5f,109,83}};
+    for (unsigned i = 0; i < 120; ++i) {
+        nx_command c = {0};
+        c.type = i%5 == 0 ? NX_COMMAND_FILL_RECT : i%5 == 1 ? NX_COMMAND_STROKE_RECT :
+            i%5 == 2 ? NX_COMMAND_FILL_ROUND_RECT : i%5 == 3 ? NX_COMMAND_LINE : NX_COMMAND_FILL_TRIANGLE;
+        c.rect = (nx_rect){(float)((i*17)%151)-12.5f,(float)((i*11)%109)-10.25f,25.5f,20.25f};
+        c.color = (nx_color){(i%17)/16.f,(i%23)/22.f,(i%29)/28.f,1};
+        c.radius = 4.5f; c.thickness = 2.5f;
+        c.points[0] = (nx_point){c.rect.x,c.rect.y}; c.points[1] = (nx_point){c.rect.x+19,c.rect.y+3};
+        c.points[2] = (nx_point){c.rect.x+4,c.rect.y+20};
+        if (i%2) { nx_point swap = c.points[1]; c.points[1] = c.points[2]; c.points[2] = swap; }
+        commands[n++] = c;
+    }
+    commands[n++] = (nx_command){.type=NX_COMMAND_POP_CLIP};
+    commands[n++] = (nx_command){.type=NX_COMMAND_POP_CLIP};
+    int presented = 1;
+    CHECK(nx_metal_test_fail_next(r,NX_MTL_TEST_PIPELINE_MEMORY) == NX_OK);
+    CHECK(nx_metal_render(r,commands,n,1,(nx_color){0},&presented) == NX_ERROR_MEMORY && !presented);
+    const double scales[] = {1,1.25,1.5,2};
+    for (unsigned i = 0; i < 4; ++i)
+        CHECK(compare_commands(w,r,commands,n,scales[i],(nx_color){.03f,.07f,.11f,.26f}) == 0);
+    nx_command distant = {.type=NX_COMMAND_FILL_TRIANGLE,.color={1,1,1,1},
+        .points={{-1000000,-1000000.0625f},{1000000,999999.9375f},{-1000000,999999.9375f}}};
+    CHECK(compare_commands(w,r,&distant,1,1,(nx_color){0}) == 0);
+    nx_command diagonal[] = {
+        {.type=NX_COMMAND_FILL_TRIANGLE,.color={0,1,1,1},.points={{40.5f,52.5f},{68.5f,52.5f},{40.5f,80.5f}}},
+        {.type=NX_COMMAND_FILL_TRIANGLE,.color={1,0,1,1},.points={{68.5f,80.5f},{40.5f,80.5f},{68.5f,52.5f}}},
+        {.type=NX_COMMAND_FILL_TRIANGLE,.color={1,1,1,1},.points={{4,4},{4,4},{4,4}}}
+    };
+    CHECK(compare_commands(w,r,diagonal,3,1,(nx_color){0}) == 0);
+    /* Near-edge triangles must not become dependent on optional float64. */
+    for (unsigned i = 0; i < 12; ++i) {
+        float offset = (float)i/1000.f;
+        nx_command triangle = {.type=NX_COMMAND_FILL_TRIANGLE,.color={1,0,1,1},
+            .points={{3.1401f+offset,2.7182f-offset},{152.319f-offset,11.1781f+offset},{35.409f+offset,105.079f-offset}}};
+        CHECK(compare_commands(w,r,&triangle,1,scales[i%4],(nx_color){0}) == 0);
+    }
+    return 0;
 }
 typedef struct wrong { nx_metal_renderer *renderer; nx_result query, render, destroy; } wrong;
 static void *wrong_thread(void *user) {
@@ -89,7 +149,7 @@ int main(void) {
         nx_window_destroy(window); nx_window_info wi; CHECK(nx_window_get_info(window,&wi) == NX_OK);
         nx_metal_renderer_info before, after;
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK && !before.pending && !before.submitted_frames);
-        nx_command shape = {0}; shape.type = NX_COMMAND_FILL_RECT; shape.rect = (nx_rect){1,2,3,4}; shape.color = (nx_color){1,1,1,1};
+        nx_command shape = {0}; shape.type = NX_COMMAND_FILL_RECT; shape.rect = (nx_rect){1,2,3,4}; shape.color = (nx_color){1,1,1,.5f};
         int presented;
         CHECK(nx_metal_render(r,&shape,1,1,(nx_color){0},&presented) == NX_ERROR_UNSUPPORTED && !presented);
         shape.type = NX_COMMAND_POP_CLIP;
@@ -106,6 +166,7 @@ int main(void) {
         nx_color colors[] = {{0},{1,0,0,1},{0,1,0,.26f},{.1f,.3f,.8f,0},
             {.5f/255.f,82.5f/255.f,190.5f/255.f,92.5f/255.f}};
         for (unsigned i = 0; i < 15; ++i) CHECK(compare(window,r,colors[i%5]) == 0);
+        CHECK(test_shapes(window,r) == 0);
         CHECK(nx_metal_renderer_get_info(r,&before) == NX_OK);
         [nx_window_native_nswindow(window) setContentSize:NSMakeSize(281,193)];
         CHECK(nx_window_poll(window,0) == NX_OK);
@@ -130,6 +191,8 @@ int main(void) {
         CHECK(nx_metal_test_invalidate(r) == NX_OK);
         CHECK(nx_metal_render(r,NULL,0,1,colors[0],&presented) == NX_ERROR_STATE);
         CHECK(nx_metal_renderer_recover(r) == NX_OK && compare(window,r,colors[2]) == 0);
+        nx_command recovered = {.type=NX_COMMAND_FILL_ROUND_RECT,.rect={9.5f,7.5f,91,67},.radius=12,.color={0,1,1,1}};
+        CHECK(compare_commands(window,r,&recovered,1,1.5,(nx_color){0}) == 0);
         printf("Metal %s: %ux%u; %llu submitted, %llu retired\n",after.device_name,after.pixel_width,after.pixel_height,
             (unsigned long long)after.submitted_frames,(unsigned long long)after.completed_frames);
         CHECK(nx_metal_renderer_destroy(r) == NX_OK && !h.live);
@@ -138,7 +201,7 @@ int main(void) {
         CHECK([view layer] == original_layer && [view wantsLayer] == original_wants_layer);
         [original_layer release];
         nx_window_destroy(window);
-        puts("Metal clear/readback, finite retirement, recovery and driver checks passed.");
+        puts("Metal clear/shapes/clips/readback, finite retirement, recovery and driver checks passed.");
     }
     return 0;
 }

@@ -8,9 +8,10 @@ Native rendering: [D3D12](concepts/d3d12.md) and [Linux Vulkan shapes, clips and
 
 The guide will expand with each public API slice. Pages for unimplemented capabilities are deliberately absent to avoid implying support that has not been built or validated.
 
-The initial [AppKit window adapter](concepts/macos.md) now has implementation and
-authored native checks. Its native macOS execution evidence is pending; Metal and
-the full macOS NexaCloud runner are not yet available.
+The initial [AppKit window adapter](concepts/macos.md) has passing native CI
+callback/lifecycle checks. Full macOS integration, physical acceptance and the
+macOS NexaCloud runner remain pending.
 
-The initial [Metal clear/present backend](concepts/metal.md) also has implementation
-and authored native tests. SDK/GPU execution and command rendering remain pending.
+The initial [Metal backend](concepts/metal.md) implements clear/present and opaque
+geometry with clips, plus authored native tests. CPU preparation tests pass on
+Windows/Linux; SDK/GPU execution, alpha and image commands remain pending.
