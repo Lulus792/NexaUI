@@ -36,6 +36,8 @@ static int frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
     if (info.width <= 0 || info.height <= 0) return nx_window_poll(window, 16) == NX_OK;
     if (!cloud_frame(scene, info.width, info.height, dt) ||
         nx_window_set_cursor(window, cloud_cursor(scene)) != NX_OK) return 0;
+    nx_result accessibility=nx_window_publish_semantics(window,cloud_context(scene));
+    if (accessibility!=NX_OK && accessibility!=NX_ERROR_UNSUPPORTED) return 0;
     const nx_command *commands; size_t count;
     if (nx_frame_commands(cloud_context(scene), &commands, &count) != NX_OK) return 0;
     double width = ceil((double)info.width * info.scale), height = ceil((double)info.height * info.scale);

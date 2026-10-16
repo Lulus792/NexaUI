@@ -4,6 +4,7 @@
 #include "wayland/backend.h"
 #include "wayland/window_internal.h"
 #include "window_internal.h"
+#include "accessibility.h"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -19,6 +20,7 @@ struct nx_window {
     pthread_t owner_thread;
     nx_linux_backend backend;
     const void *renderer_owner;
+    nx_linux_ax *accessibility;
     union {
         nx_x11_window *x11;
         nx_wayland_window *wayland;
@@ -85,9 +87,14 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
 
 nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
     if (!window) return NX_ERROR_ARGUMENT;
-    return window->backend == NX_LINUX_WAYLAND ?
-        nx_wayland_window_poll(window->native.wayland, timeout_ms) :
-        nx_x11_window_poll(window->native.x11, timeout_ms);
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (nx_linux_ax_pump(window->accessibility)) timeout_ms=0;
+    int writable=0, fd=nx_linux_ax_fd(window->accessibility,&writable);
+    nx_result result=window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_poll_with_fd(window->native.wayland,timeout_ms,fd,writable) :
+        nx_x11_window_poll_with_fd(window->native.x11,timeout_ms,fd,writable);
+    nx_linux_ax_pump(window->accessibility);
+    return result;
 }
 
 nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
@@ -204,14 +211,18 @@ nx_result nx_window_next_event(nx_window *window, nx_event *out_event,
 
 nx_result nx_window_route_events(nx_window *window, nx_context *context,
                                   size_t *out_count) {
-    if (!window) {
-        if (out_count) *out_count = 0;
-        return NX_ERROR_ARGUMENT;
-    }
-    return window->backend == NX_LINUX_WAYLAND ?
-        nx_wayland_window_route_events(window->native.wayland,
-                                        context, out_count) :
-        nx_x11_window_route_events(window->native.x11, context, out_count);
+    if (out_count) *out_count=0;
+    if (!window || !context || !out_count) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) ||
+        !nx_linux_ax_matches(window->accessibility,context)) return NX_ERROR_STATE;
+    nx_result result=window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_route_events(window->native.wayland,context,out_count) :
+        nx_x11_window_route_events(window->native.x11,context,out_count);
+    if (result!=NX_OK) return result;
+    size_t native_count=0;
+    result=nx_linux_ax_route(window->accessibility,context,&native_count);
+    *out_count+=native_count;
+    return result;
 }
 
 nx_result nx_window_next_file_drop(nx_window *window, char *path_utf8,
@@ -256,6 +267,7 @@ nx_result nx_window_clipboard_get_text(nx_window *window,
 
 void nx_window_destroy(nx_window *window) {
     if (!window || !nx_linux_on_owner_thread(window)) return;
+    nx_linux_ax_destroy(window->accessibility);
     if (window->backend == NX_LINUX_WAYLAND)
         nx_wayland_window_destroy(window->native.wayland);
     else nx_x11_window_destroy(window->native.x11);
@@ -396,6 +408,26 @@ nx_result nx_window_wayland_test_ime_state(nx_window *window,
 #endif
 
 nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
-    (void)context;
-    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (!context) {
+        nx_linux_ax_destroy(window->accessibility); window->accessibility=NULL; return NX_OK;
+    }
+    return nx_linux_ax_publish(&window->accessibility,window,window->allocator,context);
 }
+void nx_linux_window_ax_geometry(nx_window *window,nx_linux_ax_geometry *out) {
+    if (window->backend==NX_LINUX_WAYLAND)
+        nx_wayland_window_ax_geometry(window->native.wayland,out);
+    else nx_x11_window_ax_geometry(window->native.x11,out);
+}
+int nx_linux_window_ax_focus(nx_window *window) {
+    return window->backend==NX_LINUX_WAYLAND ?
+        nx_wayland_window_ax_focus(window->native.wayland) : nx_x11_window_ax_focus(window->native.x11);
+}
+#ifdef NEXAUI_X11_TEST_HOOKS
+nx_result nx_window_linux_ax_test_disconnect(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return nx_linux_ax_test_disconnect(window->accessibility);
+}
+#endif

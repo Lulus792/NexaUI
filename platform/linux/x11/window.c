@@ -1177,16 +1177,18 @@ static void nx_x11_dispatch_pending(nx_x11_window *window) {
     }
 }
 
-nx_result nx_x11_window_poll(nx_x11_window *window, uint32_t timeout_ms) {
+nx_result nx_x11_window_poll_with_fd(nx_x11_window *window, uint32_t timeout_ms,
+                                      int extra_fd, int writable) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_x11_on_owner_thread(window) || !window->alive)
         return NX_ERROR_STATE;
     if (!XPending(window->display)) {
-        struct pollfd fd = {ConnectionNumber(window->display), POLLIN, 0};
+        struct pollfd fds[2] = {{ConnectionNumber(window->display), POLLIN, 0},
+            {extra_fd, (short)(POLLIN | (writable ? POLLOUT : 0)), 0}};
         int timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
-        int ready = poll(&fd, 1, timeout);
+        int ready = poll(fds, extra_fd >= 0 ? 2 : 1, timeout);
         if (ready < 0 && errno != EINTR) return NX_ERROR_PLATFORM;
-        if (ready > 0 && (fd.revents & (POLLERR | POLLHUP | POLLNVAL)))
+        if (ready > 0 && (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)))
             return NX_ERROR_PLATFORM;
     }
     nx_x11_dispatch_pending(window);
@@ -1732,3 +1734,31 @@ nx_result nx_x11_window_test_ime_clear(nx_x11_window *window) {
     return NX_OK;
 }
 #endif
+
+nx_result nx_x11_window_poll(nx_x11_window *window, uint32_t timeout_ms) {
+    return nx_x11_window_poll_with_fd(window, timeout_ms, -1, 0);
+}
+void nx_x11_window_ax_geometry(nx_x11_window *window, nx_linux_ax_geometry *out) {
+    *out = (nx_linux_ax_geometry){0};
+    if (!window || !nx_x11_on_owner_thread(window) || !window->alive) return;
+    XWindowAttributes attrs;
+    Window child;
+    int x, y;
+    if (!XGetWindowAttributes(window->display, window->xid, &attrs)) return;
+    out->width = window->width / window->scale;
+    out->height = window->height / window->scale;
+    out->visible = attrs.map_state == IsViewable && !window->should_close;
+    out->focused = window->ime_focused;
+    if (XTranslateCoordinates(window->display, window->xid,
+            DefaultRootWindow(window->display), 0, 0, &x, &y, &child)) {
+        out->x = x; out->y = y; out->screen_position = 1;
+    }
+}
+int nx_x11_window_ax_focus(nx_x11_window *window) {
+    nx_linux_ax_geometry info;
+    nx_x11_window_ax_geometry(window, &info);
+    if (!info.visible) return 0;
+    XSetInputFocus(window->display, window->xid, RevertToParent, CurrentTime);
+    XFlush(window->display);
+    return 1;
+}

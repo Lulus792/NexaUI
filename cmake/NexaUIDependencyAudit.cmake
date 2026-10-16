@@ -23,6 +23,11 @@ function(nexaui_audit_core_target target)
     if(APPLE)
         list(APPEND _allowed_links "-framework AppKit" objc)
     endif()
+    # dlopen/dlsym load the optional Linux accessibility IPC SDK. libdbus,
+    # libatspi, GLib and UI frameworks are not core link dependencies.
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        list(APPEND _allowed_links ${CMAKE_DL_LIBS})
+    endif()
     foreach(_property LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
         get_target_property(_links "${target}" "${_property}")
         if(_links)

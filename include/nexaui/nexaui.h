@@ -1562,7 +1562,8 @@ NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, u
    a different context returns STATE before consuming events. Publishing a new
    context invalidates prior element handles and queued native requests.
    NULL context detaches the bridge. Windows supports UIA; macOS supports AppKit AX;
-   other adapters return UNSUPPORTED until their native transports are present. */
+   Linux supports runtime-optional AT-SPI. An unavailable SDK/runtime/bus returns
+   UNSUPPORTED while ordinary window operation remains available. */
 NX_API nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context);
 
 /* Register an explicit single-selection container (GROUP, LIST, TREE or

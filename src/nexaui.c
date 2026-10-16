@@ -115,7 +115,7 @@ struct nx_context {
     unsigned theme_depth;
     unsigned state; /* 0 idle, 1 building, 2 finished */
     uint64_t frame_serial;
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
     uint64_t native_identity;
 #endif
     float width, height;
@@ -253,7 +253,7 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
     if (!ctx) return NX_ERROR_MEMORY;
     memset(ctx, 0, sizeof(*ctx));
     ctx->allocator = a;
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
     ctx->native_identity = nx_native_next_identity();
     if (!ctx->native_identity) { a.deallocate(a.user, ctx, sizeof(*ctx)); return NX_ERROR_LIMIT; }
 #endif
@@ -273,7 +273,7 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
     return NX_OK;
 }
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
 uint64_t nx_context_identity(const nx_context *ctx) { return ctx ? ctx->native_identity : 0; }
 uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->frame_serial : 0; }
 #endif

@@ -45,3 +45,5 @@ These links are allowed only for an Apple target; the implementation remains in
 `platform/macos/window.m`. The runtime link is explicit for plain C consumers of
 the static archive. The audit checks both `#include` and Objective-C `#import`;
 fixtures reject forbidden UI imports and AppKit links on non-Apple targets.
+
+The private Linux accessibility adapter uses optional system `dbus-1` SDK headers and late-binds `libdbus-1.so.3`. Linux links `${CMAKE_DL_LIBS}` solely for that system loader; it does not link libdbus, libatspi or GLib into the core or require them in the installed package. Missing development headers, `NEXAUI_ENABLE_ATSPI=OFF`, a missing runtime ABI or bus preserve ordinary UI operation. The independent native test client links libatspi, GObject and D-Bus only in its separate process. See [AT-SPI](atspi.md) for the private protocol implementation and validation.

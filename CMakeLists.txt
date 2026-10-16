@@ -28,6 +28,17 @@ elseif(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
     pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+    option(NEXAUI_ENABLE_ATSPI "Build the runtime-optional Linux AT-SPI transport" ON)
+    if(NEXAUI_ENABLE_ATSPI)
+        pkg_check_modules(NEXAUI_DBUS QUIET dbus-1)
+    else()
+        set(NEXAUI_DBUS_FOUND FALSE)
+    endif()
+    if(NEXAUI_DBUS_FOUND)
+        target_compile_definitions(nexaui PRIVATE NEXAUI_HAVE_DBUS_SDK=1)
+        target_include_directories(nexaui PRIVATE ${NEXAUI_DBUS_INCLUDE_DIRS})
+    endif()
+    target_link_libraries(nexaui PRIVATE ${CMAKE_DL_LIBS})
     pkg_check_modules(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
     pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
     find_program(WAYLAND_SCANNER wayland-scanner REQUIRED)
@@ -72,7 +83,7 @@ elseif(UNIX AND NOT APPLE)
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
         DEPENDS ${NEXAUI_TEXT_INPUT_V3_XML}
         VERBATIM)
-    target_sources(nexaui PRIVATE platform/linux/window.c
+    target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c
         platform/linux/x11/window.c platform/linux/wayland/window.c
         platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -459,6 +470,74 @@ if(NEXAUI_BUILD_TESTS)
         find_package(Python3 COMPONENTS Interpreter QUIET)
         find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
         find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
+        add_executable(nexaui_linux_atspi_host tests/linux_atspi_host.c)
+        target_include_directories(nexaui_linux_atspi_host PRIVATE platform/linux)
+        target_link_libraries(nexaui_linux_atspi_host PRIVATE NexaUI::NexaUI X11::X11)
+        target_compile_features(nexaui_linux_atspi_host PRIVATE c_std_17)
+        set_target_properties(nexaui_linux_atspi_host PROPERTIES
+            C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+        target_compile_options(nexaui_linux_atspi_host PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_definitions(nexaui_linux_atspi_host PRIVATE NEXAUI_X11_TEST_HOOKS)
+        pkg_check_modules(NEXAUI_ATSPI QUIET IMPORTED_TARGET atspi-2 gobject-2.0 dbus-1)
+        find_program(NEXAUI_ATSPI_REGISTRY at-spi2-registryd
+            PATHS /usr/libexec /usr/lib/at-spi2-core)
+        find_program(NEXAUI_DBUS_DAEMON dbus-daemon)
+        find_program(NEXAUI_DBUS_SEND dbus-send)
+        find_program(NEXAUI_ATSPI_LAUNCHER at-spi-bus-launcher
+            PATHS /usr/libexec /usr/lib/at-spi2-core)
+        if(NEXAUI_DBUS_FOUND AND NEXAUI_ATSPI_FOUND AND NEXAUI_ATSPI_REGISTRY
+                AND NEXAUI_DBUS_DAEMON AND NEXAUI_DBUS_SEND AND Python3_Interpreter_FOUND)
+            add_executable(nexaui_linux_atspi_client tests/linux_atspi_client.c)
+            target_link_libraries(nexaui_linux_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            target_compile_features(nexaui_linux_atspi_client PRIVATE c_std_17)
+            set_target_properties(nexaui_linux_atspi_client PROPERTIES
+                C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            target_compile_options(nexaui_linux_atspi_client PRIVATE -Wall -Wextra -Wpedantic)
+            add_library(nexaui_dbus_missing_abi SHARED tests/linux_dbus_missing.c)
+            set_target_properties(nexaui_dbus_missing_abi PROPERTIES
+                OUTPUT_NAME dbus-1 SOVERSION 3 VERSION 3
+                C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/missing-dbus)
+            if(NEXAUI_XVFB_EXECUTABLE AND NEXAUI_XAUTH_EXECUTABLE)
+                add_test(NAME nexaui_atspi_x11_private
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                        ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_atspi_client>
+                        $<TARGET_FILE:nexaui_linux_atspi_host>)
+                set_tests_properties(nexaui_atspi_x11_private PROPERTIES TIMEOUT 70
+                    ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                if(NEXAUI_ATSPI_LAUNCHER)
+                    add_test(NAME nexaui_atspi_session_discovery_private
+                        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                            ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                            ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_atspi_client>
+                            $<TARGET_FILE:nexaui_linux_atspi_host> ${NEXAUI_ATSPI_LAUNCHER})
+                    set_tests_properties(nexaui_atspi_session_discovery_private PROPERTIES TIMEOUT 70
+                        ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                endif()
+                add_test(NAME nexaui_atspi_disabled
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        $<TARGET_FILE:nexaui_linux_atspi_host> --optional)
+                set_tests_properties(nexaui_atspi_disabled PROPERTIES TIMEOUT 30
+                    ENVIRONMENT "NO_AT_BRIDGE=1;NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                add_test(NAME nexaui_atspi_missing_runtime_abi
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                        ${NEXAUI_ATSPI_REGISTRY} --optional
+                        $<TARGET_FILE:nexaui_linux_atspi_host>)
+                # Only the host must see the incomplete SDK. registryd and the
+                # fixture's dbus-send must keep their real system dependencies.
+                set_tests_properties(nexaui_atspi_missing_runtime_abi PROPERTIES TIMEOUT 70
+                    ENVIRONMENT "NEXAUI_TEST_DBUS_LIBRARY_DIR=$<TARGET_FILE_DIR:nexaui_dbus_missing_abi>;NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                add_test(NAME nexaui_atspi_no_bus
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        ${CMAKE_COMMAND} -E env --unset=AT_SPI_BUS_ADDRESS
+                        --unset=DBUS_SESSION_BUS_ADDRESS --unset=NO_AT_BRIDGE
+                        $<TARGET_FILE:nexaui_linux_atspi_host> --optional)
+                set_tests_properties(nexaui_atspi_no_bus PROPERTIES TIMEOUT 30
+                    ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+            endif()
+        endif()
         if(Python3_Interpreter_FOUND AND NEXAUI_XVFB_EXECUTABLE
                 AND NEXAUI_XAUTH_EXECUTABLE)
             add_test(NAME nexaui_x11_private

@@ -86,7 +86,14 @@ static int frame(scene *s) {
             if (g==2) {
                 nx_control_desc radio=control(member.semantic.id,parent,"Choice",member.semantic.bounds);radio.disabled=item==3;
                 CHECK(nx_radio(s->ctx,&radio,member.semantic.id,choice,&state)==NX_OK && !state.clicked);
-            } else CHECK(nx_widget_register(s->ctx,&member,&state)==NX_OK && !state.clicked);
+            } else {
+                nx_result registered=nx_widget_register(s->ctx,&member,&state);
+                if (registered!=NX_OK || state.clicked)
+                    fprintf(stderr,"Selection member %llu: result=%d clicked=%d focus=%llu\n",
+                        (unsigned long long)member.semantic.id,registered,state.clicked,
+                        (unsigned long long)nx_focus_id(s->ctx));
+                CHECK(registered==NX_OK && !state.clicked);
+            }
         }
     }
     s->fill_clicks=0;

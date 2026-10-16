@@ -2,6 +2,7 @@
 #define NEXAUI_X11_BACKEND_H
 
 #include "nexaui/nexaui.h"
+#include "../accessibility.h"
 #include <X11/Xlib.h>
 
 typedef struct nx_x11_window nx_x11_window;
@@ -9,6 +10,9 @@ typedef struct nx_x11_window nx_x11_window;
 nx_result nx_x11_window_create(const nx_window_desc *desc,
                                nx_x11_window **out_window);
 nx_result nx_x11_window_poll(nx_x11_window *window, uint32_t timeout_ms);
+nx_result nx_x11_window_poll_with_fd(nx_x11_window *window, uint32_t timeout_ms, int fd, int writable);
+void nx_x11_window_ax_geometry(nx_x11_window *window, nx_linux_ax_geometry *out);
+int nx_x11_window_ax_focus(nx_x11_window *window);
 nx_result nx_x11_window_get_info(nx_x11_window *window, nx_window_info *out_info);
 nx_result nx_x11_window_set_cursor(nx_x11_window *window, nx_cursor_shape shape);
 nx_result nx_x11_window_get_reduced_motion(nx_x11_window *window,

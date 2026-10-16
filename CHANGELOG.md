@@ -2,6 +2,8 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added the initial private Linux AT-SPI transport and native NexaCloud publication. Independent libatspi/real-registry tests cover native queries, committed actions, selection/cache/events, rollback and retired objects on X11 and WSLg Wayland. D-Bus remains runtime-optional, with no core libatspi/GLib link dependency. Full screenreader/text/table acceptance remains open.
+
 - Verified the complete static/shared Windows/macOS/Ubuntu CI matrix and Linux sanitizers at `2f70d68`. macOS compact-details GPU capture and Escape/focus flow pass. Ubuntu's active-validation counterexample and 20 untraced presentation repeats confirm the pinned-layer correction for the reported false positive; production retirement is unchanged.
 - Verified and published macOS NexaCloud GPU captures: 79/79 static/shared tests pass at `fb80bd0`, with byte-identical overview/file/compact artifacts and exact headless comparisons. Added a compact-details modal/Escape/focus case awaiting its native run. Added test-only EXT negotiation coverage and corrected the CI package download's client identifier after a reproducible HTTP 403.
 - Corrected MSL packed-vector component access in the new image shader after native compiler diagnostics. Pinned the CI-only Vulkan validation layer to a present-fence-aware version with checksum/provenance verification and an active-validation counterexample; system SDK headers and renderer retirement remain unchanged. Follow-up native results are pending.
