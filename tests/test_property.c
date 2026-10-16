@@ -84,7 +84,7 @@ static int test_actions(void) {
     nx_property_row_desc number = number_desc();
     nx_property_row_desc text = text_desc();
     nx_property_action actions[3];
-    for (unsigned frame = 0; frame < 6; ++frame) {
+    for (unsigned frame = 0; frame < 7; ++frame) {
         if (frame == 1) CHECK(click(ctx, 180, 16));
         if (frame == 2) {
             boolean.boolean_value = 1; /* Application accepted the proposal. */
@@ -104,6 +104,12 @@ static int test_actions(void) {
             boolean.read_only = 1;
             CHECK(click(ctx, 180, 16));
         }
+        if (frame==6) {
+            CHECK(nx_focus_set(ctx,12)==NX_OK);
+            nx_event event={0}; event.type=NX_EVENT_KEY_DOWN_CONSUMED; event.key=NX_KEY_RIGHT;
+            CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+            event.type=NX_EVENT_KEY_UP; CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        }
         CHECK(nx_begin_frame(ctx, 200, 110, 0) == NX_OK);
         CHECK(draw(ctx, &boolean, &number, &text, actions));
         CHECK(nx_end_frame(ctx) == NX_OK);
@@ -116,6 +122,7 @@ static int test_actions(void) {
         if (frame == 4) CHECK(actions[2].edit_requested);
         if (frame == 5) CHECK(!actions[0].changed &&
                               !actions[0].edit_requested);
+        if (frame==6) CHECK(nx_key_pressed(ctx,NX_KEY_RIGHT) && !actions[1].changed && actions[1].number_value==6);
         size_t count = 0;
         CHECK(nx_semantics_count(ctx, &count) == NX_OK && count == 4);
         uint32_t index = UINT32_MAX;

@@ -2,6 +2,7 @@
 #include "secure_zero.h"
 #include "unicode_data.h"
 #include "edit_shortcuts.h"
+#include "text_command.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -527,6 +528,60 @@ static size_t nx_tb_word_next(const nx_text_buffer *buffer,
     while (cursor < buffer->length && !buffer->grapheme[cursor]);
     return cursor;
 }
+int nx_text_buffer_word_boundary_internal(const nx_text_buffer *buffer,size_t byte) {
+    return buffer && byte<=buffer->length && buffer->word[byte] && buffer->grapheme[byte];
+}
+nx_result nx_text_buffer_erase_internal(nx_text_buffer *buffer,size_t start,size_t end) {
+    if (!buffer || start>end || end>buffer->length || !buffer->grapheme[start] || !buffer->grapheme[end])
+        return NX_ERROR_ARGUMENT;
+    return nx_tb_edit(buffer,start,end-start,NULL,0);
+}
+
+static nx_result nx_tb_command(nx_text_buffer *buffer,uint32_t value,int *handled) {
+    if (!nx_text_command_valid(value)) return NX_ERROR_ARGUMENT;
+    uint32_t command=nx_text_command_base(value);
+    int extend=(value&NX_TEXT_COMMAND_EXTEND_SELECTION)!=0;
+    nx_text_move move;
+    switch (command) {
+    case NX_TEXT_COMMAND_MOVE_BACKWARD: move=NX_TEXT_MOVE_GRAPHEME_BACKWARD; break;
+    case NX_TEXT_COMMAND_MOVE_FORWARD: move=NX_TEXT_MOVE_GRAPHEME_FORWARD; break;
+    case NX_TEXT_COMMAND_MOVE_WORD_BACKWARD: move=NX_TEXT_MOVE_WORD_BACKWARD; break;
+    case NX_TEXT_COMMAND_MOVE_WORD_FORWARD: move=NX_TEXT_MOVE_WORD_FORWARD; break;
+    case NX_TEXT_COMMAND_PARAGRAPH_START:
+    case NX_TEXT_COMMAND_LINE_START: move=NX_TEXT_MOVE_LINE_START; break;
+    case NX_TEXT_COMMAND_PARAGRAPH_END:
+    case NX_TEXT_COMMAND_LINE_END: move=NX_TEXT_MOVE_LINE_END; break;
+    case NX_TEXT_COMMAND_DOCUMENT_START: move=NX_TEXT_MOVE_DOCUMENT_START; break;
+    case NX_TEXT_COMMAND_DOCUMENT_END: move=NX_TEXT_MOVE_DOCUMENT_END; break;
+    default: move=(nx_text_move)-1; break;
+    }
+    nx_result result=NX_OK;
+    if (move!=(nx_text_move)-1) result=nx_text_buffer_move_cursor(buffer,move,extend);
+    else if (command==NX_TEXT_COMMAND_SELECT_ALL)
+        result=nx_text_buffer_set_selection(buffer,0,buffer->length);
+    else if (command==NX_TEXT_COMMAND_UNDO || command==NX_TEXT_COMMAND_REDO) {
+        result=command==NX_TEXT_COMMAND_UNDO?nx_text_buffer_undo(buffer):nx_text_buffer_redo(buffer);
+        if (result==NX_ERROR_STATE) result=NX_OK;
+    } else if (command==NX_TEXT_COMMAND_NEWLINE) result=nx_text_buffer_replace(buffer,"\n",1);
+    else if (command>=NX_TEXT_COMMAND_DELETE_BACKWARD && command<=NX_TEXT_COMMAND_DELETE_PARAGRAPH_END) {
+        size_t start=buffer->anchor<buffer->cursor?buffer->anchor:buffer->cursor;
+        size_t end=buffer->anchor>buffer->cursor?buffer->anchor:buffer->cursor;
+        if (start==end) switch (command) {
+        case NX_TEXT_COMMAND_DELETE_BACKWARD: start=nx_tb_prior(buffer->grapheme,start); break;
+        case NX_TEXT_COMMAND_DELETE_FORWARD: end=nx_tb_next(buffer->grapheme,buffer->length,end); break;
+        case NX_TEXT_COMMAND_DELETE_WORD_BACKWARD: start=nx_tb_word_prior(buffer,start); break;
+        case NX_TEXT_COMMAND_DELETE_WORD_FORWARD: end=nx_tb_word_next(buffer,end); break;
+        case NX_TEXT_COMMAND_DELETE_LINE_START:
+        case NX_TEXT_COMMAND_DELETE_PARAGRAPH_START: start=nx_tb_line_edge(buffer,start,0); break;
+        case NX_TEXT_COMMAND_DELETE_LINE_END:
+        case NX_TEXT_COMMAND_DELETE_PARAGRAPH_END: end=nx_tb_line_edge(buffer,end,1); break;
+        default: return NX_ERROR_ARGUMENT;
+        }
+        result=nx_tb_edit(buffer,start,end-start,NULL,0);
+    } else return NX_OK; /* Visual/layout, clipboard and focus commands need a field. */
+    if (result==NX_OK) *handled=1;
+    return result;
+}
 
 nx_result nx_text_buffer_apply_event(nx_text_buffer *buffer,
                                       const nx_event *event,
@@ -534,6 +589,8 @@ nx_result nx_text_buffer_apply_event(nx_text_buffer *buffer,
     if (!buffer || !event || !out_handled) return NX_ERROR_ARGUMENT;
     *out_handled = 0;
     nx_result result = NX_OK;
+    if (event->type==NX_EVENT_TEXT_COMMAND)
+        return nx_tb_command(buffer,event->text_command,out_handled);
     if (event->type == NX_EVENT_TEXT) {
         uint32_t scalar = event->scalar;
         if (scalar > 0x10ffffu ||
@@ -702,7 +759,11 @@ nx_result nx_numeric_input_apply_event(nx_text_buffer *buffer,
         (event->scalar > 0x10ffffu ||
          (event->scalar >= 0xd800u && event->scalar <= 0xdfffu)))
         return NX_ERROR_ARGUMENT;
-    if (event->type == NX_EVENT_KEY_DOWN && event->key == NX_KEY_ENTER) {
+    if (event->type==NX_EVENT_TEXT_COMMAND && !nx_text_command_valid(event->text_command))
+        return NX_ERROR_ARGUMENT;
+    int commit=(event->type==NX_EVENT_KEY_DOWN && event->key==NX_KEY_ENTER) ||
+        (event->type==NX_EVENT_TEXT_COMMAND && event->text_command==NX_TEXT_COMMAND_NEWLINE);
+    if (commit) {
         *out_handled = 1;
     } else if (event->type == NX_EVENT_TEXT &&
                !((event->scalar >= '0' && event->scalar <= '9') ||
@@ -723,8 +784,7 @@ nx_result nx_numeric_input_apply_event(nx_text_buffer *buffer,
     result = nx_numeric_parse(bytes, length, minimum, maximum,
                               &parsed, out_valid);
     if (result != NX_OK) return result;
-    if (event->type == NX_EVENT_KEY_DOWN && event->key == NX_KEY_ENTER &&
-        *out_valid)
+    if (commit && *out_valid)
         *committed_value = parsed;
     return NX_OK;
 }

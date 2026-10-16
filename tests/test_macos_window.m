@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <objc/runtime.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
 typedef struct block { void *p; size_t bytes; } block;
@@ -138,6 +139,68 @@ static int test_input(nx_window *w) {
     while (nx_window_next_event(w,&e,&available) == NX_OK && available) CHECK(e.type != NX_EVENT_TEXT);
     return 0;
 }
+
+@interface NXTestCommandSink : NSResponder { @public int received; }
+- (void)nexaProbeHostAction:(id)sender;
+@end
+@implementation NXTestCommandSink
+- (void)nexaProbeHostAction:(id)sender { (void)sender; ++received; }
+@end
+static unsigned consumed_interpret_calls;
+static void consume_interpret(id view,SEL selector,NSArray *events) {
+    (void)view; (void)selector; (void)events; ++consumed_interpret_calls;
+}
+static int test_native_commands(nx_window *w) {
+    NSView *view=nx_window_native_nsview(w); NSWindow *native=nx_window_native_nswindow(w);
+    id<NSTextInputClient> client=(id<NSTextInputClient>)view;
+    CHECK(nx_window_set_ime_enabled(w,1)==NX_OK && drain(w)==0);
+    CHECK([native makeFirstResponder:view]);
+    /* Model an input method that consumes the key without returning an editor
+       action. The original real NXMacView keyDown implementation still runs. */
+    Class original=object_getClass(view),consuming=objc_allocateClassPair(original,"NXIMEConsumerProbe",0);
+    CHECK(consuming && class_getInstanceSize(consuming)==class_getInstanceSize(original));
+    CHECK(class_addMethod(consuming,@selector(interpretKeyEvents:),(IMP)consume_interpret,"v@:@"));
+    objc_registerClassPair(consuming);
+    NSEvent *left=[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0
+        windowNumber:[native windowNumber] context:nil characters:@"\uf702" charactersIgnoringModifiers:@"\uf702" isARepeat:NO keyCode:123];
+    object_setClass(view,consuming);
+    @try { [view keyDown:left]; } @finally { object_setClass(view,original); }
+    CHECK(consumed_interpret_calls==1);
+    nx_event event; int available=0;
+    CHECK(nx_window_next_event(w,&event,&available)==NX_OK && available &&
+        event.type==NX_EVENT_KEY_DOWN_CONSUMED && event.key==NX_KEY_LEFT);
+    CHECK(nx_window_next_event(w,&event,&available)==NX_OK && !available);
+    [client doCommandBySelector:@selector(moveWordLeftAndModifySelection:)];
+    CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 &&
+        event.text_command==(NX_TEXT_COMMAND_MOVE_WORD_LEFT|NX_TEXT_COMMAND_EXTEND_SELECTION) && !event.modifiers);
+    NSEvent *select=[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagCommand timestamp:0
+        windowNumber:[native windowNumber] context:nil characters:@"a" charactersIgnoringModifiers:@"a" isARepeat:NO keyCode:0];
+    CHECK([view performKeyEquivalent:select]);
+    CHECK(find(w,NX_EVENT_KEY_DOWN_CONSUMED,&event)==0 && event.key==NX_KEY_A && event.modifiers==NX_MOD_SUPER);
+    CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 && event.text_command==NX_TEXT_COMMAND_SELECT_ALL && event.modifiers==NX_MOD_SUPER);
+    NSEvent *quit=[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagCommand timestamp:0
+        windowNumber:[native windowNumber] context:nil characters:@"q" charactersIgnoringModifiers:@"q" isARepeat:NO keyCode:12];
+    CHECK(![view performKeyEquivalent:quit]); /* Leave the application's menu equivalent available. */
+    NXTestCommandSink *sink=[[[NXTestCommandSink alloc] init] autorelease];
+    NSResponder *prior=[[view nextResponder] retain]; [view setNextResponder:sink];
+    @try { [client doCommandBySelector:@selector(nexaProbeHostAction:)]; }
+    @finally { [view setNextResponder:prior]; [prior release]; }
+    CHECK(sink->received==1);
+    /* Exercise AppKit's actual key-binding interpreter as well as direct
+       selector callbacks. This is not an installed/physical IME acceptance. */
+    NSEvent *end=[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagControl timestamp:0
+        windowNumber:[native windowNumber] context:nil characters:@"\x05" charactersIgnoringModifiers:@"e" isARepeat:NO keyCode:14];
+    CHECK(drain(w)==0); [view keyDown:end];
+    CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 &&
+        (event.text_command==NX_TEXT_COMMAND_LINE_END || event.text_command==NX_TEXT_COMMAND_PARAGRAPH_END) && event.modifiers==NX_MOD_CONTROL);
+    [client setMarkedText:@"candidate" selectedRange:NSMakeRange(9,0) replacementRange:NSMakeRange(NSNotFound,0)];
+    CHECK(drain(w)==0); [client doCommandBySelector:@selector(cancelOperation:)];
+    CHECK(![client hasMarkedText]);
+    while (nx_window_next_event(w,&event,&available)==NX_OK && available)
+        CHECK(event.type!=NX_EVENT_TEXT && event.type!=NX_EVENT_TEXT_COMMAND);
+    CHECK(nx_window_set_ime_enabled(w,0)==NX_OK && drain(w)==0);
+    return 0;
+}
 int main(void) {
     @autoreleasepool {
         for (size_t fail = 1; fail <= 2; ++fail) {
@@ -153,7 +216,7 @@ int main(void) {
         nx_window_info info; CHECK(nx_window_get_info(w,&info) == NX_OK && info.width == 320 && info.height == 200 && info.scale > 0);
         printf("AppKit native client %.0fx%.0f points, backing %.2f\n",info.width,info.height,info.scale);
         CHECK(!strcmp([[nx_window_native_nswindow(w) title] UTF8String],d.title_utf8));
-        CHECK(drain(second) == 0 && test_input(w) == 0);
+        CHECK(drain(second) == 0 && test_input(w) == 0 && test_native_commands(w)==0);
         nx_event e; int available; CHECK(nx_window_next_event(second,&e,&available) == NX_OK && !available);
         [nx_window_native_nswindow(w) setContentSize:NSMakeSize(420,230)];
         CHECK(nx_window_poll(w,0) == NX_OK && nx_window_get_info(w,&info) == NX_OK && info.width == 420 && info.height == 230);
@@ -183,6 +246,7 @@ int main(void) {
         nx_window_destroy(second);
         CHECK(![client hasMarkedText] && [client markedRange].location == NSNotFound && [client selectedRange].location == NSNotFound);
         [client insertText:@"late callback" replacementRange:NSMakeRange(NSNotFound,0)];
+        [client doCommandBySelector:@selector(moveLeft:)];
         [retained release];
         [nx_window_native_nswindow(w) performClose:nil];
         CHECK(nx_window_get_info(w,&info) == NX_OK && info.should_close);

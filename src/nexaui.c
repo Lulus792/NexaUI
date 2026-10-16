@@ -2,6 +2,7 @@
 #include "edit_shortcuts.h"
 #include "secure_zero.h"
 #include "context_identity.h"
+#include "text_command.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -127,6 +128,7 @@ struct nx_context {
     nx_input_snapshot input;
     unsigned char keys_down[NX_KEY_COUNT];
     unsigned char keys_pressed[NX_KEY_COUNT];
+    unsigned char action_keys_pressed[NX_KEY_COUNT];
     unsigned char keys_released[NX_KEY_COUNT];
     nx_region_buffer previous_regions, current_regions;
     uint64_t focused_id, hovered_id, pointer_active_id, key_active_id;
@@ -173,6 +175,8 @@ struct nx_text_field {
     double vertical_x;
     int vertical_x_valid;
     double scroll_x, scroll_y;
+    nx_text_caret command_caret;
+    int command_caret_valid;
 };
 
 static nx_region *nx_region_find(const nx_region_buffer *buffer, uint64_t id);
@@ -477,6 +481,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     ctx->input.wheel_x = 0;
     ctx->input.wheel_y = 0;
     memset(ctx->keys_pressed, 0, sizeof(ctx->keys_pressed));
+    memset(ctx->action_keys_pressed,0,sizeof(ctx->action_keys_pressed));
     memset(ctx->keys_released, 0, sizeof(ctx->keys_released));
     nx_event_buffer previous = ctx->frame_events;
     ctx->frame_events = ctx->pending_events;
@@ -547,7 +552,11 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             ctx->input.buttons_down = 0;
             break;
         case NX_EVENT_KEY_DOWN:
-            if (!ctx->keys_down[event->key]) ctx->keys_pressed[event->key] = 1;
+        case NX_EVENT_KEY_DOWN_CONSUMED:
+            if (!ctx->keys_down[event->key]) {
+                ctx->keys_pressed[event->key] = 1;
+                if (event->type==NX_EVENT_KEY_DOWN) ctx->action_keys_pressed[event->key]=1;
+            }
             ctx->keys_down[event->key] = 1;
             ctx->input.modifiers = event->modifiers;
             break;
@@ -569,6 +578,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             }
             break;
         case NX_EVENT_TEXT:
+        case NX_EVENT_TEXT_COMMAND:
         case NX_EVENT_IME_PREEDIT_CHANGED:
         case NX_EVENT_IME_DELETE_SURROUNDING:
         case NX_EVENT_IME_DELETE_RANGE:
@@ -579,7 +589,8 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         case NX_EVENT_TOUCH_CANCEL:
             break;
         }
-        nx_process_interaction(ctx, event);
+        if (event->type != NX_EVENT_KEY_DOWN_CONSUMED)
+            nx_process_interaction(ctx, event);
     }
     ctx->selection_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
@@ -626,12 +637,17 @@ static int nx_valid_event(const nx_event *event) {
     case NX_EVENT_TOUCH_CANCEL:
         return 1;
     case NX_EVENT_KEY_DOWN:
+    case NX_EVENT_KEY_DOWN_CONSUMED:
     case NX_EVENT_KEY_UP:
         return event->key > NX_KEY_UNKNOWN && event->key < NX_KEY_COUNT &&
                (event->repeat == 0 || event->repeat == 1);
     case NX_EVENT_TEXT:
         return event->scalar <= 0x10ffffu &&
                !(event->scalar >= 0xd800u && event->scalar <= 0xdfffu);
+    case NX_EVENT_TEXT_COMMAND:
+        return nx_text_command_valid(event->text_command) &&
+               ((event->ime_target == 0) == (event->ime_revision == 0)) &&
+               (event->repeat == 0 || event->repeat == 1);
     case NX_EVENT_IME_PREEDIT_CHANGED:
         return 1;
     case NX_EVENT_IME_DELETE_SURROUNDING:
@@ -1043,6 +1059,11 @@ static void nx_process_interaction(nx_context *ctx, const nx_event *event) {
         ctx->touch_scroll_id = 0;
         ctx->touch_target_id = 0;
         ctx->key_active_id = 0;
+    } else if (event->type == NX_EVENT_TEXT_COMMAND &&
+               (!event->ime_target || event->ime_target == ctx->focused_id)) {
+        uint32_t command=nx_text_command_base(event->text_command);
+        if (!event->repeat && (command==NX_TEXT_COMMAND_TAB || command==NX_TEXT_COMMAND_BACKTAB))
+            nx_focus_advance(ctx,command==NX_TEXT_COMMAND_BACKTAB);
     } else if (event->type == NX_EVENT_KEY_DOWN) {
         if (event->key == NX_KEY_TAB && !event->repeat) {
             nx_focus_advance(ctx, (event->modifiers & NX_MOD_SHIFT) != 0);
@@ -3202,8 +3223,10 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
     if (desc->dismiss_on_escape) {
         for (size_t i = 0; i < ctx->frame_events.count; ++i) {
             const nx_event *event = &ctx->frame_events.data[i];
-            if (event->type == NX_EVENT_KEY_DOWN &&
-                event->key == NX_KEY_ESCAPE && !event->repeat)
+            if (!event->repeat &&
+                ((event->type==NX_EVENT_KEY_DOWN && event->key==NX_KEY_ESCAPE) ||
+                 (event->type==NX_EVENT_TEXT_COMMAND && event->text_command==NX_TEXT_COMMAND_CANCEL &&
+                  (!event->ime_target || event->ime_target==ctx->focused_id))))
                 dismissed = 1;
         }
     }
@@ -4637,6 +4660,7 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
                                 const nx_password_mask *mask,
                                 nx_utf8_span preedit, int32_t preedit_begin,
                                 int32_t preedit_end,
+                                const nx_text_caret *preferred_caret,
                                 double *scroll_x, double *scroll_y,
                                 nx_rect *out_caret_rect,
                                 int *out_caret_visible) {
@@ -4759,6 +4783,15 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
                 (composing && cursor_caret.byte_offset > cursor)) {
                 has_cursor_caret = 1;
                 break;
+            }
+        }
+        if (!composing && preferred_caret && preferred_caret->byte_offset==cursor) {
+            for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
+                nx_text_caret candidate;
+                result=nx_text_layout_caret_at(layout,i,&candidate);
+                if (result!=NX_OK) goto done;
+                if (candidate.byte_offset==cursor && candidate.line_index==preferred_caret->line_index &&
+                    candidate.affinity==preferred_caret->affinity) { cursor_caret=candidate; has_cursor_caret=1; break; }
             }
         }
         if (has_cursor_caret) {
@@ -5106,7 +5139,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
                             desc->pixels_per_em, desc->glyph_cache_bytes,
                             field->buffer, 0, desc->disabled, !valid,
-                            state.focused, NULL, (nx_utf8_span){0}, 0, 0,
+                            state.focused, NULL, (nx_utf8_span){0}, 0, 0, NULL,
                             &field->scroll_x,
                             &field->scroll_y, NULL, NULL);
     if (result != NX_OK) goto rollback;
@@ -5185,6 +5218,7 @@ nx_result nx_text_field_set_text(nx_text_field *field,
     field->next_event_index = 0;
     field->submitted = 0;
     field->vertical_x_valid = 0;
+    field->command_caret_valid = 0;
     field->scroll_x = field->scroll_y = 0.0;
     return NX_OK;
 }
@@ -5267,6 +5301,128 @@ static nx_result nx_field_clipboard_event(nx_text_buffer *buffer,
     } else result = NX_OK; /* Unavailable clipboard leaves the draft alone. */
     if (sensitive) nx_private_secure_zero(bytes, length + 1u);
     free(bytes);
+    return result;
+}
+
+static int nx_field_caret_order(nx_text_caret a,nx_text_caret b) {
+    if (a.line_index!=b.line_index) return a.line_index<b.line_index?-1:1;
+    if (a.x!=b.x) return a.x<b.x?-1:1;
+    return a.byte_offset<b.byte_offset?-1:a.byte_offset>b.byte_offset?1:0;
+}
+
+/* Visual commands use the very same layout and mask as drawing. Keep the
+   chosen affinity through soft-wrap/bidi boundaries instead of reducing a
+   caret to a byte offset before painting it. */
+static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_field *field,uint32_t value) {
+    uint32_t command=nx_text_command_base(value);
+    int extend=(value&NX_TEXT_COMMAND_EXTEND_SELECTION)!=0;
+    int left=command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_LEFT;
+    int right=command==NX_TEXT_COMMAND_MOVE_RIGHT || command==NX_TEXT_COMMAND_MOVE_WORD_RIGHT;
+    int word=command==NX_TEXT_COMMAND_MOVE_WORD_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_RIGHT;
+    int vertical=command==NX_TEXT_COMMAND_MOVE_UP || command==NX_TEXT_COMMAND_MOVE_DOWN ||
+        command==NX_TEXT_COMMAND_PAGE_UP || command==NX_TEXT_COMMAND_PAGE_DOWN;
+    int erase=command==NX_TEXT_COMMAND_DELETE_LINE_START || command==NX_TEXT_COMMAND_DELETE_LINE_END;
+    nx_utf8_span source; size_t anchor=0,cursor=0;
+    nx_result result=nx_text_field_text(field,&source);
+    if (result!=NX_OK) return result;
+    result=nx_text_buffer_selection(field->buffer,&anchor,&cursor);
+    if (result!=NX_OK) return result;
+    if (erase && anchor!=cursor) {
+        result=nx_text_buffer_erase_internal(field->buffer,anchor<cursor?anchor:cursor,anchor>cursor?anchor:cursor);
+        if (result==NX_OK) field->command_caret_valid=field->vertical_x_valid=0;
+        return result;
+    }
+    nx_password_mask mask={0}; nx_text_layout *layout=NULL;
+    size_t display_cursor=cursor,display_anchor=anchor;
+    if (desc->password) {
+        result=nx_password_mask_create(source,&mask); if (result!=NX_OK) return result;
+        result=nx_password_mask_offset(&mask,cursor,&display_cursor);
+        if (result==NX_OK) result=nx_password_mask_offset(&mask,anchor,&display_anchor);
+        if (result!=NX_OK) goto done;
+    }
+    result=nx_text_layout_create(desc->fonts,desc->password?mask.text:source.data,
+        desc->password?mask.count:source.length,NX_BIDI_LTR,desc->pixels_per_em,
+        desc->multiline?fmax(1.0,(double)desc->bounds.width-8.0):1000000000.0,&layout);
+    if (result!=NX_OK) goto done;
+    nx_text_caret current={0},target={0}; int found=0;
+    for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
+        nx_text_caret c; result=nx_text_layout_caret_at(layout,i,&c); if (result!=NX_OK) goto done;
+        if (c.byte_offset!=display_cursor) continue;
+        if (!found) { current=c; found=1; }
+        if (field->command_caret_valid && field->command_caret.byte_offset==display_cursor &&
+            c.line_index==field->command_caret.line_index && c.affinity==field->command_caret.affinity) { current=c; break; }
+    }
+    if (!found) { result=NX_ERROR_STATE; goto done; }
+    target=current;
+    if (left || right) {
+        int collapse=!extend && anchor!=cursor,best=0;
+        for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
+            nx_text_caret c; result=nx_text_layout_caret_at(layout,i,&c); if (result!=NX_OK) goto done;
+            if (collapse) {
+                if (c.byte_offset!=display_cursor && c.byte_offset!=display_anchor) continue;
+                if (!best || (left?nx_field_caret_order(c,target)<0:nx_field_caret_order(c,target)>0)) { target=c; best=1; }
+            } else {
+                int order=nx_field_caret_order(c,current);
+                size_t source_byte=desc->password?mask.source_offsets[c.byte_offset]:c.byte_offset;
+                if ((left?order>=0:order<=0) || (word && !nx_text_buffer_word_boundary_internal(field->buffer,source_byte))) continue;
+                if (!best || (left?nx_field_caret_order(c,target)>0:nx_field_caret_order(c,target)<0)) { target=c; best=1; }
+            }
+        }
+    } else if (vertical) {
+        int backward=command==NX_TEXT_COMMAND_MOVE_UP || command==NX_TEXT_COMMAND_PAGE_UP;
+        double distance=(command==NX_TEXT_COMMAND_PAGE_UP || command==NX_TEXT_COMMAND_PAGE_DOWN)?
+            fmax(current.height,(double)desc->bounds.height-8.0):current.height;
+        double x=field->vertical_x_valid?field->vertical_x:current.x;
+        result=nx_text_layout_hit_test(layout,x,current.top+current.height*.5+(backward?-distance:distance),&target);
+        if (result!=NX_OK) goto done;
+    } else {
+        nx_text_line line; result=nx_text_layout_line_at(layout,current.line_index,&line); if (result!=NX_OK) goto done;
+        int end=command==NX_TEXT_COMMAND_LINE_END || command==NX_TEXT_COMMAND_DELETE_LINE_END;
+        int visual_edge=command==NX_TEXT_COMMAND_LINE_LEFT || command==NX_TEXT_COMMAND_LINE_RIGHT;
+        int edge_found=0;
+        for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
+            nx_text_caret c; result=nx_text_layout_caret_at(layout,i,&c); if (result!=NX_OK) goto done;
+            if (c.line_index!=current.line_index) continue;
+            if (visual_edge) {
+                if (!edge_found || (command==NX_TEXT_COMMAND_LINE_LEFT?nx_field_caret_order(c,target)<0:nx_field_caret_order(c,target)>0)) { target=c; edge_found=1; }
+            } else if (c.byte_offset==(end?line.byte_end:line.byte_start)) {
+                if (!edge_found || c.affinity==(end?NX_CARET_UPSTREAM:NX_CARET_DOWNSTREAM)) { target=c; edge_found=1; }
+            }
+        }
+    }
+    {
+        size_t byte=desc->password?mask.source_offsets[target.byte_offset]:target.byte_offset;
+        if (erase) result=nx_text_buffer_erase_internal(field->buffer,byte<cursor?byte:cursor,byte>cursor?byte:cursor);
+        else result=nx_text_buffer_set_selection(field->buffer,extend?anchor:byte,byte);
+        if (result==NX_OK) {
+            field->command_caret=target; field->command_caret_valid=!erase;
+            if (vertical) {
+                if (!field->vertical_x_valid) field->vertical_x=current.x;
+                field->vertical_x_valid=1;
+            } else field->vertical_x_valid=0;
+        }
+    }
+done:
+    nx_text_layout_destroy(layout); nx_password_mask_destroy(&mask); return result;
+}
+
+static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_field *field,const nx_event *event) {
+    uint32_t command=nx_text_command_base(event->text_command);
+    if (command==NX_TEXT_COMMAND_NEWLINE && !desc->multiline) { field->submitted=1; return NX_OK; }
+    if (command>=NX_TEXT_COMMAND_COPY && command<=NX_TEXT_COMMAND_PASTE) {
+        nx_key key=command==NX_TEXT_COMMAND_COPY?NX_KEY_C:command==NX_TEXT_COMMAND_CUT?NX_KEY_X:NX_KEY_V;
+        if (desc->password && key!=NX_KEY_V) return NX_OK;
+        nx_result result=nx_field_clipboard_event(field->buffer,&desc->clipboard,key,desc->multiline,field->sensitive);
+        if (result==NX_OK) field->command_caret_valid=field->vertical_x_valid=0;
+        return result;
+    }
+    if (command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_RIGHT ||
+        command==NX_TEXT_COMMAND_MOVE_WORD_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_RIGHT ||
+        (command>=NX_TEXT_COMMAND_MOVE_UP && command<=NX_TEXT_COMMAND_LINE_RIGHT) ||
+        command==NX_TEXT_COMMAND_DELETE_LINE_START || command==NX_TEXT_COMMAND_DELETE_LINE_END)
+        return nx_field_visual_command(desc,field,event->text_command);
+    int handled=0; nx_result result=nx_text_buffer_apply_event(field->buffer,event,&handled);
+    if (result==NX_OK && handled) field->command_caret_valid=field->vertical_x_valid=0;
     return result;
 }
 
@@ -5392,10 +5548,11 @@ nx_result nx_text_field_widget(nx_context *ctx,
             (double)desc->bounds.y +
             ((double)desc->bounds.height -
              nx_text_layout_height(layout)) * 0.5;
-        nx_text_caret hit;
+        nx_text_caret hit={0};
         result = nx_text_layout_hit_test(layout,
             (double)state.pointer_x - text_x,
             (double)state.pointer_y - text_y, &hit);
+        nx_text_caret display_hit=hit;
         if (result == NX_OK && desc->password) {
             if (hit.byte_offset > mask.count) result = NX_ERROR_STATE;
             else hit.byte_offset = mask.source_offsets[hit.byte_offset];
@@ -5404,6 +5561,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
             result = nx_text_buffer_set_selection(field->buffer,
                                                    hit.byte_offset,
                                                    hit.byte_offset);
+        if (result==NX_OK) { field->command_caret=display_hit; field->command_caret_valid=1; }
         nx_text_layout_destroy(layout);
         layout = NULL;
         if (result != NX_OK) goto rollback;
@@ -5415,10 +5573,21 @@ nx_result nx_text_field_widget(nx_context *ctx,
         while (field->next_event_index < ctx->frame_events.count) {
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             if (event->type != NX_EVENT_TEXT &&
+                event->type != NX_EVENT_TEXT_COMMAND &&
                 event->type != NX_EVENT_IME_DELETE_SURROUNDING &&
                 event->type != NX_EVENT_IME_DELETE_RANGE)
                 ime_batch_target = ime_batch_revision = 0;
-            if (!desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
+            if (event->type==NX_EVENT_TEXT_COMMAND) {
+                if (event->ime_target) {
+                    int same=ime_batch_target==event->ime_target && ime_batch_revision==event->ime_revision;
+                    if (!same) ime_batch_accepted=desc->ime_window && event->ime_target==desc->id &&
+                        event->ime_revision==nx_field_ime_revision(field);
+                    ime_batch_target=event->ime_target; ime_batch_revision=event->ime_revision;
+                    if (!ime_batch_accepted) { ++field->next_event_index; continue; }
+                }
+                result=nx_field_text_command(desc,field,event);
+                if (result!=NX_OK) goto rollback;
+            } else if (!desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
                 event->key == NX_KEY_ENTER &&
                 !(event->modifiers & (NX_MOD_CONTROL | NX_MOD_ALT |
                                       NX_MOD_SUPER))) {
@@ -5434,6 +5603,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                         field->sensitive);
                 if (result != NX_OK) goto rollback;
                 field->vertical_x_valid = 0;
+                field->command_caret_valid = 0;
             } else if (desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
                        (event->key == NX_KEY_UP || event->key == NX_KEY_DOWN) &&
                        !(event->modifiers & (NX_MOD_CONTROL | NX_MOD_ALT |
@@ -5445,6 +5615,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                     !!(event->modifiers & NX_MOD_SHIFT),
                     &field->vertical_x, &field->vertical_x_valid);
                 if (result != NX_OK) goto rollback;
+                field->command_caret_valid = 0;
             } else if (event->type == NX_EVENT_IME_DELETE_SURROUNDING ||
                        event->type == NX_EVENT_IME_DELETE_RANGE) {
                 ime_batch_target = event->ime_target;
@@ -5482,7 +5653,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                     result = nx_text_buffer_apply_event(field->buffer, event,
                                                          &handled);
                     if (result != NX_OK) goto rollback;
-                    if (handled) field->vertical_x_valid = 0;
+                    if (handled) field->command_caret_valid = field->vertical_x_valid = 0;
                 }
             } else if (event->type == NX_EVENT_KEY_DOWN ||
                        event->type == NX_EVENT_TEXT) {
@@ -5490,7 +5661,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                 result = nx_text_buffer_apply_event(field->buffer, event,
                                                      &handled);
                 if (result != NX_OK) goto rollback;
-                if (handled) field->vertical_x_valid = 0;
+                if (handled) field->command_caret_valid = field->vertical_x_valid = 0;
             }
             ++field->next_event_index;
         }
@@ -5555,7 +5726,8 @@ nx_result nx_text_field_widget(nx_context *ctx,
                             field->buffer, desc->multiline, desc->disabled,
                             !valid, state.focused,
                             desc->password ? &mask : NULL,
-                            ime_preedit, ime_begin, ime_end, &field->scroll_x,
+                            ime_preedit, ime_begin, ime_end,
+                            field->command_caret_valid?&field->command_caret:NULL, &field->scroll_x,
                             &field->scroll_y, &caret_rect,
                             &caret_visible);
     if (result != NX_OK) goto rollback;
@@ -5733,11 +5905,14 @@ static nx_result nx_search_popup_run(nx_context *ctx,
     if (query_state.focused && !dismissed) {
         for (size_t e = 0; e < ctx->frame_events.count; ++e) {
             const nx_event *event = &ctx->frame_events.data[e];
-            if (event->type != NX_EVENT_KEY_DOWN ||
-                (event->modifiers & (NX_MOD_CONTROL | NX_MOD_ALT | NX_MOD_SUPER)))
-                continue;
-            int direction = event->key == NX_KEY_DOWN ? 1 :
-                            event->key == NX_KEY_UP ? -1 : 0;
+            int direction=0;
+            if (event->type==NX_EVENT_KEY_DOWN &&
+                !(event->modifiers&(NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER)))
+                direction=event->key==NX_KEY_DOWN?1:event->key==NX_KEY_UP?-1:0;
+            else if (event->type==NX_EVENT_TEXT_COMMAND &&
+                (!event->ime_target || event->ime_target==desc->query.id))
+                direction=event->text_command==NX_TEXT_COMMAND_MOVE_DOWN?1:
+                    event->text_command==NX_TEXT_COMMAND_MOVE_UP?-1:0;
             if (!direction || !match_count) continue;
             size_t next = active_pos;
             for (size_t attempts = 0; attempts < match_count; ++attempts) {
@@ -6174,11 +6349,11 @@ nx_result nx_plot(nx_context *ctx, const nx_plot_desc *desc,
         }
         if (next.interaction.focused) {
             double step = (desc->x_max - desc->x_min) / (double)columns;
-            if (nx_key_pressed(ctx, NX_KEY_LEFT)) {
+            if (ctx->action_keys_pressed[NX_KEY_LEFT]) {
                 next.cursor_x = fmax(desc->x_min, next.cursor_x - step);
                 next.cursor_valid = 1;
             }
-            if (nx_key_pressed(ctx, NX_KEY_RIGHT)) {
+            if (ctx->action_keys_pressed[NX_KEY_RIGHT]) {
                 next.cursor_x = fmin(desc->x_max, next.cursor_x + step);
                 next.cursor_valid = 1;
             }
@@ -6668,13 +6843,13 @@ nx_result nx_property_row(nx_context *ctx,
             next.boolean_value = !desc->boolean_value;
             next.changed = 1;
         } else if (desc->kind == NX_PROPERTY_NUMBER) {
-            if (next.interaction.focused && nx_key_pressed(ctx, NX_KEY_LEFT)) {
+            if (next.interaction.focused && ctx->action_keys_pressed[NX_KEY_LEFT]) {
                 double distance = desc->number_value - desc->minimum;
                 next.number_value = distance <= desc->step ? desc->minimum :
                                     desc->number_value - desc->step;
                 next.changed = next.number_value != desc->number_value;
             }
-            if (next.interaction.focused && nx_key_pressed(ctx, NX_KEY_RIGHT)) {
+            if (next.interaction.focused && ctx->action_keys_pressed[NX_KEY_RIGHT]) {
                 double distance = desc->maximum - next.number_value;
                 next.number_value = distance <= desc->step ? desc->maximum :
                                     next.number_value + desc->step;

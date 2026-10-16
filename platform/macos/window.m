@@ -4,6 +4,8 @@
 #include "event_queue.h"
 #include "drop_queue.h"
 #include "accessibility.h"
+#include "text_command.h"
+#include <objc/runtime.h>
 
 #include <limits.h>
 #include <math.h>
@@ -23,6 +25,7 @@ struct nx_window {
     const void *renderer_owner;
     nx_window *next;
     int should_close, ime_enabled, discarding_marked;
+    int interpreting_repeat;
     nx_ime_purpose ime_purpose;
     nx_rect caret;
     nx_cursor_shape cursor;
@@ -150,6 +153,64 @@ static nx_key nx_mac_key(NSEvent *event) {
     return NX_KEY_UNKNOWN;
 }
 static void nx_mac_focus(nx_window *w, int focused);
+static void nx_mac_discard(nx_window *w);
+
+static uint32_t nx_mac_primary_command(nx_key key,uint32_t modifiers) {
+    if (!(modifiers&NX_MOD_SUPER) || (modifiers&(NX_MOD_CONTROL|NX_MOD_ALT))) return 0;
+    switch (key) {
+    case NX_KEY_A: return NX_TEXT_COMMAND_SELECT_ALL;
+    case NX_KEY_C: return NX_TEXT_COMMAND_COPY;
+    case NX_KEY_X: return NX_TEXT_COMMAND_CUT;
+    case NX_KEY_V: return NX_TEXT_COMMAND_PASTE;
+    case NX_KEY_Z: return modifiers&NX_MOD_SHIFT?NX_TEXT_COMMAND_REDO:NX_TEXT_COMMAND_UNDO;
+    default: return 0;
+    }
+}
+static int nx_mac_editor_key(nx_key key,uint32_t modifiers) {
+    if (key>=NX_KEY_F1 && key<=NX_KEY_F12) return 0;
+    if (!(modifiers&NX_MOD_SUPER) || nx_mac_primary_command(key,modifiers)) return 1;
+    return key==NX_KEY_LEFT || key==NX_KEY_RIGHT || key==NX_KEY_UP || key==NX_KEY_DOWN ||
+        key==NX_KEY_BACKSPACE || key==NX_KEY_DELETE || key==NX_KEY_HOME || key==NX_KEY_END;
+}
+static uint32_t nx_mac_selector_command(SEL selector) {
+    const char *name=sel_getName(selector); if (!name) return 0;
+    size_t length=strlen(name); char stem[96];
+    const char suffix[]="AndModifySelection:"; size_t tail=sizeof(suffix)-1u;
+    int extend=length>=tail && strcmp(name+length-tail,suffix)==0;
+    size_t count=extend?length-tail:length?length-1u:0u;
+    if (!length || name[length-1u]!=':' || !count || count>=sizeof(stem)) return 0;
+    memcpy(stem,name,count); stem[count]=0;
+    static const struct { const char *name; uint32_t command; } commands[]={
+        {"moveBackward",NX_TEXT_COMMAND_MOVE_BACKWARD},{"moveForward",NX_TEXT_COMMAND_MOVE_FORWARD},
+        {"moveLeft",NX_TEXT_COMMAND_MOVE_LEFT},{"moveRight",NX_TEXT_COMMAND_MOVE_RIGHT},
+        {"moveWordBackward",NX_TEXT_COMMAND_MOVE_WORD_BACKWARD},{"moveWordForward",NX_TEXT_COMMAND_MOVE_WORD_FORWARD},
+        {"moveWordLeft",NX_TEXT_COMMAND_MOVE_WORD_LEFT},{"moveWordRight",NX_TEXT_COMMAND_MOVE_WORD_RIGHT},
+        {"moveUp",NX_TEXT_COMMAND_MOVE_UP},{"moveDown",NX_TEXT_COMMAND_MOVE_DOWN},
+        {"pageUp",NX_TEXT_COMMAND_PAGE_UP},{"pageDown",NX_TEXT_COMMAND_PAGE_DOWN},
+        {"moveToBeginningOfLine",NX_TEXT_COMMAND_LINE_START},{"moveToEndOfLine",NX_TEXT_COMMAND_LINE_END},
+        {"moveToLeftEndOfLine",NX_TEXT_COMMAND_LINE_LEFT},{"moveToRightEndOfLine",NX_TEXT_COMMAND_LINE_RIGHT},
+        {"moveToBeginningOfParagraph",NX_TEXT_COMMAND_PARAGRAPH_START},{"moveToEndOfParagraph",NX_TEXT_COMMAND_PARAGRAPH_END},
+        {"moveToBeginningOfDocument",NX_TEXT_COMMAND_DOCUMENT_START},{"moveToEndOfDocument",NX_TEXT_COMMAND_DOCUMENT_END},
+        {"deleteBackward",NX_TEXT_COMMAND_DELETE_BACKWARD},{"deleteForward",NX_TEXT_COMMAND_DELETE_FORWARD},
+        {"deleteWordBackward",NX_TEXT_COMMAND_DELETE_WORD_BACKWARD},{"deleteWordForward",NX_TEXT_COMMAND_DELETE_WORD_FORWARD},
+        {"deleteToBeginningOfLine",NX_TEXT_COMMAND_DELETE_LINE_START},{"deleteToEndOfLine",NX_TEXT_COMMAND_DELETE_LINE_END},
+        {"deleteToBeginningOfParagraph",NX_TEXT_COMMAND_DELETE_PARAGRAPH_START},{"deleteToEndOfParagraph",NX_TEXT_COMMAND_DELETE_PARAGRAPH_END},
+        {"selectAll",NX_TEXT_COMMAND_SELECT_ALL},{"insertNewline",NX_TEXT_COMMAND_NEWLINE},
+        {"insertTab",NX_TEXT_COMMAND_TAB},{"insertBacktab",NX_TEXT_COMMAND_BACKTAB},
+        {"cancelOperation",NX_TEXT_COMMAND_CANCEL},{"copy",NX_TEXT_COMMAND_COPY},
+        {"cut",NX_TEXT_COMMAND_CUT},{"paste",NX_TEXT_COMMAND_PASTE},
+        {"undo",NX_TEXT_COMMAND_UNDO},{"redo",NX_TEXT_COMMAND_REDO}
+    };
+    for (size_t i=0;i<sizeof(commands)/sizeof(*commands);++i) if (!strcmp(stem,commands[i].name)) {
+        uint32_t command=commands[i].command|(extend?NX_TEXT_COMMAND_EXTEND_SELECTION:0);
+        return nx_text_command_valid(command)?command:0;
+    }
+    return 0;
+}
+static void nx_mac_command(nx_window *w,uint32_t command) {
+    nx_event event={0}; event.type=NX_EVENT_TEXT_COMMAND; event.text_command=command;
+    event.modifiers=w->modifiers; event.repeat=w->interpreting_repeat; nx_mac_push(w,event);
+}
 
 @interface NXMacApplicationDelegate : NSObject <NSApplicationDelegate>
 @end
@@ -238,11 +299,18 @@ static void nx_mac_focus(nx_window *w, int focused);
     nx_key key = nx_mac_key(native); unsigned code = [native keyCode];
     if (code < 128 && owner->pressed[code] != NX_KEY_UNKNOWN) key = owner->pressed[code];
     if (code < 128) owner->pressed[code] = key;
+    int editor=owner->ime_enabled && nx_mac_editor_key(key,owner->modifiers);
     if (key != NX_KEY_UNKNOWN) {
-        nx_event event = {0}; event.type = NX_EVENT_KEY_DOWN; event.key = key;
+        nx_event event = {0}; event.type = editor?NX_EVENT_KEY_DOWN_CONSUMED:NX_EVENT_KEY_DOWN; event.key = key;
         event.modifiers = owner->modifiers; event.repeat = [native isARepeat]; nx_mac_push(owner, event);
     }
-    if (!(owner->modifiers & (NX_MOD_SUPER | NX_MOD_CONTROL))) [self interpretKeyEvents:@[native]];
+    int prior_repeat=owner->interpreting_repeat; owner->interpreting_repeat=[native isARepeat];
+    uint32_t command=editor?nx_mac_primary_command(key,owner->modifiers):0;
+    if (command) {
+        if ([marked length] && command==NX_TEXT_COMMAND_UNDO) nx_mac_discard(owner);
+        else { if ([marked length]) [self unmarkText]; if (owner) nx_mac_command(owner,command); }
+    } else if (editor || !(owner->modifiers & (NX_MOD_SUPER | NX_MOD_CONTROL))) [self interpretKeyEvents:@[native]];
+    if (owner) owner->interpreting_repeat=prior_repeat;
 }
 - (void)keyUp:(NSEvent *)native {
     if (!owner) return;
@@ -266,7 +334,8 @@ static void nx_mac_focus(nx_window *w, int focused);
     owner->modifiers = flags;
 }
 - (BOOL)performKeyEquivalent:(NSEvent *)event {
-    if (owner && ([event modifierFlags] & NSEventModifierFlagCommand)) {
+    if (owner && owner->ime_enabled && ([event modifierFlags] & NSEventModifierFlagCommand) &&
+        nx_mac_editor_key(nx_mac_key(event),nx_mac_modifiers([event modifierFlags]))) {
         [self keyDown:event]; return YES;
     }
     return NO;
@@ -300,7 +369,17 @@ static void nx_mac_focus(nx_window *w, int focused);
     [marked release]; marked = nil; marked_selection = NSMakeRange(0,0);
     nx_mac_clear_preedit(owner); nx_mac_text(owner, text);
 }
-- (void)doCommandBySelector:(SEL)selector { (void)selector; /* Physical actions were already queued. */ }
+- (void)doCommandBySelector:(SEL)selector {
+    if (!owner || !pthread_main_np()) return;
+    uint32_t command=nx_mac_selector_command(selector);
+    if (!command) { [super doCommandBySelector:selector]; return; }
+    if (!owner->ime_enabled) return; /* Non-editor widgets use their physical keys. */
+    if ([marked length]) {
+        if (command==NX_TEXT_COMMAND_CANCEL || command==NX_TEXT_COMMAND_UNDO) { nx_mac_discard(owner); return; }
+        [self unmarkText];
+    }
+    if (owner) nx_mac_command(owner,command);
+}
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actual {
     if (actual) *actual = NSMakeRange(NSNotFound,0);
     if (!owner || owner->ime_purpose == NX_IME_PURPOSE_PASSWORD || !marked || range.location > [marked length] ||

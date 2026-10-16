@@ -101,6 +101,10 @@ static int test_editor_bridge(void) {
     event.key = NX_KEY_ENTER;
     CHECK(apply(buffer, event, &committed, 1, 1));
     CHECK(committed == -1.5 && expect_draft(buffer, "-1.5"));
+    event=(nx_event){0}; event.type=NX_EVENT_TEXT_COMMAND; event.text_command=NX_TEXT_COMMAND_NEWLINE;
+    committed=0;
+    CHECK(apply(buffer,event,&committed,1,1) && committed==-1.5 && expect_draft(buffer,"-1.5"));
+    event.type=NX_EVENT_KEY_DOWN;
     event.key = NX_KEY_Z;
     event.modifiers = NX_MOD_CONTROL;
     CHECK(apply(buffer, event, &committed, 1, 1));

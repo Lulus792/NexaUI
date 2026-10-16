@@ -486,6 +486,96 @@ static int test_multiline(nx_font_collection *fonts) {
     return 0;
 }
 
+static int command_frame(nx_context *ctx,nx_text_field_desc *desc,nx_text_field *field,uint32_t command) {
+    nx_event event={0}; event.type=NX_EVENT_TEXT_COMMAND; event.text_command=command;
+    event.modifiers=NX_MOD_SUPER|NX_MOD_ALT; /* Selector semantics do not rewrite modifiers. */
+    nx_interaction_state state; int valid=0,submitted=0;
+    return nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,120,0)==NX_OK &&
+        nx_text_field_widget(ctx,desc,field,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
+static int field_caret(nx_context *ctx,float *x,float *y) {
+    const nx_command *commands=NULL; size_t count=0;
+    if (nx_frame_commands(ctx,&commands,&count)!=NX_OK) return 0;
+    for (size_t i=0;i<count;++i) if (commands[i].type==NX_COMMAND_LINE) {
+        *x=commands[i].points[0].x; *y=commands[i].points[0].y; return 1;
+    }
+    return 0;
+}
+static int test_native_text_commands(nx_font_collection *fonts) {
+    nx_context *ctx=NULL; nx_text_field *field=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("111",3,4096,&field)==NX_OK);
+    nx_text_field_desc desc={0}; desc.id=1; desc.bounds=(nx_rect){0,0,80,80};
+    desc.name=(nx_utf8_span){"Commands",8}; desc.fonts=fonts; desc.pixels_per_em=20; desc.glyph_cache_bytes=65536;
+    nx_interaction_state state; int valid=0,submitted=0; size_t anchor=0,cursor=0;
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_LEFT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==2 && cursor==2);
+    nx_event consumed={0}; consumed.type=NX_EVENT_KEY_DOWN_CONSUMED; consumed.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&consumed)==NX_OK);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_LINE_START));
+    CHECK(expect_text(field,"111"));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT|NX_TEXT_COMMAND_EXTEND_SELECTION));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==0 && cursor==1);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DELETE_BACKWARD) && expect_text(field,"11"));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_UNDO) && expect_text(field,"111"));
+    CHECK(nx_text_field_set_text(field,"\xd7\x90\xd7\x91",4)==NX_OK);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==2);
+    float x=0,y=0; CHECK(field_caret(ctx,&x,&y) && x==16);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_LEFT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(nx_text_field_set_text(field,"1\xd7\x90\xd7\x91" "1",6)==NX_OK);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
+    float previous_x=4;
+    for (unsigned i=0;i<16;++i) {
+        CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
+        CHECK(field_caret(ctx,&x,&y) && x>=previous_x); previous_x=x;
+    }
+    CHECK(x==52); /* Bidi visual end is independent of the document's byte end. */
+    for (unsigned i=0;i<16;++i) {
+        CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_LEFT));
+        CHECK(field_caret(ctx,&x,&y) && x<=previous_x); previous_x=x;
+    }
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==0 && x==4);
+    /* Spaces provide actual Unicode wrap opportunities; a run of digits is
+       deliberately unbreakable under the layout contract. */
+    CHECK(nx_text_field_set_text(field,"1 1 1",5)==NX_OK);
+    desc.multiline=1; desc.bounds.width=32;
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_LINE_START));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_UP));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==2);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_LINE_END));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(field_caret(ctx,&x,&y) && x==4 && y==44); /* Same byte, next soft-wrapped line. */
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_LINE_END));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DELETE_LINE_START) && expect_text(field,"1 1 "));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_UNDO) && expect_text(field,"1 1 1"));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==5 && cursor==5);
+    test_clipboard clipboard={0}; desc.multiline=0; desc.bounds.width=80;
+    desc.clipboard=(nx_text_clipboard){&clipboard,read_clipboard,write_clipboard};
+    CHECK(nx_text_field_set_text(field,"15",2)==NX_OK);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_SELECT_ALL));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_COPY) && clipboard.writes==1 && !strcmp(clipboard.bytes,"15"));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_CUT) && expect_text(field,""));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_PASTE) && expect_text(field,"15"));
+    nx_text_field_destroy(field); field=NULL;
+    CHECK(nx_text_field_create_password("A\xf0\x9f\x8c\x8d",5,&field)==NX_OK); desc.password=1;
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==1);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==5);
+    unsigned writes=clipboard.writes;
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_SELECT_ALL));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_COPY) && command_frame(ctx,&desc,field,NX_TEXT_COMMAND_CUT));
+    CHECK(clipboard.writes==writes && expect_text(field,"A\xf0\x9f\x8c\x8d"));
+    nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
     uint8_t bytes[512];
     font_fixture(bytes);
@@ -494,6 +584,7 @@ int main(void) {
     CHECK(nx_font_open(bytes, sizeof(bytes), NULL, &font) == NX_OK);
     CHECK(nx_font_collection_create(NULL, &fonts) == NX_OK);
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
+    if (test_native_text_commands(fonts)) return 1;
     if (test_single_line(fonts) || test_multiline(fonts) ||
         test_caret_scrolling(fonts) ||
         test_clipboard_shortcuts(fonts, NX_MOD_CONTROL) ||

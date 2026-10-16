@@ -74,6 +74,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             check_buffer(buffer);
         }
     }
+    for (size_t i=0;i<size && i<16;++i) {
+        nx_event event={0}; int handled=0;
+        event.type=NX_EVENT_TEXT_COMMAND;
+        event.text_command=1u+data[i]%(NX_TEXT_COMMAND_COUNT-1u);
+        if (event.text_command<=NX_TEXT_COMMAND_DOCUMENT_END && (data[i]&1u))
+            event.text_command|=NX_TEXT_COMMAND_EXTEND_SELECTION;
+        require(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK);
+        check_buffer(buffer);
+    }
     nx_text_buffer_destroy(buffer);
     return 0;
 }

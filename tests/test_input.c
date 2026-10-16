@@ -3,6 +3,17 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+
+/* Adding semantic commands must not change the existing event C ABI. */
+typedef struct prior_event_layout {
+    nx_event_type type; uint32_t modifiers; float x,y,delta_x,delta_y,width,height,scale;
+    uint32_t button,contact_id; nx_key key; uint32_t scalar; int repeat,focused;
+    uint64_t ime_target,ime_revision; uint32_t ime_before,ime_after; int32_t ime_index; uint32_t ime_length;
+} prior_event_layout;
+_Static_assert(sizeof(nx_event)==sizeof(prior_event_layout),"event ABI size");
+_Static_assert(offsetof(nx_event,text_command)==offsetof(prior_event_layout,scalar),"event payload ABI");
+_Static_assert(offsetof(nx_event,ime_target)==offsetof(prior_event_layout,ime_target),"event target ABI");
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -243,7 +254,37 @@ static int test_win32_event_path(void) {
 }
 #endif
 
+static int test_consumed_key_and_text_command(void) {
+    nx_context *ctx=NULL; nx_interaction_state state;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK);
+    CHECK(nx_interact_region(ctx,1,(nx_rect){0,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_interact_region(ctx,2,(nx_rect){30,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    nx_event event={0}; event.type=NX_EVENT_KEY_DOWN_CONSUMED; event.key=NX_KEY_TAB;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK);
+    CHECK(nx_key_down(ctx,NX_KEY_TAB) && nx_key_pressed(ctx,NX_KEY_TAB) && nx_focus_id(ctx)==0);
+    CHECK(nx_interact_region(ctx,1,(nx_rect){0,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_interact_region(ctx,2,(nx_rect){30,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    event.type=NX_EVENT_TEXT_COMMAND; event.text_command=NX_TEXT_COMMAND_TAB; event.modifiers=NX_MOD_SUPER;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.text_command=NX_TEXT_COMMAND_DELETE_BACKWARD|NX_TEXT_COMMAND_EXTEND_SELECTION;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.text_command=NX_TEXT_COMMAND_NONE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.text_command=NX_TEXT_COMMAND_COPY; event.ime_target=1;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK && nx_focus_id(ctx)==1);
+    CHECK(nx_interact_region(ctx,1,(nx_rect){0,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_interact_region(ctx,2,(nx_rect){30,0,20,20},NX_REGION_FOCUSABLE,&state)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
+    if (test_consumed_key_and_text_command()) return 1;
     if (test_frame_transitions()) return 1;
     if (test_focus_and_validation()) return 1;
     if (test_event_allocation_failure()) return 1;

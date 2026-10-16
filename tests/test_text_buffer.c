@@ -364,7 +364,51 @@ static int test_platform_primary_shortcuts(void) {
     nx_text_buffer_destroy(buffer); return 0;
 }
 
+static int test_text_commands(void) {
+    nx_text_buffer *buffer=NULL;
+    CHECK(nx_text_buffer_create("alpha beta",10,4096,&buffer)==NX_OK);
+    nx_event event={0}; int handled=0;
+    event.type=NX_EVENT_TEXT_COMMAND; event.modifiers=NX_MOD_SUPER|NX_MOD_ALT;
+    event.text_command=NX_TEXT_COMMAND_DELETE_WORD_BACKWARD;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer,"alpha ",6,6,6)==0);
+    event.text_command=NX_TEXT_COMMAND_UNDO;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer,"alpha beta",10,10,10)==0);
+    event.text_command=NX_TEXT_COMMAND_PARAGRAPH_START;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    event.text_command=NX_TEXT_COMMAND_MOVE_WORD_FORWARD|NX_TEXT_COMMAND_EXTEND_SELECTION;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer,"alpha beta",10,0,5)==0);
+    event.text_command=NX_TEXT_COMMAND_DELETE_FORWARD;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer," beta",5,0,0)==0);
+    event.type=NX_EVENT_KEY_DOWN_CONSUMED; event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && !handled);
+    CHECK(expect_text(buffer," beta",5,0,0)==0);
+    event.type=NX_EVENT_TEXT_COMMAND; event.text_command=NX_TEXT_COMMAND_DELETE_FORWARD|NX_TEXT_COMMAND_EXTEND_SELECTION;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_ERROR_ARGUMENT && !handled);
+    CHECK(expect_text(buffer," beta",5,0,0)==0);
+    event.text_command=NX_TEXT_COMMAND_MOVE_LEFT;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && !handled); /* Needs visual layout. */
+    nx_text_buffer_destroy(buffer); buffer=NULL;
+    const char unicode[]="A\xf0\x9f\x8c\x8d" "e\xcc\x81";
+    CHECK(nx_text_buffer_create(unicode,sizeof(unicode)-1,4096,&buffer)==NX_OK);
+    event.text_command=NX_TEXT_COMMAND_DOCUMENT_START;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    event.text_command=NX_TEXT_COMMAND_MOVE_FORWARD;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    event.text_command=NX_TEXT_COMMAND_MOVE_FORWARD|NX_TEXT_COMMAND_EXTEND_SELECTION;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer,unicode,8,1,5)==0);
+    event.text_command=NX_TEXT_COMMAND_DELETE_BACKWARD;
+    CHECK(nx_text_buffer_apply_event(buffer,&event,&handled)==NX_OK && handled);
+    CHECK(expect_text(buffer,"Ae\xcc\x81",4,1,1)==0);
+    nx_text_buffer_destroy(buffer); return 0;
+}
+
 int main(void) {
+    if (test_text_commands()) return 1;
     if (test_edit_and_history()) return 1;
     if (test_ime_delete_surrounding()) return 1;
     if (test_ime_delete_relative()) return 1;

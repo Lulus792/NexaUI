@@ -10,7 +10,7 @@ option(NEXAUI_BUILD_BENCHMARKS "Build NexaUI benchmarks" OFF)
 option(NEXAUI_BUILD_FUZZERS "Build Clang/libFuzzer targets" OFF)
 
 add_library(nexaui src/nexaui.c src/headless.c src/renderer_backend.c src/theme.c src/color.c src/utf8.c src/grapheme.c src/word.c src/line.c src/bidi.c src/shape.c src/gsub.c src/gpos.c src/gpos_marks.c src/ot_layout.c src/text_layout.c src/text_buffer.c src/virtual_list.c src/table.c src/tree.c src/docking.c src/search.c src/snapshot.c src/sim_channel.c src/series.c src/arena.c src/layout.c src/font.c src/glyf.c src/raster.c src/glyph_cache.c src/font_collection.c src/unicode_data.c platform/common/event_queue.c platform/common/drop_queue.c platform/common/uri_list.c)
-target_include_directories(nexaui PRIVATE platform/common)
+target_include_directories(nexaui PRIVATE platform/common src)
 target_sources(nexaui PRIVATE src/text_stamp.c)
 if(WIN32)
     target_sources(nexaui PRIVATE platform/windows/window.c platform/windows/snapshot_lock.c platform/windows/accessibility.c)

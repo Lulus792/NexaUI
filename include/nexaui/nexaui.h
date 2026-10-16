@@ -226,6 +226,35 @@ typedef enum nx_key {
 #define NX_BUTTON_X1     8u
 #define NX_BUTTON_X2    16u
 
+/* Text-system actions are distinct from physical keys and their modifiers.
+   Native key bindings may produce these without the corresponding key chord.
+   Layout-dependent visual movement is handled by rendered text fields. */
+typedef enum nx_text_command {
+    NX_TEXT_COMMAND_NONE = 0,
+    NX_TEXT_COMMAND_MOVE_BACKWARD, NX_TEXT_COMMAND_MOVE_FORWARD,
+    NX_TEXT_COMMAND_MOVE_LEFT, NX_TEXT_COMMAND_MOVE_RIGHT,
+    NX_TEXT_COMMAND_MOVE_WORD_BACKWARD, NX_TEXT_COMMAND_MOVE_WORD_FORWARD,
+    NX_TEXT_COMMAND_MOVE_WORD_LEFT, NX_TEXT_COMMAND_MOVE_WORD_RIGHT,
+    NX_TEXT_COMMAND_MOVE_UP, NX_TEXT_COMMAND_MOVE_DOWN,
+    NX_TEXT_COMMAND_PAGE_UP, NX_TEXT_COMMAND_PAGE_DOWN,
+    NX_TEXT_COMMAND_LINE_START, NX_TEXT_COMMAND_LINE_END,
+    NX_TEXT_COMMAND_LINE_LEFT, NX_TEXT_COMMAND_LINE_RIGHT,
+    NX_TEXT_COMMAND_PARAGRAPH_START, NX_TEXT_COMMAND_PARAGRAPH_END,
+    NX_TEXT_COMMAND_DOCUMENT_START, NX_TEXT_COMMAND_DOCUMENT_END,
+    NX_TEXT_COMMAND_DELETE_BACKWARD, NX_TEXT_COMMAND_DELETE_FORWARD,
+    NX_TEXT_COMMAND_DELETE_WORD_BACKWARD, NX_TEXT_COMMAND_DELETE_WORD_FORWARD,
+    NX_TEXT_COMMAND_DELETE_LINE_START, NX_TEXT_COMMAND_DELETE_LINE_END,
+    NX_TEXT_COMMAND_DELETE_PARAGRAPH_START, NX_TEXT_COMMAND_DELETE_PARAGRAPH_END,
+    NX_TEXT_COMMAND_SELECT_ALL, NX_TEXT_COMMAND_NEWLINE,
+    NX_TEXT_COMMAND_TAB, NX_TEXT_COMMAND_BACKTAB, NX_TEXT_COMMAND_CANCEL,
+    NX_TEXT_COMMAND_COPY, NX_TEXT_COMMAND_CUT, NX_TEXT_COMMAND_PASTE,
+    NX_TEXT_COMMAND_UNDO, NX_TEXT_COMMAND_REDO,
+    NX_TEXT_COMMAND_COUNT
+} nx_text_command;
+/* Only movement commands accept this flag. It expresses the selector's
+   selection behavior independently of the physical Shift modifier. */
+#define NX_TEXT_COMMAND_EXTEND_SELECTION UINT32_C(0x80000000)
+
 typedef enum nx_event_type {
     NX_EVENT_POINTER_MOVE = 1,
     NX_EVENT_POINTER_DOWN,
@@ -243,7 +272,11 @@ typedef enum nx_event_type {
     NX_EVENT_TOUCH_CANCEL,
     NX_EVENT_IME_PREEDIT_CHANGED, /* Query nx_window_get_ime_preedit. */
     NX_EVENT_IME_DELETE_SURROUNDING,
-    NX_EVENT_IME_DELETE_RANGE
+    NX_EVENT_IME_DELETE_RANGE,
+    NX_EVENT_TEXT_COMMAND,
+    /* Physical state only: the native text system owns the corresponding
+       edit/action. Widgets must not repeat it from this key event. */
+    NX_EVENT_KEY_DOWN_CONSUMED
 } nx_event_type;
 
 /* Every field is backend-neutral. Unused fields are zero. Mouse and touch
@@ -259,7 +292,10 @@ typedef struct nx_event {
     uint32_t button;
     uint32_t contact_id; /* Touch contact ID for NX_EVENT_TOUCH_*. */
     nx_key key;
-    uint32_t scalar;
+    union {
+        uint32_t scalar; /* NX_EVENT_TEXT. */
+        uint32_t text_command; /* NX_EVENT_TEXT_COMMAND: command plus flags. */
+    };
     int repeat;
     int focused;
     /* Wayland IME TEXT and DELETE events carry the editor target and
@@ -1516,6 +1552,8 @@ NX_API nx_result nx_frame_events(const nx_context *context,
                                  const nx_event **out_events, size_t *out_count);
 NX_API nx_result nx_frame_input(const nx_context *context, nx_input_snapshot *out_input);
 NX_API int nx_key_down(const nx_context *context, nx_key key);
+/* Physical snapshots include native-consumed keys. Inspect frame event types
+   before deriving application actions that could duplicate native text input. */
 NX_API int nx_key_pressed(const nx_context *context, nx_key key);
 NX_API int nx_key_released(const nx_context *context, nx_key key);
 
