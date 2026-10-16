@@ -73,8 +73,8 @@ The Linux shared Debug build with GCC 15.2.0 passed the same twelve tests.
 The complete local Windows static suite executed 98 passing tests and skipped
 one clipboard test (99 registered, 205.94 seconds). Native NexaCloud, UIA and
 compact UIA cases passed; the skip is not counted as clipboard acceptance.
-The portable tests do not establish macOS runtime or native screenreader
-acceptance; fresh CI results are recorded separately when available.
+The local targeted runs alone do not establish macOS runtime or native
+screenreader acceptance; fresh CI results follow below.
 
 ## Combined-table fuzz campaign
 
@@ -144,6 +144,12 @@ cmake --build BUILD_DIR --target nexaui_font_mark_probe
 python tools/check_font_mark_anchors.py --probe BUILD_DIR/nexaui_font_mark_probe --output out/font-marks.json FONT1.ttf FONT2.ttf
 ```
 
+The same real-font checks were also run with the Windows shared probe and the
+Linux Clang ASan/UBSan/LeakSanitizer probe, reading the same three installed
+files through WSL's local mount. All three builds produced 36 successful
+shaping samples and 18 matching anchor pairs in total. The receipt includes
+each build's output; no font bytes were uploaded or copied into the repository.
+
 After the unary correction, the twelve targeted tests passed again in the
 Windows shared build and the Linux ASan/UBSan/LeakSanitizer build. A fresh
 combined-table fuzz run used eight starting seeds, including the unary case,
@@ -151,3 +157,29 @@ combined-table fuzz run used eight starting seeds, including the unary case,
 It exited 0 after 18.745 seconds with 1,859 coverage counters and no ASan/UBSan
 finding; the [follow-up receipt](gpos-unary-fuzz.json) retains exact hashes.
 LeakSanitizer was disabled only for the libFuzzer process, as above.
+
+## Corrected source CI
+
+The complete [run 38931689013](https://github.com/Lulus792/NexaUI/actions/runs/38931689013)
+for `cdc7e75a5d4ee45c7fc10e6d8da343caea6bcf8d` passed all seven required jobs.
+Counts below come from the actual first-suite job logs, with skips separated:
+
+| Job | Compiler | Passed | Skipped | Failed |
+| --- | --- | ---: | ---: | ---: |
+| Windows static | MSVC 19.51.36260.0 | 99 | 0 | 0 |
+| Windows shared | MSVC 19.51.36260.0 | 99 | 0 | 0 |
+| macOS static | AppleClang 21.0.0.21000101 | 86 | 0 | 0 |
+| macOS shared | AppleClang 21.0.0.21000101 | 86 | 0 | 0 |
+| Linux static | GCC 13.3.0 | 100 | 7 | 0 |
+| Linux shared | GCC 13.3.0 | 100 | 7 | 0 |
+| Linux sanitizers | Clang 18.1.3 | 100 | 7 | 0 |
+
+`nexaui_gpos_marks`, shape and GSUB cases ran in every job. Native NexaCloud
+and UIA checks passed in both Windows jobs; the separate AppKit AX client
+passed in both macOS jobs. Linux Wayland cases lacked a compositor and are
+not counted as executed acceptance. Required CI steps also completed installed
+and add-subdirectory consumer builds. Optional Windows ASan and fuzz CI jobs
+were not requested; the local fuzz/sanitizer results above are separate.
+The [CI receipt](gpos-marks-ci.json) records job IDs and extracted result lines.
+These bounded probes do not close full screenreader, hardware or complex-script
+acceptance in the master roadmap.
