@@ -5448,7 +5448,7 @@ static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_fi
         nx_key key=command==NX_TEXT_COMMAND_COPY?NX_KEY_C:command==NX_TEXT_COMMAND_CUT?NX_KEY_X:NX_KEY_V;
         if (desc->password && key!=NX_KEY_V) return NX_OK;
         nx_result result=nx_field_clipboard_event(field->buffer,&desc->clipboard,key,desc->multiline,field->sensitive);
-        if (result==NX_OK) field->command_caret_valid=field->vertical_x_valid=0;
+        if (result==NX_OK && key!=NX_KEY_C) field->command_caret_valid=field->vertical_x_valid=0;
         return result;
     }
     if (command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_RIGHT ||
@@ -5640,9 +5640,11 @@ nx_result nx_text_field_widget(nx_context *ctx,
                         &desc->clipboard, event->key, desc->multiline,
                         field->sensitive);
                 if (result != NX_OK) goto rollback;
-                field->vertical_x_valid = 0;
-                field->command_caret_valid = 0;
-                if (event->key!=NX_KEY_C) field->suppress_caret_reveal=0;
+                if (event->key!=NX_KEY_C) {
+                    field->vertical_x_valid = 0;
+                    field->command_caret_valid = 0;
+                    field->suppress_caret_reveal=0;
+                }
             } else if (event->type==NX_EVENT_KEY_DOWN && nx_field_key_command(event)) {
                 nx_event action=*event; action.type=NX_EVENT_TEXT_COMMAND;
                 action.text_command=nx_field_key_command(event);

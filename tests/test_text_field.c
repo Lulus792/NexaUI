@@ -567,6 +567,10 @@ static int test_native_text_commands(nx_font_collection *fonts) {
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_RIGHT));
     CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
     CHECK(field_caret(ctx,&x,&y) && x==4 && y==44); /* Same byte, next soft-wrapped line. */
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_COPY));
+    CHECK(field_caret(ctx,&x,&y) && x==4 && y==44); /* Copy must preserve visual affinity. */
+    CHECK(physical_key_frame(ctx,&desc,field,NX_KEY_C,NX_MOD_CONTROL));
+    CHECK(field_caret(ctx,&x,&y) && x==4 && y==44);
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_LINE_END));
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DELETE_LINE_START) && expect_text(field,"1 1 "));
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_UNDO) && expect_text(field,"1 1 1"));
