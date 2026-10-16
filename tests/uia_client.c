@@ -456,7 +456,10 @@ static int cloud_probe(HWND hwnd) {
     puts("Independent native NexaCloud UIA navigation/file/clear/reopen workflow passed"); return 0;
 }
 int wmain(int argc,WCHAR **argv) {
-    if (argc==3 && wcscmp(argv[1],L"--cloud")==0) return cloud_probe((HWND)(UINT_PTR)_wcstoui64(argv[2],NULL,10));
+    if (argc==3 && wcscmp(argv[1],L"--cloud")==0) {
+        setvbuf(stdout,NULL,_IONBF,0); /* Keep progress when a parent deadline fires. */
+        return cloud_probe((HWND)(UINT_PTR)_wcstoui64(argv[2],NULL,10));
+    }
     if (argc!=4) return 2;
     HWND hwnd=(HWND)(UINT_PTR)_wcstoui64(argv[1],NULL,10);
     commands=(HANDLE)(UINT_PTR)_wcstoui64(argv[2],NULL,10); acks=(HANDLE)(UINT_PTR)_wcstoui64(argv[3],NULL,10);

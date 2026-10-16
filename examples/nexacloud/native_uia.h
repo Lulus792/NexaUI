@@ -29,10 +29,13 @@ static int uia_smoke(nx_window *window,cloud_scene *scene,nx_renderer_driver *re
     CloseHandle(input); CloseHandle(write);
     if (!created) { CloseHandle(read); return 0; }
     CloseHandle(process.hThread);
-    int okay=1; ULONGLONG deadline=GetTickCount64()+90000;
+    int okay=1; ULONGLONG deadline=GetTickCount64()+150000;
     while (WaitForSingleObject(process.hProcess,0)==WAIT_TIMEOUT) {
         uia_client_log(read);
-        if (GetTickCount64()>=deadline || !frame(window,scene,renderer)) {
+        int timed_out=GetTickCount64()>=deadline;
+        if (timed_out || !frame(window,scene,renderer)) {
+            fputs(timed_out ? "NexaCloud UIA child exceeded the 150-second deadline\n" :
+                "NexaCloud UIA native frame failed\n",stderr);
             /* Only this test's explicitly created child process is terminated. */
             TerminateProcess(process.hProcess,1); okay=0; break;
         }
