@@ -117,6 +117,23 @@ static NSString *role(nx_semantic_role value) {
 static NSString *string(const char *bytes) {
     return [[[NSString alloc] initWithBytes:bytes length:strlen(bytes) encoding:NSUTF8StringEncoding] autorelease];
 }
+static const char *value_string(nx_ax_node *n) {
+    return n->role==NX_ROLE_TEXT && !n->value[0] ? n->name : n->value;
+}
+static int has_state_value(nx_ax_node *n) {
+    return !(n->state&NX_SEM_PROTECTED) &&
+        (n->role==NX_ROLE_RADIO || n->role==NX_ROLE_TAB || n->role==NX_ROLE_CHECKBOX || n->role==NX_ROLE_SWITCH);
+}
+static int state_value(nx_ax_node *n) {
+    if (n->role==NX_ROLE_RADIO || n->role==NX_ROLE_TAB) return selected(n);
+    return (n->state&NX_SEM_MIXED) ? 2 : !!(n->state&NX_SEM_CHECKED);
+}
+static int value_changed(nx_ax_node *a,nx_ax_node *b) {
+    if (has_state_value(a)!=has_state_value(b)) return 1;
+    if (has_state_value(b)) return state_value(a)!=state_value(b);
+    return strcmp((a->state&NX_SEM_PROTECTED) ? "" : value_string(a),
+                  (b->state&NX_SEM_PROTECTED) ? "" : value_string(b))!=0;
+}
 static NSRect logical(nx_ax_node *n) { return NSMakeRect(n->bounds.x,n->bounds.y,n->bounds.width,n->bounds.height); }
 static NSRect screen(NXMacAXBridge *b,nx_ax_node *n) {
     NSWindow *window=[b->view window];
@@ -159,10 +176,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
 - (id)accessibilityValue {
     nx_ax_node *n=[self current]; if (!n) return nil;
     if (n->state&NX_SEM_PROTECTED) return @"";
-    if (n->role==NX_ROLE_RADIO || n->role==NX_ROLE_TAB) return @(selected(n));
-    if (n->role==NX_ROLE_CHECKBOX || n->role==NX_ROLE_SWITCH)
-        return @((n->state&NX_SEM_MIXED) ? 2 : !!(n->state&NX_SEM_CHECKED));
-    return string(n->role==NX_ROLE_TEXT && !n->value[0] ? n->name : n->value);
+    if (has_state_value(n)) return @(state_value(n));
+    return string(value_string(n));
 }
 - (NSString *)accessibilityValueDescription { nx_ax_node *n=[self current]; return n ? string(n->value) : nil; }
 - (NSRect)accessibilityFrame { nx_ax_node *n=[self current]; return n ? screen(bridge,n) : NSZeroRect; }
@@ -419,7 +434,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
     for (size_t i=0;i<s->count;++i) {
         nx_ax_node *n=&s->nodes[i];
         if (!structure && (n->id!=snapshot->nodes[i].id || n->incarnation!=snapshot->nodes[i].incarnation ||
-            n->parent!=snapshot->nodes[i].parent)) structure=1;
+            n->parent!=snapshot->nodes[i].parent || (n->role==NX_ROLE_TEXT_FIELD &&
+            ((n->state^snapshot->nodes[i].state)&NX_SEM_PROTECTED)))) structure=1;
         if (n->state&NX_SEM_FOCUSED) focus=n->id;
     }
     /* Retain all event identities before any AppKit call-out. A notification may
@@ -432,12 +448,17 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
             [item retire]; [elements removeObjectForKey:@(item->identity)];
         } else if (prior!=NX_AX_NONE) {
             nx_ax_node *a=&snapshot->nodes[prior], *b=&s->nodes[next];
-            if (a->state!=b->state || strcmp(a->value,b->value))
+            if (value_changed(a,b))
                 [notifications addObject:@[item,NSAccessibilityValueChangedNotification]];
             uint64_t before=a->selected==NX_AX_NONE ? 0 : snapshot->nodes[a->selected].id;
             uint64_t after=b->selected==NX_AX_NONE ? 0 : s->nodes[b->selected].id;
-            if ((b->state&NX_SEM_SELECTION_SINGLE) && before!=after)
+            uint64_t before_inc=a->selected==NX_AX_NONE ? 0 : snapshot->nodes[a->selected].incarnation;
+            uint64_t after_inc=b->selected==NX_AX_NONE ? 0 : s->nodes[b->selected].incarnation;
+            if ((b->state&NX_SEM_SELECTION_SINGLE) && (before!=after || before_inc!=after_inc)) {
                 [notifications addObject:@[item,NSAccessibilitySelectedChildrenChangedNotification]];
+                if (b->role==NX_ROLE_LIST || b->role==NX_ROLE_TREE)
+                    [notifications addObject:@[item,NSAccessibilitySelectedRowsChangedNotification]];
+            }
         }
     }
     nx_ax_snapshot *old=snapshot; snapshot=s; spare=old; incarnation=next_incarnation;

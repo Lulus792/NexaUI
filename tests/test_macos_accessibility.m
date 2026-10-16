@@ -126,6 +126,7 @@ static int run(void) {
     CHECK([[view accessibilityChildren] count]==1);
     id button=[find(view,2) retain], toggle=[find(view,3) retain], secret=[find(view,5) retain], dynamic=[find(view,8) retain];
     CHECK(button && toggle && secret && dynamic);
+    NSString *saved_label=[[button accessibilityLabel] retain];
     CHECK([[button accessibilityRole] isEqualToString:NSAccessibilityButtonRole]);
     CHECK([[button accessibilityLabel] isEqualToString:@"Öffnen 📁"]);
     CHECK([button accessibilityParent]==find(view,1) && [button accessibilityWindow]==native);
@@ -138,6 +139,9 @@ static int run(void) {
     CHECK(![secret isAccessibilitySelectorAllowed:@selector(accessibilityPerformPress)]);
     [native makeKeyAndOrderFront:nil];
     NSRect before=[button accessibilityFrame]; CHECK(before.size.width==100 && before.size.height==30);
+    NSRect content=[native contentRectForFrameRect:[native frame]];
+    CHECK(fabs(before.origin.x-content.origin.x-10)<.01);
+    CHECK(fabs(before.origin.y-(NSMaxY(content)-20-30))<.01);
     NSPoint origin=[native frame].origin; [native setFrameOrigin:NSMakePoint(origin.x+40,origin.y+30)];
     NSRect after=[button accessibilityFrame]; CHECK(fabs(after.origin.x-before.origin.x-40)<.01 && fabs(after.origin.y-before.origin.y-30)<.01);
     CHECK([view accessibilityHitTest:NSMakePoint(NSMidX(after),NSMidY(after))]==button);
@@ -186,6 +190,16 @@ static int run(void) {
     CHECK([find(view,164) accessibilityPerformPress]);
     CHECK(advance(window,&s)==0 && s.queued==64);
     CHECK(advance(window,&s)==0 && s.queued==1); /* Accepted native work survives core backpressure. */
+    nx_window *other_window=NULL; nx_window_desc other_desc={"Other AX",640,480,NX_WINDOW_HIDDEN,{0}};
+    scene other_scene={0}; other_scene.required=51; other_scene.radio=71;
+    CHECK(nx_window_create(&other_desc,&other_window)==NX_OK && nx_context_create(NULL,&other_scene.ui)==NX_OK);
+    CHECK(frame(&other_scene)==0 && nx_window_publish_semantics(other_window,other_scene.ui)==NX_OK);
+    id other_button=[find(nx_window_native_nsview(other_window),2) retain]; CHECK(other_button && other_button!=button);
+    CHECK(nx_window_route_events(other_window,s.ui,&routed)==NX_ERROR_STATE);
+    CHECK([button accessibilityPerformPress] && advance(other_window,&other_scene)==0 && !other_scene.clicks);
+    CHECK(advance(window,&s)==0 && s.clicks);
+    nx_context_destroy(other_scene.ui); nx_window_destroy(other_window);
+    CHECK(![other_button isAccessibilityElement] && [button isAccessibilityElement]); [other_button release];
     s.large=1; s.renamed=1; CHECK(frame(&s)==0); h.fail_next=1;
     CHECK(nx_window_publish_semantics(window,s.ui)==NX_ERROR_MEMORY && !h.fail_next);
     CHECK([[button accessibilityLabel] isEqualToString:@"Öffnen 📁"]);
@@ -211,6 +225,7 @@ static int run(void) {
     id final=[find(view,2) retain];
     nx_context_destroy(s.ui); nx_window_destroy(window);
     CHECK(h.count==0 && ![final isAccessibilityElement] && ![final accessibilityPerformPress] && NSEqualRects([final accessibilityFrame],NSZeroRect));
+    CHECK([saved_label isEqualToString:@"Öffnen 📁"]); [saved_label release];
     [final release]; [current release]; [replacement release]; [dynamic release]; [secret release]; [toggle release]; [button release];
     [tabs release]; [a release]; [b release]; [list release]; [c release]; [d release]; [view release];
     puts("Native AppKit AX properties/actions/selection/lifetime/allocation checks passed");
