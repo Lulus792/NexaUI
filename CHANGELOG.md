@@ -2,6 +2,7 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Verified the initial Linux AT-SPI transport at `08a4237`: all six desktop static/shared CI variants and Linux sanitizers pass. All five native Linux cases execute on Ubuntu/libatspi 2.52, with local WSLg/libatspi 2.60.5 coverage in static/shared/sanitizer builds. Linux's unavailable-Wayland CI skips and local exploratory regression failures remain explicitly documented.
 - Added the initial private Linux AT-SPI transport and native NexaCloud publication. Independent libatspi/real-registry tests cover native queries, committed actions, selection/cache/events, rollback and retired objects on X11 and WSLg Wayland. D-Bus remains runtime-optional, with no core libatspi/GLib link dependency. Full screenreader/text/table acceptance remains open.
 
 - Verified the complete static/shared Windows/macOS/Ubuntu CI matrix and Linux sanitizers at `2f70d68`. macOS compact-details GPU capture and Escape/focus flow pass. Ubuntu's active-validation counterexample and 20 untraced presentation repeats confirm the pinned-layer correction for the reported false positive; production retirement is unchanged.

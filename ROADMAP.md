@@ -562,3 +562,11 @@ W07/X02/X05 now include explicit backend-neutral single-selection models with re
 M07/X06 now have an initial private AppKit NSAccessibilityElement bridge over owned snapshots with native role/name/value/protection/hierarchy/geometry queries, main-thread queued press/focus/selection and native object retirement. The native NexaCloud Metal runner publishes completed frames. Static/shared native macOS suites each pass 85/85 cases on macOS 26.6.2 ARM64/AppleClang 21, including the separate OS AX client without a skip, installed C consumers and native NexaCloud/Metal checks. Full role-specific contracts, native notification observation, VoiceOver, other architecture/hardware acceptance and X08 remain open. See [the report](docs/quality/macos-ax-report.md).
 
 L11/X07 now have an initial private AT-SPI D-Bus transport with Accessible/Application/Component/Action/Selection/Cache interfaces, owned snapshots, native request backpressure and committed cache/state/selection events. Independent libatspi plus direct wire-error tests execute against a real private registry on X11 and WSLg Wayland. Native polling includes the bus fd; optional SDK/runtime/bus failures preserve ordinary UI behavior. The [contract](docs/concepts/atspi.md) and [report](docs/quality/linux-atspi-report.md) retain exact execution evidence. Full text/range/table/relations/events, Orca and broader physical/desktop acceptance remain open; this does not complete L11/X07/X08 or F2/F4.
+
+At `08a4237`, all six desktop static/shared CI jobs and Linux sanitizers pass.
+Each Ubuntu job executes all five AT-SPI cases with native libatspi 2.52/D-Bus
+1.14, with 99 executed successes and seven unavailable-Wayland skips overall.
+Windows passes 98/98 and macOS 85/85 in each variant, including separate native
+UIA/AX clients. Local WSLg tests also pass in static/shared/sanitizer builds with
+libatspi 2.60.5/D-Bus 1.16.2. This is scoped native transport evidence; full
+screenreader/text/table/role coverage and physical release gates remain open.
