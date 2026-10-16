@@ -36,6 +36,20 @@ such commands unhandled. Numeric Enter commands commit a valid draft, but the
 numeric widget does not yet share the complete general-field native input path.
 See the [native command report](../quality/macos-input-commands-report.md).
 
+General and numeric text fields now support left-button drag selection and
+Shift-click extension. The moving endpoint follows layout hit testing while the
+source anchor stays fixed. General fields preserve bidi/wrap affinity and map
+password-mask positions back to complete source graphemes. Capture permits moving
+and releasing outside the field; cancellation, focus loss, disabling or omission
+ends the drag. A held pointer beyond the visible edge scrolls the field once per
+frame, with bounded speed and catch-up. Touch taps still place the caret; touch
+selection handles, double/triple-click units and text drag/drop remain open.
+
+Selection uses both `NX_COLOR_SELECTION` and `NX_COLOR_SELECTION_TEXT`. Boundary
+glyph masks split into disjoint clips, including glyph overhang, so foreground
+colors do not require painting the antialiased glyph twice. See the
+[executed selection and contrast checks](../quality/text-pointer-report.md).
+
 This stage does not validate SFNT table checksums or parse font collections, Unicode variation sequences, other `cmap` formats or CFF outlines. Contextual substitutions/positioning, cursive attachment, advanced script preprocessing/reordering, variable-font deltas, atlas packing and native text rendering remain pending. Invalid supported table structures return an error rather than exposing out-of-bounds spans.
 
 The `nexaui_font_inspect` example prints directory entries, metrics, representative Unicode mappings and simple/composite sample outlines from a local font. `nexaui_glyph_raster` writes a cached PGM mask for one Unicode scalar. `nexaui_font_fallback` reports which ordered face covers four representative scalars. `tests/test_font.c` exercises malformed offsets, duplicate tags, allocator failures, metric bounds and deterministic byte mutations; `tests/test_cmap.c` exercises format 4 and 12 mappings and malformed ranges; `tests/test_glyf.c` exercises short and long location tables, packed points, repeated flags, nested components, transforms, cycles, malformed references and allocator failures; `tests/test_raster.c` covers holes, antialiasing, implicit curve points, atomic failures and A8 headless compositing; `tests/test_glyph_cache.c` covers reuse, LRU eviction, resident budget, empty glyphs and allocator failures; `tests/test_font_collection.c` covers ordered fallback, missing glyphs, duplicate faces, capacity and allocation failures. For deeper corpus testing, configure with `-DNEXAUI_BUILD_FUZZERS=ON` under a non-MSVC Clang toolchain with libFuzzer and run `nexaui_sfnt_fuzz` on a font corpus. This fuzzer target has not yet been run in the current Windows environment.

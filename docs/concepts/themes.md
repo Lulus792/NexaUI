@@ -35,6 +35,13 @@ Context theme state is confined to its UI thread, like frame and layout state. A
 
 Built-in buttons use `NX_COLOR_ACCENT_TEXT` for their label on the normal accent fill. Hovered and pressed fills use `NX_COLOR_TEXT`, and disabled buttons use `NX_COLOR_DISABLED_TEXT`. This keeps the High Contrast preset's black label legible on its yellow accent background.
 
+General and numeric text-field selections use `NX_COLOR_SELECTION_TEXT` inside
+the selected geometry and the ordinary foreground outside it. High Contrast
+therefore draws black selected text on yellow. Partial glyph masks use disjoint
+clips rather than a second antialiased overpaint. The
+[selection report](../quality/text-pointer-report.md) records the pixel
+counterexample and reviewed theme/text-size images.
+
 ## Midnight preset
 
 `NX_THEME_MIDNIGHT` supplies deep blue surfaces and cyan accents for interfaces

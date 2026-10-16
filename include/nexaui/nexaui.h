@@ -1864,6 +1864,8 @@ NX_API nx_result nx_drag_value(nx_context *context,
 /* A single-line numeric editor. The field owns its draft text and committed
    value. Register once per frame; it consumes focused key/text events,
    paints text, selection and caret, and exposes draft/validation semantics.
+   Left-button dragging selects text; Shift-click preserves the anchor.
+   Capture permits release outside the field and bounded edge auto-scroll.
    A failed paint may be retried in the same frame without repeating edits.
    Fonts and their bytes remain caller-owned through each widget call. */
 NX_API nx_result nx_numeric_field_create(double initial_value,
@@ -1884,7 +1886,9 @@ NX_API nx_result nx_numeric_field_widget(nx_context *context,
 /* A text editor with owned UTF-8 draft and undo history. Single-line Enter
    reports submission; multiline Enter inserts a line break. Programmatic set
    replaces the draft and clears history. A failed paint may be retried in the
-   same frame without applying the same events again. */
+   same frame without applying the same events again. Left-button drag and
+   Shift-click select at grapheme boundaries, including password masks;
+   a held pointer beyond the visible edge scrolls once per frame. */
 NX_API nx_result nx_text_field_create(const char *initial, size_t length,
                                       size_t history_bytes,
                                       nx_text_field **out_field);

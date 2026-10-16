@@ -1,0 +1,156 @@
+{
+  "source_commit": "8dce6f2f41057ea5982cf339f95f982ad76a0756",
+  "date": "2026-10-16",
+  "platform": "Windows 11, headless renderer; MSVC 19.38; CMake 4.3.2",
+  "font": {
+    "name": "Arial",
+    "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+    "redistributed": false
+  },
+  "scope": "Actual example output after pointer press/move/release and source-range assertion; logical text-size and theme variants, no physical DPI/native-input proof. PNGs converted losslessly from PPM; contact sheet adds only a label margin.",
+  "images": [
+    {
+      "theme": "light",
+      "logical_text_scale": "1",
+      "width": 680,
+      "height": 420,
+      "sha256": "7b1549f76cc3e60daebfa19b48e43c269e747a070e9adb33874b33307c5ef7de",
+      "local_path": "out/text-pointer-light-1.png"
+    },
+    {
+      "theme": "light",
+      "logical_text_scale": "1.5",
+      "width": 680,
+      "height": 420,
+      "sha256": "29d5047dab5736b0fe9dbd603e217f59aa8eda6a46572cc6baed899b485cbd00",
+      "local_path": "out/text-pointer-light-1.5.png"
+    },
+    {
+      "theme": "light",
+      "logical_text_scale": "2",
+      "width": 680,
+      "height": 420,
+      "sha256": "e62d6782b96f6b1801e8b970593b89fe9ef945246dd91e08ef87250942a81c08",
+      "local_path": "out/text-pointer-light-2.png"
+    },
+    {
+      "theme": "dark",
+      "logical_text_scale": "1",
+      "width": 680,
+      "height": 420,
+      "sha256": "231b768ff501803a315d02d5483ced8c793af0913e0108b66ac6e3c2ad8ad7c6",
+      "local_path": "out/text-pointer-dark-1.png"
+    },
+    {
+      "theme": "dark",
+      "logical_text_scale": "1.5",
+      "width": 680,
+      "height": 420,
+      "sha256": "7639544102bb9896b4696a4d982fe198e87e462b9e455362a2fa874dab5e0ff0",
+      "local_path": "out/text-pointer-dark-1.5.png"
+    },
+    {
+      "theme": "dark",
+      "logical_text_scale": "2",
+      "width": 680,
+      "height": 420,
+      "sha256": "589290c0cf70ed77b902f0b3a3303caddc63d49fc1d016268325e5cf1c41e6e2",
+      "local_path": "out/text-pointer-dark-2.png"
+    },
+    {
+      "theme": "contrast",
+      "logical_text_scale": "1",
+      "width": 680,
+      "height": 420,
+      "sha256": "d6224a9b45d322eef9d7a1c85e893b0d552d9a3e16c96fbf86b7f76c2900bd41",
+      "local_path": "out/text-pointer-contrast-1.png"
+    },
+    {
+      "theme": "contrast",
+      "logical_text_scale": "1.5",
+      "width": 680,
+      "height": 420,
+      "sha256": "ddc6b64efea58985941555c8bb619529b6c51ea58e19e6f61572c722545635f2",
+      "local_path": "out/text-pointer-contrast-1.5.png"
+    },
+    {
+      "theme": "contrast",
+      "logical_text_scale": "2",
+      "width": 680,
+      "height": 420,
+      "sha256": "e6cdbded6616b65353bce0e7d2a92373ffb01f84a434e7622c7520de1b014b79",
+      "local_path": "out/text-pointer-contrast-2.png"
+    }
+  ],
+  "reviewed_contact_sheet": "text-pointer-images/review.png",
+  "contrast_detail": "text-pointer-images/contrast-2.png",
+  "linux_comparison": {
+    "platform": "Alpine 3.24 / WSL2; Clang 22.1.3; same local Arial bytes; ASan/UBSan/LSan detect_leaks=1",
+    "variants": [
+      {
+        "theme": "light",
+        "logical_text_scale": "1",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "ee8bcb3a5a9e458673aab69ab33f4dd8fb759f25f2706a43742db26dbac76eaf"
+      },
+      {
+        "theme": "light",
+        "logical_text_scale": "1.5",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "dc1bc39784f712d94a6afa39ff3c1cf0842dd5bf32a183d7735ef7f54b222f03"
+      },
+      {
+        "theme": "light",
+        "logical_text_scale": "2",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "bdafa93f076ec725a48b4a871a713a22691edd12894063983fc9cf2e1d9b9498"
+      },
+      {
+        "theme": "dark",
+        "logical_text_scale": "1",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "8b3910dfa7f16c81839e056c46aed09743b8d7c36508183dc80d9d33cfe27781"
+      },
+      {
+        "theme": "dark",
+        "logical_text_scale": "1.5",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "3711ca8fb1ca954d0974ab2115a28336b65d6696ec1d50d84802b29ac7a30c60"
+      },
+      {
+        "theme": "dark",
+        "logical_text_scale": "2",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "209be55fb938eeab5874938e4af862ab427959b9b90e30a802db268165217fc3"
+      },
+      {
+        "theme": "contrast",
+        "logical_text_scale": "1",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "e7f2d00236ced89da40f52617993dd998324770290e1d6cf4735615e7bcb55aa"
+      },
+      {
+        "theme": "contrast",
+        "logical_text_scale": "1.5",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "8ea876142adb082ecb05824824e7c391dd4c0e32a7441ec2f1a8c24d061dbb9c"
+      },
+      {
+        "theme": "contrast",
+        "logical_text_scale": "2",
+        "different_pixels": 0,
+        "total_pixels": 285600,
+        "linux_ppm_sha256": "6dceac51db1c3c93d4eff52177527c1737f71cbbc1e400efed91db0d4ec9a541"
+      }
+    ],
+    "all_pixels_identical": true
+  }
+}

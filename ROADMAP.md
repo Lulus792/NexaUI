@@ -582,3 +582,13 @@ remain local as required by NSTextInputClient. See the
 [command report](docs/quality/macos-input-commands-report.md) for exact CI and
 adversarial tests. This does not complete M04/T17/U05, physical IME, full-document
 replacement/reconversion, secure OS input or the F2/F4 gates.
+
+T16/U04/U05 now support captured mouse text selection, Shift-click and bounded
+edge auto-scroll in general/numeric fields, including masked grapheme offsets.
+Private per-event capture/focus provenance preserves same-frame press/move/up
+and edits across multiple fields without changing public events. Selection ink
+uses its theme token with disjoint boundary-mask clips; the visual High Contrast
+counterexample is corrected. The [selection report](docs/quality/text-pointer-report.md)
+retains execution, adversarial and image evidence. Touch selection handles,
+word/paragraph multi-click, text drag/drop, full native IME and physical/assistive
+acceptance remain open. This does not complete T16/T17/U05 or F4.
