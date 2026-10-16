@@ -84,6 +84,12 @@ if(NEXAUI_BUILD_TESTS)
                 --smoke "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud")
             set_tests_properties(nexaui_nexacloud_native_example PROPERTIES TIMEOUT 120
                 RESOURCE_LOCK native_display)
+            if(TARGET nexaui_uia_client)
+                add_dependencies(nexaui_nexacloud_native nexaui_uia_client)
+                add_test(NAME nexaui_nexacloud_uia COMMAND nexaui_nexacloud_native
+                    --uia-smoke "${_cloud_font}" $<TARGET_FILE:nexaui_uia_client>)
+                set_tests_properties(nexaui_nexacloud_uia PROPERTIES TIMEOUT 120 RESOURCE_LOCK native_display)
+            endif()
         endif()
         if(TARGET nexaui_renderer_metal)
             add_test(NAME nexaui_nexacloud_metal_native_example COMMAND nexaui_nexacloud_native

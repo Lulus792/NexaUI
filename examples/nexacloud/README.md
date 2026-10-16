@@ -184,3 +184,5 @@ capture files, details and settings at 200%. Current evidence and its limits are
 in the [large-text report](../../docs/nexacloud-validation.md#text-reflow--2026-10-15).
 Physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI screenreader tasks
 remain open. See the [NexaCloud delivery plan](../../docs/nexacloud.md).
+
+The Windows runner now exposes explicit single-selection containers for navigation and files. The independent `nexaui_nexacloud_uia` client changes pages, selects a file, verifies the real inspector preview name, clears selection and reopens the file view while checking an old handle remains unavailable. Selection updates use the application model before layout rather than synthetic clicks. This automated UIA workflow is not a complete screenreader acceptance test.

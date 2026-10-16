@@ -561,7 +561,8 @@ typedef enum nx_semantic_role {
     NX_ROLE_MENU, NX_ROLE_MENU_ITEM, NX_ROLE_TOOLBAR, NX_ROLE_STATUS,
     NX_ROLE_TREE, NX_ROLE_TREE_ITEM, NX_ROLE_PROGRESS, NX_ROLE_SEPARATOR,
     NX_ROLE_CUSTOM, NX_ROLE_SCROLL_AREA, NX_ROLE_COLUMN_HEADER,
-    NX_ROLE_POPUP, NX_ROLE_DIALOG, NX_ROLE_TOOLTIP, NX_ROLE_MENU_BAR
+    NX_ROLE_POPUP, NX_ROLE_DIALOG, NX_ROLE_TOOLTIP, NX_ROLE_MENU_BAR,
+    NX_ROLE_TAB_LIST
 } nx_semantic_role;
 
 #define NX_SEM_DISABLED   1u
@@ -575,6 +576,9 @@ typedef enum nx_semantic_role {
 #define NX_SEM_BUSY     256u
 #define NX_SEM_FOCUSED  512u /* Derived from nx_focus_id; do not set in desc. */
 #define NX_SEM_PROTECTED 1024u /* Value is sensitive; semantic value is empty. */
+/* Derived by nx_selection_group; not accepted in ordinary semantic descs. */
+#define NX_SEM_SELECTION_SINGLE 2048u
+#define NX_SEM_SELECTION_REQUIRED 4096u
 
 #define NX_ACTION_PRESS       1u
 #define NX_ACTION_FOCUS       2u
@@ -584,6 +588,9 @@ typedef enum nx_semantic_role {
 #define NX_ACTION_EXPAND     32u
 #define NX_ACTION_COLLAPSE   64u
 #define NX_ACTION_SELECT    128u
+/* Derived capabilities of explicit selection-group members. */
+#define NX_ACTION_ADD_SELECTION 256u
+#define NX_ACTION_DESELECT 512u
 
 typedef struct nx_semantic_desc {
     uint64_t id, parent_id; /* parent_id zero makes a root. */
@@ -1542,11 +1549,12 @@ NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);
 NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
                                    uint32_t *out_index);
-/* Queue PRESS, FOCUS or SELECT against the completed semantic/interactive tree.
-   Delivered at the next begin_frame through the ordinary interaction state.
-   Disabled, inactive/modal-blocked and unsupported targets are rejected. A
-   duplicate request or full 64-entry queue returns LIMIT without accepting it.
-   Context-thread only, between frames. Other semantic actions remain unsupported. */
+/* Queue PRESS, FOCUS or selection actions against a completed frame. PRESS and
+   legacy ungrouped SELECT become ordinary interaction; explicit group selection
+   is applied through nx_selection_group/apply in the next frame without a click.
+   ADD_SELECTION and DESELECT are derived for group members; required groups
+   cannot be cleared. Disabled, modal-blocked and unsupported targets are rejected.
+   Duplicate/full 64-entry queues return LIMIT. Owner thread, between frames. */
 NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
 /* Publish an owned native accessibility snapshot of a completed context frame.
    Window/context owner thread only. The context may change or be destroyed after
@@ -1556,6 +1564,23 @@ NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, u
    NULL context detaches the bridge. Windows initially supports UIA;
    other adapters return UNSUPPORTED until their native transports are present. */
 NX_API nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context);
+
+/* Register an explicit single-selection container (GROUP, LIST, TREE or
+   TAB_LIST), apply queued selection requests to the caller-owned ID, then build
+   its SELECT-capable descendants using that ID. No model pointer is retained.
+   required must be 0/1 (TAB_LIST requires 1). IDs are widget IDs, not domain
+   option numbers. End-frame rejects multiple selected members or an empty
+   required selection. Selection state uses CHECKED for radios, SELECTED otherwise.
+   Desc actions must be zero; container state flags above are derived internally.
+   Allocation failure leaves the model and pending selection requests unchanged. */
+NX_API nx_result nx_selection_group(nx_context *context, const nx_semantic_desc *desc,
+                                    int required, uint64_t *selected_id);
+/* Optional early model phase before layout/group registration. Requests for this
+   group are consumed once; later group registration preserves the result.
+   SELECT replaces, ADD_SELECTION adds only to an empty selection, DESELECT clears
+   only its matching optional selection. Context owner thread, during a frame. */
+NX_API nx_result nx_selection_apply(nx_context *context, uint64_t group_id,
+                                    int required, uint64_t *selected_id);
 
 /* IDs are stable across frames for identical hierarchy and byte sequences.
    Labels are borrowed only for the duration of the call and may contain any

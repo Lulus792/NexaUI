@@ -24,6 +24,8 @@ typedef struct scene {
     nx_context *ctx;
     int checked, removed, recreated, renamed, large_extra;
     unsigned clicks, fill_clicks, total_clicks;
+    uint64_t required_choice, optional_choice, radio_choice, other_choice;
+    int selection_moved;
 } scene;
 static nx_control_desc control(uint64_t id,uint64_t parent,const char *name,nx_rect bounds) {
     nx_control_desc d={0}; d.id=id; d.parent_id=parent; d.name=(nx_utf8_span){name,strlen(name)}; d.bounds=bounds; return d;
@@ -60,6 +62,32 @@ static int frame(scene *s) {
         nx_semantic_desc extra={0}; extra.id=20; extra.parent_id=1; extra.role=NX_ROLE_TEXT;
         extra.bounds=(nx_rect){200,200,100,30}; extra.name=(nx_utf8_span){label,sizeof(label)};
         CHECK(nx_semantics_add(s->ctx,&extra,NULL)==NX_OK);
+    }
+    for (unsigned g=0;g<4;++g) {
+        nx_semantic_desc container={0}; container.id=50u+g*10u; container.parent_id=1;
+        container.role=g==0 ? NX_ROLE_TAB_LIST : g==2 ? NX_ROLE_GROUP : NX_ROLE_LIST;
+        container.name=(nx_utf8_span){"Selection",9}; container.bounds=(nx_rect){250,20+(float)g*80,180,70};
+        uint64_t *choice=g==0 ? &s->required_choice : g==1 ? &s->optional_choice : g==2 ? &s->radio_choice : &s->other_choice;
+        CHECK(nx_selection_group(s->ctx,&container,g==0 || g==2,choice)==NX_OK);
+        uint64_t parent=container.id;
+        if (g==1) {
+            nx_semantic_desc decoration=container; decoration.id=64; decoration.parent_id=60; decoration.role=NX_ROLE_PANEL;
+            CHECK(nx_semantics_add(s->ctx,&decoration,NULL)==NX_OK); parent=64;
+        }
+        for (unsigned item=1;item<=3;++item) {
+            if (g==3 && (!s->selection_moved || item!=1)) continue;
+            if (g==1 && s->selection_moved && item==1) continue;
+            nx_widget_desc member={0}; member.semantic.id=g==3 ? 61 : container.id+item; member.semantic.parent_id=parent;
+            member.semantic.role=g==2 ? NX_ROLE_RADIO : g==0 ? NX_ROLE_TAB : NX_ROLE_LIST_ITEM;
+            member.semantic.bounds=(nx_rect){250+(float)(item-1u)*50,20+(float)g*80,45,30};
+            member.semantic.name=(nx_utf8_span){"Choice",6}; member.semantic.actions=NX_ACTION_SELECT|NX_ACTION_FOCUS;
+            member.semantic.state=(*choice==member.semantic.id ? (g==2 ? NX_SEM_CHECKED : NX_SEM_SELECTED) : 0u) | (item==3 ? NX_SEM_DISABLED : 0u);
+            member.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
+            if (g==2) {
+                nx_control_desc radio=control(member.semantic.id,parent,"Choice",member.semantic.bounds);radio.disabled=item==3;
+                CHECK(nx_radio(s->ctx,&radio,member.semantic.id,choice,&state)==NX_OK && !state.clicked);
+            } else CHECK(nx_widget_register(s->ctx,&member,&state)==NX_OK && !state.clicked);
+        }
     }
     s->fill_clicks=0;
     for (uint64_t id=100;id<=164;++id) {
@@ -117,13 +145,23 @@ static int run(const WCHAR *client) {
     CHECK(NX_UIA_TreeItemControlTypeId==UIA_TreeItemControlTypeId);
     CHECK(NX_UIA_ValueValuePropertyId==UIA_ValueValuePropertyId);
     CHECK(NX_UIA_WindowControlTypeId==UIA_WindowControlTypeId);
+    CHECK(NX_UIA_TabControlTypeId==UIA_TabControlTypeId);
+    CHECK(NX_UIA_SelectionPatternId==UIA_SelectionPatternId);
+    CHECK(NX_UIA_SelectionItemPatternId==UIA_SelectionItemPatternId);
+    CHECK(NX_UIA_SelectionSelectionPropertyId==UIA_SelectionSelectionPropertyId);
+    CHECK(NX_UIA_SelectionCanSelectMultiplePropertyId==UIA_SelectionCanSelectMultiplePropertyId);
+    CHECK(NX_UIA_SelectionIsSelectionRequiredPropertyId==UIA_SelectionIsSelectionRequiredPropertyId);
+    CHECK(NX_UIA_SelectionItemSelectionContainerPropertyId==UIA_SelectionItemSelectionContainerPropertyId);
+    CHECK(NX_UIA_Selection_InvalidatedEventId==UIA_Selection_InvalidatedEventId);
+    CHECK(NX_UIA_SelectionItem_ElementSelectedEventId==UIA_SelectionItem_ElementSelectedEventId);
+    CHECK(NX_UIA_SelectionItem_ElementRemovedFromSelectionEventId==UIA_SelectionItem_ElementRemovedFromSelectionEventId);
     allocation_state allocations={0};
     char title[1601]; memset(title,'A',1600); title[1600]=0;
     nx_window_desc desc={0}; desc.width=640; desc.height=480; desc.title_utf8=title;
     desc.flags=NX_WINDOW_HIDDEN; desc.allocator=(nx_allocator){&allocations,allocate,deallocate};
     nx_window *window=NULL; CHECK(nx_window_create(&desc,&window)==NX_OK);
     HWND hwnd=nx_window_native_hwnd(window); CHECK(hwnd);
-    scene s={0}; CHECK(nx_context_create(NULL,&s.ctx)==NX_OK); CHECK(frame(&s)==0);
+    scene s={0}; s.required_choice=51; s.radio_choice=71; CHECK(nx_context_create(NULL,&s.ctx)==NX_OK); CHECK(frame(&s)==0);
     /* First publication must be transactional too. */
     allocations.fail_next=1;
     CHECK(nx_window_publish_semantics(window,s.ctx)==NX_ERROR_MEMORY && !allocations.fail_next);
@@ -174,7 +212,19 @@ static int run(const WCHAR *client) {
         if (available>=sizeof(unsigned)) {
             unsigned request,reply=0; DWORD bytes=0;
             CHECK(ReadFile(command_read,&request,sizeof(request),&bytes,NULL) && bytes==sizeof(request));
-            if (request==UIA_TEST_APPLY) {
+            if (request==UIA_TEST_MOVE_UNPUBLISHED || request==UIA_TEST_MOVE_SELECTION || request==UIA_TEST_RESTORE_SELECTION) {
+                s.selection_moved=request!=UIA_TEST_RESTORE_SELECTION; s.other_choice=0;
+                CHECK(frame(&s)==0);
+                if (request!=UIA_TEST_MOVE_UNPUBLISHED) CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+            } else if (request==UIA_TEST_ROUTE_SELECTION) {
+                size_t actions=0; CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
+                CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK); reply=(unsigned)actions;
+            } else if (request==UIA_TEST_SELECTION_APPLY || request==UIA_TEST_SELECTION_FOCUS) {
+                size_t actions=0; CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
+                CHECK(frame(&s)==0); CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                reply=request==UIA_TEST_SELECTION_FOCUS ? (unsigned)nx_focus_id(s.ctx) :
+                    (unsigned)s.required_choice|((unsigned)s.optional_choice<<8u)|((unsigned)s.radio_choice<<16u);
+            } else if (request==UIA_TEST_APPLY) {
                 size_t actions=0; CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
                 CHECK(frame(&s)==0); CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
                 reply=(s.clicks ? 1u : 0u)|(s.checked ? 2u : 0u)|(nx_focus_id(s.ctx)==2 ? 4u : 0u)|(s.fill_clicks<<8u)|((GetFocus()==hwnd && GetForegroundWindow()==hwnd) ? 8u : 0u);

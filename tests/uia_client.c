@@ -61,7 +61,8 @@ static int runtime_equal(SAFEARRAY *a,SAFEARRAY *b) {
 typedef struct observer {
     IUIAutomationStructureChangedEventHandler structure;
     IUIAutomationFocusChangedEventHandler focus;
-    LONG refs, structures, focuses;
+    IUIAutomationEventHandler automation;
+    LONG refs, structures, focuses, selections, removals, invalidations;
     int process_id;
 } observer;
 static ULONG observer_add(observer *o) { return (ULONG)InterlockedIncrement(&o->refs); }
@@ -73,6 +74,7 @@ static HRESULT observer_query(observer *o,REFIID iid,void **out) {
     if (!out) return E_POINTER; *out=NULL;
     if (IsEqualIID(iid,&IID_IUnknown) || IsEqualIID(iid,&IID_IUIAutomationStructureChangedEventHandler)) *out=&o->structure;
     else if (IsEqualIID(iid,&IID_IUIAutomationFocusChangedEventHandler)) *out=&o->focus;
+    else if (IsEqualIID(iid,&IID_IUIAutomationEventHandler)) *out=&o->automation;
     else return E_NOINTERFACE;
     observer_add(o); return S_OK;
 }
@@ -82,6 +84,7 @@ static ULONG STDMETHODCALLTYPE prefix##_add(type *self) { return observer_add(CO
 static ULONG STDMETHODCALLTYPE prefix##_release(type *self) { return observer_release(CONTAINING_RECORD(self,observer,member)); }
 OBSERVER_INTERFACE(structure,IUIAutomationStructureChangedEventHandler,structure)
 OBSERVER_INTERFACE(focus,IUIAutomationFocusChangedEventHandler,focus)
+OBSERVER_INTERFACE(automation,IUIAutomationEventHandler,automation)
 static int our_sender(observer *o,IUIAutomationElement *sender) {
     if (!sender) return 0;
     int pid=0; BSTR framework=NULL;
@@ -100,12 +103,111 @@ static HRESULT STDMETHODCALLTYPE focus_event(IUIAutomationFocusChangedEventHandl
     if (our_sender(o,sender)) InterlockedIncrement(&o->focuses);
     return S_OK;
 }
+static HRESULT STDMETHODCALLTYPE automation_event(IUIAutomationEventHandler *self,IUIAutomationElement *sender,EVENTID id) {
+    observer *o=CONTAINING_RECORD(self,observer,automation);
+    if (our_sender(o,sender)) {
+        if (id==UIA_SelectionItem_ElementSelectedEventId) InterlockedIncrement(&o->selections);
+        if (id==UIA_SelectionItem_ElementRemovedFromSelectionEventId) InterlockedIncrement(&o->removals);
+        if (id==UIA_Selection_InvalidatedEventId) InterlockedIncrement(&o->invalidations);
+    }
+    return S_OK;
+}
+static IUIAutomationEventHandlerVtbl automation_vtable={automation_query,automation_add,automation_release,automation_event};
 static IUIAutomationStructureChangedEventHandlerVtbl structure_vtable={structure_query,structure_add,structure_release,structure_event};
 static IUIAutomationFocusChangedEventHandlerVtbl focus_vtable={focus_query,focus_add,focus_release,focus_event};
 static int wait_event(LONG *counter,LONG previous) {
     ULONGLONG end=GetTickCount64()+3000;
     while (InterlockedCompareExchange(counter,0,0)<=previous && GetTickCount64()<end) Sleep(10);
     return InterlockedCompareExchange(counter,0,0)>previous;
+}
+static int selection_id(IUIAutomationSelectionPattern *pattern,unsigned expected) {
+    IUIAutomationElementArray *array=NULL; OK(IUIAutomationSelectionPattern_GetCurrentSelection(pattern,&array));
+    int count=0; OK(IUIAutomationElementArray_get_Length(array,&count)); CHECK(count==(expected ? 1 : 0));
+    if (expected) {
+        IUIAutomationElement *item=NULL; OK(IUIAutomationElementArray_GetElement(array,0,&item));
+        WCHAR id[48]; swprintf_s(id,48,L"nexa-%016llx",(unsigned long long)expected);
+        BSTR actual=NULL; OK(IUIAutomationElement_get_CurrentAutomationId(item,&actual)); CHECK(wcscmp(actual,id)==0);
+        SysFreeString(actual); IUIAutomationElement_Release(item);
+    }
+    IUIAutomationElementArray_Release(array); return 0;
+}
+static int selection_probe(IUIAutomation *uia,IUIAutomationElement *root,observer *events,HWND hwnd) {
+    IUIAutomationElement *required=find(uia,root,50),*optional=find(uia,root,60),*radio=find(uia,root,70);
+    IUIAutomationElement *a=find(uia,root,51),*b=find(uia,root,52),*c=find(uia,root,61),*d=find(uia,root,62),*disabled=find(uia,root,63),*r=find(uia,root,72);
+    CHECK(required && optional && radio && a && b && c && d && disabled && r);
+    IUIAutomationSelectionPattern *req=NULL,*opt=NULL,*rad=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(required,UIA_SelectionPatternId,&IID_IUIAutomationSelectionPattern,(void **)&req));
+    OK(IUIAutomationElement_GetCurrentPatternAs(optional,UIA_SelectionPatternId,&IID_IUIAutomationSelectionPattern,(void **)&opt));
+    OK(IUIAutomationElement_GetCurrentPatternAs(radio,UIA_SelectionPatternId,&IID_IUIAutomationSelectionPattern,(void **)&rad));
+    BOOL value=TRUE; OK(IUIAutomationSelectionPattern_get_CurrentCanSelectMultiple(req,&value)); CHECK(!value);
+    OK(IUIAutomationSelectionPattern_get_CurrentIsSelectionRequired(req,&value)); CHECK(value);
+    OK(IUIAutomationSelectionPattern_get_CurrentIsSelectionRequired(opt,&value)); CHECK(!value);
+    CHECK(selection_id(req,51)==0 && selection_id(opt,0)==0 && selection_id(rad,71)==0);
+    IUIAutomationSelectionItemPattern *pa=NULL,*pb=NULL,*pc=NULL,*pd=NULL,*px=NULL,*pr=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(a,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pa));
+    OK(IUIAutomationElement_GetCurrentPatternAs(b,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pb));
+    OK(IUIAutomationElement_GetCurrentPatternAs(c,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pc));
+    OK(IUIAutomationElement_GetCurrentPatternAs(d,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pd));
+    OK(IUIAutomationElement_GetCurrentPatternAs(disabled,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&px));
+    OK(IUIAutomationElement_GetCurrentPatternAs(r,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pr));
+    IUIAutomationElement *owner=NULL;
+    OK(IUIAutomationSelectionItemPattern_get_CurrentSelectionContainer(pc,&owner)); CHECK(owner);
+    BSTR owner_id=NULL; OK(IUIAutomationElement_get_CurrentAutomationId(owner,&owner_id)); CHECK(wcscmp(owner_id,L"nexa-000000000000003c")==0);
+    SysFreeString(owner_id); IUIAutomationElement_Release(owner);
+    CHECK(IUIAutomationSelectionItemPattern_RemoveFromSelection(pa)==(HRESULT)UIA_E_INVALIDOPERATION);
+    CHECK(IUIAutomationSelectionItemPattern_AddToSelection(pb)==(HRESULT)UIA_E_INVALIDOPERATION);
+    CHECK(FAILED(IUIAutomationSelectionItemPattern_Select(px)));
+    LONG selected_before=InterlockedCompareExchange(&events->selections,0,0);
+    LONG invalidated_before=InterlockedCompareExchange(&events->invalidations,0,0);
+    OK(IUIAutomationSelectionItemPattern_Select(pb));
+    OK(IUIAutomationSelectionItemPattern_Select(pb)); /* Same pending operation is idempotent. */
+    CHECK(FAILED(IUIAutomationSelectionItemPattern_Select(pa)));
+    CHECK(selection_id(req,51)==0); /* Acceptance does not publish a fake selection. */
+    unsigned reply=0; CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && (reply&255u)==52);
+    CHECK(wait_event(&events->selections,selected_before) && wait_event(&events->invalidations,invalidated_before));
+    CHECK(selection_id(req,52)==0); OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pa,&value)); CHECK(!value);
+    OK(IUIAutomationSelectionItemPattern_AddToSelection(pc));
+    CHECK(host(UIA_TEST_ROUTE_SELECTION,&reply)==0); /* Forward, republish the same completed frame. */
+    CHECK(FAILED(IUIAutomationSelectionItemPattern_Select(pd))); /* Still busy until a new frame publishes. */
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && ((reply>>8u)&255u)==61);
+    CHECK(selection_id(opt,61)==0);
+    OK(IUIAutomationSelectionItemPattern_AddToSelection(pc));
+    CHECK(IUIAutomationSelectionItemPattern_AddToSelection(pd)==(HRESULT)UIA_E_INVALIDOPERATION);
+    OK(IUIAutomationSelectionItemPattern_RemoveFromSelection(pd)); /* Unselected removal is a no-op. */
+    LONG removed_before=InterlockedCompareExchange(&events->removals,0,0);
+    OK(IUIAutomationSelectionItemPattern_RemoveFromSelection(pc));
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && ((reply>>8u)&255u)==0);
+    CHECK(selection_id(opt,0)==0 && wait_event(&events->removals,removed_before));
+    OK(IUIAutomationSelectionItemPattern_Select(pc));
+    CHECK(host(UIA_TEST_MOVE_SELECTION,&reply)==0);
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && ((reply>>8u)&255u)==0);
+    IUIAutomationElement *moved_owner=NULL; OK(IUIAutomationSelectionItemPattern_get_CurrentSelectionContainer(pc,&moved_owner));
+    BSTR moved_id=NULL; OK(IUIAutomationElement_get_CurrentAutomationId(moved_owner,&moved_id)); CHECK(wcscmp(moved_id,L"nexa-0000000000000050")==0);
+    SysFreeString(moved_id); IUIAutomationElement_Release(moved_owner);
+    OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pc,&value)); CHECK(!value); /* Old queued request did not retarget group 80. */
+    OK(IUIAutomationSelectionItemPattern_Select(pc)); CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0);
+    OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pc,&value)); CHECK(value);
+    CHECK(host(UIA_TEST_RESTORE_SELECTION,&reply)==0);
+    OK(IUIAutomationSelectionItemPattern_Select(pc));
+    CHECK(host(UIA_TEST_MOVE_UNPUBLISHED,&reply)==0);
+    CHECK(host(UIA_TEST_ROUTE_SELECTION,&reply)==0); /* Must defer against the older displayed frame. */
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0);
+    OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pc,&value)); CHECK(!value);
+    CHECK(host(UIA_TEST_RESTORE_SELECTION,&reply)==0);
+    OK(IUIAutomationSelectionItemPattern_Select(pd)); OK(IUIAutomationSelectionItemPattern_Select(pr));
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && ((reply>>8u)&255u)==62 && ((reply>>16u)&255u)==72);
+    CHECK(selection_id(opt,62)==0 && selection_id(rad,72)==0);
+    OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pr,&value)); CHECK(value);
+    CHECK(host(UIA_TEST_SHOW,&reply)==0);
+    OK(IUIAutomationElement_get_CurrentIsKeyboardFocusable(required,&value)); CHECK(value);
+    OK(IUIAutomationElement_SetFocus(required)); CHECK(host(UIA_TEST_SELECTION_FOCUS,&reply)==0 && reply==52);
+    OK(IUIAutomationElement_get_CurrentHasKeyboardFocus(b,&value)); CHECK(!!value==!!(GetForegroundWindow()==hwnd));
+    IUIAutomationSelectionItemPattern_Release(pa); IUIAutomationSelectionItemPattern_Release(pb); IUIAutomationSelectionItemPattern_Release(pc);
+    IUIAutomationSelectionItemPattern_Release(pd); IUIAutomationSelectionItemPattern_Release(px); IUIAutomationSelectionItemPattern_Release(pr);
+    IUIAutomationSelectionPattern_Release(req); IUIAutomationSelectionPattern_Release(opt); IUIAutomationSelectionPattern_Release(rad);
+    IUIAutomationElement_Release(required); IUIAutomationElement_Release(optional); IUIAutomationElement_Release(radio);
+    IUIAutomationElement_Release(a); IUIAutomationElement_Release(b); IUIAutomationElement_Release(c); IUIAutomationElement_Release(d); IUIAutomationElement_Release(disabled); IUIAutomationElement_Release(r);
+    return 0;
 }
 static int run(HWND hwnd) {
     OK(CoInitializeEx(NULL,COINIT_MULTITHREADED));
@@ -118,10 +220,13 @@ static int run(HWND hwnd) {
     IUIAutomationElement *secret=find(uia,root,5),*outside=find(uia,root,7),*dynamic=find(uia,root,8);
     CHECK(button && toggle && disabled && secret && outside && dynamic);
     observer *events=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,sizeof(*events)); CHECK(events);
-    events->structure.lpVtbl=&structure_vtable; events->focus.lpVtbl=&focus_vtable; events->refs=1;
+    events->structure.lpVtbl=&structure_vtable; events->focus.lpVtbl=&focus_vtable; events->automation.lpVtbl=&automation_vtable; events->refs=1;
     DWORD process_id=0; CHECK(GetWindowThreadProcessId(hwnd,&process_id)); events->process_id=(int)process_id;
     OK(IUIAutomation_AddStructureChangedEventHandler(uia,root,TreeScope_Subtree,NULL,&events->structure));
     OK(IUIAutomation_AddFocusChangedEventHandler(uia,NULL,&events->focus));
+    OK(IUIAutomation_AddAutomationEventHandler(uia,UIA_SelectionItem_ElementSelectedEventId,root,TreeScope_Subtree,NULL,&events->automation));
+    OK(IUIAutomation_AddAutomationEventHandler(uia,UIA_SelectionItem_ElementRemovedFromSelectionEventId,root,TreeScope_Subtree,NULL,&events->automation));
+    OK(IUIAutomation_AddAutomationEventHandler(uia,UIA_Selection_InvalidatedEventId,root,TreeScope_Subtree,NULL,&events->automation));
     CHECK(name_is(button,L"\x00d6" L"ffnen \xd83d\xdcc1"));
     CONTROLTYPEID type=0; OK(IUIAutomationElement_get_CurrentControlType(button,&type)); CHECK(type==UIA_ButtonControlTypeId);
     BOOL value=FALSE; OK(IUIAutomationElement_get_CurrentIsEnabled(disabled,&value)); CHECK(!value);
@@ -136,6 +241,7 @@ static int run(HWND hwnd) {
     unsigned reply=0; CHECK(host(UIA_TEST_MOVE,&reply)==0);
     OK(IUIAutomationElement_get_CurrentBoundingRectangle(button,&second_bounds));
     CHECK(second_bounds.left-first_bounds.left==40 && second_bounds.top-first_bounds.top==30);
+    CHECK(selection_probe(uia,root,events,hwnd)==0);
     CHECK(host(UIA_TEST_STRESS_START,&reply)==0);
     unsigned stress_accepted=0;
     for (unsigned i=0;i<32;++i) {
@@ -216,7 +322,30 @@ static int run(HWND hwnd) {
     OK(IUIAutomationElement_get_CurrentControlType(replacement,&type)); CHECK(type==UIA_CheckBoxControlTypeId);
     OK(IUIAutomationElement_GetRuntimeId(replacement,&runtime_after)); CHECK(!runtime_equal(runtime_before,runtime_after));
     SafeArrayDestroy(runtime_before); SafeArrayDestroy(runtime_after);
+    IUIAutomationElement *old_selection=find(uia,root,61),*old_group=find(uia,root,60); CHECK(old_selection && old_group);
+    IUIAutomationSelectionItemPattern *old_item_pattern=NULL; IUIAutomationSelectionPattern *old_group_pattern=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(old_selection,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&old_item_pattern));
+    OK(IUIAutomationElement_GetCurrentPatternAs(old_group,UIA_SelectionPatternId,&IID_IUIAutomationSelectionPattern,(void **)&old_group_pattern));
     CHECK(host(UIA_TEST_REPLACE_CONTEXT,&reply)==0 && unavailable(button) && unavailable(replacement));
+    HRESULT stale_value=IUIAutomationSelectionItemPattern_get_CurrentIsSelected(old_item_pattern,&value);
+    HRESULT stale_action=IUIAutomationSelectionItemPattern_Select(old_item_pattern);
+    IUIAutomationElementArray *stale_array=NULL; HRESULT stale_group=IUIAutomationSelectionPattern_GetCurrentSelection(old_group_pattern,&stale_array);
+    int diagnostic_count=-1;
+    if (stale_array) OK(IUIAutomationElementArray_get_Length(stale_array,&diagnostic_count));
+    fprintf(stderr,"Stale selection: value=%08lx selected=%d action=%08lx group=%08lx count=%d\n",(unsigned long)stale_value,value,(unsigned long)stale_action,(unsigned long)stale_group,diagnostic_count);
+    CHECK(unavailable(old_selection) && unavailable(old_group));
+    /* UIAutomationCore normalizes these retired pattern property reads to
+       false/empty. The live new container still selects 62; no read may retarget. */
+    CHECK(stale_value==(HRESULT)UIA_E_ELEMENTNOTAVAILABLE || (SUCCEEDED(stale_value) && !value));
+    CHECK(stale_action==(HRESULT)UIA_E_ELEMENTNOTAVAILABLE);
+    if (SUCCEEDED(stale_group)) {
+        int stale_count=-1; CHECK(stale_array);
+        OK(IUIAutomationElementArray_get_Length(stale_array,&stale_count)); CHECK(!stale_count);
+        IUIAutomationElementArray_Release(stale_array);
+    } else CHECK(stale_group==(HRESULT)UIA_E_ELEMENTNOTAVAILABLE && !stale_array);
+    CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && ((reply>>8u)&255u)==62);
+    IUIAutomationSelectionItemPattern_Release(old_item_pattern); IUIAutomationSelectionPattern_Release(old_group_pattern);
+    IUIAutomationElement_Release(old_selection); IUIAutomationElement_Release(old_group);
     IUIAutomationElement_Release(replacement); replacement=find(uia,root,2); CHECK(replacement && invoke(replacement,1));
     CHECK(host(UIA_TEST_WRONG_CONTEXT,&reply)==0);
     CHECK(host(UIA_TEST_APPLY,&reply)==0 && (reply&1u));
@@ -240,7 +369,65 @@ static int run(HWND hwnd) {
     IUIAutomation_Release(uia); CoUninitialize();
     puts("Independent UIA client passed"); return 0;
 }
+static int cloud_wait(IUIAutomation *uia,IUIAutomationElement *root,unsigned group_id,unsigned expected,const WCHAR *preview) {
+    ULONGLONG end=GetTickCount64()+15000;
+    do {
+        IUIAutomationElement *group=find(uia,root,group_id); int ready=0;
+        if (group) {
+            IUIAutomationSelectionPattern *pattern=NULL; IUIAutomationElementArray *array=NULL;
+            HRESULT hr=IUIAutomationElement_GetCurrentPatternAs(group,UIA_SelectionPatternId,&IID_IUIAutomationSelectionPattern,(void **)&pattern);
+            if (SUCCEEDED(hr)) hr=IUIAutomationSelectionPattern_GetCurrentSelection(pattern,&array);
+            int count=-1; if (SUCCEEDED(hr)) hr=IUIAutomationElementArray_get_Length(array,&count);
+            if (SUCCEEDED(hr) && count==(expected ? 1 : 0)) {
+                ready=!expected;
+                if (expected) {
+                    IUIAutomationElement *e=NULL; BSTR actual=NULL; WCHAR wanted[48]; swprintf_s(wanted,48,L"nexa-%016llx",(unsigned long long)expected);
+                    if (SUCCEEDED(IUIAutomationElementArray_GetElement(array,0,&e)) && SUCCEEDED(IUIAutomationElement_get_CurrentAutomationId(e,&actual))) ready=wcscmp(wanted,actual)==0;
+                    SysFreeString(actual); if (e) IUIAutomationElement_Release(e);
+                }
+            }
+            if (array) IUIAutomationElementArray_Release(array); if (pattern) IUIAutomationSelectionPattern_Release(pattern);
+            IUIAutomationElement_Release(group);
+        }
+        if (ready && preview) {
+            IUIAutomationElement *image=find(uia,root,302); BSTR name=NULL; ready=0;
+            if (image) {
+                if (SUCCEEDED(IUIAutomationElement_get_CurrentName(image,&name))) ready=wcscmp(name,preview)==0;
+                SysFreeString(name); IUIAutomationElement_Release(image);
+            }
+        }
+        if (ready) return 0;
+        Sleep(20);
+    } while (GetTickCount64()<end);
+    fprintf(stderr,"NexaCloud UIA selection/preview timed out for group %u target %u\n",group_id,expected); return 1;
+}
+static int cloud_select(IUIAutomation *uia,IUIAutomationElement *root,unsigned id,int remove) {
+    IUIAutomationElement *e=find(uia,root,id); CHECK(e);
+    IUIAutomationSelectionItemPattern *pattern=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(e,UIA_SelectionItemPatternId,&IID_IUIAutomationSelectionItemPattern,(void **)&pattern));
+    HRESULT hr=remove ? IUIAutomationSelectionItemPattern_RemoveFromSelection(pattern) : IUIAutomationSelectionItemPattern_Select(pattern);
+    IUIAutomationSelectionItemPattern_Release(pattern); IUIAutomationElement_Release(e); CHECK(SUCCEEDED(hr)); return 0;
+}
+static int cloud_probe(HWND hwnd) {
+    OK(CoInitializeEx(NULL,COINIT_MULTITHREADED)); IUIAutomation *uia=NULL; IUIAutomationElement *root=NULL;
+    OK(CoCreateInstance(&CLSID_CUIAutomation,NULL,CLSCTX_INPROC_SERVER,&IID_IUIAutomation,(void **)&uia));
+    OK(IUIAutomation_ElementFromHandle(uia,hwnd,&root)); CHECK(root);
+    CHECK(cloud_select(uia,root,11,0)==0);
+    CHECK(cloud_wait(uia,root,37,11,NULL)==0 && cloud_wait(uia,root,219,1000,L"Bergsee.jpg")==0);
+    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_wait(uia,root,219,1001,L"Wald.png")==0);
+    IUIAutomationElement *old_file=find(uia,root,1001); CHECK(old_file);
+    CHECK(cloud_select(uia,root,1001,1)==0 && cloud_wait(uia,root,219,0,NULL)==0);
+    CHECK(cloud_select(uia,root,10,0)==0 && cloud_wait(uia,root,37,10,NULL)==0);
+    ULONGLONG end=GetTickCount64()+15000;
+    while (!unavailable(old_file) && GetTickCount64()<end) Sleep(20);
+    CHECK(unavailable(old_file)); IUIAutomationElement_Release(old_file);
+    CHECK(cloud_select(uia,root,11,0)==0 && cloud_wait(uia,root,37,11,NULL)==0);
+    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_wait(uia,root,219,1001,L"Wald.png")==0);
+    IUIAutomationElement_Release(root); IUIAutomation_Release(uia); CoUninitialize();
+    puts("Independent native NexaCloud UIA navigation/file/clear/reopen workflow passed"); return 0;
+}
 int wmain(int argc,WCHAR **argv) {
+    if (argc==3 && wcscmp(argv[1],L"--cloud")==0) return cloud_probe((HWND)(UINT_PTR)_wcstoui64(argv[2],NULL,10));
     if (argc!=4) return 2;
     HWND hwnd=(HWND)(UINT_PTR)_wcstoui64(argv[1],NULL,10);
     commands=(HANDLE)(UINT_PTR)_wcstoui64(argv[2],NULL,10); acks=(HANDLE)(UINT_PTR)_wcstoui64(argv[3],NULL,10);

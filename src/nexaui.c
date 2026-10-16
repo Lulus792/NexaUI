@@ -50,6 +50,7 @@ typedef struct nx_region_buffer {
 typedef struct nx_semantic_record {
     uint64_t id, parent_id;
     unsigned depth;
+    uint32_t selection_owner, selection_count;
     nx_semantic_role role;
     nx_rect bounds;
     size_t name_offset, name_length;
@@ -66,6 +67,11 @@ typedef struct nx_semantic_record {
     nx_color tree_unselected_color;
     int has_tree_visual;
 } nx_semantic_record;
+
+static int nx_same_selection_group(const nx_semantic_record *a, const nx_semantic_record *b) {
+    return a->selection_owner != UINT32_MAX ? a->selection_owner == b->selection_owner :
+        b->selection_owner == UINT32_MAX && a->parent_id == b->parent_id;
+}
 
 typedef struct nx_semantic_buffer {
     nx_semantic_record *nodes;
@@ -139,7 +145,9 @@ struct nx_context {
     nx_key key_active_key;
     int pointer_valid;
     nx_semantic_buffer semantics;
-    struct { uint64_t id; uint32_t action; } accessible_requests[64];
+    struct { uint64_t id, owner_id; uint32_t action; } accessible_requests[64];
+    struct { uint64_t id, owner_id; uint32_t action; } selection_requests[64];
+    size_t selection_request_count;
     size_t accessible_request_count;
     size_t semantic_initial_capacity, semantic_text_initial_capacity;
 };
@@ -267,6 +275,7 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
 
 #if defined(_WIN32)
 uint64_t nx_context_identity(const nx_context *ctx) { return ctx ? ctx->native_identity : 0; }
+uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->frame_serial : 0; }
 #endif
 
 void nx_context_destroy(nx_context *ctx) {
@@ -572,13 +581,19 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         }
         nx_process_interaction(ctx, event);
     }
+    ctx->selection_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
         uint64_t id = ctx->accessible_requests[i].id;
         uint32_t action = ctx->accessible_requests[i].action;
         nx_region *region = nx_region_find(&ctx->previous_regions, id);
         if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
             (ctx->previous_overlay_id && region->overlay_id != ctx->previous_overlay_id)) continue;
-        if (action == NX_ACTION_FOCUS) {
+        if (ctx->accessible_requests[i].owner_id && action != NX_ACTION_FOCUS && action != NX_ACTION_PRESS) {
+            size_t slot = ctx->selection_request_count++;
+            ctx->selection_requests[slot].id = id;
+            ctx->selection_requests[slot].owner_id = ctx->accessible_requests[i].owner_id;
+            ctx->selection_requests[slot].action = action;
+        } else if (action == NX_ACTION_FOCUS) {
             if (region->flags & NX_REGION_FOCUSABLE) { ctx->focused_id = id; ctx->key_active_id = 0; }
         } else if (region->clicks != UINT_MAX) ++region->clicks;
     }
@@ -1255,18 +1270,18 @@ static size_t nx_semantic_copy_span(nx_semantic_buffer *buffer, nx_utf8_span spa
     return offset;
 }
 
-nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc,
-                           uint32_t *out_index) {
+static nx_result nx_semantics_add_impl(nx_context *ctx, const nx_semantic_desc *desc,
+                                        uint32_t *out_index, int selection) {
     if (out_index) *out_index = UINT32_MAX;
     if (!ctx || !desc || !desc->id ||
-        desc->role < NX_ROLE_WINDOW || desc->role > NX_ROLE_MENU_BAR ||
+        desc->role < NX_ROLE_WINDOW || desc->role > NX_ROLE_TAB_LIST ||
         !nx_valid_rect(desc->bounds) || !nx_valid_span(desc->name) ||
         !nx_valid_span(desc->description) || !nx_valid_span(desc->value) ||
         (nx_semantic_requires_name(desc->role) && !desc->name.length) ||
         (desc->state & ~(NX_SEM_DISABLED | NX_SEM_CHECKED | NX_SEM_MIXED |
                          NX_SEM_EXPANDED | NX_SEM_SELECTED | NX_SEM_READONLY |
                          NX_SEM_REQUIRED | NX_SEM_INVALID | NX_SEM_BUSY |
-                         NX_SEM_PROTECTED)) ||
+                         NX_SEM_PROTECTED | (selection ? NX_SEM_SELECTION_SINGLE | NX_SEM_SELECTION_REQUIRED : 0u))) ||
         ((desc->state & (NX_SEM_CHECKED | NX_SEM_MIXED)) ==
          (NX_SEM_CHECKED | NX_SEM_MIXED)) ||
         (desc->actions & ~(NX_ACTION_PRESS | NX_ACTION_FOCUS |
@@ -1278,10 +1293,12 @@ nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc,
     nx_semantic_buffer *buffer = &ctx->semantics;
     if (nx_semantic_find_index(buffer, desc->id) != UINT32_MAX) return NX_ERROR_STATE;
     unsigned depth = 0;
+    uint32_t owner = UINT32_MAX;
     if (desc->parent_id) {
         uint32_t parent = nx_semantic_find_index(buffer, desc->parent_id);
         if (parent == UINT32_MAX) return NX_ERROR_ARGUMENT;
         depth = buffer->nodes[parent].depth + 1u;
+        owner = (buffer->nodes[parent].state & NX_SEM_SELECTION_SINGLE) ? parent : buffer->nodes[parent].selection_owner;
         if (depth >= NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
     }
     nx_utf8_span spans[3] = {desc->name, desc->description, desc->value};
@@ -1301,6 +1318,7 @@ nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc,
     node->id = desc->id;
     node->parent_id = desc->parent_id;
     node->depth = depth;
+    node->selection_owner = owner;
     node->role = desc->role;
     node->bounds = desc->bounds;
     node->state = desc->state;
@@ -1316,6 +1334,38 @@ nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc,
     buffer->slots[slot] = index + 1u;
     if (out_index) *out_index = index;
     return NX_OK;
+}
+
+nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc, uint32_t *out_index) {
+    return nx_semantics_add_impl(ctx, desc, out_index, 0);
+}
+
+nx_result nx_selection_apply(nx_context *ctx, uint64_t group_id, int required, uint64_t *selected_id) {
+    if (!ctx || !group_id || !selected_id || (required != 0 && required != 1)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    uint64_t next = *selected_id;
+    for (size_t i = 0; i < ctx->selection_request_count; ++i) {
+        if (ctx->selection_requests[i].owner_id != group_id) continue;
+        uint64_t id = ctx->selection_requests[i].id;
+        uint32_t action = ctx->selection_requests[i].action;
+        if (action == NX_ACTION_SELECT || (action == NX_ACTION_ADD_SELECTION && (!next || next == id))) next = id;
+        else if (action == NX_ACTION_DESELECT && !required && next == id) next = 0;
+        ctx->selection_requests[i].owner_id = 0;
+    }
+    *selected_id = next;
+    return NX_OK;
+}
+
+nx_result nx_selection_group(nx_context *ctx, const nx_semantic_desc *desc, int required, uint64_t *selected_id) {
+    if (!ctx || !desc || !selected_id || (required != 0 && required != 1) || desc->actions ||
+        (desc->state & (NX_SEM_SELECTION_SINGLE | NX_SEM_SELECTION_REQUIRED)) ||
+        (desc->role == NX_ROLE_TAB_LIST && !required) ||
+        (desc->role != NX_ROLE_GROUP && desc->role != NX_ROLE_LIST && desc->role != NX_ROLE_TREE && desc->role != NX_ROLE_TAB_LIST)) return NX_ERROR_ARGUMENT;
+    nx_semantic_desc group = *desc;
+    group.state |= NX_SEM_SELECTION_SINGLE | (required ? NX_SEM_SELECTION_REQUIRED : 0u);
+    nx_result result = nx_semantics_add_impl(ctx, &group, NULL, 1);
+    if (result != NX_OK) return result;
+    return nx_selection_apply(ctx, desc->id, required, selected_id);
 }
 
 static void nx_semantics_rollback_last(nx_context *ctx, uint64_t id,
@@ -1401,6 +1451,10 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
     view->bounds = node->bounds;
     view->state = node->state | (ctx->focused_id == node->id ? NX_SEM_FOCUSED : 0u);
     view->actions = node->actions;
+    if ((node->actions & NX_ACTION_SELECT) && node->selection_owner != UINT32_MAX) {
+        view->actions |= NX_ACTION_ADD_SELECTION;
+        if (!(ctx->semantics.nodes[node->selection_owner].state & NX_SEM_SELECTION_REQUIRED)) view->actions |= NX_ACTION_DESELECT;
+    }
     const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
     if (region && (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))) view->state |= NX_SEM_DISABLED;
@@ -1417,7 +1471,8 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
 nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t action) {
     if (!ctx || !id) return NX_ERROR_ARGUMENT;
     if (ctx->state != 2u) return NX_ERROR_STATE;
-    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT)
+    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT &&
+        action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
         return NX_ERROR_UNSUPPORTED;
     uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
     if (index == UINT32_MAX) return NX_ERROR_STATE;
@@ -1426,11 +1481,19 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     if (!region || (node->state & NX_SEM_DISABLED) ||
         (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id)) return NX_ERROR_STATE;
-    if (!(node->actions & action) || (action == NX_ACTION_FOCUS && !(region->flags & NX_REGION_FOCUSABLE)))
+    const nx_semantic_record *owner = node->selection_owner == UINT32_MAX ? NULL : &ctx->semantics.nodes[node->selection_owner];
+    uint32_t supported = node->actions;
+    if (owner && (supported & NX_ACTION_SELECT)) {
+        supported |= NX_ACTION_ADD_SELECTION;
+        if (!(owner->state & NX_SEM_SELECTION_REQUIRED)) supported |= NX_ACTION_DESELECT;
+        if (owner->state & NX_SEM_DISABLED) return NX_ERROR_STATE;
+    }
+    if (!(supported & action) || (action == NX_ACTION_FOCUS && !(region->flags & NX_REGION_FOCUSABLE)))
         return NX_ERROR_UNSUPPORTED;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i)
         if (ctx->accessible_requests[i].id == id && ctx->accessible_requests[i].action == action) return NX_ERROR_LIMIT;
     if (ctx->accessible_request_count == 64u) return NX_ERROR_LIMIT;
+    ctx->accessible_requests[ctx->accessible_request_count].owner_id = owner ? owner->id : 0;
     ctx->accessible_requests[ctx->accessible_request_count].id = id;
     ctx->accessible_requests[ctx->accessible_request_count++].action = action;
     return NX_OK;
@@ -1453,6 +1516,16 @@ nx_result nx_end_frame(nx_context *ctx) {
     if (ctx->id_depth || ctx->clip_depth || ctx->theme_depth ||
         ctx->scroll_scope_count || ctx->building_overlay_id)
         return NX_ERROR_STATE;
+    for (size_t i = 0; i < ctx->semantics.count; ++i) ctx->semantics.nodes[i].selection_count = 0;
+    for (size_t i = 0; i < ctx->semantics.count; ++i) {
+        nx_semantic_record *n = &ctx->semantics.nodes[i];
+        if (n->selection_owner != UINT32_MAX && (n->actions & NX_ACTION_SELECT) &&
+            (n->state & (n->role == NX_ROLE_RADIO ? NX_SEM_CHECKED : NX_SEM_SELECTED))) {
+            if (++ctx->semantics.nodes[n->selection_owner].selection_count > 1u) return NX_ERROR_STATE;
+        }
+    }
+    for (size_t i = 0; i < ctx->semantics.count; ++i)
+        if ((ctx->semantics.nodes[i].state & NX_SEM_SELECTION_REQUIRED) && !ctx->semantics.nodes[i].selection_count) return NX_ERROR_STATE;
     if (ctx->current_overlay_id) {
         nx_region *focused_overlay = nx_region_find(&ctx->current_regions,
                                                      ctx->focused_id);
@@ -2168,7 +2241,7 @@ nx_result nx_radio(nx_context *ctx, const nx_control_desc *desc,
         for (size_t i = 0; i + 1u < ctx->semantics.count; ++i) {
             nx_semantic_record *node = &ctx->semantics.nodes[i];
             if (node->role == NX_ROLE_RADIO && node->has_radio_visual &&
-                node->parent_id == desc->parent_id) {
+                nx_same_selection_group(node, &ctx->semantics.nodes[ctx->semantics.count - 1u])) {
                 node->state &= ~NX_SEM_CHECKED;
                 ctx->commands[node->radio_outer_command].color =
                     node->radio_unchecked_color;
@@ -3494,7 +3567,9 @@ nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
                                                            prior_id);
             if (prior_index != UINT32_MAX) {
                 nx_semantic_record *prior = &ctx->semantics.nodes[prior_index];
-                if (prior->role == NX_ROLE_TREE_ITEM) {
+                if (prior->role == NX_ROLE_TREE_ITEM &&
+                    ((prior->selection_owner == UINT32_MAX && node->selection_owner == UINT32_MAX) ||
+                     nx_same_selection_group(prior, node))) {
                     prior->state &= ~NX_SEM_SELECTED;
                     if (prior->has_tree_visual)
                         ctx->commands[prior->tree_background_command].color =
@@ -3701,7 +3776,7 @@ nx_result nx_tab(nx_context *ctx, const nx_control_desc *desc,
         for (size_t i = 0; i + 1u < ctx->semantics.count; ++i) {
             nx_semantic_record *prior = &ctx->semantics.nodes[i];
             if (prior->role != NX_ROLE_TAB ||
-                prior->parent_id != desc->parent_id) continue;
+                !nx_same_selection_group(prior, node)) continue;
             prior->state &= ~NX_SEM_SELECTED;
             if (prior->has_tab_visual)
                 ctx->commands[prior->tab_background_command].color =

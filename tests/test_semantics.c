@@ -257,6 +257,103 @@ static int test_modal_action_rejection(void) {
     nx_context_destroy(ctx); return 0;
 }
 
+static int selection_frame(nx_context *ctx,uint64_t *choice,int required) {
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    nx_semantic_desc group=node(90,0,NX_ROLE_LIST,"Choices");
+    CHECK(nx_selection_group(ctx,&group,required,choice)==NX_OK);
+    for (uint64_t id=91;id<=93;++id) {
+        nx_widget_desc d={0}; d.semantic=node(id,90,NX_ROLE_LIST_ITEM,"Item");
+        d.semantic.actions=NX_ACTION_SELECT|NX_ACTION_FOCUS;
+        d.semantic.state=*choice==id ? NX_SEM_SELECTED : 0;
+        d.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
+        nx_interaction_state state;
+        CHECK(nx_widget_register(ctx,&d,&state)==NX_OK && !state.clicked);
+    }
+    CHECK(nx_end_frame(ctx)==NX_OK); return 0;
+}
+static int test_selection_models(void) {
+    nx_context *ctx=NULL; CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    uint64_t choice=0; CHECK(selection_frame(ctx,&choice,0)==0);
+    nx_semantic_view view; CHECK(nx_semantics_get(ctx,0,&view)==NX_OK && (view.state&NX_SEM_SELECTION_SINGLE));
+    CHECK(nx_semantics_get(ctx,1,&view)==NX_OK && (view.actions&NX_ACTION_DESELECT));
+    CHECK(nx_semantics_request_action(ctx,91,NX_ACTION_SELECT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,92,NX_ACTION_SELECT)==NX_OK);
+    CHECK(selection_frame(ctx,&choice,0)==0 && choice==92);
+    CHECK(nx_semantics_request_action(ctx,91,NX_ACTION_DESELECT)==NX_OK);
+    CHECK(selection_frame(ctx,&choice,0)==0 && choice==92);
+    CHECK(nx_semantics_request_action(ctx,92,NX_ACTION_DESELECT)==NX_OK);
+    CHECK(selection_frame(ctx,&choice,0)==0 && choice==0);
+    CHECK(nx_semantics_request_action(ctx,91,NX_ACTION_ADD_SELECTION)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,92,NX_ACTION_ADD_SELECTION)==NX_OK);
+    CHECK(selection_frame(ctx,&choice,0)==0 && choice==91);
+    CHECK(selection_frame(ctx,&choice,1)==0);
+    CHECK(nx_semantics_request_action(ctx,91,NX_ACTION_DESELECT)==NX_ERROR_UNSUPPORTED);
+    CHECK(nx_semantics_get(ctx,1,&view)==NX_OK && !(view.actions&NX_ACTION_DESELECT));
+    CHECK(nx_semantics_request_action(ctx,93,NX_ACTION_SELECT)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_selection_apply(ctx,90,1,&choice)==NX_OK && choice==93);
+    CHECK(nx_selection_apply(ctx,90,1,&choice)==NX_OK && choice==93);
+    nx_semantic_desc bad=node(200,0,NX_ROLE_LIST,"Raw"); bad.state=NX_SEM_SELECTION_SINGLE;
+    CHECK(nx_semantics_add(ctx,&bad,NULL)==NX_ERROR_ARGUMENT);
+    nx_semantic_desc group=node(90,0,NX_ROLE_LIST,"Choices");
+    CHECK(nx_selection_group(ctx,&group,0,&choice)==NX_OK && choice==93);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    nx_context_destroy(ctx);
+    /* An invalid completed projection must not become queryable/publishable. */
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    choice=0; CHECK(nx_selection_group(ctx,&group,1,&choice)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_ERROR_STATE);
+    nx_context_destroy(ctx);
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_selection_group(ctx,&group,0,&choice)==NX_OK);
+    for (uint64_t id=91;id<=92;++id) {
+        nx_widget_desc d={0};d.semantic=node(id,90,NX_ROLE_LIST_ITEM,"Item");
+        d.semantic.actions=NX_ACTION_SELECT;d.semantic.state=NX_SEM_SELECTED;d.flags=NX_WIDGET_INTERACTIVE;
+        nx_interaction_state state;CHECK(nx_widget_register(ctx,&d,&state)==NX_OK);
+    }
+    CHECK(nx_end_frame(ctx)==NX_ERROR_STATE);nx_context_destroy(ctx);return 0;
+}
+
+static int test_nested_tabs_and_selection_rollback(void) {
+    nx_context *ctx=NULL; CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    uint64_t choice=91;
+    for (unsigned frame=0;frame<2;++frame) {
+        if (frame) {
+            nx_event click={0};click.type=NX_EVENT_POINTER_DOWN;click.button=NX_BUTTON_LEFT;click.x=110;click.y=15;
+            CHECK(nx_context_queue_event(ctx,&click)==NX_OK);click.type=NX_EVENT_POINTER_UP;CHECK(nx_context_queue_event(ctx,&click)==NX_OK);
+        }
+        CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+        nx_semantic_desc group=node(90,0,NX_ROLE_TAB_LIST,"Tabs");
+        CHECK(nx_selection_group(ctx,&group,0,&choice)==NX_ERROR_ARGUMENT);
+        CHECK(nx_selection_group(ctx,&group,1,&choice)==NX_OK);
+        for (unsigned i=0;i<2;++i) {
+            nx_semantic_desc panel=node(94+i,90,NX_ROLE_PANEL,"Panel");CHECK(nx_semantics_add(ctx,&panel,NULL)==NX_OK);
+            nx_control_desc tab={0};tab.id=91+i;tab.parent_id=94+i;tab.name=(nx_utf8_span){"Tab",3};tab.bounds=(nx_rect){90.f*i,0,80,30};
+            nx_interaction_state state;CHECK(nx_tab(ctx,&tab,&choice,&state)==NX_OK);
+        }
+        CHECK(nx_end_frame(ctx)==NX_OK);
+        CHECK(choice==(frame ? 92u : 91u));
+    }
+    nx_context_destroy(ctx);
+    tracking t={0};nx_context_desc config={0};config.allocator=(nx_allocator){&t,tracked_allocate,tracked_deallocate};
+    CHECK(nx_context_create(&config,&ctx)==NX_OK);choice=91;
+    CHECK(selection_frame(ctx,&choice,1)==0);
+    CHECK(nx_semantics_request_action(ctx,92,NX_ACTION_SELECT)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    char long_name[2048];memset(long_name,'A',sizeof(long_name));
+    nx_semantic_desc group=node(90,0,NX_ROLE_LIST,NULL);group.name=(nx_utf8_span){long_name,sizeof(long_name)};
+    t.fail_after=t.calls;
+    CHECK(nx_selection_group(ctx,&group,1,&choice)==NX_ERROR_MEMORY && choice==91);
+    t.fail_after=0;group.name=(nx_utf8_span){"Choices",7};
+    CHECK(nx_selection_group(ctx,&group,1,&choice)==NX_OK && choice==92);
+    uint64_t untouched=0;CHECK(nx_selection_group(ctx,&group,1,&untouched)==NX_ERROR_STATE && !untouched);
+    nx_widget_desc item={0};item.semantic=node(92,90,NX_ROLE_LIST_ITEM,"Item");item.semantic.state=NX_SEM_SELECTED;item.semantic.actions=NX_ACTION_SELECT;item.flags=NX_WIDGET_INTERACTIVE;
+    nx_interaction_state state;CHECK(nx_widget_register(ctx,&item,&state)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK);nx_context_destroy(ctx);CHECK(t.frees+1u==t.calls);return 0;
+}
+
 int main(void) {
     if (test_tree_and_focus()) return 1;
     if (test_validation_and_depth()) return 1;
@@ -264,6 +361,8 @@ int main(void) {
     if (test_many_nodes_and_string_ownership()) return 1;
     if (test_action_dispatch_and_backpressure()) return 1;
     if (test_modal_action_rejection()) return 1;
+    if (test_selection_models()) return 1;
+    if (test_nested_tabs_and_selection_rollback()) return 1;
     puts("semantics tests passed");
     return 0;
 }

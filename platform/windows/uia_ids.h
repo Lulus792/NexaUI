@@ -54,5 +54,15 @@ enum {
     NX_UIA_TreeItemControlTypeId = 50024,
     NX_UIA_ValueValuePropertyId = 30045,
     NX_UIA_WindowControlTypeId = 50032,
+    NX_UIA_TabControlTypeId = 50018,
+    NX_UIA_SelectionPatternId = 10001,
+    NX_UIA_SelectionItemPatternId = 10010,
+    NX_UIA_SelectionSelectionPropertyId = 30059,
+    NX_UIA_SelectionCanSelectMultiplePropertyId = 30060,
+    NX_UIA_SelectionIsSelectionRequiredPropertyId = 30061,
+    NX_UIA_SelectionItemSelectionContainerPropertyId = 30080,
+    NX_UIA_Selection_InvalidatedEventId = 20013,
+    NX_UIA_SelectionItem_ElementSelectedEventId = 20012,
+    NX_UIA_SelectionItem_ElementRemovedFromSelectionEventId = 20011,
 };
 #endif

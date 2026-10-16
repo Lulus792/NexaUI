@@ -55,7 +55,7 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 - **Themes and interaction.** Dark, light and high-contrast presets, local theme overrides, keyboard focus, input routing, clipboard and file-drop reception, plus interruptible transitions and reduced-motion state. [Themes](docs/concepts/themes.md) · [Input](docs/concepts/input.md) · [Animation](docs/concepts/animation.md)
 - **Tooling and data views.** Virtual lists, time-series decimation, real-time plots, telemetry and profiler panels, hierarchy and property inspectors, and application-rendered viewport images. [Plotting](docs/concepts/plotting.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md)
 - **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
-- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and an initial Windows UI Automation bridge for native queries, focus, Invoke and Toggle. Complete control-pattern/event coverage, screenreader acceptance and macOS/Linux transports remain open. [Accessibility](docs/concepts/accessibility.md)
+- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and an initial Windows UI Automation bridge for native queries, focus, Invoke, Toggle and explicit single-selection groups. Complete control-pattern/event coverage, screenreader acceptance and macOS/Linux transports remain open. [Accessibility](docs/concepts/accessibility.md)
 
 ## Platform status
 

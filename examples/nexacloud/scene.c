@@ -280,11 +280,16 @@ static int sidebar(cloud_scene *s, float width) {
     nav.viewport = box(0, nav_top, width, s->height - nav_top - 16 - (show_status ? 188 * s->text_scale : 0));
     nav.content_size = (nx_size){width, 12 + 6 * 58 * nav_scale}; nav.axes = NX_SCROLL_Y; nav.thumb_y_id = 36;
     nx_scroll_info nav_info; TRY(nx_scroll_area_begin(s->ui, &nav, &s->nav_x, &s->nav_y, &nav_info));
+    uint64_t nav_selected = 10u + (unsigned)s->page;
+    nx_semantic_desc nav_group = {37,35,NX_ROLE_TAB_LIST,nav.viewport,span("Navigation"),{0},{0},0,0};
+    TRY(nx_selection_group(s->ui,&nav_group,1,&nav_selected));
+    if (nav_selected >= 10 && nav_selected < 16) next_page = (int)(nav_selected - 10);
+    int shown_page = next_page;
     for (int i = 0; i < 6; ++i) {
         int clicked;
-        REQUIRE(action(s, 10u + i, 35, box(12, nav_top + 12 + i * 58.0f * nav_scale - s->nav_y,
+        REQUIRE(action(s, 10u + i, 37, box(12, nav_top + 12 + i * 58.0f * nav_scale - s->nav_y,
             width - 24, 48 * nav_scale), names[i], icons[i], NX_ACTION_NAVIGATION,
-            s->page == i, 0, &clicked));
+            shown_page == i, 0, &clicked));
         if (clicked) next_page = i;
         if (i == TRANSFERS && width > 200 && s->text_scale == 1) {
             TRY(nx_fill_round_rect(s->ui, box(width - 41, 128 + i * 58.0f - s->nav_y, 21, 21), 11, color(s, NX_COLOR_ACCENT)));
@@ -605,6 +610,14 @@ static int detail_panel(cloud_scene *s, nx_rect r, uint64_t parent) {
 
 static int file_browser(cloud_scene *s, nx_rect r) {
     int click;
+    uint64_t selected_file = s->selected >= 0 ? 1000u + (unsigned)s->selected : 0;
+    TRY(nx_selection_apply(s->ui,219,0,&selected_file));
+    int selection_changed = selected_file != (s->selected >= 0 ? 1000u + (unsigned)s->selected : 0);
+    if (selection_changed) s->detail_y = 0;
+    if (!selected_file) { s->selected = -1; if (selection_changed) s->details = 0; }
+    else if (selected_file >= 1000 && selected_file < 1000u + s->file_count) {
+        s->selected = (int)(selected_file - 1000); if (selection_changed) s->details = 1;
+    }
     if (s->selected >= 0 && ((s->page == TRASH) != !!s->files[s->selected].deleted ||
         (s->page == FAVORITES && !s->files[s->selected].favorite) ||
         (s->page == FILES && s->files[s->selected].parent != s->folder_depth))) s->selected = -1;
@@ -624,7 +637,10 @@ static int file_browser(cloud_scene *s, nx_rect r) {
     if (click) { if (r.width < 950 * s->text_scale) { s->dialog = 6; s->details = 1; } else s->details ^= 1; }
     float inspector = s->details && s->selected >= 0 && r.width >= 950 * scale ? 350 * scale : 0.0f;
     nx_rect content = box(r.x + 16, r.y + 38 + toolbar_h, r.width - 32 - (inspector ? inspector + 16 : 0), r.height - 54 - toolbar_h);
-    REQUIRE(card(s, 210, 1, content, "Dateien"));
+    selected_file = s->selected >= 0 ? 1000u + (unsigned)s->selected : 0;
+    nx_semantic_desc files_group = {219,1,NX_ROLE_LIST,content,span("Dateiauswahl"),{0},{0},0,0};
+    TRY(nx_selection_group(s->ui,&files_group,0,&selected_file));
+    REQUIRE(card(s, 210, 219, content, "Dateien"));
     nx_utf8_span query; TRY(nx_text_field_text(s->search, &query));
     unsigned visible[20], count = 0;
     for (unsigned i = 0; i < s->file_count; ++i) {

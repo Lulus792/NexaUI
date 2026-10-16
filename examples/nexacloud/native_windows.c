@@ -96,10 +96,12 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
         gpu.last_gpu_frame_ms, (unsigned long long)gpu.last_draw_calls, gpu.using_warp);
     return native_reflow(window, scene, renderer, prefix, "native");
 }
+#include "native_uia.h"
 #endif
 
 int main(int argc, char **argv) {
-    int testing = argc == 4 && strcmp(argv[1], "--smoke") == 0;
+    int uia_testing = argc == 4 && strcmp(argv[1], "--uia-smoke") == 0;
+    int testing = uia_testing || (argc == 4 && strcmp(argv[1], "--smoke") == 0);
     if (argc != 2 && !testing) {
         fputs("usage: nexaui_nexacloud_native FONT.ttf | --smoke FONT.ttf OUTPUT_PREFIX\n", stderr); return 2;
     }
@@ -111,7 +113,7 @@ int main(int argc, char **argv) {
         nx_d3d12_driver_open(window, &renderer) == NX_OK;
     if (okay) cloud_set_window(scene, window);
 #ifdef NEXAUI_D3D12_TEST_HOOKS
-    if (okay && testing) okay = smoke(window, scene, &renderer, argv[3]);
+    if (okay && testing) okay = uia_testing ? uia_smoke(window,scene,&renderer,argv[3]) : smoke(window, scene, &renderer, argv[3]);
 #else
     if (testing) okay = 0;
 #endif
