@@ -471,8 +471,8 @@ typedef enum nx_ime_purpose {
    it and never authorizes sending password surrounding text. */
 NX_API nx_result nx_window_set_ime_purpose(nx_window *window,
                                             nx_ime_purpose purpose);
-/* Read the current, uncommitted Windows, X11 or Wayland composition. Query with
-   bytes=NULL and capacity=0 for the UTF-8 byte count; a non-NULL buffer must
+/* Read the current, uncommitted Windows, X11, Wayland or AppKit composition.
+   Query with bytes=NULL and capacity=0 for the UTF-8 byte count; a non-NULL buffer must
    fit the text plus NUL. Cursor offsets are UTF-8 byte offsets into that
    text, or both -1 when the IME hides its caret. This state belongs to the
    window and changes as native messages are dispatched. Other backends may
@@ -2203,12 +2203,16 @@ NX_API int nx_text_buffer_can_undo(const nx_text_buffer *buffer);
 NX_API int nx_text_buffer_can_redo(const nx_text_buffer *buffer);
 NX_API nx_result nx_text_buffer_undo(nx_text_buffer *buffer);
 NX_API nx_result nx_text_buffer_redo(nx_text_buffer *buffer);
-/* Apply backend-neutral key and text events to a focused multiline buffer.
+/* Apply backend-neutral key, text and text-command events to a focused
+   multiline buffer.
    Handles printable text, Enter, grapheme/word navigation and deletion,
    Home/End, Ctrl+A/Z/Y and Ctrl+Shift+Z. macOS additionally accepts Command+A/Z
-   and Command+Shift+Z. Other events are unhandled.
+   and Command+Shift+Z. Text commands handle logical grapheme/word, hard-line,
+   paragraph/document movement, deletion, select-all, newline and undo/redo
+   independently of physical modifiers. Consumed key presses are unhandled.
    Call only for the editor that owns focus; clipboard, IME composition,
-   pointer selection and visual Up/Down navigation are handled elsewhere.
+   pointer selection, visual caret geometry and scrolling are handled elsewhere.
+   Commands requiring those facilities return NX_OK with out_handled zero.
    On an edit error, buffer state is unchanged and out_handled is zero. */
 NX_API nx_result nx_text_buffer_apply_event(nx_text_buffer *buffer,
                                              const nx_event *event,

@@ -2,6 +2,9 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added initial AppKit native editor commands and consumed physical-key events, with shared visual caret navigation for general text fields, preserved bidi/wrap affinity, separate viewport/caret page actions and clipboard/undo integration. Unknown text selectors remain local under the NSTextInputClient contract. Full-document IME and physical acceptance remain open.
+- Verified the command and copy-affinity changes at `03bb8cf`: all six desktop static/shared CI variants and Linux sanitizers pass. Native AppKit interpreter-to-model checks run in both macOS variants; seven unavailable Wayland cases per Ubuntu suite remain explicit skips. Added a 50,000-run logical-model fuzz receipt and documented adversarial regressions.
+
 - Verified the initial Linux AT-SPI transport at `08a4237`: all six desktop static/shared CI variants and Linux sanitizers pass. All five native Linux cases execute on Ubuntu/libatspi 2.52, with local WSLg/libatspi 2.60.5 coverage in static/shared/sanitizer builds. Linux's unavailable-Wayland CI skips and local exploratory regression failures remain explicitly documented.
 - Added the initial private Linux AT-SPI transport and native NexaCloud publication. Independent libatspi/real-registry tests cover native queries, committed actions, selection/cache/events, rollback and retired objects on X11 and WSLg Wayland. D-Bus remains runtime-optional, with no core libatspi/GLib link dependency. Full screenreader/text/table acceptance remains open.
 

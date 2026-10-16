@@ -34,17 +34,29 @@ rejected. Ordinary unmark commits marked text; disabling IME or losing focus
 discards it. The logical caret is converted into native screen coordinates.
 
 This is an initial composition slice. Full-document surrounding text and
-replacement, revision-bound reconversion, native key-binding actions, complete
-Command-based editor navigation and OS secure-input purpose remain M04 work.
+replacement, revision-bound reconversion, complete native key bindings and OS
+secure-input purpose remain M04 work.
 Only default/full-mark replacement is accepted; partial/document requests are
 ignored. Password purpose returns unsupported and blocks attributed-substring
 exposure. It does not claim OS secure keyboard capture.
 
-The common text model accepts Command+A/Z/Shift+Z on macOS, and text-field
-clipboard callbacks accept Command+C/X/V. Ctrl remains an explicit compatible
-binding; Command identity stays in the normalized event instead of being
-rewritten as Ctrl. Mixed Control+Command and Alt chords are not primary actions.
-Native word/line/paragraph key bindings remain separate work.
+For an active editor, AppKit's `interpretKeyEvents:` produces committed text or
+`doCommandBySelector:` actions. Supported word, visual/logical caret, line,
+paragraph, document, selection, deletion, scrolling and focus selectors become
+`NX_EVENT_TEXT_COMMAND`. Physical presses already delegated to the interpreter
+use `NX_EVENT_KEY_DOWN_CONSUMED`, so widgets do not apply them a second time.
+Command+A/C/X/V/Z/Shift+Z use the same action path; original modifiers remain
+unchanged. Unrelated Command shortcuts remain available to the host application.
+
+Unknown text selectors are ignored locally. The specialized
+[NSTextInputClient contract](https://developer.apple.com/documentation/appkit/nstextinputclient/docommand%28by%3A%29)
+explicitly prohibits forwarding them to `super`, unlike the general NSResponder
+implementation. Supported ordinary commands commit pending marked text first;
+Cancel and Undo discard pending composition. Plain Page Up/Down scroll the
+viewport without changing the selection. Their selection variants also move the
+caret; explicit `MOVE_PAGE` commands provide caret page movement for other input
+policies. See the [command validation report](../quality/macos-input-commands-report.md)
+for executed native tests and the remaining limits.
 
 The pasteboard transfers validated UTF-8 strings with a 1 MiB cap, preserving
 line endings. File URL drops copy complete UTF-8 path batches with logical
@@ -70,8 +82,8 @@ passed `nexaui_macos_window` on both static and shared macOS CI builds
 [shared job](https://github.com/Lulus792/NexaUI/actions/runs/38654334451/job/116160404563)).
 Each ran 74 tests with 73 passing. The sole failure was an outdated core-test
 conditional that still expected macOS window creation to be unsupported; it
-now exercises the same actual lifecycle checks as Windows/Linux. The follow-up
-full matrix must pass before claiming a green integration run.
+now exercises the same actual lifecycle checks as Windows/Linux. Subsequent
+native integration runs below and in the command report provide passing evidence.
 
 The dependency audit permits AppKit/objc only on Apple targets and checks
 Objective-C `#import` as well as C `#include`. Its positive/negative fixtures pass
@@ -89,6 +101,11 @@ variants pass 79/79 tests, including RGBA8/A8 uploads and native NexaCloud GPU
 comparisons. The three static/shared scene captures are byte-identical and
 reviewed; [actual client sizes and limits](../nexacloud-validation.md#native-macos-scene--2026-10-15)
 are recorded. Physical input, IME, DPI and VoiceOver remain open.
+
+The initial native editor-command path at `03bb8cf` also passes 86/86 tests in
+each macOS variant, including actual AppKit interpretation and selector-to-model
+checks. See [the command report](../quality/macos-input-commands-report.md) for
+the tested subset, counterexamples and outstanding physical/IME acceptance.
 
 ## Primary references
 

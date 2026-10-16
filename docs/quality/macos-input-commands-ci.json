@@ -1,0 +1,184 @@
+{
+  "source_commit": "03bb8cfda5e05249d561ef317b2097020b021087",
+  "workflow_run": 38948530828,
+  "workflow_url": "https://github.com/Lulus792/NexaUI/actions/runs/38948530828",
+  "checked_date": "2026-10-16",
+  "jobs": [
+    {
+      "name": "sanitizers",
+      "id": 117133722094,
+      "conclusion": "success",
+      "passed": 100,
+      "skipped": 7,
+      "failed": 0,
+      "skip_lines": [
+        "5/107 Test   #5: nexaui_vulkan_wayland_present ..............***Skipped   0.01 sec",
+        "7/107 Test   #7: nexaui_vulkan_wayland_draw .................***Skipped   0.01 sec",
+        "9/107 Test   #9: nexaui_vulkan_wayland_timing ...............***Skipped   0.01 sec",
+        "11/107 Test  #11: nexaui_vulkan_wayland_ring .................***Skipped   0.01 sec",
+        "22/107 Test  #22: nexaui_wayland_window ......................***Skipped   0.01 sec",
+        "104/107 Test #104: nexaui_nexacloud_wayland_native_example ....***Skipped   0.06 sec",
+        "107/107 Test #107: nexaui_vulkan_wayland_example ..............***Skipped   0.01 sec"
+      ],
+      "command_tests": [
+        "39/107 Test  #39: nexaui_property ............................   Passed    0.01 sec",
+        "61/107 Test  #61: nexaui_numeric .............................   Passed    0.01 sec",
+        "62/107 Test  #62: nexaui_numeric_field .......................   Passed    0.02 sec",
+        "63/107 Test  #63: nexaui_text_field ..........................   Passed    0.05 sec",
+        "64/107 Test  #64: nexaui_input ...............................   Passed    0.01 sec",
+        "73/107 Test  #73: nexaui_text_buffer .........................   Passed    0.01 sec"
+      ],
+      "summary": "2026-10-16T18:37:30.1682714Z 100% tests passed, 0 tests failed out of 107",
+      "compiler": "2026-10-16T18:36:09.6219571Z -- The C compiler identification is Clang 18.1.3"
+    },
+    {
+      "name": "core (macos-latest, OFF)",
+      "id": 117133722445,
+      "conclusion": "success",
+      "passed": 86,
+      "skipped": 0,
+      "failed": 0,
+      "skip_lines": [],
+      "command_tests": [
+        "16/86 Test #16: nexaui_property ............................   Passed    0.01 sec",
+        "38/86 Test #38: nexaui_numeric .............................   Passed    0.00 sec",
+        "39/86 Test #39: nexaui_numeric_field .......................   Passed    0.01 sec",
+        "40/86 Test #40: nexaui_text_field ..........................   Passed    0.01 sec",
+        "41/86 Test #41: nexaui_input ...............................   Passed    0.01 sec",
+        "42/86 Test #42: nexaui_macos_ax_external ...................   Passed    0.42 sec",
+        "44/86 Test #44: nexaui_macos_window ........................   Passed    0.46 sec",
+        "54/86 Test #54: nexaui_text_buffer .........................   Passed    0.02 sec"
+      ],
+      "summary": "2026-10-16T18:37:02.7799880Z 100% tests passed out of 86",
+      "compiler": "2026-10-16T18:36:05.1985580Z -- The C compiler identification is AppleClang 21.0.0.21000101"
+    },
+    {
+      "name": "core (macos-latest, ON)",
+      "id": 117133722483,
+      "conclusion": "success",
+      "passed": 86,
+      "skipped": 0,
+      "failed": 0,
+      "skip_lines": [],
+      "command_tests": [
+        "16/86 Test #16: nexaui_property ............................   Passed    0.02 sec",
+        "38/86 Test #38: nexaui_numeric .............................   Passed    0.01 sec",
+        "39/86 Test #39: nexaui_numeric_field .......................   Passed    0.01 sec",
+        "40/86 Test #40: nexaui_text_field ..........................   Passed    0.02 sec",
+        "41/86 Test #41: nexaui_input ...............................   Passed    0.01 sec",
+        "42/86 Test #42: nexaui_macos_ax_external ...................   Passed    0.63 sec",
+        "44/86 Test #44: nexaui_macos_window ........................   Passed    0.52 sec",
+        "54/86 Test #54: nexaui_text_buffer .........................   Passed    0.01 sec"
+      ],
+      "summary": "2026-10-16T18:36:49.5155330Z 100% tests passed out of 86",
+      "compiler": "2026-10-16T18:35:56.3636980Z -- The C compiler identification is AppleClang 21.0.0.21000101"
+    },
+    {
+      "name": "core (ubuntu-latest, ON)",
+      "id": 117133722499,
+      "conclusion": "success",
+      "passed": 100,
+      "skipped": 7,
+      "failed": 0,
+      "skip_lines": [
+        "5/107 Test   #5: nexaui_vulkan_wayland_present ..............***Skipped   0.00 sec",
+        "7/107 Test   #7: nexaui_vulkan_wayland_draw .................***Skipped   0.00 sec",
+        "9/107 Test   #9: nexaui_vulkan_wayland_timing ...............***Skipped   0.00 sec",
+        "11/107 Test  #11: nexaui_vulkan_wayland_ring .................***Skipped   0.00 sec",
+        "22/107 Test  #22: nexaui_wayland_window ......................***Skipped   0.00 sec",
+        "104/107 Test #104: nexaui_nexacloud_wayland_native_example ....***Skipped   0.03 sec",
+        "107/107 Test #107: nexaui_vulkan_wayland_example ..............***Skipped   0.00 sec"
+      ],
+      "command_tests": [
+        "39/107 Test  #39: nexaui_property ............................   Passed    0.00 sec",
+        "61/107 Test  #61: nexaui_numeric .............................   Passed    0.00 sec",
+        "62/107 Test  #62: nexaui_numeric_field .......................   Passed    0.00 sec",
+        "63/107 Test  #63: nexaui_text_field ..........................   Passed    0.00 sec",
+        "64/107 Test  #64: nexaui_input ...............................   Passed    0.00 sec",
+        "73/107 Test  #73: nexaui_text_buffer .........................   Passed    0.00 sec"
+      ],
+      "summary": "2026-10-16T18:36:49.0650857Z 100% tests passed, 0 tests failed out of 107",
+      "compiler": "2026-10-16T18:36:03.2043373Z -- The C compiler identification is GNU 13.3.0"
+    },
+    {
+      "name": "core (ubuntu-latest, OFF)",
+      "id": 117133722533,
+      "conclusion": "success",
+      "passed": 100,
+      "skipped": 7,
+      "failed": 0,
+      "skip_lines": [
+        "5/107 Test   #5: nexaui_vulkan_wayland_present ..............***Skipped   0.00 sec",
+        "7/107 Test   #7: nexaui_vulkan_wayland_draw .................***Skipped   0.00 sec",
+        "9/107 Test   #9: nexaui_vulkan_wayland_timing ...............***Skipped   0.00 sec",
+        "11/107 Test  #11: nexaui_vulkan_wayland_ring .................***Skipped   0.00 sec",
+        "22/107 Test  #22: nexaui_wayland_window ......................***Skipped   0.00 sec",
+        "104/107 Test #104: nexaui_nexacloud_wayland_native_example ....***Skipped   0.03 sec",
+        "107/107 Test #107: nexaui_vulkan_wayland_example ..............***Skipped   0.00 sec"
+      ],
+      "command_tests": [
+        "39/107 Test  #39: nexaui_property ............................   Passed    0.00 sec",
+        "61/107 Test  #61: nexaui_numeric .............................   Passed    0.00 sec",
+        "62/107 Test  #62: nexaui_numeric_field .......................   Passed    0.00 sec",
+        "63/107 Test  #63: nexaui_text_field ..........................   Passed    0.00 sec",
+        "64/107 Test  #64: nexaui_input ...............................   Passed    0.00 sec",
+        "73/107 Test  #73: nexaui_text_buffer .........................   Passed    0.00 sec"
+      ],
+      "summary": "2026-10-16T18:37:08.1040986Z 100% tests passed, 0 tests failed out of 107",
+      "compiler": "2026-10-16T18:36:13.0241381Z -- The C compiler identification is GNU 13.3.0"
+    },
+    {
+      "name": "core (windows-latest, OFF)",
+      "id": 117133722594,
+      "conclusion": "success",
+      "passed": 99,
+      "skipped": 0,
+      "failed": 0,
+      "skip_lines": [],
+      "command_tests": [
+        "19/99 Test #19: nexaui_property ............................   Passed    0.02 sec",
+        "41/99 Test #41: nexaui_numeric .............................   Passed    0.01 sec",
+        "42/99 Test #42: nexaui_numeric_field .......................   Passed    0.02 sec",
+        "43/99 Test #43: nexaui_text_field ..........................   Passed    0.03 sec",
+        "52/99 Test #52: nexaui_input ...............................   Passed    0.03 sec",
+        "61/99 Test #61: nexaui_text_buffer .........................   Passed    0.02 sec"
+      ],
+      "summary": "2026-10-16T18:43:17.3879390Z 100% tests passed out of 99",
+      "compiler": "2026-10-16T18:36:07.8927837Z -- The C compiler identification is MSVC 19.51.36260.0"
+    },
+    {
+      "name": "core (windows-latest, ON)",
+      "id": 117133722615,
+      "conclusion": "success",
+      "passed": 99,
+      "skipped": 0,
+      "failed": 0,
+      "skip_lines": [],
+      "command_tests": [
+        "19/99 Test #19: nexaui_property ............................   Passed    0.02 sec",
+        "41/99 Test #41: nexaui_numeric .............................   Passed    0.02 sec",
+        "42/99 Test #42: nexaui_numeric_field .......................   Passed    0.02 sec",
+        "43/99 Test #43: nexaui_text_field ..........................   Passed    0.03 sec",
+        "52/99 Test #52: nexaui_input ...............................   Passed    0.03 sec",
+        "61/99 Test #61: nexaui_text_buffer .........................   Passed    0.02 sec"
+      ],
+      "summary": "2026-10-16T18:42:33.7792426Z 100% tests passed out of 99",
+      "compiler": "2026-10-16T18:36:20.3352535Z -- The C compiler identification is MSVC 19.51.36260.0"
+    },
+    {
+      "name": "fuzz-campaigns",
+      "id": 117133723460,
+      "conclusion": "skipped"
+    },
+    {
+      "name": "windows-asan",
+      "id": 117133723562,
+      "conclusion": "skipped"
+    }
+  ],
+  "limits": [
+    "Seven Ubuntu Wayland/native display tests skipped in each Ubuntu/sanitizer suite; this run does not establish native Wayland acceptance.",
+    "Optional Windows ASan and fuzz-campaign jobs were skipped by workflow policy. Separate local Linux sanitizer and libFuzzer receipts are documented.",
+    "AppKit in-process and interpreter tests do not establish physical keyboard, installed IME, VoiceOver, full-document replacement or reconversion acceptance."
+  ]
+}
