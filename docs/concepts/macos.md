@@ -53,11 +53,11 @@ are unsupported. Receiving a path performs no filesystem operation.
 
 ## Validation status
 
-The development host is Windows/Linux. Both configurations still build, and
-shared event/drop/input/dependency tests pass. Host results do **not** compile
-or validate Objective-C.
+The development host is Windows/Linux; local C regression results do **not**
+compile or validate Objective-C. Native static/shared macOS CI results are
+recorded separately below and in the AX validation report.
 
-The authored `nexaui_macos_window` test creates real hidden AppKit windows and
+The native `nexaui_macos_window` test creates real hidden AppKit windows and
 checks callbacks, Unicode/preedit, resize, two-window isolation, wrong-thread
 calls, allocator sizes, renderer leases, clipboard and file URL drops. Its
 clipboard case snapshots/restores the original items. The C17 hello-window
@@ -101,3 +101,5 @@ are recorded. Physical input, IME, DPI and VoiceOver remain open.
 ## Initial accessibility transport
 
 Completed frames can be published through `nx_window_publish_semantics`; the native NexaCloud Metal runner does this before rendering. The private AppKit bridge provides owned semantic copies and native `NSAccessibilityElement` objects with queued owner-thread actions. See [the transport contract](accessibility.md#initial-macos-appkit-ax-bridge) and [validation report](../quality/macos-ax-report.md). Native protocol checks and a separate OS AX client are registered. Accessibility trust is checked without prompting; a missing trust grant is an explicit skip of the external case. Full VoiceOver, text/range/table and physical display acceptance remain open.
+
+The initial AX implementation passes all 85 native/core cases in each static/shared Debug build on macOS 26.6.2 ARM64 with AppleClang 21. Both the AppKit server-method fixture and independent OS AX client ran successfully, including actual action-model changes. See the [executed AX evidence](../quality/macos-ax-report.md). This does not establish VoiceOver, Intel, physical input/display or full role-specific protocol acceptance.
