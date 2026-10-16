@@ -1,12 +1,11 @@
 #include "font_internal.h"
+#include "ot_layout.h"
+#include <math.h>
 
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef struct nx_gpos_table {
-    const uint8_t *data;
-    size_t length;
-} nx_gpos_table;
+typedef nx_ot_view nx_gpos_table;
 
 #define NX_GPOS_WORK_LIMIT 4000000u
 
@@ -58,7 +57,11 @@ static int nx_gpos_feature_enabled(uint32_t tag) {
     return tag == NX_SFNT_TAG('k','e','r','n') ||
            tag == NX_SFNT_TAG('d','i','s','t') ||
            tag == NX_SFNT_TAG('p','a','l','t') ||
-           tag == NX_SFNT_TAG('h','a','l','t');
+           tag == NX_SFNT_TAG('h','a','l','t') ||
+           tag == NX_SFNT_TAG('m','a','r','k') ||
+           tag == NX_SFNT_TAG('m','k','m','k') ||
+           tag == NX_SFNT_TAG('a','b','v','m') ||
+           tag == NX_SFNT_TAG('b','l','w','m');
 }
 
 static nx_result nx_gpos_coverage(nx_gpos_table table, size_t offset,
@@ -221,6 +224,8 @@ static uint16_t nx_gpos_class(nx_gpos_table table, size_t offset,
 static nx_result nx_gpos_validate_subtable(nx_gpos_table table, size_t offset,
                                            uint16_t type, uint16_t glyph_limit,
                                            size_t *remaining) {
+    if (type>=4u && type<=6u)
+        return nx_gpos_mark_validate(table,offset,type,glyph_limit,remaining);
     if (!nx_gpos_has(table, offset, 6u)) return NX_ERROR_ARGUMENT;
     uint16_t format = nx_gpos_u16(table.data + offset);
     size_t coverage = 0, covered = 0;
@@ -311,9 +316,9 @@ static nx_result nx_gpos_validate_subtable(nx_gpos_table table, size_t offset,
 }
 
 static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
-                                      uint16_t glyph_limit, double scale,
-                                      nx_shaped_glyph *glyphs, size_t count,
-                                      uint8_t *pair_mask, size_t *remaining) {
+                                      uint16_t glyph_limit, double scale, double ppem,
+                                      nx_shaped_glyph *glyphs, nx_ot_glyph_state *state, size_t count,
+                                      const nx_ot_gdef *gdef,uint8_t *pair_mask, size_t *remaining) {
     if (!nx_gpos_has(table, lookup, 6u)) return NX_ERROR_ARGUMENT;
     uint16_t type = nx_gpos_u16(table.data + lookup);
     uint16_t flags = nx_gpos_u16(table.data + lookup + 2u);
@@ -323,19 +328,37 @@ static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
         !nx_gpos_has(table, lookup, 6u + 2u * subtables +
                      ((flags & 0x10u) ? 2u : 0u)))
         return NX_ERROR_ARGUMENT;
-    /* GDEF filtering, mark attachment and contextual positioning are deferred. */
-    if ((flags & ~1u) || (type != 1u && type != 2u)) return NX_OK;
+    if (type!=1u && type!=2u && type!=4u && type!=5u && type!=6u && type!=9u) return NX_OK;
+    uint16_t filter_set=(flags&16u)?nx_gpos_u16(table.data+lookup+6u+2u*subtables):0;
+    nx_result filter=nx_ot_filter_validate(gdef,flags,filter_set);
+    if (filter==NX_ERROR_UNSUPPORTED) return NX_OK;
+    if (filter!=NX_OK) return filter;
+    uint16_t effective=type;
     size_t offsets[64];
     for (size_t s = 0; s < subtables; ++s) {
         if (!nx_gpos_child(table, lookup,
                            nx_gpos_u16(table.data + lookup + 6u + 2u * s),
                            6u, &offsets[s])) return NX_ERROR_ARGUMENT;
+        if (type==9u) {
+            size_t outer=offsets[s],child;
+            if (!nx_gpos_has(table,outer,8u)) return NX_ERROR_ARGUMENT;
+            if (nx_gpos_u16(table.data+outer)!=1u) return NX_OK;
+            uint16_t target=nx_gpos_u16(table.data+outer+2u);
+            if (target==9u) return NX_ERROR_ARGUMENT;
+            if (s && target!=effective) return NX_ERROR_ARGUMENT;
+            effective=target;
+            if (!nx_gpos_child(table,outer,nx_gpos_u32(table.data+outer+4u),6u,&child)) return NX_ERROR_ARGUMENT;
+            offsets[s]=child;
+        }
+        if (effective!=1u && effective!=2u && effective!=4u && effective!=5u && effective!=6u) return NX_OK;
         nx_result result = nx_gpos_validate_subtable(table, offsets[s],
-                                                      type, glyph_limit,
+                                                      effective, glyph_limit,
                                                       remaining);
         if (result == NX_ERROR_UNSUPPORTED) return NX_OK;
         if (result != NX_OK) return result;
     }
+    type=effective;
+    size_t previous=SIZE_MAX,nonmark=SIZE_MAX;
     for (size_t i = 0; i < count;) {
         if (nx_gpos_charge(remaining, 1u) != NX_OK)
             return NX_ERROR_LIMIT;
@@ -348,6 +371,14 @@ static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
             size_t index = nx_gpos_coverage_index(table, coverage,
                                                    glyphs[i].glyph_index);
             if (index == SIZE_MAX) continue;
+            if (type>=4u && type<=6u) {
+                int matched=0;
+                nx_result r=nx_gpos_mark_apply(table,sub,type,i,type==6u?previous:nonmark,
+                    glyphs,state,scale,ppem,&matched);
+                if (r!=NX_OK) return r;
+                if (matched) break;
+                continue;
+            }
             uint16_t format = nx_gpos_u16(table.data + sub);
             uint16_t value_format1 = nx_gpos_u16(table.data + sub + 4u);
             size_t value_size1 = nx_gpos_value_size(value_format1);
@@ -358,7 +389,12 @@ static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
                                     scale, &glyphs[i]);
                 break;
             }
-            if (i + 1u >= count) continue;
+            size_t next=i+1u;
+            while (next<count && nx_ot_ignored(gdef,flags,filter_set,glyphs[next].glyph_index)) {
+                if (nx_gpos_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+                ++next;
+            }
+            if (next>=count) continue;
             uint16_t value_format2 = nx_gpos_u16(table.data + sub + 6u);
             size_t value_size2 = nx_gpos_value_size(value_format2);
             size_t record = SIZE_MAX;
@@ -372,19 +408,19 @@ static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
                     size_t mid = low + (high - low) / 2u;
                     uint16_t second = nx_gpos_u16(table.data + set +
                                                    2u + mid * stride);
-                    if (second < glyphs[i + 1u].glyph_index) low = mid + 1u;
+                    if (second < glyphs[next].glyph_index) low = mid + 1u;
                     else high = mid;
                 }
                 if (low < pairs &&
                     nx_gpos_u16(table.data + set + 2u + low * stride) ==
-                    glyphs[i + 1u].glyph_index)
+                    glyphs[next].glyph_index)
                     record = set + 4u + low * stride;
             } else {
                 size_t class1 = sub + nx_gpos_u16(table.data + sub + 8u);
                 size_t class2 = sub + nx_gpos_u16(table.data + sub + 10u);
                 size_t a = nx_gpos_class(table, class1, glyphs[i].glyph_index);
                 size_t b = nx_gpos_class(table, class2,
-                                         glyphs[i + 1u].glyph_index);
+                                         glyphs[next].glyph_index);
                 size_t columns = nx_gpos_u16(table.data + sub + 14u);
                 record = sub + 16u + (a * columns + b) *
                          (value_size1 + value_size2);
@@ -393,20 +429,25 @@ static nx_result nx_gpos_apply_lookup(nx_gpos_table table, size_t lookup,
             nx_gpos_apply_value(table.data + record, value_format1,
                                 scale, &glyphs[i]);
             nx_gpos_apply_value(table.data + record + value_size1,
-                                value_format2, scale, &glyphs[i + 1u]);
+                                value_format2, scale, &glyphs[next]);
             pair_mask[i] = 1u;
-            if (value_format2) consumed = 2u;
+            consumed=value_format2?next+1u-i:next-i;
             break;
+        }
+        if (type>=4u && type<=6u && !nx_ot_ignored(gdef,flags,filter_set,glyphs[i].glyph_index)) {
+            previous=i;
+            if (nx_ot_glyph_class(gdef,&glyphs[i],&state[i])!=3u) nonmark=i;
         }
         i += consumed;
     }
     return NX_OK;
 }
 
-nx_result nx_gpos_apply(const nx_font *font, uint32_t script_tag,
-                        nx_shaped_glyph *glyphs, size_t count,
+nx_result nx_gpos_apply_state(const nx_font *font, uint32_t script_tag,
+                        nx_shaped_glyph *glyphs, nx_ot_glyph_state *state,size_t count,
                         double pixels_per_em, uint8_t *pair_mask) {
-    if (!font || (count && (!glyphs || !pair_mask)))
+    if (!font || !isfinite(pixels_per_em) || pixels_per_em<=0 || pixels_per_em>16384 ||
+        (count && (!glyphs || !state || !pair_mask)))
         return NX_ERROR_ARGUMENT;
     nx_bytes_view view;
     if (nx_font_find_table(font, NX_SFNT_TAG('G','P','O','S'), &view) != NX_OK)
@@ -510,6 +551,9 @@ nx_result nx_gpos_apply(const nx_font *font, uint32_t script_tag,
     nx_font_metrics metrics;
     result = nx_font_get_metrics(font, &metrics);
     if (result != NX_OK) goto done;
+    nx_ot_gdef gdef;
+    result=nx_ot_gdef_load(font,&gdef,metrics.glyph_count,&remaining);
+    if (result!=NX_OK) goto done;
     double scale = pixels_per_em / metrics.units_per_em;
     for (size_t i = 0; i < lookup_count; ++i) {
         if (!active[i]) continue;
@@ -520,11 +564,23 @@ nx_result nx_gpos_apply(const nx_font *font, uint32_t script_tag,
             result = NX_ERROR_ARGUMENT; goto done;
         }
         result = nx_gpos_apply_lookup(table, lookup, metrics.glyph_count,
-                                      scale, glyphs, count, pair_mask,
+                                      scale,pixels_per_em,glyphs,state,count,&gdef,pair_mask,
                                       &remaining);
         if (result != NX_OK) goto done;
     }
 done:
     free(active);
     return result;
+}
+
+nx_result nx_gpos_apply(const nx_font *font,uint32_t script,nx_shaped_glyph *glyphs,
+                        size_t count,double ppem,uint8_t *pair_mask) {
+    if (!font || (count && (!glyphs || !pair_mask))) return NX_ERROR_ARGUMENT;
+    if (count>SIZE_MAX/sizeof(nx_ot_glyph_state)) return NX_ERROR_LIMIT;
+    nx_ot_glyph_state *state=count?calloc(count,sizeof(*state)):NULL;
+    if (count && !state) return NX_ERROR_MEMORY;
+    for (size_t i=0;i<count;++i) nx_ot_state_init(&glyphs[i],&state[i]);
+    nx_result result=nx_gpos_apply_state(font,script,glyphs,state,count,ppem,pair_mask);
+    if (result==NX_OK) result=nx_ot_resolve(glyphs,state,count);
+    free(state); return result;
 }

@@ -8,6 +8,16 @@ seeds come from `make_gsub_seed.py` and `make_gpos_seed.py`. Run
 target exercises UTF-8 validation, grapheme and word boundaries, line breaks,
 selection, navigation, edits and undo/redo. Invalid UTF-8 is also fed to the
 validator.
+
+The GPOS corpus also includes six `NXP2` seeds generated from the public-API
+mark tests: after building tests, run `nexaui_gpos_mark_tests --write-seeds
+fuzz/corpus/gpos` (use the executable's build directory). The target accepts
+legacy raw GPOS or a 16-byte `NXP2` header containing big-endian GPOS/GDEF/GSUB
+lengths followed by those three tables. It runs fixed base/mark, ligature and
+nested-ligature sequences plus a mutated sequence through GSUB, metrics, GPOS
+and attachment resolution. The campaign runner uses `-max_len=2048` for GPOS
+so the combined seeds fit. This exercises the implemented subset; it is not
+complex-script conformance or a real-font corpus.
 Run `python3 fuzz/make_layout_seeds.py` after generating the text corpus to
 create focused wrapping, hard-break, paragraph-separator, bidi, combining-mark and whitespace
 cases. The layout target uses a borrowed synthetic font face and checks lines,

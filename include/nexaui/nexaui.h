@@ -2025,12 +2025,14 @@ NX_API nx_result nx_font_collection_resolve(const nx_font_collection *collection
 
 /* Shape one UTF-8 paragraph into logical-order glyphs and homogeneous runs.
    The path applies selected GSUB single and ligature substitutions and GPOS
-   single and pair positioning, with legacy kern format-0 pairs as a fallback.
-   Nonspacing marks are centered over their grapheme base before GPOS. Ligatures
+   single/pair positioning and mark-to-base/ligature/mark attachment, with legacy
+   kern format-0 pairs as a fallback. Supported lookups use GDEF filtering and
+   extension tables. Nonspacing marks are centered over their grapheme base
+   before GPOS. Ligatures
    span multiple input bytes; their scalar is the first input scalar.
-   Default-ignorable and control scalars produce no glyph. GDEF filtering,
-   device adjustments, mark attachment and advanced script shaping are later
-   stages. Missing mappings use
+   Default-ignorable and control scalars produce no glyph. Anchor device deltas
+   apply at integer ppem; hinted anchor points, variation deltas, contextual and
+   advanced script shaping remain pending. Missing mappings use
    glyph zero of the first font. Both output arrays may be null for a count
    query. Insufficient output capacity returns NX_ERROR_LIMIT with required
    counts but no elements; other failures leave counts and arrays unchanged. */
@@ -2052,7 +2054,7 @@ NX_API nx_result nx_shape_text(const nx_font_collection *collection,
    byte ranges but measure and position them with zero advance at line ends.
    Carets occur at extended-grapheme boundaries, with two positions where bidi
    runs or soft-wrapped lines meet. Ligature interiors divide advance evenly.
-   GDEF, device adjustments and advanced script shaping remain pending. */
+   Advanced script shaping and hinted/variable-font positioning remain pending. */
 NX_API nx_result nx_text_layout_create(const nx_font_collection *collection,
                                        const char *bytes, size_t length,
                                        nx_bidi_direction direction,

@@ -1,4 +1,5 @@
 #include "font_internal.h"
+#include "ot_layout.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -199,93 +200,123 @@ static nx_result nx_gsub_validate_subtable(nx_gsub_table table, size_t offset,
     return NX_ERROR_UNSUPPORTED;
 }
 
-static nx_result nx_gsub_apply_lookup(nx_gsub_table table, size_t lookup,
-                                      uint16_t glyph_limit,
-                                      nx_shaped_glyph *glyphs, size_t *count,
-                                      size_t *remaining) {
-    if (!nx_gsub_has(table, lookup, 6u)) return NX_ERROR_ARGUMENT;
-    uint16_t type = nx_gsub_u16(table.data + lookup);
-    uint16_t flags = nx_gsub_u16(table.data + lookup + 2u);
-    size_t subtables = nx_gsub_u16(table.data + lookup + 4u);
-    if (subtables > 64u || !nx_gsub_array(table, lookup, 6u,
-                                           subtables, 2u) ||
-        !nx_gsub_has(table, lookup, 6u + 2u * subtables +
-                    ((flags & 0x10u) ? 2u : 0u)))
-        return NX_ERROR_ARGUMENT;
-    /* GDEF-based glyph filtering and unsupported lookup types are deferred. */
-    if (flags & ~1u || (type != 1u && type != 4u)) return NX_OK;
-    size_t offsets[64];
-    for (size_t s = 0; s < subtables; ++s) {
-        if (!nx_gsub_child(table, lookup,
-                           nx_gsub_u16(table.data + lookup + 6u + 2u * s),
-                           6u, &offsets[s])) return NX_ERROR_ARGUMENT;
-        nx_result result = nx_gsub_validate_subtable(table, offsets[s],
-                                                      type, glyph_limit,
-                                                      remaining);
-        if (result == NX_ERROR_UNSUPPORTED) return NX_OK;
-        if (result != NX_OK) return result;
+static nx_result nx_gsub_apply_lookup(nx_gsub_table table,size_t lookup,uint16_t glyph_limit,
+    nx_shaped_glyph *glyphs,nx_ot_glyph_state *state,size_t *count,const nx_ot_gdef *gdef,size_t *remaining) {
+    if (!nx_gsub_has(table,lookup,6u)) return NX_ERROR_ARGUMENT;
+    uint16_t type=nx_gsub_u16(table.data+lookup),flags=nx_gsub_u16(table.data+lookup+2u);
+    size_t subtables=nx_gsub_u16(table.data+lookup+4u);
+    if (subtables>64u || !nx_gsub_array(table,lookup,6u,subtables,2u) ||
+        !nx_gsub_has(table,lookup,6u+2u*subtables+((flags&16u)?2u:0u))) return NX_ERROR_ARGUMENT;
+    if (type!=1u && type!=4u && type!=7u) return NX_OK;
+    uint16_t set=(flags&16u)?nx_gsub_u16(table.data+lookup+6u+2u*subtables):0;
+    nx_result r=nx_ot_filter_validate(gdef,flags,set);
+    if (r==NX_ERROR_UNSUPPORTED) return NX_OK;
+    if (r!=NX_OK) return r;
+    uint16_t effective=type; size_t offsets[64];
+    for (size_t s=0;s<subtables;++s) {
+        if (!nx_gsub_child(table,lookup,nx_gsub_u16(table.data+lookup+6u+2u*s),6u,&offsets[s])) return NX_ERROR_ARGUMENT;
+        if (type==7u) {
+            size_t outer=offsets[s],child;
+            if (!nx_gsub_has(table,outer,8u)) return NX_ERROR_ARGUMENT;
+            if (nx_gsub_u16(table.data+outer)!=1u) return NX_OK;
+            uint16_t target=nx_gsub_u16(table.data+outer+2u);
+            if (target==7u || (s && target!=effective)) return NX_ERROR_ARGUMENT;
+            effective=target;
+            if (!nx_gsub_child(table,outer,nx_gsub_u32(table.data+outer+4u),6u,&child)) return NX_ERROR_ARGUMENT;
+            offsets[s]=child;
+        }
+        if (effective!=1u && effective!=4u) return NX_OK;
+        r=nx_gsub_validate_subtable(table,offsets[s],effective,glyph_limit,remaining);
+        if (r==NX_ERROR_UNSUPPORTED) return NX_OK;
+        if (r!=NX_OK) return r;
     }
-    for (size_t i = 0; i < *count;) {
-        if (nx_gsub_charge(remaining, 1u) != NX_OK)
-            return NX_ERROR_LIMIT;
-        int applied = 0;
-        size_t consumed = 1;
-        for (size_t s = 0; s < subtables && !applied; ++s) {
-            if (nx_gsub_charge(remaining, 1u) != NX_OK)
-                return NX_ERROR_LIMIT;
-            size_t sub = offsets[s];
-            size_t coverage = sub + nx_gsub_u16(table.data + sub + 2u);
-            size_t index = nx_gsub_coverage_index(table, coverage,
-                                                   glyphs[i].glyph_index);
-            if (index == SIZE_MAX) continue;
-            if (type == 1u) {
-                uint16_t replacement;
-                if (nx_gsub_u16(table.data + sub) == 1u) {
-                    replacement = (uint16_t)(glyphs[i].glyph_index +
-                                  (int16_t)nx_gsub_u16(table.data + sub + 4u));
-                } else replacement = nx_gsub_u16(table.data + sub + 6u +
-                                                  2u * index);
-                if (replacement >= glyph_limit) return NX_ERROR_ARGUMENT;
-                glyphs[i].glyph_index = replacement;
-                applied = 1;
+    type=effective;
+    /* Stable streaming compaction: no suffix memmove for each ligature. A
+       supported lookup only looks forward, so output cannot clobber unread
+       input. Ignored glyphs keep order; each input record is copied once. */
+    size_t input=*count,write=0;
+    for (size_t i=0;i<input;) {
+        if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+        int applied=0; size_t next=i+1u;
+        for (size_t s=0;s<subtables && !applied;++s) {
+            if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+            size_t sub=offsets[s],coverage=sub+nx_gsub_u16(table.data+sub+2u);
+            size_t index=nx_gsub_coverage_index(table,coverage,glyphs[i].glyph_index);
+            if (index==SIZE_MAX) continue;
+            if (type==1u) {
+                uint16_t replacement=nx_gsub_u16(table.data+sub)==1u?
+                    (uint16_t)(glyphs[i].glyph_index+(int16_t)nx_gsub_u16(table.data+sub+4u)):
+                    nx_gsub_u16(table.data+sub+6u+2u*index);
+                if (replacement>=glyph_limit) return NX_ERROR_ARGUMENT;
+                glyphs[i].glyph_index=replacement;
+                glyphs[write]=glyphs[i]; state[write++]=state[i]; applied=1;
             } else {
-                size_t set = sub + nx_gsub_u16(table.data + sub + 6u + 2u * index);
-                size_t ligatures = nx_gsub_u16(table.data + set);
-                for (size_t l = 0; l < ligatures; ++l) {
-                    if (nx_gsub_charge(remaining, 1u) != NX_OK)
-                        return NX_ERROR_LIMIT;
-                    size_t lig = set + nx_gsub_u16(table.data + set + 2u + 2u * l);
-                    size_t components = nx_gsub_u16(table.data + lig + 2u);
-                    if (components > *count - i) continue;
-                    size_t c = 1;
-                    for (; c < components; ++c) {
-                        if (nx_gsub_charge(remaining, 1u) != NX_OK)
-                            return NX_ERROR_LIMIT;
-                        if (glyphs[i + c].glyph_index !=
-                            nx_gsub_u16(table.data + lig + 4u +
-                                        2u * (c - 1u)))
-                            break;
+                size_t set_at=sub+nx_gsub_u16(table.data+sub+6u+2u*index);
+                size_t ligatures=nx_gsub_u16(table.data+set_at);
+                for (size_t l=0;l<ligatures;++l) {
+                    if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+                    size_t lig=set_at+nx_gsub_u16(table.data+set_at+2u+2u*l);
+                    size_t components=nx_gsub_u16(table.data+lig+2u),indices[32]; indices[0]=i;
+                    if (components>input-i) continue;
+                    size_t c=1,cursor=i;
+                    for (;c<components;++c) {
+                        do {
+                            if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+                            ++cursor;
+                        } while (cursor<input && nx_ot_ignored(gdef,flags,set,glyphs[cursor].glyph_index));
+                        if (cursor==input || glyphs[cursor].glyph_index!=nx_gsub_u16(table.data+lig+4u+2u*(c-1u))) break;
+                        indices[c]=cursor;
                     }
-                    if (c != components) continue;
-                    glyphs[i].glyph_index = nx_gsub_u16(table.data + lig);
-                    glyphs[i].byte_end = glyphs[i + components - 1u].byte_end;
-                    memmove(glyphs + i + 1u, glyphs + i + components,
-                            (*count - i - components) * sizeof(*glyphs));
-                    *count -= components - 1u;
-                    consumed = 1;
-                    applied = 1;
-                    break;
+                    if (c!=components) continue;
+                    nx_ot_glyph_state old[32]; uint32_t starts[32],total=0;
+                    for (c=0;c<components;++c) {
+                        old[c]=state[indices[c]]; starts[c]=total;
+                        if (old[c].components>UINT32_MAX-total) return NX_ERROR_LIMIT;
+                        total+=old[c].components;
+                    }
+                    size_t end=indices[components-1u],id=old[0].origin,cluster=glyphs[i].cluster_byte_start;
+                    nx_shaped_glyph formed=glyphs[i]; formed.glyph_index=nx_gsub_u16(table.data+lig);
+                    formed.byte_end=glyphs[end].byte_end;
+                    nx_ot_glyph_state formed_state=old[0]; formed_state.ligature_id=id;
+                    formed_state.components=total; formed_state.component=0; formed_state.ligated=1;
+                    glyphs[write]=formed; state[write++]=formed_state;
+                    size_t component=0;
+                    for (size_t read=i+1u;read<=end;++read) {
+                        if (component+1u<components && read==indices[component+1u]) { ++component; continue; }
+                        if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+                        nx_ot_glyph_state m=state[read];
+                        if (nx_ot_glyph_class(gdef,&glyphs[read],&m)==3u) {
+                            uint32_t local=old[component].components;
+                            if (m.ligature_id && m.ligature_id==old[component].ligature_id && m.component)
+                                local=m.component<local?m.component:local;
+                            m.ligature_id=id; m.component=starts[component]+local;
+                        }
+                        nx_shaped_glyph kept=glyphs[read]; kept.cluster_byte_start=cluster;
+                        glyphs[write]=kept; state[write++]=m;
+                    }
+                    /* Trailing marks belong to the last consumed component,
+                       including its already tracked nested ligature components. */
+                    for (size_t tail=end+1u;tail<input && nx_ot_glyph_class(gdef,&glyphs[tail],&state[tail])==3u;++tail) {
+                        if (nx_gsub_charge(remaining,1u)!=NX_OK) return NX_ERROR_LIMIT;
+                        nx_ot_glyph_state *m=&state[tail]; uint32_t local=old[components-1u].components;
+                        if (m->ligature_id && m->ligature_id==old[components-1u].ligature_id && m->component)
+                            local=m->component<local?m->component:local;
+                        m->ligature_id=id; m->component=starts[components-1u]+local;
+                        glyphs[tail].cluster_byte_start=cluster;
+                    }
+                    next=end+1u; applied=1; break;
                 }
             }
         }
-        i += consumed;
+        if (!applied) { glyphs[write]=glyphs[i]; state[write++]=state[i]; }
+        i=next;
     }
-    return NX_OK;
+    *count=write; return NX_OK;
 }
 
-nx_result nx_gsub_apply(const nx_font *font, uint32_t script_tag,
-                        nx_shaped_glyph *glyphs, size_t *inout_count) {
-    if (!font || !inout_count || (*inout_count && !glyphs))
+nx_result nx_gsub_apply_state(const nx_font *font, uint32_t script_tag,
+                        nx_shaped_glyph *glyphs,nx_ot_glyph_state *state,size_t *inout_count) {
+    if (!font || !inout_count || (*inout_count && (!glyphs || !state)))
         return NX_ERROR_ARGUMENT;
     nx_bytes_view view;
     if (nx_font_find_table(font, NX_SFNT_TAG('G','S','U','B'), &view) != NX_OK)
@@ -384,6 +415,9 @@ nx_result nx_gsub_apply(const nx_font *font, uint32_t script_tag,
     nx_font_metrics metrics;
     result = nx_font_get_metrics(font, &metrics);
     if (result != NX_OK) goto done;
+    nx_ot_gdef gdef;
+    result=nx_ot_gdef_load(font,&gdef,metrics.glyph_count,&work_remaining);
+    if (result!=NX_OK) goto done;
     for (size_t i = 0; i < lookup_count; ++i) {
         if (!active[i]) continue;
         size_t lookup = 0;
@@ -393,10 +427,20 @@ nx_result nx_gsub_apply(const nx_font *font, uint32_t script_tag,
             result = NX_ERROR_ARGUMENT; goto done;
         }
         result = nx_gsub_apply_lookup(table, lookup, metrics.glyph_count,
-                                      glyphs, inout_count, &work_remaining);
+                                      glyphs,state,inout_count,&gdef,&work_remaining);
         if (result != NX_OK) goto done;
     }
 done:
     free(active);
     return result;
+}
+
+nx_result nx_gsub_apply(const nx_font *font,uint32_t script,nx_shaped_glyph *glyphs,size_t *count) {
+    if (!font || !count || (*count && !glyphs)) return NX_ERROR_ARGUMENT;
+    if (*count>SIZE_MAX/sizeof(nx_ot_glyph_state)) return NX_ERROR_LIMIT;
+    nx_ot_glyph_state *state=*count?calloc(*count,sizeof(*state)):NULL;
+    if (*count && !state) return NX_ERROR_MEMORY;
+    for (size_t i=0;i<*count;++i) { nx_ot_state_init(&glyphs[i],&state[i]); state[i].origin=i+1u; }
+    nx_result result=nx_gsub_apply_state(font,script,glyphs,state,count);
+    free(state); return result;
 }

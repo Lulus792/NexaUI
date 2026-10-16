@@ -1,6 +1,7 @@
 #include "nexaui/nexaui.h"
 #include "unicode_data.h"
 #include "font_internal.h"
+#include "ot_layout.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -83,6 +84,7 @@ nx_result nx_shape_text(const nx_font_collection *collection,
     if (count > SIZE_MAX / sizeof(nx_shape_char) ||
         count > SIZE_MAX / sizeof(nx_shaped_glyph) ||
         count > SIZE_MAX / sizeof(nx_shape_run) ||
+        count > SIZE_MAX / sizeof(nx_ot_glyph_state) ||
         count > SIZE_MAX / sizeof(size_t)) return NX_ERROR_LIMIT;
     nx_shape_char *chars = count ? malloc(count * sizeof(*chars)) : NULL;
     uint8_t *levels = count ? malloc(count) : NULL;
@@ -90,10 +92,11 @@ nx_result nx_shape_text(const nx_font_collection *collection,
     nx_shaped_glyph *shaped = count ? malloc(count * sizeof(*shaped)) : NULL;
     nx_shape_run *built_runs = count ? malloc(count * sizeof(*built_runs)) : NULL;
     uint8_t *pair_mask = count ? calloc(count, 1u) : NULL;
+    nx_ot_glyph_state *ot = count ? calloc(count,sizeof(*ot)) : NULL;
     if (count && (!chars || !levels || !bidi_order || !shaped ||
-                  !built_runs || !pair_mask)) {
+                  !built_runs || !pair_mask || !ot)) {
         free(chars); free(levels); free(bidi_order); free(shaped);
-        free(built_runs); free(pair_mask);
+        free(built_runs); free(pair_mask); free(ot);
         return NX_ERROR_MEMORY;
     }
     size_t bidi_count = 0, bidi_visual = 0;
@@ -170,6 +173,7 @@ nx_result nx_shape_text(const nx_font_collection *collection,
             item.cluster_byte_start = cluster_byte;
             item.glyph_index = glyph_index;
             item.bidi_level = chars[i].level;
+            nx_ot_state_init(&item,&ot[glyph_count]);
             shaped[glyph_count++] = item;
         }
         first = end;
@@ -183,16 +187,18 @@ nx_result nx_shape_text(const nx_font_collection *collection,
                shaped[end].script_tag == shaped[start].script_tag &&
                shaped[end].bidi_level == shaped[start].bidi_level) ++end;
         size_t span_count = end - start;
-        result = nx_gsub_apply(shaped[start].font, shaped[start].script_tag,
-                               shaped + start, &span_count);
+        result = nx_gsub_apply_state(shaped[start].font, shaped[start].script_tag,
+                               shaped + start,ot + start, &span_count);
         if (result != NX_OK) goto done;
         if (span_count < end - start) {
             memmove(shaped + start + span_count, shaped + end,
                     (glyph_count - end) * sizeof(*shaped));
+            memmove(ot + start + span_count,ot + end,(glyph_count-end)*sizeof(*ot));
             glyph_count -= end - start - span_count;
         }
         start += span_count;
     }
+    size_t fallback_base=SIZE_MAX,fallback_cluster=SIZE_MAX;
     for (size_t i = 0; i < glyph_count; ++i) {
         nx_shaped_glyph *item = &shaped[i];
         size_t font_index = item->font_index;
@@ -204,20 +210,16 @@ nx_result nx_shape_text(const nx_font_collection *collection,
         (void)lsb;
         double scale = pixels_per_em / metrics[font_index].units_per_em;
         double advance = natural_advance * scale;
-        int mark = nx_shape_mark(nx_ucd_gc(item->scalar));
-        item->advance_x = mark ? 0.0 : advance;
-        if (mark) {
-            for (size_t prior = i; prior > 0; --prior) {
-                const nx_shaped_glyph *base = &shaped[prior - 1u];
-                if (base->cluster_byte_start != item->cluster_byte_start)
-                    break;
-                if (base->advance_x > 0.0) {
-                    item->offset_x = -base->advance_x +
-                                     (base->advance_x - advance) * 0.5;
-                    break;
-                }
-            }
+        int mark = ot[i].nonspacing && !ot[i].ligated;
+        if (item->cluster_byte_start!=fallback_cluster) {
+            fallback_cluster=item->cluster_byte_start; fallback_base=SIZE_MAX;
         }
+        item->advance_x = mark ? 0.0 : advance;
+        if (mark && fallback_base!=SIZE_MAX) {
+            double width=shaped[fallback_base].advance_x;
+            item->offset_x=((item->bidi_level&1u)?0.0:-width)+(width-advance)*0.5;
+        }
+        if (item->advance_x>0) fallback_base=i;
         if (!run_count || built_runs[run_count - 1u].font != item->font ||
             built_runs[run_count - 1u].script_tag != item->script_tag ||
             built_runs[run_count - 1u].bidi_level != item->bidi_level) {
@@ -228,8 +230,8 @@ nx_result nx_shape_text(const nx_font_collection *collection,
     }
     for (size_t r = 0; r < run_count; ++r) {
         nx_shape_run *run = &built_runs[r];
-        result = nx_gpos_apply(run->font, run->script_tag,
-                               shaped + run->glyph_start, run->glyph_count,
+        result = nx_gpos_apply_state(run->font, run->script_tag,
+                               shaped + run->glyph_start,ot + run->glyph_start,run->glyph_count,
                                pixels_per_em, pair_mask + run->glyph_start);
         if (result != NX_OK) goto done;
     }
@@ -248,6 +250,11 @@ nx_result nx_shape_text(const nx_font_collection *collection,
         if (result != NX_OK) goto done;
         prior->advance_x += kern * scale;
     }
+    for (size_t r=0;r<run_count;++r) {
+        nx_shape_run *run=&built_runs[r];
+        result=nx_ot_resolve(shaped+run->glyph_start,ot+run->glyph_start,run->glyph_count);
+        if (result!=NX_OK) goto done;
+    }
     if (glyph_capacity < glyph_count || run_capacity < run_count ||
         (glyph_count && !glyphs) || (run_count && !runs)) {
         *out_glyph_count = glyph_count;
@@ -263,6 +270,6 @@ nx_result nx_shape_text(const nx_font_collection *collection,
     *out_paragraph_level = paragraph;
 done:
     free(chars); free(levels); free(bidi_order); free(shaped);
-    free(built_runs); free(pair_mask);
+    free(built_runs); free(pair_mask); free(ot);
     return result;
 }

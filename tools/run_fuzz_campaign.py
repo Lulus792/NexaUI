@@ -13,7 +13,7 @@ import time
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGETS = {"sfnt": 512, "gsub": 512, "gpos": 512, "text": 512, "layout": 256}
+TARGETS = {"sfnt": 512, "gsub": 512, "gpos": 2048, "text": 512, "layout": 256}
 
 
 def digest(path):

@@ -157,7 +157,9 @@ int main(void) {
           glyphs[1].glyph_index == 4);
     fixture(bytes);
     put16(bytes + 400u + 58u + 26u + 2u, 8);
-    CHECK(shape(bytes, "fi", 2, glyphs, &count) == NX_OK);
+    /* IgnoreMarks now has an implemented filter. Its mandatory GDEF class
+       definition is absent here, so this selected lookup is malformed. */
+    CHECK(shape(bytes, "fi", 2, glyphs, &count) == NX_ERROR_ARGUMENT);
     CHECK(count == 2 && glyphs[0].glyph_index == 3);
     fixture(bytes);
     put16(bytes + 400u + 10u + 8u + 4u + 4u, 1); /* One active feature. */
