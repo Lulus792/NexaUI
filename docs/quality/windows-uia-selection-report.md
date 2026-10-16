@@ -16,7 +16,7 @@ Local Windows checks use Windows 11 build 26200, MSVC C17 19.38.33145.0, SDK 10.
 | Linux static Debug full suite | 101 passed, including native X11/Wayland Vulkan and NexaCloud examples |
 | Linux Clang ASan/UBSan/LeakSanitizer: semantics, widgets, controls, overlay | 4 passed; no sanitizer finding |
 
-The additional focus case was added after the full static suite and passed on all three static hosts; it is included in the full shared suite and sanitizer cases. The clipboard fixture skipped without modifying the user's contents. These finite sanitizer tests do not establish general COM/OS leak freedom or race freedom.
+The full-suite counts above record the initial selection implementation (`ebd8081`); the compact-window follow-up below adds a 98th registered Windows test. The additional focus case was added after the full static suite and passed on all three static hosts; it is included in the full shared suite and sanitizer cases. The clipboard fixture skipped without modifying the user's contents. These finite sanitizer tests do not establish general COM/OS leak freedom or race freedom.
 
 ## Portable model and native behavior
 
@@ -38,6 +38,12 @@ On the checked Windows runtime, retained pattern read access after context repla
 
 Navigation and file selection use the same portable model APIs on Windows, macOS and Linux. Native AX and AT-SPI transport are still pending. Existing headless and Linux native example checks pass; no claim of macOS AX, Linux AT-SPI or real screenreader operation follows from the Windows client.
 
+## Responsive-window client follow-up
+
+The first CI run of `ebd8081` passed both macOS builds, both Linux builds, Linux sanitizers and the three Windows UIA fixtures, but both Windows Server 2025 jobs failed the new NexaCloud preview expectation. A local 800 × 700 native window reproduced the same timeout: the client assumed the side inspector would always exist, whereas narrow NexaCloud layouts present details in a modal opened through the details command.
+
+The independent client now uses that exposed command when the side preview is absent, checks the preview, invokes Close and waits for the file's interaction scope to become enabled before continuing. It neither bypasses modality nor reaches into the application model. A mandatory `nexaui_nexacloud_uia_compact` case runs the same workflow with an 800 × 700 requested client size. The host logs its actual logical client size and scale so runner-dependent geometry remains visible. The corrected wide/compact pair passes in static and shared Debug and in both MSVC ASan configurations (two cases per configuration, no sanitizer finding). The original compact negative log is retained as `out/selection-compact-negative-test.log`; the passing static pair is in `out/selection-responsive-tests.log`; the shared and ASan pairs are in `out/selection-responsive-shared-tests.log` and `out/selection-responsive-build-msvc-asan-{static,shared}-tests.log`. Windows Release and Linux production builds with tests disabled also succeed.
+
 ## Reproduction and local evidence
 
 ```powershell
@@ -48,7 +54,7 @@ ctest --test-dir build-shared -C Debug --output-on-failure --parallel 4
 
 # Put the configured compiler's ASan runtime directory on PATH first.
 cmake --build build-msvc-asan-static --config RelWithDebInfo --parallel 4
-ctest --test-dir build-msvc-asan-static -C RelWithDebInfo -R '^nexaui_(uia.*|semantics|nexacloud_uia)$' --output-on-failure
+ctest --test-dir build-msvc-asan-static -C RelWithDebInfo -R '^nexaui_(uia.*|semantics|nexacloud_uia.*)$' --output-on-failure
 # Repeat for build-msvc-asan-shared.
 ```
 

@@ -9,6 +9,8 @@ static void uia_client_log(HANDLE pipe) {
 }
 static int uia_smoke(nx_window *window,cloud_scene *scene,nx_renderer_driver *renderer,const char *client_path) {
     if (!frame(window,scene,renderer)) return 0;
+    nx_window_info info; if (nx_window_get_info(window,&info)!=NX_OK) return 0;
+    fprintf(stderr,"NexaCloud UIA logical client %.0fx%.0f scale %.2f\n",info.width,info.height,info.scale);
     WCHAR client[2048],command[4096];
     /* main's CRT argv is in the Windows process code page. */
     if (!MultiByteToWideChar(CP_ACP,0,client_path,-1,client,2048) ||

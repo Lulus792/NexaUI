@@ -88,7 +88,10 @@ if(NEXAUI_BUILD_TESTS)
                 add_dependencies(nexaui_nexacloud_native nexaui_uia_client)
                 add_test(NAME nexaui_nexacloud_uia COMMAND nexaui_nexacloud_native
                     --uia-smoke "${_cloud_font}" $<TARGET_FILE:nexaui_uia_client>)
-                set_tests_properties(nexaui_nexacloud_uia PROPERTIES TIMEOUT 120 RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_nexacloud_uia_compact COMMAND nexaui_nexacloud_native
+                    --uia-smoke-compact "${_cloud_font}" $<TARGET_FILE:nexaui_uia_client>)
+                set_tests_properties(nexaui_nexacloud_uia nexaui_nexacloud_uia_compact PROPERTIES
+                    TIMEOUT 120 RESOURCE_LOCK native_display)
             endif()
         endif()
         if(TARGET nexaui_renderer_metal)

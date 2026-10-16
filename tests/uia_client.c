@@ -408,13 +408,42 @@ static int cloud_select(IUIAutomation *uia,IUIAutomationElement *root,unsigned i
     HRESULT hr=remove ? IUIAutomationSelectionItemPattern_RemoveFromSelection(pattern) : IUIAutomationSelectionItemPattern_Select(pattern);
     IUIAutomationSelectionItemPattern_Release(pattern); IUIAutomationElement_Release(e); CHECK(SUCCEEDED(hr)); return 0;
 }
+/* Narrow windows present details in a modal instead of the side inspector.
+   Use the same exposed commands as a user, then wait for the modal to close
+   before selecting another file outside its interaction scope. */
+static int cloud_preview(IUIAutomation *uia,IUIAutomationElement *root,unsigned id,const WCHAR *name) {
+    CHECK(cloud_wait(uia,root,219,id,NULL)==0);
+    IUIAutomationElement *image=find(uia,root,302);
+    if (image) IUIAutomationElement_Release(image);
+    else {
+        IUIAutomationElement *details=find(uia,root,203); CHECK(details);
+        int opened=invoke(details,1); IUIAutomationElement_Release(details); CHECK(opened);
+        puts("NexaCloud UIA opens responsive details dialog");
+    }
+    CHECK(cloud_wait(uia,root,219,id,name)==0);
+    IUIAutomationElement *close=find(uia,root,502);
+    if (!close) return 0;
+    int closed_dialog=invoke(close,1); IUIAutomationElement_Release(close); CHECK(closed_dialog);
+    ULONGLONG end=GetTickCount64()+15000;
+    do {
+        close=find(uia,root,502);
+        if (!close) {
+            IUIAutomationElement *item=find(uia,root,id); BOOL enabled=FALSE;
+            HRESULT hr=item ? IUIAutomationElement_get_CurrentIsEnabled(item,&enabled) : E_FAIL;
+            if (item) IUIAutomationElement_Release(item);
+            if (SUCCEEDED(hr) && enabled) return 0;
+        } else IUIAutomationElement_Release(close);
+        Sleep(20);
+    } while (GetTickCount64()<end);
+    fputs("NexaCloud UIA details dialog did not release the file interaction scope\n",stderr); return 1;
+}
 static int cloud_probe(HWND hwnd) {
     OK(CoInitializeEx(NULL,COINIT_MULTITHREADED)); IUIAutomation *uia=NULL; IUIAutomationElement *root=NULL;
     OK(CoCreateInstance(&CLSID_CUIAutomation,NULL,CLSCTX_INPROC_SERVER,&IID_IUIAutomation,(void **)&uia));
     OK(IUIAutomation_ElementFromHandle(uia,hwnd,&root)); CHECK(root);
     CHECK(cloud_select(uia,root,11,0)==0);
-    CHECK(cloud_wait(uia,root,37,11,NULL)==0 && cloud_wait(uia,root,219,1000,L"Bergsee.jpg")==0);
-    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_wait(uia,root,219,1001,L"Wald.png")==0);
+    CHECK(cloud_wait(uia,root,37,11,NULL)==0 && cloud_preview(uia,root,1000,L"Bergsee.jpg")==0);
+    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_preview(uia,root,1001,L"Wald.png")==0);
     IUIAutomationElement *old_file=find(uia,root,1001); CHECK(old_file);
     CHECK(cloud_select(uia,root,1001,1)==0 && cloud_wait(uia,root,219,0,NULL)==0);
     CHECK(cloud_select(uia,root,10,0)==0 && cloud_wait(uia,root,37,10,NULL)==0);
@@ -422,7 +451,7 @@ static int cloud_probe(HWND hwnd) {
     while (!unavailable(old_file) && GetTickCount64()<end) Sleep(20);
     CHECK(unavailable(old_file)); IUIAutomationElement_Release(old_file);
     CHECK(cloud_select(uia,root,11,0)==0 && cloud_wait(uia,root,37,11,NULL)==0);
-    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_wait(uia,root,219,1001,L"Wald.png")==0);
+    CHECK(cloud_select(uia,root,1001,0)==0 && cloud_preview(uia,root,1001,L"Wald.png")==0);
     IUIAutomationElement_Release(root); IUIAutomation_Release(uia); CoUninitialize();
     puts("Independent native NexaCloud UIA navigation/file/clear/reopen workflow passed"); return 0;
 }

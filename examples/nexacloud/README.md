@@ -186,3 +186,5 @@ Physical 4K/HiDPI display behavior and native UIA/AX/AT-SPI screenreader tasks
 remain open. See the [NexaCloud delivery plan](../../docs/nexacloud.md).
 
 The Windows runner now exposes explicit single-selection containers for navigation and files. The independent `nexaui_nexacloud_uia` client changes pages, selects a file, verifies the real inspector preview name, clears selection and reopens the file view while checking an old handle remains unavailable. Selection updates use the application model before layout rather than synthetic clicks. This automated UIA workflow is not a complete screenreader acceptance test.
+
+The Windows UIA workflow also runs as `nexaui_nexacloud_uia_compact` at 800 × 700. The independent client opens the responsive details dialog through the exposed command, verifies the file preview, closes the dialog and waits for the file controls to become enabled before continuing.

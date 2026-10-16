@@ -100,7 +100,8 @@ static int smoke(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
 #endif
 
 int main(int argc, char **argv) {
-    int uia_testing = argc == 4 && strcmp(argv[1], "--uia-smoke") == 0;
+    int compact_uia = argc == 4 && strcmp(argv[1], "--uia-smoke-compact") == 0;
+    int uia_testing = compact_uia || (argc == 4 && strcmp(argv[1], "--uia-smoke") == 0);
     int testing = uia_testing || (argc == 4 && strcmp(argv[1], "--smoke") == 0);
     if (argc != 2 && !testing) {
         fputs("usage: nexaui_nexacloud_native FONT.ttf | --smoke FONT.ttf OUTPUT_PREFIX\n", stderr); return 2;
@@ -108,7 +109,7 @@ int main(int argc, char **argv) {
     cloud_scene *scene = cloud_create(argv[testing ? 2 : 1]);
     nx_window *window = NULL; nx_renderer_driver renderer = {0};
     nx_window_desc desc = {0}; desc.title_utf8 = "NexaCloud — NexaUI";
-    desc.width = 1440; desc.height = 1040; desc.flags = testing ? NX_WINDOW_HIDDEN : 0;
+    desc.width = compact_uia ? 800.0f : 1440.0f; desc.height = compact_uia ? 700.0f : 1040.0f; desc.flags = testing ? NX_WINDOW_HIDDEN : 0;
     int okay = scene && nx_window_create(&desc, &window) == NX_OK &&
         nx_d3d12_driver_open(window, &renderer) == NX_OK;
     if (okay) cloud_set_window(scene, window);
