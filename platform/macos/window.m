@@ -187,6 +187,9 @@ static uint32_t nx_mac_selector_command(SEL selector) {
         {"moveWordLeft",NX_TEXT_COMMAND_MOVE_WORD_LEFT},{"moveWordRight",NX_TEXT_COMMAND_MOVE_WORD_RIGHT},
         {"moveUp",NX_TEXT_COMMAND_MOVE_UP},{"moveDown",NX_TEXT_COMMAND_MOVE_DOWN},
         {"pageUp",NX_TEXT_COMMAND_PAGE_UP},{"pageDown",NX_TEXT_COMMAND_PAGE_DOWN},
+        {"scrollPageUp",NX_TEXT_COMMAND_PAGE_UP},{"scrollPageDown",NX_TEXT_COMMAND_PAGE_DOWN},
+        {"scrollLineUp",NX_TEXT_COMMAND_SCROLL_LINE_UP},{"scrollLineDown",NX_TEXT_COMMAND_SCROLL_LINE_DOWN},
+        {"scrollToBeginningOfDocument",NX_TEXT_COMMAND_SCROLL_DOCUMENT_START},{"scrollToEndOfDocument",NX_TEXT_COMMAND_SCROLL_DOCUMENT_END},
         {"moveToBeginningOfLine",NX_TEXT_COMMAND_LINE_START},{"moveToEndOfLine",NX_TEXT_COMMAND_LINE_END},
         {"moveToLeftEndOfLine",NX_TEXT_COMMAND_LINE_LEFT},{"moveToRightEndOfLine",NX_TEXT_COMMAND_LINE_RIGHT},
         {"moveToBeginningOfParagraph",NX_TEXT_COMMAND_PARAGRAPH_START},{"moveToEndOfParagraph",NX_TEXT_COMMAND_PARAGRAPH_END},
@@ -372,7 +375,9 @@ static void nx_mac_command(nx_window *w,uint32_t command) {
 - (void)doCommandBySelector:(SEL)selector {
     if (!owner || !pthread_main_np()) return;
     uint32_t command=nx_mac_selector_command(selector);
-    if (!command) { [super doCommandBySelector:selector]; return; }
+    /* NSTextInputClient explicitly forbids forwarding unknown text commands,
+       unlike the general NSResponder implementation of this method. */
+    if (!command) return;
     if (!owner->ime_enabled) return; /* Non-editor widgets use their physical keys. */
     if ([marked length]) {
         if (command==NX_TEXT_COMMAND_CANCEL || command==NX_TEXT_COMMAND_UNDO) { nx_mac_discard(owner); return; }

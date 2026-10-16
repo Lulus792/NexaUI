@@ -249,9 +249,12 @@ typedef enum nx_text_command {
     NX_TEXT_COMMAND_TAB, NX_TEXT_COMMAND_BACKTAB, NX_TEXT_COMMAND_CANCEL,
     NX_TEXT_COMMAND_COPY, NX_TEXT_COMMAND_CUT, NX_TEXT_COMMAND_PASTE,
     NX_TEXT_COMMAND_UNDO, NX_TEXT_COMMAND_REDO,
+    NX_TEXT_COMMAND_SCROLL_LINE_UP, NX_TEXT_COMMAND_SCROLL_LINE_DOWN,
+    NX_TEXT_COMMAND_SCROLL_DOCUMENT_START, NX_TEXT_COMMAND_SCROLL_DOCUMENT_END,
+    NX_TEXT_COMMAND_MOVE_PAGE_UP, NX_TEXT_COMMAND_MOVE_PAGE_DOWN,
     NX_TEXT_COMMAND_COUNT
 } nx_text_command;
-/* Only movement commands accept this flag. It expresses the selector's
+/* Only movement and page commands accept this flag. It expresses the selector's
    selection behavior independently of the physical Shift modifier. */
 #define NX_TEXT_COMMAND_EXTEND_SELECTION UINT32_C(0x80000000)
 

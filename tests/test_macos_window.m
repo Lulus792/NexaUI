@@ -155,6 +155,8 @@ static int test_native_commands(nx_window *w) {
     id<NSTextInputClient> client=(id<NSTextInputClient>)view;
     CHECK(nx_window_set_ime_enabled(w,1)==NX_OK && drain(w)==0);
     CHECK([native makeFirstResponder:view]);
+    nx_text_buffer *model=NULL; int handled=0; size_t anchor=0,cursor=0;
+    CHECK(nx_text_buffer_create("first\nsecond",12,4096,&model)==NX_OK);
     /* Model an input method that consumes the key without returning an editor
        action. The original real NXMacView keyDown implementation still runs. */
     Class original=object_getClass(view),consuming=objc_allocateClassPair(original,"NXIMEConsumerProbe",0);
@@ -169,6 +171,8 @@ static int test_native_commands(nx_window *w) {
     nx_event event; int available=0;
     CHECK(nx_window_next_event(w,&event,&available)==NX_OK && available &&
         event.type==NX_EVENT_KEY_DOWN_CONSUMED && event.key==NX_KEY_LEFT);
+    CHECK(nx_text_buffer_apply_event(model,&event,&handled)==NX_OK && !handled);
+    CHECK(nx_text_buffer_selection(model,&anchor,&cursor)==NX_OK && anchor==12 && cursor==12);
     CHECK(nx_window_next_event(w,&event,&available)==NX_OK && !available);
     [client doCommandBySelector:@selector(moveWordLeftAndModifySelection:)];
     CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 &&
@@ -185,7 +189,7 @@ static int test_native_commands(nx_window *w) {
     NSResponder *prior=[[view nextResponder] retain]; [view setNextResponder:sink];
     @try { [client doCommandBySelector:@selector(nexaProbeHostAction:)]; }
     @finally { [view setNextResponder:prior]; [prior release]; }
-    CHECK(sink->received==1);
+    CHECK(sink->received==0); /* NSTextInputClient consumes unsupported commands locally. */
     /* Exercise AppKit's actual key-binding interpreter as well as direct
        selector callbacks. This is not an installed/physical IME acceptance. */
     NSEvent *end=[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:NSEventModifierFlagControl timestamp:0
@@ -193,12 +197,21 @@ static int test_native_commands(nx_window *w) {
     CHECK(drain(w)==0); [view keyDown:end];
     CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 &&
         (event.text_command==NX_TEXT_COMMAND_LINE_END || event.text_command==NX_TEXT_COMMAND_PARAGRAPH_END) && event.modifiers==NX_MOD_CONTROL);
+    CHECK(nx_text_buffer_set_selection(model,0,0)==NX_OK);
+    CHECK(nx_text_buffer_apply_event(model,&event,&handled)==NX_OK && handled);
+    CHECK(nx_text_buffer_selection(model,&anchor,&cursor)==NX_OK && anchor==5 && cursor==5);
+    [client doCommandBySelector:@selector(deleteWordBackward:)];
+    CHECK(find(w,NX_EVENT_TEXT_COMMAND,&event)==0 && event.text_command==NX_TEXT_COMMAND_DELETE_WORD_BACKWARD);
+    CHECK(nx_text_buffer_apply_event(model,&event,&handled)==NX_OK && handled);
+    const char *bytes=NULL; size_t length=0;
+    CHECK(nx_text_buffer_text(model,&bytes,&length)==NX_OK && length==7 && !memcmp(bytes,"\nsecond",7));
     [client setMarkedText:@"candidate" selectedRange:NSMakeRange(9,0) replacementRange:NSMakeRange(NSNotFound,0)];
     CHECK(drain(w)==0); [client doCommandBySelector:@selector(cancelOperation:)];
     CHECK(![client hasMarkedText]);
     while (nx_window_next_event(w,&event,&available)==NX_OK && available)
         CHECK(event.type!=NX_EVENT_TEXT && event.type!=NX_EVENT_TEXT_COMMAND);
     CHECK(nx_window_set_ime_enabled(w,0)==NX_OK && drain(w)==0);
+    nx_text_buffer_destroy(model);
     return 0;
 }
 int main(void) {

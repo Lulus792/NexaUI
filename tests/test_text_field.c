@@ -493,6 +493,14 @@ static int command_frame(nx_context *ctx,nx_text_field_desc *desc,nx_text_field 
     return nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,120,0)==NX_OK &&
         nx_text_field_widget(ctx,desc,field,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK;
 }
+static int physical_key_frame(nx_context *ctx,nx_text_field_desc *desc,nx_text_field *field,nx_key key,uint32_t modifiers) {
+    nx_event event={0}; event.type=NX_EVENT_KEY_DOWN; event.key=key; event.modifiers=modifiers;
+    nx_interaction_state state; int valid=0,submitted=0;
+    if (nx_context_queue_event(ctx,&event)!=NX_OK) return 0;
+    event.type=NX_EVENT_KEY_UP;
+    return nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,120,0)==NX_OK &&
+        nx_text_field_widget(ctx,desc,field,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
 static int field_caret(nx_context *ctx,float *x,float *y) {
     const nx_command *commands=NULL; size_t count=0;
     if (nx_frame_commands(ctx,&commands,&count)!=NX_OK) return 0;
@@ -500,6 +508,12 @@ static int field_caret(nx_context *ctx,float *x,float *y) {
         *x=commands[i].points[0].x; *y=commands[i].points[0].y; return 1;
     }
     return 0;
+}
+static int field_pixel_red(nx_context *ctx,unsigned x,unsigned y) {
+    const nx_command *commands=NULL; size_t count=0; uint8_t pixels[200*120*4];
+    if (nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
+        nx_headless_render(commands,count,pixels,200,120,200*4,(nx_color){0,0,0,1})!=NX_OK) return -1;
+    return pixels[(y*200+x)*4];
 }
 static int test_native_text_commands(nx_font_collection *fonts) {
     nx_context *ctx=NULL; nx_text_field *field=NULL;
@@ -525,6 +539,8 @@ static int test_native_text_commands(nx_font_collection *fonts) {
     float x=0,y=0; CHECK(field_caret(ctx,&x,&y) && x==16);
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_LEFT));
     CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(physical_key_frame(ctx,&desc,field,NX_KEY_RIGHT,0));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==2);
     CHECK(nx_text_field_set_text(field,"1\xd7\x90\xd7\x91" "1",6)==NX_OK);
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
     float previous_x=4;
@@ -555,6 +571,33 @@ static int test_native_text_commands(nx_font_collection *fonts) {
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DELETE_LINE_START) && expect_text(field,"1 1 "));
     CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_UNDO) && expect_text(field,"1 1 1"));
     CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==5 && cursor==5);
+    CHECK(nx_text_field_set_text(field,"1\n1\n1\n1\n1\n1",11)==NX_OK);
+    desc.bounds.height=40;
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
+    CHECK(field_caret(ctx,&x,&y) && y==4);
+    /* A one-pixel line centered at logical x=4 covers pixel column 3 under
+       the renderer's half-open pixel-center convention. */
+    int caret_red=field_pixel_red(ctx,3,5); CHECK(caret_red>0);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_PAGE_DOWN));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==0 && cursor==0);
+    CHECK(field_caret(ctx,&x,&y) && y<0); /* Recorded line is now outside the viewport clip. */
+    int clipped_red=field_pixel_red(ctx,3,5);
+    CHECK(clipped_red>=0 && clipped_red<caret_red);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_PAGE_UP));
+    CHECK(field_caret(ctx,&x,&y) && y==4);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_MOVE_PAGE_DOWN));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==4 && cursor==4);
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
+    CHECK(physical_key_frame(ctx,&desc,field,NX_KEY_PAGE_DOWN,0));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK);
+#if defined(__APPLE__)
+    CHECK(anchor==0 && cursor==0); /* Native Mac page key scrolls the viewport. */
+#else
+    CHECK(anchor==4 && cursor==4); /* Default PC editor page key moves the caret. */
+#endif
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_DOCUMENT_START));
+    CHECK(command_frame(ctx,&desc,field,NX_TEXT_COMMAND_PAGE_DOWN|NX_TEXT_COMMAND_EXTEND_SELECTION));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==0 && cursor==4);
     test_clipboard clipboard={0}; desc.multiline=0; desc.bounds.width=80;
     desc.clipboard=(nx_text_clipboard){&clipboard,read_clipboard,write_clipboard};
     CHECK(nx_text_field_set_text(field,"15",2)==NX_OK);

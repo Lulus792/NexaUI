@@ -274,6 +274,8 @@ static int test_consumed_key_and_text_command(void) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
     event.text_command=NX_TEXT_COMMAND_NONE;
     CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.text_command=NX_TEXT_COMMAND_SCROLL_DOCUMENT_START|NX_TEXT_COMMAND_EXTEND_SELECTION;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
     event.text_command=NX_TEXT_COMMAND_COPY; event.ime_target=1;
     CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
     CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK && nx_focus_id(ctx)==1);
