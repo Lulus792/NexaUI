@@ -97,3 +97,57 @@ Alpine runtime allocation; leak checks remained enabled for the twelve CTests.
 The [campaign receipt](gpos-marks-fuzz.json) retains the exact executable and
 starting-seed hashes. The reviewed test font is synthetic; real-font corpus
 comparison and complex-script conformance remain open.
+
+## Real-font counterexample and follow-up
+
+The initial implementation commit `e0ef31d240dc6135df450ed75b1ac07509898f8e`
+passed all seven required [CI jobs](https://github.com/Lulus792/NexaUI/actions/runs/38929524230):
+Windows static/shared each executed 99 passing tests; macOS static/shared each
+executed 86; Linux static/shared and Clang sanitizer each executed 100 passing
+tests and skipped seven Wayland cases without a compositor. The new mark test
+ran in every job. These synthetic tests still missed a real-font compatibility
+case.
+
+A separate public-API probe rejected Calibri Latin text and Arial/Segoe UI
+Hebrew text. Instrumenting the failing return isolated an existing `GSUB`
+validation check requiring at least two ligature components. These fonts use
+one-component Ligature tables, reached through the newly supported extensions.
+The [GSUB table specification](https://learn.microsoft.com/en-us/typography/opentype/spec/gsub)
+counts the first component and stores `componentCount - 1` following glyphs.
+The corrected path accepts one component as a replacement and preserves its
+private provenance and nonspacing state. Zero components remain an error.
+The added synthetic case failed before this correction and passed afterward;
+it also checks that replacement of a nonspacing mark keeps zero advance.
+
+`nexaui_font_mark_probe` runs four fixed samples on a user-supplied font without
+adding a system-font requirement to CTest. The optional
+`tools/check_font_mark_anchors.py` uses FontTools to independently read the
+active MarkBase anchors for its two-glyph Latin and Hebrew samples at 32 ppem.
+All twelve shaping probes succeeded for Arial 7.06, Segoe UI 5.72 and Calibri
+6.27. All six independently calculated anchor pairs matched:
+
+| Font | Latin A + acute: X/Y offset | Hebrew alef + sheva: X/Y offset |
+| --- | --- | --- |
+| Arial 7.06 | -6.734375 / 0.140625 | 7.65625 / 0 |
+| Segoe UI 5.72 | -14.75 / 6.25 | 8.65625 / 0 |
+| Calibri 6.27 | -1.421875 / 4.546875 | 7.4375 / 0 |
+
+The [real-font receipt](gpos-real-fonts.json) records font hashes, FontTools
+4.67.0, probe output and both expected/actual coordinates. Font files are not
+redistributed. The comparison is limited to an unshifted base with natural
+advance and one nonspacing mark; it is not a full reference shaper. Stacked
+and ligature-sequence outputs in this probe are smoke checks. Reproduce in a
+diagnostic Python environment with optional FontTools installed:
+
+```sh
+cmake --build BUILD_DIR --target nexaui_font_mark_probe
+python tools/check_font_mark_anchors.py --probe BUILD_DIR/nexaui_font_mark_probe --output out/font-marks.json FONT1.ttf FONT2.ttf
+```
+
+After the unary correction, the twelve targeted tests passed again in the
+Windows shared build and the Linux ASan/UBSan/LeakSanitizer build. A fresh
+combined-table fuzz run used eight starting seeds, including the unary case,
+50,000 runs, seed 181016, maximum length 2048 and the same sanitizer settings.
+It exited 0 after 18.745 seconds with 1,859 coverage counters and no ASan/UBSan
+finding; the [follow-up receipt](gpos-unary-fuzz.json) retains exact hashes.
+LeakSanitizer was disabled only for the libFuzzer process, as above.

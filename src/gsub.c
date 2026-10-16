@@ -184,7 +184,7 @@ static nx_result nx_gsub_validate_subtable(nx_gsub_table table, size_t offset,
                                    nx_gsub_u16(table.data + set + 2u + 2u * l),
                                    4u, &lig)) return NX_ERROR_ARGUMENT;
                 uint16_t components = nx_gsub_u16(table.data + lig + 2u);
-                if (components < 2u || components > 32u ||
+                if (components < 1u || components > 32u ||
                     nx_gsub_u16(table.data + lig) >= glyph_limit ||
                     !nx_gsub_array(table, lig, 4u, components - 1u, 2u))
                     return NX_ERROR_ARGUMENT;
@@ -268,6 +268,14 @@ static nx_result nx_gsub_apply_lookup(nx_gsub_table table,size_t lookup,uint16_t
                         indices[c]=cursor;
                     }
                     if (c!=components) continue;
+                    /* A one-component Ligature table is used by real fonts
+                       for replacement, including marks. It must not invent a
+                       new ligature owner or change a nonspacing advance. */
+                    if (components==1u) {
+                        glyphs[i].glyph_index=nx_gsub_u16(table.data+lig);
+                        glyphs[write]=glyphs[i]; state[write++]=state[i];
+                        applied=1; break;
+                    }
                     nx_ot_glyph_state old[32]; uint32_t starts[32],total=0;
                     for (c=0;c<components;++c) {
                         old[c]=state[indices[c]]; starts[c]=total;

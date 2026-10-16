@@ -1,0 +1,40 @@
+{
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-musl1",
+  "runs": 50000,
+  "seed": 181016,
+  "wall_timeout_seconds": 180,
+  "targets": [
+    {
+      "name": "gpos",
+      "command": [
+        "out/vulkan-sanitize/nexaui_gpos_fuzz",
+        "out/gpos-unary-fuzz-20261016/gpos/corpus",
+        "-seed=181016",
+        "-runs=50000",
+        "-max_len=2048",
+        "-timeout=10",
+        "-artifact_prefix=out/gpos-unary-fuzz-20261016/gpos/artifacts/"
+      ],
+      "executable_sha256": "8e07442e737b7ffe99eede3a563e0aaedc7159c7c03d7ac968ff9eae5627125a",
+      "initial_seed_sha256": {
+        "basic.bin": "3e016b11a22f1261fabb3067d8dc6bc71d3215096a89931de25c5c34e936ba4f",
+        "mark-base.bin": "bb09b53bbacb645f873b413e7b9afc326dcad8d6e1547dbf5688af20e35d96e1",
+        "mark-device.bin": "45136503534d7f428358f73accccb3581e2f2e2ccb6edf290ac0e047d5f505fa",
+        "mark-extension.bin": "a412dd1143c16ed53df7a4dfdbc14006b3e225392a832acde0c6ea017d057a59",
+        "mark-filter-pair.bin": "637f67d4a9fad899c6d3b787ef6bf676de31fda9a070c51af2dde319df0b63a6",
+        "mark-nested-ligature.bin": "0c3c70185e4c99e6421a55de4123b408a16969f28a8dda5838e088e8018cea39",
+        "mark-stack.bin": "a61b0556c503eae7c0205db696144ba531e9a73b291869e01af87ef952e198d9",
+        "mark-unary-substitution.bin": "ad3fa3d7f86e656394dc4d21c90c830688c01d9e99a92cc6846c62a102a6d20b"
+      },
+      "exit_code": 0,
+      "elapsed_seconds": 18.745,
+      "final_coverage_counters": 1859,
+      "log": "out/gpos-unary-fuzz-20261016/gpos/fuzzer.log",
+      "artifacts": "out/gpos-unary-fuzz-20261016/gpos/artifacts"
+    }
+  ],
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=0",
+    "UBSAN_OPTIONS": "halt_on_error=1"
+  }
+}

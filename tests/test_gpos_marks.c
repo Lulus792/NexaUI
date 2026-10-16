@@ -205,6 +205,14 @@ static int table_edges(void) {
     memcpy(s+400,s+200,32); p32(f.bytes+120,432);
     CHECK(shape(&f,"f\xcc\x81i",NX_BIDI_LTR,20,glyphs,16,&count)==NX_OK && count==2 && glyphs[0].glyph_index==6);
     CHECK(close_to(glyphs[1].offset_x,-17));
+    init(&f); base(&f); gdef(&f); ligature_substitution(&f,0);
+    /* Real fonts also use one-component Ligature tables as substitutions.
+       A mark stays nonspacing and keeps its attachment provenance. */
+    s=f.bytes+3072; p16(s+208,1); p16(s+214,10); p16(s+216,1); p16(s+230,7);
+    CHECK(shape(&f,"A\xcc\x81",NX_BIDI_LTR,20,glyphs,16,&count)==NX_OK && count==2);
+    CHECK(glyphs[1].glyph_index==10 && glyphs[1].advance_x==0);
+    p16(s+216,0);
+    CHECK(shape(&f,"A\xcc\x81",NX_BIDI_LTR,20,glyphs,16,&count)==NX_ERROR_ARGUMENT);
     init(&f); base(&f);
     for (size_t n=0;n<f.used;++n) {
         p32(f.bytes+104,(uint32_t)n); memset(glyphs,0x5a,sizeof(glyphs)); memcpy(unchanged,glyphs,sizeof(glyphs));
@@ -286,6 +294,9 @@ static int seeds(const char *directory) {
     CHECK(seed(&f,directory,"mark-filter-pair",114,0)==0);
     init(&f); base(&f); gdef(&f); ligature_position(&f); ligature_substitution(&f,1); mkmk(&f,0,0);
     CHECK(seed(&f,directory,"mark-nested-ligature",114,400)==0);
+    init(&f); base(&f); gdef(&f); ligature_substitution(&f,0);
+    uint8_t *s=f.bytes+3072; p16(s+208,1); p16(s+214,10); p16(s+216,1); p16(s+230,7);
+    CHECK(seed(&f,directory,"mark-unary-substitution",114,400)==0);
     init(&f); base(&f); uint8_t *g=f.bytes+1024;
     p16(g+240,100); anchor(g,338,400,700); p16(g+338,3); p16(g+344,10); p16(g+346,18);
     p16(g+348,20); p16(g+350,20); p16(g+352,1); p16(g+354,0x4000);

@@ -9,7 +9,7 @@ target exercises UTF-8 validation, grapheme and word boundaries, line breaks,
 selection, navigation, edits and undo/redo. Invalid UTF-8 is also fed to the
 validator.
 
-The GPOS corpus also includes six `NXP2` seeds generated from the public-API
+The GPOS corpus also includes seven `NXP2` seeds generated from the public-API
 mark tests: after building tests, run `nexaui_gpos_mark_tests --write-seeds
 fuzz/corpus/gpos` (use the executable's build directory). The target accepts
 legacy raw GPOS or a 16-byte `NXP2` header containing big-endian GPOS/GDEF/GSUB
