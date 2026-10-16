@@ -20,6 +20,7 @@ typedef struct editor_app {
     nx_text_layout *notes_label;
     int project_valid, project_submitted;
     int notes_valid, notes_submitted;
+    double text_scale;
 } editor_app;
 
 static nx_utf8_span span(const char *text) {
@@ -88,7 +89,7 @@ static nx_result draw_frame(editor_app *app) {
     result = nx_group(app->ui, &panel);
     if (result != NX_OK) return result;
     result = nx_draw_text_layout(app->ui, app->project_label,
-        (nx_point){44, 84}, text, GLYPH_CACHE);
+        (nx_point){44, (float)(103-16*app->text_scale)}, text, GLYPH_CACHE);
     if (result != NX_OK) return result;
     nx_text_field_desc project = {0};
     project.id = 101;
@@ -96,7 +97,7 @@ static nx_result draw_frame(editor_app *app) {
     project.bounds = (nx_rect){44, 113, 592, 42};
     project.name = span("Project name");
     project.fonts = app->fonts;
-    project.pixels_per_em = 18;
+    project.pixels_per_em = 18*app->text_scale;
     project.glyph_cache_bytes = GLYPH_CACHE;
     project.validate = validate_project;
     nx_interaction_state state;
@@ -105,7 +106,7 @@ static nx_result draw_frame(editor_app *app) {
                                   &app->project_submitted);
     if (result != NX_OK) return result;
     result = nx_draw_text_layout(app->ui, app->notes_label,
-        (nx_point){44, 178}, text, GLYPH_CACHE);
+        (nx_point){44, (float)(197-16*app->text_scale)}, text, GLYPH_CACHE);
     if (result != NX_OK) return result;
     nx_text_field_desc notes = {0};
     notes.id = 102;
@@ -113,7 +114,7 @@ static nx_result draw_frame(editor_app *app) {
     notes.bounds = (nx_rect){44, 207, 592, 148};
     notes.name = span("Notes");
     notes.fonts = app->fonts;
-    notes.pixels_per_em = 18;
+    notes.pixels_per_em = 18*app->text_scale;
     notes.glyph_cache_bytes = GLYPH_CACHE;
     notes.multiline = 1;
     result = nx_text_field_widget(app->ui, &notes, app->notes, &state,
@@ -162,28 +163,66 @@ done:
     return okay;
 }
 
+static int select_notes_by_pointer(editor_app *app) {
+    nx_utf8_span text; nx_text_layout *layout=NULL;
+    if (nx_text_field_text(app->notes,&text)!=NX_OK ||
+        nx_text_layout_create(app->fonts,text.data,text.length,NX_BIDI_LTR,
+            18*app->text_scale,584,&layout)!=NX_OK) return 0;
+    nx_text_caret first={0},last={0}; int have_first=0,have_last=0;
+    for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
+        nx_text_caret c;
+        if (nx_text_layout_caret_at(layout,i,&c)!=NX_OK) { nx_text_layout_destroy(layout); return 0; }
+        if (!c.byte_offset) { first=c; have_first=1; }
+        if (c.byte_offset==text.length) { last=c; have_last=1; }
+    }
+    nx_text_layout_destroy(layout);
+    if (!have_first || !have_last) return 0;
+    nx_event e={0}; e.type=NX_EVENT_POINTER_DOWN; e.button=NX_BUTTON_LEFT;
+    e.x=(float)(48+first.x); e.y=(float)(211+first.top+first.height*.5);
+    if (nx_context_queue_event(app->ui,&e)!=NX_OK) return 0;
+    e.type=NX_EVENT_POINTER_MOVE; e.button=0;
+    e.x=(float)(48+last.x); e.y=(float)(211+last.top+last.height*.5);
+    if (nx_context_queue_event(app->ui,&e)!=NX_OK) return 0;
+    e.type=NX_EVENT_POINTER_UP; e.button=NX_BUTTON_LEFT;
+    if (nx_context_queue_event(app->ui,&e)!=NX_OK || draw_frame(app)!=NX_OK) return 0;
+    size_t anchor=0,cursor=0;
+    return nx_text_field_selection(app->notes,&anchor,&cursor)==NX_OK && anchor==0 && cursor==text.length;
+}
+
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        fprintf(stderr, "usage: nexaui_text_editing_example FONT_FILE OUTPUT.ppm\n");
+    if (argc < 3 || argc > 5) {
+        fprintf(stderr, "usage: nexaui_text_editing_example FONT_FILE OUTPUT.ppm [light|dark|contrast] [1|1.5|2]\n");
         return 2;
     }
     int status = 1;
     uint8_t *font_bytes = NULL;
     nx_font *font = NULL;
     editor_app app = {0};
+    app.text_scale=1;
+    nx_theme_kind appearance=NX_THEME_LIGHT;
+    if (argc>3) {
+        if (!strcmp(argv[3],"dark")) appearance=NX_THEME_DARK;
+        else if (!strcmp(argv[3],"contrast")) appearance=NX_THEME_HIGH_CONTRAST;
+        else if (strcmp(argv[3],"light")) return 2;
+    }
+    if (argc>4) {
+        if (!strcmp(argv[4],"1.5")) app.text_scale=1.5;
+        else if (!strcmp(argv[4],"2")) app.text_scale=2;
+        else if (strcmp(argv[4],"1")) return 2;
+    }
     if (!load_font(argv[1], &font_bytes, &font, &app.fonts) ||
         nx_context_create(NULL, &app.ui) != NX_OK ||
         nx_text_field_create("A", 1, 4096, &app.project) != NX_OK ||
         nx_text_field_create("Plan\nReview", 11, 4096, &app.notes) != NX_OK ||
         nx_text_layout_create(app.fonts, "Text editing", 12,
-            NX_BIDI_AUTO, 22, 300, &app.title) != NX_OK ||
+            NX_BIDI_AUTO, 22*app.text_scale, 600, &app.title) != NX_OK ||
         nx_text_layout_create(app.fonts, "Project name", 12,
-            NX_BIDI_AUTO, 16, 200, &app.project_label) != NX_OK ||
+            NX_BIDI_AUTO, 16*app.text_scale, 592, &app.project_label) != NX_OK ||
         nx_text_layout_create(app.fonts, "Notes", 5,
-            NX_BIDI_AUTO, 16, 200, &app.notes_label) != NX_OK)
+            NX_BIDI_AUTO, 16*app.text_scale, 592, &app.notes_label) != NX_OK)
         goto cleanup;
     nx_theme theme;
-    if (nx_theme_preset(NX_THEME_LIGHT, &theme) != NX_OK ||
+    if (nx_theme_preset(appearance, &theme) != NX_OK ||
         nx_context_set_theme(app.ui, &theme) != NX_OK ||
         draw_frame(&app) != NX_OK || app.project_valid ||
         !semantic_text_equals(app.ui, 101, "A", 1) ||
@@ -212,6 +251,7 @@ int main(int argc, char **argv) {
         !text_equals(app.notes, "Plan\nReview\nReady!") ||
         !semantic_text_equals(app.ui, 102,
                                "Plan\nReview\nReady!", 0) ||
+        !select_notes_by_pointer(&app) ||
         !save_frame(app.ui, argv[2])) goto cleanup;
     printf("Project: NexaUI; notes: Plan / Review / Ready! -> %s\n", argv[2]);
     status = 0;
