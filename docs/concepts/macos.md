@@ -97,3 +97,7 @@ are recorded. Physical input, IME, DPI and VoiceOver remain open.
 - [Unmark commits pending text](https://developer.apple.com/documentation/appkit/nstextinputclient/unmarktext%28%29?language=objc)
 - [High-resolution coordinates](https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/APIs/APIs.html)
 - [Dragging destinations](https://developer.apple.com/documentation/AppKit/NSDraggingDestination)
+
+## Initial accessibility transport
+
+Completed frames can be published through `nx_window_publish_semantics`; the native NexaCloud Metal runner does this before rendering. The private AppKit bridge provides owned semantic copies and native `NSAccessibilityElement` objects with queued owner-thread actions. See [the transport contract](accessibility.md#initial-macos-appkit-ax-bridge) and [validation report](../quality/macos-ax-report.md). Native protocol checks and a separate OS AX client are registered. Accessibility trust is checked without prompting; a missing trust grant is an explicit skip of the external case. Full VoiceOver, text/range/table and physical display acceptance remain open.

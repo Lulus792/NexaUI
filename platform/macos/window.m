@@ -3,6 +3,7 @@
 #include "window_internal.h"
 #include "event_queue.h"
 #include "drop_queue.h"
+#include "accessibility.h"
 
 #include <limits.h>
 #include <math.h>
@@ -164,12 +165,18 @@ static void nx_mac_focus(nx_window *w, int focused);
 @public
     nx_window *owner;
     NSTrackingArea *tracking;
+    NXMacAXBridge *accessibility;
     NSString *marked;
     NSRange marked_selection;
 }
 @end
 
 @implementation NXMacView
+- (BOOL)isAccessibilityElement { return pthread_main_np() && (accessibility ? YES : [super isAccessibilityElement]); }
+- (NSString *)accessibilityRole { if (!pthread_main_np()) return nil; return accessibility ? NSAccessibilityGroupRole : [super accessibilityRole]; }
+- (NSArray *)accessibilityChildren { if (!pthread_main_np()) return @[]; return accessibility ? nx_mac_ax_children(accessibility) : [super accessibilityChildren]; }
+- (id)accessibilityHitTest:(NSPoint)point { if (!pthread_main_np()) return nil; return accessibility ? nx_mac_ax_hit(accessibility,point) : [super accessibilityHitTest:point]; }
+- (id)accessibilityFocusedUIElement { if (!pthread_main_np()) return nil; return accessibility ? nx_mac_ax_focus(accessibility) : [super accessibilityFocusedUIElement]; }
 - (BOOL)isFlipped { return YES; }
 - (BOOL)acceptsFirstResponder { return YES; }
 - (BOOL)acceptsFirstMouse:(NSEvent *)event { (void)event; return YES; }
@@ -475,7 +482,11 @@ nx_result nx_window_route_events(nx_window *w, nx_context *context, size_t *coun
     *count = 0;
     if (!w || !context) return NX_ERROR_ARGUMENT;
     if (!nx_mac_owner(w)) return NX_ERROR_STATE;
-    return nx_platform_event_queue_route(&w->events,context,count);
+    if (!nx_mac_ax_matches(w->view->accessibility,context)) return NX_ERROR_STATE;
+    nx_result result=nx_platform_event_queue_route(&w->events,context,count);
+    if (result!=NX_OK) return result;
+    size_t actions=0; result=nx_mac_ax_route(w->view->accessibility,context,&actions);
+    *count+=actions; return result;
 }
 nx_result nx_window_next_file_drop(nx_window *w, char *path, size_t capacity, size_t *length, nx_file_drop_info *info, int *available) {
     if (!length || !info || !available || (!path && capacity)) return NX_ERROR_ARGUMENT;
@@ -579,7 +590,10 @@ void nx_window_destroy(nx_window *w) {
         while (*slot && *slot != w) slot = &(*slot)->next;
         if (*slot) *slot = w->next;
         if (w->view && w->view->owner == w) nx_mac_discard(w);
-        if (w->view) w->view->owner = NULL;
+        if (w->view) {
+            NXMacAXBridge *bridge=w->view->accessibility; w->view->accessibility=nil;
+            nx_mac_ax_destroy(bridge); w->view->owner = NULL;
+        }
         if (w->delegate) w->delegate->owner = NULL;
         [w->native setDelegate:nil]; [w->native setContentView:nil]; [w->native close];
         [w->view release]; [w->delegate release]; [w->native release];
@@ -594,6 +608,21 @@ void nx_window_destroy(nx_window *w) {
 }
 
 nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
-    (void)context;
-    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_mac_owner(window)) return NX_ERROR_STATE;
+    @autoreleasepool {
+        NXMacView *view=window->view;
+        if (!context) {
+            NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil;
+            nx_mac_ax_destroy(bridge); return NX_OK;
+        }
+        int created=!view->accessibility;
+        if (created) view->accessibility=nx_mac_ax_create(view,window->allocator);
+        if (!view->accessibility) return NX_ERROR_MEMORY;
+        nx_result result=nx_mac_ax_publish(view->accessibility,context);
+        if (created && result!=NX_OK) {
+            NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil; nx_mac_ax_destroy(bridge);
+        }
+        return result;
+    }
 }
