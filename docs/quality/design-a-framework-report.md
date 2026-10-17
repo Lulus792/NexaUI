@@ -5,12 +5,19 @@ The four requested building blocks now have public C17 implementations. Their
 remaining acceptance is recorded below; the full Design-A application is not
 declared finished. NexaCloud's dependency pin was not changed.
 
+**Sampling follow-up:** `876b006` corrects the isolated 1:1 D3D12 texel-choice
+defect. Local hardware/WARP tests now match at 1×/1.25×/1.5×/2×, with fractional
+scales mandatory. All seven required follow-up CI jobs pass: Windows 104/104 and
+macOS 90/90 per variant; Ubuntu/sanitizers 104 executed successes plus seven
+Wayland skips each. Read the [new sampling report](d3d12-texel-identity-report.md)
+for current evidence; the failed run and repair history below are retained.
+
 | Request | Public implementation | Acceptance still open |
 | --- | --- | --- |
-| A01 gradients | `nx_surface_image_create`, `nx_draw_paint_image`: solid/linear/radial, rounded alpha edges | D3D12 pixel parity (local 1.5×/CI 2×) and physical-display matrix |
-| A02 shadows/glow | `nx_shadow_image_create`: cached padded rounded mask, three separable box passes | Same D3D12 issue; physical performance/contrast acceptance |
+| A01 gradients | `nx_surface_image_create`, `nx_draw_paint_image`: solid/linear/radial, rounded alpha edges; native CI passes | Physical-display matrix and application adoption |
+| A02 shadows/glow | `nx_shadow_image_create`: cached padded rounded mask, three separable box passes; native CI passes | Physical performance/contrast acceptance and application adoption |
 | A03 protection icons | `NX_ICON_SHIELD`, `NX_ICON_SHIELD_CHECK`, `NX_ICON_WIFI_SHIELD` | Physical DPI/accessibility task acceptance; parent provides meaning |
-| A04 multiple area series | `nx_plot_multi`: named ordered layers, gradients, explicit segments/gaps, existing extrema decimation | Same D3D12 boundary; full application labels/legend and assistive acceptance |
+| A04 multiple area series | `nx_plot_multi`: named ordered layers, gradients, explicit segments/gaps, existing extrema decimation; native CI passes | Full application labels/legend and assistive acceptance |
 
 Contracts: [paint resources](../concepts/paints.md),
 [plotting](../concepts/plotting.md). Existing commands, `nx_plot_desc`, single-series
@@ -54,7 +61,7 @@ The [image receipt](design-a-framework-images.json) records dimensions and hashe
 The follow-up change after the implementation commit corrects only the test's
 `clock()` output label; it does not change paint/plot/renderer behavior.
 
-## Open D3D12 fractional sampling diagnostic
+## Initial D3D12 sampling failure — historical evidence
 
 The exact-source [CI run](https://github.com/Lulus792/NexaUI/actions/runs/39069623365)
 has **five successful required jobs and two failed Windows jobs**. Both Windows

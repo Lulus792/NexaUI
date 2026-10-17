@@ -2,8 +2,11 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Corrected D3D12 1:1 texel selection with an exact half-cell/integer bias, independently per axis. Coordinate-coded hardware/WARP fields establish the cause; 36 RGBA8/A8/axis/origin cases cover nextafter boundaries. Required paint scenes now include 1×/1.25×/1.5×/2×, with a separate WARP CTest; all local comparisons are byte-exact.
+- Verified `876b006` in all seven required desktop/sanitizer CI jobs: Windows 104/104 and macOS 90/90 per static/shared variant; Ubuntu/sanitizers 104 executed successes plus seven Wayland skips each. The preceding D3D12 CI failure is resolved without widening pixel tolerance. Physical and application acceptance remain open.
+
 - Added explicit reusable raster resources for rounded solid/linear/radial paints and soft three-pass box-filtered shadows/glow; appended Shield, Shield-Check and Wi-Fi+Shield vector icons without renumbering existing values.
-- Added `nx_plot_multi` with named gradient-filled layers, explicit data gaps, existing extrema decimation, bounded masks/scratch/history, crosshair and rollback. Five Linux/macOS/sanitizer CI jobs pass; Windows paint comparisons fail at 2× on CI and 1.5× locally. Full Design-A acceptance remains open.
+- Added `nx_plot_multi` with named gradient-filled layers, explicit data gaps, existing extrema decimation, bounded masks/scratch/history, crosshair and rollback. Initial verification passed five Linux/macOS/sanitizer CI jobs and exposed Windows paint sampling failures, addressed by the follow-up above. Full Design-A acceptance remains open.
 
 - Added bounded contextual/chained GSUB types 5/6 in all three formats, nested actions, extension dispatch and default `calt`, preserving mark provenance and modified-sequence indices through ligatures.
 - Verified source `80f0246` in seven required desktop/sanitizer CI jobs: Windows 101/101 and macOS 88/88 per static/shared variant, Ubuntu/sanitizers 102 executed successes and seven Wayland skips each. Added old-code negatives, optional FontTools fixture/Calibri checks and a 50,000-run ASan/UBSan campaign. Full script shaping remains open.

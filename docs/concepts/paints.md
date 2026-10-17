@@ -59,9 +59,11 @@ omits shadows for increased contrast/reduced effects; no effect is required for
 interaction or conveying status.
 
 Bitmap sampling remains nearest-neighbor. Match resource scale to output density
-and align geometry when exact pixel placement matters. Fractional D3D12 sampling
-has an unresolved precision discrepancy; see the
-[Design-A validation report](../quality/design-a-framework-report.md).
+and align geometry when exact pixel placement matters. D3D12 now uses an exact
+identity-axis path when the physical extent equals the source texel count. The
+[sampling report](../quality/d3d12-texel-identity-report.md) records its prior
+hardware/WARP failures, unchanged byte-exact tolerance and remaining boundaries.
+Arbitrary-ratio resampling and physical display acceptance need separate evidence.
 
 Shield icons append `NX_ICON_SHIELD`, `NX_ICON_SHIELD_CHECK` and
 `NX_ICON_WIFI_SHIELD` without changing existing enum values. They use the same
