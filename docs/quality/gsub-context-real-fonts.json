@@ -1,0 +1,401 @@
+{
+  "source_commit": "80f0246ec0bb75627a910a8054fb33957be4fedd",
+  "checks": {
+    "windows-static": {
+      "fonttools": "4.67.0",
+      "ppem": 32,
+      "fonts": [
+        {
+          "font": "arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,21.34375,0,0\nglyph,0,1,1171,0,-6.734375,0.140625\nsample,1,result,0,count,3\nglyph,1,0,36,21.34375,0,0\nglyph,1,1,1171,0,-6.734375,0.140625\nglyph,1,2,2114,0,-11.203125,11.171875\nsample,2,result,0,count,4\nglyph,2,0,73,8.890625,0,0\nglyph,2,1,1171,0,1.65625,0.140625\nglyph,2,2,213,8.890625,0,0\nglyph,2,3,2114,0,-4.203125,0.390625\nsample,3,result,0,count,2\nglyph,3,0,672,18.015625,0,0\nglyph,3,1,653,0,7.65625,0\n",
+          "stderr": "",
+          "version": "Version 7.06",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -6.734375,
+                0.140625
+              ],
+              "actual": [
+                -6.734375,
+                0.140625
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.65625,
+                0.0
+              ],
+              "actual": [
+                7.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "segoeui.ttf",
+          "sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,20.640625,0,0\nglyph,0,1,583,0,-14.75,6.25\nsample,1,result,0,count,3\nglyph,1,0,36,20.640625,0,0\nglyph,1,1,583,0,-14.75,6.25\nglyph,1,2,1122,0,-10.53125,11.625\nsample,2,result,0,count,4\nglyph,2,0,73,10.015625,0,0\nglyph,2,1,583,0,-6.8125,7.03125\nglyph,2,2,214,7.75,0,0\nglyph,2,3,1122,0,-3.84375,-0.25\nsample,3,result,0,count,2\nglyph,3,0,2920,20.375,0,0\nglyph,3,1,2899,0,8.65625,0\n",
+          "stderr": "",
+          "version": "Version 5.72",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -14.75,
+                6.25
+              ],
+              "actual": [
+                -14.75,
+                6.25
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                8.65625,
+                0.0
+              ],
+              "actual": [
+                8.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "calibri.ttf",
+          "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,4,18.515625,0,0\nglyph,0,1,502,0,-1.40625,-0.203125\nsample,1,result,0,count,3\nglyph,1,0,4,18.515625,0,0\nglyph,1,1,502,0,-1.40625,-0.203125\nglyph,1,2,507,0,-2.015625,5.671875\nsample,2,result,0,count,4\nglyph,2,0,296,9.765625,0,0\nglyph,2,1,502,0,3.609375,1.359375\nglyph,2,2,358,7.34375,0,0\nglyph,2,3,506,0,3.5625,0.46875\nsample,3,result,0,count,2\nglyph,3,0,4192,17.171875,0,0\nglyph,3,1,4163,0,7.4375,0\n",
+          "stderr": "",
+          "version": "Version 6.27",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "glyph00502"
+              ],
+              "expected": [
+                -1.40625,
+                -0.203125
+              ],
+              "actual": [
+                -1.40625,
+                -0.203125
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.4375,
+                0.0
+              ],
+              "actual": [
+                7.4375,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        }
+      ]
+    },
+    "windows-shared": {
+      "fonttools": "4.67.0",
+      "ppem": 32,
+      "fonts": [
+        {
+          "font": "arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,21.34375,0,0\nglyph,0,1,1171,0,-6.734375,0.140625\nsample,1,result,0,count,3\nglyph,1,0,36,21.34375,0,0\nglyph,1,1,1171,0,-6.734375,0.140625\nglyph,1,2,2114,0,-11.203125,11.171875\nsample,2,result,0,count,4\nglyph,2,0,73,8.890625,0,0\nglyph,2,1,1171,0,1.65625,0.140625\nglyph,2,2,213,8.890625,0,0\nglyph,2,3,2114,0,-4.203125,0.390625\nsample,3,result,0,count,2\nglyph,3,0,672,18.015625,0,0\nglyph,3,1,653,0,7.65625,0\n",
+          "stderr": "",
+          "version": "Version 7.06",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -6.734375,
+                0.140625
+              ],
+              "actual": [
+                -6.734375,
+                0.140625
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.65625,
+                0.0
+              ],
+              "actual": [
+                7.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "segoeui.ttf",
+          "sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,20.640625,0,0\nglyph,0,1,583,0,-14.75,6.25\nsample,1,result,0,count,3\nglyph,1,0,36,20.640625,0,0\nglyph,1,1,583,0,-14.75,6.25\nglyph,1,2,1122,0,-10.53125,11.625\nsample,2,result,0,count,4\nglyph,2,0,73,10.015625,0,0\nglyph,2,1,583,0,-6.8125,7.03125\nglyph,2,2,214,7.75,0,0\nglyph,2,3,1122,0,-3.84375,-0.25\nsample,3,result,0,count,2\nglyph,3,0,2920,20.375,0,0\nglyph,3,1,2899,0,8.65625,0\n",
+          "stderr": "",
+          "version": "Version 5.72",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -14.75,
+                6.25
+              ],
+              "actual": [
+                -14.75,
+                6.25
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                8.65625,
+                0.0
+              ],
+              "actual": [
+                8.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "calibri.ttf",
+          "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,4,18.515625,0,0\nglyph,0,1,502,0,-1.40625,-0.203125\nsample,1,result,0,count,3\nglyph,1,0,4,18.515625,0,0\nglyph,1,1,502,0,-1.40625,-0.203125\nglyph,1,2,507,0,-2.015625,5.671875\nsample,2,result,0,count,4\nglyph,2,0,296,9.765625,0,0\nglyph,2,1,502,0,3.609375,1.359375\nglyph,2,2,358,7.34375,0,0\nglyph,2,3,506,0,3.5625,0.46875\nsample,3,result,0,count,2\nglyph,3,0,4192,17.171875,0,0\nglyph,3,1,4163,0,7.4375,0\n",
+          "stderr": "",
+          "version": "Version 6.27",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "glyph00502"
+              ],
+              "expected": [
+                -1.40625,
+                -0.203125
+              ],
+              "actual": [
+                -1.40625,
+                -0.203125
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.4375,
+                0.0
+              ],
+              "actual": [
+                7.4375,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        }
+      ]
+    },
+    "linux-sanitized": {
+      "fonttools": "4.67.0",
+      "ppem": 32,
+      "fonts": [
+        {
+          "font": "arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,21.34375,0,0\nglyph,0,1,1171,0,-6.734375,0.140625\nsample,1,result,0,count,3\nglyph,1,0,36,21.34375,0,0\nglyph,1,1,1171,0,-6.734375,0.140625\nglyph,1,2,2114,0,-11.203125,11.171875\nsample,2,result,0,count,4\nglyph,2,0,73,8.890625,0,0\nglyph,2,1,1171,0,1.65625,0.140625\nglyph,2,2,213,8.890625,0,0\nglyph,2,3,2114,0,-4.203125,0.390625\nsample,3,result,0,count,2\nglyph,3,0,672,18.015625,0,0\nglyph,3,1,653,0,7.65625,0\n",
+          "stderr": "",
+          "version": "Version 7.06",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -6.734375,
+                0.140625
+              ],
+              "actual": [
+                -6.734375,
+                0.140625
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.65625,
+                0.0
+              ],
+              "actual": [
+                7.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "segoeui.ttf",
+          "sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,36,20.640625,0,0\nglyph,0,1,583,0,-14.75,6.25\nsample,1,result,0,count,3\nglyph,1,0,36,20.640625,0,0\nglyph,1,1,583,0,-14.75,6.25\nglyph,1,2,1122,0,-10.53125,11.625\nsample,2,result,0,count,4\nglyph,2,0,73,10.015625,0,0\nglyph,2,1,583,0,-6.8125,7.03125\nglyph,2,2,214,7.75,0,0\nglyph,2,3,1122,0,-3.84375,-0.25\nsample,3,result,0,count,2\nglyph,3,0,2920,20.375,0,0\nglyph,3,1,2899,0,8.65625,0\n",
+          "stderr": "",
+          "version": "Version 5.72",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "acutecomb"
+              ],
+              "expected": [
+                -14.75,
+                6.25
+              ],
+              "actual": [
+                -14.75,
+                6.25
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                8.65625,
+                0.0
+              ],
+              "actual": [
+                8.65625,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        },
+        {
+          "font": "calibri.ttf",
+          "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6",
+          "probe_exit": 0,
+          "stdout": "sample,0,result,0,count,2\nglyph,0,0,4,18.515625,0,0\nglyph,0,1,502,0,-1.40625,-0.203125\nsample,1,result,0,count,3\nglyph,1,0,4,18.515625,0,0\nglyph,1,1,502,0,-1.40625,-0.203125\nglyph,1,2,507,0,-2.015625,5.671875\nsample,2,result,0,count,4\nglyph,2,0,296,9.765625,0,0\nglyph,2,1,502,0,3.609375,1.359375\nglyph,2,2,358,7.34375,0,0\nglyph,2,3,506,0,3.5625,0.46875\nsample,3,result,0,count,2\nglyph,3,0,4192,17.171875,0,0\nglyph,3,1,4163,0,7.4375,0\n",
+          "stderr": "",
+          "version": "Version 6.27",
+          "anchors": [
+            {
+              "sample": 0,
+              "glyphs": [
+                "A",
+                "glyph00502"
+              ],
+              "expected": [
+                -1.40625,
+                -0.203125
+              ],
+              "actual": [
+                -1.40625,
+                -0.203125
+              ],
+              "matches": true
+            },
+            {
+              "sample": 3,
+              "glyphs": [
+                "uni05D0",
+                "uni05B0"
+              ],
+              "expected": [
+                7.4375,
+                0.0
+              ],
+              "actual": [
+                7.4375,
+                0.0
+              ],
+              "matches": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

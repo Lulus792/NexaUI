@@ -2069,14 +2069,14 @@ NX_API nx_result nx_font_collection_resolve(const nx_font_collection *collection
                                             nx_font_match *out_match);
 
 /* Shape one UTF-8 paragraph into logical-order glyphs and homogeneous runs.
-   The path applies selected GSUB single and ligature substitutions and GPOS
+   The path applies selected GSUB single, ligature and contextual substitutions and GPOS
    single/pair positioning and mark-to-base/ligature/mark attachment, with legacy
    kern format-0 pairs as a fallback. Supported lookups use GDEF filtering and
    extension tables. Nonspacing marks are centered over their grapheme base
    before GPOS. Ligatures
    span multiple input bytes; their scalar is the first input scalar.
    Default-ignorable and control scalars produce no glyph. Anchor device deltas
-   apply at integer ppem; hinted anchor points, variation deltas, contextual and
+   apply at integer ppem; hinted anchor points, variation deltas, contextual GPOS and
    advanced script shaping remain pending. Missing mappings use
    glyph zero of the first font. Both output arrays may be null for a count
    query. Insufficient output capacity returns NX_ERROR_LIMIT with required

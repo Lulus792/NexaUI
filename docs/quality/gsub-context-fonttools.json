@@ -1,0 +1,239 @@
+{
+  "source_commit": "80f0246ec0bb75627a910a8054fb33957be4fedd",
+  "checks": {
+    "windows-static": {
+      "fonttools": "4.67.0",
+      "fixtures": [
+        {
+          "type": 5,
+          "format": 1,
+          "sha256": "b86b257554996973ca6b5d3fb88db8bc096efa3572a93c3913704c6f8aa3de62",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 5,
+          "format": 2,
+          "sha256": "a0f35a77b1a7a6bfb0c8409c98734162eb2b70c6e7c76da742c284ed10890ed7",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 5,
+          "format": 3,
+          "sha256": "b1e5b96f35353b5953c6da09adb4d23a34eb47bc0f53abfa7387e94f863fdf1d",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 1,
+          "sha256": "ccc83711fa0f7c67855d93f70abfe8309c56b1a7c97dbc9ce7c8325371ac6a98",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 2,
+          "sha256": "ca0826ba290a6d11e5798757080091a6dd90c3ef0f931280aa7e8c689f69b50f",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 3,
+          "sha256": "fe3b16943b0d4dae4279779ebc9d0c71a29b26101fe5e544710a5d10b3296d6d",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        }
+      ],
+      "real_context": {
+        "font": "calibri.ttf",
+        "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6",
+        "trace": {
+          "root": 5,
+          "nested": 162,
+          "base": 4,
+          "input_mark": 501,
+          "output_mark": 502
+        },
+        "actual_glyphs": [
+          4,
+          502
+        ],
+        "matches": true
+      }
+    },
+    "linux-sanitized": {
+      "fonttools": "4.67.0",
+      "fixtures": [
+        {
+          "type": 5,
+          "format": 1,
+          "sha256": "b86b257554996973ca6b5d3fb88db8bc096efa3572a93c3913704c6f8aa3de62",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 5,
+          "format": 2,
+          "sha256": "a0f35a77b1a7a6bfb0c8409c98734162eb2b70c6e7c76da742c284ed10890ed7",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 5,
+          "format": 3,
+          "sha256": "b1e5b96f35353b5953c6da09adb4d23a34eb47bc0f53abfa7387e94f863fdf1d",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 1,
+          "sha256": "ccc83711fa0f7c67855d93f70abfe8309c56b1a7c97dbc9ce7c8325371ac6a98",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 2,
+          "sha256": "ca0826ba290a6d11e5798757080091a6dd90c3ef0f931280aa7e8c689f69b50f",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        },
+        {
+          "type": 6,
+          "format": 3,
+          "sha256": "fe3b16943b0d4dae4279779ebc9d0c71a29b26101fe5e544710a5d10b3296d6d",
+          "records": [
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "matches": true
+        }
+      ],
+      "real_context": {
+        "font": "calibri.ttf",
+        "sha256": "57e93ff143572bcc092c1f56202d43ddc07bb119aa104c6d7af163470fb551f6",
+        "trace": {
+          "root": 5,
+          "nested": 162,
+          "base": 4,
+          "input_mark": 501,
+          "output_mark": 502
+        },
+        "actual_glyphs": [
+          4,
+          502
+        ],
+        "matches": true
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "source_commit": "80f0246ec0bb75627a910a8054fb33957be4fedd",
+  "run_id": 39064946893,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39064946893",
+  "required_jobs": [
+    {
+      "job_id": 117490505333,
+      "passed": 102,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T20:02:54.9996623Z 100% tests passed, 0 tests failed out of 109",
+        "2026-10-17T20:02:54.9997153Z Total Test time (real) =  45.33 sec",
+        "2026-10-17T20:02:54.9997394Z The following tests did not run:"
+      ]
+    },
+    {
+      "job_id": 117490505476,
+      "passed": 102,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T20:02:42.2837658Z 100% tests passed, 0 tests failed out of 109",
+        "2026-10-17T20:02:42.2838058Z Total Test time (real) =  32.57 sec",
+        "2026-10-17T20:02:42.2838393Z The following tests did not run:"
+      ]
+    },
+    {
+      "job_id": 117490505477,
+      "passed": 88,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T20:02:18.8949270Z 100% tests passed out of 88",
+        "2026-10-17T20:02:18.8949670Z Total Test time (real) =  24.25 sec"
+      ]
+    },
+    {
+      "job_id": 117490505492,
+      "passed": 88,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T20:02:32.4658730Z 100% tests passed out of 88",
+        "2026-10-17T20:02:32.4659620Z Total Test time (real) =  33.13 sec"
+      ]
+    },
+    {
+      "job_id": 117490505540,
+      "passed": 102,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T20:02:40.6838231Z 100% tests passed, 0 tests failed out of 109",
+        "2026-10-17T20:02:40.6838655Z Total Test time (real) =  34.53 sec",
+        "2026-10-17T20:02:40.6838998Z The following tests did not run:",
+        "2026-10-17T20:02:46.9171549Z 100% tests passed, 0 tests failed out of 1",
+        "2026-10-17T20:02:46.9172115Z Total Test time (real) =   6.16 sec"
+      ]
+    },
+    {
+      "job_id": 117490505580,
+      "passed": 101,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T20:08:36.5639881Z 100% tests passed out of 101\r",
+        "2026-10-17T20:08:36.5640543Z Total Test time (real) = 366.20 sec\r"
+      ]
+    },
+    {
+      "job_id": 117490505609,
+      "passed": 101,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T20:08:48.0075980Z 100% tests passed out of 101\r",
+        "2026-10-17T20:08:48.0076555Z Total Test time (real) = 391.77 sec\r"
+      ]
+    }
+  ],
+  "optional_jobs_skipped": [
+    "windows-asan",
+    "fuzz-campaigns"
+  ],
+  "scope": "Native CI, not physical device or screenreader acceptance"
+}

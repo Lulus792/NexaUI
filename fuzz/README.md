@@ -65,3 +65,11 @@ automates all five bounded runs against fresh copies and writes logs, crash
 artifacts, hashes and exit codes. It refuses an existing output directory or
 one inside the source corpus. Optional CI jobs and the supported-toolchain
 report are documented in `docs/quality/sanitizers.md`.
+
+The GSUB corpus also contains six contextual/chained seeds (types 5/6, formats
+1/2/3). Build `nexaui_gsub_context_tests`, then run it with a destination directory
+to dump synthetic SFNT fixtures and raw tables. Copy the six `.bin` files into
+the corpus. GSUB campaigns now use `-max_len=4096`; no system font is redistributed.
+`tools/check_gsub_context.py` optionally decompiles these fixtures with FontTools
+and checks a constrained installed-font case against the public probe. FontTools
+4.67.0 was a diagnostic dependency only, never linked into NexaUI.

@@ -2,6 +2,9 @@
 
 ## 0.1.0 — Foundation in progress
 
+- Added bounded contextual/chained GSUB types 5/6 in all three formats, nested actions, extension dispatch and default `calt`, preserving mark provenance and modified-sequence indices through ligatures.
+- Verified source `80f0246` in seven required desktop/sanitizer CI jobs: Windows 101/101 and macOS 88/88 per static/shared variant, Ubuntu/sanitizers 102 executed successes and seven Wayland skips each. Added old-code negatives, optional FontTools fixture/Calibri checks and a 50,000-run ASan/UBSan campaign. Full script shaping remains open.
+
 - Added mouse drag selection, Shift-click, captured outside release and bounded edge scrolling for general/numeric fields. Private event-level capture/focus ownership preserves same-frame input order; password offsets remain grapheme-aligned. Corrected selection foreground contrast using disjoint mask clips and expanded the text-editing example with nine theme/text-size variants.
 - Verified `8dce6f2` in all six desktop static/shared CI variants plus Linux sanitizers: Windows 100/100, macOS 87/87, Ubuntu/sanitizers 101 executed successes and seven Wayland skips each. Nine real-font Windows/Linux image pairs are pixel-identical; physical devices, full IME and screenreader acceptance remain open.
 

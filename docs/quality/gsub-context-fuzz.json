@@ -1,0 +1,40 @@
+{
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-musl1",
+  "runs": 50000,
+  "seed": 181018,
+  "wall_timeout_seconds": 300,
+  "targets": [
+    {
+      "name": "gsub",
+      "command": [
+        "out/vulkan-sanitize/nexaui_gsub_fuzz",
+        "out/gsub-context-final-fuzz-20261017/gsub/corpus",
+        "-seed=181018",
+        "-runs=50000",
+        "-max_len=4096",
+        "-timeout=10",
+        "-artifact_prefix=out/gsub-context-final-fuzz-20261017/gsub/artifacts/"
+      ],
+      "executable_sha256": "514771142aeb484b68920b1a788142188998b02dcded6e4ea524ac3c40dff297",
+      "initial_seed_sha256": {
+        "basic.bin": "4164c7269808e7621ce3bf6a13e1342567b7bf284acbb0c4a7d8737a66fa1747",
+        "context-5-1.bin": "0dd56aeb00dfa9b2a7b9566ca652a7ad935a3193a9206a0c9fa9ebe7703e8423",
+        "context-5-2.bin": "901f4aaa7539185e7a123557114a4d61df25435f98636de6adc1a00583b09748",
+        "context-5-3.bin": "7a0f6409cd8c6c5a77bca86e79ebbeed0e2108bb739a21d0012db0ba1cbd45d6",
+        "context-6-1.bin": "a1a495a05dea30a544e280cbf0ba50b02a80f9151fb25bbcd7cbe13d84ca9255",
+        "context-6-2.bin": "08a4cbc9e7ed0b7bcb6ab59b74b74a3ff4d1b7a79d73ea5b4784726e8d4bad42",
+        "context-6-3.bin": "058ed52c479ea2777457fb29c42e747ce7e9b356d0e0c43afcc1bee8f63902fd"
+      },
+      "exit_code": 0,
+      "elapsed_seconds": 22.027,
+      "final_coverage_counters": 1861,
+      "log": "out/gsub-context-final-fuzz-20261017/gsub/fuzzer.log",
+      "artifacts": "out/gsub-context-final-fuzz-20261017/gsub/artifacts"
+    }
+  ],
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=0",
+    "UBSAN_OPTIONS": "halt_on_error=1"
+  },
+  "source_commit": "80f0246ec0bb75627a910a8054fb33957be4fedd"
+}
