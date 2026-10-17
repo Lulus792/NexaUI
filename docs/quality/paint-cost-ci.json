@@ -1,0 +1,322 @@
+{
+  "source_commit": "50040831c5a700b19b4086df79260594575af6b2",
+  "implementation_commit": "18345c0a2e578533ae1d993c063c8619131170fc",
+  "run_id": 39075691088,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39075691088",
+  "required_jobs": [
+    {
+      "id": 117522253578,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T22:36:52.7101251Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T22:36:52.7101540Z ",
+        "2026-10-17T22:36:52.7101636Z Total Test time (real) =  45.40 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:15.4629674Z   6/111 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    4.39 sec",
+        "2026-10-17T22:36:38.8848701Z  37/111 Test  #37: nexaui_plot_multi ..........................   Passed    0.08 sec",
+        "2026-10-17T22:36:39.4334165Z  51/111 Test  #51: nexaui_paint ...............................   Passed    0.14 sec"
+      ],
+      "package_steps": [],
+      "decoded_log_sha256": "9cd8b711d82d2baa4521b7a398ee7fdecdee81fc90bfe49446910287bbad1970"
+    },
+    {
+      "id": 117522253774,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T22:36:45.1969720Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T22:36:45.1970180Z ",
+        "2026-10-17T22:36:45.1970547Z Total Test time (real) =  37.62 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:14.9659694Z   6/111 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    3.97 sec",
+        "2026-10-17T22:36:37.8749847Z  37/111 Test  #37: nexaui_plot_multi ..........................   Passed    0.04 sec",
+        "2026-10-17T22:36:38.1501096Z  51/111 Test  #51: nexaui_paint ...............................   Passed    0.12 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "2be7f0d0e0800f2172eab012bddf1ae5865bee66b73264132addf80e999789f3"
+    },
+    {
+      "id": 117522253777,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "passed": 90,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T22:36:20.3828600Z 100% tests passed out of 90",
+        "2026-10-17T22:36:20.3828850Z ",
+        "2026-10-17T22:36:20.3829020Z Total Test time (real) =  26.16 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:35:56.9806120Z 14/90 Test #14: nexaui_plot_multi ..........................   Passed    0.05 sec",
+        "2026-10-17T22:35:57.7007080Z 28/90 Test #28: nexaui_paint ...............................   Passed    0.10 sec",
+        "2026-10-17T22:36:05.3244140Z 48/90 Test #48: nexaui_metal ...............................   Passed    6.42 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "7d6d1cb2660e4c335fd5dcd681c0d830b02a8149837d87de9c21342d7fd54d22"
+    },
+    {
+      "id": 117522253835,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T22:36:46.1341583Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T22:36:46.1342068Z ",
+        "2026-10-17T22:36:46.1343132Z Total Test time (real) =  38.72 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:16.0894934Z   6/111 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    4.03 sec",
+        "2026-10-17T22:36:38.8523024Z  37/111 Test  #37: nexaui_plot_multi ..........................   Passed    0.03 sec",
+        "2026-10-17T22:36:39.1137658Z  51/111 Test  #51: nexaui_paint ...............................   Passed    0.11 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "5906ea1574f104428a56a5e2a81cd545cf3bd67211ffef28e9a4017575eb9fd8"
+    },
+    {
+      "id": 117522253877,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "passed": 104,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T22:42:54.1367170Z 100% tests passed out of 104",
+        "2026-10-17T22:42:54.1367526Z ",
+        "2026-10-17T22:42:54.1367749Z Total Test time (real) = 385.01 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:33.7901199Z         Start  11: nexaui_d3d12_widgets",
+        "2026-10-17T22:36:34.7449009Z  11/104 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.95 sec",
+        "2026-10-17T22:36:34.7456163Z         Start  12: nexaui_d3d12_widgets_warp",
+        "2026-10-17T22:36:35.5792523Z  12/104 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.83 sec",
+        "2026-10-17T22:36:47.0473095Z  18/104 Test  #18: nexaui_plot_multi ..........................   Passed    0.06 sec",
+        "2026-10-17T22:36:48.0171914Z  32/104 Test  #32: nexaui_paint ...............................   Passed    0.17 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "success"
+        }
+      ],
+      "decoded_log_sha256": "1a2861d47b6e73ceda77f16293c8296012032933fe6e0c5f42eb28d19525ead8"
+    },
+    {
+      "id": 117522253879,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "passed": 90,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T22:36:50.0681920Z 100% tests passed out of 90",
+        "2026-10-17T22:36:50.0699210Z ",
+        "2026-10-17T22:36:50.0700570Z Total Test time (real) =  38.19 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:15.6330350Z 14/90 Test #14: nexaui_plot_multi ..........................   Passed    0.07 sec",
+        "2026-10-17T22:36:17.1193150Z 28/90 Test #28: nexaui_paint ...............................   Passed    0.16 sec",
+        "2026-10-17T22:36:25.5267160Z 48/90 Test #48: nexaui_metal ...............................   Passed    6.90 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "b0d9897942022a190dbc2f6dcf18f8bb550198ee885dd91804f22caf49c29fcd"
+    },
+    {
+      "id": 117522253880,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "passed": 104,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T22:43:04.6398644Z 100% tests passed out of 104",
+        "2026-10-17T22:43:04.6398980Z ",
+        "2026-10-17T22:43:04.6399154Z Total Test time (real) = 404.79 sec"
+      ],
+      "native_and_regression_cases": [
+        "2026-10-17T22:36:24.3775498Z         Start  11: nexaui_d3d12_widgets",
+        "2026-10-17T22:36:25.2799364Z  11/104 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.90 sec",
+        "2026-10-17T22:36:25.2804257Z         Start  12: nexaui_d3d12_widgets_warp",
+        "2026-10-17T22:36:26.0826803Z  12/104 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.80 sec",
+        "2026-10-17T22:36:36.5915876Z  18/104 Test  #18: nexaui_plot_multi ..........................   Passed    0.07 sec",
+        "2026-10-17T22:36:37.4694880Z  32/104 Test  #32: nexaui_paint ...............................   Passed    0.22 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "success"
+        }
+      ],
+      "decoded_log_sha256": "a2c360d868a19510bfa871445508ce7c0fc5cf58e949a6890db90279ed4437a6"
+    }
+  ],
+  "optional_jobs_skipped": [
+    "fuzz-campaigns",
+    "windows-asan"
+  ],
+  "source_hash_validation": {
+    "src/paint.c": {
+      "measured_file_sha256": "1e9f63c9e72ec843da28bd636d700404b9228137bc3960607063145370cb779d",
+      "git_lf_sha256": "1e9f63c9e72ec843da28bd636d700404b9228137bc3960607063145370cb779d",
+      "crlf_sequences": 0,
+      "lf_normalized_equal": true
+    },
+    "src/nexaui.c": {
+      "measured_file_sha256": "8e369e0c164ed16f9e86b09ff32f56b40b8b161392d02a2a9ae1486c424d74d4",
+      "git_lf_sha256": "e7be32a66f2c8a76f3536b864ded43bf62af4dff28130adb8f54835592224910",
+      "crlf_sequences": 7495,
+      "lf_normalized_equal": true
+    },
+    "benchmarks/paint_bench.c": {
+      "measured_file_sha256": "4c988a01196bcb920c20cbe2497a6572fd9bd4638e887b745bcf7d7a7cb9bff9",
+      "git_lf_sha256": "4c988a01196bcb920c20cbe2497a6572fd9bd4638e887b745bcf7d7a7cb9bff9",
+      "crlf_sequences": 0,
+      "lf_normalized_equal": true
+    },
+    "benchmarks/paint_baseline.c": {
+      "measured_file_sha256": "d834010f32340cc25c777e7a3855211fae63c3579236bc692dc6392efd6e755e",
+      "git_lf_sha256": "d834010f32340cc25c777e7a3855211fae63c3579236bc692dc6392efd6e755e",
+      "crlf_sequences": 0,
+      "lf_normalized_equal": true
+    },
+    "benchmarks/plot_baseline.c": {
+      "measured_file_sha256": "8eda93fb680e6fe9bf02d6b3f1ada7bddeeb608032596f424078bcab817a2e42",
+      "git_lf_sha256": "8eda93fb680e6fe9bf02d6b3f1ada7bddeeb608032596f424078bcab817a2e42",
+      "crlf_sequences": 0,
+      "lf_normalized_equal": true
+    },
+    "tools/prepare_paint_baseline.py": {
+      "measured_file_sha256": "f041095ab6d822b71dc75e3e286e334383cefcaf00a5eba3a372be6242a5bcc1",
+      "git_lf_sha256": "f041095ab6d822b71dc75e3e286e334383cefcaf00a5eba3a372be6242a5bcc1",
+      "crlf_sequences": 0,
+      "lf_normalized_equal": true
+    }
+  },
+  "local_shared_benchmark_execution": {
+    "build_dir": "out/vulkan-shared",
+    "exit": 0,
+    "csv_rows": 288,
+    "csv_sha256": "fc384e43fa6230ffa43c72a66e7ebf36500cf5a7899ddeba12a6cc5959e25b52",
+    "purpose": "Current-only execution/teardown check after explicit libm linkage; these Debug times are excluded from the paired Release measurement."
+  }
+}

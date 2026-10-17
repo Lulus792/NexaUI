@@ -1,5 +1,10 @@
 # Paint construction and filled-plot CPU costs — 2026-10-18
 
+Implementation: `18345c0a2e578533ae1d993c063c8619131170fc`. Accepted source:
+`50040831c5a700b19b4086df79260594575af6b2`, which adds the benchmark's direct
+Linux libm dependency after the first shared CI build failed. The
+[initial failure](paint-cost-ci-build-failure.json) remains recorded.
+
 The Design-A primitives now avoid repeated row-color evaluation and unnecessary
 rounded-coverage calculations. Filled plots retain column spans and shade only
 their occupied rectangle. Public APIs, output pixels, allocation counts and
@@ -62,11 +67,24 @@ The regular plot regression additionally uses a scalar pixel-center oracle over
 20 empty/baseline/positive/negative narrow-gap cases at .125/1/1.5/2/8×. It checks
 all RGBA channels, including transparent-gap RGB, and releases all tracked bytes.
 Existing allocation-failure, rollback/retry, clipping and native bitmap parity
-tests remain required. Exact-source CI is recorded separately after completion.
+tests remain required. All seven required [exact-source CI jobs](paint-cost-ci.json)
+now pass in [run 39075691088](https://github.com/Lulus792/NexaUI/actions/runs/39075691088):
+Windows static/shared 104/104 each, macOS static/shared 90/90 each, and Ubuntu
+static/shared plus sanitizers 104 executed passes and seven Wayland skips each
+(111 registered). Native hardware/WARP D3D12, Metal and X11/Vulkan paint tests
+pass. Package consumers pass in all six core jobs. Optional Windows ASan and
+fuzz-campaign jobs were skipped; the failed local musl/libFuzzer probe below
+is not turned into a successful campaign by this CI result.
 
 Local Windows Debug static passes 104/104; shared paint/plot/hardware-D3D12/WARP
 passes 4/4. Alpine ASan/UBSan/LSan paint/plot/components/native-Vulkan passes 4/4
 with no skips. [Commands and actual outcomes](paint-cost-checks.json).
+The Linux shared current-only benchmark also executes all 288 measured records
+and teardown successfully after the linkage fix; its Debug times are excluded
+from the Release comparison. The CI receipt verifies the measured source hashes
+against the accepted Git source: `src/nexaui.c` was measured with CRLF line
+endings, while its Git blob uses LF. Normalized contents are identical; the
+original physical-file hash remains unchanged in the measurement receipt.
 
 Construction still allocates twice for surfaces and four times for shadows.
 The measured large shadow retains 4,096,480 bytes and peaks at 12,289,280 bytes;

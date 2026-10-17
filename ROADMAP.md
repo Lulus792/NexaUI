@@ -8,6 +8,11 @@ the [sampling report](docs/quality/d3d12-texel-identity-report.md) records its e
 Application adoption and physical/assistive review remain open; this does not
 complete a release gate.
 
+The `18345c0`/`5004083` follow-up reduces repeated paint/area-fill CPU work,
+retains bytewise output and records [paired Release costs and ownership](docs/quality/paint-cost-report.md).
+All seven required desktop CI jobs pass at `5004083`. Large shadow creation still
+requires application caching; filled plots still allocate frame-owned masks.
+
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
 ## Milestones and gates
