@@ -1,0 +1,96 @@
+{
+  "source_commit": "c25ec7e0db46669b12d4ca3002a5ab7f0310bf09",
+  "run_id": 39069623365,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39069623365",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 117504341354,
+      "name": "sanitizers",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T21:09:23.0775705Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T21:09:23.0776109Z Total Test time (real) =  45.38 sec"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "id": 117504341548,
+      "name": "core (ubuntu-latest, OFF)",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T21:09:01.4141442Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T21:09:01.4141889Z Total Test time (real) =  32.68 sec"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "id": 117504341653,
+      "name": "core (ubuntu-latest, ON)",
+      "passed": 104,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T21:09:09.1772421Z 100% tests passed, 0 tests failed out of 111",
+        "2026-10-17T21:09:09.1773231Z Total Test time (real) =  38.07 sec"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "id": 117504341676,
+      "name": "core (macos-latest, OFF)",
+      "passed": 90,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T21:08:50.7942810Z 100% tests passed out of 90",
+        "2026-10-17T21:08:50.8129200Z Total Test time (real) =  34.34 sec"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "id": 117504341789,
+      "name": "core (macos-latest, ON)",
+      "passed": 90,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T21:08:43.7232050Z 100% tests passed out of 90",
+        "2026-10-17T21:08:43.7232720Z Total Test time (real) =  27.21 sec"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "id": 117504341558,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "failure",
+      "passed": 102,
+      "failed": 1,
+      "skipped": 0,
+      "diagnostic": [
+        "2026-10-17T21:08:48.5372571Z D:\\a\\NexaUI\\NexaUI\\tests\\test_d3d12_widgets.c:156: maximum==0\r",
+        "2026-10-17T21:08:48.5373894Z paint scale 1.0 density 1.0: max channel delta 0; 0 differing bytes\r",
+        "2026-10-17T21:08:48.5374367Z paint scale 2.0 density 2.0: max channel delta 3; 306 differing bytes\r",
+        "2026-10-17T21:14:47.2191937Z 99% tests passed, 1 tests failed out of 103\r"
+      ]
+    },
+    {
+      "id": 117504341698,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "failure",
+      "passed": 102,
+      "failed": 1,
+      "skipped": 0,
+      "diagnostic": [
+        "2026-10-17T21:08:50.9477126Z D:\\a\\NexaUI\\NexaUI\\tests\\test_d3d12_widgets.c:156: maximum==0\r",
+        "2026-10-17T21:08:50.9478508Z paint scale 1.0 density 1.0: max channel delta 0; 0 differing bytes\r",
+        "2026-10-17T21:08:50.9479013Z paint scale 2.0 density 2.0: max channel delta 3; 306 differing bytes\r",
+        "2026-10-17T21:14:47.8430870Z 99% tests passed, 1 tests failed out of 103\r"
+      ]
+    }
+  ],
+  "optional_skipped": [
+    "windows-asan",
+    "fuzz-campaigns"
+  ],
+  "acceptance": "Open: Windows D3D12 paint pixel comparison fails at 2x on CI; 1.5x separate local diagnostic also fails. Do not infer full platform acceptance from the five passing jobs."
+}

@@ -1,5 +1,11 @@
 # NexaUI development DAG
 
+Design-A integration now has public rounded raster gradients, cached soft-form
+effects, shield icons and `nx_plot_multi` at `c25ec7e`. Contracts and acceptance
+gaps are in [the framework report](docs/quality/design-a-framework-report.md).
+D3D12 pixel parity (local fractional DPI and CI 2×), application adoption and physical/assistive review
+remain open; this does not complete a release gate.
+
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
 ## Milestones and gates

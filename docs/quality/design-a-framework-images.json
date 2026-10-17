@@ -1,0 +1,32 @@
+{
+  "source_commit": "c25ec7e0db46669b12d4ca3002a5ab7f0310bf09",
+  "renderer": "NexaUI headless RGBA8",
+  "platform": "Windows MSVC Debug",
+  "images": [
+    {
+      "file": "../images/design-a-paint.png",
+      "sha256": "3320bda8c39116c135cfb93579b5bfbf69b6cde94d5e7d8c1a71b739689f782a",
+      "size": [
+        180,
+        140
+      ]
+    },
+    {
+      "file": "../images/design-a-plot.png",
+      "sha256": "dd68a03487f4aaa12cdcf403b3f0f219f7b2b71b2ee014bc019536f96495a939",
+      "size": [
+        160,
+        100
+      ]
+    },
+    {
+      "file": "../images/design-a-icons.png",
+      "sha256": "a4d223a57615a46c1ba731f1163dd515170527e5296ada49993bb33dad872434",
+      "size": [
+        720,
+        288
+      ]
+    }
+  ],
+  "scope": "authored API fixtures; not final NexaCloud UI; no native GPU screenshot claim"
+}

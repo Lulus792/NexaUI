@@ -27,3 +27,11 @@ performed; historical comparison material remains intact.
 No VM/WSL disk was touched. New local Linux commands use the existing shared
 `Alpine-Dev` distribution. Historical records referring to `NexaUI-Alpine-3.24`
 remain unchanged, as required by the local migration instructions.
+
+The completed `out/gsub-context-negative/build` was subsequently checked for
+matching active build/probe processes (none) and cleaned through its own CMake
+target. Its resolved path was verified inside `D:/NexaUI/out/gsub-context-negative/`.
+Logical file sizes fell from 5,069,692 to 321,763 bytes, removing another
+4,747,929 bytes. Combined removal is **44,815,650 bytes (about 42.74 MiB)**.
+Old GSUB source copies, CMake input/configuration and actual failure logs remain.
+Current Design-A images and the unresolved D3D12 diagnostic are retained.

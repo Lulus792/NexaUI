@@ -50,7 +50,47 @@ use disabled theme colors. The caller retains `nx_plot_state` across frames.
 Frame errors leave that state unchanged and roll back commands, hit region and
 semantic node so a retry with the same ID can succeed.
 
-The plot currently draws one series, linear x/y scales and no legend or
+The original `nx_plot` draws one series, linear x/y scales and no legend or
 selection. Rendering a full million-point viewport still requires a linear
 scan through S03. The widget does not own simulation data, cache samples or
 schedule redraws; the application controls update cadence and visible ranges.
+
+## Multiple series and filled areas
+
+`nx_plot_multi` retains the axis, focus, pointer/captured crosshair and keyboard
+behavior of `nx_plot`. Its `plot` member supplies bounds/ranges/fonts/scratch;
+the old `series` member is ignored. Each `nx_plot_layer` has a semantic name,
+line color, optional top/bottom RGBA fill colors, baseline and an array of
+contiguous `nx_series_view` segments. Separate segments express missing-data
+gaps. They must be ordered without overlapping x ranges; no line/fill crosses
+a gap. Empty segments are allowed. Nonfinite values remain errors. Constant,
+zero and negative values use the same shared finite y range, with the baseline
+clamped into that range.
+
+All segments use the existing first/min/max/last decimator and retain source
+order. Linear connections introduce no spline overshoot. Layer paint order is
+array order: fill then line for each series. Fills interpolate premultiplied
+encoded sRGB vertically across the plot area and use straight RGBA8 masks. Shared
+`x_unit`/`y_unit` and series names enter the semantic description. Numeric ticks
+keep the existing formatter; applications draw the visible named legend and
+time/unit labels, as the NexaCloud composition does.
+
+There are at most 8 layers, 32 total segments and 1,000,000 total source samples.
+Scratch capacity must be `columns * total_segments`, where columns is the
+rounded-up logical plot width capped at 16384. Callbacks are borrowed only for
+the call and cannot mutate data during it. The library retains no source view.
+The fill's `raster_scale` is explicit (.125–8); physical axes cap at 4096 and
+the sum of filled layer pixels at 4,194,304 (16 MiB RGBA plus small headers).
+Masks belong to the context through the next `nx_begin_frame` or destruction.
+Use a bounded application update cadence for changing histories. Rendering cost
+is source scanning plus retained marks and filled pixels; no background sampler
+or automatic animation is introduced. `hide_fills` preserves lines and input for
+the application's contrast/effects fallback.
+
+Validation/decimation precedes registration. Allocation or drawing errors roll
+back commands, masks, semantics and the hit region; plot state is unchanged and
+the same ID can be retried. Caller scratch contents may change on error.
+The [three-series regression](../../tests/test_plot_multi.c) demonstrates gaps,
+negative/constant data, units, crosshair, failure/retry and budget limits.
+
+![Three-series gap and negative-value fixture](../images/design-a-plot.png)

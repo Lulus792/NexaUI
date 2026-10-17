@@ -115,6 +115,6 @@ int main(int argc,char **argv) {
     clock_t begin=clock();nx_paint_image *image=NULL;
     nx_shadow_image_desc d={640,360,12,2,4,{0,4},{0,.5f,1,.6f},32u*1024u*1024u};
     CHECK(nx_shadow_image_create(&d,NULL,&image)==NX_OK);
-    printf("1280x720 soft-card build CPU: %.3f ms; draw reuses immutable pixels\n",1000.*(clock()-begin)/CLOCKS_PER_SEC);
+    printf("1280x720 soft-card build clock(): %.3f ms; draw reuses immutable pixels\n",1000.*(clock()-begin)/CLOCKS_PER_SEC);
     nx_paint_image_destroy(image);return 0;
 }
