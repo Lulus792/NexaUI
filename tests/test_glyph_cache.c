@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define CHECK(expr) do { if (!(expr)) { \
     fprintf(stderr, "%s:%d: %s failed\n", __FILE__, __LINE__, #expr); \
@@ -145,6 +146,37 @@ static int test_lru_and_limits(void) {
     return 0;
 }
 
+static int test_fractional_sizes(void) {
+    uint8_t bytes[384];fixture(bytes);nx_font *font=NULL;nx_glyph_cache *cache=NULL;
+    CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK);
+    CHECK(nx_glyph_cache_create(font,65536,NULL,&cache)==NX_OK);
+    nx_glyph_mask_view integer,fractional,neighbor,again;
+    CHECK(nx_glyph_cache_get(cache,1,20,&integer)==NX_OK);
+    CHECK(nx_glyph_cache_get_fractional(cache,1,20,&again)==NX_OK&&again.pixels==integer.pixels);
+    CHECK(nx_glyph_cache_get_fractional(cache,1,20.5,&fractional)==NX_OK);
+    CHECK(fractional.width==5&&fractional.height==5&&fractional.advance_x==10.25);
+    CHECK(nx_glyph_cache_get_fractional(cache,1,nextafter(20.5,21),&neighbor)==NX_OK);
+    CHECK(neighbor.pixels!=fractional.pixels&&neighbor.advance_x!=fractional.advance_x);
+    CHECK(nx_glyph_cache_get_fractional(cache,1,20.5,&again)==NX_OK&&again.pixels==fractional.pixels);
+    nx_glyph_cache_stats stats;CHECK(nx_glyph_cache_get_stats(cache,&stats)==NX_OK);
+    CHECK(stats.entry_count==3&&stats.hits==2&&stats.misses==3);
+    /* Compare the actual fractional outline raster against the cache's mask. */
+    nx_glyph_point points[3];uint16_t ends[1];nx_glyph_outline_buffer outline={0};
+    outline.points=points;outline.point_capacity=3;outline.contour_ends=ends;outline.contour_capacity=1;
+    CHECK(nx_font_get_glyph_outline(font,1,&outline)==NX_OK);
+    uint8_t reference[25];
+    CHECK(nx_rasterize_glyph_a8(&outline,.0205,-fractional.x_offset,-fractional.y_offset,
+        reference,5,5,5,sizeof(reference),NULL)==NX_OK);
+    CHECK(memcmp(reference,fractional.pixels,sizeof(reference))==0);
+    const double invalid[]={0,-1,.124,NAN,INFINITY,65535.5};
+    for(unsigned i=0;i<sizeof(invalid)/sizeof(*invalid);++i){
+        CHECK(nx_glyph_cache_get_fractional(cache,1,invalid[i],&again)==NX_ERROR_ARGUMENT);
+        CHECK(!again.pixels&&!again.width);
+    }
+    CHECK(nx_glyph_cache_get_fractional(cache,0,.125,&again)==NX_OK&&again.advance_x==.0625);
+    nx_glyph_cache_destroy(cache);nx_font_close(font);return 0;
+}
+
 typedef struct tracker {
     unsigned calls, frees, fail_after;
 } tracker;
@@ -197,6 +229,7 @@ int main(void) {
     if (test_cache_hits_and_empty_glyph()) return 1;
     if (test_lru_and_limits()) return 1;
     if (test_allocator_failure()) return 1;
+    if (test_fractional_sizes()) return 1;
     puts("glyph cache tests passed");
     return 0;
 }

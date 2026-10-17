@@ -1,3 +1,7 @@
+#ifndef NEXAUI_SEARCH_FONT_FIXTURE_H
+#define NEXAUI_SEARCH_FONT_FIXTURE_H
+#include <nexaui/nexaui.h>
+#include <string.h>
 static void put16(uint8_t *p, uint16_t value) {
     p[0] = (uint8_t)(value >> 8u);
     p[1] = (uint8_t)value;
@@ -87,3 +91,4 @@ static void font_fixture(uint8_t bytes[512]) {
     glyph[16] = 0x27;
     glyph[17] = glyph[18] = glyph[19] = 100u;
 }
+#endif

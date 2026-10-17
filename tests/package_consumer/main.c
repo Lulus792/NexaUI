@@ -30,6 +30,12 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(void) {
+    nx_text_stamp *stamp=0;nx_rect stamp_bounds;nx_glyph_mask_view mask;
+    if(nx_text_stamp_create_scaled(0,1.5f,65536,0,&stamp)!=NX_ERROR_ARGUMENT||stamp||
+       nx_text_stamp_bounds(0,&stamp_bounds)!=NX_ERROR_ARGUMENT||
+       nx_glyph_cache_get_fractional(0,0,19.25,&mask)!=NX_ERROR_ARGUMENT||
+       nx_draw_text_layout_scaled(0,0,(nx_point){0},(nx_color){1,1,1,1},1.5f,65536)!=NX_ERROR_ARGUMENT)
+        return 13;
     nx_context *context = 0;
     nx_layout *layout = 0;
     if (nx_context_create(0, &context) != NX_OK) return 1;

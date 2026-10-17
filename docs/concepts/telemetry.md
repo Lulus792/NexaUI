@@ -48,7 +48,7 @@ minimum; nonzero values below 16 logical pixels are rejected. With supplied
 fonts, row and header heights grow for legible text. At larger text sizes,
 labels and values stack, so fewer rows fit and scrolling remains necessary.
 Fonts are optional; without them, semantic names and values remain available
-but only the bars are painted. Supplied fonts use integer `pixels_per_em` in
+but only the bars are painted. Supplied fonts use finite `pixels_per_em` in
 [1,16384] and a positive glyph-cache budget.
 
 Panels use semantic theme colors for dark, light and high-contrast appearance.

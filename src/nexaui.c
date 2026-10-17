@@ -1847,13 +1847,17 @@ static nx_result nx_draw_text_layout_impl(nx_context *ctx,
                                           size_t span_count,
                                           size_t cache_bytes,
                                           const nx_text_selection_rect *selection,
-                                          size_t selection_count,nx_color selection_tint) {
+                                          size_t selection_count,nx_color selection_tint,
+                                          double raster_scale,double coordinate_scale) {
     if (!ctx || !layout || !isfinite(origin.x) || !isfinite(origin.y) ||
-        !nx_valid_color(tint) || !cache_bytes)
+        !nx_valid_color(tint) || !cache_bytes || !isfinite(raster_scale) ||
+        raster_scale < .125 || raster_scale > 8)
         return NX_ERROR_ARGUMENT;
     if (ctx->state != 1u) return NX_ERROR_STATE;
     double ppem = nx_text_layout_pixels_per_em(layout);
-    if (ppem < 1.0 || ppem > 16384.0 || floor(ppem) != ppem)
+    double raster_ppem=ppem*raster_scale;
+    if (ppem < .125 || ppem > 16384.0 || !isfinite(raster_ppem) ||
+        raster_ppem < .125 || raster_ppem > 16384.0)
         return NX_ERROR_ARGUMENT;
     nx_glyph_cache *caches[NX_FONT_COLLECTION_MAX_FONTS] = {0};
     size_t first_command = ctx->command_count;
@@ -1876,9 +1880,9 @@ static nx_result nx_draw_text_layout_impl(nx_context *ctx,
             if (result != NX_OK) break;
         }
         nx_glyph_mask_view mask;
-        result = nx_glyph_cache_get(caches[font_index],
+        result = nx_glyph_cache_get_fractional(caches[font_index],
                                     glyph.shape.glyph_index,
-                                    (uint16_t)ppem, &mask);
+                                    raster_ppem, &mask);
         if (result != NX_OK) break;
         if (!mask.width || !mask.height) continue;
         if (mask.width > SIZE_MAX / mask.height ||
@@ -1899,17 +1903,22 @@ static nx_result nx_draw_text_layout_impl(nx_context *ctx,
             memcpy(owned->pixels + (size_t)y * mask.width,
                    mask.pixels + (size_t)y * mask.stride_bytes,
                    mask.width);
-        double x = (double)origin.x + glyph.x + glyph.shape.offset_x +
-                   mask.x_offset;
-        double y = (double)origin.y + glyph.baseline_y -
-                   glyph.shape.offset_y + mask.y_offset;
+        double units=coordinate_scale/raster_scale;
+        double x = (double)origin.x + (glyph.x + glyph.shape.offset_x)*coordinate_scale +
+                   mask.x_offset*units;
+        double y = (double)origin.y + (glyph.baseline_y -
+                   glyph.shape.offset_y)*coordinate_scale + mask.y_offset*units;
+        if(raster_scale==1&&coordinate_scale==1){
+            x=(double)origin.x+glyph.x+glyph.shape.offset_x+mask.x_offset;
+            y=(double)origin.y+glyph.baseline_y-glyph.shape.offset_y+mask.y_offset;
+        }
         if (!isfinite(x) || !isfinite(y) || x < -FLT_MAX ||
             x > FLT_MAX || y < -FLT_MAX || y > FLT_MAX) {
             result = NX_ERROR_LIMIT;
             break;
         }
         nx_rect dest = {(float)x, (float)y,
-                        (float)mask.width, (float)mask.height};
+                        (float)(mask.width*units), (float)(mask.height*units)};
         nx_bitmap_view bitmap = {owned->pixels, mask.width, mask.height,
                                  mask.width, NX_BITMAP_A8};
         nx_color glyph_tint = tint;
@@ -1941,7 +1950,20 @@ nx_result nx_draw_text_layout(nx_context *ctx,
                               nx_point origin, nx_color tint,
                               size_t cache_bytes) {
     return nx_draw_text_layout_impl(ctx, layout, origin, tint,
-                                    NULL, 0, cache_bytes,NULL,0,tint);
+                                    NULL, 0, cache_bytes,NULL,0,tint,1,1);
+}
+
+nx_result nx_draw_text_layout_scaled(nx_context *ctx,const nx_text_layout *layout,
+    nx_point origin,nx_color tint,float raster_scale,size_t cache_bytes) {
+    return nx_draw_text_layout_impl(ctx,layout,origin,tint,
+        NULL,0,cache_bytes,NULL,0,tint,raster_scale,1);
+}
+
+nx_result nx_draw_text_layout_pixels(nx_context *ctx,const nx_text_layout *layout,
+    float raster_scale,size_t cache_bytes) {
+    nx_color white={1,1,1,1};
+    return nx_draw_text_layout_impl(ctx,layout,(nx_point){0},white,
+        NULL,0,cache_bytes,NULL,0,white,raster_scale,raster_scale);
 }
 
 static nx_result nx_rich_fill(nx_context *ctx, double x, double y,
@@ -2058,7 +2080,7 @@ nx_result nx_draw_rich_text_layout(nx_context *ctx,
                                   &spans[i], 1);
     if (result == NX_OK)
         result = nx_draw_text_layout_impl(ctx, layout, origin, base_tint,
-                                          spans, span_count, cache_bytes,NULL,0,base_tint);
+                                          spans, span_count, cache_bytes,NULL,0,base_tint,1,1);
     for (size_t i = 0; i < span_count && result == NX_OK; ++i)
         result = nx_rich_geometry(ctx, layout, origin, base_tint,
                                   &spans[i], 0);
@@ -2675,8 +2697,11 @@ nx_result nx_draw_text_stamp(nx_context *ctx, const nx_text_stamp *stamp,
     nx_bitmap_view view; nx_point offset;
     nx_result result = nx_text_stamp_view(stamp, &view, &offset);
     if (result != NX_OK || !view.width) return result;
-    return nx_draw_bitmap(ctx, (nx_rect){origin.x + offset.x, origin.y + offset.y,
-        (float)view.width, (float)view.height}, view, tint);
+    nx_rect bounds;
+    result=nx_text_stamp_bounds(stamp,&bounds);
+    if(result!=NX_OK)return result;
+    bounds.x+=origin.x;bounds.y+=origin.y;
+    return nx_draw_bitmap(ctx,bounds,view,tint);
 }
 
 nx_result nx_label_stamp(nx_context *ctx, uint64_t id, uint64_t parent_id,
@@ -4542,7 +4567,6 @@ nx_result nx_theme_selector(nx_context *ctx,
         (desc->fonts && (!isfinite(desc->pixels_per_em) ||
                          desc->pixels_per_em < 1 ||
                          desc->pixels_per_em > 16384 ||
-                         floor(desc->pixels_per_em) != desc->pixels_per_em ||
                          !desc->glyph_cache_bytes)))
         return NX_ERROR_ARGUMENT;
     for (unsigned i = 0; i < 3; ++i) {
@@ -4976,7 +5000,7 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
         }
     }
     result = nx_draw_text_layout_impl(ctx, layout, origin, foreground,NULL,0,
-                                  glyph_cache_bytes,selection_rects,selection_count,selection_text);
+                                  glyph_cache_bytes,selection_rects,selection_count,selection_text,1,1);
     if (result != NX_OK) goto done;
     if (composing) {
         size_t count = 0;
@@ -5198,7 +5222,6 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
         desc->bounds.height <= 0.0f ||
         !isfinite(desc->pixels_per_em) || desc->pixels_per_em < 1.0 ||
         desc->pixels_per_em > 16384.0 ||
-        floor(desc->pixels_per_em) != desc->pixels_per_em ||
         !desc->glyph_cache_bytes || !isfinite(desc->minimum) ||
         !isfinite(desc->maximum) || desc->maximum < desc->minimum)
         return NX_ERROR_ARGUMENT;
@@ -5725,7 +5748,6 @@ nx_result nx_text_field_widget(nx_context *ctx,
         desc->bounds.height <= 0.0f ||
         !isfinite(desc->pixels_per_em) || desc->pixels_per_em < 1.0 ||
         desc->pixels_per_em > 16384.0 ||
-        floor(desc->pixels_per_em) != desc->pixels_per_em ||
         !desc->glyph_cache_bytes || (desc->password && desc->multiline) ||
         (!!desc->password != !!field->sensitive))
         return NX_ERROR_ARGUMENT;
@@ -6649,7 +6671,6 @@ static nx_result nx_plot_core(nx_context *ctx, const nx_plot_desc *desc,
         (desc->fonts && (!isfinite(desc->pixels_per_em) ||
                          desc->pixels_per_em < 1.0 ||
                          desc->pixels_per_em > 16384.0 ||
-                         floor(desc->pixels_per_em) != desc->pixels_per_em ||
                          !desc->glyph_cache_bytes))) return NX_ERROR_ARGUMENT;
     if (ctx->state != 1u) return NX_ERROR_STATE;
     nx_rect area = nx_plot_area(desc->bounds, desc->fonts != NULL);
@@ -6792,7 +6813,7 @@ nx_result nx_plot_multi(nx_context *ctx,const nx_plot_multi_desc *desc,nx_plot_s
 static int nx_dashboard_fonts_valid(const nx_font_collection *fonts,
                                     double ppem, size_t cache_bytes) {
     return !fonts || (isfinite(ppem) && ppem >= 1.0 && ppem <= 16384.0 &&
-                      floor(ppem) == ppem && cache_bytes > 0);
+                      cache_bytes > 0);
 }
 
 static nx_result nx_dashboard_text(nx_context *ctx,

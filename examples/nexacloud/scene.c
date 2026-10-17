@@ -15,7 +15,8 @@
 enum { OVERVIEW, FILES, TRANSFERS, FAVORITES, TRASH, SETTINGS };
 typedef struct cloud_text {
     char text[192];
-    unsigned size;
+    double size;
+    float density;
     unsigned width;
     uint64_t used_frame;
     nx_text_layout *layout;
@@ -39,6 +40,7 @@ struct cloud_scene {
     nx_font_collection *fonts;
     cloud_text text[512];
     size_t text_count;
+    size_t stamp_calls,stamp_live,stamp_fail_at;
     nx_text_field *search;
     uint8_t thumbnails[8][THUMB_W * THUMB_H * 4u];
     cloud_file files[20];
@@ -48,6 +50,7 @@ struct cloud_scene {
     float detail_x, detail_y;
     float scroll_x, scroll_y, dashboard_y, dashboard_x;
     float width, height, text_scale, requested_text_scale;
+    float pixel_scale,requested_pixel_scale;
     float nav_x, nav_y;
     uint64_t frame_number;
     uint64_t previous_focus;
@@ -68,11 +71,26 @@ static void notify(cloud_scene *s, const char *message) {
     snprintf(s->notice, sizeof(s->notice), "%s", message); s->notice_seconds = 5;
 }
 
+static void *stamp_allocate(void *user,size_t bytes) {
+    cloud_scene *s=user;
+    if(++s->stamp_calls==s->stamp_fail_at)return NULL;
+    void *p=malloc(bytes);if(p)s->stamp_live+=bytes;return p;
+}
+static void stamp_release(void *user,void *p,size_t bytes) {
+    cloud_scene *s=user;s->stamp_live-=bytes;free(p);
+}
+static nx_text_layout *stamp_fallback(cloud_scene *s,cloud_text *fallback) {
+    if(fallback)fallback->used_frame=s->frame_number;
+    return fallback?fallback->layout:NULL;
+}
+
 static nx_text_layout *wrapped_layout(cloud_scene *s, const char *text, unsigned ppem, float max_width) {
-    ppem = (unsigned)floorf(ppem * s->text_scale + 0.5f);
+    double logical_ppem=ppem*(double)s->text_scale;
     unsigned width = (unsigned)fminf(10000, fmaxf(1, floorf(max_width)));
+    cloud_text *fallback=NULL;
     for (size_t i = 0; i < s->text_count; ++i)
-        if (s->text[i].size == ppem && s->text[i].width == width && strcmp(s->text[i].text, text) == 0) {
+        if (s->text[i].size == logical_ppem && s->text[i].width == width && strcmp(s->text[i].text, text) == 0) {
+            if(s->text[i].density!=s->pixel_scale){fallback=&s->text[i];continue;}
             s->text[i].used_frame = s->frame_number;
             return s->text[i].layout;
         }
@@ -84,19 +102,20 @@ static nx_text_layout *wrapped_layout(cloud_scene *s, const char *text, unsigned
         for (size_t i = 0; i < s->text_count; ++i)
             if (s->text[i].used_frame != s->frame_number &&
                 (slot == 512 || s->text[i].used_frame < s->text[slot].used_frame)) slot = i;
-        if (slot == 512) return NULL;
+        if (slot == 512) return stamp_fallback(s,fallback);
     }
     nx_text_layout *new_layout = NULL;
     nx_text_stamp *new_stamp = NULL;
     if (nx_text_layout_create(s->fonts, text, strlen(text), NX_BIDI_LTR,
-                              ppem, width, &new_layout) != NX_OK) return NULL;
-    if (nx_text_stamp_create(new_layout, CACHE_BYTES, NULL, &new_stamp) != NX_OK) {
-        nx_text_layout_destroy(new_layout); return NULL;
+                              logical_ppem, width, &new_layout) != NX_OK) return stamp_fallback(s,fallback);
+    nx_allocator allocator={s,stamp_allocate,stamp_release};
+    if (nx_text_stamp_create_scaled(new_layout,s->pixel_scale,CACHE_BYTES,&allocator,&new_stamp) != NX_OK) {
+        nx_text_layout_destroy(new_layout); return stamp_fallback(s,fallback);
     }
     cloud_text *t = &s->text[slot];
     nx_text_stamp_destroy(t->stamp); nx_text_layout_destroy(t->layout);
     t->layout = new_layout; t->stamp = new_stamp;
-    memcpy(t->text, text, strlen(text) + 1u); t->size = ppem; t->width = width;
+    memcpy(t->text, text, strlen(text) + 1u); t->size = logical_ppem; t->width = width;t->density=s->pixel_scale;
     t->used_frame = s->frame_number;
     if (slot == s->text_count) ++s->text_count;
     return t->layout;
@@ -209,6 +228,7 @@ cloud_scene *cloud_create(const char *font_path) {
     cloud_scene *s = calloc(1, sizeof(*s));
     if (!s) return NULL;
     s->text_scale = s->requested_text_scale = 1; s->details = 1; s->selected = 0;
+    s->pixel_scale=s->requested_pixel_scale=1;
     FILE *f = fopen(font_path, "rb");
     long length = -1;
     if (f && fseek(f, 0, SEEK_END) == 0) length = ftell(f);
@@ -261,6 +281,10 @@ int cloud_set_text_scale(cloud_scene *s, float scale) {
     s->requested_text_scale = scale; return 1;
 }
 float cloud_text_scale(const cloud_scene *s) { return s ? s->requested_text_scale : 1; }
+int cloud_set_pixel_scale(cloud_scene *s,float scale) {
+    if(!s||!isfinite(scale)||scale<.125f||scale>8)return 0;
+    s->requested_pixel_scale=scale;return 1;
+}
 
 static int sidebar(cloud_scene *s, float width) {
     TRY(nx_fill_rect(s->ui, box(0, 0, width, s->height), color(s, NX_COLOR_BACKGROUND)));
@@ -874,6 +898,7 @@ int cloud_frame(cloud_scene *s, float width, float height, double dt) {
         for (size_t i = 0; i < s->text_count; ++i) s->text[i].used_frame = 0;
     }
     s->text_scale = s->requested_text_scale;
+    s->pixel_scale=s->requested_pixel_scale;
     nx_input_snapshot input; TRY(nx_frame_input(s->ui, &input));
 #ifdef __APPLE__
     const uint32_t primary = NX_MOD_SUPER;
@@ -963,8 +988,42 @@ static int key(cloud_scene *s, nx_key code) {
     TRY(nx_context_queue_event(s->ui, &e)); return 1;
 }
 
+static int density_smoke(cloud_scene *s) {
+    REQUIRE(cloud_frame(s,1440,1040,0));
+    size_t count;TRY(nx_semantics_count(s->ui,&count));
+    nx_rect *bounds=malloc(count*sizeof(*bounds));uint64_t *ids=malloc(count*sizeof(*ids));
+    REQUIRE(bounds&&ids&&s->text_count);
+    for(size_t i=0;i<count;++i){nx_semantic_view node;TRY(nx_semantics_get(s->ui,(uint32_t)i,&node));
+        bounds[i]=node.bounds;ids[i]=node.id;}
+    cloud_text first=s->text[0];nx_bitmap_view original;nx_point offset;
+    TRY(nx_text_stamp_view(first.stamp,&original,&offset));
+    REQUIRE(!cloud_set_pixel_scale(s,NAN)&&!cloud_set_pixel_scale(s,0)&&!cloud_set_pixel_scale(s,9));
+    REQUIRE(cloud_set_pixel_scale(s,2)&&s->pixel_scale==1);
+    nx_bitmap_view borrowed;TRY(nx_text_stamp_view(first.stamp,&borrowed,&offset));
+    REQUIRE(borrowed.pixels==original.pixels); /* setter does not invalidate prior commands */
+    s->stamp_fail_at=s->stamp_calls+1;
+    REQUIRE(cloud_frame(s,1440,1040,0));s->stamp_fail_at=0;
+    REQUIRE(s->text[0].stamp==first.stamp&&s->text[0].used_frame==s->frame_number);
+    REQUIRE(cloud_frame(s,1440,1040,0));
+    int found=0;
+    for(size_t i=0;i<s->text_count;++i)if(s->text[i].density==2&&s->text[i].size==first.size&&
+        s->text[i].width==first.width&&!strcmp(s->text[i].text,first.text)){
+        TRY(nx_text_stamp_view(s->text[i].stamp,&borrowed,&offset));
+        REQUIRE(borrowed.width>original.width);found=1;
+    }REQUIRE(found);
+    const float scales[]={1.25f,1.5f,2,1};
+    for(unsigned k=0;k<4;++k){REQUIRE(cloud_set_pixel_scale(s,scales[k])&&cloud_frame(s,1440,1040,0));
+        size_t current;TRY(nx_semantics_count(s->ui,&current));REQUIRE(current==count);
+        for(size_t i=0;i<count;++i){nx_semantic_view node;TRY(nx_semantics_get(s->ui,(uint32_t)i,&node));
+            REQUIRE(node.id==ids[i]&&!memcmp(&node.bounds,&bounds[i],sizeof(node.bounds)));}
+        size_t calls=s->stamp_calls;REQUIRE(cloud_frame(s,1440,1040,0)&&s->stamp_calls==calls);
+    }
+    free(ids);free(bounds);return 1;
+}
+
 int cloud_smoke(cloud_scene *s, const char *prefix) {
     char path[1024];
+    REQUIRE(density_smoke(s));
     snprintf(path, sizeof(path), "%s-overview.ppm", prefix); REQUIRE(cloud_export(s, path, 1440, 1040));
     REQUIRE(click_at(s, 100, 195)); REQUIRE(cloud_frame(s, 1440, 1040, 0)); REQUIRE(s->page == FILES);
     snprintf(path, sizeof(path), "%s-files.ppm", prefix); REQUIRE(cloud_export(s, path, 1440, 1040));

@@ -11,7 +11,7 @@ clicking it changes expansion while clicking the rest of an item selects it.
 `nx_property_row` accepts a boolean, finite ranged number, or UTF-8 text
 value. It copies the accessible name and current value into the frame's
 semantic tree and paints an optional font-backed label. The minimum row
-height is 16 logical pixels. With a font, supply an integer `pixels_per_em`
+height is 16 logical pixels. With a font, supply a finite `pixels_per_em`
 from 1 to 16384 and a positive glyph-cache budget. A number needs a finite
 `minimum < maximum`, an in-range value, and a positive finite `step`. A unit
 can contain at most 64 UTF-8 bytes.

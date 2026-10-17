@@ -4,6 +4,11 @@
 #include "nexaui/nexaui.h"
 #include <math.h>
 
+/* Physical-coordinate recording for stamp construction; keeps the original
+   shaped layout and line breaks rather than creating a scaled replacement. */
+nx_result nx_draw_text_layout_pixels(nx_context *context,
+    const nx_text_layout *layout, float raster_scale, size_t cache_bytes);
+
 static inline int nx_valid_rect(nx_rect r) {
     return isfinite(r.x) && isfinite(r.y) && isfinite(r.width) &&
            isfinite(r.height) && r.width >= 0.0f && r.height >= 0.0f &&

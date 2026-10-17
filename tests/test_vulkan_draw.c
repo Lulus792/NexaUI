@@ -2,6 +2,8 @@
 #include "wayland/window_internal.h"
 #include "x11/window_internal.h"
 #include "paint_scene.h"
+#include "search_font_fixture.h"
+#include "text_density_scene.h"
 #include <X11/Xutil.h>
 
 #include <float.h>
@@ -434,6 +436,13 @@ static int test_paints(nx_window *window) {
         CHECK(nx_frame_commands(ui,&paint_commands,&paint_count)==NX_OK);
         CHECK(compare(window,renderer,paint_commands,paint_count,1+density*.5,(nx_color){.02f,.04f,.08f,1})==0);
         paint_scene_free(images);nx_context_destroy(ui);
+    }
+    const float scales[]={1,1.25f,1.5f,2};
+    for(unsigned i=0;i<4;++i){nx_context *ui=NULL;nx_text_stamp *stamp=NULL;
+        CHECK(nx_context_create(NULL,&ui)==NX_OK&&!text_density_scene(ui,&stamp,scales[i]));
+        const nx_command *commands;size_t count;CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
+        CHECK(compare(window,renderer,commands,count,scales[i],(nx_color){.02f,.04f,.08f,1})==0);
+        nx_context_destroy(ui);nx_text_stamp_destroy(stamp);
     }
     CHECK(nx_vulkan_renderer_destroy(renderer)==NX_OK);
     return 0;

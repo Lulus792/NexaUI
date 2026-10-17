@@ -652,7 +652,7 @@ typedef struct nx_widget_desc {
    owns state and a reusable envelope buffer of at least one element per
    logical plot pixel, capped at 16384. Ranges are finite, increasing and
    caller-controlled; the widget never changes them. Optional fonts draw
-   numeric tick labels at integer pixels_per_em in [1,16384]. Zero-initialize
+   numeric tick labels at finite pixels_per_em in [1,16384]. Zero-initialize
    state before its first frame. */
 typedef struct nx_plot_desc {
     uint64_t id, parent_id;
@@ -683,7 +683,7 @@ NX_API nx_result nx_plot(nx_context *context, const nx_plot_desc *desc,
    immutable simulation snapshot. Panels borrow records only for the call and
    visit at most the rows that fit after first_row; scrolling stays with the
    application. IDs must be nonzero and unique among visible records and the
-   panel. Optional fonts draw labels and numbers at integer pixels_per_em in
+   panel. Optional fonts draw labels and numbers at finite pixels_per_em in
    [1,16384]. A zero row_height chooses a theme-based minimum; supplied fonts
    may increase it. At most 4096 rows are visited per call. */
 typedef enum nx_telemetry_level {
@@ -1372,7 +1372,7 @@ typedef struct nx_numeric_field_desc {
     nx_rect bounds;
     nx_utf8_span name;
     const nx_font_collection *fonts; /* Borrowed through the widget call. */
-    double pixels_per_em; /* Integer in [1, 16384] for text drawing. */
+    double pixels_per_em; /* Finite in [1, 16384] for text drawing. */
     size_t glyph_cache_bytes;
     double minimum, maximum; /* Finite inclusive validation range. */
     int disabled;
@@ -1728,20 +1728,29 @@ NX_API nx_result nx_draw_bitmap(nx_context *context, nx_rect dest,
                                 nx_bitmap_view bitmap, nx_color tint);
 /* Rasterize and append a positioned layout as A8 bitmap commands. The context
    owns copies of the masks until its next begin_frame or destruction, so cache
-   eviction cannot invalidate the command stream. The layout's ppem must be an
-   integer in [1, 16384]. cache_bytes is a per-font mask-cache budget and must
-   be positive. On failure, no commands are appended. Fonts and their source
+   eviction cannot invalidate the command stream. The layout's ppem must be
+   finite in [.125, 16384], including fractional sizes. cache_bytes is a
+   positive per-font mask-cache budget. On failure, no commands are appended. Fonts and their source
    bytes must remain valid for the duration of this call. */
 NX_API nx_result nx_draw_text_layout(nx_context *context,
                                      const nx_text_layout *layout,
                                      nx_point origin, nx_color tint,
                                      size_t cache_bytes);
+/* Rasterize at layout ppem * raster_scale without reshaping/reflowing the
+   layout. Destination geometry stays in logical coordinates. Scale must be
+   finite in [.125,8]; physical ppem must remain in [.125,16384]. Match scale to
+   renderer density for native-resolution masks. Raster phase is fixed per
+   glyph; placement still uses nearest-neighbor sampling, not phase-aware AA.
+   Lifetime, rollback and per-font cache budget match nx_draw_text_layout. */
+NX_API nx_result nx_draw_text_layout_scaled(nx_context *context,
+    const nx_text_layout *layout, nx_point origin, nx_color tint,
+    float raster_scale, size_t glyph_cache_bytes);
 
 /* Rasterize a monochrome layout once into an immutable, tightly bounded A8
    stamp. It owns its pixels and copied text; fonts/layout may be released after
    creation. Empty/whitespace-only layouts produce an empty stamp. Creation
    uses the existing glyph rasterizer and software compositor, with a maximum
-   16384 pixels per dimension and 4194304 ink pixels. Allocator is optional.
+   16384 pixels per dimension and 4194304 stored pixels. Allocator is optional.
    This caches one pixel phase/size: recreate after changing font size. Drawing
    is ordinary nearest-neighbor bitmap sampling; tint is applied after glyph
    coverage is combined, unlike per-glyph tinted compositing at overlaps. */
@@ -1749,14 +1758,30 @@ NX_API nx_result nx_text_stamp_create(const nx_text_layout *layout,
                                        size_t glyph_cache_bytes,
                                        const nx_allocator *allocator,
                                        nx_text_stamp **out_stamp);
+/* Density-aware variant. Logical layout metrics and line breaks are retained;
+   each glyph is rasterized at ppem * raster_scale before stamp composition.
+   Scale/physical ppem limits match nx_draw_text_layout_scaled. Construction's
+   own live allocations are capped at 64 MiB (font decoding's allocator is
+   separate); final A8 limits match nx_text_stamp_create. On error out is NULL.
+   The legacy constructor is this operation at scale 1. Rebuild a candidate
+   between frames when density changes, retain the old stamp on failure, and
+   release replaced stamps after renderer consumption. */
+NX_API nx_result nx_text_stamp_create_scaled(const nx_text_layout *layout,
+    float raster_scale, size_t glyph_cache_bytes, const nx_allocator *allocator,
+    nx_text_stamp **out_stamp);
 NX_API void nx_text_stamp_destroy(nx_text_stamp *stamp);
 NX_API nx_result nx_text_stamp_text(const nx_text_stamp *stamp,
                                      nx_utf8_span *out_text);
-/* View and offset from the original layout origin; a blank stamp returns a
-   zero view. Borrowed until destroy. Keep stamps alive until rendering ends. */
+/* Physical A8 view and logical offset from the original layout origin; a blank
+   stamp returns a zero view. For scaled stamps use nx_text_stamp_bounds for the
+   logical destination size; view width/height are physical pixels. Borrowed
+   until destroy. Keep stamps alive until rendering ends. */
 NX_API nx_result nx_text_stamp_view(const nx_text_stamp *stamp,
                                      nx_bitmap_view *out_view,
                                      nx_point *out_offset);
+/* Logical ink rectangle relative to the original layout origin, including
+   raster padding. This is not the layout's advance/wrap measurement. */
+NX_API nx_result nx_text_stamp_bounds(const nx_text_stamp *stamp,nx_rect *out_bounds);
 NX_API nx_result nx_draw_text_stamp(nx_context *context, const nx_text_stamp *stamp,
                                      nx_point origin, nx_color tint);
 NX_API nx_result nx_label_stamp(nx_context *context, uint64_t id, uint64_t parent_id,
@@ -2106,7 +2131,7 @@ NX_API nx_result nx_rasterize_glyph_a8(const nx_glyph_outline_buffer *outline,
                                       size_t pixel_buffer_size,
                                       const nx_allocator *allocator);
 
-/* A per-font, single-threaded LRU cache of A8 masks at integer pixels-per-em.
+/* A per-font, single-threaded LRU cache of A8 masks.
    The font and its source bytes must outlive the cache. max_bytes limits resident
    entries and pixels, excluding the cache object and temporary raster work.
    A returned view remains valid until the next cache miss, clear or destroy.
@@ -2118,6 +2143,11 @@ NX_API void nx_glyph_cache_destroy(nx_glyph_cache *cache);
 NX_API nx_result nx_glyph_cache_get(nx_glyph_cache *cache,
                                    uint16_t glyph_index, uint16_t pixels_per_em,
                                    nx_glyph_mask_view *out_mask);
+/* Exact finite double ppem in [.125,65535], with no size quantization. Shares
+   cache entries with the integer getter. Fixed glyph raster phase; no TrueType
+   hinting or LCD/subpixel-color rendering is added. */
+NX_API nx_result nx_glyph_cache_get_fractional(nx_glyph_cache *cache,
+    uint16_t glyph_index,double pixels_per_em,nx_glyph_mask_view *out_mask);
 NX_API void nx_glyph_cache_clear(nx_glyph_cache *cache);
 NX_API nx_result nx_glyph_cache_get_stats(const nx_glyph_cache *cache,
                                          nx_glyph_cache_stats *out_stats);

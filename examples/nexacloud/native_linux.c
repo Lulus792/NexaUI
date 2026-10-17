@@ -34,7 +34,7 @@ static int frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
     if (nx_window_route_events(window, cloud_context(scene), &routed) != NX_OK) return 0;
     if (info.should_close) return 1;
     if (info.width <= 0 || info.height <= 0) return nx_window_poll(window, 16) == NX_OK;
-    if (!cloud_frame(scene, info.width, info.height, dt) ||
+    if (!cloud_set_pixel_scale(scene,info.scale)||!cloud_frame(scene, info.width, info.height, dt) ||
         nx_window_set_cursor(window, cloud_cursor(scene)) != NX_OK) return 0;
     nx_result accessibility=nx_window_publish_semantics(window,cloud_context(scene));
     if (accessibility!=NX_OK && accessibility!=NX_ERROR_UNSUPPORTED) return 0;

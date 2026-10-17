@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-18 Europe/Berlin",
+  "environment": {
+    "windows": "Windows10.0.26200/MSVC19.38 Debug x64",
+    "linux": "Alpine-Dev WSL2 Alpine3.24.2 Clang22.1.3 ASan/UBSan/LSan and GCC shared"
+  },
+  "sources_sha256": {
+    "src/nexaui.c": "9b7a82344adeb937770308a060c71f9912e5d96954e09c58c8191e87c2f5d243",
+    "src/glyph_cache.c": "c49fb0653565175094fd6c54870fcedf6b6c74b2a270637c13ec02a259ed4251",
+    "src/text_stamp.c": "cb2f3f0175f04918cd356d7fdbbd2ebe778c91dd3ec0cdd5506991f9776210d1",
+    "include/nexaui/nexaui.h": "4fed94024f0041e80e808d243b688873289563ee36fac13c3010b3c680a3be6a",
+    "tests/test_text_density.c": "506ce9282dc232accf56d29f474829e4980273ea6b35dbef7a70a95eb690455b",
+    "tests/text_density_scene.h": "3582e08c733ed3a7b14a93ca941ed111e13ac268e5e2ffd6b9d16378bd000044",
+    "examples/nexacloud/scene.c": "0718212b0086fcb42974f1d7c8d6d4eae6297d7a4f8d2e804f532b48268e3bf9",
+    "examples/16_text_density/main.c": "f4843425765673d7adec731220f319bfaae3b7ca2f39c5c381750aea83627ab2"
+  },
+  "images": [
+    {
+      "font": "segoe",
+      "font_sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e",
+      "image": "text-density-images/segoe.png",
+      "width": 1024,
+      "height": 320,
+      "png_sha256": "f3cb995434d95bc2650b16c0b2b81606e50f26064aa6857398790594b96eef3e",
+      "ppm_sha256": "d4bcfbc182dc51fbe13db3eebbef5216396ac3f8661b23c9ee3d902385523b2d",
+      "windows_static_and_linux_sanitizer_bytes_identical": true
+    },
+    {
+      "font": "arial",
+      "font_sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+      "image": "text-density-images/arial.png",
+      "width": 1024,
+      "height": 320,
+      "png_sha256": "341896d740a30b37b6b0b469317ea09392054b880dab21d540da29b0719a5e0d",
+      "ppm_sha256": "c7982f189935aae1fa15fa739bda0041ad54b88166aabd3849a7362c94713d7f",
+      "windows_static_and_linux_sanitizer_bytes_identical": true
+    }
+  ],
+  "counterexample": {
+    "baseline": {
+      "revision": "50040831c5a700b19b4086df79260594575af6b2",
+      "sources_sha256": {
+        "cache.c": "2605a9edc568c1b7b685fffc4b0dea09718b1836d89469dc0a9bde24ee3d931d",
+        "core.c": "888c5be700ea34d43c6fad32f74abf5e7fc67d6bd8760f4b8ba1b9fa7ea2ffee",
+        "core_prefix.h": "432a535e9f5ab7d398298b84eb5fe7e9491ed38781ff8fede29c80fd7a809ebc",
+        "extra_prefix.h": "904e7928d2bb8ebf44f4780eb9ea0366cbaa00300404643d00cc32023a7f5bff",
+        "glyph_cache.c": "b2d1dd8447778c15f72d6e7cddea0c0889dee83f8c58f0f419888c266b9f2a4d",
+        "internal.h": "3bf10e0896a208da68640c45108d69d8294cabfe1ebdc86cb5fef00ba3ae53d6",
+        "nexaui.c": "e7be32a66f2c8a76f3536b864ded43bf62af4dff28130adb8f54835592224910",
+        "paint.c": "1e9f63c9e72ec843da28bd636d700404b9228137bc3960607063145370cb779d",
+        "probe.c": "04fed457efc7ffc34a60472b51d484325807954919839f80b96cbbd02196f45c",
+        "stamp.c": "f764dbed8d748fb6c9621ffce69ddae0882d612234d31fcf48f5da6aa332e893",
+        "text_stamp.c": "8b31bbf0c7ea4f8b7a6b72ddc5c246ebccfac65946783d4c4daeb1faa7920158"
+      },
+      "scope": "Old core/cache/stamp compiled with isolated symbols beside current unchanged font/layout helpers. Compare the existing fractional draw/stamp entry points; this is not a complete old release binary."
+    },
+    "before_command": "out/text-before-5004083/build/before reject",
+    "after_command": "out/text-before-5004083/build/after accept",
+    "before_observed": "fractional layout draw=1 stamp=1",
+    "after_observed": "fractional layout draw=0 stamp=0",
+    "exit_codes": [
+      0,
+      0
+    ],
+    "baseline_binary_sha256": "526ec8f5d3d1a2672e0fd461002fb710dfb7dead894e6d24b89e9e0603fae72d",
+    "current_probe_binary_sha256": "f0ed132ac909b6369f2bfa9a9fbb4d77f56b30b92828c72502b215265d9ae504",
+    "host_shared_library_sha256": "8916a6262998c791ccd234b1d43579d62baceb6601b1587c3c702437bf588fe1",
+    "unchanged_shared_helpers_sha256": {
+      "font.c": "9b4a85c7cef4d7461f1c1a9901db071e8e7838ef2310ae014fadff44defd3f0c",
+      "font_collection.c": "801cbb9b13804dd6ea72d6de1e394109ac455db38f011d366b531968cd6128b4",
+      "text_layout.c": "d9e317565aeb7c95a90537e05e0b886a8ce03341dbeae09beeab5d0cbdb5d006",
+      "shape.c": "0128cd900a68312a6f36358b31c9dfcc683bd6e28c614f58aee51fc9923a7f22"
+    }
+  },
+  "pixel_cases": {
+    "densities": [
+      0.125,
+      1,
+      1.25,
+      1.5,
+      2,
+      8
+    ],
+    "comparison": "Full RGBA against physical-position glyph composition, direct and stamp paths; sources destroyed before cached drawing",
+    "exact_cache_key": "20,20.5,nextafter(20.5,21); exact double equality, no size quantization",
+    "font_backed_widgets": [
+      "text editor19.25",
+      "numeric editor19.25",
+      "plot ticks12.5"
+    ],
+    "constructor_allocation_failures": 16,
+    "direct_draw_failure_sweep": true,
+    "construction_cap_bytes": 67108864,
+    "observed_peak_requested_bytes": 67100212,
+    "tracked_live_after_failure": 0,
+    "example_density_changes": "1\u21922 with forced allocation failure, retry;1.25/1.5/2/1 with identical semantic IDs/bounds and no new warm stamp allocations"
+  },
+  "local_tests": [
+    {
+      "command": "ctest --test-dir build -C Debug --output-on-failure --timeout30",
+      "passed": 105,
+      "skipped": 0,
+      "exit": 0,
+      "elapsed_seconds": 294.53,
+      "log_sha256": "6ff7b4366f0029e64e27410e7f3e9f374c1fae2e9eefef0ba34427d0d7b7cc96"
+    },
+    {
+      "command": "ctest --test-dir build-shared -C Debug -R nexaui_(text_density|text_stamp|glyph_cache|nexacloud_example|nexacloud_text_reflow|nexacloud_native_example|d3d12_widgets|d3d12_widgets_warp)$",
+      "passed": 8,
+      "exit": 0,
+      "elapsed_seconds": 25.97,
+      "log_sha256": "3ff635134b88cb510ae912cd5a4fc4bf8cce74177acd189419ff041fef661f96"
+    },
+    {
+      "command": "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 NEXAUI_REQUIRE_VULKAN=1 ctest --test-dir out/vulkan-sanitize -R nexaui_(text_density|glyph_cache|vulkan_x11_draw|nexacloud_text_reflow|nexacloud_example|nexacloud_vulkan_x11)$",
+      "passed": 5,
+      "exit": 0,
+      "elapsed_seconds": 51.61,
+      "note": "The last alternative is not a registered name and did not contribute a test; native example names are checked separately below.",
+      "log_sha256": "aa549dd3ec521ef2985bc6a60822a67f9c5ec20e7dc0681c1e863c408ff348fc"
+    },
+    {
+      "command": "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 NEXAUI_REQUIRE_VULKAN=1 ctest --test-dir out/vulkan-sanitize -R nexaui_(text_density|nexacloud_x11_native_example|nexacloud_wayland_native_example)$",
+      "passed": 3,
+      "exit": 0,
+      "skipped": 0,
+      "elapsed_seconds": 20.07,
+      "log_sha256": "386a47d368ed967aea728abea37a4bdf1290ac7cd38295795fdacf377c7359ca"
+    }
+  ],
+  "scope_notes": [
+    "Local suites preceded the final additional widget assertions; final rebuilt text-density target runs are recorded separately and exact-source full desktop CI follows.",
+    "The earlier Linux five-case run overlapped its rebuild; it is supporting/intermediate evidence. The subsequent three-case native run starts after its build completed.",
+    "Native D3D12 hardware/WARP and Vulkan fixtures cover1/1.25/1.5/2x, whole-buffer tolerance remains0.",
+    "No physical monitor/DPI, Retina, screenreader, CPU/GPU performance or general font-quality acceptance inferred."
+  ],
+  "final_unit_runs": [
+    {
+      "variant": "windows-shared",
+      "command": "cmake --build <variant> --target nexaui_text_density_tests, then execute binary; detect_leaks and halt_on_error enabled for sanitizer variant",
+      "exit": 0,
+      "log_sha256": "89fed309c10292b5d90a4c00ac62bd7da81008be42263acc75f3b331919e8c5b",
+      "includes_final_widget_and_success_assertions": true
+    },
+    {
+      "variant": "linux-sanitize",
+      "command": "cmake --build <variant> --target nexaui_text_density_tests, then execute binary; detect_leaks and halt_on_error enabled for sanitizer variant",
+      "exit": 0,
+      "log_sha256": "89fed309c10292b5d90a4c00ac62bd7da81008be42263acc75f3b331919e8c5b",
+      "includes_final_widget_and_success_assertions": true
+    },
+    {
+      "variant": "linux-shared",
+      "command": "cmake --build <variant> --target nexaui_text_density_tests, then execute binary; detect_leaks and halt_on_error enabled for sanitizer variant",
+      "exit": 0,
+      "log_sha256": "89fed309c10292b5d90a4c00ac62bd7da81008be42263acc75f3b331919e8c5b",
+      "includes_final_widget_and_success_assertions": true
+    }
+  ]
+}

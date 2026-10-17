@@ -11,6 +11,14 @@ search, grid/list views, file selection, a scrollable inspector, description
 editing, favorites, local folder creation and reversible example-file deletion.
 Upload, share and preview actions open explicit demonstration dialogs.
 
+Native runners pass the window's pixel density to the text cache. Text
+preferences remain logical sizes, including fractional ppem; density changes
+build replacement stamps after begin-frame without changing line breaks.
+Stable frames reuse stamps. Failed density rebuilds retain a compatible old
+stamp and retry later. The smoke workflow checks a forced failure/retry, cache
+reuse and unchanged semantic bounds at 1/1.25/1.5/2×. This does not certify
+physical monitor switching or native screenreader acceptance.
+
 The reusable [component APIs](../../docs/concepts/cloud-components.md) are part
 of NexaUI itself: Midnight theme, rounded surfaces/cards, vector icons, action
 variants, progress displays and immutable cached text stamps. App data stays in

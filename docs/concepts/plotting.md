@@ -34,7 +34,7 @@ an upper bound for the inner plot area. An insufficient buffer returns
 is empty, the axes and grid still render.
 
 The widget paints a surface, border, five horizontal and vertical grid lines,
-two axes and a theme-colored trace. A supplied font collection plus integer
+two axes and a theme-colored trace. A supplied font collection plus finite
 `pixels_per_em` in [1,16384] and positive `glyph_cache_bytes` adds numeric tick labels; without fonts,
 the lines and ticks remain. Colors come from the active NexaUI theme,
 including dark, light and high-contrast presets. The trace and cursor are

@@ -10,11 +10,11 @@ NexaUI has begun its own font stack with a bounded SFNT directory parser. `nx_fo
 
 `nx_rasterize_glyph_a8` now turns decoded outlines into caller-owned A8 coverage masks. It inserts implied on-curve midpoints between consecutive off-curve points, flattens quadratic BÃ©zier spans within a pixel-space tolerance, and fills using the nonzero winding rule. Each pixel uses a deterministic 4Ã—4 sample grid. The implementation is guided by the [TrueType fundamentals description of outlines and scan conversion](https://learn.microsoft.com/en-us/typography/opentype/spec/ttch01). It does not interpret TrueType instructions, perform grid fitting or apply dropout control, so small-size results can differ from native font rasterizers. Dimensions, edge count, recursion and scanline work are bounded. The resulting mask can be drawn by the headless renderer as `NX_BITMAP_A8`.
 
-`nx_glyph_cache` reuses these A8 masks for a single font and integer pixels-per-em size. A bounded resident-byte budget includes cache entry headers and mask pixels. New masks evict least recently used entries when needed; hit, miss, eviction, resident-byte and entry counters are available for diagnostics. Mask views expose baseline offsets and pixel advance. The font and its source bytes outlive the cache, and a borrowed view is invalidated by the next miss, clear or destroy. Temporary outline and raster buffers can briefly exceed the resident cache budget. The cache currently stores individual masks; shared atlas packing and GPU upload remain future work.
+`nx_glyph_cache` reuses these A8 masks for a single font. The integer getter remains compatible; `nx_glyph_cache_get_fractional` accepts exact finite double sizes in [.125,65535], with no size quantization. A bounded resident-byte budget includes cache entry headers and mask pixels. New masks evict least recently used entries when needed; hit, miss, eviction, resident-byte and entry counters are available for diagnostics. Mask views expose baseline offsets and pixel advance. The font and its source bytes outlive the cache, and a borrowed view is invalidated by the next miss, clear or destroy. Temporary outline and raster buffers can briefly exceed the resident cache budget. The cache currently stores individual masks; shared atlas packing and GPU upload remain future work.
 
 `nx_font_collection` holds an ordered list of borrowed font faces and selects the first nonzero glyph for a Unicode scalar. It rejects duplicate faces, requires a supported Unicode `cmap`, and is limited to 64 faces. A missing scalar is represented by a null font and glyph zero, allowing the caller to choose a replacement policy. The collection does not own fonts or source bytes. Selection currently considers coverage only; language, style, shaping, variation selectors and color-glyph capability are not yet part of the decision. A selected face may have a CFF outline that the current rasterizer cannot draw.
 
-`nx_shape_text` produces logical glyphs and runs with bounded GSUB single, ligature, contextual and chained contextual substitutions, GPOS single/pair positioning and mark-to-base/ligature/mark attachment, and classic `kern` fallback. `nx_text_layout_create` adds Unicode line wrapping, hard breaks, line-local reshaping, bidi positions, grapheme carets, hit testing and selection rectangles. `nx_draw_text_layout` converts those positioned glyphs to A8 bitmap commands. It copies each mask into context-owned memory that remains valid until the next `nx_begin_frame` or context destruction, including after temporary glyph caches are released. Drawing currently requires an integer pixels-per-em layout and a positive per-font cache budget. A failed draw call rolls back its commands and owned masks.
+`nx_shape_text` produces logical glyphs and runs with bounded GSUB single, ligature, contextual and chained contextual substitutions, GPOS single/pair positioning and mark-to-base/ligature/mark attachment, and classic `kern` fallback. `nx_text_layout_create` adds Unicode line wrapping, hard breaks, line-local reshaping, bidi positions, grapheme carets, hit testing and selection rectangles. `nx_draw_text_layout` converts those positioned glyphs to A8 bitmap commands. It copies each mask into context-owned memory that remains valid until the next `nx_begin_frame` or context destruction, including after temporary glyph caches are released. Drawing accepts finite fractional pixels-per-em layouts in [.125,16384] and requires a positive per-font cache budget. A failed draw call rolls back its commands and owned masks.
 
 The supported OpenType subset includes GSUB types 1/4/5/6 and extension type 7, and GPOS types 1/2/4/5/6 and extension type 9. Selected `mark`, `mkmk`, `abvm` and `blwm` features participate in positioning. GDEF class definitions and mark sets implement lookup filtering; `IgnoreMarks` takes precedence over mark filters, and a mark filtering set takes precedence over a mark attachment class. A selected lookup that requires missing class/filter data returns an error. This tightens the previous behavior that skipped such flags. Unsupported lookup kinds still remain outside the subset. Public output arrays and counts remain unchanged on malformed-font failure.
 
@@ -82,3 +82,44 @@ the whole contextual root before mutation; malformed data and exhausted budgets
 return errors with public outputs unchanged. GSUB 2/3/8, contextual/cursive GPOS,
 script-specific joining/reordering and variable-font shaping remain open.
 See the [context report](../quality/gsub-context-report.md).
+
+## Raster density without changing layout
+
+`nx_draw_text_layout_scaled` rasterizes at `layout_ppem * raster_scale` while
+recording logical destination geometry. Scale must be finite in [.125,8] and
+the resulting physical ppem must remain in [.125,16384]. It retains the supplied
+layout's shaping, line breaks, carets and selection coordinates. It does not
+reshape at physical ppem or reinterpret its existing GPOS Device adjustments.
+
+`nx_text_stamp_create_scaled` builds an owned A8 stamp from the same physical
+glyph masks. Its bitmap view has physical dimensions; `nx_text_stamp_bounds`
+provides the logical rectangle relative to the original layout origin. The
+ordinary stamp draw/label/action paths use that rectangle automatically. The
+legacy constructor uses density 1. Constructors clear the output on error;
+keep the previous handle in a separate variable until a replacement succeeds.
+
+```c
+nx_text_stamp *candidate = NULL;
+nx_result result = nx_text_stamp_create_scaled(layout, window_density,
+    2 * 1024 * 1024, NULL, &candidate);
+/* If successful, use candidate for subsequent frames. Release replaced stamps
+   after their renderer consumption; on failure retain the old handle. */
+```
+
+Construction's own live allocations cap at 64 MiB. Final masks retain the
+16384-per-axis and 4,194,304-pixel limits. Borrowed-font outline decoding uses
+the font's separate allocator; its existing parser bounds still apply. Invalid
+scales/physical ppem return ARGUMENT, resource limits return LIMIT, allocation
+failure returns MEMORY. Failed direct draws roll back appended commands/masks.
+Layouts/fonts/source bytes can die after stamp creation or direct recording;
+stamps must survive renderer consumption, and direct masks survive until the
+context's next begin-frame/destruction. Allocator user state outlives its stamp.
+
+Higher density produces new outline samples rather than enlarging the old mask.
+Raster phase remains fixed per glyph and bitmap placement remains nearest-neighbor.
+There is no phase-aware AA, TrueType hinting, LCD rendering, color-glyph support
+or new atlas here. Physical-pixel alignment helps preserve the baked phase;
+logical ink bounds include raster padding and can differ slightly by density,
+while the original layout measurements remain unchanged. The
+[validation report](../quality/text-density-report.md) and
+[comparison example](../../examples/16_text_density/README.md) record the scope.

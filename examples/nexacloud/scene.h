@@ -12,6 +12,9 @@ nx_cursor_shape cloud_cursor(const cloud_scene *scene);
    finite values in [1,2] are accepted without changing an in-flight command stream. */
 int cloud_set_text_scale(cloud_scene *scene, float scale);
 float cloud_text_scale(const cloud_scene *scene);
+/* Physical pixels per logical unit. Applied at the next begin-frame so a
+   density change never invalidates an already recorded stamp. */
+int cloud_set_pixel_scale(cloud_scene *scene,float scale);
 int cloud_frame(cloud_scene *scene, float width, float height, double dt);
 int cloud_export(cloud_scene *scene, const char *path, float width, float height);
 /* The scripted workflow uses the same normalized input as native windows. */

@@ -77,12 +77,21 @@ requires an active frame. Stamps are immutable and can be reused with different
 colors. Keep each stamp alive while a renderer can still read its pixels.
 
 A stamp caches a particular raster size and phase. Recreate it when the desired
-font size changes. Integer logical origins preserve its baked sampling phase;
-the reference scene snaps cached label origins to whole logical pixels.
+font size or density changes. `nx_text_stamp_create_scaled` keeps the shaped
+logical layout while rasterizing at `ppem * raster_scale`; `nx_text_stamp_bounds`
+returns the logical destination rectangle, while the bitmap view has physical
+pixel dimensions. Match raster density to the renderer and align placement to
+its physical pixel grid when preserving the baked phase matters. The example
+keys stamps by logical size, wrap width and density, applies a new density at
+begin-frame, and retains old cache entries through their command consumption.
 As with other bitmaps, scaled drawing uses nearest-neighbor
 sampling. It is intended for repeated labels, rather than replacing text layout,
-editing, rich text or resolution-aware font selection. Combining monochrome
+editing, rich text or font-family selection. Construction's own live allocations
+cap at 64 MiB, separately from allocations by borrowed fonts while decoding.
+Combining monochrome
 coverage before tinting can differ from separately tinting overlapping glyphs;
 the stamp contract does not promise byte equality with per-glyph compositing
 for every color and overlap. The unit test checks white-ink output, font-release
 lifetime, blank output and every creation allocation failure.
+See the [fractional/density validation](../quality/text-density-report.md) and
+the [two-density example](../../examples/16_text_density/README.md).

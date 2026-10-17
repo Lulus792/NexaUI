@@ -8,6 +8,7 @@
 
 #include "search_font_fixture.h"
 #include "paint_scene.h"
+#include "text_density_scene.h"
 
 #define CHECK(x) do { if (!(x)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); \
@@ -126,14 +127,16 @@ static int run_theme(nx_d3d12_renderer *renderer, uint32_t width,
 
 static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t height,uint8_t *gpu,uint8_t *headless) {
     const double scales[]={1,1.25,1.5,2};
-    for(unsigned density=0;density<4;++density) {
+    for(unsigned density=0;density<4;++density) for(unsigned suite=0;suite<2;++suite) {
         double scale=scales[density];
         /* An explicit diagnostic retains 150%-resource -> 100%-display
            downsampling; ordinary checks scale the entire command stream. */
         if(getenv("NEXAUI_TEST_PAINT_DOWNSAMPLE"))scale=1;
         nx_context *ui=NULL;nx_paint_image *images[3]={0};
+        nx_text_stamp *stamp=NULL;
         CHECK(nx_context_create(NULL,&ui)==NX_OK);
-        CHECK(!paint_scene(ui,images,(float)scales[density]));
+        if(suite) {CHECK(!text_density_scene(ui,&stamp,(float)scales[density]));}
+        else {CHECK(!paint_scene(ui,images,(float)scales[density]));}
         const nx_command *commands;size_t count;
         CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
         nx_color clear={.02f,.04f,.08f,1};
@@ -152,10 +155,12 @@ static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t heigh
             unsigned delta=gpu[i]>headless[i]?gpu[i]-headless[i]:headless[i]-gpu[i];
             if(delta>maximum)maximum=delta;if(delta)++differing;
         }
-        printf("paint scale %.2f density %.2f: max channel delta %u; %zu differing bytes\n",scale,scales[density],maximum,differing);
+        printf("%s scale %.2f density %.2f: max channel delta %u; %zu differing bytes\n",
+            suite?"text":"paint",scale,scales[density],maximum,differing);
         CHECK(maximum==0); /* Accepted cases remain byte-exact. */
         free(scaled);
         paint_scene_free(images);nx_context_destroy(ui);
+        nx_text_stamp_destroy(stamp);
     }
     return 0;
 }

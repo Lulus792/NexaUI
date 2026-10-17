@@ -10,7 +10,8 @@
 typedef struct nx_glyph_cache_entry {
     struct nx_glyph_cache_entry *hash_next, *older, *newer;
     size_t allocation_size;
-    uint16_t glyph_index, pixels_per_em;
+    uint16_t glyph_index;
+    double pixels_per_em;
     nx_glyph_mask_view mask;
 } nx_glyph_cache_entry;
 
@@ -35,9 +36,12 @@ static void nx_cache_deallocate(void *user, void *pointer, size_t size) {
     free(pointer);
 }
 
-static uint32_t nx_cache_bucket(uint16_t glyph_index, uint16_t pixels_per_em) {
+static uint32_t nx_cache_bucket(uint16_t glyph_index, double pixels_per_em) {
+    uint32_t size = (uint32_t)pixels_per_em;
+    uint32_t fraction=(uint32_t)((pixels_per_em-size)*65536.0);
+    size ^= fraction^(fraction>>8); /* Hash only; entry equality keeps exact ppem. */
     return (((uint32_t)glyph_index * UINT32_C(0x9e3779b1)) ^
-            ((uint32_t)pixels_per_em * UINT32_C(0x85ebca6b))) &
+            (size * UINT32_C(0x85ebca6b))) &
            (NX_GLYPH_CACHE_BUCKETS - 1u);
 }
 
@@ -177,7 +181,7 @@ nx_result nx_glyph_cache_get_stats(const nx_glyph_cache *cache,
 
 static nx_result nx_cache_build_entry(nx_glyph_cache *cache,
                                        uint16_t glyph_index,
-                                       uint16_t pixels_per_em,
+                                       double pixels_per_em,
                                        nx_glyph_cache_entry **out_entry) {
     *out_entry = NULL;
     uint16_t advance;
@@ -264,9 +268,16 @@ cleanup:
 nx_result nx_glyph_cache_get(nx_glyph_cache *cache, uint16_t glyph_index,
                              uint16_t pixels_per_em,
                              nx_glyph_mask_view *out_mask) {
+    return nx_glyph_cache_get_fractional(cache, glyph_index, pixels_per_em, out_mask);
+}
+
+nx_result nx_glyph_cache_get_fractional(nx_glyph_cache *cache, uint16_t glyph_index,
+                                        double pixels_per_em,
+                                        nx_glyph_mask_view *out_mask) {
     if (!out_mask) return NX_ERROR_ARGUMENT;
     *out_mask = (nx_glyph_mask_view){0};
-    if (!cache || !pixels_per_em || glyph_index >= cache->glyph_count)
+    if (!cache || !isfinite(pixels_per_em) || pixels_per_em < .125 ||
+        pixels_per_em > 65535.0 || glyph_index >= cache->glyph_count)
         return NX_ERROR_ARGUMENT;
     uint32_t bucket = nx_cache_bucket(glyph_index, pixels_per_em);
     for (nx_glyph_cache_entry *entry = cache->buckets[bucket]; entry;
