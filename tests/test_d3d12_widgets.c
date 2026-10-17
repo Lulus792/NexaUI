@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "search_font_fixture.h"
 #include "paint_scene.h"
@@ -26,6 +27,7 @@ static int compare_pixels(const uint8_t *gpu, const uint8_t *headless,
     }
     return 1;
 }
+#include "d3d12_paint_diagnostic.h"
 
 static int run_theme(nx_d3d12_renderer *renderer, uint32_t width,
                      uint32_t height, nx_theme_kind kind,
@@ -123,17 +125,15 @@ static int run_theme(nx_d3d12_renderer *renderer, uint32_t width,
 }
 
 static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t height,uint8_t *gpu,uint8_t *headless) {
-    for(unsigned density=0;density<3;++density) {
-        /* Open fractional-DPI diagnostic, deliberately not a passing gate.
-           Enable NEXAUI_TEST_PAINT_FRACTIONAL=1 to reproduce it. */
-        if(density==1&&!getenv("NEXAUI_TEST_PAINT_FRACTIONAL"))continue;
-        double scale=1+density*.5;
+    const double scales[]={1,1.25,1.5,2};
+    for(unsigned density=0;density<4;++density) {
+        double scale=scales[density];
         /* An explicit diagnostic retains 150%-resource -> 100%-display
            downsampling; ordinary checks scale the entire command stream. */
         if(getenv("NEXAUI_TEST_PAINT_DOWNSAMPLE"))scale=1;
         nx_context *ui=NULL;nx_paint_image *images[3]={0};
         CHECK(nx_context_create(NULL,&ui)==NX_OK);
-        CHECK(!paint_scene(ui,images,1+density*.5f));
+        CHECK(!paint_scene(ui,images,(float)scales[density]));
         const nx_command *commands;size_t count;
         CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
         nx_color clear={.02f,.04f,.08f,1};
@@ -152,7 +152,7 @@ static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t heigh
             unsigned delta=gpu[i]>headless[i]?gpu[i]-headless[i]:headless[i]-gpu[i];
             if(delta>maximum)maximum=delta;if(delta)++differing;
         }
-        printf("paint scale %.1f density %.1f: max channel delta %u; %zu differing bytes\n",scale,1+density*.5,maximum,differing);
+        printf("paint scale %.2f density %.2f: max channel delta %u; %zu differing bytes\n",scale,scales[density],maximum,differing);
         CHECK(maximum==0); /* Accepted cases remain byte-exact. */
         free(scaled);
         paint_scene_free(images);nx_context_destroy(ui);
@@ -173,6 +173,11 @@ int main(void) {
     size_t bytes = (size_t)info.pixel_width * info.pixel_height * 4u;
     uint8_t *gpu = malloc(bytes), *headless = malloc(bytes);
     CHECK(gpu && headless);
+    if(getenv("NEXAUI_TEST_PAINT_DIAGNOSE")){
+        int status=diagnose_paints(renderer,info.pixel_width,info.pixel_height,gpu,headless);
+        free(headless);free(gpu);nx_d3d12_renderer_destroy(renderer);nx_window_destroy(window);return status;
+    }
+    CHECK(test_identity_texels(renderer,info.pixel_width,info.pixel_height,gpu,headless)==0);
     uint8_t font_bytes[512];
     font_fixture(font_bytes);
     nx_font *font = NULL;

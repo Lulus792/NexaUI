@@ -578,7 +578,11 @@ if(NEXAUI_BUILD_TESTS)
         target_link_libraries(nexaui_d3d12_widget_tests PRIVATE
             NexaUI::NexaUI nexaui_renderer_d3d12)
         add_test(NAME nexaui_d3d12_widgets COMMAND nexaui_d3d12_widget_tests)
-        set_tests_properties(nexaui_d3d12_widgets PROPERTIES TIMEOUT 30)
+        add_test(NAME nexaui_d3d12_widgets_warp COMMAND nexaui_d3d12_widget_tests)
+        set_tests_properties(nexaui_d3d12_widgets nexaui_d3d12_widgets_warp
+            PROPERTIES TIMEOUT 30 RESOURCE_LOCK native_display)
+        set_tests_properties(nexaui_d3d12_widgets_warp PROPERTIES
+            ENVIRONMENT "NEXAUI_TEST_FORCE_WARP=1")
     endif()
     add_executable(nexaui_renderer_backend_tests
         tests/test_renderer_backend.c src/renderer_backend.c)
