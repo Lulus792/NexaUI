@@ -108,15 +108,33 @@ static nx_result create_image(const nx_surface_image_desc *d,unsigned blur,nx_po
         }
     }
     double radius=fmin(d->radius,fmin(d->width,d->height)*.5);
-    for(uint32_t y=0;y<h;++y) for(uint32_t x=0;x<w;++x) {
-        double coverage=0;
-        for(unsigned sy=0;sy<2;++sy) for(unsigned sx=0;sx<2;++sx)
-            coverage+=inside((x+.25+.5*sx-padding)/d->scale,
-                (y+.25+.5*sy-padding)/d->scale,d->width,d->height,radius)*.25;
-        size_t i=(size_t)y*w+x;
-        nx_color c=paint_sample(&d->paint,(x+.5-padding)/d->scale,(y+.5-padding)/d->scale);
-        rgba[4*i]=byte(c.r);rgba[4*i+1]=byte(c.g);rgba[4*i+2]=byte(c.b);rgba[4*i+3]=byte(c.a*coverage);
-        if(mask) mask[i]=(float)coverage;
+    int row_constant=d->paint.kind==NX_PAINT_SOLID||
+        (d->paint.kind==NX_PAINT_LINEAR&&d->paint.from.x==d->paint.to.x)||
+        (d->paint.from.x==d->paint.to.x&&d->paint.from.y==d->paint.to.y);
+    for(uint32_t y=0;y<h;++y) {
+        double ymin=(y+.25-padding)/d->scale,ymax=(y+.75-padding)/d->scale;
+        nx_color row={0};uint8_t row_rgb[3]={0};
+        if(row_constant){row=paint_sample(&d->paint,(.5-padding)/d->scale,(y+.5-padding)/d->scale);
+            row_rgb[0]=byte(row.r);row_rgb[1]=byte(row.g);row_rgb[2]=byte(row.b);}
+        for(uint32_t x=0;x<w;++x) {
+            double xmin=(x+.25-padding)/d->scale,xmax=(x+.75-padding)/d->scale;
+            double coverage=0;
+            /* The farthest Cartesian sample bounds all four original samples.
+               Keep their exact arithmetic on partial/curved boundary pixels. */
+            if(xmin>=0&&ymin>=0&&xmax<d->width&&ymax<d->height){
+                double dx=fmax(fmax(radius-xmin,xmax-(d->width-radius)),0);
+                double dy=fmax(fmax(radius-ymin,ymax-(d->height-radius)),0);
+                if(dx*dx+dy*dy<=radius*radius)coverage=1;
+            }
+            if(coverage==0)for(unsigned sy=0;sy<2;++sy)for(unsigned sx=0;sx<2;++sx)
+                coverage+=inside((x+.25+.5*sx-padding)/d->scale,
+                    (y+.25+.5*sy-padding)/d->scale,d->width,d->height,radius)*.25;
+            size_t i=(size_t)y*w+x;
+            nx_color c=row_constant?row:paint_sample(&d->paint,(x+.5-padding)/d->scale,(y+.5-padding)/d->scale);
+            rgba[4*i]=row_constant?row_rgb[0]:byte(c.r);rgba[4*i+1]=row_constant?row_rgb[1]:byte(c.g);
+            rgba[4*i+2]=row_constant?row_rgb[2]:byte(c.b);rgba[4*i+3]=byte(c.a*coverage);
+            if(mask) mask[i]=(float)coverage;
+        }
     }
     if(mask) {
         for(unsigned pass=0;pass<3;++pass) {box_pass(mask,temp,w,h,blur,0);box_pass(temp,mask,w,h,blur,1);}

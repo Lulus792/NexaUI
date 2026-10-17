@@ -94,3 +94,9 @@ The [three-series regression](../../tests/test_plot_multi.c) demonstrates gaps,
 negative/constant data, units, crosshair, failure/retry and budget limits.
 
 ![Three-series gap and negative-value fixture](../images/design-a-plot.png)
+
+The [paired CPU profile](../quality/paint-cost-report.md) measures filled,
+gapped/negative, empty, baseline-only and sparse histories. Each filled layer
+still allocates a frame-owned RGBA mask. Column-span shading uses 16 KiB of
+bounded stack storage and limits color work to its occupied rectangle; zeroing
+the full mask remains area-dependent. Reuse scratch and control update cadence.

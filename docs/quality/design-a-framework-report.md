@@ -26,6 +26,11 @@ contain no NexaCloud networking types, telemetry generator or external GUI libra
 
 ## Executed local evidence
 
+The [paired Release cost and ownership follow-up](paint-cost-report.md) records
+current construction/recording/filled-plot costs, bytewise before/after checks
+and explicit caching guidance. It supersedes the Debug timing below for current
+performance discussion; the original measurement remains historical evidence.
+
 - Windows static: 103/103 full CTests passed in the pre-publication run; later
   final targeted paint/multiplot/D3D12 checks also passed. Windows shared and
   Linux ASan/UBSan/LSan paint/multiplot/component checks passed. Full CI receipt

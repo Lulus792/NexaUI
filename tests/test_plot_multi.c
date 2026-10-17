@@ -8,6 +8,42 @@ static nx_result sample(void *u,size_t i,nx_series_point *p){*p=((nx_series_poin
 typedef struct heap {size_t calls,fail,bytes;} heap;
 static void *alloc(void *u,size_t n){heap*h=u;if(++h->calls==h->fail)return NULL;void*p=malloc(n);if(p)h->bytes+=n;return p;}
 static void release(void*u,void*p,size_t n){heap*h=u;h->bytes-=n;free(p);}
+/* Scalar pixel-center oracle for empty, baseline-only and narrow disjoint
+   constant spans. Inspect all channels, including transparent gap RGB. */
+static int span_masks(void) {
+    const float scales[]={.125f,1,1.5f,2,8};
+    heap h={0};nx_context_desc cd={0};cd.allocator=(nx_allocator){&h,alloc,release};
+    nx_context *ui=NULL;CHECK(nx_context_create(&cd,&ui)==NX_OK);
+    for(unsigned scale=0;scale<5;++scale)for(unsigned kind=0;kind<4;++kind){
+        double value=kind==2?2:kind==3?-2:0;
+        nx_series_point a[]={{1,value},{2,value}},b[]={{8,value},{9,value}};
+        nx_series_view segments[]={{kind?2:0,a,sample},{kind?2:0,b,sample}};
+        nx_plot_layer layer={{"Sparse",6},segments,2,{1,1,1,1},
+            {1,.25f,.5f,.75f},{1,.25f,.5f,.75f},0,1};
+        nx_series_envelope scratch[320];nx_plot_multi_desc d={0};
+        d.plot.id=1;d.plot.bounds=(nx_rect){0,0,160,100};d.plot.name=(nx_utf8_span){"Spans",5};
+        d.plot.x_max=10;d.plot.y_min=-4;d.plot.y_max=4;
+        d.plot.scratch=scratch;d.plot.scratch_capacity=320;
+        d.layers=&layer;d.layer_count=1;d.raster_scale=scales[scale];
+        nx_plot_state state={0};CHECK(nx_begin_frame(ui,160,100,0)==NX_OK);
+        CHECK(nx_plot_multi(ui,&d,&state)==NX_OK&&nx_end_frame(ui)==NX_OK);
+        const nx_command *commands;size_t count;unsigned masks=0;
+        CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
+        for(size_t i=0;i<count;++i)if(commands[i].type==NX_COMMAND_BITMAP){
+            nx_bitmap_view image=commands[i].bitmap;++masks;
+            for(uint32_t y=0;y<image.height;++y)for(uint32_t x=0;x<image.width;++x){
+                double px=(x+.5)*10/image.width,py=4-(y+.5)*8/image.height;
+                int occupied=kind>=2&&((px>=1&&px<2)||(px>=8&&px<9))&&
+                    py<=fmax(value,0)&&py>fmin(value,0);
+                const uint8_t expected[]={255,64,128,191};
+                const uint8_t *pixel=image.pixels+(size_t)y*image.stride_bytes+4*x;
+                for(unsigned channel=0;channel<4;++channel)
+                    CHECK(pixel[channel]==(occupied?expected[channel]:0));
+            }
+        }CHECK(masks==1);
+    }
+    nx_context_destroy(ui);CHECK(!h.bytes);return 0;
+}
 static int run(const char *path) {
     nx_series_point a[]={{0,3},{2,3}},b[]={{8,-2},{10,-2}},c[]={{0,1},{10,1}};
     nx_series_view segments[]={{2,a,sample},{2,b,sample}},upload={2,c,sample};
@@ -64,4 +100,4 @@ static int run(const char *path) {
     for(size_t i=0;i<count;++i)CHECK(commands[i].type!=NX_COMMAND_BITMAP);
     nx_context_destroy(ui);CHECK(!h.bytes);return 0;
 }
-int main(int argc,char **argv){return run(argc>1?argv[1]:NULL);}
+int main(int argc,char **argv){if(span_masks())return 1;return run(argc>1?argv[1]:NULL);}

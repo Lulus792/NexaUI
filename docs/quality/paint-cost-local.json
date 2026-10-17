@@ -1,0 +1,1293 @@
+{
+  "date": "2026-10-18 Europe/Berlin",
+  "baseline": {
+    "revision": "876b006e24ffbe7a3da926b48a68c6f885228167",
+    "core_symbols": 113,
+    "files": {
+      "paint.c": "001a87294d62a7f2d6fbeab2b1f7b029752c273d5e4385fe8a7b3d6ce4bb81a2",
+      "nexaui.c": "eef122b292e76e81aa1484a478cf9a2696f46903cba68f4dbd8e0928abf2c55e",
+      "core_prefix.h": "432a535e9f5ab7d398298b84eb5fe7e9491ed38781ff8fede29c80fd7a809ebc"
+    }
+  },
+  "cpu": "Intel Xeon W-2123 @ 3.60GHz, 4 cores / 8 logical processors",
+  "method": {
+    "construction": "2 warmups, 16 timed samples per variant; alternating AB/BA in one process",
+    "plot": "4 warmups, 32 timed samples per variant; alternating AB/BA in one process; 601 points/layer except empty and sparse",
+    "cached": "2 warmup batches, 16 timed batches of 128 frames; 32 paint commands/frame",
+    "timer": "QPC on Windows; CLOCK_MONOTONIC on Alpine; elapsed wall milliseconds",
+    "quantile": "median via statistics.median; p95 nearest rank ceil(0.95*n)-1",
+    "comparison": "171 full constructor RGBA/bounds pairs in-process; all plot command fields and RGBA bytes after every pair (36 per case); timed-case snapshots also compared bytewise",
+    "scope": "CPU construction/command recording/plot rasterization only, no GPU upload/draw/presentation or physical display timing; no cold-start claim",
+    "execution": "Windows then Linux, no overlapping local compilation or benchmark; ordinary host scheduling and filesystem caches retained"
+  },
+  "sources_sha256": {
+    "src/paint.c": "1e9f63c9e72ec843da28bd636d700404b9228137bc3960607063145370cb779d",
+    "src/nexaui.c": "8e369e0c164ed16f9e86b09ff32f56b40b8b161392d02a2a9ae1486c424d74d4",
+    "benchmarks/paint_bench.c": "4c988a01196bcb920c20cbe2497a6572fd9bd4638e887b745bcf7d7a7cb9bff9",
+    "benchmarks/paint_baseline.c": "d834010f32340cc25c777e7a3855211fae63c3579236bc692dc6392efd6e755e",
+    "benchmarks/plot_baseline.c": "8eda93fb680e6fe9bf02d6b3f1ada7bddeeb608032596f424078bcab817a2e42",
+    "tools/prepare_paint_baseline.py": "f041095ab6d822b71dc75e3e286e334383cefcaf00a5eba3a372be6242a5bcc1"
+  },
+  "platforms": [
+    {
+      "name": "windows",
+      "environment": "Windows 10.0.26200 x64, MSVC 19.38, SDK 10.0.26100.0, static Release",
+      "release_flags": "/O2 /Ob2 /DNDEBUG",
+      "binary_sha256": "036d83dc0d03ff7d299ac75c7577066bc09688e377edfccc8cdb6fa4b3e9b254",
+      "csv": "paint-cost-windows.csv",
+      "csv_sha256": "11a4d9cc026a3498327fafefe059f54cf33c8cfae54e8021ddd535568063277e",
+      "rows": 560,
+      "constructor_matrix_full_rgba_pairs": 171,
+      "plot_full_frame_pairs": 216,
+      "retained_raw_snapshots": "out/paint-profile-windows-final",
+      "snapshot_pairs": [
+        {
+          "case": "glow-48x48-2",
+          "bytes": 115600,
+          "sha256": "24aaa4795c3f2e5c8ba6abfd2d2ced48df1df88371bc88ffe95f5797617a3174"
+        },
+        {
+          "case": "linear-320x160-1",
+          "bytes": 204800,
+          "sha256": "67b62a0843280e005df131185045ae80b2474189596a87ca7fc3e9e138ee8050"
+        },
+        {
+          "case": "linear-320x160-2",
+          "bytes": 819200,
+          "sha256": "dbd07a2391c62e1ffaa54e62af86a133b39b1f43e275a7119019a0016c0c5dab"
+        },
+        {
+          "case": "plot-empty-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-empty-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-gaps-negative-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "e61708db95993835c07b3bffb7fa8990d3d2578ae43edd116e0a7ba28995c270"
+        },
+        {
+          "case": "plot-gaps-negative-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "9147af82bd3423d4c38b33c1e3134746e26a9206acb0b252e4179c640a85a6b4"
+        },
+        {
+          "case": "plot-rates-1-layer-0",
+          "bytes": 608832,
+          "sha256": "00b95d1e8fa55a1daae6fa595ce221a3b07e0b3aaa6422e09ed9a3e25294d0f8"
+        },
+        {
+          "case": "plot-rates-1-layer-1",
+          "bytes": 608832,
+          "sha256": "0bd5314885ad85269c11a04d13aa392e521d8b337b0241039405ee8d9314a529"
+        },
+        {
+          "case": "plot-rates-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "55407d70be435d5ff606e3519a31f2abc3ed437c02dcc89c772be765c3246885"
+        },
+        {
+          "case": "plot-rates-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "997362c031e79f56b7fc8e6a92091f5687f6e890e5bafbe3402518a50254f39e"
+        },
+        {
+          "case": "plot-sparse-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "624a5633ee0d30d52a55326865f85a0c5de863283d23151875b73a68d9b6e7d0"
+        },
+        {
+          "case": "plot-sparse-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "94f23dbdc4575872cbffa5b1397b3fed26ad7d64a05aca19225382deea3b5662"
+        },
+        {
+          "case": "plot-zero-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-zero-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "radial-128x128-2",
+          "bytes": 262144,
+          "sha256": "170b78fe13bc752ca02374484632c4225d24c72ccbdb6e06ba58082583bdda3d"
+        },
+        {
+          "case": "shadow-640x360-2",
+          "bytes": 4096400,
+          "sha256": "1aa5f31b8f6bd057c3ab63116bd13829bfde9b8138829e647a81dba4a621323f"
+        }
+      ],
+      "summary": [
+        {
+          "phase": "create",
+          "case": "glow-48x48-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 2.120699995,
+          "median_ms": 2.1576,
+          "p95_ms": 3.405800002,
+          "max_ms": 3.405800002,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            346880
+          ],
+          "retained_bytes": [
+            115680
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "18416907078708668019"
+        },
+        {
+          "phase": "create",
+          "case": "glow-48x48-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 1.404900016,
+          "median_ms": 1.4277000009999998,
+          "p95_ms": 3.022499994,
+          "max_ms": 3.022499994,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            346880
+          ],
+          "retained_bytes": [
+            115680
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "18416907078708668019"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-1",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 4.98930001,
+          "median_ms": 5.4608499925,
+          "p95_ms": 7.351100008,
+          "max_ms": 7.351100008,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            204880
+          ],
+          "retained_bytes": [
+            204880
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "17212003767672610471"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-1",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 0.944200001,
+          "median_ms": 0.955299998,
+          "p95_ms": 2.902899985,
+          "max_ms": 2.902899985,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            204880
+          ],
+          "retained_bytes": [
+            204880
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "17212003767672610471"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 20.610500011,
+          "median_ms": 21.025049995,
+          "p95_ms": 28.078300005,
+          "max_ms": 28.078300005,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            819280
+          ],
+          "retained_bytes": [
+            819280
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "13148346122361618419"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 3.618099989,
+          "median_ms": 3.8877499899999997,
+          "p95_ms": 5.036300019,
+          "max_ms": 5.036300019,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            819280
+          ],
+          "retained_bytes": [
+            819280
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "13148346122361618419"
+        },
+        {
+          "phase": "create",
+          "case": "radial-128x128-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 7.129299978,
+          "median_ms": 7.3042500155,
+          "p95_ms": 8.416500001,
+          "max_ms": 8.416500001,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            262224
+          ],
+          "retained_bytes": [
+            262224
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "6071830143787183739"
+        },
+        {
+          "phase": "create",
+          "case": "radial-128x128-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 5.251199997,
+          "median_ms": 5.5369499895,
+          "p95_ms": 7.174099999,
+          "max_ms": 7.174099999,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            262224
+          ],
+          "retained_bytes": [
+            262224
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "6071830143787183739"
+        },
+        {
+          "phase": "create",
+          "case": "shadow-640x360-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 118.560199975,
+          "median_ms": 121.3689,
+          "p95_ms": 124.390000012,
+          "max_ms": 124.390000012,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            12289280
+          ],
+          "retained_bytes": [
+            4096480
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "9795962037860731139"
+        },
+        {
+          "phase": "create",
+          "case": "shadow-640x360-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 60.594400013,
+          "median_ms": 62.657350005,
+          "p95_ms": 67.949499993,
+          "max_ms": 67.949499993,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            12289280
+          ],
+          "retained_bytes": [
+            4096480
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "9795962037860731139"
+        },
+        {
+          "phase": "frame",
+          "case": "cached-32-paints",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 0.001592969,
+          "median_ms": 0.001700781,
+          "p95_ms": 0.001738281,
+          "max_ms": 0.001738281,
+          "allocations": [
+            0
+          ],
+          "peak_bytes": [
+            33120
+          ],
+          "retained_bytes": [
+            33120
+          ],
+          "commands": [
+            32
+          ],
+          "checksum": "0"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-empty-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 1.194799988,
+          "median_ms": 1.2595500155,
+          "p95_ms": 1.358100009,
+          "max_ms": 1.372400002,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            18
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-empty-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 1.20269999,
+          "median_ms": 1.2762500115000002,
+          "p95_ms": 1.384100004,
+          "max_ms": 1.406299998,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            18
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-gaps-negative-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 2.0869,
+          "median_ms": 2.197349997,
+          "p95_ms": 2.32119998,
+          "max_ms": 5.504700006,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5039246
+          ],
+          "retained_bytes": [
+            5039246
+          ],
+          "commands": [
+            820
+          ],
+          "checksum": "13309482327220649700"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-gaps-negative-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 1.666900003,
+          "median_ms": 1.7311999985000002,
+          "p95_ms": 1.887299994,
+          "max_ms": 1.9149,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5039246
+          ],
+          "retained_bytes": [
+            5039246
+          ],
+          "commands": [
+            820
+          ],
+          "checksum": "13309482327220649700"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-1",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 2.123299986,
+          "median_ms": 2.2501000060000003,
+          "p95_ms": 3.405199997,
+          "max_ms": 3.881799988,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            1492750
+          ],
+          "retained_bytes": [
+            1492750
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "8724400277814144249"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-1",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 0.775999972,
+          "median_ms": 0.8268500095,
+          "p95_ms": 1.042399992,
+          "max_ms": 1.088799996,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            1492750
+          ],
+          "retained_bytes": [
+            1492750
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "8724400277814144249"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 7.88770002,
+          "median_ms": 8.5061499995,
+          "p95_ms": 9.442800016,
+          "max_ms": 9.791299992,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7654851813388711642"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 2.293900005,
+          "median_ms": 2.4041500005,
+          "p95_ms": 3.033899993,
+          "max_ms": 3.312199988,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7654851813388711642"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-sparse-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 1.20269999,
+          "median_ms": 1.275949995,
+          "p95_ms": 1.394999999,
+          "max_ms": 1.415100007,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            40
+          ],
+          "checksum": "14399198916965580301"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-sparse-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 1.209300011,
+          "median_ms": 1.261049998,
+          "p95_ms": 1.441300003,
+          "max_ms": 1.452199998,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            40
+          ],
+          "checksum": "14399198916965580301"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-zero-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 1.348999998,
+          "median_ms": 1.407349977,
+          "p95_ms": 1.559299999,
+          "max_ms": 1.687500015,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-zero-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 1.331300009,
+          "median_ms": 1.395949992,
+          "p95_ms": 1.705700008,
+          "max_ms": 1.843899983,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7618625783658734743"
+        }
+      ]
+    },
+    {
+      "name": "linux",
+      "environment": "Alpine-Dev WSL2, Alpine 3.24.2 x86_64, Clang 22.1.3, Ninja, static Release, Vulkan OFF",
+      "release_flags": "-O3 -DNDEBUG",
+      "binary_sha256": "bd164cde96bb05e733d4bdcb698f3d32b4243ca8e73106e258be003e23f9d396",
+      "csv": "paint-cost-linux.csv",
+      "csv_sha256": "e70cea0fbf2cadb59a370f300d16327b7b097b0c20e7dfab9aaaff0ff843b25e",
+      "rows": 560,
+      "constructor_matrix_full_rgba_pairs": 171,
+      "plot_full_frame_pairs": 216,
+      "retained_raw_snapshots": "out/paint-profile-linux-paired",
+      "snapshot_pairs": [
+        {
+          "case": "glow-48x48-2",
+          "bytes": 115600,
+          "sha256": "24aaa4795c3f2e5c8ba6abfd2d2ced48df1df88371bc88ffe95f5797617a3174"
+        },
+        {
+          "case": "linear-320x160-1",
+          "bytes": 204800,
+          "sha256": "67b62a0843280e005df131185045ae80b2474189596a87ca7fc3e9e138ee8050"
+        },
+        {
+          "case": "linear-320x160-2",
+          "bytes": 819200,
+          "sha256": "dbd07a2391c62e1ffaa54e62af86a133b39b1f43e275a7119019a0016c0c5dab"
+        },
+        {
+          "case": "plot-empty-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-empty-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-gaps-negative-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "e61708db95993835c07b3bffb7fa8990d3d2578ae43edd116e0a7ba28995c270"
+        },
+        {
+          "case": "plot-gaps-negative-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "9147af82bd3423d4c38b33c1e3134746e26a9206acb0b252e4179c640a85a6b4"
+        },
+        {
+          "case": "plot-rates-1-layer-0",
+          "bytes": 608832,
+          "sha256": "00b95d1e8fa55a1daae6fa595ce221a3b07e0b3aaa6422e09ed9a3e25294d0f8"
+        },
+        {
+          "case": "plot-rates-1-layer-1",
+          "bytes": 608832,
+          "sha256": "0bd5314885ad85269c11a04d13aa392e521d8b337b0241039405ee8d9314a529"
+        },
+        {
+          "case": "plot-rates-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "55407d70be435d5ff606e3519a31f2abc3ed437c02dcc89c772be765c3246885"
+        },
+        {
+          "case": "plot-rates-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "997362c031e79f56b7fc8e6a92091f5687f6e890e5bafbe3402518a50254f39e"
+        },
+        {
+          "case": "plot-sparse-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "624a5633ee0d30d52a55326865f85a0c5de863283d23151875b73a68d9b6e7d0"
+        },
+        {
+          "case": "plot-sparse-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "94f23dbdc4575872cbffa5b1397b3fed26ad7d64a05aca19225382deea3b5662"
+        },
+        {
+          "case": "plot-zero-2-layer-0",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "plot-zero-2-layer-1",
+          "bytes": 2435328,
+          "sha256": "d3aab15b495cd8be503ae7276f3e82a5f6c1d5bdf622a86516d86c866c35eb20"
+        },
+        {
+          "case": "radial-128x128-2",
+          "bytes": 262144,
+          "sha256": "170b78fe13bc752ca02374484632c4225d24c72ccbdb6e06ba58082583bdda3d"
+        },
+        {
+          "case": "shadow-640x360-2",
+          "bytes": 4096400,
+          "sha256": "1aa5f31b8f6bd057c3ab63116bd13829bfde9b8138829e647a81dba4a621323f"
+        }
+      ],
+      "summary": [
+        {
+          "phase": "create",
+          "case": "glow-48x48-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 1.486523,
+          "median_ms": 1.587523,
+          "p95_ms": 2.072727,
+          "max_ms": 2.072727,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            346880
+          ],
+          "retained_bytes": [
+            115680
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "18416907078708668019"
+        },
+        {
+          "phase": "create",
+          "case": "glow-48x48-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 1.100602,
+          "median_ms": 1.1846215,
+          "p95_ms": 1.358772,
+          "max_ms": 1.358772,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            346880
+          ],
+          "retained_bytes": [
+            115680
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "18416907078708668019"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-1",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 3.479297,
+          "median_ms": 4.388227499999999,
+          "p95_ms": 5.802975,
+          "max_ms": 5.802975,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            204880
+          ],
+          "retained_bytes": [
+            204880
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "17212003767672610471"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-1",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 0.67224,
+          "median_ms": 0.8871355,
+          "p95_ms": 1.723138,
+          "max_ms": 1.723138,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            204880
+          ],
+          "retained_bytes": [
+            204880
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "17212003767672610471"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 13.293885,
+          "median_ms": 13.7136015,
+          "p95_ms": 16.279913,
+          "max_ms": 16.279913,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            819280
+          ],
+          "retained_bytes": [
+            819280
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "13148346122361618419"
+        },
+        {
+          "phase": "create",
+          "case": "linear-320x160-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 2.539419,
+          "median_ms": 2.6615015,
+          "p95_ms": 4.010034,
+          "max_ms": 4.010034,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            819280
+          ],
+          "retained_bytes": [
+            819280
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "13148346122361618419"
+        },
+        {
+          "phase": "create",
+          "case": "radial-128x128-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 5.905904,
+          "median_ms": 6.0785715,
+          "p95_ms": 6.702035,
+          "max_ms": 6.702035,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            262224
+          ],
+          "retained_bytes": [
+            262224
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "6071830143787183739"
+        },
+        {
+          "phase": "create",
+          "case": "radial-128x128-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 5.418314,
+          "median_ms": 5.614147,
+          "p95_ms": 5.925017,
+          "max_ms": 5.925017,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            262224
+          ],
+          "retained_bytes": [
+            262224
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "6071830143787183739"
+        },
+        {
+          "phase": "create",
+          "case": "shadow-640x360-2",
+          "variant": "before",
+          "samples": 16,
+          "min_ms": 73.874827,
+          "median_ms": 75.0874,
+          "p95_ms": 79.61814,
+          "max_ms": 79.61814,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            12289280
+          ],
+          "retained_bytes": [
+            4096480
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "9795962037860731139"
+        },
+        {
+          "phase": "create",
+          "case": "shadow-640x360-2",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 48.88253,
+          "median_ms": 49.7782875,
+          "p95_ms": 51.759731,
+          "max_ms": 51.759731,
+          "allocations": [
+            4
+          ],
+          "peak_bytes": [
+            12289280
+          ],
+          "retained_bytes": [
+            4096480
+          ],
+          "commands": [
+            1
+          ],
+          "checksum": "9795962037860731139"
+        },
+        {
+          "phase": "frame",
+          "case": "cached-32-paints",
+          "variant": "current",
+          "samples": 16,
+          "min_ms": 0.000844094,
+          "median_ms": 0.0008483555,
+          "p95_ms": 0.001346336,
+          "max_ms": 0.001346336,
+          "allocations": [
+            0
+          ],
+          "peak_bytes": [
+            33120
+          ],
+          "retained_bytes": [
+            33120
+          ],
+          "commands": [
+            32
+          ],
+          "checksum": "0"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-empty-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 2.407204,
+          "median_ms": 2.6101004999999997,
+          "p95_ms": 2.963069,
+          "max_ms": 3.413001,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            18
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-empty-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 2.515613,
+          "median_ms": 2.645688,
+          "p95_ms": 2.895636,
+          "max_ms": 2.898768,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            18
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-gaps-negative-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 4.099368,
+          "median_ms": 4.292928,
+          "p95_ms": 4.532375,
+          "max_ms": 4.561815,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5039246
+          ],
+          "retained_bytes": [
+            5039246
+          ],
+          "commands": [
+            820
+          ],
+          "checksum": "13309482327220649700"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-gaps-negative-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 3.258122,
+          "median_ms": 3.430196,
+          "p95_ms": 3.745751,
+          "max_ms": 3.976123,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5039246
+          ],
+          "retained_bytes": [
+            5039246
+          ],
+          "commands": [
+            820
+          ],
+          "checksum": "13309482327220649700"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-1",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 3.745565,
+          "median_ms": 4.0036855,
+          "p95_ms": 4.189716,
+          "max_ms": 4.238297,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            1492750
+          ],
+          "retained_bytes": [
+            1492750
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "8724400277814144249"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-1",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 1.041283,
+          "median_ms": 1.1044040000000002,
+          "p95_ms": 1.305071,
+          "max_ms": 1.315017,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            1492750
+          ],
+          "retained_bytes": [
+            1492750
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "8724400277814144249"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 15.136058,
+          "median_ms": 15.536746,
+          "p95_ms": 16.56437,
+          "max_ms": 17.260296,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7654851813388711642"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-rates-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 3.835763,
+          "median_ms": 4.0843415,
+          "p95_ms": 4.454791,
+          "max_ms": 4.505537,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7654851813388711642"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-sparse-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 2.580177,
+          "median_ms": 2.7112925,
+          "p95_ms": 3.212748,
+          "max_ms": 3.693417,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            40
+          ],
+          "checksum": "14399198916965580301"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-sparse-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 2.593582,
+          "median_ms": 2.753429,
+          "p95_ms": 3.391356,
+          "max_ms": 3.565833,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            4939406
+          ],
+          "retained_bytes": [
+            4939406
+          ],
+          "commands": [
+            40
+          ],
+          "checksum": "14399198916965580301"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-zero-640x280-2",
+          "variant": "before",
+          "samples": 32,
+          "min_ms": 2.720533,
+          "median_ms": 2.9173229999999997,
+          "p95_ms": 3.491266,
+          "max_ms": 3.787844,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7618625783658734743"
+        },
+        {
+          "phase": "frame",
+          "case": "plot-zero-640x280-2",
+          "variant": "current",
+          "samples": 32,
+          "min_ms": 2.675757,
+          "median_ms": 2.922118,
+          "p95_ms": 3.661411,
+          "max_ms": 4.0545,
+          "allocations": [
+            2
+          ],
+          "peak_bytes": [
+            5145742
+          ],
+          "retained_bytes": [
+            5145742
+          ],
+          "commands": [
+            1220
+          ],
+          "checksum": "7618625783658734743"
+        }
+      ]
+    }
+  ]
+}

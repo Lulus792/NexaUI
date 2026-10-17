@@ -71,3 +71,8 @@ Shield icons append `NX_ICON_SHIELD`, `NX_ICON_SHIELD_CHECK` and
 icon puts Wi-Fi in the upper left and the shield at lower right, with unchanged
 logical stroke width. Give its parent control a meaningful accessible name and
 connection state; an icon does not establish TLS or network security.
+
+The [paired Release cost report](../quality/paint-cost-report.md) separates
+resource construction from recording cached draws. Large shadows still take
+tens of milliseconds to construct on the measured host; cache them outside
+frame building. Those CPU results do not include GPU upload or presentation.

@@ -6477,6 +6477,10 @@ static nx_result nx_plot_multi_paint(nx_context *ctx,const nx_plot_desc *d,nx_re
             image=ctx->allocator.allocate(ctx->allocator.user,allocation);
             if(!image)return NX_ERROR_MEMORY;
             image->allocation_size=allocation;image->next=ctx->owned_bitmaps;ctx->owned_bitmaps=image;
+            /* Ordered disjoint segments assign each raster column at most
+               once. Store its vertical span, then write contiguous rows. */
+            uint16_t lower[4096]={0},upper[4096]={0};
+            int first_x=(int)w,last_x=0,first_y=(int)h,last_y=0;
             memset(image->pixels,0,bytes);
             nx_point base=nx_plot_map(area,d,(nx_series_point){d->x_min,l->baseline});
             for(size_t segment=0;segment<plan_count;++segment) {
@@ -6499,16 +6503,28 @@ static nx_result nx_plot_multi_paint(nx_context *ctx,const nx_plot_desc *d,nx_re
                                 int y0=(int)ceil((low-area.y)*h/area.height-.5);
                                 int y1=(int)ceil((high-area.y)*h/area.height-.5);
                                 y0=y0<0?0:y0;y1=y1>(int)h?(int)h:y1;
-                                for(int row=y0;row<y1;++row){
-                                    nx_color c=nx_plot_gradient(l,(row+.5)/h);
-                                    uint8_t *pixel=image->pixels+((size_t)row*w+(unsigned)x)*4;
-                                    pixel[0]=(uint8_t)floorf(c.r*255+.5f);pixel[1]=(uint8_t)floorf(c.g*255+.5f);
-                                    pixel[2]=(uint8_t)floorf(c.b*255+.5f);pixel[3]=(uint8_t)floorf(c.a*255+.5f);
+                                lower[x]=(uint16_t)y0;upper[x]=(uint16_t)y1;
+                                if(y1>y0){
+                                    if(x<first_x)first_x=x;if(x+1>last_x)last_x=x+1;
+                                    if(y0<first_y)first_y=y0;if(y1>last_y)last_y=y1;
                                 }
                             }
                         }
                         previous=point;has_previous=1;
                     }
+                }
+            }
+            /* Empty, baseline-only and sparse histories keep the memset fast
+               path; shade only the occupied rectangle, including its gaps. */
+            for(int row=first_y;row<last_y;++row){
+                nx_color c=nx_plot_gradient(l,(row+.5)/h);
+                uint8_t color[4]={(uint8_t)floorf(c.r*255+.5f),(uint8_t)floorf(c.g*255+.5f),
+                    (uint8_t)floorf(c.b*255+.5f),(uint8_t)floorf(c.a*255+.5f)};
+                uint8_t *dest=image->pixels+(size_t)row*w*4;
+                for(int x=first_x;x<last_x;++x){
+                    int covered=row>=lower[x]&&row<upper[x];
+                    dest[4*x]=covered?color[0]:0;dest[4*x+1]=covered?color[1]:0;
+                    dest[4*x+2]=covered?color[2]:0;dest[4*x+3]=covered?color[3]:0;
                 }
             }
             nx_result r=nx_draw_bitmap(ctx,area,(nx_bitmap_view){image->pixels,w,h,(size_t)w*4,NX_BITMAP_RGBA8},(nx_color){1,1,1,1});

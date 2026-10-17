@@ -135,7 +135,7 @@ if(NEXAUI_BUILD_FUZZERS)
         -fno-omit-frame-pointer)
     target_link_options(nexaui_text_fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
     add_executable(nexaui_layout_fuzz fuzz/layout_fuzz.c src/font.c
-        src/font_collection.c src/shape.c src/gsub.c src/gpos.c src/gpos_marks.c src/ot_layout.c src/bidi.c
+        src/font_collection.c src/shape.c src/gsub.c src/gsub_context.c src/gpos.c src/gpos_marks.c src/ot_layout.c src/bidi.c
         src/grapheme.c src/word.c src/line.c src/text_layout.c src/utf8.c
         src/unicode_data.c)
     target_include_directories(nexaui_layout_fuzz PRIVATE include src)
@@ -994,6 +994,25 @@ if(NEXAUI_BUILD_EXAMPLES)
 endif()
 
 if(NEXAUI_BUILD_BENCHMARKS)
+    add_executable(nexaui_paint_bench benchmarks/paint_bench.c)
+    target_link_libraries(nexaui_paint_bench PRIVATE NexaUI::NexaUI)
+    target_compile_features(nexaui_paint_bench PRIVATE c_std_17)
+    set(NEXAUI_PAINT_BASELINE "" CACHE FILEPATH "Recorded NexaUI paint.c for optional paired benchmark")
+    if(NEXAUI_PAINT_BASELINE)
+        file(TO_CMAKE_PATH "${NEXAUI_PAINT_BASELINE}" NEXAUI_PAINT_BASELINE_NORMALIZED)
+        target_sources(nexaui_paint_bench PRIVATE benchmarks/paint_baseline.c)
+        target_compile_definitions(nexaui_paint_bench PRIVATE
+            NEXAUI_PAINT_BASELINE_PATH="${NEXAUI_PAINT_BASELINE_NORMALIZED}")
+    endif()
+    set(NEXAUI_CORE_BASELINE "" CACHE PATH "Exported paint/core baseline directory")
+    if(NEXAUI_CORE_BASELINE)
+        file(TO_CMAKE_PATH "${NEXAUI_CORE_BASELINE}" NEXAUI_CORE_BASELINE_NORMALIZED)
+        target_sources(nexaui_paint_bench PRIVATE benchmarks/plot_baseline.c)
+        target_include_directories(nexaui_paint_bench PRIVATE src platform/common)
+        target_compile_definitions(nexaui_paint_bench PRIVATE
+            NEXAUI_CORE_BASELINE_PREFIX="${NEXAUI_CORE_BASELINE_NORMALIZED}/core_prefix.h"
+            NEXAUI_CORE_BASELINE_PATH="${NEXAUI_CORE_BASELINE_NORMALIZED}/nexaui.c")
+    endif()
     add_executable(nexaui_text_stress_bench benchmarks/text_stress_bench.c)
     target_link_libraries(nexaui_text_stress_bench PRIVATE NexaUI::NexaUI)
     add_executable(nexaui_layout_bench benchmarks/layout_bench.c)
