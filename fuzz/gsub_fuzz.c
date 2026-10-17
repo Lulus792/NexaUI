@@ -60,12 +60,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             glyphs[1].glyph_index = 3;
             glyphs[2].glyph_index = 4;
         }
-        size_t work_count = count;
-        (void)nx_gsub_apply(font, NX_SFNT_TAG('L','a','t','n'),
-                            glyphs, &work_count);
-        work_count = count;
-        (void)nx_gsub_apply(font, NX_SFNT_TAG('A','r','a','b'),
-                            glyphs, &work_count);
+        for (unsigned variant=0;variant<4;++variant) {
+            nx_shaped_glyph work[32]; memcpy(work,glyphs,sizeof(work));
+            if (variant==2 && count>=3) {
+                work[0].glyph_index=1; work[1].glyph_index=2; work[2].glyph_index=3;
+            }
+            if (variant==3 && count>=6) {
+                const uint16_t chain[]={6,1,2,3,4,5};
+                for (size_t i=0;i<6;++i) work[i].glyph_index=chain[i];
+            }
+            size_t work_count=count;
+            nx_result result=nx_gsub_apply(font,variant==1?NX_SFNT_TAG('A','r','a','b'):NX_SFNT_TAG('L','a','t','n'),work,&work_count);
+            if (result==NX_OK) {
+                if (work_count>count) abort();
+                for (size_t i=0;i<work_count;++i) if (work[i].glyph_index>=8) abort();
+            }
+        }
         nx_font_close(font);
     }
     free(bytes);

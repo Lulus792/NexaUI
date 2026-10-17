@@ -33,6 +33,8 @@ static inline nx_result nx_ot_charge(size_t *left,size_t cost) {
 }
 nx_result nx_ot_coverage_validate(nx_ot_view view,size_t offset,uint16_t limit,size_t *count,size_t *work);
 size_t nx_ot_coverage_index(nx_ot_view view,size_t offset,uint16_t glyph);
+nx_result nx_ot_class_validate(nx_ot_view view,size_t offset,uint16_t limit,size_t *work);
+unsigned nx_ot_class_at(nx_ot_view view,size_t offset,uint16_t glyph);
 nx_result nx_ot_gdef_load(const nx_font *font,nx_ot_gdef *out,uint16_t glyph_limit,size_t *work);
 nx_result nx_ot_filter_validate(const nx_ot_gdef *g,uint16_t flags,uint16_t set);
 int nx_ot_ignored(const nx_ot_gdef *g,uint16_t flags,uint16_t set,uint16_t glyph);
@@ -41,6 +43,9 @@ void nx_ot_state_init(const nx_shaped_glyph *glyph,nx_ot_glyph_state *state);
 nx_result nx_ot_resolve(nx_shaped_glyph *glyphs,nx_ot_glyph_state *state,size_t count);
 nx_result nx_gsub_apply_state(const nx_font *font,uint32_t script,nx_shaped_glyph *glyphs,
                               nx_ot_glyph_state *state,size_t *count);
+nx_result nx_gsub_context_apply(nx_ot_view view,size_t lookups,size_t lookup_count,
+    size_t root,uint16_t glyph_limit,nx_shaped_glyph *glyphs,nx_ot_glyph_state *state,
+    size_t *count,const nx_ot_gdef *gdef,size_t *work);
 nx_result nx_gpos_apply_state(const nx_font *font,uint32_t script,nx_shaped_glyph *glyphs,
                               nx_ot_glyph_state *state,size_t count,double ppem,uint8_t *pair_mask);
 nx_result nx_gpos_mark_validate(nx_ot_view view,size_t sub,uint16_t type,uint16_t limit,size_t *work);

@@ -68,6 +68,10 @@ static unsigned class_at(nx_ot_view v,size_t at,uint16_t glyph) {
     }
     return 0;
 }
+nx_result nx_ot_class_validate(nx_ot_view v,size_t at,uint16_t limit,size_t *work) {
+    return classes_validate(v,at,UINT16_MAX,limit,work);
+}
+unsigned nx_ot_class_at(nx_ot_view v,size_t at,uint16_t glyph) { return class_at(v,at,glyph); }
 nx_result nx_ot_gdef_load(const nx_font *font,nx_ot_gdef *out,uint16_t limit,size_t *work) {
     *out=(nx_ot_gdef){0}; out->glyph_limit=limit;
     nx_bytes_view data;

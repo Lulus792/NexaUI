@@ -62,7 +62,8 @@ static int nx_gsub_feature_enabled(uint32_t tag) {
            tag == NX_SFNT_TAG('l','o','c','l') ||
            tag == NX_SFNT_TAG('r','l','i','g') ||
            tag == NX_SFNT_TAG('l','i','g','a') ||
-           tag == NX_SFNT_TAG('c','l','i','g');
+           tag == NX_SFNT_TAG('c','l','i','g') ||
+           tag == NX_SFNT_TAG('c','a','l','t');
 }
 
 /* Validate a coverage table and return its number of covered glyphs. */
@@ -200,14 +201,19 @@ static nx_result nx_gsub_validate_subtable(nx_gsub_table table, size_t offset,
     return NX_ERROR_UNSUPPORTED;
 }
 
-static nx_result nx_gsub_apply_lookup(nx_gsub_table table,size_t lookup,uint16_t glyph_limit,
+static nx_result nx_gsub_apply_lookup(nx_gsub_table table,size_t lookup,size_t lookups,size_t lookup_count,size_t lookup_index,uint16_t glyph_limit,
     nx_shaped_glyph *glyphs,nx_ot_glyph_state *state,size_t *count,const nx_ot_gdef *gdef,size_t *remaining) {
     if (!nx_gsub_has(table,lookup,6u)) return NX_ERROR_ARGUMENT;
     uint16_t type=nx_gsub_u16(table.data+lookup),flags=nx_gsub_u16(table.data+lookup+2u);
     size_t subtables=nx_gsub_u16(table.data+lookup+4u);
     if (subtables>64u || !nx_gsub_array(table,lookup,6u,subtables,2u) ||
         !nx_gsub_has(table,lookup,6u+2u*subtables+((flags&16u)?2u:0u))) return NX_ERROR_ARGUMENT;
-    if (type!=1u && type!=4u && type!=7u) return NX_OK;
+    if (type==5u || type==6u || type==7u) {
+        nx_result result=nx_gsub_context_apply((nx_ot_view){table.data,table.length},lookups,lookup_count,
+            lookup_index,glyph_limit,glyphs,state,count,gdef,remaining);
+        return result==NX_ERROR_UNSUPPORTED?NX_OK:result;
+    }
+    if (type!=1u && type!=4u) return NX_OK;
     uint16_t set=(flags&16u)?nx_gsub_u16(table.data+lookup+6u+2u*subtables):0;
     nx_result r=nx_ot_filter_validate(gdef,flags,set);
     if (r==NX_ERROR_UNSUPPORTED) return NX_OK;
@@ -215,17 +221,6 @@ static nx_result nx_gsub_apply_lookup(nx_gsub_table table,size_t lookup,uint16_t
     uint16_t effective=type; size_t offsets[64];
     for (size_t s=0;s<subtables;++s) {
         if (!nx_gsub_child(table,lookup,nx_gsub_u16(table.data+lookup+6u+2u*s),6u,&offsets[s])) return NX_ERROR_ARGUMENT;
-        if (type==7u) {
-            size_t outer=offsets[s],child;
-            if (!nx_gsub_has(table,outer,8u)) return NX_ERROR_ARGUMENT;
-            if (nx_gsub_u16(table.data+outer)!=1u) return NX_OK;
-            uint16_t target=nx_gsub_u16(table.data+outer+2u);
-            if (target==7u || (s && target!=effective)) return NX_ERROR_ARGUMENT;
-            effective=target;
-            if (!nx_gsub_child(table,outer,nx_gsub_u32(table.data+outer+4u),6u,&child)) return NX_ERROR_ARGUMENT;
-            offsets[s]=child;
-        }
-        if (effective!=1u && effective!=4u) return NX_OK;
         r=nx_gsub_validate_subtable(table,offsets[s],effective,glyph_limit,remaining);
         if (r==NX_ERROR_UNSUPPORTED) return NX_OK;
         if (r!=NX_OK) return r;
@@ -434,7 +429,7 @@ nx_result nx_gsub_apply_state(const nx_font *font, uint32_t script_tag,
                            6u, &lookup)) {
             result = NX_ERROR_ARGUMENT; goto done;
         }
-        result = nx_gsub_apply_lookup(table, lookup, metrics.glyph_count,
+        result = nx_gsub_apply_lookup(table, lookup, lookups, lookup_count, i, metrics.glyph_count,
                                       glyphs,state,inout_count,&gdef,&work_remaining);
         if (result != NX_OK) goto done;
     }
