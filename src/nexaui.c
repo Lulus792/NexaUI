@@ -2562,11 +2562,38 @@ nx_result nx_draw_icon(nx_context *ctx, nx_icon icon, nx_rect bounds,
         nx_icon_line(&p, 9, 13, 9, 5); nx_icon_line(&p, 15, 13, 15, 5);
         nx_icon_arc(&p, 12, 5, 3, 3, 180, 360);
         nx_icon_line(&p, 12, 9, 12, 18); break;
-    case NX_ICON_WIFI:
-        nx_icon_arc(&p, 12, 22, 20, 18, 240, 300);
-        nx_icon_arc(&p, 12, 22, 13, 12, 240, 300);
-        nx_icon_arc(&p, 12, 22, 6, 6, 240, 300);
-        nx_icon_arc(&p, 12, 21, 1, 1, 0, 360); break;
+    case NX_ICON_WIFI: case NX_ICON_WIFI_SHIELD:
+        if (icon == NX_ICON_WIFI_SHIELD) {
+            nx_icon_pen wifi = p;
+            wifi.box.width *= .70f; wifi.box.height *= .70f;
+            nx_icon_arc(&wifi, 12, 22, 20, 18, 240, 300);
+            nx_icon_arc(&wifi, 12, 22, 13, 12, 240, 300);
+            nx_icon_arc(&wifi, 12, 22, 6, 6, 240, 300);
+            nx_icon_arc(&wifi, 12, 21, 1, 1, 0, 360);
+            p.result = wifi.result;
+            p.box.x += bounds.width * .58f;
+            p.box.y += bounds.height * .46f;
+            p.box.width *= .42f; p.box.height *= .54f;
+            /* All child lines retain the caller's logical stroke width. */
+            nx_icon_line(&p, 3, 5, 12, 2); nx_icon_line(&p, 12, 2, 21, 5);
+            nx_icon_line(&p, 21, 5, 20, 14); nx_icon_line(&p, 20, 14, 17, 19);
+            nx_icon_line(&p, 17, 19, 12, 22); nx_icon_line(&p, 12, 22, 7, 19);
+            nx_icon_line(&p, 7, 19, 4, 14); nx_icon_line(&p, 4, 14, 3, 5);
+            nx_icon_line(&p, 7, 12, 11, 16); nx_icon_line(&p, 11, 16, 17, 9);
+        } else {
+            nx_icon_arc(&p, 12, 22, 20, 18, 240, 300);
+            nx_icon_arc(&p, 12, 22, 13, 12, 240, 300);
+            nx_icon_arc(&p, 12, 22, 6, 6, 240, 300);
+            nx_icon_arc(&p, 12, 21, 1, 1, 0, 360);
+        } break;
+    case NX_ICON_SHIELD: case NX_ICON_SHIELD_CHECK:
+        nx_icon_line(&p, 3, 5, 12, 2); nx_icon_line(&p, 12, 2, 21, 5);
+        nx_icon_line(&p, 21, 5, 20, 14); nx_icon_line(&p, 20, 14, 17, 19);
+        nx_icon_line(&p, 17, 19, 12, 22); nx_icon_line(&p, 12, 22, 7, 19);
+        nx_icon_line(&p, 7, 19, 4, 14); nx_icon_line(&p, 4, 14, 3, 5);
+        if (icon == NX_ICON_SHIELD_CHECK) {
+            nx_icon_line(&p, 7, 12, 11, 16); nx_icon_line(&p, 11, 16, 17, 9);
+        } break;
     case NX_ICON_ACTIVITY:
         nx_icon_line(&p, 1, 13, 6, 13); nx_icon_line(&p, 6, 13, 10, 3);
         nx_icon_line(&p, 10, 3, 14, 22); nx_icon_line(&p, 14, 22, 18, 10);
@@ -6419,9 +6446,94 @@ static nx_result nx_plot_tick_label(nx_context *ctx,
     return result;
 }
 
+
+typedef struct nx_plot_segment_plan {
+    const nx_plot_layer *layer;
+    nx_series_envelope *buckets;
+    size_t count;
+} nx_plot_segment_plan;
+static nx_color nx_plot_gradient(const nx_plot_layer *l,double t) {
+    nx_color a=l->fill_top,b=l->fill_bottom,c={0};
+    double alpha=(1-t)*a.a+t*b.a;c.a=(float)alpha;
+    if(alpha>0){c.r=(float)(((1-t)*a.r*a.a+t*b.r*b.a)/alpha);
+        c.g=(float)(((1-t)*a.g*a.a+t*b.g*b.a)/alpha);
+        c.b=(float)(((1-t)*a.b*a.a+t*b.b*b.a)/alpha);}
+    return c;
+}
+static void nx_plot_marks(const nx_series_envelope *b,nx_series_mark marks[4]) {
+    marks[0]=b->first;marks[1]=b->minimum;marks[2]=b->maximum;marks[3]=b->last;
+    for(unsigned a=1;a<4;++a){nx_series_mark m=marks[a];unsigned j=a;
+        while(j&&marks[j-1].index>m.index){marks[j]=marks[j-1];--j;}marks[j]=m;}
+}
+static nx_result nx_plot_multi_paint(nx_context *ctx,const nx_plot_desc *d,nx_rect area,
+    const nx_plot_multi_desc *multi,const nx_plot_segment_plan *plans,size_t plan_count) {
+    uint32_t w=(uint32_t)fmin(4096,ceil((double)area.width*multi->raster_scale));
+    uint32_t h=(uint32_t)fmin(4096,ceil((double)area.height*multi->raster_scale));
+    for(size_t layer=0;layer<multi->layer_count;++layer) {
+        const nx_plot_layer *l=&multi->layers[layer];nx_owned_bitmap *image=NULL;
+        if(l->filled&&!multi->hide_fills&&!d->disabled) {
+            size_t bytes=(size_t)w*h*4;
+            size_t allocation=sizeof(nx_owned_bitmap)+bytes-1;
+            image=ctx->allocator.allocate(ctx->allocator.user,allocation);
+            if(!image)return NX_ERROR_MEMORY;
+            image->allocation_size=allocation;image->next=ctx->owned_bitmaps;ctx->owned_bitmaps=image;
+            memset(image->pixels,0,bytes);
+            nx_point base=nx_plot_map(area,d,(nx_series_point){d->x_min,l->baseline});
+            for(size_t segment=0;segment<plan_count;++segment) {
+                const nx_plot_segment_plan *p=&plans[segment];if(p->layer!=l)continue;
+                nx_point previous={0};int has_previous=0;
+                for(size_t i=0;i<p->count;++i) {
+                    nx_series_mark marks[4];nx_plot_marks(&p->buckets[i],marks);
+                    for(unsigned j=0;j<4;++j){
+                        if(j&&marks[j].index==marks[j-1].index)continue;
+                        nx_point point=nx_plot_map(area,d,marks[j].point);
+                        if(has_previous&&point.x>previous.x){
+                            int x0=(int)ceil(((double)previous.x-area.x)*w/area.width-.5);
+                            int x1=(int)ceil(((double)point.x-area.x)*w/area.width-.5);
+                            x0=x0<0?0:x0;x1=x1>(int)w?(int)w:x1;
+                            for(int x=x0;x<x1;++x){
+                                double logical=area.x+(x+.5)*area.width/w;
+                                double fraction=(logical-previous.x)/(point.x-previous.x);
+                                double y=previous.y+(point.y-previous.y)*fraction;
+                                double low=fmin(y,base.y),high=fmax(y,base.y);
+                                int y0=(int)ceil((low-area.y)*h/area.height-.5);
+                                int y1=(int)ceil((high-area.y)*h/area.height-.5);
+                                y0=y0<0?0:y0;y1=y1>(int)h?(int)h:y1;
+                                for(int row=y0;row<y1;++row){
+                                    nx_color c=nx_plot_gradient(l,(row+.5)/h);
+                                    uint8_t *pixel=image->pixels+((size_t)row*w+(unsigned)x)*4;
+                                    pixel[0]=(uint8_t)floorf(c.r*255+.5f);pixel[1]=(uint8_t)floorf(c.g*255+.5f);
+                                    pixel[2]=(uint8_t)floorf(c.b*255+.5f);pixel[3]=(uint8_t)floorf(c.a*255+.5f);
+                                }
+                            }
+                        }
+                        previous=point;has_previous=1;
+                    }
+                }
+            }
+            nx_result r=nx_draw_bitmap(ctx,area,(nx_bitmap_view){image->pixels,w,h,(size_t)w*4,NX_BITMAP_RGBA8},(nx_color){1,1,1,1});
+            if(r!=NX_OK)return r;
+        }
+        nx_color line=l->line;
+        if(d->disabled) {nx_result r=nx_theme_color(ctx,NX_COLOR_DISABLED_TEXT,&line);if(r!=NX_OK)return r;}
+        for(size_t segment=0;segment<plan_count;++segment) {
+            const nx_plot_segment_plan *p=&plans[segment];if(p->layer!=l)continue;
+            nx_point previous={0};int has_previous=0;
+            for(size_t i=0;i<p->count;++i) {
+                nx_series_mark marks[4];nx_plot_marks(&p->buckets[i],marks);
+                for(unsigned j=0;j<4;++j){if(j&&marks[j].index==marks[j-1].index)continue;
+                    nx_point point=nx_plot_map(area,d,marks[j].point);
+                    nx_result r=nx_draw_line(ctx,has_previous?previous:point,point,1.5f,line);
+                    if(r!=NX_OK)return r;previous=point;has_previous=1;}
+            }
+        }
+    }
+    return NX_OK;
+}
 static nx_result nx_plot_paint(nx_context *ctx, const nx_plot_desc *desc,
                                nx_rect area, const nx_series_envelope *buckets,
-                               size_t bucket_count, const nx_plot_state *state) {
+                               size_t bucket_count, const nx_plot_state *state,
+    const nx_plot_multi_desc *multi,const nx_plot_segment_plan *plans,size_t plan_count) {
     nx_color surface, border, grid, line, text, focus;
     nx_result result = nx_theme_color(ctx, desc->disabled ?
         NX_COLOR_DISABLED_BACKGROUND : NX_COLOR_SURFACE, &surface);
@@ -6470,9 +6582,10 @@ static nx_result nx_plot_paint(nx_context *ctx, const nx_plot_desc *desc,
     }
     result = nx_push_clip(ctx, area);
     if (result != NX_OK) return result;
+    if(multi) result=nx_plot_multi_paint(ctx,desc,area,multi,plans,plan_count);
     nx_point previous = {0};
     int has_previous = 0;
-    for (size_t i = 0; i < bucket_count && result == NX_OK; ++i) {
+    for (size_t i = 0; !multi && i < bucket_count && result == NX_OK; ++i) {
         nx_series_mark marks[4] = {buckets[i].first, buckets[i].minimum,
                                     buckets[i].maximum, buckets[i].last};
         for (unsigned a = 1; a < 4u; ++a) {
@@ -6507,8 +6620,8 @@ static nx_result nx_plot_paint(nx_context *ctx, const nx_plot_desc *desc,
     return result;
 }
 
-nx_result nx_plot(nx_context *ctx, const nx_plot_desc *desc,
-                  nx_plot_state *state) {
+static nx_result nx_plot_core(nx_context *ctx, const nx_plot_desc *desc,
+                  nx_plot_state *state,const nx_plot_multi_desc *multi) {
     if (!ctx || !desc || !state || !desc->id || !desc->name.length ||
         !nx_valid_span(desc->name) ||
         !nx_valid_rect(desc->bounds) || desc->bounds.width <= 0.0f ||
@@ -6531,11 +6644,55 @@ nx_result nx_plot(nx_context *ctx, const nx_plot_desc *desc,
     if (!columns) columns = 1u;
     if (!desc->scratch || desc->scratch_capacity < columns)
         return NX_ERROR_LIMIT;
-    size_t bucket_count = 0;
-    nx_result result = nx_series_decimate(&desc->series, desc->x_min,
-        desc->x_max, columns, desc->scratch, desc->scratch_capacity,
-        &bucket_count);
-    if (result != NX_OK) return result;
+    size_t bucket_count=0,plan_count=0;nx_plot_segment_plan plans[32];
+    nx_result result=NX_OK;
+    char description[640]="Time series plot";size_t description_length=16;
+    if(multi) {
+        if(!multi->layers||!multi->layer_count||multi->layer_count>8||
+            !nx_valid_span(multi->x_unit)||!nx_valid_span(multi->y_unit)||
+            multi->x_unit.length>24||multi->y_unit.length>24||
+            !isfinite(multi->raster_scale)||multi->raster_scale<.125f||multi->raster_scale>8)
+            return NX_ERROR_ARGUMENT;
+        size_t samples=0,total_segments=0,filled=0;
+        for(size_t k=0;k<multi->layer_count;++k) {
+            const nx_plot_layer *l=&multi->layers[k];
+            if(!l->name.length||l->name.length>64||!nx_valid_span(l->name)||!l->segments||!l->segment_count||
+                l->segment_count>32||!nx_valid_color(l->line)||!nx_valid_color(l->fill_top)||
+                !nx_valid_color(l->fill_bottom)||!isfinite(l->baseline))return NX_ERROR_ARGUMENT;
+            total_segments+=l->segment_count;filled+=l->filled&&!multi->hide_fills&&!desc->disabled;
+            if(total_segments>32)return NX_ERROR_LIMIT;
+            for(size_t j=0;j<l->segment_count;++j){
+                if(l->segments[j].count>1000000-samples)return NX_ERROR_LIMIT;
+                samples+=l->segments[j].count;
+            }
+            int n=snprintf(description+description_length,sizeof(description)-description_length,
+                "; %.*s",(int)l->name.length,l->name.data);
+            if(n<0||(size_t)n>=sizeof(description)-description_length)return NX_ERROR_LIMIT;
+            description_length+=(size_t)n;
+        }
+        if(desc->scratch_capacity<(size_t)columns*total_segments)return NX_ERROR_LIMIT;
+        double w=ceil((double)area.width*multi->raster_scale),h=ceil((double)area.height*multi->raster_scale);
+        if(filled&&(w>4096||h>4096||w*h*filled>4194304))return NX_ERROR_LIMIT;
+        int n=snprintf(description+description_length,sizeof(description)-description_length,
+            "; x [%.*s]; y [%.*s]",(int)multi->x_unit.length,multi->x_unit.data?multi->x_unit.data:"",
+            (int)multi->y_unit.length,multi->y_unit.data?multi->y_unit.data:"");
+        if(n<0||(size_t)n>=sizeof(description)-description_length)return NX_ERROR_LIMIT;
+        description_length+=(size_t)n;
+        for(size_t k=0;k<multi->layer_count;++k) {
+            const nx_plot_layer *l=&multi->layers[k];double last=desc->x_min;int has_last=0;
+            for(size_t j=0;j<l->segment_count;++j){
+                nx_plot_segment_plan *p=&plans[plan_count];p->layer=l;p->buckets=desc->scratch+plan_count*columns;
+                result=nx_series_decimate(&l->segments[j],desc->x_min,desc->x_max,columns,p->buckets,columns,&p->count);
+                if(result!=NX_OK)return result;
+                if(p->count){if(has_last&&p->buckets[0].first.point.x<last)return NX_ERROR_ARGUMENT;
+                    last=p->buckets[p->count-1].last.point.x;has_last=1;}
+                ++plan_count;
+            }
+        }
+    } else {
+        result=nx_series_decimate(&desc->series,desc->x_min,desc->x_max,columns,desc->scratch,desc->scratch_capacity,&bucket_count);
+        if(result!=NX_OK)return result;
+    }
 
     nx_plot_state next = *state;
     if (!next.cursor_valid || !isfinite(next.cursor_x)) {
@@ -6549,10 +6706,11 @@ nx_result nx_plot(nx_context *ctx, const nx_plot_desc *desc,
     widget.semantic.role = NX_ROLE_CUSTOM;
     widget.semantic.bounds = desc->bounds;
     widget.semantic.name = desc->name;
-    widget.semantic.description = (nx_utf8_span){"Time series plot", 16};
+    widget.semantic.description = (nx_utf8_span){description,description_length};
     widget.semantic.state = desc->disabled ? NX_SEM_DISABLED : 0;
     widget.semantic.actions = NX_ACTION_FOCUS;
     widget.flags = NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
+    nx_owned_bitmap *old_bitmap=ctx->owned_bitmaps;
     size_t old_text_count = ctx->semantics.text_count;
     size_t old_command_count = ctx->command_count;
     unsigned old_clip_depth = ctx->clip_depth;
@@ -6594,16 +6752,25 @@ nx_result nx_plot(nx_context *ctx, const nx_plot_desc *desc,
             (nx_utf8_span){value, (size_t)length});
         node->value_length = (size_t)length;
     }
-    result = nx_plot_paint(ctx, desc, area, desc->scratch, bucket_count, &next);
+    result = nx_plot_paint(ctx, desc, area, desc->scratch, bucket_count, &next,multi,plans,plan_count);
     if (result != NX_OK) goto plot_rollback;
     *state = next;
     return NX_OK;
 plot_rollback:
+    nx_free_owned_bitmaps(ctx,old_bitmap);
     ctx->clip_depth = old_clip_depth;
     ctx->command_count = old_command_count;
     nx_region_rollback_last(ctx, desc->id);
     nx_semantics_rollback_last(ctx, desc->id, old_text_count);
     return result;
+}
+
+nx_result nx_plot(nx_context *ctx,const nx_plot_desc *desc,nx_plot_state *state) {
+    return nx_plot_core(ctx,desc,state,NULL);
+}
+nx_result nx_plot_multi(nx_context *ctx,const nx_plot_multi_desc *desc,nx_plot_state *state) {
+    if(!desc)return NX_ERROR_ARGUMENT;
+    return nx_plot_core(ctx,&desc->plot,state,desc);
 }
 
 static int nx_dashboard_fonts_valid(const nx_font_collection *fonts,

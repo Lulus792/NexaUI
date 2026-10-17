@@ -1198,7 +1198,8 @@ typedef enum nx_icon {
     NX_ICON_PLUS, NX_ICON_UPLOAD, NX_ICON_DOWNLOAD, NX_ICON_LINK,
     NX_ICON_SHARE, NX_ICON_CHECK, NX_ICON_STORAGE, NX_ICON_THERMOMETER,
     NX_ICON_WIFI, NX_ICON_ACTIVITY, NX_ICON_IMAGE, NX_ICON_EDIT,
-    NX_ICON_INFO, NX_ICON_SUN, NX_ICON_COUNT
+    NX_ICON_INFO, NX_ICON_SUN, NX_ICON_SHIELD, NX_ICON_SHIELD_CHECK,
+    NX_ICON_WIFI_SHIELD, NX_ICON_COUNT
 } nx_icon;
 
 NX_API nx_result nx_draw_icon(nx_context *context, nx_icon icon,
@@ -1468,6 +1469,79 @@ typedef struct nx_bitmap_view {
     size_t stride_bytes;
     nx_bitmap_format format;
 } nx_bitmap_view;
+
+/* Immutable reusable raster paints. Physical dimensions are ceil(logical size
+   * scale), <=4096 per axis and <=4194304 pixels. Choose scale for the target
+   pixel density; drawing never resamples or rebuilds the resource implicitly.
+   Stop colors interpolate premultiplied in encoded sRGB and store straight
+   RGBA8; rounded coverage uses four fixed subpixel samples. Stops must be
+   strictly increasing, start at 0, end at 1, with 2..16 entries. Degenerate
+   vectors use the final stop. Points are local logical coordinates. */
+typedef enum nx_paint_kind {
+    NX_PAINT_SOLID = 0, NX_PAINT_LINEAR, NX_PAINT_RADIAL
+} nx_paint_kind;
+typedef struct nx_color_stop { float position; nx_color color; } nx_color_stop;
+typedef struct nx_paint {
+    nx_paint_kind kind;
+    nx_color color; /* Solid paint only. */
+    nx_point from, to; /* Linear endpoints; radial center and radius point. */
+    const nx_color_stop *stops; size_t stop_count; /* Borrowed during create. */
+} nx_paint;
+typedef struct nx_surface_image_desc {
+    float width, height, radius, scale;
+    nx_paint paint;
+    size_t byte_budget; /* Peak allocations, including object; hard max 64 MiB. */
+} nx_surface_image_desc;
+typedef struct nx_shadow_image_desc {
+    float width, height, radius, scale;
+    float softness; /* Each of three box passes uses ceil(softness*scale) radius,
+                       capped at 64 physical pixels. Zero means a sharp mask. */
+    nx_point offset; /* Logical translation of shadow relative to shape origin. */
+    nx_color color;
+    size_t byte_budget;
+} nx_shadow_image_desc;
+typedef struct nx_paint_image nx_paint_image;
+/* Failure leaves *out_image unchanged. Calls never mutate frame state. */
+NX_API nx_result nx_surface_image_create(const nx_surface_image_desc *desc,
+    const nx_allocator *allocator, nx_paint_image **out_image);
+NX_API nx_result nx_shadow_image_create(const nx_shadow_image_desc *desc,
+    const nx_allocator *allocator, nx_paint_image **out_image);
+/* View/bounds borrow the resource; bounds are relative to the shape origin,
+   including blur support/offset. Keep it alive until all renderer use ends. */
+NX_API nx_result nx_paint_image_view(const nx_paint_image *image,
+    nx_bitmap_view *out_bitmap, nx_rect *out_bounds);
+NX_API nx_result nx_draw_paint_image(nx_context *context,
+    const nx_paint_image *image, nx_point shape_origin, nx_color tint);
+NX_API void nx_paint_image_destroy(nx_paint_image *image);
+
+/* Multiple named series share nx_plot's axes, focus and crosshair. Each layer
+   supplies 1..32 borrowed, ordered nonoverlapping contiguous segments; gaps are
+   explicit segment boundaries, never interpolated. NaN/Inf are errors. Total
+   limits: 8 layers, 32 segments, 1,000,000 source samples, 16384 columns. Scratch
+   needs columns * total_segments envelopes. Each segment retains the original
+   decimator's ordered first/min/max/last samples; no smoothing is introduced.
+   Filled plots rasterize <=4096 per axis, <=4194304 pixels across all layers,
+   at raster_scale [.125,8]. Frame-owned RGBA masks live until next begin_frame
+   or context destruction. Work is bounded by source samples + mask pixels +
+   retained marks, not the unbounded x/y magnitudes. Colors interpolate as in
+   raster paints. hide_fills is the application's contrast/effects fallback.
+   Names/units enter semantics; applications provide their visible legend. */
+typedef struct nx_plot_layer {
+    nx_utf8_span name;
+    const nx_series_view *segments; size_t segment_count;
+    nx_color line, fill_top, fill_bottom;
+    double baseline; /* Finite, clamped to the shared y range. */
+    int filled;
+} nx_plot_layer;
+typedef struct nx_plot_multi_desc {
+    nx_plot_desc plot; /* series ignored; remaining axes/input/font contract kept. */
+    const nx_plot_layer *layers; size_t layer_count;
+    nx_utf8_span x_unit, y_unit; /* <=24 bytes each; names <=64 bytes each. */
+    float raster_scale;
+    int hide_fills;
+} nx_plot_multi_desc;
+NX_API nx_result nx_plot_multi(nx_context *context,
+    const nx_plot_multi_desc *desc, nx_plot_state *state);
 
 /* S07: application-rendered RGBA8 viewport surface. Callbacks may render a
    software preview of a 3D scene. resize is called on changed physical pixel

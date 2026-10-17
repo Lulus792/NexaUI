@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "search_font_fixture.h"
+#include "paint_scene.h"
 
 #define CHECK(x) do { if (!(x)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); \
@@ -121,6 +122,43 @@ static int run_theme(nx_d3d12_renderer *renderer, uint32_t width,
     return 0;
 }
 
+static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t height,uint8_t *gpu,uint8_t *headless) {
+    for(unsigned density=0;density<3;++density) {
+        /* Open fractional-DPI diagnostic, deliberately not a passing gate.
+           Enable NEXAUI_TEST_PAINT_FRACTIONAL=1 to reproduce it. */
+        if(density==1&&!getenv("NEXAUI_TEST_PAINT_FRACTIONAL"))continue;
+        double scale=1+density*.5;
+        /* An explicit diagnostic retains 150%-resource -> 100%-display
+           downsampling; ordinary checks scale the entire command stream. */
+        if(getenv("NEXAUI_TEST_PAINT_DOWNSAMPLE"))scale=1;
+        nx_context *ui=NULL;nx_paint_image *images[3]={0};
+        CHECK(nx_context_create(NULL,&ui)==NX_OK);
+        CHECK(!paint_scene(ui,images,1+density*.5f));
+        const nx_command *commands;size_t count;
+        CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
+        nx_color clear={.02f,.04f,.08f,1};
+        nx_command *scaled=malloc(count*sizeof(*scaled));CHECK(scaled);
+        for(size_t i=0;i<count;++i){
+            scaled[i]=commands[i];nx_command *c=&scaled[i];
+            c->rect.x=(float)(c->rect.x*scale);c->rect.y=(float)(c->rect.y*scale);
+            c->rect.width=(float)(c->rect.width*scale);c->rect.height=(float)(c->rect.height*scale);
+            c->radius=(float)(c->radius*scale);c->thickness=(float)(c->thickness*scale);
+            for(unsigned j=0;j<3;++j){c->points[j].x=(float)(c->points[j].x*scale);c->points[j].y=(float)(c->points[j].y*scale);}
+        }
+        CHECK(nx_headless_render(scaled,count,headless,width,height,(size_t)width*4,clear)==NX_OK);
+        CHECK(nx_d3d12_test_render_readback(renderer,commands,count,scale,clear,gpu,(size_t)width*4)==NX_OK);
+        unsigned maximum=0;size_t differing=0;
+        for(size_t i=0;i<(size_t)width*height*4;++i){
+            unsigned delta=gpu[i]>headless[i]?gpu[i]-headless[i]:headless[i]-gpu[i];
+            if(delta>maximum)maximum=delta;if(delta)++differing;
+        }
+        printf("paint scale %.1f density %.1f: max channel delta %u; %zu differing bytes\n",scale,1+density*.5,maximum,differing);
+        CHECK(maximum==0); /* Accepted cases remain byte-exact. */
+        free(scaled);
+        paint_scene_free(images);nx_context_destroy(ui);
+    }
+    return 0;
+}
 int main(void) {
     nx_window_desc desc = {0};
     desc.title_utf8 = "NexaUI D3D12 widget regression";
@@ -152,6 +190,7 @@ int main(void) {
                     NX_THEME_DARK, text, gpu, headless) == 0);
     CHECK(run_theme(renderer, info.pixel_width, info.pixel_height,
                     NX_THEME_HIGH_CONTRAST, text, gpu, headless) == 0);
+    CHECK(test_paints(renderer,info.pixel_width,info.pixel_height,gpu,headless)==0);
     nx_text_layout_destroy(text);
     nx_font_collection_destroy(fonts);
     nx_font_close(font);

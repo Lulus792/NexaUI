@@ -169,14 +169,12 @@ static void nx_paint_bitmap(uint8_t *pixels, uint32_t width, uint32_t height,
     size_t channels = bitmap->format == NX_BITMAP_RGBA8 ? 4u : 1u;
     for (uint32_t y = y0; y < y1; ++y) {
         uint8_t *row = pixels + (size_t)y * stride;
-        double v = ((double)y + 0.5 - cmd->rect.y) / cmd->rect.height;
         uint32_t sy = (uint32_t)fmin((double)bitmap->height - 1.0,
-                                     floor(v * bitmap->height));
+            floor((((double)y + 0.5 - cmd->rect.y) * bitmap->height) / cmd->rect.height));
         const uint8_t *source_row = bitmap->pixels + (size_t)sy * bitmap->stride_bytes;
         for (uint32_t x = x0; x < x1; ++x) {
-            double u = ((double)x + 0.5 - cmd->rect.x) / cmd->rect.width;
             uint32_t sx = (uint32_t)fmin((double)bitmap->width - 1.0,
-                                         floor(u * bitmap->width));
+                floor((((double)x + 0.5 - cmd->rect.x) * bitmap->width) / cmd->rect.width));
             const uint8_t *sample = source_row + (size_t)sx * channels;
             uint8_t src[4];
             if (channels == 4u) {

@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "wayland/window_internal.h"
 #include "x11/window_internal.h"
+#include "paint_scene.h"
 #include <X11/Xutil.h>
 
 #include <float.h>
@@ -423,6 +424,21 @@ static nx_command bitmap(float x, float y, float w, float h, nx_bitmap_view view
     nx_command c = rect(x, y, w, h, tint); c.type = NX_COMMAND_BITMAP; c.bitmap = view; return c;
 }
 
+static int test_paints(nx_window *window) {
+    nx_vulkan_renderer *renderer=NULL;
+    CHECK(create_serial(window,NULL,&renderer)==NX_OK);
+    for(unsigned density=0;density<3;++density) {
+        nx_context *ui=NULL;nx_paint_image *images[3]={0};
+        CHECK(nx_context_create(NULL,&ui)==NX_OK&&!paint_scene(ui,images,1+density*.5f));
+        const nx_command *paint_commands;size_t paint_count;
+        CHECK(nx_frame_commands(ui,&paint_commands,&paint_count)==NX_OK);
+        CHECK(compare(window,renderer,paint_commands,paint_count,1+density*.5,(nx_color){.02f,.04f,.08f,1})==0);
+        paint_scene_free(images);nx_context_destroy(ui);
+    }
+    CHECK(nx_vulkan_renderer_destroy(renderer)==NX_OK);
+    return 0;
+}
+
 static int test_bitmaps(nx_window *window) {
     heap h = {0}; nx_allocator allocator = {&h, tracked_allocate, tracked_free};
     nx_vulkan_renderer *renderer;
@@ -682,7 +698,7 @@ int main(int argc, char **argv) {
         int selected = !strcmp(argv[1], "alpha") ? test_clips_and_alpha(window) :
             !strcmp(argv[1], "storage") ? test_owned_storage(window) :
             !strcmp(argv[1], "shapes") ? test_shapes(window) :
-            !strcmp(argv[1], "bitmaps") ? test_bitmaps(window) :
+            !strcmp(argv[1], "bitmaps") ? (test_bitmaps(window)||test_paints(window)) :
             !strcmp(argv[1], "batches") ? test_batches(window) : 1;
         nx_window_destroy(window); return selected;
     }
@@ -690,6 +706,7 @@ int main(int argc, char **argv) {
     if (!status) status = test_clips_and_alpha(window);
     if (!status) status = test_shapes(window);
     if (!status) status = test_bitmaps(window);
+    if (!status) status = test_paints(window);
     if (!status) status = test_owned_storage(window);
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);

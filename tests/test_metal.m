@@ -1,6 +1,7 @@
 #import <AppKit/AppKit.h>
 #include "renderer.h"
 #include "window_internal.h"
+#include "paint_scene.h"
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -77,6 +78,17 @@ static int compare_commands(nx_window *w, nx_metal_renderer *r, const nx_command
 }
 static int compare(nx_window *w, nx_metal_renderer *r, nx_color clear) {
     return compare_commands(w,r,NULL,0,1,clear);
+}
+static int test_paints(nx_window *w,nx_metal_renderer *r) {
+    for(unsigned density=0;density<3;++density) {
+        nx_context *ui=NULL;nx_paint_image *images[3]={0};
+        CHECK(nx_context_create(NULL,&ui)==NX_OK&&!paint_scene(ui,images,1+density*.5f));
+        const nx_command *commands;size_t count;
+        CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
+        CHECK(compare_commands(w,r,commands,count,1+density*.5,(nx_color){.02f,.04f,.08f,1})==0);
+        paint_scene_free(images);nx_context_destroy(ui);
+    }
+    return 0;
 }
 static int test_shapes(nx_window *w, nx_metal_renderer *r) {
     nx_command commands[132] = {0}; size_t n = 0;
@@ -562,6 +574,10 @@ int main(void) {
         CHECK(nx_metal_renderer_destroy(r) == NX_OK && !h.live);
         CHECK([view layer] == original_layer && [view wantsLayer] == original_wants_layer);
         CHECK(test_driver(window) == 0);
+        nx_metal_renderer *paint_renderer=NULL;
+        CHECK(nx_metal_renderer_create(window,NULL,&paint_renderer)==NX_OK);
+        CHECK(test_paints(window,paint_renderer)==0);
+        CHECK(nx_metal_renderer_destroy(paint_renderer)==NX_OK);
         CHECK([view layer] == original_layer && [view wantsLayer] == original_wants_layer);
         [original_layer release];
         nx_window_destroy(window);
