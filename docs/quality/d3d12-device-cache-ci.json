@@ -1,0 +1,518 @@
+{
+  "source_commit": "0bbe8338b8a99f3f61f789cb7b29cbc294c14f97",
+  "run_id": 39095248146,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39095248146",
+  "required_jobs": [
+    {
+      "id": 117580225999,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "registered": 110,
+      "passed": 110,
+      "skipped": 0,
+      "summary": "2026-10-18T04:00:36.4660405Z 100% tests passed out of 110",
+      "selected_cases": [
+        "2026-10-18T03:55:11.7609073Z   9/110 Test   #9: nexaui_d3d12_smoke .........................   Passed    2.09 sec",
+        "2026-10-18T03:55:13.6153045Z  10/110 Test  #10: nexaui_d3d12_warp_smoke ....................   Passed    1.85 sec",
+        "2026-10-18T03:55:14.5161855Z  11/110 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.90 sec",
+        "2026-10-18T03:55:15.3379230Z  12/110 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.82 sec",
+        "2026-10-18T03:55:15.6542342Z  13/110 Test  #13: nexaui_d3d12_pipelines .....................   Passed    0.32 sec",
+        "2026-10-18T03:55:15.8011447Z  14/110 Test  #14: nexaui_d3d12_pipelines_warp ................   Passed    0.15 sec",
+        "2026-10-18T03:55:24.7638206Z  38/110 Test  #38: nexaui_text_density ........................   Passed    0.08 sec",
+        "2026-10-18T03:55:24.7857251Z  39/110 Test  #39: nexaui_context_text_density ................   Passed    0.02 sec",
+        "2026-10-18T03:57:18.8759338Z  58/110 Test  #58: nexaui_clipboard ...........................   Passed    0.03 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "89557da4e2e550eb427680c01438fd81f7ceb70424710378aeeea5255450567c"
+    },
+    {
+      "id": 117580226148,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "registered": 93,
+      "passed": 93,
+      "skipped": 0,
+      "summary": "2026-10-18T03:55:13.5383260Z 100% tests passed out of 93",
+      "selected_cases": [
+        "2026-10-18T03:54:51.9287050Z 32/93 Test #32: nexaui_text_density ........................   Passed    0.05 sec",
+        "2026-10-18T03:54:51.9385880Z 33/93 Test #33: nexaui_context_text_density ................   Passed    0.01 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "b5092b27c6596226b5dee1026700390cb51a9ae96faed8ca29f898535b0b7a70"
+    },
+    {
+      "id": 117580226152,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "registered": 110,
+      "passed": 110,
+      "skipped": 0,
+      "summary": "2026-10-18T04:01:49.2863049Z 100% tests passed out of 110",
+      "selected_cases": [
+        "2026-10-18T03:55:24.1558516Z   9/110 Test   #9: nexaui_d3d12_smoke .........................   Passed    1.94 sec",
+        "2026-10-18T03:55:25.9435731Z  10/110 Test  #10: nexaui_d3d12_warp_smoke ....................   Passed    1.79 sec",
+        "2026-10-18T03:55:26.8517778Z  11/110 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.91 sec",
+        "2026-10-18T03:55:27.6680948Z  12/110 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.82 sec",
+        "2026-10-18T03:55:27.9834709Z  13/110 Test  #13: nexaui_d3d12_pipelines .....................   Passed    0.31 sec",
+        "2026-10-18T03:55:28.1582283Z  14/110 Test  #14: nexaui_d3d12_pipelines_warp ................   Passed    0.17 sec",
+        "2026-10-18T03:55:41.1947074Z  38/110 Test  #38: nexaui_text_density ........................   Passed    0.12 sec",
+        "2026-10-18T03:55:41.2273556Z  39/110 Test  #39: nexaui_context_text_density ................   Passed    0.03 sec",
+        "2026-10-18T03:57:25.5803231Z  58/110 Test  #58: nexaui_clipboard ...........................   Passed    0.03 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "d5eb260e58de4731b9afde3838fb83b79f4dbeb30373381ff1c1847cddb41451"
+    },
+    {
+      "id": 117580226162,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T03:55:34.4401085Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T03:55:27.3601557Z  55/114 Test  #55: nexaui_text_density ........................   Passed    0.06 sec",
+        "2026-10-18T03:55:27.3671012Z  56/114 Test  #56: nexaui_context_text_density ................   Passed    0.01 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "cf7a5eb56563d8d892a138eed22e939e2b82334ae0d03fcf309d48df8cf56836"
+    },
+    {
+      "id": 117580226177,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T03:55:30.9889980Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T03:55:23.9039100Z  55/114 Test  #55: nexaui_text_density ........................   Passed    0.06 sec",
+        "2026-10-18T03:55:23.9104351Z  56/114 Test  #56: nexaui_context_text_density ................   Passed    0.01 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "b94d5b4e8dcc968aaaf88ee52dffe2a388596d48607cfcea0b6f396e8faa4119"
+    },
+    {
+      "id": 117580226195,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "registered": 93,
+      "passed": 93,
+      "skipped": 0,
+      "summary": "2026-10-18T03:55:13.2488400Z 100% tests passed out of 93",
+      "selected_cases": [
+        "2026-10-18T03:54:51.6482870Z 32/93 Test #32: nexaui_text_density ........................   Passed    0.04 sec",
+        "2026-10-18T03:54:51.6563780Z 33/93 Test #33: nexaui_context_text_density ................   Passed    0.01 sec"
+      ],
+      "shader_checks": [
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        }
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        }
+      ],
+      "decoded_log_lf_no_bom_sha256": "4460fe55f14c2ded926dcd50c5afe7a69d9f775ae2daa7369219ac9d063fa733"
+    },
+    {
+      "id": 117580226209,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T03:56:19.7654235Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T03:55:55.2446335Z  55/114 Test  #55: nexaui_text_density ........................   Passed    0.21 sec",
+        "2026-10-18T03:55:55.3019646Z  56/114 Test  #56: nexaui_context_text_density ................   Passed    0.06 sec"
+      ],
+      "shader_checks": [],
+      "package_steps": [],
+      "decoded_log_lf_no_bom_sha256": "a8d27a26976647f11abbce6614926c99506aaabc5d6e23cbc03b5567f572fe02"
+    }
+  ],
+  "optional_jobs": [
+    {
+      "id": 117580226894,
+      "name": "windows-asan",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 117580226995,
+      "name": "fuzz-campaigns",
+      "conclusion": "skipped"
+    }
+  ],
+  "scope": "Exact-source native CI including Windows startup-diagnostic compilation. Native CPU-metadata execution is in the local8-case receipt. No startup-speed, human or physical acceptance. Installed consumers run; add_subdirectory forms build/link only."
+}

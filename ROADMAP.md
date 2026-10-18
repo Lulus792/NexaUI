@@ -29,6 +29,9 @@ byte-identical embedded DXBC and adds a complete native startup diagnostic plus
 pipeline failure/retry checks. The [startup report](docs/quality/d3d12-startup-report.md)
 retains the non-improving final total-start comparison; overall latency acceptance
 and the historical application outliers remain open.
+The [device/cache follow-up](docs/quality/d3d12-device-cache-report.md) locates
+cache-journal flushing in new local device outliers and adds separate diagnostic
+CPU accounting. It supplies no production total-start acceptance.
 
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 

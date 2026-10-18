@@ -184,3 +184,12 @@ the original PSO outliers before claiming reliably faster first usable frames.
 NexaCloud separately reviews candidate998a12c and its application workload/pin.
 Physical monitor/IME/assistive and whole-design acceptance remain P2 work; this
 component and its green CI do not complete the broader project goal.
+
+## Follow-up: device creation and executable identity
+
+The [device/cache investigation](d3d12-device-cache-report.md) adds42 preserved
+native tasks, including a rejected explicit-adapter control and synchronous
+OS shader-cache journal flush observations for byte-identical copies at new
+paths. Diagnostic0bbe833 adds separate CPU accounting; the production renderer
+remains998a12c. The new observations do not supersede this report's negative
+total-start comparison or close the historical application findings.
