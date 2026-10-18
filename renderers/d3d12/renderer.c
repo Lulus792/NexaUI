@@ -3,14 +3,7 @@
 #define COBJMACROS
 #include <windows.h>
 #include <d3d12.h>
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4115) /* Windows SDK forward declaration in d3dcompiler.h. */
-#endif
-#include <d3dcompiler.h>
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+#include <d3dcommon.h>
 #include <dxgi1_4.h>
 
 #include "renderer.h"
@@ -130,106 +123,11 @@ typedef struct nx_d3d12_vertex {
     float rgba[4];
 } nx_d3d12_vertex;
 
-static const char nx_d3d12_shader[] =
-    "struct V { float2 pos : POSITION; float4 color : COLOR; };\n"
-    "struct P { float4 pos : SV_POSITION; float4 color : COLOR; };\n"
-    "P VSMain(V v) { P p; p.pos = float4(v.pos, 0, 1);"
-    " p.color = v.color; return p; }\n"
-    "float4 PSMain(P p) : SV_TARGET { return p.color; }\n";
-
-static const char nx_d3d12_composite_shader[] =
-    "Texture2D<float4> previous : register(t0);\n"
-    "struct V { float2 pos : POSITION; float4 color : COLOR; };\n"
-    "struct P { float4 pos : SV_POSITION; float4 color : COLOR; };\n"
-    "P VSMain(V v) { P p; p.pos = float4(v.pos, 0, 1);"
-    " p.color = v.color; return p; }\n"
-    "float4 PSMain(P p) : SV_TARGET {\n"
-    "  uint4 s = (uint4)round(saturate(p.color) * 255.0);\n"
-    "  uint4 d = (uint4)round(saturate(previous.Load(int3(int2(p.pos.xy), 0))) * 255.0);\n"
-    "  if (s.a == 0) return float4(d) / 255.0;\n"
-    "  if (s.a == 255 || d.a == 0) return float4(s) / 255.0;\n"
-    "  uint inv = 255 - s.a;\n"
-    "  uint denom = s.a * 255 + d.a * inv;\n"
-    "  uint3 rgb = (s.rgb * s.a * 255 + d.rgb * d.a * inv + denom / 2) / denom;\n"
-    "  uint alpha = (denom + 127) / 255;\n"
-    "  return float4(rgb, alpha) / 255.0;\n"
-    "}\n";
-
-static const char nx_d3d12_shape_shader[] =
-    "Texture2D<float4> previous : register(t0);\n"
-    "cbuffer Shape : register(b0) { float4 bounds; float radius; uint kind; };\n"
-    "struct V { float2 pos : POSITION; float4 color : COLOR; };\n"
-    "struct P { float4 pos : SV_POSITION; float4 color : COLOR; };\n"
-    "P VSMain(V v) { P p; p.pos = float4(v.pos, 0, 1);"
-    " p.color = v.color; return p; }\n"
-    "float4 PSMain(P p) : SV_TARGET {\n"
-    "  float2 diff;\n"
-    "  if (kind == 0) {\n"
-    "    float2 a = bounds.xy, d = bounds.zw - a;\n"
-    "    float len2 = dot(d, d);\n"
-    "    float along = len2 > 0 ? saturate(dot(p.pos.xy - a, d) / len2) : 0;\n"
-    "    diff = p.pos.xy - (a + along * d);\n"
-    "  } else {\n"
-    "    float2 nearest = clamp(p.pos.xy, bounds.xy + radius, bounds.zw - radius);\n"
-    "    diff = p.pos.xy - nearest;\n"
-    "  }\n"
-    "  if (dot(diff, diff) > radius * radius) discard;\n"
-    "  uint4 s = (uint4)round(saturate(p.color) * 255.0);\n"
-    "  uint4 old = (uint4)round(saturate(previous.Load(int3(int2(p.pos.xy), 0))) * 255.0);\n"
-    "  if (s.a == 0) return float4(old) / 255.0;\n"
-    "  if (s.a == 255 || old.a == 0) return float4(s) / 255.0;\n"
-    "  uint inv = 255 - s.a;\n"
-    "  uint denom = s.a * 255 + old.a * inv;\n"
-    "  uint3 rgb = (s.rgb * s.a * 255 + old.rgb * old.a * inv + denom / 2) / denom;\n"
-    "  uint alpha = (denom + 127) / 255;\n"
-    "  return float4(rgb, alpha) / 255.0;\n"
-    "}\n";
-
-static const char nx_d3d12_bitmap_shader[] =
-    "Texture2D<float4> previous : register(t0);\n"
-    "Texture2D<float4> source : register(t1);\n"
-    "cbuffer Bitmap : register(b0) { float4 bounds; uint source_format; };\n"
-    /* At 1:1, floor(pixel_center-origin) = pixel_index-ceil(origin-.5).
-       Compare origin with its half-integer cell boundary before subtracting:
-       even local subtraction rounds nextafter(.5) across an integer texel. */
-    "float identity_position(float position, float origin) {\n"
-    "  precise float whole = floor(origin);\n"
-    "  precise float midpoint = whole + 0.5;\n"
-    "  float bias = -whole;\n"
-    "  if (origin > midpoint) bias -= 1.0;\n"
-    "  return floor(position) + bias;\n"
-    "}\n"
-    "struct V { float2 pos : POSITION; float4 color : COLOR; };\n"
-    "struct P { float4 pos : SV_POSITION; float4 color : COLOR; };\n"
-    "P VSMain(V v) { P p; p.pos = float4(v.pos, 0, 1);"
-    " p.color = v.color; return p; }\n"
-    "float4 PSMain(P p) : SV_TARGET {\n"
-    "  uint width, height; source.GetDimensions(width, height);\n"
-    "  float2 local = p.pos.xy - bounds.xy;\n"
-    "  precise float2 sample_position = local / bounds.zw * float2(width, height);\n"
-    "  if (bounds.z == float(width)) sample_position.x = identity_position(p.pos.x, bounds.x);\n"
-    "  if (bounds.w == float(height)) sample_position.y = identity_position(p.pos.y, bounds.y);\n"
-    "  uint2 xy = min((uint2)max(floor(sample_position), 0.0),"
-    " uint2(width - 1, height - 1));\n"
-    "  uint4 sample = (uint4)round(saturate(source.Load(int3(xy, 0))) * 255.0);\n"
-    "  uint4 tint = (uint4)round(saturate(p.color) * 255.0);\n"
-    "  uint4 s;\n"
-    "  if (source_format == 2) { s.rgb = tint.rgb;"
-    " s.a = (sample.r * tint.a + 127) / 255; }\n"
-    "  else { s = (sample * tint + 127) / 255; }\n"
-    "  uint4 d = (uint4)round(saturate(previous.Load(int3(int2(p.pos.xy), 0))) * 255.0);\n"
-    "  if (s.a == 0) return float4(d) / 255.0;\n"
-    "  if (s.a == 255 || d.a == 0) return float4(s) / 255.0;\n"
-    "  uint inv = 255 - s.a;\n"
-    "  uint denom = s.a * 255 + d.a * inv;\n"
-    "  uint3 rgb = (s.rgb * s.a * 255 + d.rgb * d.a * inv + denom / 2) / denom;\n"
-    "  uint alpha = (denom + 127) / 255;\n"
-    "  return float4(rgb, alpha) / 255.0;\n"
-    "}\n";
+#include "shader_bytecode.h"
 
 static nx_result nx_d3d12_ensure_pipeline(nx_d3d12_renderer *r) {
     if (r->pipeline) return NX_OK;
-    ID3DBlob *signature = NULL, *vs = NULL, *ps = NULL, *errors = NULL;
+    ID3DBlob *signature = NULL, *errors = NULL;
     ID3D12RootSignature *root = NULL;
     ID3D12PipelineState *pipeline = NULL;
     D3D12_ROOT_SIGNATURE_DESC root_desc = {0};
@@ -242,15 +140,6 @@ static nx_result nx_d3d12_ensure_pipeline(nx_d3d12_renderer *r) {
         ID3D10Blob_GetBufferSize(signature),
         &IID_ID3D12RootSignature, (void **)&root);
     if (FAILED(hr)) goto fail;
-    hr = D3DCompile(nx_d3d12_shader, sizeof(nx_d3d12_shader) - 1u,
-        "nexaui-d3d12", NULL, NULL, "VSMain", "vs_5_0", 0, 0,
-        &vs, &errors);
-    if (FAILED(hr)) goto fail;
-    if (errors) { ID3D10Blob_Release(errors); errors = NULL; }
-    hr = D3DCompile(nx_d3d12_shader, sizeof(nx_d3d12_shader) - 1u,
-        "nexaui-d3d12", NULL, NULL, "PSMain", "ps_5_0", 0, 0,
-        &ps, &errors);
-    if (FAILED(hr)) goto fail;
     D3D12_INPUT_ELEMENT_DESC layout[2] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0,
          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -259,10 +148,10 @@ static nx_result nx_d3d12_ensure_pipeline(nx_d3d12_renderer *r) {
     };
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {0};
     desc.pRootSignature = root;
-    desc.VS.pShaderBytecode = ID3D10Blob_GetBufferPointer(vs);
-    desc.VS.BytecodeLength = ID3D10Blob_GetBufferSize(vs);
-    desc.PS.pShaderBytecode = ID3D10Blob_GetBufferPointer(ps);
-    desc.PS.BytecodeLength = ID3D10Blob_GetBufferSize(ps);
+    desc.VS.pShaderBytecode = nx_d3d12_solid_vs;
+    desc.VS.BytecodeLength = sizeof(nx_d3d12_solid_vs);
+    desc.PS.pShaderBytecode = nx_d3d12_solid_ps;
+    desc.PS.BytecodeLength = sizeof(nx_d3d12_solid_ps);
     desc.InputLayout.pInputElementDescs = layout;
     desc.InputLayout.NumElements = 2;
     desc.SampleMask = UINT_MAX;
@@ -293,8 +182,6 @@ static nx_result nx_d3d12_ensure_pipeline(nx_d3d12_renderer *r) {
     pipeline = NULL;
 fail:
     if (errors) ID3D10Blob_Release(errors);
-    if (ps) ID3D10Blob_Release(ps);
-    if (vs) ID3D10Blob_Release(vs);
     if (signature) ID3D10Blob_Release(signature);
     if (pipeline) ID3D12PipelineState_Release(pipeline);
     if (root) ID3D12RootSignature_Release(root);
@@ -304,7 +191,7 @@ fail:
 static nx_result nx_d3d12_ensure_composite(nx_d3d12_renderer *r,
                                              UINT frame) {
     if (!r->composite_pipeline) {
-        ID3DBlob *signature = NULL, *vs = NULL, *ps = NULL, *errors = NULL;
+        ID3DBlob *signature = NULL, *errors = NULL;
         ID3D12RootSignature *root = NULL;
         ID3D12PipelineState *pipeline = NULL;
         ID3D12DescriptorHeap *srv_heap = NULL;
@@ -331,15 +218,6 @@ static nx_result nx_d3d12_ensure_composite(nx_d3d12_renderer *r,
             ID3D10Blob_GetBufferSize(signature),
             &IID_ID3D12RootSignature, (void **)&root);
         if (FAILED(hr)) goto fail;
-        hr = D3DCompile(nx_d3d12_composite_shader,
-            sizeof(nx_d3d12_composite_shader) - 1u, "nexaui-composite",
-            NULL, NULL, "VSMain", "vs_5_0", 0, 0, &vs, &errors);
-        if (FAILED(hr)) goto fail;
-        if (errors) { ID3D10Blob_Release(errors); errors = NULL; }
-        hr = D3DCompile(nx_d3d12_composite_shader,
-            sizeof(nx_d3d12_composite_shader) - 1u, "nexaui-composite",
-            NULL, NULL, "PSMain", "ps_5_0", 0, 0, &ps, &errors);
-        if (FAILED(hr)) goto fail;
         D3D12_INPUT_ELEMENT_DESC layout[2] = {
             {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0,
              D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -348,10 +226,10 @@ static nx_result nx_d3d12_ensure_composite(nx_d3d12_renderer *r,
         };
         D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {0};
         desc.pRootSignature = root;
-        desc.VS.pShaderBytecode = ID3D10Blob_GetBufferPointer(vs);
-        desc.VS.BytecodeLength = ID3D10Blob_GetBufferSize(vs);
-        desc.PS.pShaderBytecode = ID3D10Blob_GetBufferPointer(ps);
-        desc.PS.BytecodeLength = ID3D10Blob_GetBufferSize(ps);
+        desc.VS.pShaderBytecode = nx_d3d12_composite_vs;
+        desc.VS.BytecodeLength = sizeof(nx_d3d12_composite_vs);
+        desc.PS.pShaderBytecode = nx_d3d12_composite_ps;
+        desc.PS.BytecodeLength = sizeof(nx_d3d12_composite_ps);
         desc.InputLayout.pInputElementDescs = layout;
         desc.InputLayout.NumElements = 2;
         desc.SampleMask = UINT_MAX;
@@ -384,8 +262,6 @@ static nx_result nx_d3d12_ensure_composite(nx_d3d12_renderer *r,
         srv_heap = NULL;
 fail:
         if (errors) ID3D10Blob_Release(errors);
-        if (ps) ID3D10Blob_Release(ps);
-        if (vs) ID3D10Blob_Release(vs);
         if (signature) ID3D10Blob_Release(signature);
         if (srv_heap) ID3D12DescriptorHeap_Release(srv_heap);
         if (pipeline) ID3D12PipelineState_Release(pipeline);
@@ -414,7 +290,7 @@ fail:
 
 static nx_result nx_d3d12_ensure_shape_pipeline(nx_d3d12_renderer *r) {
     if (r->shape_pipeline) return NX_OK;
-    ID3DBlob *signature = NULL, *vs = NULL, *ps = NULL, *errors = NULL;
+    ID3DBlob *signature = NULL, *errors = NULL;
     ID3D12RootSignature *root = NULL;
     ID3D12PipelineState *pipeline = NULL;
     D3D12_DESCRIPTOR_RANGE range = {0};
@@ -444,15 +320,6 @@ static nx_result nx_d3d12_ensure_shape_pipeline(nx_d3d12_renderer *r) {
         ID3D10Blob_GetBufferSize(signature),
         &IID_ID3D12RootSignature, (void **)&root);
     if (FAILED(hr)) goto fail;
-    hr = D3DCompile(nx_d3d12_shape_shader,
-        sizeof(nx_d3d12_shape_shader) - 1u, "nexaui-shape", NULL, NULL,
-        "VSMain", "vs_5_0", 0, 0, &vs, &errors);
-    if (FAILED(hr)) goto fail;
-    if (errors) { ID3D10Blob_Release(errors); errors = NULL; }
-    hr = D3DCompile(nx_d3d12_shape_shader,
-        sizeof(nx_d3d12_shape_shader) - 1u, "nexaui-shape", NULL, NULL,
-        "PSMain", "ps_5_0", 0, 0, &ps, &errors);
-    if (FAILED(hr)) goto fail;
     D3D12_INPUT_ELEMENT_DESC layout[2] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0,
          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -461,10 +328,10 @@ static nx_result nx_d3d12_ensure_shape_pipeline(nx_d3d12_renderer *r) {
     };
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {0};
     desc.pRootSignature = root;
-    desc.VS.pShaderBytecode = ID3D10Blob_GetBufferPointer(vs);
-    desc.VS.BytecodeLength = ID3D10Blob_GetBufferSize(vs);
-    desc.PS.pShaderBytecode = ID3D10Blob_GetBufferPointer(ps);
-    desc.PS.BytecodeLength = ID3D10Blob_GetBufferSize(ps);
+    desc.VS.pShaderBytecode = nx_d3d12_shape_vs;
+    desc.VS.BytecodeLength = sizeof(nx_d3d12_shape_vs);
+    desc.PS.pShaderBytecode = nx_d3d12_shape_ps;
+    desc.PS.BytecodeLength = sizeof(nx_d3d12_shape_ps);
     desc.InputLayout.pInputElementDescs = layout;
     desc.InputLayout.NumElements = 2;
     desc.SampleMask = UINT_MAX;
@@ -488,8 +355,6 @@ static nx_result nx_d3d12_ensure_shape_pipeline(nx_d3d12_renderer *r) {
     pipeline = NULL;
 fail:
     if (errors) ID3D10Blob_Release(errors);
-    if (ps) ID3D10Blob_Release(ps);
-    if (vs) ID3D10Blob_Release(vs);
     if (signature) ID3D10Blob_Release(signature);
     if (pipeline) ID3D12PipelineState_Release(pipeline);
     if (root) ID3D12RootSignature_Release(root);
@@ -498,7 +363,7 @@ fail:
 
 static nx_result nx_d3d12_ensure_bitmap_pipeline(nx_d3d12_renderer *r) {
     if (r->bitmap_pipeline) return NX_OK;
-    ID3DBlob *signature = NULL, *vs = NULL, *ps = NULL, *errors = NULL;
+    ID3DBlob *signature = NULL, *errors = NULL;
     ID3D12RootSignature *root = NULL;
     ID3D12PipelineState *pipeline = NULL;
     D3D12_DESCRIPTOR_RANGE range = {0};
@@ -527,15 +392,6 @@ static nx_result nx_d3d12_ensure_bitmap_pipeline(nx_d3d12_renderer *r) {
         ID3D10Blob_GetBufferSize(signature),
         &IID_ID3D12RootSignature, (void **)&root);
     if (FAILED(hr)) goto fail;
-    hr = D3DCompile(nx_d3d12_bitmap_shader,
-        sizeof(nx_d3d12_bitmap_shader) - 1u, "nexaui-bitmap", NULL, NULL,
-        "VSMain", "vs_5_0", 0, 0, &vs, &errors);
-    if (FAILED(hr)) goto fail;
-    if (errors) { ID3D10Blob_Release(errors); errors = NULL; }
-    hr = D3DCompile(nx_d3d12_bitmap_shader,
-        sizeof(nx_d3d12_bitmap_shader) - 1u, "nexaui-bitmap", NULL, NULL,
-        "PSMain", "ps_5_0", 0, 0, &ps, &errors);
-    if (FAILED(hr)) goto fail;
     D3D12_INPUT_ELEMENT_DESC layout[2] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0,
          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -544,10 +400,10 @@ static nx_result nx_d3d12_ensure_bitmap_pipeline(nx_d3d12_renderer *r) {
     };
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {0};
     desc.pRootSignature = root;
-    desc.VS.pShaderBytecode = ID3D10Blob_GetBufferPointer(vs);
-    desc.VS.BytecodeLength = ID3D10Blob_GetBufferSize(vs);
-    desc.PS.pShaderBytecode = ID3D10Blob_GetBufferPointer(ps);
-    desc.PS.BytecodeLength = ID3D10Blob_GetBufferSize(ps);
+    desc.VS.pShaderBytecode = nx_d3d12_bitmap_vs;
+    desc.VS.BytecodeLength = sizeof(nx_d3d12_bitmap_vs);
+    desc.PS.pShaderBytecode = nx_d3d12_bitmap_ps;
+    desc.PS.BytecodeLength = sizeof(nx_d3d12_bitmap_ps);
     desc.InputLayout.pInputElementDescs = layout;
     desc.InputLayout.NumElements = 2;
     desc.SampleMask = UINT_MAX;
@@ -571,8 +427,6 @@ static nx_result nx_d3d12_ensure_bitmap_pipeline(nx_d3d12_renderer *r) {
     pipeline = NULL;
 fail:
     if (errors) ID3D10Blob_Release(errors);
-    if (ps) ID3D10Blob_Release(ps);
-    if (vs) ID3D10Blob_Release(vs);
     if (signature) ID3D10Blob_Release(signature);
     if (pipeline) ID3D12PipelineState_Release(pipeline);
     if (root) ID3D12RootSignature_Release(root);

@@ -174,7 +174,7 @@ if(WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
         ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(nexaui_renderer_d3d12 PRIVATE
-        NexaUI::NexaUI d3d12 d3dcompiler dxgi dxguid)
+        NexaUI::NexaUI d3d12 dxgi dxguid)
     target_compile_features(nexaui_renderer_d3d12 PRIVATE c_std_17)
     if(MSVC)
         target_compile_options(nexaui_renderer_d3d12 PRIVATE /W4)
@@ -583,6 +583,19 @@ if(NEXAUI_BUILD_TESTS)
             PROPERTIES TIMEOUT 30 RESOURCE_LOCK native_display)
         set_tests_properties(nexaui_d3d12_widgets_warp PROPERTIES
             ENVIRONMENT "NEXAUI_TEST_FORCE_WARP=1")
+        add_executable(nexaui_d3d12_pipeline_tests tests/test_d3d12_pipelines.c)
+        target_compile_definitions(nexaui_d3d12_pipeline_tests PRIVATE NEXAUI_D3D12_TEST_HOOKS)
+        target_include_directories(nexaui_d3d12_pipeline_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/renderers/d3d12
+            ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
+            ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        target_compile_features(nexaui_d3d12_pipeline_tests PRIVATE c_std_17)
+        target_link_libraries(nexaui_d3d12_pipeline_tests PRIVATE NexaUI::NexaUI d3d12 dxgi dxguid)
+        add_test(NAME nexaui_d3d12_pipelines COMMAND nexaui_d3d12_pipeline_tests)
+        add_test(NAME nexaui_d3d12_pipelines_warp COMMAND nexaui_d3d12_pipeline_tests)
+        set_tests_properties(nexaui_d3d12_pipelines nexaui_d3d12_pipelines_warp
+            PROPERTIES TIMEOUT 90 RESOURCE_LOCK native_display)
+        set_tests_properties(nexaui_d3d12_pipelines_warp PROPERTIES ENVIRONMENT "NEXAUI_TEST_FORCE_WARP=1")
     endif()
     add_executable(nexaui_renderer_backend_tests
         tests/test_renderer_backend.c src/renderer_backend.c)
@@ -1060,6 +1073,24 @@ if(NEXAUI_BUILD_BENCHMARKS)
             ${CMAKE_CURRENT_SOURCE_DIR}/src)
         target_link_libraries(nexaui_d3d12_bench PRIVATE
             NexaUI::NexaUI nexaui_renderer_d3d12)
+        if(TARGET nexacloud_scene)
+            add_executable(nexaui_d3d12_startup_bench benchmarks/d3d12_startup.c)
+            target_include_directories(nexaui_d3d12_startup_bench PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/renderers/d3d12
+                ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows
+                ${CMAKE_CURRENT_SOURCE_DIR}/src
+                ${CMAKE_CURRENT_SOURCE_DIR}/examples/nexacloud)
+            target_compile_features(nexaui_d3d12_startup_bench PRIVATE c_std_17)
+            target_link_libraries(nexaui_d3d12_startup_bench PRIVATE
+                NexaUI::NexaUI nexacloud_scene d3d12 d3dcompiler dxgi dxguid dwmapi)
+            set(NEXAUI_D3D12_STARTUP_RENDERER_SOURCE "" CACHE FILEPATH
+                "Historical D3D12 source for the startup diagnostic only; empty uses the current backend")
+            if(NEXAUI_D3D12_STARTUP_RENDERER_SOURCE)
+                file(TO_CMAKE_PATH "${NEXAUI_D3D12_STARTUP_RENDERER_SOURCE}" _startup_renderer)
+                target_compile_definitions(nexaui_d3d12_startup_bench PRIVATE
+                    "NEXAUI_D3D12_STARTUP_RENDERER_SOURCE=\"${_startup_renderer}\"")
+            endif()
+        endif()
     endif()
 endif()
 

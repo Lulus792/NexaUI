@@ -40,6 +40,13 @@ jobs:
         run: python tools/generate_unicode.py --check
       - name: Verify embedded Metal source
         run: python tools/embed_metal_shader.py --check
+      - name: Verify embedded D3D12 source and bytecode integrity
+        run: python tools/generate_d3d12_shaders.py --check-source
+      - name: Verify D3D12 shader integrity counterexamples
+        run: python tests/test_d3d12_shader_generator.py
+      - name: Compare embedded D3D12 bytecode with the system compiler
+        if: runner.os == 'Windows'
+        run: python tools/generate_d3d12_shaders.py --check
       - name: Verify fuzz campaign runner
         run: python tests/test_fuzz_runner.py
       - name: Configure

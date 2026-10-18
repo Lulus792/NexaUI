@@ -3,3 +3,5 @@
 /data/unicode/** -text
 /tests/baselines/*.ppm -text
 *.png -text
+# Authored HLSL is hashed and compiled byte-for-byte by the DXBC verifier.
+/renderers/d3d12/shaders/*.hlsl text eol=lf
