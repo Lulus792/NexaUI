@@ -1,0 +1,373 @@
+{
+  "source_commit": "749c7fad44672ea870e538b2a6a9131637dc439f",
+  "implementation_commit": "af5c2978c4229295cda81551c54175fc8f954be9",
+  "files": [
+    {
+      "path": "CMakeLists.txt",
+      "physical_sha256": "1b5b482c8090d02e65767c565420d8fc9e7522d731797d6ddfa8ec63d791e09c",
+      "git_content_sha256": "2794cd5747ca32e5698f4411c60cc93b27602338e2ba52ff01d828413f32cf2c"
+    },
+    {
+      "path": "include/nexaui/nexaui.h",
+      "physical_sha256": "02f3b1d1d27f9fbdc910798c1f31e46ed42e0fac9ef782cf9c108d2962123f19",
+      "git_content_sha256": "692ac743746d8f9831e101bab8eebab6ec5873d8e96928696456de523c23bec6"
+    },
+    {
+      "path": "src/nexaui.c",
+      "physical_sha256": "82ebe89793962f436c94aa45064ea5f4c50c12acc501d592a0b02c2b3c04a16c",
+      "git_content_sha256": "e999870a91025a95fa8d8218e5514b0092b95356abff28bc7b330036bff67f38"
+    },
+    {
+      "path": "renderers/metal/draw_plan.c",
+      "physical_sha256": "0d6a4e9d553c264cdf0b180942c54fab618f8cb45db184e62ba743dabffe4285",
+      "git_content_sha256": "0d6a4e9d553c264cdf0b180942c54fab618f8cb45db184e62ba743dabffe4285"
+    },
+    {
+      "path": "tests/test_context_text_density.c",
+      "physical_sha256": "7947b2e97ee3cc96d5396da11275dfe5c73532dea211cd0232632c1b66a0ed59",
+      "git_content_sha256": "7947b2e97ee3cc96d5396da11275dfe5c73532dea211cd0232632c1b66a0ed59"
+    },
+    {
+      "path": "tests/test_text_density.c",
+      "physical_sha256": "4656ee02f2c3a494c0b285ad241fab72c2604aea0e6b2dd10917ec408ba9271c",
+      "git_content_sha256": "4656ee02f2c3a494c0b285ad241fab72c2604aea0e6b2dd10917ec408ba9271c"
+    },
+    {
+      "path": "tests/text_density_scene.h",
+      "physical_sha256": "6c1e4f1d1b7961beaa09cb8039cd3073463f90455792de781ce1ad89333eb30c",
+      "git_content_sha256": "6c1e4f1d1b7961beaa09cb8039cd3073463f90455792de781ce1ad89333eb30c"
+    },
+    {
+      "path": "tests/test_ime.c",
+      "physical_sha256": "c52fe1a7840053f1895479e5397e34ac3f0e05cc654c4216bd83011b8812d513",
+      "git_content_sha256": "c52fe1a7840053f1895479e5397e34ac3f0e05cc654c4216bd83011b8812d513"
+    },
+    {
+      "path": "tests/test_metal_plan.c",
+      "physical_sha256": "b5e8c6fd3625ab0fc2209e371044020c9796ece54cc3e5cd49d7672f0c3dd837",
+      "git_content_sha256": "b5e8c6fd3625ab0fc2209e371044020c9796ece54cc3e5cd49d7672f0c3dd837"
+    },
+    {
+      "path": "tests/test_metal.m",
+      "physical_sha256": "dba32b1dde0c67224717b597ff46ebe6166da62724645a65d13544d87eb7dd8b",
+      "git_content_sha256": "dba32b1dde0c67224717b597ff46ebe6166da62724645a65d13544d87eb7dd8b"
+    },
+    {
+      "path": "tests/package_consumer/main.c",
+      "physical_sha256": "6d3fb644d78a748cc3e231fc15ed7b49f68fb4bd3ce65fbe694ea27f00cd45c1",
+      "git_content_sha256": "6d3fb644d78a748cc3e231fc15ed7b49f68fb4bd3ce65fbe694ea27f00cd45c1"
+    },
+    {
+      "path": "examples/nexacloud/scene.c",
+      "physical_sha256": "044043db90acbb931aa698ae1341b636920777558a18b3d937cb8cec43bced50",
+      "git_content_sha256": "d768f9f54d8eebc4f3a689d0afd002975f3083644763aaabdb1301d180e0b6e2"
+    },
+    {
+      "path": "examples/17_widget_text_density/main.c",
+      "physical_sha256": "8ec417727d43a355f8b09f3a8a74dc8f7b5d18d8b94df203ffd480d3ee141a9e",
+      "git_content_sha256": "8ec417727d43a355f8b09f3a8a74dc8f7b5d18d8b94df203ffd480d3ee141a9e"
+    }
+  ],
+  "checks": [
+    {
+      "command": "cmake --build build --config Debug --parallel 4; ctest --test-dir build -C Debug --output-on-failure --no-tests=error",
+      "revision": "af5c297",
+      "passed": 107,
+      "failed": 1,
+      "skipped": 0,
+      "exit": 8,
+      "log": {
+        "path": "out/context-density-windows-first-full.log",
+        "sha256": "1a706d768e862f6283fd65dc43f056367fd5265163e29961e58b9aa7f35a0382",
+        "selected_lines": [
+          "        Start  56: nexaui_clipboard",
+          " 56/108 Test  #56: nexaui_clipboard ...........................***Failed    0.07 sec",
+          "clipboard transfer test failed",
+          "99% tests passed, 1 tests failed out of 108",
+          "\t 56 - nexaui_clipboard (Failed)"
+        ]
+      },
+      "limitation": "Clipboard transfer failed with no diagnosed cause. All density/IME/D3D12/old UIA/reference cases passed. Do not report this as a full local pass."
+    },
+    {
+      "command": "ctest --test-dir build -C Debug -R '^nexaui_clipboard$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 0,
+      "skipped": 1,
+      "log": {
+        "path": "out/context-density-clipboard-repeat.log",
+        "sha256": "de5852ac28f05440a2eabd76affafdefc7c587baf46a5c70b15cbd925c716579",
+        "selected_lines": [
+          "    Start 56: nexaui_clipboard",
+          "1/1 Test #56: nexaui_clipboard .................***Skipped   0.17 sec",
+          "100% tests passed, 0 tests failed out of 1",
+          "\t 56 - nexaui_clipboard (Skipped)"
+        ]
+      },
+      "limitation": "Skip77 does not resolve or pass the preceding clipboard failure."
+    },
+    {
+      "command": "cmake --build build-shared --config Debug --target nexaui_context_text_density_tests nexaui_text_density_tests nexaui_ime_tests nexaui_d3d12_widget_tests --parallel 4; ctest --test-dir build-shared -C Debug -R '^nexaui_(context_text_density|text_density|ime|d3d12_widgets|d3d12_widgets_warp)$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 5,
+      "log": {
+        "path": "out/context-density-shared.log",
+        "sha256": "3ac5dc4669cfe8d28935233ede058b55fc88d45ee244b338db0cb1f736830206",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 5"
+        ]
+      },
+      "limitation": "Initial unit before final rich-error/argument assertions. Final rebuilt unit follows."
+    },
+    {
+      "command": "cmake --build build-shared --config Debug --target nexaui_context_text_density_tests --parallel 4; ctest --test-dir build-shared -C Debug -R '^nexaui_context_text_density$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 1,
+      "log": {
+        "path": "out/context-density-shared-final.log",
+        "sha256": "96b69333c4b4c70e77d1a0e08f9b3b1af5e7b42766b83d34bf125060bfee56d3",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 1"
+        ]
+      }
+    },
+    {
+      "command": "cmake --build build-msvc-asan-static --config RelWithDebInfo --target nexaui_context_text_density_tests nexaui_text_density_tests nexaui_ime_tests --parallel 4; add selected compiler runtime to process PATH; ASAN_OPTIONS=halt_on_error=1 ctest --test-dir build-msvc-asan-static -C RelWithDebInfo -R '^nexaui_(context_text_density|text_density|ime)$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 3,
+      "instrumentation": "Actual MSVC /fsanitize=address configuration; no LSan claim",
+      "log": {
+        "path": "out/context-density-msvc-asan.log",
+        "sha256": "9ea4844ee092b88079a216931854e08af265ea54888e01e246e236dadd750fbe",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 3"
+        ]
+      }
+    },
+    {
+      "command": "wsl -d Alpine-Dev --exec cmake --build /mnt/d/NexaUI/out/vulkan-sanitize --target nexaui_context_text_density_tests nexaui_text_density_tests nexaui_vulkan_draw_tests --parallel 4; ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir out/vulkan-sanitize -R '^nexaui_(context_text_density|text_density|vulkan_x11_draw)$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 3,
+      "instrumentation": "Clang ASan/UBSan/LSan; final build then test",
+      "log": {
+        "path": "out/context-density-linux-sanitize-final.log",
+        "sha256": "f135d05485064b1236196ae97b81ca219c8088da533715b6f63aef21d3382e92",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 3"
+        ]
+      }
+    },
+    {
+      "command": "ctest --test-dir build -C Debug -R '^nexaui_metal_plan$' --output-on-failure --no-tests=error",
+      "before_exit": 8,
+      "after_exit": 0,
+      "before": {
+        "path": "out/context-density-metal-plan-before.log",
+        "sha256": "14d40bd796d456784c1779f43fed52367032b43c9a89a987341d021f0b94ad97",
+        "selected_lines": [
+          "1/1 Test #2: nexaui_metal_plan ................***Failed    0.06 sec",
+          "plan scale=1.5 pixel 13,15 channel 0: 8 != 205",
+          "0% tests passed, 1 tests failed out of 1"
+        ]
+      },
+      "after": {
+        "path": "out/context-density-metal-plan-after.log",
+        "sha256": "b9714433d66bdff3a7b5b5d53a359f589269c1e63f5fcceae120c0d450a24245",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 1"
+        ]
+      }
+    },
+    {
+      "command": "wsl -d Alpine-Dev --exec ctest --test-dir /mnt/d/NexaUI/out/vulkan-sanitize -R '^nexaui_metal_plan$' --output-on-failure --no-tests=error",
+      "exit": 0,
+      "passed": 1,
+      "log": {
+        "path": "out/context-density-metal-plan-linux.log",
+        "sha256": "e5b85217f0983136085f235201bbf98b36e07505611d2d24ddd54b86f1cbf349",
+        "selected_lines": [
+          "100% tests passed, 0 tests failed out of 1"
+        ]
+      }
+    }
+  ],
+  "oracle": {
+    "scales": [
+      0.125,
+      1,
+      1.25,
+      1.5,
+      2,
+      8
+    ],
+    "same_context_sequence": [
+      1,
+      2,
+      1.25,
+      1.5,
+      1
+    ],
+    "field_failures_retried": 9,
+    "rich_failures_retried": 11,
+    "edit_after_retry": "015",
+    "ime": "Native hidden Windows HWND/IMM context; injected preedit01; synthetic WM_DPICHANGED; no human-input claim"
+  },
+  "counterexamples": {
+    "parent": "4bf99c9",
+    "compiler": "Alpine Clang22.1.3; ASan/UBSan/LSan enabled",
+    "scope": "Isolated source mutation for each density handoff; production checkout unchanged; all 12 processes clean up resources",
+    "results": [
+      {
+        "name": "current",
+        "source_sha256": "e999870a91025a95fa8d8218e5514b0092b95356abff28bc7b330036bff67f38",
+        "cases": [
+          {
+            "kind": 0,
+            "exit": 0,
+            "stdout": "path=0 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 1,
+            "exit": 0,
+            "stdout": "path=1 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 2,
+            "exit": 0,
+            "stdout": "path=2 expected=6x6 masks=4 status=0\n"
+          }
+        ]
+      },
+      {
+        "name": "ordinary",
+        "source_sha256": "ecb7e00cfcaf99b37e37b1e591267b2b05771d3e9163c85432f0997402918ea0",
+        "cases": [
+          {
+            "kind": 0,
+            "exit": 1,
+            "stdout": "path=0 expected=6x6 masks=3 status=1\n"
+          },
+          {
+            "kind": 1,
+            "exit": 0,
+            "stdout": "path=1 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 2,
+            "exit": 0,
+            "stdout": "path=2 expected=6x6 masks=4 status=0\n"
+          }
+        ]
+      },
+      {
+        "name": "rich",
+        "source_sha256": "687fbc76bd813f17021a073272b894647ffcc8b591254594f6bbde3ee1385c14",
+        "cases": [
+          {
+            "kind": 0,
+            "exit": 0,
+            "stdout": "path=0 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 1,
+            "exit": 1,
+            "stdout": "path=1 expected=6x6 masks=3 status=1\n"
+          },
+          {
+            "kind": 2,
+            "exit": 0,
+            "stdout": "path=2 expected=6x6 masks=4 status=0\n"
+          }
+        ]
+      },
+      {
+        "name": "selected-editor",
+        "source_sha256": "7dea85a81cb8396a08de4946f0e8ef46879214b29fba81f67449d85f9dc1c997",
+        "cases": [
+          {
+            "kind": 0,
+            "exit": 0,
+            "stdout": "path=0 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 1,
+            "exit": 0,
+            "stdout": "path=1 expected=6x6 masks=3 status=0\n"
+          },
+          {
+            "kind": 2,
+            "exit": 1,
+            "stdout": "path=2 expected=6x6 masks=4 status=1\n"
+          }
+        ]
+      }
+    ]
+  },
+  "exploratory_exclusion": "Initial counterexample link collided with concurrent static-archive replacement (no more archived files). Final 12-process campaign ran after build completion. Initial log retained; duplicate identical source cleaned, canonical final copy retained.",
+  "cleanup": {
+    "Removed": "D:\\NexaUI\\out\\context-density-counterexamples\\current.c",
+    "Bytes": 360565,
+    "Reason": "Duplicate of retained final probe source; initial linker failure log preserved"
+  },
+  "images": [
+    {
+      "name": "segoe",
+      "width": 1024,
+      "height": 360,
+      "png_sha256": "55c7a66d16ac3c214c206269dc3330a53284f7baef2cf7fdb494854e00995685",
+      "ppm_sha256": "0cd599e78aac5ab04178239bb70b4d07b5bcc0eb35e483bb9700f898f5d4bb28",
+      "windows_linux_byte_equal": true,
+      "font_sha256": "704eada12961a27fd271f7d3b09e2066520e758390c1776744eff430fee30f6e",
+      "font_bytes": 960076,
+      "review": "Both images opened and visually inspected; no font redistribution, physical-display or human-task claim"
+    },
+    {
+      "name": "arial",
+      "width": 1024,
+      "height": 360,
+      "png_sha256": "922c51970d073c75e64d6d6ce7fca2ade6f2f258f835c9c38f38c12dbabc7591",
+      "ppm_sha256": "de13c9002ea3d674e24a6a3faf06ca3a290f5ccd26db7853d688ac48b1997509",
+      "windows_linux_byte_equal": true,
+      "font_sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+      "font_bytes": 1045720,
+      "review": "Both images opened and visually inspected; no font redistribution, physical-display or human-task claim"
+    }
+  ],
+  "native_metal_failure_before": [
+    {
+      "path": "out/context-ci-117553231226.log",
+      "sha256": "1af8a0d23cd1dbb6ff349439fed41f5906586e6194aab786dcce6cd89d734639",
+      "selected_lines": [
+        "2026-10-18T01:22:54.8859720Z 51/93 Test #51: nexaui_metal ...............................***Failed    6.47 sec",
+        "2026-10-18T01:23:15.3019460Z 99% tests passed, 1 tests failed out of 93"
+      ]
+    },
+    {
+      "path": "out/context-ci-117553231333.log",
+      "sha256": "4264588eb943ad2002f776e77b850f02512aab4f23149c894999a2d05aa5ec19",
+      "selected_lines": [
+        "2026-10-18T01:22:55.1731490Z 51/93 Test #51: nexaui_metal ...............................***Failed    8.09 sec",
+        "2026-10-18T01:23:13.5412610Z 99% tests passed, 1 tests failed out of 93"
+      ]
+    }
+  ],
+  "metal_scissor_proof": {
+    "old": [
+      12,
+      158,
+      1,
+      5
+    ],
+    "reference": [
+      12,
+      158,
+      2,
+      5
+    ],
+    "scale": 1.5,
+    "new_differences": 0,
+    "shader_changed": false,
+    "tolerance_changed": false
+  },
+  "scope": "Context default propagation; no app pin/source changes, physical monitor or human screenreader signoff. Final native CI recorded separately."
+}

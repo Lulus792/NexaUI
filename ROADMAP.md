@@ -13,6 +13,12 @@ retains bytewise output and records [paired Release costs and ownership](docs/qu
 All seven required desktop CI jobs pass at `5004083`. Large shadow creation still
 requires application caching; filled plots still allocate frame-owned masks.
 
+`af5c297` propagates a context raster default through rich text, editors,
+selection/preedit and other font-backed widgets. `749c7fa` corrects the Metal
+clip-edge rounding exposed by the expanded native fixture. Read the
+[context text-density report](docs/quality/context-text-density-report.md) for
+exact validation, counterexamples and the remaining physical acceptance.
+
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
 ## Milestones and gates

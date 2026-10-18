@@ -5,6 +5,10 @@ Review date: 2026-10-18. Framework source:
 This consolidates the four delivered framework requests. It does not accept the
 complete NexaCloud application, every operating system, or a release gate.
 The public target platforms are Windows, macOS, Linux X11 and Wayland.
+The subsequent [widget text-density follow-up](context-text-density-report.md)
+adds a context default for editable/rich/internal text paths and records the
+Metal clip repair exposed by the expanded native fixture. Its exact source and
+validation are separate from the original consolidation below.
 
 ## Delivery and executed evidence
 

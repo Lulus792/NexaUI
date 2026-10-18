@@ -71,7 +71,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 - New Design-A paint/effect/icon/plot APIs are available for NexaCloud integration. The isolated D3D12 identity-sampling defect is corrected; local hardware/WARP checks now match the reference at 1×/1.25×/1.5×/2×. See the [sampling proof and remaining acceptance](docs/quality/d3d12-texel-identity-report.md). Application adoption, physical displays and the final visual match remain separate work.
 - Gradients and area fills have [paired Release CPU measurements](docs/quality/paint-cost-report.md). Large soft shadows still require caching outside frame building; filled plots retain per-frame mask allocation. These results exclude GPU upload and presentation.
-- Text supports fractional raster sizes and [density-aware stamps](docs/quality/text-density-report.md) that retain logical layout metrics. The native example uses window density; physical monitor/DPI and screenreader acceptance remain open.
+- Text supports fractional raster sizes, [density-aware stamps](docs/quality/text-density-report.md) and a [context raster default for editors and widgets](docs/quality/context-text-density-report.md) while retaining logical layout metrics. The native example uses window density; physical monitor/DPI and screenreader acceptance remain open.
 - The initial [AppKit adapter](docs/concepts/macos.md), [Metal command path](docs/concepts/metal.md) and native NexaCloud scene pass static/shared macOS CI checks. Physical hardware, display and assistive acceptance remain open. Direct GPU texture import is pending. Native renderer drivers are currently private to the build tree. Linux has a [Vulkan shape pipeline](docs/concepts/vulkan.md#shape-pipeline) for core shapes, images and glyph masks with clips and straight alpha.
 - Text shaping and script coverage are incomplete. X11 callback-style XIM needs acceptance testing with installed input methods, and Wayland input support remains a work in progress.
 - Linux Vulkan uses instanced geometry, ordered draw batching and three private upload slots. The [batching comparison](benchmarks/baselines/vulkan-d4a2508/README.md) records smaller geometry uploads and fewer draw calls; the [ring comparison](benchmarks/baselines/vulkan-1cdf550/README.md) verifies in-flight lifetime. [Submission-keyed GPU timestamps](benchmarks/baselines/vulkan-fa58bc1/README.md) now retain raw device timings and explicit unavailable states. Hardware performance acceptance remains open.
@@ -160,6 +160,8 @@ Start with a small example, then explore the parts your application needs.
 | [Real-time plot](examples/13_realtime_plot/README.md) | A moving time window with pointer and keyboard cursors |
 | [Simulation dashboard](examples/14_simulation_dashboard/README.md) | Worker snapshots, plots, telemetry and profiling |
 | [3D viewport shell](examples/15_3d_viewport_shell/README.md) | An application-rendered cube at multiple backing scales |
+| [Text raster density](examples/16_text_density/README.md) | Low-density versus density-matched cached masks |
+| [Widget text density](examples/17_widget_text_density/README.md) | Editable text, passwords and numeric fields at equal logical sizes |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
 | [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows/Linux runners |
 
