@@ -24,6 +24,12 @@ The [Orca follow-up](docs/quality/orca-focus-report.md) records a native negativ
 case and nine actual control/dialog announcements. Long observed response times,
 human screenreader use and full accessibility/physical acceptance remain open.
 
+R01 partial result `998a12c` replaces eight first-use HLSL compilations with
+byte-identical embedded DXBC and adds a complete native startup diagnostic plus
+pipeline failure/retry checks. The [startup report](docs/quality/d3d12-startup-report.md)
+retains the non-improving final total-start comparison; overall latency acceptance
+and the historical application outliers remain open.
+
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
 ## Milestones and gates
