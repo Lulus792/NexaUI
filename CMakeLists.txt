@@ -812,8 +812,14 @@ if(NEXAUI_BUILD_TESTS)
         add_executable(nexaui_clipboard_tests tests/test_clipboard.c)
         target_link_libraries(nexaui_clipboard_tests PRIVATE NexaUI::NexaUI user32)
         add_test(NAME nexaui_clipboard COMMAND nexaui_clipboard_tests)
-        set_tests_properties(nexaui_clipboard PROPERTIES TIMEOUT 15
+        add_test(NAME nexaui_clipboard_current_station_guard
+            COMMAND nexaui_clipboard_tests reject-current-station)
+        add_test(NAME nexaui_clipboard_busy_guard
+            COMMAND nexaui_clipboard_tests reject-busy)
+        set_tests_properties(nexaui_clipboard nexaui_clipboard_busy_guard
+            PROPERTIES TIMEOUT 15 RESOURCE_LOCK windows_clipboard
             SKIP_RETURN_CODE 77)
+        set_tests_properties(nexaui_clipboard_current_station_guard PROPERTIES TIMEOUT 15)
         add_executable(nexaui_file_drop_tests tests/test_file_drop.c)
         target_include_directories(nexaui_file_drop_tests PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows)
