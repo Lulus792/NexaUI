@@ -65,3 +65,8 @@ file operations take this long, explain every earlier PSO outlier, or make the
 full first usable frame reliably faster. Physical/IME/assistive and broader
 project acceptance remain separate. The independent R02 geometry correction
 is recorded in the [transfer-icon report](transfer-icon-report.md).
+
+The [actual flush-boundary follow-up](d3d12-flush-timing-report.md) now times
+all32 file flushes in a new owned process:28 are inside Device creation, four
+after READY. This extends the cache-span result without establishing kernel/
+storage/filter causality or a production startup improvement.

@@ -35,6 +35,10 @@ CPU accounting. It supplies no production total-start acceptance.
 The [private cache-event trace](docs/quality/d3d12-private-cache-trace-report.md)
 then correlates two long cache creations with a new first device call, without
 thread suspension or a global trace. R01 remains open.
+The [file-flush follow-up](docs/quality/d3d12-flush-timing-report.md) measures28
+flushes inside a new Device call and separates four post-READY flushes. A fixed
+owned-file C:/D: control supports local storage-path differences; kernel/filter
+attribution and a reliable production startup gain remain open.
 
 `f7ec75b` corrects `NX_ICON_TRANSFER` to paired opposing arrows while retaining
 Upload/Download output and the public API. The [R02 report](docs/quality/transfer-icon-report.md)
