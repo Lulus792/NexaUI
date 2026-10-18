@@ -35,6 +35,7 @@ static int paint_scene(nx_context *ui,nx_paint_image *images[3],float density) {
     if(nx_plot_multi(ui,&plot,&state)!=NX_OK) return 1;
     for(int i=0;i<3;++i)
         if(nx_draw_icon(ui,(nx_icon)(NX_ICON_SHIELD+i),(nx_rect){12+i*42.f,102,24,24},1.4f,(nx_color){0,.9f,1,1})!=NX_OK) return 1;
+    if(nx_draw_icon(ui,NX_ICON_TRANSFER,(nx_rect){138,102,24,24},1.4f,(nx_color){0,.9f,1,1})!=NX_OK)return 1;
     return nx_pop_clip(ui)!=NX_OK||nx_end_frame(ui)!=NX_OK;
 }
 static void paint_scene_free(nx_paint_image *images[3]) {

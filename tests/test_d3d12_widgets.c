@@ -9,6 +9,7 @@
 #include "search_font_fixture.h"
 #include "paint_scene.h"
 #include "text_density_scene.h"
+#include "transfer_icon_scene.h"
 
 #define CHECK(x) do { if (!(x)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); \
@@ -164,6 +165,36 @@ static int test_paints(nx_d3d12_renderer *renderer,uint32_t width,uint32_t heigh
     }
     return 0;
 }
+static int test_transfer_icons(nx_d3d12_renderer *renderer,uint32_t width,
+                              uint32_t height,uint8_t *gpu,uint8_t *headless) {
+    nx_context *ui=NULL;CHECK(nx_context_create(NULL,&ui)==NX_OK);
+    nx_d3d12_renderer_info info;CHECK(nx_d3d12_renderer_get_info(renderer,&info)==NX_OK);
+    const float scales[]={1,1.25f,1.5f,2};unsigned frames=0;
+    for(unsigned size=24;size<=26;size+=2)for(unsigned theme=NX_THEME_DARK;theme<=NX_THEME_MIDNIGHT;++theme)
+        for(unsigned density=0;density<4;++density)for(unsigned alpha=0;alpha<2;++alpha) {
+            nx_color clear;
+            CHECK(!(size==24?transfer_icon_scene(ui,(nx_theme_kind)theme,alpha?.55f:1,&clear):
+                transfer_icon_scene_sized(ui,(nx_theme_kind)theme,alpha?.55f:1,(float)size,&clear)));
+            const nx_command *commands;size_t count;
+            CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK);
+            nx_command *scaled=malloc(count*sizeof(*scaled));CHECK(scaled);
+            transfer_icon_scale(commands,count,scales[density],scaled);
+            CHECK(nx_headless_render(scaled,count,headless,width,height,(size_t)width*4,clear)==NX_OK);
+            CHECK(nx_d3d12_test_render_readback(renderer,commands,count,scales[density],clear,gpu,(size_t)width*4)==NX_OK);
+            CHECK(compare_pixels(gpu,headless,width,height));free(scaled);++frames;
+            const char *prefix=getenv("NEXAUI_TEST_TRANSFER_DUMP");
+            if(prefix) {
+                char path[1024];int n=snprintf(path,sizeof(path),"%s-%s-s%u-t%u-d%u-a%u.ppm",prefix,info.using_warp?"warp":"hardware",size,theme,density,alpha);
+                CHECK(n>0&&(size_t)n<sizeof(path));FILE *f=fopen(path,"wb");CHECK(f);
+                CHECK(fprintf(f,"P6\n%u %u\n255\n",width,height)>0);
+                for(size_t i=0;i<(size_t)width*height;++i)CHECK(fwrite(gpu+4*i,1,3,f)==3);
+                CHECK(!fclose(f));
+            }
+        }
+    nx_context_destroy(ui);
+    printf("D3D12 transfer icons WARP=%d: %u exact size/theme/density/alpha frames passed\n",info.using_warp,frames);
+    return 0;
+}
 int main(void) {
     nx_window_desc desc = {0};
     desc.title_utf8 = "NexaUI D3D12 widget regression";
@@ -201,6 +232,7 @@ int main(void) {
     CHECK(run_theme(renderer, info.pixel_width, info.pixel_height,
                     NX_THEME_HIGH_CONTRAST, text, gpu, headless) == 0);
     CHECK(test_paints(renderer,info.pixel_width,info.pixel_height,gpu,headless)==0);
+    CHECK(test_transfer_icons(renderer,info.pixel_width,info.pixel_height,gpu,headless)==0);
     nx_text_layout_destroy(text);
     nx_font_collection_destroy(fonts);
     nx_font_close(font);

@@ -2525,7 +2525,7 @@ nx_result nx_draw_icon(nx_context *ctx, nx_icon icon, nx_rect bounds,
         nx_icon_line(&p, 21, 21, 21, 7); nx_icon_line(&p, 21, 7, 11, 7);
         nx_icon_line(&p, 11, 7, 9, 4); nx_icon_line(&p, 9, 4, 3, 4);
         nx_icon_line(&p, 3, 4, 3, 7); nx_icon_line(&p, 3, 10, 21, 10); break;
-    case NX_ICON_UPLOAD: case NX_ICON_DOWNLOAD: case NX_ICON_TRANSFER: {
+    case NX_ICON_UPLOAD: case NX_ICON_DOWNLOAD: {
         float y0 = icon == NX_ICON_DOWNLOAD ? 4.0f : 17.0f;
         float y1 = icon == NX_ICON_DOWNLOAD ? 17.0f : 4.0f;
         float wing = icon == NX_ICON_DOWNLOAD ? 12.0f : 9.0f;
@@ -2534,6 +2534,13 @@ nx_result nx_draw_icon(nx_context *ctx, nx_icon icon, nx_rect bounds,
         nx_icon_line(&p, 3, 17, 3, 21); nx_icon_line(&p, 3, 21, 21, 21);
         nx_icon_line(&p, 21, 21, 21, 17); break;
     }
+    case NX_ICON_TRANSFER:
+        nx_icon_line(&p, 8, 17, 8, 4);
+        nx_icon_line(&p, 4, 8, 8, 4); nx_icon_line(&p, 8, 4, 12, 8);
+        nx_icon_line(&p, 16, 4, 16, 17);
+        nx_icon_line(&p, 12, 13, 16, 17); nx_icon_line(&p, 16, 17, 20, 13);
+        nx_icon_line(&p, 3, 17, 3, 21); nx_icon_line(&p, 3, 21, 21, 21);
+        nx_icon_line(&p, 21, 21, 21, 17); break;
     case NX_ICON_STAR: {
         float px = 12, py = 2;
         for (unsigned i = 1; i <= 10; ++i) {
