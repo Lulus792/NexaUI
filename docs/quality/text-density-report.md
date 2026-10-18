@@ -1,5 +1,9 @@
 # Fractional text and raster density — 2026-10-18
 
+Implementation: `b5946b40ade5eeca55970bd95ea1203d42f9b6f8`.
+All seven required [exact-source CI jobs](text-density-ci.json) pass in
+[run 39080145124](https://github.com/Lulus792/NexaUI/actions/runs/39080145124).
+
 NexaUI can now rasterize fractional font sizes and higher-density text without
 changing the supplied logical layout. The NexaUI NexaCloud example adopts the
 window density. This is a T15 text-quality step, independent of the already
@@ -81,10 +85,21 @@ Entries used by the current command stream cannot be evicted in that frame.
   not claimed as a local macOS run.
 
 Local Windows static passes 105/105; shared targeted tests pass 8/8. Linux
-ASan/UBSan/LSan and shared targeted checks pass. The
+ASan/UBSan/LSan and shared targeted checks pass, including native X11 and
+Wayland example runs with no skips. Final rebuilt density-unit targets also
+pass with the additional widget assertions. The
 [local receipt](text-density-local.json) records commands, source/probe/image
-hashes and actual outcomes. Exact-source CI is recorded after its jobs complete;
-physical display/input/assistive acceptance remains separate.
+hashes and actual outcomes, distinguishing an overlapping intermediate run from
+the subsequent build-then-test evidence.
+
+CI Windows static/shared each pass 105/105, macOS static/shared each pass 91/91,
+and Ubuntu static/shared plus sanitizers each execute 105 passes with seven
+Wayland skips (112 registered). Native D3D12/WARP, Metal and X11/Vulkan text
+fixtures pass at common densities; the installed and add-subdirectory C
+consumers also link and execute the new exports. Optional Windows ASan and
+fuzz jobs were skipped. Source validation records physical-file and normalized
+Git hashes to make CRLF/LF differences explicit. Physical display/input/
+assistive acceptance remains separate.
 
 ## Real-font comparison
 

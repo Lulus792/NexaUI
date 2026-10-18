@@ -1,0 +1,364 @@
+{
+  "source_commit": "b5946b40ade5eeca55970bd95ea1203d42f9b6f8",
+  "run_id": 39080145124,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39080145124",
+  "conclusion": "success",
+  "required_jobs": [
+    {
+      "id": 117535259013,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "passed": 105,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T23:45:41.9657397Z 100% tests passed, 0 tests failed out of 112",
+        "2026-10-17T23:45:41.9657971Z ",
+        "2026-10-17T23:45:41.9658507Z Total Test time (real) =  57.32 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:44:51.8763001Z   6/112 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    5.50 sec",
+        "2026-10-17T23:45:17.2365613Z  53/112 Test  #53: nexaui_text_stamp ..........................   Passed    0.02 sec",
+        "2026-10-17T23:45:17.4368275Z  54/112 Test  #54: nexaui_text_density ........................   Passed    0.20 sec",
+        "2026-10-17T23:45:18.5218470Z  85/112 Test  #85: nexaui_glyph_cache .........................   Passed    0.01 sec",
+        "2026-10-17T23:45:33.5155505Z         Start 107: nexaui_nexacloud_example",
+        "2026-10-17T23:45:36.5634748Z 107/112 Test #107: nexaui_nexacloud_example ...................   Passed    3.05 sec",
+        "2026-10-17T23:45:36.5636292Z         Start 108: nexaui_nexacloud_x11_native_example",
+        "2026-10-17T23:45:41.4753645Z 108/112 Test #108: nexaui_nexacloud_x11_native_example ........   Passed    4.91 sec",
+        "2026-10-17T23:45:41.4755221Z         Start 109: nexaui_nexacloud_wayland_native_example",
+        "2026-10-17T23:45:41.5375049Z 109/112 Test #109: nexaui_nexacloud_wayland_native_example ....***Skipped   0.06 sec"
+      ],
+      "package_steps": [],
+      "decoded_log_sha256": "12f1114ea68c93bce76a954a7edfd98922f012b9ba757fff53ba301ba3e12503"
+    },
+    {
+      "id": 117535259091,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "passed": 91,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T23:45:19.8136040Z 100% tests passed out of 91",
+        "2026-10-17T23:45:19.8136510Z ",
+        "2026-10-17T23:45:19.8136860Z Total Test time (real) =  31.10 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:44:53.0588980Z 30/91 Test #30: nexaui_text_stamp ..........................   Passed    0.03 sec",
+        "2026-10-17T23:44:53.1419640Z 31/91 Test #31: nexaui_text_density ........................   Passed    0.08 sec",
+        "2026-10-17T23:45:01.3569880Z 49/91 Test #49: nexaui_metal ...............................   Passed    6.76 sec",
+        "2026-10-17T23:45:01.7067750Z 66/91 Test #66: nexaui_glyph_cache .........................   Passed    0.01 sec",
+        "2026-10-17T23:45:06.7215070Z       Start 88: nexaui_nexacloud_example",
+        "2026-10-17T23:45:07.6747520Z 88/91 Test #88: nexaui_nexacloud_example ...................   Passed    0.95 sec",
+        "2026-10-17T23:45:07.6748940Z       Start 89: nexaui_nexacloud_metal_native_example",
+        "2026-10-17T23:45:19.0567690Z 89/91 Test #89: nexaui_nexacloud_metal_native_example ......   Passed   11.38 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "40e680bdfe83080c214073a379a0e18f0413d658a7b6f6f0d38168dc753a3108"
+    },
+    {
+      "id": 117535259130,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "passed": 105,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T23:45:22.1675334Z 100% tests passed, 0 tests failed out of 112",
+        "2026-10-17T23:45:22.1675827Z ",
+        "2026-10-17T23:45:22.1676127Z Total Test time (real) =  38.42 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:44:52.0629216Z   6/112 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    4.01 sec",
+        "2026-10-17T23:45:14.9602162Z  53/112 Test  #53: nexaui_text_stamp ..........................   Passed    0.00 sec",
+        "2026-10-17T23:45:15.0233773Z  54/112 Test  #54: nexaui_text_density ........................   Passed    0.06 sec",
+        "2026-10-17T23:45:15.2205360Z  85/112 Test  #85: nexaui_glyph_cache .........................   Passed    0.00 sec",
+        "2026-10-17T23:45:18.7362889Z         Start 107: nexaui_nexacloud_example",
+        "2026-10-17T23:45:19.5251990Z 107/112 Test #107: nexaui_nexacloud_example ...................   Passed    0.79 sec",
+        "2026-10-17T23:45:19.5256343Z         Start 108: nexaui_nexacloud_x11_native_example",
+        "2026-10-17T23:45:21.7952344Z 108/112 Test #108: nexaui_nexacloud_x11_native_example ........   Passed    2.27 sec",
+        "2026-10-17T23:45:21.7953916Z         Start 109: nexaui_nexacloud_wayland_native_example",
+        "2026-10-17T23:45:21.8221946Z 109/112 Test #109: nexaui_nexacloud_wayland_native_example ....***Skipped   0.03 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "a0e785fadcad4963d8802e4ef768e44fd32d2a278bc3fb5f9e0596eee87b0aed"
+    },
+    {
+      "id": 117535259148,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "passed": 91,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T23:44:55.8020350Z 100% tests passed out of 91",
+        "2026-10-17T23:44:55.8020730Z ",
+        "2026-10-17T23:44:55.8020920Z Total Test time (real) =  27.15 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:44:31.4671350Z 30/91 Test #30: nexaui_text_stamp ..........................   Passed    0.01 sec",
+        "2026-10-17T23:44:31.5273570Z 31/91 Test #31: nexaui_text_density ........................   Passed    0.06 sec",
+        "2026-10-17T23:44:40.4427600Z 49/91 Test #49: nexaui_metal ...............................   Passed    7.93 sec",
+        "2026-10-17T23:44:40.7264150Z 66/91 Test #66: nexaui_glyph_cache .........................   Passed    0.01 sec",
+        "2026-10-17T23:44:45.3079560Z       Start 88: nexaui_nexacloud_example",
+        "2026-10-17T23:44:46.0285640Z 88/91 Test #88: nexaui_nexacloud_example ...................   Passed    0.72 sec",
+        "2026-10-17T23:44:46.0286620Z       Start 89: nexaui_nexacloud_metal_native_example",
+        "2026-10-17T23:44:55.2268730Z 89/91 Test #89: nexaui_nexacloud_metal_native_example ......   Passed    9.19 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "fdb7a82375651be66b5900835bb55a9bf0927c81eed4473bbaca5b1737bf5a19"
+    },
+    {
+      "id": 117535259179,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "passed": 105,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T23:51:42.0469897Z 100% tests passed out of 105",
+        "2026-10-17T23:51:42.0470323Z ",
+        "2026-10-17T23:51:42.0470553Z Total Test time (real) = 391.84 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:45:06.3476565Z   nexaui_nexacloud_reflow.vcxproj -> D:\\a\\NexaUI\\NexaUI\\build\\examples\\nexacloud\\Debug\\nexaui_nexacloud_reflow.exe",
+        "2026-10-17T23:45:07.7984562Z   nexaui_nexacloud_native.vcxproj -> D:\\a\\NexaUI\\NexaUI\\build\\examples\\nexacloud\\Debug\\nexaui_nexacloud_native.exe",
+        "2026-10-17T23:45:14.5938422Z         Start  11: nexaui_d3d12_widgets",
+        "2026-10-17T23:45:15.5247098Z  11/105 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.93 sec",
+        "2026-10-17T23:45:15.5250949Z         Start  12: nexaui_d3d12_widgets_warp",
+        "2026-10-17T23:45:16.3899656Z  12/105 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.86 sec",
+        "2026-10-17T23:45:28.2068394Z  34/105 Test  #34: nexaui_text_stamp ..........................   Passed    0.02 sec",
+        "2026-10-17T23:45:28.3156727Z  35/105 Test  #35: nexaui_text_density ........................   Passed    0.11 sec",
+        "2026-10-17T23:47:14.6370368Z  74/105 Test  #74: nexaui_glyph_cache .........................   Passed    0.02 sec",
+        "2026-10-17T23:47:27.1890004Z         Start  96: nexaui_nexacloud_example",
+        "2026-10-17T23:47:30.9794503Z  96/105 Test  #96: nexaui_nexacloud_example ...................   Passed    3.79 sec",
+        "2026-10-17T23:47:30.9798558Z         Start  97: nexaui_nexacloud_native_example",
+        "2026-10-17T23:47:36.9570835Z  97/105 Test  #97: nexaui_nexacloud_native_example ............   Passed    5.98 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "success"
+        }
+      ],
+      "decoded_log_sha256": "2918b27512dec318a31959328554339b6ff381b3dacf5b71685bf7e16a18d190"
+    },
+    {
+      "id": 117535259194,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "passed": 105,
+      "skipped": 0,
+      "summary": [
+        "2026-10-17T23:51:47.2259145Z 100% tests passed out of 105",
+        "2026-10-17T23:51:47.2259601Z ",
+        "2026-10-17T23:51:47.2259844Z Total Test time (real) = 391.28 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:45:12.2840247Z   nexaui_nexacloud_reflow.vcxproj -> D:\\a\\NexaUI\\NexaUI\\build\\examples\\nexacloud\\Debug\\nexaui_nexacloud_reflow.exe",
+        "2026-10-17T23:45:13.8441759Z   nexaui_nexacloud_native.vcxproj -> D:\\a\\NexaUI\\NexaUI\\build\\examples\\nexacloud\\Debug\\nexaui_nexacloud_native.exe",
+        "2026-10-17T23:45:20.4298616Z         Start  11: nexaui_d3d12_widgets",
+        "2026-10-17T23:45:21.3952741Z  11/105 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.96 sec",
+        "2026-10-17T23:45:21.3957276Z         Start  12: nexaui_d3d12_widgets_warp",
+        "2026-10-17T23:45:22.2615279Z  12/105 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.87 sec",
+        "2026-10-17T23:45:38.2753342Z  34/105 Test  #34: nexaui_text_stamp ..........................   Passed    0.02 sec",
+        "2026-10-17T23:45:38.3848672Z  35/105 Test  #35: nexaui_text_density ........................   Passed    0.11 sec",
+        "2026-10-17T23:47:25.3611295Z  74/105 Test  #74: nexaui_glyph_cache .........................   Passed    0.01 sec",
+        "2026-10-17T23:47:37.0759074Z         Start  96: nexaui_nexacloud_example",
+        "2026-10-17T23:47:40.4944164Z  96/105 Test  #96: nexaui_nexacloud_example ...................   Passed    3.42 sec",
+        "2026-10-17T23:47:40.4948676Z         Start  97: nexaui_nexacloud_native_example",
+        "2026-10-17T23:47:44.4356623Z  97/105 Test  #97: nexaui_nexacloud_native_example ............   Passed    3.94 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "success"
+        }
+      ],
+      "decoded_log_sha256": "3e0d48a076b1805a909566add888f3f4f88ce5f2697070218ef7123ccf8e6b3e"
+    },
+    {
+      "id": 117535259261,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "passed": 105,
+      "skipped": 7,
+      "summary": [
+        "2026-10-17T23:45:07.2884632Z 100% tests passed, 0 tests failed out of 112",
+        "2026-10-17T23:45:07.2884822Z ",
+        "2026-10-17T23:45:07.2884919Z Total Test time (real) =  31.03 sec"
+      ],
+      "text_native_and_example_cases": [
+        "2026-10-17T23:44:41.2795591Z   6/112 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    3.25 sec",
+        "2026-10-17T23:45:03.2025839Z  53/112 Test  #53: nexaui_text_stamp ..........................   Passed    0.00 sec",
+        "2026-10-17T23:45:03.2418939Z  54/112 Test  #54: nexaui_text_density ........................   Passed    0.04 sec",
+        "2026-10-17T23:45:03.3605686Z  85/112 Test  #85: nexaui_glyph_cache .........................   Passed    0.00 sec",
+        "2026-10-17T23:45:05.2454873Z         Start 107: nexaui_nexacloud_example",
+        "2026-10-17T23:45:05.6670346Z 107/112 Test #107: nexaui_nexacloud_example ...................   Passed    0.42 sec",
+        "2026-10-17T23:45:05.6671118Z         Start 108: nexaui_nexacloud_x11_native_example",
+        "2026-10-17T23:45:06.9630116Z 108/112 Test #108: nexaui_nexacloud_x11_native_example ........   Passed    1.30 sec",
+        "2026-10-17T23:45:06.9630921Z         Start 109: nexaui_nexacloud_wayland_native_example",
+        "2026-10-17T23:45:06.9781098Z 109/112 Test #109: nexaui_nexacloud_wayland_native_example ....***Skipped   0.01 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build installed consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "conclusion": "skipped"
+        }
+      ],
+      "decoded_log_sha256": "2eab1565a009f479da850727d4b100ca860cc2ac31ed3831278d2240004b2e39"
+    }
+  ],
+  "optional_jobs_skipped": [
+    "windows-asan",
+    "fuzz-campaigns"
+  ],
+  "measured_source_validation": {
+    "src/nexaui.c": {
+      "physical_file_sha256": "9b7a82344adeb937770308a060c71f9912e5d96954e09c58c8191e87c2f5d243",
+      "git_lf_sha256": "c78fe0a76417d1304f4feb1c7a7cb766cfb055765350b2d8f128b87b50cc90ad",
+      "lf_normalized_equal": true
+    },
+    "src/glyph_cache.c": {
+      "physical_file_sha256": "c49fb0653565175094fd6c54870fcedf6b6c74b2a270637c13ec02a259ed4251",
+      "git_lf_sha256": "c49fb0653565175094fd6c54870fcedf6b6c74b2a270637c13ec02a259ed4251",
+      "lf_normalized_equal": true
+    },
+    "src/text_stamp.c": {
+      "physical_file_sha256": "cb2f3f0175f04918cd356d7fdbbd2ebe778c91dd3ec0cdd5506991f9776210d1",
+      "git_lf_sha256": "cb2f3f0175f04918cd356d7fdbbd2ebe778c91dd3ec0cdd5506991f9776210d1",
+      "lf_normalized_equal": true
+    },
+    "include/nexaui/nexaui.h": {
+      "physical_file_sha256": "4fed94024f0041e80e808d243b688873289563ee36fac13c3010b3c680a3be6a",
+      "git_lf_sha256": "42299a82a41786580b1127ac01628f346c61856ace9b2404c9e2c37ccd733fd6",
+      "lf_normalized_equal": true
+    },
+    "tests/test_text_density.c": {
+      "physical_file_sha256": "506ce9282dc232accf56d29f474829e4980273ea6b35dbef7a70a95eb690455b",
+      "git_lf_sha256": "506ce9282dc232accf56d29f474829e4980273ea6b35dbef7a70a95eb690455b",
+      "lf_normalized_equal": true
+    },
+    "tests/text_density_scene.h": {
+      "physical_file_sha256": "3582e08c733ed3a7b14a93ca941ed111e13ac268e5e2ffd6b9d16378bd000044",
+      "git_lf_sha256": "3582e08c733ed3a7b14a93ca941ed111e13ac268e5e2ffd6b9d16378bd000044",
+      "lf_normalized_equal": true
+    },
+    "examples/nexacloud/scene.c": {
+      "physical_file_sha256": "0718212b0086fcb42974f1d7c8d6d4eae6297d7a4f8d2e804f532b48268e3bf9",
+      "git_lf_sha256": "c1cca592d0da139a76486c37b8e24da1c57547406c6087aefcdfa3fcdbb4a1f8",
+      "lf_normalized_equal": true
+    },
+    "examples/16_text_density/main.c": {
+      "physical_file_sha256": "f4843425765673d7adec731220f319bfaae3b7ca2f39c5c381750aea83627ab2",
+      "git_lf_sha256": "f4843425765673d7adec731220f319bfaae3b7ca2f39c5c381750aea83627ab2",
+      "lf_normalized_equal": true
+    }
+  }
+}
