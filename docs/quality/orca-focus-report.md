@@ -106,6 +106,12 @@ failure. A temporary named-station probe returned Access Denied and was reverted
 no new privilege requirement was introduced. The prior local clipboard failure
 remains unresolved; CI and local results must be reported separately.
 
+The later [clipboard isolation follow-up](clipboard-isolation-report.md) fixes
+the error183 isolation skip by reopening a verified distinct hidden station,
+with current-station/busy guards and checked handle cleanup. Three cases pass
+in each local static/shared/ASan configuration. The old full-suite failure's
+cause is not inferred from this new test-fixture result.
+
 ## CI and handoff
 
 [Run 39089162407](https://github.com/Lulus792/NexaUI/actions/runs/39089162407)

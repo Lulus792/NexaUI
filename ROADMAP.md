@@ -23,6 +23,10 @@ exact validation, counterexamples and the remaining physical acceptance.
 The [Orca follow-up](docs/quality/orca-focus-report.md) records a native negative
 case and nine actual control/dialog announcements. Long observed response times,
 human screenreader use and full accessibility/physical acceptance remain open.
+The later [Windows clipboard-fixture correction](docs/quality/clipboard-isolation-report.md)
+executes the local Unicode transfer in an isolated hidden station, with native
+station/busy guards. It does not diagnose the earlier full-suite clipboard failure
+or complete human/physical P2 acceptance.
 
 R01 partial result `998a12c` replaces eight first-use HLSL compilations with
 byte-identical embedded DXBC and adds a complete native startup diagnostic plus

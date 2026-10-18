@@ -1,0 +1,5016 @@
+{
+  "date": "2026-10-18",
+  "source_commit": "dc64630b46147a6a880e1f9da4d08cc3f9142b80",
+  "run_id": 39101951803,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803",
+  "jobs": [
+    {
+      "id": 117599860842,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599860842",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599860842.log",
+        "bytes": 111461,
+        "sha256": "86dcc0abd783e9c4ed8c34febc52ceccc55bab6a1d3abc6db4ca2db9956f7fa0"
+      },
+      "registered": 115,
+      "passed": 108,
+      "skipped": 7,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_validation",
+          "result": "passed",
+          "seconds": 1.27
+        },
+        {
+          "name": "nexaui_vulkan_device",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_vulkan_native",
+          "result": "passed",
+          "seconds": 0.54
+        },
+        {
+          "name": "nexaui_vulkan_x11_present",
+          "result": "passed",
+          "seconds": 0.74
+        },
+        {
+          "name": "nexaui_vulkan_wayland_present",
+          "result": "skipped",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_vulkan_x11_draw",
+          "result": "passed",
+          "seconds": 5.76
+        },
+        {
+          "name": "nexaui_vulkan_wayland_draw",
+          "result": "skipped",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_vulkan_x11_timing",
+          "result": "passed",
+          "seconds": 0.93
+        },
+        {
+          "name": "nexaui_vulkan_wayland_timing",
+          "result": "skipped",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_vulkan_x11_ring",
+          "result": "passed",
+          "seconds": 7.6
+        },
+        {
+          "name": "nexaui_vulkan_wayland_ring",
+          "result": "skipped",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.28
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_wayland_cursor",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_wayland_repeat",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_wayland_window",
+          "result": "skipped",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_wayland_text_input_v1",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_wayland_text_input_v3",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_x11_window",
+          "result": "passed",
+          "seconds": 0.53
+        },
+        {
+          "name": "nexaui_atspi_x11_private",
+          "result": "passed",
+          "seconds": 7.39
+        },
+        {
+          "name": "nexaui_atspi_session_discovery_private",
+          "result": "passed",
+          "seconds": 7.44
+        },
+        {
+          "name": "nexaui_atspi_disabled",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_atspi_missing_runtime_abi",
+          "result": "passed",
+          "seconds": 0.17
+        },
+        {
+          "name": "nexaui_atspi_no_bus",
+          "result": "passed",
+          "seconds": 0.11
+        },
+        {
+          "name": "nexaui_x11_private",
+          "result": "passed",
+          "seconds": 0.53
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 0.87
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.17
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.45
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.27
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 1.64
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.21
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.21
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.22
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.84
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 3.93
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.23
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.23
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 8.22
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 3.12
+        },
+        {
+          "name": "nexaui_nexacloud_x11_native_example",
+          "result": "passed",
+          "seconds": 4.82
+        },
+        {
+          "name": "nexaui_nexacloud_wayland_native_example",
+          "result": "skipped",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_vulkan_x11_example",
+          "result": "passed",
+          "seconds": 0.41
+        },
+        {
+          "name": "nexaui_vulkan_wayland_example",
+          "result": "skipped",
+          "seconds": 0.01
+        }
+      ],
+      "summary": "2026-10-18T05:52:34.0646165Z 100% tests passed, 0 tests failed out of 115",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Configure ASan counterexample",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Verify ASan counterexample",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        }
+      ]
+    },
+    {
+      "id": 117599860984,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599860984",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599860984.log",
+        "bytes": 81946,
+        "sha256": "f773bc419dcc798360575bd3b3929310a16f8e433fa8d58ce4fd8ff7ecd1da3e"
+      },
+      "registered": 113,
+      "passed": 113,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.16
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_d3d12_smoke",
+          "result": "passed",
+          "seconds": 1.97
+        },
+        {
+          "name": "nexaui_d3d12_warp_smoke",
+          "result": "passed",
+          "seconds": 1.8
+        },
+        {
+          "name": "nexaui_d3d12_widgets",
+          "result": "passed",
+          "seconds": 1.92
+        },
+        {
+          "name": "nexaui_d3d12_widgets_warp",
+          "result": "passed",
+          "seconds": 1.87
+        },
+        {
+          "name": "nexaui_d3d12_pipelines",
+          "result": "passed",
+          "seconds": 0.31
+        },
+        {
+          "name": "nexaui_d3d12_pipelines_warp",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 10.36
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.53
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.14
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.16
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 1.24
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.11
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_uia",
+          "result": "passed",
+          "seconds": 49.74
+        },
+        {
+          "name": "nexaui_uia_mta",
+          "result": "passed",
+          "seconds": 17.53
+        },
+        {
+          "name": "nexaui_uia_owned_com",
+          "result": "passed",
+          "seconds": 52.09
+        },
+        {
+          "name": "nexaui_design_a_uia",
+          "result": "passed",
+          "seconds": 2.12
+        },
+        {
+          "name": "nexaui_multi_window",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_clipboard",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_clipboard_current_station_guard",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_clipboard_busy_guard",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_file_drop",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_cursor",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_ime",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.22
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.75
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 2.21
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.2
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.24
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.29
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.13
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 6.65
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 3.42
+        },
+        {
+          "name": "nexaui_nexacloud_native_example",
+          "result": "passed",
+          "seconds": 3.71
+        },
+        {
+          "name": "nexaui_nexacloud_uia",
+          "result": "passed",
+          "seconds": 119.65
+        },
+        {
+          "name": "nexaui_nexacloud_uia_compact",
+          "result": "passed",
+          "seconds": 108.1
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_01_hello_ui_example",
+          "result": "passed",
+          "seconds": 0.17
+        },
+        {
+          "name": "nexaui_01_hello_ui_font_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_02_buttons_and_input_example",
+          "result": "passed",
+          "seconds": 0.37
+        },
+        {
+          "name": "nexaui_showcase_example",
+          "result": "passed",
+          "seconds": 1.55
+        },
+        {
+          "name": "nexaui_multi_window_example",
+          "result": "passed",
+          "seconds": 7.41
+        }
+      ],
+      "summary": "2026-10-18T05:58:32.3403016Z 100% tests passed out of 113",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    },
+    {
+      "id": 117599861006,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861006",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599861006.log",
+        "bytes": 163872,
+        "sha256": "94404175e363a88c968196d0107c387178ce2738941044596792e86e21b5fc95"
+      },
+      "registered": 115,
+      "passed": 108,
+      "skipped": 7,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_validation",
+          "result": "passed",
+          "seconds": 2.61
+        },
+        {
+          "name": "nexaui_vulkan_device",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_native",
+          "result": "passed",
+          "seconds": 0.16
+        },
+        {
+          "name": "nexaui_vulkan_x11_present",
+          "result": "passed",
+          "seconds": 0.36
+        },
+        {
+          "name": "nexaui_vulkan_wayland_present",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_draw",
+          "result": "passed",
+          "seconds": 3.24
+        },
+        {
+          "name": "nexaui_vulkan_wayland_draw",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_timing",
+          "result": "passed",
+          "seconds": 0.66
+        },
+        {
+          "name": "nexaui_vulkan_wayland_timing",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_ring",
+          "result": "passed",
+          "seconds": 7.19
+        },
+        {
+          "name": "nexaui_vulkan_wayland_ring",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_cursor",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_repeat",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_window",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_text_input_v1",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_text_input_v3",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_x11_window",
+          "result": "passed",
+          "seconds": 0.61
+        },
+        {
+          "name": "nexaui_atspi_x11_private",
+          "result": "passed",
+          "seconds": 7.07
+        },
+        {
+          "name": "nexaui_atspi_session_discovery_private",
+          "result": "passed",
+          "seconds": 7.02
+        },
+        {
+          "name": "nexaui_atspi_disabled",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_atspi_missing_runtime_abi",
+          "result": "passed",
+          "seconds": 0.11
+        },
+        {
+          "name": "nexaui_atspi_no_bus",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_x11_private",
+          "result": "passed",
+          "seconds": 0.46
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 0.56
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.13
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 0.39
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 1.12
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 0.43
+        },
+        {
+          "name": "nexaui_nexacloud_x11_native_example",
+          "result": "passed",
+          "seconds": 1.32
+        },
+        {
+          "name": "nexaui_nexacloud_wayland_native_example",
+          "result": "skipped",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_vulkan_x11_example",
+          "result": "passed",
+          "seconds": 0.31
+        },
+        {
+          "name": "nexaui_vulkan_wayland_example",
+          "result": "skipped",
+          "seconds": 0.0
+        }
+      ],
+      "summary": "2026-10-18T05:51:52.4574531Z 100% tests passed, 0 tests failed out of 115",
+      "later_summary_lines": [
+        "2026-10-18T05:51:57.7923686Z 100% tests passed, 0 tests failed out of 1"
+      ],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    },
+    {
+      "id": 117599861011,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861011",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599861011.log",
+        "bytes": 91506,
+        "sha256": "0d4813dffb15b7c04db188d4de3390b8b64ea4970ff5f5ec2b4de36c3f62875b"
+      },
+      "registered": 94,
+      "passed": 94,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 2.85
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.5
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.16
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 0.72
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_macos_ax_external",
+          "result": "passed",
+          "seconds": 0.49
+        },
+        {
+          "name": "nexaui_macos_accessibility",
+          "result": "passed",
+          "seconds": 0.3
+        },
+        {
+          "name": "nexaui_macos_window",
+          "result": "passed",
+          "seconds": 0.29
+        },
+        {
+          "name": "nexaui_metal",
+          "result": "passed",
+          "seconds": 6.42
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.31
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 1.04
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 3.13
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 0.86
+        },
+        {
+          "name": "nexaui_nexacloud_metal_native_example",
+          "result": "passed",
+          "seconds": 9.68
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.2
+        },
+        {
+          "name": "nexaui_metal_example",
+          "result": "passed",
+          "seconds": 0.44
+        }
+      ],
+      "summary": "2026-10-18T05:52:02.5171080Z 100% tests passed out of 94",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    },
+    {
+      "id": 117599861060,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861060",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599861060.log",
+        "bytes": 91544,
+        "sha256": "62f238e6529edf3d01829a1ce7ecd9f5d07f1e47dd004f12f07dcb663556df7e"
+      },
+      "registered": 94,
+      "passed": 94,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 2.53
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.35
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 0.52
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.14
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_macos_ax_external",
+          "result": "passed",
+          "seconds": 0.39
+        },
+        {
+          "name": "nexaui_macos_accessibility",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_macos_window",
+          "result": "passed",
+          "seconds": 0.22
+        },
+        {
+          "name": "nexaui_metal",
+          "result": "passed",
+          "seconds": 6.39
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.25
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 0.79
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.14
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 2.45
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 1.08
+        },
+        {
+          "name": "nexaui_nexacloud_metal_native_example",
+          "result": "passed",
+          "seconds": 9.97
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.17
+        },
+        {
+          "name": "nexaui_metal_example",
+          "result": "passed",
+          "seconds": 0.36
+        }
+      ],
+      "summary": "2026-10-18T05:51:43.8643280Z 100% tests passed out of 94",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    },
+    {
+      "id": 117599861506,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861506",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599861506.log",
+        "bytes": 82176,
+        "sha256": "097a39377c9bada828432569227a29e0f056157fd165e5a5c045c3208e5581da"
+      },
+      "registered": 113,
+      "passed": 113,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.14
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.2
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_d3d12_smoke",
+          "result": "passed",
+          "seconds": 1.98
+        },
+        {
+          "name": "nexaui_d3d12_warp_smoke",
+          "result": "passed",
+          "seconds": 1.85
+        },
+        {
+          "name": "nexaui_d3d12_widgets",
+          "result": "passed",
+          "seconds": 1.94
+        },
+        {
+          "name": "nexaui_d3d12_widgets_warp",
+          "result": "passed",
+          "seconds": 1.9
+        },
+        {
+          "name": "nexaui_d3d12_pipelines",
+          "result": "passed",
+          "seconds": 0.37
+        },
+        {
+          "name": "nexaui_d3d12_pipelines_warp",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 10.54
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.38
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.23
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 0.91
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.14
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_uia",
+          "result": "passed",
+          "seconds": 53.09
+        },
+        {
+          "name": "nexaui_uia_mta",
+          "result": "passed",
+          "seconds": 18.5
+        },
+        {
+          "name": "nexaui_uia_owned_com",
+          "result": "passed",
+          "seconds": 51.76
+        },
+        {
+          "name": "nexaui_design_a_uia",
+          "result": "passed",
+          "seconds": 2.26
+        },
+        {
+          "name": "nexaui_multi_window",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_clipboard",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_clipboard_current_station_guard",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_clipboard_busy_guard",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_file_drop",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_cursor",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_ime",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.24
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.7
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 1.96
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.16
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.13
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.23
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.09
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.11
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 4.99
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 2.63
+        },
+        {
+          "name": "nexaui_nexacloud_native_example",
+          "result": "passed",
+          "seconds": 4.03
+        },
+        {
+          "name": "nexaui_nexacloud_uia",
+          "result": "passed",
+          "seconds": 133.48
+        },
+        {
+          "name": "nexaui_nexacloud_uia_compact",
+          "result": "passed",
+          "seconds": 120.71
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_01_hello_ui_example",
+          "result": "passed",
+          "seconds": 0.19
+        },
+        {
+          "name": "nexaui_01_hello_ui_font_example",
+          "result": "passed",
+          "seconds": 0.15
+        },
+        {
+          "name": "nexaui_02_buttons_and_input_example",
+          "result": "passed",
+          "seconds": 0.34
+        },
+        {
+          "name": "nexaui_showcase_example",
+          "result": "passed",
+          "seconds": 1.05
+        },
+        {
+          "name": "nexaui_multi_window_example",
+          "result": "passed",
+          "seconds": 0.15
+        }
+      ],
+      "summary": "2026-10-18T05:58:52.7370058Z 100% tests passed out of 113",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    },
+    {
+      "id": 117599861542,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861542"
+    },
+    {
+      "id": 117599861546,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861546"
+    },
+    {
+      "id": 117599861559,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/39101951803/job/117599861559",
+      "log": {
+        "path": "D:\\NexaUI\\out\\p2-clipboard\\ci-117599861559.log",
+        "bytes": 159396,
+        "sha256": "edfea6e59a1eebe4cc3340a919375618a418b187199940c3e6e3029d18f3ed20"
+      },
+      "registered": 115,
+      "passed": 108,
+      "skipped": 7,
+      "tests": [
+        {
+          "name": "nexaui_vulkan_validation",
+          "result": "passed",
+          "seconds": 3.12
+        },
+        {
+          "name": "nexaui_vulkan_device",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_native",
+          "result": "passed",
+          "seconds": 0.23
+        },
+        {
+          "name": "nexaui_vulkan_x11_present",
+          "result": "passed",
+          "seconds": 0.53
+        },
+        {
+          "name": "nexaui_vulkan_wayland_present",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_draw",
+          "result": "passed",
+          "seconds": 3.94
+        },
+        {
+          "name": "nexaui_vulkan_wayland_draw",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_timing",
+          "result": "passed",
+          "seconds": 0.54
+        },
+        {
+          "name": "nexaui_vulkan_wayland_timing",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_ring",
+          "result": "passed",
+          "seconds": 7.29
+        },
+        {
+          "name": "nexaui_vulkan_wayland_ring",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_timing_math",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_metal_plan",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_bitmaps",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_metal_batches",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_metal_timing",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_platform_event_queue",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_platform_drop_queue",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_uri_list",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_cursor",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_repeat",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_window",
+          "result": "skipped",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_text_input_v1",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_wayland_text_input_v3",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_x11_window",
+          "result": "passed",
+          "seconds": 0.72
+        },
+        {
+          "name": "nexaui_atspi_x11_private",
+          "result": "passed",
+          "seconds": 7.19
+        },
+        {
+          "name": "nexaui_atspi_session_discovery_private",
+          "result": "passed",
+          "seconds": 7.24
+        },
+        {
+          "name": "nexaui_atspi_disabled",
+          "result": "passed",
+          "seconds": 0.08
+        },
+        {
+          "name": "nexaui_atspi_missing_runtime_abi",
+          "result": "passed",
+          "seconds": 0.18
+        },
+        {
+          "name": "nexaui_atspi_no_bus",
+          "result": "passed",
+          "seconds": 0.1
+        },
+        {
+          "name": "nexaui_x11_private",
+          "result": "passed",
+          "seconds": 0.52
+        },
+        {
+          "name": "nexaui_renderer_backend",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_dependency_audit",
+          "result": "passed",
+          "seconds": 0.78
+        },
+        {
+          "name": "nexaui_snapshot",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_sim_channel",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_series",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_plot_multi",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_plot",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_telemetry",
+          "result": "passed",
+          "seconds": 0.12
+        },
+        {
+          "name": "nexaui_property",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_viewport",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_core",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_layout",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_docking",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_theme",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_color",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_animation",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_widget",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_display_widget",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_controls",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_transfer_icon",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_paint",
+          "result": "passed",
+          "seconds": 0.11
+        },
+        {
+          "name": "nexaui_design_a_fallback",
+          "result": "passed",
+          "seconds": 0.36
+        },
+        {
+          "name": "nexaui_cloud_components",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_stamp",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_density",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_context_text_density",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_visual_regression",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_containers",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_scroll_virtual",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_table",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_tree",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_overlay",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_menu",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_search",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_value_controls",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_numeric",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_numeric_field",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_field",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_pointer",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_input",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_interaction",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_semantics",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_shapes",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_bitmap",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_font",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_kern",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_shape",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_text_layout",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_text_buffer",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_gsub_context",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_gsub",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_gpos_marks",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_gpos",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_cmap",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_glyf",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_raster",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_glyph_cache",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_font_collection",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_unicode_data",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_grapheme",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_word",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_line",
+          "result": "passed",
+          "seconds": 0.07
+        },
+        {
+          "name": "nexaui_bidi",
+          "result": "passed",
+          "seconds": 0.22
+        },
+        {
+          "name": "nexaui_bidi_types",
+          "result": "passed",
+          "seconds": 0.76
+        },
+        {
+          "name": "nexaui_03_layout_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_04_forms_example",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_scroll_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_tables_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_text_editing_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_themes_example",
+          "result": "passed",
+          "seconds": 0.06
+        },
+        {
+          "name": "nexaui_custom_widget_example",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_docking_editor_example",
+          "result": "passed",
+          "seconds": 0.04
+        },
+        {
+          "name": "nexaui_accessibility_example",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_realtime_plot_example",
+          "result": "passed",
+          "seconds": 0.02
+        },
+        {
+          "name": "nexaui_simulation_dashboard_example",
+          "result": "passed",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_simulation_dashboard_font_example",
+          "result": "passed",
+          "seconds": 0.05
+        },
+        {
+          "name": "nexaui_3d_viewport_shell_example",
+          "result": "passed",
+          "seconds": 0.01
+        },
+        {
+          "name": "nexaui_nexacloud_text_reflow",
+          "result": "passed",
+          "seconds": 2.09
+        },
+        {
+          "name": "nexaui_nexacloud_example",
+          "result": "passed",
+          "seconds": 0.81
+        },
+        {
+          "name": "nexaui_nexacloud_x11_native_example",
+          "result": "passed",
+          "seconds": 2.26
+        },
+        {
+          "name": "nexaui_nexacloud_wayland_native_example",
+          "result": "skipped",
+          "seconds": 0.03
+        },
+        {
+          "name": "nexaui_00_hello_window_example",
+          "result": "passed",
+          "seconds": 0.0
+        },
+        {
+          "name": "nexaui_vulkan_x11_example",
+          "result": "passed",
+          "seconds": 0.32
+        },
+        {
+          "name": "nexaui_vulkan_wayland_example",
+          "result": "skipped",
+          "seconds": 0.0
+        }
+      ],
+      "summary": "2026-10-18T05:51:58.9448404Z 100% tests passed, 0 tests failed out of 115",
+      "later_summary_lines": [],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Test (Linux X11)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 25
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Optional Windows-ASan and fuzz-campaign jobs skipped; local actual MSVC ASan is recorded separately.",
+    "Seven Linux Wayland cases skipped, not passed.",
+    "Installed consumer executes; add_subdirectory consumer builds/links.",
+    "No physical display, app pin-adoption, human assistive acceptance or R01 speed claim."
+  ]
+}
