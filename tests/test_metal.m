@@ -72,7 +72,8 @@ static int compare_commands(nx_window *w, nx_metal_renderer *r, const nx_command
     CHECK(result == NX_OK);
     if (memcmp(actual,expected,bytes)) {
         for (size_t i = 0; i < bytes; ++i) if (actual[i] != expected[i]) {
-            fprintf(stderr,"Metal byte %zu: %u != %u\n",i,actual[i],expected[i]); break;
+            fprintf(stderr,"Metal scale=%g %ux%u pixel=%zu,%zu channel=%zu byte %zu: %u != %u\n",
+                scale,width,height,(i%stride)/4,i/stride,(i%stride)%4,i,actual[i],expected[i]); break;
         }
         return 1;
     }

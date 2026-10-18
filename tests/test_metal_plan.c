@@ -69,6 +69,16 @@ static int compare(const nx_command *stream, size_t count, double scale) {
     return 0;
 }
 int main(void) {
+    /* Selected HiDPI ink pieces can have a fractional padding clip. Scale
+       origin and extent to physical float components before adding edges,
+       exactly as the software command stream does. Keeping this sum logical
+       drops physical column 13 at 1.5x (13.5 vs 13.5000004768). */
+    uint8_t clip_pixel[]={255,255,255,128};
+    nx_command padding_clip[]={
+        {.type=NX_COMMAND_PUSH_CLIP,.rect={8.33333302f,10,.666666985f,12}},
+        {.type=NX_COMMAND_BITMAP,.rect={8.33333302f,10,3.33333325f,12},.color={1,1,1,1},.bitmap={clip_pixel,1,1,4,NX_BITMAP_RGBA8}},
+        {.type=NX_COMMAND_POP_CLIP}};
+    CHECK(compare(padding_clip,3,1.5)==0);
     nx_command stream[512]; size_t n = 0;
     stream[n++] = rect(NX_COMMAND_FILL_RECT,(nx_rect){-4,.5f,30.5f,25.5f},(nx_color){.5f,.2f,.7f,1});
     stream[n++] = rect(NX_COMMAND_PUSH_CLIP,(nx_rect){5.5f,4.5f,69,62},(nx_color){0});

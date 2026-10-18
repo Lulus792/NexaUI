@@ -88,9 +88,14 @@ int nx_mtl_plan_next(nx_mtl_plan *p, nx_mtl_draw *out) {
             x0 = edge(s.a.x,1,p->width); y0 = edge(s.a.y,1,p->height);
             x1 = edge((double)s.a.x+s.b.x,1,p->width); y1 = edge((double)s.a.y+s.b.y,1,p->height);
         } else {
-            x0 = edge(c->rect.x,p->scale,p->width); y0 = edge(c->rect.y,p->scale,p->height);
-            x1 = edge((double)c->rect.x+c->rect.width,p->scale,p->width);
-            y1 = edge((double)c->rect.y+c->rect.height,p->scale,p->height);
+            /* Match the physical float command contract before adding edges.
+               A logical sum multiplied in double can cross a different pixel
+               center than separately scaled origin/extent (HiDPI ink clips). */
+            nx_point origin = {(float)(c->rect.x*p->scale),(float)(c->rect.y*p->scale)};
+            nx_point extent = {(float)(c->rect.width*p->scale),(float)(c->rect.height*p->scale)};
+            x0 = edge(origin.x,1,p->width); y0 = edge(origin.y,1,p->height);
+            x1 = edge((double)origin.x+extent.x,1,p->width);
+            y1 = edge((double)origin.y+extent.y,1,p->height);
         }
         nx_mtl_box clip = p->clips[p->depth];
         x0 = fmax(x0,clip.x); y0 = fmax(y0,clip.y);
