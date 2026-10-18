@@ -1,0 +1,393 @@
+{
+  "source_commit": "33dcf12c53e1f609f40b5b0e43fe6f273ed77a3f",
+  "run_id": 39084241953,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39084241953",
+  "required_jobs": [
+    {
+      "id": 117547359433,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "registered": 113,
+      "passed": 106,
+      "skipped": 7,
+      "summary": "2026-10-18T00:51:47.7657430Z 100% tests passed, 0 tests failed out of 113",
+      "selected_cases": [
+        "2026-10-18T00:51:02.9491342Z   6/113 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    5.47 sec",
+        "2026-10-18T00:51:28.9772010Z  52/113 Test  #52: nexaui_design_a_fallback ...................   Passed    1.11 sec"
+      ],
+      "package_steps": [],
+      "decoded_log_lf_sha256": "2eea02c09f58fab7c79382eef9ae50d6675c64f780f7b7d9220ed139a7ccabdd"
+    },
+    {
+      "id": 117547359579,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "registered": 113,
+      "passed": 106,
+      "skipped": 7,
+      "summary": "2026-10-18T00:51:36.9883040Z 100% tests passed, 0 tests failed out of 113",
+      "selected_cases": [
+        "2026-10-18T00:51:10.0832721Z   6/113 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    3.52 sec",
+        "2026-10-18T00:51:32.6512606Z  52/113 Test  #52: nexaui_design_a_fallback ...................   Passed    0.20 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "9fe144147a89095f6c864d8c4721f24a7e35fff8f546dcd76823e70fa518b46f"
+    },
+    {
+      "id": 117547359627,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "registered": 107,
+      "passed": 107,
+      "skipped": 0,
+      "summary": "2026-10-18T00:58:15.5814676Z 100% tests passed out of 107",
+      "selected_cases": [
+        "2026-10-18T00:51:30.3165907Z  11/107 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.91 sec",
+        "2026-10-18T00:51:31.1599256Z  12/107 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.84 sec",
+        "2026-10-18T00:51:44.2307442Z  33/107 Test  #33: nexaui_design_a_fallback ...................   Passed    1.25 sec",
+        "2026-10-18T00:52:38.9278865Z  50/107 Test  #50: nexaui_uia .................................   Passed   54.16 sec",
+        "2026-10-18T00:52:57.3803741Z  51/107 Test  #51: nexaui_uia_mta .............................   Passed   18.45 sec",
+        "2026-10-18T00:53:50.8958763Z  52/107 Test  #52: nexaui_uia_owned_com .......................   Passed   53.51 sec",
+        "2026-10-18T00:53:53.1566404Z  53/107 Test  #53: nexaui_design_a_uia ........................   Passed    2.26 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "ce92412481048952384e839cf5d0b8579a8527f924bcb66d2d1bf9036b839c50"
+    },
+    {
+      "id": 117547359631,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "registered": 107,
+      "passed": 107,
+      "skipped": 0,
+      "summary": "2026-10-18T00:57:36.8328632Z 100% tests passed out of 107",
+      "selected_cases": [
+        "2026-10-18T00:51:22.0383781Z  11/107 Test  #11: nexaui_d3d12_widgets .......................   Passed    0.90 sec",
+        "2026-10-18T00:51:22.8807237Z  12/107 Test  #12: nexaui_d3d12_widgets_warp ..................   Passed    0.84 sec",
+        "2026-10-18T00:51:36.8446980Z  33/107 Test  #33: nexaui_design_a_fallback ...................   Passed    1.25 sec",
+        "2026-10-18T00:52:29.0886396Z  50/107 Test  #50: nexaui_uia .................................   Passed   51.66 sec",
+        "2026-10-18T00:52:48.1262305Z  51/107 Test  #51: nexaui_uia_mta .............................   Passed   19.04 sec",
+        "2026-10-18T00:53:17.1350309Z  52/107 Test  #52: nexaui_uia_owned_com .......................   Passed   29.01 sec",
+        "2026-10-18T00:53:17.7231689Z  53/107 Test  #53: nexaui_design_a_uia ........................   Passed    0.59 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "ced30d6992746d16cc880e6506ff3d026897bc37f65bcc7d3bca707a5c12fc32"
+    },
+    {
+      "id": 117547359637,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "registered": 113,
+      "passed": 106,
+      "skipped": 7,
+      "summary": "2026-10-18T00:51:34.9967643Z 100% tests passed, 0 tests failed out of 113",
+      "selected_cases": [
+        "2026-10-18T00:51:05.8321019Z   6/113 Test   #6: nexaui_vulkan_x11_draw .....................   Passed    3.61 sec",
+        "2026-10-18T00:51:28.9533450Z  52/113 Test  #52: nexaui_design_a_fallback ...................   Passed    0.28 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "76b195d0f87f275c6a048676b61c1db4c7b809d045675a8c8e581523aef00cd7"
+    },
+    {
+      "id": 117547359655,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "registered": 92,
+      "passed": 92,
+      "skipped": 0,
+      "summary": "2026-10-18T00:51:26.6685400Z 100% tests passed out of 92",
+      "selected_cases": [
+        "2026-10-18T00:51:04.0373300Z 29/92 Test #29: nexaui_design_a_fallback ...................   Passed    0.53 sec",
+        "2026-10-18T00:51:04.9455720Z 47/92 Test #47: nexaui_macos_ax_external ...................   Passed    0.57 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "f924347319ba34e7ab5e265677b26031576b86ad3f3c1af3df236bde5be1e4a4"
+    },
+    {
+      "id": 117547359744,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "registered": 92,
+      "passed": 92,
+      "skipped": 0,
+      "summary": "2026-10-18T00:51:42.0057380Z 100% tests passed out of 92",
+      "selected_cases": [
+        "2026-10-18T00:51:14.0475550Z 29/92 Test #29: nexaui_design_a_fallback ...................   Passed    0.75 sec",
+        "2026-10-18T00:51:15.0922490Z 47/92 Test #47: nexaui_macos_ax_external ...................   Passed    0.74 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "2476b1d16676f1b18c4833b48b67efcbeed9c14069a2fc23da2bd7250a9ffa58"
+    }
+  ],
+  "optional_jobs": [
+    {
+      "id": 117547360446,
+      "name": "windows-asan",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 117547360865,
+      "name": "fuzz-campaigns",
+      "conclusion": "skipped"
+    }
+  ],
+  "scope": "Exact-source automated desktop CI; no physical-display or human screenreader acceptance"
+}

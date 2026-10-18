@@ -2,10 +2,10 @@
 
 Design-A integration now has public rounded raster gradients, cached soft-form
 effects, shield icons and `nx_plot_multi` at `c25ec7e`. Contracts and acceptance
-gaps are in [the framework report](docs/quality/design-a-framework-report.md).
+gaps are in [the consolidated acceptance handoff](docs/quality/design-a-acceptance.md).
 The follow-up `876b006` corrects an isolated D3D12 identity-axis sampling defect;
 the [sampling report](docs/quality/d3d12-texel-identity-report.md) records its evidence.
-Application adoption and physical/assistive review remain open; this does not
+Application adoption is reported separately by NexaCloud; physical/assistive review remains open. This does not
 complete a release gate.
 
 The `18345c0`/`5004083` follow-up reduces repeated paint/area-fill CPU work,

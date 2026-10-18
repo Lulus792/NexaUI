@@ -1,6 +1,9 @@
 # NexaCloud Design A framework slice — 2026-10-17
 
 Source: `c25ec7e0db46669b12d4ca3002a5ab7f0310bf09`.
+Current consolidated acceptance and integration boundaries are maintained in
+[the 2026-10-18 handoff](design-a-acceptance.md). The initial table below records
+the delivery-time state; later application adoption does not rewrite its history.
 The four requested building blocks now have public C17 implementations. Their
 remaining acceptance is recorded below; the full Design-A application is not
 declared finished. NexaCloud's dependency pin was not changed.
