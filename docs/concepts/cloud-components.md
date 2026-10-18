@@ -56,6 +56,9 @@ Use application text to identify upload/download, status and remaining time.
 
 `nx_draw_icon` supplies original, portable line icons for navigation, files,
 status and common actions. It requires no symbol font or platform assets.
+`NX_ICON_TRANSFER` draws paired upward/downward arrows; Upload and Download
+retain their single-direction paths. The [directional-icon regression report](../quality/transfer-icon-report.md)
+records theme, density, clipping and native pixel checks.
 Icons are decoration; use a named widget for an icon-only action. NONE draws
 nothing. The icon, surface, card, progress and action operations roll back
 their appended commands on failure; widgets also roll back semantics and hit

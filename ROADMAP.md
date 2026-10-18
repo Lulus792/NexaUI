@@ -32,6 +32,14 @@ and the historical application outliers remain open.
 The [device/cache follow-up](docs/quality/d3d12-device-cache-report.md) locates
 cache-journal flushing in new local device outliers and adds separate diagnostic
 CPU accounting. It supplies no production total-start acceptance.
+The [private cache-event trace](docs/quality/d3d12-private-cache-trace-report.md)
+then correlates two long cache creations with a new first device call, without
+thread suspension or a global trace. R01 remains open.
+
+`f7ec75b` corrects `NX_ICON_TRANSFER` to paired opposing arrows while retaining
+Upload/Download output and the public API. The [R02 report](docs/quality/transfer-icon-report.md)
+records directional counterexamples,64 size/theme/density/alpha cases and exact
+hardware/WARP output. Application adoption and physical acceptance remain separate.
 
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
