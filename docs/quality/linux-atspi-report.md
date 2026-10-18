@@ -124,6 +124,12 @@ published GitHub artifact digests. None is an independent physical/Orca signoff.
 
 ## Remaining acceptance
 
+The later [Orca focus follow-up](orca-focus-report.md) fixes missing focused
+events for newly published incarnations and records nine actual native-example
+control/dialog announcements. It retains long response times and registry
+warnings as open issues; this historical transport report does not imply a
+human screenreader or complete role/interface acceptance.
+
 Full Text/EditableText/Value/Table/Collection/relations and role/event contracts,
 Orca tasks, compositor/desktop/distribution/architecture diversity, physical
 scaling/input and release/hardware acceptance remain open (L11/X07/X08 and wider

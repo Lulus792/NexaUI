@@ -90,6 +90,9 @@ Cache add/remove, child changes, accessible name/description/parent changes,
 selected/checked/focus/enabled/showing state and selection changes are emitted from
 committed publications. Old object references are encoded before their snapshot
 storage is reused. X11 also emits screen-space BoundsChanged notifications.
+Newly published focused incarnations additionally emit a focused state event
+after insertion; cache state alone is insufficient for the tested Orca modal.
+See the [focus regression and real Orca task](../quality/orca-focus-report.md).
 
 ## Coordinates and validation limits
 
@@ -101,7 +104,7 @@ it does not claim to activate an arbitrary application. Actual native focus is
 required for the exposed focused state.
 
 The [native report](../quality/linux-atspi-report.md) distinguishes independent
-libatspi/registry tests from manual screenreader acceptance. Orca, complete
+libatspi/registry tests from manual screenreader acceptance. Human Orca acceptance, complete
 text/range/table/collection/relations contracts, full event coverage, broader
 desktop/distribution/architecture and physical scaling acceptance remain open.
 

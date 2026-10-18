@@ -1,0 +1,384 @@
+{
+  "source_commit": "10cd3fb2de28674af7ef493cd0c1f249994efa12",
+  "run_id": 39089162407,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39089162407",
+  "required_jobs": [
+    {
+      "id": 117561962687,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T02:12:44.0099257Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T02:12:06.8445839Z  26/114 Test  #26: nexaui_atspi_x11_private ...................   Passed    7.40 sec",
+        "2026-10-18T02:12:14.1344005Z  27/114 Test  #27: nexaui_atspi_session_discovery_private .....   Passed    7.29 sec",
+        "2026-10-18T02:12:14.2312125Z  28/114 Test  #28: nexaui_atspi_disabled ......................   Passed    0.10 sec",
+        "2026-10-18T02:12:14.4064378Z  29/114 Test  #29: nexaui_atspi_missing_runtime_abi ...........   Passed    0.17 sec",
+        "2026-10-18T02:12:14.5044278Z  30/114 Test  #30: nexaui_atspi_no_bus ........................   Passed    0.10 sec"
+      ],
+      "package_steps": [],
+      "decoded_log_lf_sha256": "f081f055ac18df516ebf26c646588d1477b79633d8f11b52f4ce470331b38006"
+    },
+    {
+      "id": 117561962692,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "registered": 108,
+      "passed": 108,
+      "skipped": 0,
+      "summary": "2026-10-18T02:18:48.5489339Z 100% tests passed out of 108",
+      "selected_cases": [
+        "2026-10-18T02:14:08.7752493Z  56/108 Test  #56: nexaui_clipboard ...........................   Passed    0.03 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "06169a3afa0d49b5dd4d30b3b6254a90aa90b31a22e6b1317fa3de967a8f03c0"
+    },
+    {
+      "id": 117561962741,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T02:12:11.6742654Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T02:11:54.9598017Z  26/114 Test  #26: nexaui_atspi_x11_private ...................   Passed    7.20 sec",
+        "2026-10-18T02:12:02.1032800Z  27/114 Test  #27: nexaui_atspi_session_discovery_private .....   Passed    7.14 sec",
+        "2026-10-18T02:12:02.2022382Z  28/114 Test  #28: nexaui_atspi_disabled ......................   Passed    0.10 sec",
+        "2026-10-18T02:12:02.3421942Z  29/114 Test  #29: nexaui_atspi_missing_runtime_abi ...........   Passed    0.14 sec",
+        "2026-10-18T02:12:02.4335882Z  30/114 Test  #30: nexaui_atspi_no_bus ........................   Passed    0.09 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "b607be5ffa226ab119ff1364f2a943c66efed24bb1aac1ccb94c51d0ab9a3d45"
+    },
+    {
+      "id": 117561962749,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "registered": 93,
+      "passed": 93,
+      "skipped": 0,
+      "summary": "2026-10-18T02:11:55.9764880Z 100% tests passed out of 93",
+      "selected_cases": [],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "63b618b3c886c6c8373df580d59acfe89dc56fb8feab3a2054744e4260c55b87"
+    },
+    {
+      "id": 117561962811,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "registered": 108,
+      "passed": 108,
+      "skipped": 0,
+      "summary": "2026-10-18T02:18:37.4932086Z 100% tests passed out of 108",
+      "selected_cases": [
+        "2026-10-18T02:14:09.0886360Z  56/108 Test  #56: nexaui_clipboard ...........................   Passed    0.02 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "6ca2585bc5817472a5082beacc29cdcbcfb3bb7ffe96c2a55bb64086d68a2ddf"
+    },
+    {
+      "id": 117561962812,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "registered": 93,
+      "passed": 93,
+      "skipped": 0,
+      "summary": "2026-10-18T02:11:56.2132110Z 100% tests passed out of 93",
+      "selected_cases": [],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "02a199e63623398d70f279899a2acdc13c5b684b6d88ec932bfc18a13ebb40a0"
+    },
+    {
+      "id": 117561962826,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "registered": 114,
+      "passed": 107,
+      "skipped": 7,
+      "summary": "2026-10-18T02:11:56.4217842Z 100% tests passed, 0 tests failed out of 114",
+      "selected_cases": [
+        "2026-10-18T02:11:43.7868265Z  26/114 Test  #26: nexaui_atspi_x11_private ...................   Passed    7.07 sec",
+        "2026-10-18T02:11:50.8553553Z  27/114 Test  #27: nexaui_atspi_session_discovery_private .....   Passed    7.07 sec",
+        "2026-10-18T02:11:50.9162138Z  28/114 Test  #28: nexaui_atspi_disabled ......................   Passed    0.06 sec",
+        "2026-10-18T02:11:51.0214233Z  29/114 Test  #29: nexaui_atspi_missing_runtime_abi ...........   Passed    0.10 sec",
+        "2026-10-18T02:11:51.0830503Z  30/114 Test  #30: nexaui_atspi_no_bus ........................   Passed    0.06 sec"
+      ],
+      "package_steps": [
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 22
+        }
+      ],
+      "decoded_log_lf_sha256": "11e8c2029f65744edee6ad40b1d85bf47ca77810c4282939cace47ba0caef222"
+    }
+  ],
+  "optional_jobs": [
+    {
+      "id": 117561963425,
+      "name": "windows-asan",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 117561963924,
+      "name": "fuzz-campaigns",
+      "conclusion": "skipped"
+    }
+  ],
+  "scope": "Exact-source automated native desktop CI; Orca is a separate local task, not run in CI. Installed consumer executes; add_subdirectory consumer builds/links only."
+}

@@ -19,6 +19,11 @@ clip-edge rounding exposed by the expanded native fixture. Read the
 [context text-density report](docs/quality/context-text-density-report.md) for
 exact validation, counterexamples and the remaining physical acceptance.
 
+`10cd3fb` fixes a missing AT-SPI focus notification for newly published controls.
+The [Orca follow-up](docs/quality/orca-focus-report.md) records a native negative
+case and nine actual control/dialog announcements. Long observed response times,
+human screenreader use and full accessibility/physical acceptance remain open.
+
 This is the implementation plan for [MASTER.md](MASTER.md). An edge `A -> B` means B starts after A's public contract and tests are accepted. Tasks are intentionally narrow; a task may be split further when implementation exposes new constraints. Every task follows the definition of done in MASTER section 26. Platform tasks additionally require a native build and a manual smoke test on that platform. A successful headless build never substitutes for native validation.
 
 ## Milestones and gates
