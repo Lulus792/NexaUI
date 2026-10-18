@@ -141,16 +141,38 @@ int main(void) {
         &preedit_begin, &preedit_end) == NX_OK &&
         preedit_begin == -1 && preedit_end == -1);
     SendMessageW(hwnd, WM_IME_STARTCOMPOSITION, 0, 0);
-    CHECK(nx_window_windows_test_ime_preedit(window, L"na", 2, 1) == NX_OK);
-    CHECK(nx_begin_frame(ctx, 200, 100, 0) == NX_OK);
-    CHECK(nx_text_field_widget(ctx, &desc, field, &state,
-                               &valid, &submitted) == NX_OK);
-    CHECK(nx_end_frame(ctx) == NX_OK);
-    CHECK(nx_frame_commands(ctx, &commands, &count) == NX_OK);
-    size_t line_count = 0;
-    for (size_t i = 0; i < count; ++i)
-        if (commands[i].type == NX_COMMAND_LINE) ++line_count;
-    CHECK(line_count >= 2);
+    CHECK(nx_window_windows_test_ime_preedit(window, L"01", 2, 1) == NX_OK);
+    const float text_densities[]={1,2,1.25f,1.5f};nx_command base_lines[8];size_t base_count=0;
+    for(unsigned density=0;density<4;++density) {
+        CHECK(nx_context_set_text_raster_scale(ctx,text_densities[density])==NX_OK);
+        CHECK(nx_begin_frame(ctx, 200, 100, 0) == NX_OK);
+        CHECK(nx_text_field_widget(ctx, &desc, field, &state,&valid, &submitted) == NX_OK);
+        CHECK(nx_end_frame(ctx) == NX_OK&&nx_frame_commands(ctx, &commands, &count) == NX_OK);
+        nx_glyph_cache *cache=NULL;nx_glyph_mask_view mask;
+        CHECK(nx_glyph_cache_create(font,65536,NULL,&cache)==NX_OK&&
+            nx_glyph_cache_get_fractional(cache,2,desc.pixels_per_em*text_densities[density],&mask)==NX_OK);
+        size_t line_count=0,masks=0;nx_point composing_caret={0};
+        for(size_t i=0;i<count;++i) {
+            if(commands[i].type==NX_COMMAND_LINE) {
+                CHECK(line_count<8);
+                if(density)CHECK(line_count<base_count&&!memcmp(commands[i].points,base_lines[line_count].points,sizeof(commands[i].points)));
+                else base_lines[line_count]=commands[i];
+                composing_caret=commands[i].points[0];++line_count;
+            }
+            if(commands[i].type==NX_COMMAND_BITMAP) {
+                CHECK(commands[i].bitmap.width==mask.width&&commands[i].bitmap.height==mask.height);
+                for(uint32_t y=0;y<mask.height;++y)CHECK(!memcmp(commands[i].bitmap.pixels+y*commands[i].bitmap.stride_bytes,mask.pixels+y*mask.stride_bytes,mask.width));
+                ++masks;
+            }
+        }
+        CHECK(line_count>=2&&masks);if(!density)base_count=line_count;else CHECK(base_count==line_count);
+        nx_glyph_cache_destroy(cache);
+        input=ImmGetContext(hwnd);CHECK(input&&ImmGetCompositionWindow(input,&form));
+        CHECK(form.ptCurrentPos.x==(LONG)lround(composing_caret.x*info.scale)&&
+            form.ptCurrentPos.y==(LONG)lround(composing_caret.y*info.scale));ImmReleaseContext(hwnd,input);
+        CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&preedit_begin,&preedit_end)==NX_OK&&
+            preedit_length==2&&preedit_begin==1&&preedit_end==1&&!memcmp(preedit,"01",2));
+    }
     nx_utf8_span draft;
     CHECK(nx_text_field_text(field, &draft) == NX_OK &&
           draft.length == 2 && memcmp(draft.data, "01", 2) == 0);

@@ -891,6 +891,7 @@ int cloud_frame(cloud_scene *s, float width, float height, double dt) {
         TRY(nx_context_set_theme(s->ui, &s->theme)); s->pending_theme = 0;
     }
     TRY(nx_context_set_reduced_motion(s->ui, s->reduced_motion));
+    TRY(nx_context_set_text_raster_scale(s->ui, s->requested_pixel_scale));
     TRY(nx_begin_frame(s->ui, width, height, dt));
     /* The old command stream has now expired; future cache evictions are safe. */
     if (++s->frame_number == 0) {

@@ -39,6 +39,11 @@ int main(void) {
     nx_context *context = 0;
     nx_layout *layout = 0;
     if (nx_context_create(0, &context) != NX_OK) return 1;
+    float text_density=0;
+    if (nx_context_get_text_raster_scale(context,&text_density)!=NX_OK || text_density!=1 ||
+        nx_context_set_text_raster_scale(context,1.5f)!=NX_OK ||
+        nx_context_get_text_raster_scale(context,&text_density)!=NX_OK || text_density!=1.5f)
+        return 14;
     if (nx_layout_create(0, 0, &layout) != NX_OK) {
         nx_context_destroy(context);
         return 2;

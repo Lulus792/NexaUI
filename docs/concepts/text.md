@@ -85,6 +85,34 @@ See the [context report](../quality/gsub-context-report.md).
 
 ## Raster density without changing layout
 
+Set `nx_context_set_text_raster_scale(ui, window_density)` between frames to
+choose the default for `nx_draw_text_layout`, rich text and font-backed widgets.
+New contexts use 1×. `nx_context_get_text_raster_scale` reports the current value
+in any frame state. The setter accepts finite [.125,8], does not allocate, and
+rejects changes during frame building with STATE. It neither alters layout/input
+coordinates nor invalidates the previous finished command stream.
+
+The default reaches layout labels/actions, menus/tabs/tables, property text,
+text/numeric editors including selection and preedit, search queries/results/
+empty labels, plot ticks and dashboard text. Their existing calls converge on
+the ordinary or selected/rich layout draw paths. Explicit `_scaled` drawing and
+stamp creation use exactly the caller's scale, without multiplying the default.
+Cached stamps/images, bitmap sources, icons, layout measurement, hit tests,
+caret/selection/decorations and IME placement remain independently controlled.
+The NexaCloud reference runner applies window density before each begin-frame.
+
+Drawing still returns ARGUMENT for physical ppem outside [.125,16384], LIMIT
+for exhausted resource budgets and MEMORY for failed allocations. Failed draws
+retain the existing widget/command rollback contracts; there is no automatic
+old-mask cache or lower-density retry. A field can accept an edit before painting
+fails; its existing same-frame retry does not repeat that edit. Callers can retry
+with a smaller density after ending the frame, or use their own retained output.
+Keep the context alive and do not begin another frame until renderers finish
+consuming its copied direct masks. Changing the default alone does not expire
+them. Raster-padding clips/ink bounds can vary; logical selection fills and caret
+positions do not. The [widget comparison](../../examples/17_widget_text_density/README.md)
+demonstrates the distinction with a user-supplied font.
+
 `nx_draw_text_layout_scaled` rasterizes at `layout_ppem * raster_scale` while
 recording logical destination geometry. Scale must be finite in [.125,8] and
 the resulting physical ppem must remain in [.125,16384]. It retains the supplied

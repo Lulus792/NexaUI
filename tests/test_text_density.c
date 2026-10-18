@@ -88,6 +88,11 @@ static int density_pixels(void){
         CHECK(nx_draw_text_layout_scaled(ui,layout,(nx_point){8,4},(nx_color){1,1,1,1},density,65536)==NX_OK);
         CHECK(nx_end_frame(ui)==NX_OK&&!render_scaled(ui,density,actual,widths[k],heights[k]));
         CHECK(memcmp(actual,expected[k],size)==0);free(actual);
+        CHECK(nx_context_set_text_raster_scale(ui,density)==NX_OK);
+        actual=malloc(size);CHECK(actual&&nx_begin_frame(ui,80,64,0)==NX_OK);
+        CHECK(nx_draw_text_layout(ui,layout,(nx_point){8,4},(nx_color){1,1,1,1},65536)==NX_OK);
+        CHECK(nx_end_frame(ui)==NX_OK&&!render_scaled(ui,density,actual,widths[k],heights[k]));
+        CHECK(memcmp(actual,expected[k],size)==0);free(actual);
         CHECK(nx_text_stamp_create_scaled(layout,density,65536,NULL,&stamps[k])==NX_OK);
         CHECK(nx_text_stamp_view(stamps[k],&view,&offset)==NX_OK&&view.width&&view.height);
         CHECK(nx_text_stamp_bounds(stamps[k],&bounds)==NX_OK&&bounds.x==offset.x&&bounds.y==offset.y);

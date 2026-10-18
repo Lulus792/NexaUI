@@ -129,6 +129,7 @@ struct nx_context {
     float width, height;
     double delta_seconds;
     int reduced_motion;
+    float text_raster_scale;
     nx_event_buffer pending_events, frame_events;
     size_t event_initial_capacity;
     size_t region_initial_capacity;
@@ -274,6 +275,7 @@ nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_contex
     if (!ctx) return NX_ERROR_MEMORY;
     memset(ctx, 0, sizeof(*ctx));
     ctx->allocator = a;
+    ctx->text_raster_scale = 1;
 #if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
     ctx->native_identity = nx_native_next_identity();
     if (!ctx->native_identity) { a.deallocate(a.user, ctx, sizeof(*ctx)); return NX_ERROR_LIMIT; }
@@ -330,6 +332,22 @@ void nx_context_destroy(nx_context *ctx) {
         a.deallocate(a.user, ctx->semantics.text, ctx->semantics.text_capacity);
     a.deallocate(a.user, ctx->commands, ctx->command_capacity * sizeof(nx_command));
     a.deallocate(a.user, ctx, sizeof(nx_context));
+}
+
+nx_result nx_context_set_text_raster_scale(nx_context *ctx, float scale) {
+    if (!ctx || !isfinite(scale) || scale < .125f || scale > 8)
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state == 1u) return NX_ERROR_STATE;
+    ctx->text_raster_scale = scale;
+    return NX_OK;
+}
+
+nx_result nx_context_get_text_raster_scale(const nx_context *ctx, float *out_scale) {
+    if (!out_scale) return NX_ERROR_ARGUMENT;
+    *out_scale = 0;
+    if (!ctx) return NX_ERROR_ARGUMENT;
+    *out_scale = ctx->text_raster_scale;
+    return NX_OK;
 }
 
 nx_result nx_context_set_theme(nx_context *ctx, const nx_theme *theme) {
@@ -1950,7 +1968,7 @@ nx_result nx_draw_text_layout(nx_context *ctx,
                               nx_point origin, nx_color tint,
                               size_t cache_bytes) {
     return nx_draw_text_layout_impl(ctx, layout, origin, tint,
-                                    NULL, 0, cache_bytes,NULL,0,tint,1,1);
+                                    NULL, 0, cache_bytes,NULL,0,tint,ctx?ctx->text_raster_scale:1,1);
 }
 
 nx_result nx_draw_text_layout_scaled(nx_context *ctx,const nx_text_layout *layout,
@@ -2080,7 +2098,7 @@ nx_result nx_draw_rich_text_layout(nx_context *ctx,
                                   &spans[i], 1);
     if (result == NX_OK)
         result = nx_draw_text_layout_impl(ctx, layout, origin, base_tint,
-                                          spans, span_count, cache_bytes,NULL,0,base_tint,1,1);
+                                          spans, span_count, cache_bytes,NULL,0,base_tint,ctx->text_raster_scale,1);
     for (size_t i = 0; i < span_count && result == NX_OK; ++i)
         result = nx_rich_geometry(ctx, layout, origin, base_tint,
                                   &spans[i], 0);
@@ -5000,7 +5018,7 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
         }
     }
     result = nx_draw_text_layout_impl(ctx, layout, origin, foreground,NULL,0,
-                                  glyph_cache_bytes,selection_rects,selection_count,selection_text,1,1);
+                                  glyph_cache_bytes,selection_rects,selection_count,selection_text,ctx->text_raster_scale,1);
     if (result != NX_OK) goto done;
     if (composing) {
         size_t count = 0;

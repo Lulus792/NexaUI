@@ -1612,6 +1612,22 @@ typedef struct nx_command {
 NX_API nx_result nx_context_create(const nx_context_desc *desc, nx_context **out_context);
 NX_API void nx_context_destroy(nx_context *context);
 
+/* Default raster density for ordinary text drawing and font-backed widgets,
+   including editor selection/preedit text, rich text, search and plot labels.
+   New contexts use 1. Set a finite value in [.125,8] between frames only
+   (STATE during building); no allocation, reflow or resource invalidation.
+   Physical ppem still must be in [.125,16384] at drawing time. Layout, input,
+   carets, decorations and semantics remain logical. Explicit _scaled draws
+   and stamp constructors ignore this default; cached stamp/image density is
+   caller-owned. Draw failures retain their existing rollback/error contracts;
+   there is no implicit old-mask cache or silent lower-density retry. Previously
+   recorded mask pixels live through the next begin_frame or context destroy,
+   even after this setting changes. Use on the context owner thread.
+   The getter accepts any frame state, and clears a non-NULL output on error. */
+NX_API nx_result nx_context_set_text_raster_scale(nx_context *context, float scale);
+NX_API nx_result nx_context_get_text_raster_scale(const nx_context *context,
+                                                 float *out_scale);
+
 /* All frame building and ID operations require exclusive access on one UI thread.
    Beginning a frame invalidates the previous command pointer. Logical dimensions
    must be finite and positive; delta_seconds must be finite and nonnegative. */
@@ -1727,6 +1743,7 @@ NX_API nx_result nx_fill_triangle(nx_context *context, nx_point a, nx_point b,
 NX_API nx_result nx_draw_bitmap(nx_context *context, nx_rect dest,
                                 nx_bitmap_view bitmap, nx_color tint);
 /* Rasterize and append a positioned layout as A8 bitmap commands. The context
+   text raster scale selects physical mask density; layout stays logical. The context
    owns copies of the masks until its next begin_frame or destruction, so cache
    eviction cannot invalidate the command stream. The layout's ppem must be
    finite in [.125, 16384], including fractional sizes. cache_bytes is a
@@ -1736,7 +1753,8 @@ NX_API nx_result nx_draw_text_layout(nx_context *context,
                                      const nx_text_layout *layout,
                                      nx_point origin, nx_color tint,
                                      size_t cache_bytes);
-/* Rasterize at layout ppem * raster_scale without reshaping/reflowing the
+/* Rasterize at layout ppem * raster_scale, ignoring the context default,
+   without reshaping/reflowing the
    layout. Destination geometry stays in logical coordinates. Scale must be
    finite in [.125,8]; physical ppem must remain in [.125,16384]. Match scale to
    renderer density for native-resolution masks. Raster phase is fixed per
