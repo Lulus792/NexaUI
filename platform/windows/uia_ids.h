@@ -53,6 +53,7 @@ enum {
     NX_UIA_TreeControlTypeId = 50023,
     NX_UIA_TreeItemControlTypeId = 50024,
     NX_UIA_ValueValuePropertyId = 30045,
+    NX_UIA_ValuePatternId = 10002,
     NX_UIA_WindowControlTypeId = 50032,
     NX_UIA_TabControlTypeId = 50018,
     NX_UIA_SelectionPatternId = 10001,

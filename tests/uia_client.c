@@ -58,6 +58,94 @@ static int runtime_equal(SAFEARRAY *a,SAFEARRAY *b) {
     for (LONG i=lo1;i<=hi1;++i) { LONG x,y; if (FAILED(SafeArrayGetElement(a,&i,&x)) || FAILED(SafeArrayGetElement(b,&i,&y)) || x!=y) return 0; }
     return 1;
 }
+/* Independent native properties/actions; no NexaUI linkage or simulated
+   screenreader claim. The test host does not present this geometry fixture. */
+static int design_value(IUIAutomationElement *plot,WCHAR value[64]) {
+    VARIANT v;VariantInit(&v);
+    HRESULT hr=IUIAutomationElement_GetCurrentPropertyValue(plot,UIA_ValueValuePropertyId,&v);
+    int ok=SUCCEEDED(hr)&&V_VT(&v)==VT_BSTR&&V_BSTR(&v)&&SysStringLen(V_BSTR(&v))<64;
+    if(ok) wcscpy_s(value,64,V_BSTR(&v));VariantClear(&v);return ok;
+}
+static int design_arrow(IUIAutomationElement *plot,HWND hwnd) {
+    unsigned reply;WCHAR before[64]={0},after[64]={0};
+    OK(IUIAutomationElement_SetFocus(plot));CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply)&&(reply&8u));
+    BOOL native_focus=FALSE;OK(IUIAutomationElement_get_CurrentHasKeyboardFocus(plot,&native_focus));
+    CHECK(!!native_focus==!!(reply&16u));
+    CHECK(design_value(plot,before));
+    CHECK(PostMessageW(hwnd,WM_KEYDOWN,VK_RIGHT,1));CHECK(PostMessageW(hwnd,WM_KEYUP,VK_RIGHT,((LPARAM)3<<30)|1));
+    for(unsigned i=0;i<8;++i) {
+        CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply)&&design_value(plot,after));
+        fwprintf(stderr,L"Design cursor before='%ls' after='%ls'\n",before,after);
+        if(wcscmp(before,after)&&wcsncmp(after,L"x=",2)==0) return 0;
+    }
+    CHECK(0);return 1;
+}
+static int design_probe(IUIAutomation *uia,IUIAutomationElement *root,HWND hwnd) {
+    unsigned reply;CHECK(!host(UIA_TEST_DESIGN_START,&reply)&&reply>>8u==4);
+    IUIAutomationElement *status=find(uia,root,1900),*hc=find(uia,root,1901),
+        *effects=find(uia,root,1902),*plot=find(uia,root,1903);
+    CHECK(status&&hc&&effects&&plot&&name_is(status,L"Local WLAN connected; sample data")&&name_is(plot,L"Transfer rates"));
+    CONTROLTYPEID type=0;BOOL focusable=FALSE;BSTR help=NULL;
+    OK(IUIAutomationElement_get_CurrentControlType(plot,&type));CHECK(type==UIA_CustomControlTypeId);
+    OK(IUIAutomationElement_get_CurrentIsKeyboardFocusable(plot,&focusable));CHECK(focusable);
+    OK(IUIAutomationElement_get_CurrentHelpText(plot,&help));
+    CHECK(help&&wcsstr(help,L"Download; Upload; x [s]; y [MB/s]"));SysFreeString(help);
+    CHECK(!design_arrow(plot,hwnd));
+    IUIAutomationValuePattern *value=NULL;BOOL readonly=FALSE;BSTR current=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(plot,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&value));
+    OK(IUIAutomationValuePattern_get_CurrentIsReadOnly(value,&readonly));CHECK(readonly);
+    OK(IUIAutomationValuePattern_get_CurrentValue(value,&current));CHECK(current&&wcsncmp(current,L"x=",2)==0);SysFreeString(current);
+    CHECK(FAILED(IUIAutomationValuePattern_SetValue(value,L"x=999")));
+    IUIAutomationElement *guard=find(uia,root,1904);IUIAutomationValuePattern *guard_value=NULL;CHECK(guard);
+    OK(IUIAutomationElement_GetCurrentPatternAs(guard,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&guard_value));
+    OK(IUIAutomationValuePattern_get_CurrentValue(guard_value,&current));CHECK(current&&!wcscmp(current,L"fixture-value"));SysFreeString(current);
+    for(unsigned guard_mode=0;guard_mode<2;++guard_mode) {
+        CHECK(!host(guard_mode?UIA_TEST_DESIGN_EDITABLE:UIA_TEST_DESIGN_PROTECT,&reply));
+        current=NULL;HRESULT hr=IUIAutomationValuePattern_get_CurrentValue(guard_value,&current);
+        CHECK(FAILED(hr)||!current||!*current);SysFreeString(current);
+        CHECK(FAILED(IUIAutomationValuePattern_SetValue(guard_value,L"overwrite")));
+        IUIAutomationValuePattern *unsupported=NULL;
+        hr=IUIAutomationElement_GetCurrentPatternAs(guard,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&unsupported);
+        /* UIAutomationCore can retain the static COM pattern interface. Its
+           live methods must still refuse the now-protected/editable value. */
+        if(SUCCEEDED(hr)&&unsupported) {
+            current=NULL;hr=IUIAutomationValuePattern_get_CurrentValue(unsupported,&current);
+            CHECK(FAILED(hr)||!current||!*current);SysFreeString(current);
+            CHECK(FAILED(IUIAutomationValuePattern_SetValue(unsupported,L"overwrite")));
+            IUIAutomationValuePattern_Release(unsupported);
+        } else CHECK(!unsupported);
+    }
+    CHECK(!host(UIA_TEST_DESIGN_UNGUARD,&reply));
+    OK(IUIAutomationValuePattern_get_CurrentValue(guard_value,&current));CHECK(current&&!wcscmp(current,L"fixture-value"));SysFreeString(current);
+    IUIAutomationValuePattern_Release(guard_value);IUIAutomationElement_Release(guard);
+    IUIAutomationTogglePattern *toggle=NULL;
+    OK(IUIAutomationElement_GetCurrentPatternAs(effects,UIA_TogglePatternId,&IID_IUIAutomationTogglePattern,(void **)&toggle));
+    OK(IUIAutomationTogglePattern_Toggle(toggle));CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply)&&(reply&1u)&&reply>>8u==0);
+    enum ToggleState state=ToggleState_Off;OK(IUIAutomationTogglePattern_get_CurrentToggleState(toggle,&state));CHECK(state==ToggleState_On);
+    CHECK(!design_arrow(plot,hwnd));
+    OK(IUIAutomationTogglePattern_Toggle(toggle));CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply)&&!(reply&1u)&&reply>>8u==4);
+    IUIAutomationTogglePattern_Release(toggle);
+    /* Keyboard control of HC through this actual HWND, with completed frame
+       acknowledgements rather than a timing-only sleep. */
+    OK(IUIAutomationElement_SetFocus(hc));CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply));
+    CHECK(PostMessageW(hwnd,WM_KEYDOWN,VK_SPACE,1));CHECK(PostMessageW(hwnd,WM_KEYUP,VK_SPACE,((LPARAM)3<<30)|1));
+    for(unsigned i=0;i<8&&!(reply&4u);++i)CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply));
+    CHECK((reply&6u)==6u&&!(reply&1u)&&reply>>8u==0);
+    CHECK(!design_arrow(plot,hwnd));
+    OK(IUIAutomationElement_GetCurrentPatternAs(hc,UIA_TogglePatternId,&IID_IUIAutomationTogglePattern,(void **)&toggle));
+    OK(IUIAutomationTogglePattern_get_CurrentToggleState(toggle,&state));CHECK(state==ToggleState_On);
+    OK(IUIAutomationTogglePattern_Toggle(toggle));
+    for(unsigned i=0;i<8&&(reply&6u);++i)CHECK(!host(UIA_TEST_DESIGN_FRAME,&reply));
+    CHECK(!(reply&6u)&&reply>>8u==4);IUIAutomationTogglePattern_Release(toggle);
+    IUIAutomationElement_Release(status);IUIAutomationElement_Release(hc);
+    IUIAutomationElement_Release(effects);
+    CHECK(!host(UIA_TEST_DESIGN_END,&reply));
+    current=NULL;HRESULT stale_value=IUIAutomationValuePattern_get_CurrentValue(value,&current);
+    CHECK(FAILED(stale_value)||!current||!*current);SysFreeString(current);CHECK(unavailable(plot));
+    CHECK(FAILED(IUIAutomationValuePattern_SetValue(value,L"x=999")));IUIAutomationValuePattern_Release(value);
+    IUIAutomationElement_Release(plot);
+    puts("Design A independent UIA properties, effect toggles and posted HWND keys passed");return 0;
+}
 typedef struct observer {
     IUIAutomationStructureChangedEventHandler structure;
     IUIAutomationFocusChangedEventHandler focus;
@@ -360,6 +448,10 @@ static int run(HWND hwnd) {
     OK(IUIAutomationElement_GetRuntimeId(new_button,&runtime_after)); CHECK(!runtime_equal(runtime_before,runtime_after));
     SafeArrayDestroy(runtime_before); SafeArrayDestroy(runtime_after);
     CHECK(invoke(new_button,1)); CHECK(host(UIA_TEST_APPLY,&reply)==0 && (reply&1u));
+    CHECK(!design_probe(uia,new_root,hwnd));
+    CHECK(unavailable(new_button));IUIAutomationElement_Release(new_button);
+    new_button=find(uia,new_root,2);CHECK(new_button&&name_is(new_button,L"Changed")&&invoke(new_button,1));
+    CHECK(!host(UIA_TEST_APPLY,&reply)&&(reply&1u));
     CHECK(host(UIA_TEST_DESTROY_WINDOW,&reply)==0 && closed(new_root) && closed(new_button));
     IUIAutomationElement_Release(new_button); IUIAutomationElement_Release(new_root);
     IUIAutomationElement_Release(replacement); IUIAutomationElement_Release(dynamic);
@@ -460,8 +552,21 @@ int wmain(int argc,WCHAR **argv) {
         setvbuf(stdout,NULL,_IONBF,0); /* Keep progress when a parent deadline fires. */
         return cloud_probe((HWND)(UINT_PTR)_wcstoui64(argv[2],NULL,10));
     }
-    if (argc!=4) return 2;
+    if (argc!=4&&argc!=5) return 2;
     HWND hwnd=(HWND)(UINT_PTR)_wcstoui64(argv[1],NULL,10);
     commands=(HANDLE)(UINT_PTR)_wcstoui64(argv[2],NULL,10); acks=(HANDLE)(UINT_PTR)_wcstoui64(argv[3],NULL,10);
-    int result=run(hwnd); CloseHandle(commands); CloseHandle(acks); return result;
+    int result;
+    if(argc==5&&wcscmp(argv[4],L"--design")==0) {
+        result=1;IUIAutomation *uia=NULL;IUIAutomationElement *root=NULL;
+        HRESULT init=CoInitializeEx(NULL,COINIT_MULTITHREADED);
+        if(SUCCEEDED(init)) {
+            if(SUCCEEDED(CoCreateInstance(&CLSID_CUIAutomation,NULL,CLSCTX_INPROC_SERVER,&IID_IUIAutomation,(void **)&uia))&&
+               SUCCEEDED(IUIAutomation_ElementFromHandle(uia,hwnd,&root))) {
+                result=design_probe(uia,root,hwnd);unsigned reply;
+                if(!result)result=host(UIA_TEST_DESTROY_WINDOW,&reply);
+            }
+            if(root)IUIAutomationElement_Release(root);if(uia)IUIAutomation_Release(uia);CoUninitialize();
+        }
+    } else result=run(hwnd);
+    CloseHandle(commands); CloseHandle(acks); return result;
 }

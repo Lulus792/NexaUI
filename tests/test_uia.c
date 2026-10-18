@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "window_internal.h"
 #include "uia_protocol.h"
+#include "design_a_fallback_scene.h"
 #include <objbase.h>
 #include <oleauto.h>
 #include <uiautomation.h>
@@ -26,11 +27,14 @@ typedef struct scene {
     unsigned clicks, fill_clicks, total_clicks;
     uint64_t required_choice, optional_choice, radio_choice, other_choice;
     int selection_moved;
+    int design_mode;
+    design_a_scene design;
 } scene;
 static nx_control_desc control(uint64_t id,uint64_t parent,const char *name,nx_rect bounds) {
     nx_control_desc d={0}; d.id=id; d.parent_id=parent; d.name=(nx_utf8_span){name,strlen(name)}; d.bounds=bounds; return d;
 }
 static int frame(scene *s) {
+    if(s->design_mode) return design_a_frame(s->ctx,&s->design,1);
     CHECK(nx_begin_frame(s->ctx,640,480,0)==NX_OK);
     nx_semantic_desc root={0}; root.id=1; root.role=NX_ROLE_WINDOW;
     root.name=(nx_utf8_span){"NexaCloud",9}; root.bounds=(nx_rect){0,0,640,480};
@@ -103,7 +107,7 @@ static int frame(scene *s) {
     }
     CHECK(nx_end_frame(s->ctx)==NX_OK); return 0;
 }
-static int run(const WCHAR *client) {
+static int run(const WCHAR *client,int design_only) {
     CHECK(NX_UIA_AutomationFocusChangedEventId==UIA_AutomationFocusChangedEventId);
     CHECK(NX_UIA_AutomationIdPropertyId==UIA_AutomationIdPropertyId);
     CHECK(NX_UIA_ButtonControlTypeId==UIA_ButtonControlTypeId);
@@ -151,6 +155,7 @@ static int run(const WCHAR *client) {
     CHECK(NX_UIA_TreeControlTypeId==UIA_TreeControlTypeId);
     CHECK(NX_UIA_TreeItemControlTypeId==UIA_TreeItemControlTypeId);
     CHECK(NX_UIA_ValueValuePropertyId==UIA_ValueValuePropertyId);
+    CHECK(NX_UIA_ValuePatternId==UIA_ValuePatternId);
     CHECK(NX_UIA_WindowControlTypeId==UIA_WindowControlTypeId);
     CHECK(NX_UIA_TabControlTypeId==UIA_TabControlTypeId);
     CHECK(NX_UIA_SelectionPatternId==UIA_SelectionPatternId);
@@ -180,9 +185,9 @@ static int run(const WCHAR *client) {
     CHECK(SetHandleInformation(command_read,HANDLE_FLAG_INHERIT,0));
     CHECK(SetHandleInformation(ack_write,HANDLE_FLAG_INHERIT,0));
     WCHAR command[4096];
-    CHECK(swprintf_s(command,4096,L"\"%s\" %llu %llu %llu",client,
+    CHECK(swprintf_s(command,4096,L"\"%s\" %llu %llu %llu%s",client,
         (unsigned long long)(UINT_PTR)hwnd,(unsigned long long)(UINT_PTR)command_write,
-        (unsigned long long)(UINT_PTR)ack_read)>0);
+        (unsigned long long)(UINT_PTR)ack_read,design_only?L" --design":L"")>0);
     HANDLE log_read,log_write;
     CHECK(CreatePipe(&log_read,&log_write,&security,0));
     CHECK(SetHandleInformation(log_read,HANDLE_FLAG_INHERIT,0));
@@ -261,6 +266,25 @@ static int run(const WCHAR *client) {
             } else if (request==UIA_TEST_REATTACH) {
                 CHECK(nx_context_create(NULL,&s.ctx)==NX_OK); CHECK(frame(&s)==0);
                 CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+            } else if (request>=UIA_TEST_DESIGN_START && request<=UIA_TEST_DESIGN_UNGUARD) {
+                if(request==UIA_TEST_DESIGN_START) {
+                    CHECK(!s.design_mode&&!design_a_prepare(&s.design,1));s.design_mode=1;
+                }
+                size_t actions=0;CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
+                if(request==UIA_TEST_DESIGN_PROTECT)s.design.value_guard=1;
+                if(request==UIA_TEST_DESIGN_EDITABLE)s.design.value_guard=2;
+                if(request==UIA_TEST_DESIGN_UNGUARD)s.design.value_guard=0;
+                if(request==UIA_TEST_DESIGN_END) {
+                    s.design_mode=0;nx_theme theme;CHECK(nx_theme_preset(NX_THEME_DARK,&theme)==NX_OK);
+                    CHECK(nx_context_set_theme(s.ctx,&theme)==NX_OK);
+                }
+                CHECK(frame(&s)==0&&nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                fprintf(stderr,"Design host: routed=%zu focus=%llu cursor=%g valid=%d\n",actions,
+                    (unsigned long long)nx_focus_id(s.ctx),s.design.plot.cursor_x,s.design.plot.cursor_valid);
+                reply=(s.design.reduced_effects?1u:0u)|(s.design.high_contrast?2u:0u)|
+                    (s.design.applied_contrast?4u:0u)|(nx_focus_id(s.ctx)==DESIGN_PLOT?8u:0u)|
+                    ((GetFocus()==hwnd&&GetForegroundWindow()==hwnd)?16u:0u)|(s.design.rgba_commands<<8u);
+                if(request==UIA_TEST_DESIGN_END) design_a_free(&s.design);
             } else if (request==UIA_TEST_DESTROY_WINDOW) {
                 nx_window_destroy(window); window=NULL; destroyed=1;
             } else if (request==UIA_TEST_STRESS_START) {
@@ -297,6 +321,7 @@ static int run(const WCHAR *client) {
     DWORD status=1; CHECK(GetExitCodeProcess(process.hProcess,&status));
     CloseHandle(process.hProcess); CloseHandle(command_read); CloseHandle(ack_write);
     if (s.ctx) nx_context_destroy(s.ctx); if (old_context) nx_context_destroy(old_context);
+    design_a_free(&s.design);
     if (window) nx_window_destroy(window);
     CHECK(!allocations.live); if (status) fprintf(stderr,"Client exit %lu\n",(unsigned long)status);
     CHECK(status==0 && destroyed);
@@ -304,8 +329,8 @@ static int run(const WCHAR *client) {
 }
 int wmain(int argc,WCHAR **argv) {
     if (argc<2 || argc>3) return 2;
-    if (argc==3 && wcscmp(argv[2],L"owned")==0) return run(argv[1]);
+    if (argc==3 && wcscmp(argv[2],L"owned")==0) return run(argv[1],0);
     HRESULT hr=CoInitializeEx(NULL,argc==3 ? COINIT_MULTITHREADED : COINIT_APARTMENTTHREADED);
     if (FAILED(hr)) return 2;
-    int result=run(argv[1]); CoUninitialize(); return result;
+    int result=run(argv[1],argc==3&&wcscmp(argv[2],L"design")==0); CoUninitialize(); return result;
 }

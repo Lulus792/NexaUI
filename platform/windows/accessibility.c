@@ -72,6 +72,7 @@ struct nx_uia_element {
     IToggleProvider toggle;
     ISelectionProvider selection;
     ISelectionItemProvider selection_item;
+    IValueProvider value;
     LONG refs;
     nx_uia_bridge *bridge;
     uint64_t id, incarnation;
@@ -103,6 +104,7 @@ static HRESULT element_query(nx_uia_element *e,REFIID iid,void **out) {
     else if (e->id && IsEqualIID(iid,&IID_IToggleProvider)) *out=&e->toggle;
     else if (e->id && IsEqualIID(iid,&IID_ISelectionProvider)) *out=&e->selection;
     else if (e->id && IsEqualIID(iid,&IID_ISelectionItemProvider)) *out=&e->selection_item;
+    else if (e->id && IsEqualIID(iid,&IID_IValueProvider)) *out=&e->value;
     else if (IsEqualIID(iid,&IID_IMarshal) && e->marshaler) return IUnknown_QueryInterface(e->marshaler,iid,out);
     else return E_NOINTERFACE;
     element_add(e); return S_OK;
@@ -119,6 +121,7 @@ NX_UIA_IUNKNOWN(invoke,IInvokeProvider,invoke)
 NX_UIA_IUNKNOWN(toggle,IToggleProvider,toggle)
 NX_UIA_IUNKNOWN(selection,ISelectionProvider,selection)
 NX_UIA_IUNKNOWN(selection_item,ISelectionItemProvider,selection_item)
+NX_UIA_IUNKNOWN(value,IValueProvider,value)
 
 static uint32_t find(const nx_uia_snapshot *s,uint64_t id) {
     if (!s || !id) return NX_UIA_NONE;
@@ -203,6 +206,11 @@ static HRESULT string_value(VARIANT *out,const WCHAR *text) {
     V_VT(out)=VT_BSTR; V_BSTR(out)=SysAllocString(text ? text : L"");
     return V_BSTR(out) ? S_OK : E_OUTOFMEMORY;
 }
+/* A custom widget's semantic string (e.g. a plot cursor) is read-only.
+   Editable/protected text and numeric RangeValue contracts are separate work. */
+static int can_value(const nx_uia_node *n) {
+    return n&&n->role==NX_ROLE_CUSTOM&&!(n->state&NX_SEM_PROTECTED)&&!(n->actions&NX_ACTION_SET_VALUE);
+}
 static HRESULT STDMETHODCALLTYPE simple_options(IRawElementProviderSimple *self,enum ProviderOptions *out) {
     (void)self; if (!out) return E_POINTER;
     *out=ProviderOptions_ServerSideProvider|ProviderOptions_UseComThreading; return S_OK;
@@ -216,6 +224,7 @@ static HRESULT STDMETHODCALLTYPE simple_pattern(IRawElementProviderSimple *self,
         else if (pattern==NX_UIA_SelectionItemPatternId && can_select(b->snapshot,n)) { *out=(IUnknown *)&e->selection_item; }
         else if (pattern==NX_UIA_TogglePatternId && can_toggle(n)) *out=(IUnknown *)&e->toggle;
         else if (pattern==NX_UIA_InvokePatternId && (n->actions&NX_ACTION_PRESS) && !can_toggle(n)) *out=(IUnknown *)&e->invoke;
+        else if (pattern==NX_UIA_ValuePatternId && can_value(n)) *out=(IUnknown *)&e->value;
         if (*out) element_add(e);
     }
     ReleaseSRWLockShared(&b->lock); return hr;
@@ -434,6 +443,25 @@ static HRESULT press_pattern(nx_uia_element *e,int toggle) {
 }
 static HRESULT STDMETHODCALLTYPE invoke_action(IInvokeProvider *self) { return press_pattern(invoke_object(self),0); }
 static HRESULT STDMETHODCALLTYPE toggle_action(IToggleProvider *self) { return press_pattern(toggle_object(self),1); }
+static HRESULT STDMETHODCALLTYPE value_get(IValueProvider *self,BSTR *out) {
+    if(!out) return E_POINTER;*out=NULL;
+    nx_uia_element *e=value_object(self);nx_uia_bridge *b=e->bridge;nx_uia_node *n;
+    AcquireSRWLockShared(&b->lock);HRESULT hr=current(e,&n);
+    if(SUCCEEDED(hr)&&!can_value(n)) hr=UIA_E_NOTSUPPORTED;
+    if(SUCCEEDED(hr)) { *out=SysAllocString(n->value?n->value:L"");if(!*out)hr=E_OUTOFMEMORY; }
+    ReleaseSRWLockShared(&b->lock);return hr;
+}
+static HRESULT STDMETHODCALLTYPE value_readonly(IValueProvider *self,BOOL *out) {
+    if(!out)return E_POINTER;*out=TRUE;
+    nx_uia_element *e=value_object(self);nx_uia_bridge *b=e->bridge;nx_uia_node *n;
+    AcquireSRWLockShared(&b->lock);HRESULT hr=current(e,&n);
+    if(SUCCEEDED(hr)&&!can_value(n))hr=UIA_E_NOTSUPPORTED;
+    ReleaseSRWLockShared(&b->lock);return hr;
+}
+static HRESULT STDMETHODCALLTYPE value_set(IValueProvider *self,LPCWSTR text) {
+    (void)text;BOOL readonly;HRESULT hr=value_readonly(self,&readonly);
+    return FAILED(hr)?hr:UIA_E_NOTSUPPORTED;
+}
 static HRESULT STDMETHODCALLTYPE toggle_state(IToggleProvider *self,enum ToggleState *out) {
     if (!out) return E_POINTER; *out=ToggleState_Off;
     nx_uia_element *e=toggle_object(self); nx_uia_bridge *b=e->bridge; nx_uia_node *n;
@@ -499,12 +527,14 @@ static IRawElementProviderFragmentVtbl fragment_vtable={fragment_query,fragment_
 static IRawElementProviderFragmentRootVtbl root_vtable={root_query,root_add,root_release,root_point,root_focus};
 static IInvokeProviderVtbl invoke_vtable={invoke_query,invoke_add,invoke_release,invoke_action};
 static IToggleProviderVtbl toggle_vtable={toggle_query,toggle_add,toggle_release,toggle_action,toggle_state};
+static IValueProviderVtbl value_vtable={value_query,value_add,value_release,value_set,value_get,value_readonly};
 static HRESULT create_element(nx_uia_bridge *b,uint64_t id,uint64_t incarnation,nx_uia_element **out) {
     *out=NULL;
     nx_uia_element *e=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,sizeof(*e)); if (!e) return E_OUTOFMEMORY;
     e->simple.lpVtbl=&simple_vtable; e->fragment.lpVtbl=&fragment_vtable; e->root.lpVtbl=&root_vtable;
     e->invoke.lpVtbl=&invoke_vtable; e->toggle.lpVtbl=&toggle_vtable;
     e->selection.lpVtbl=&selection_vtable; e->selection_item.lpVtbl=&item_vtable;
+    e->value.lpVtbl=&value_vtable;
     e->refs=1; e->bridge=b; e->id=id; e->incarnation=incarnation; bridge_add(b);
     HRESULT hr=CoCreateFreeThreadedMarshaler((IUnknown *)&e->simple,&e->marshaler);
     if (FAILED(hr)) { element_release(e); return hr; }

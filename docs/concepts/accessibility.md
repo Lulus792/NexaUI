@@ -80,6 +80,26 @@ The [headless accessibility example](../../examples/12_accessibility/README.md) 
 
 Native design references: Microsoft [server-side providers](https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-serversideprovider), [client threading](https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-threading), [provider options](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/ne-uiautomationcore-provideroptions), [runtime IDs](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragment-getruntimeid), [HWND teardown](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider) and [provider disconnection](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiadisconnectprovider).
 
+## Windows custom read-only values
+
+Windows publishes a non-protected `NX_ROLE_CUSTOM` semantic string through a
+read-only `IValueProvider`/UIA ValuePattern when it has no `NX_ACTION_SET_VALUE`.
+This makes a plot's existing `x=...` cursor value visible to an independent UIA
+client. Merely returning a pattern property from the simple provider did not
+make that value available through UIAutomationCore. Names and units continue
+to use Name and HelpText; the cursor string does not supply per-series readings.
+SetValue is rejected. Every retained pattern call rechecks the published node,
+incarnation, protection and capability under the snapshot lock. Retired reads
+can normalize to empty in UIAutomationCore; they must never return a replacement
+node's value or mutate it. Editable Value/Text, RangeValue and value-change
+notifications remain separate work.
+
+The private `nexaui_design_a_fallback` test covers four density factors and
+normal/high-contrast/reduced-effects modes; `nexaui_design_a_uia` uses a separate
+native client to read properties, toggle controls and post keys to its owned
+HWND. This geometry/semantics fixture has no font labels and is not presented.
+It supplies neither a physical-display review nor a screenreader task signoff.
+
 ## Initial macOS AppKit AX bridge
 
 The macOS runner now publishes the same completed tree through `nx_window_publish_semantics`. `NSAccessibilityElement` subclasses represent semantic controls below the content view. They expose native roles, names/help, values, protected empty values, hierarchy, screen-space frames, hit testing, focus, checkbox/radio state and explicit single-selection members/containers. List rows, selected rows and tab members share their native objects with hierarchy queries. Editable text/ranges, typed numeric ranges, complete table/outline relationships and full role-specific protocol coverage remain open.
