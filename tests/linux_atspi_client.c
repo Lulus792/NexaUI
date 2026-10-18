@@ -15,6 +15,8 @@
 static pid_t host_pid=-1;
 static FILE *commands,*responses;
 static unsigned name_events,selection_events,state_events,children_events;
+static unsigned focus_events;
+static char *last_focus_path;
 static void cleanup(void) {
     if (commands) { fclose(commands); commands=NULL; }
     if (responses) { fclose(responses); responses=NULL; }
@@ -68,6 +70,10 @@ static void event(AtspiEvent *event,void *user) {
     if (strstr(event->type,"selection-changed")) ++selection_events;
     if (strstr(event->type,"state-changed")) ++state_events;
     if (strstr(event->type,"children-changed")) ++children_events;
+    if (!strcmp(event->type,"object:state-changed:focused") && event->detail1 && event->source) {
+        ++focus_events; g_free(last_focus_path);
+        last_focus_path=g_strdup(ATSPI_OBJECT(event->source)->path);
+    }
     g_boxed_free(ATSPI_TYPE_EVENT,(void *)event);
 }
 typedef struct native_ref { char *bus,*path; } native_ref;
@@ -210,6 +216,26 @@ int main(int argc,char **argv) {
     CHECK(screen_geometry(raw,button,wayland));
     gboolean focused=atspi_component_grab_focus(component,&error); CHECK(!error); pump(100);
     CHECK(wayland?(!focused || state(button,ATSPI_STATE_FOCUSED)):(focused && state(button,ATSPI_STATE_FOCUSED)));
+    if (focused && state(button,ATSPI_STATE_FOCUSED)) {
+        unsigned before=focus_events;
+        CHECK(command("focusnew")); pump(150);
+        AtspiAccessible *fresh=find(app,"New focused control",0); CHECK(fresh);
+        CHECK(state(fresh,ATSPI_STATE_FOCUSED));
+        /* A cached FOCUSED bit alone does not notify an actual screenreader. */
+        CHECK(focus_events==before+1u && last_focus_path && !strcmp(last_focus_path,ATSPI_OBJECT(fresh)->path));
+        CHECK(command("step")); pump(100); CHECK(focus_events==before+1u);
+        native_ref fresh_ref=copy_ref(fresh);
+        CHECK(command("retypefresh")); pump(150);
+        AtspiAccessible *retyped=find(app,"New focused control",0); CHECK(retyped);
+        CHECK(atspi_accessible_get_role(retyped,&error)==ATSPI_ROLE_CHECK_BOX && !error);
+        CHECK(state(retyped,ATSPI_STATE_FOCUSED) && strcmp(fresh_ref.path,ATSPI_OBJECT(retyped)->path));
+        CHECK(focus_events==before+2u && last_focus_path && !strcmp(last_focus_path,ATSPI_OBJECT(retyped)->path));
+        CHECK(raw_error(raw,fresh_ref,"GetRole","org.a11y.atspi.Error.Defunct",-1));
+        CHECK(command("step")); pump(100); CHECK(focus_events==before+2u);
+        CHECK(command("removefresh")); pump(100);
+        CHECK(atspi_component_grab_focus(component,&error) && !error); pump(100);
+        g_free(fresh_ref.bus); g_free(fresh_ref.path); g_object_unref(fresh); g_object_unref(retyped);
+    }
     native_ref button_ref=copy_ref(button), dynamic_ref=copy_ref(dynamic);
     CHECK(raw_error(raw,button_ref,"GetChildAtIndex",DBUS_ERROR_INVALID_ARGS,99));
     CHECK(command("other")); pump(100);
@@ -284,5 +310,5 @@ int main(int argc,char **argv) {
     g_object_unref(button); g_object_unref(sync); g_object_unref(disabled); g_object_unref(secret); g_object_unref(counter);
     g_object_unref(required); g_object_unref(optional); g_object_unref(dynamic); g_object_unref(app); g_object_unref(desktop);
     dbus_connection_close(raw); dbus_connection_unref(raw); dbus_error_free(&dbus_error);
-    atspi_exit(); return 0;
+    g_free(last_focus_path); atspi_exit(); return 0;
 }

@@ -1128,7 +1128,13 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
             nx_ax_event(nx_ax_parent(r),"ChildrenChanged","add",nx_ax_index(r),0,NULL,&r);
             if (same) { nx_ax_ref parent=nx_ax_parent(r); nx_ax_event(r,"PropertyChange","accessible-parent",0,0,NULL,&parent); }
         }
-        if (!same) continue;
+        if (!same) {
+            /* Cache insertion carries state but does not notify screenreaders
+               of keyboard focus (e.g. the first button of a new modal). */
+            if (nx_ax_states(r)&(UINT64_C(1)<<12))
+                nx_ax_event(r,"StateChanged","focused",1,0,NULL,NULL);
+            continue;
+        }
         if (strcmp(a->name,n->name)) nx_ax_event(r,"PropertyChange","accessible-name",0,0,n->name,NULL);
         if (strcmp(a->description,n->description)) nx_ax_event(r,"PropertyChange","accessible-description",0,0,n->description,NULL);
         if (strcmp(a->value,n->value)) nx_ax_event(r,"AttributesChanged","nexaui-value",0,0,n->value,NULL);

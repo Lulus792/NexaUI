@@ -13,7 +13,7 @@
 typedef struct scene {
     nx_context *ui;
     unsigned count;
-    int checked, removed, retyped, renamed, long_name;
+    int checked, removed, retyped, renamed, long_name, fresh, fresh_type;
     uint64_t required, optional;
 } scene;
 typedef struct heap { void *pointers[256]; size_t sizes[256],count; int fail_next; } heap;
@@ -58,6 +58,12 @@ static int frame(scene *s) {
         d=control(8,1,"Dynamic",(nx_rect){10,140,100,30});
         if (s->retyped) { int value=0; CHECK(nx_checkbox(s->ui,&d,&value,&state)==NX_OK); }
         else CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+    }
+    if (s->fresh) {
+        d=control(9,1,"New focused control",(nx_rect){120,140,100,30});
+        if (s->fresh_type) { int value=0; CHECK(nx_checkbox(s->ui,&d,&value,&state)==NX_OK); }
+        else CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        if (s->fresh==1) { CHECK(nx_focus_set(s->ui,9)==NX_OK); s->fresh=2; }
     }
     for (unsigned g=0;g<2;++g) {
         nx_semantic_desc group={0}; group.id=50u+g*10u; group.parent_id=1;
@@ -128,6 +134,9 @@ int main(int argc,char **argv) {
             else if (!strcmp(command,"retype")) app.retyped=1;
             else if (!strcmp(command,"rename")) app.renamed=1;
             else if (!strcmp(command,"long")) app.long_name=1;
+            else if (!strcmp(command,"focusnew")) app.fresh=1;
+            else if (!strcmp(command,"retypefresh")) app.fresh_type=1;
+            else if (!strcmp(command,"removefresh")) app.fresh=0;
             else if (!strcmp(command,"disconnect")) {
                 if (nx_window_linux_ax_test_disconnect(window)!=NX_OK) return 1;
                 resilient=1;
