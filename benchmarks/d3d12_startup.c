@@ -1,6 +1,8 @@
 /* Native startup diagnostic: entry, device/PSO work, first composed frame,
    actual owned-HWND input acknowledgment and normal frames. This translation
    unit wraps named APIs in the exact renderer; no production vtable is replaced.
+   CPU counters are separate scheduler accounting, not QPC precision; unavailable
+   counters emit cpu_error and -1, and process CPU sums every thread.
    Run Release builds for timing. The window is briefly visible without activation. */
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -29,39 +31,61 @@
 typedef struct span_record {
  const char *kind; LONGLONG begin,end,api_ticks; HRESULT hr;
  size_t bytes; uint64_t key;
+ uint64_t thread_cpu,process_cpu;DWORD cpu_error;
 } span_record;
+typedef struct cpu_snapshot {uint64_t thread,process;DWORD error;} cpu_snapshot;
 static span_record spans[32];static unsigned span_count;
 static LARGE_INTEGER probe_frequency,entry_tick;
 
 static LONGLONG tick(void){LARGE_INTEGER n;QueryPerformanceCounter(&n);return n.QuadPart;}
 static double ms(LONGLONG n){return 1000.0*(double)n/(double)probe_frequency.QuadPart;}
+static uint64_t file_time(FILETIME value){return (uint64_t)value.dwHighDateTime<<32|value.dwLowDateTime;}
+static cpu_snapshot cpu_read(void){
+ cpu_snapshot result={0};FILETIME c,e,k,u;
+ if(!GetThreadTimes(GetCurrentThread(),&c,&e,&k,&u)){
+  result.error=GetLastError();if(!result.error)result.error=ERROR_INVALID_DATA;return result;
+ }
+ result.thread=file_time(k)+file_time(u);
+ if(!GetProcessTimes(GetCurrentProcess(),&c,&e,&k,&u)){
+  result.error=GetLastError();if(!result.error)result.error=ERROR_INVALID_DATA;return result;
+ }
+ result.process=file_time(k)+file_time(u);return result;
+}
+static void record_span(span_record span,cpu_snapshot before){
+ cpu_snapshot after=cpu_read();span.cpu_error=before.error?before.error:after.error;
+ if(!span.cpu_error){
+  if(after.thread<before.thread || after.process<before.process)span.cpu_error=ERROR_INVALID_DATA;
+  else{span.thread_cpu=after.thread-before.thread;span.process_cpu=after.process-before.process;}
+ }
+ if(span_count<32)spans[span_count++]=span;
+}
 static uint64_t hash_bytes(uint64_t h,const void *bytes,size_t length){
  const unsigned char *p=bytes;for(size_t i=0;i<length;++i)h=(h^p[i])*UINT64_C(1099511628211);return h;
 }
 static HRESULT WINAPI measured_compile(const void *data,SIZE_T bytes,const char *name,
  const D3D_SHADER_MACRO *defines,ID3DInclude *include,const char *entry,const char *target,
  UINT flags1,UINT flags2,ID3DBlob **code,ID3DBlob **errors){
- LONGLONG begin=tick();HRESULT hr=D3DCompile(data,bytes,name,defines,include,entry,target,flags1,flags2,code,errors);
- if(span_count<32)spans[span_count++]=(span_record){target,begin,tick(),0,hr,0,0};return hr;
+ cpu_snapshot before=cpu_read();LONGLONG begin=tick();HRESULT hr=D3DCompile(data,bytes,name,defines,include,entry,target,flags1,flags2,code,errors);
+ record_span((span_record){target,begin,tick(),0,hr,0,0,0,0,0},before);return hr;
 }
 static HRESULT WINAPI measured_device(IUnknown *adapter,D3D_FEATURE_LEVEL level,REFIID iid,void **out){
- LONGLONG begin=tick();HRESULT hr=D3D12CreateDevice(adapter,level,iid,out);
- if(span_count<32)spans[span_count++]=(span_record){"CreateDevice",begin,tick(),0,hr,0,0};return hr;
+ cpu_snapshot before=cpu_read();LONGLONG begin=tick();HRESULT hr=D3D12CreateDevice(adapter,level,iid,out);
+ record_span((span_record){"CreateDevice",begin,tick(),0,hr,0,0,0,0,0},before);return hr;
 }
 static HRESULT WINAPI measured_factory(UINT flags,REFIID iid,void **out){
- LONGLONG begin=tick();HRESULT hr=CreateDXGIFactory2(flags,iid,out);
- if(span_count<32)spans[span_count++]=(span_record){"CreateFactory",begin,tick(),0,hr,0,0};return hr;
+ cpu_snapshot before=cpu_read();LONGLONG begin=tick();HRESULT hr=CreateDXGIFactory2(flags,iid,out);
+ record_span((span_record){"CreateFactory",begin,tick(),0,hr,0,0,0,0,0},before);return hr;
 }
 static HRESULT measured_pipeline(ID3D12Device *device,const D3D12_GRAPHICS_PIPELINE_STATE_DESC *desc,
  REFIID iid,void **out,unsigned line){
  (void)line;
- LONGLONG begin=tick();
+ cpu_snapshot before=cpu_read();LONGLONG begin=tick();
  uint64_t key=hash_bytes(UINT64_C(14695981039346656037),desc->VS.pShaderBytecode,desc->VS.BytecodeLength);
  key=hash_bytes(key,desc->PS.pShaderBytecode,desc->PS.BytecodeLength);
  LONGLONG api_begin=tick();HRESULT hr=ID3D12Device_CreateGraphicsPipelineState(device,desc,iid,out);
  LONGLONG end=tick();
- if(span_count<32)spans[span_count++]=(span_record){"PSO",begin,end,end-api_begin,hr,
-     desc->VS.BytecodeLength+desc->PS.BytecodeLength,key};
+ record_span((span_record){"PSO",begin,end,end-api_begin,hr,
+     desc->VS.BytecodeLength+desc->PS.BytecodeLength,key,0,0,0},before);
  return hr;
 }
 #define D3DCompile measured_compile
@@ -125,7 +149,7 @@ int main(int argc,char **argv){
  fflush(stdout);
  double warm[5];for(unsigned i=0;i<5;++i){LONGLONG ui,gpu;size_t n;if(!render_frame(window,scene,&driver,&ui,&gpu,&n))goto done;warm[i]=ms(ui+gpu);}
  puts("FINAL {");printf("\"ready_private_bytes\":%zu,\"ready_peak_working_set_bytes\":%zu,\"warm_ms\":[%.3f,%.3f,%.3f,%.3f,%.3f],\"spans\":[\n",(size_t)memory.PrivateUsage,(size_t)memory.PeakWorkingSetSize,warm[0],warm[1],warm[2],warm[3],warm[4]);
- for(unsigned i=0;i<span_count;++i){span_record s=spans[i];printf("%s{\"kind\":\"%s\",\"begin_tick\":%lld,\"end_tick\":%lld,\"total_ms\":%.3f,\"api_ms\":%.3f,\"hr\":%ld,\"bytecode_bytes\":%zu,\"key\":\"%016llx\"}\n",i?",":"",s.kind,s.begin,s.end,ms(s.end-s.begin),ms(s.api_ticks),(long)s.hr,s.bytes,(unsigned long long)s.key);}
+ for(unsigned i=0;i<span_count;++i){span_record s=spans[i];printf("%s{\"kind\":\"%s\",\"begin_tick\":%lld,\"end_tick\":%lld,\"total_ms\":%.3f,\"api_ms\":%.3f,\"hr\":%ld,\"bytecode_bytes\":%zu,\"key\":\"%016llx\",\"cpu_error\":%lu,\"thread_cpu_ms\":%.6f,\"process_cpu_ms\":%.6f}\n",i?",":"",s.kind,s.begin,s.end,ms(s.end-s.begin),ms(s.api_ticks),(long)s.hr,s.bytes,(unsigned long long)s.key,(unsigned long)s.cpu_error,s.cpu_error?-1.0:(double)s.thread_cpu/10000.0,s.cpu_error?-1.0:(double)s.process_cpu/10000.0);}
  puts("]}");fflush(stdout);result=0;
 done:
  if(result)fprintf(stderr,"R01 probe failed; stage ticks: %lld %lld %lld %lld %lld %lld %lld %lld; last Win32 %lu\n",marks[0],marks[1],marks[2],marks[3],marks[4],marks[5],marks[6],marks[7],(unsigned long)GetLastError());
