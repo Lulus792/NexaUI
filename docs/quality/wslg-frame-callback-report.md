@@ -4,6 +4,10 @@
 [Wayland FIFO waits](vulkan-canvas-response-report.md) and the separate
 [private Weston acceptance](wayland-private-compositor-report.md).
 The new evidence narrows the symptom; it does **not** close WSLg liveness.
+The later [native host observation](wslg-host-visibility-report.md) executes the
+suggested Windows checks with an independent X11 comparison. It establishes
+the current host-correlation boundary without claiming a missing caption proves
+no host object exists or attributing different coordinate origins as a defect.
 
 ## One bounded native trace
 

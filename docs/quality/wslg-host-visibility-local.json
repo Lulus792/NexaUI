@@ -1,0 +1,1480 @@
+{
+  "date": "2026-10-20",
+  "source": "8cdb487b4b6ad65a610637da319c075c6d1f3452",
+  "scope": "Native Windows host observation and independent protocol controls; no WSLg fix, physical visibility, RDP activation or full P2 acceptance claimed.",
+  "observations": [
+    {
+      "raw": {
+        "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host.json",
+        "bytes": 11241,
+        "sha256": "be1f0082a99ee95994152533c5026009344df4bce534c90a9fa6ffce4f00937f"
+      },
+      "client": {
+        "scope": "One unchanged SHM client run with new concurrent Windows host visibility observation.",
+        "binary": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control",
+        "binary_sha256": "97a43e003fd93192649689e2f493fac6851c183fedc7f2080f5f54675cc635ac",
+        "start_utc": 1792530910.1859896,
+        "environment": {
+          "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+          "WAYLAND_DISPLAY": "wayland-0",
+          "WAYLAND_DEBUG": "client",
+          "ASAN_OPTIONS": "halt_on_error=1:detect_leaks=1",
+          "UBSAN_OPTIONS": "halt_on_error=1"
+        },
+        "pid": 70237,
+        "exit_code": 2,
+        "timeout": false,
+        "seconds": 8.956296705000568,
+        "end_utc": 1792530919.142314,
+        "stdout": "SHM_FRAME configured=2 done=0 released=0 seconds=5.027312 result=2\n",
+        "protocol_sha256": "823a985e29a10f00c00241c3d3db418d2a773a414f9c4f419fb01d06efa3fe90"
+      },
+      "observation_samples": 98,
+      "samples_inside_client_interval": 78,
+      "coverage_utc": [
+        "2026-10-20T21:15:07.9904567Z",
+        "2026-10-20T21:15:19.3421594Z"
+      ],
+      "caption_matches": 0
+    },
+    {
+      "raw": {
+        "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-v2.json",
+        "bytes": 8453,
+        "sha256": "435a88722a9b330421bd0aa574307ceb1a9fe52a6d5407c86073a1d0f1e08b70"
+      },
+      "client": {
+        "scope": "One unchanged SHM client run with new concurrent Windows host visibility observation.",
+        "binary": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control",
+        "binary_sha256": "97a43e003fd93192649689e2f493fac6851c183fedc7f2080f5f54675cc635ac",
+        "start_utc": 1792531061.8063955,
+        "environment": {
+          "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+          "WAYLAND_DISPLAY": "wayland-0",
+          "WAYLAND_DEBUG": "client",
+          "ASAN_OPTIONS": "halt_on_error=1:detect_leaks=1",
+          "UBSAN_OPTIONS": "halt_on_error=1"
+        },
+        "pid": 70556,
+        "exit_code": 2,
+        "timeout": false,
+        "seconds": 5.250057564000599,
+        "end_utc": 1792531067.0564768,
+        "stdout": "SHM_FRAME configured=2 done=0 released=0 seconds=5.018880 result=2\n",
+        "protocol_sha256": "5770de9b15f0772f4b401c7f8c05a1122449e0ed053957b08060195c3fed54f2"
+      },
+      "observation_samples": 52,
+      "samples_inside_client_interval": 48,
+      "coverage_utc": [
+        "2026-10-20T21:17:41.3227532Z",
+        "2026-10-20T21:17:47.0280602Z"
+      ],
+      "caption_matches": 0,
+      "context": {
+        "station": "WinSta0",
+        "threadDesktop": "Default",
+        "inputDesktop": "Default",
+        "stationOk": true,
+        "threadOk": true,
+        "inputNameOk": true,
+        "inputCloseOk": true,
+        "inputIoQueryOk": true,
+        "inputOpenError": 0,
+        "threadReceivesInput": 1
+      },
+      "native_reference": [
+        {
+          "hwnd": 16386922,
+          "caption": "NexaUI Windows observer reference 20261020",
+          "windowClass": "Button",
+          "processId": 36988,
+          "threadId": 27268,
+          "dpi": 96,
+          "processImage": "C:\\Users\\angel\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe",
+          "existsBefore": true,
+          "existsAfter": true,
+          "visible": true,
+          "iconic": false,
+          "enabled": true,
+          "windowRectOk": true,
+          "clientRectOk": true,
+          "clientOriginOk": true,
+          "placementOk": true,
+          "monitorOk": true,
+          "windowRect": {
+            "left": 50,
+            "top": 50,
+            "right": 230,
+            "bottom": 180
+          },
+          "clientRect": {
+            "left": 0,
+            "top": 0,
+            "right": 164,
+            "bottom": 91
+          },
+          "frameRect": {
+            "left": 57,
+            "top": 50,
+            "right": 223,
+            "bottom": 173
+          },
+          "clientOrigin": {
+            "x": 58,
+            "y": 81
+          },
+          "placement": {
+            "length": 44,
+            "flags": 0,
+            "showCmd": 1,
+            "min": {
+              "x": -1,
+              "y": -1
+            },
+            "max": {
+              "x": -1,
+              "y": -1
+            },
+            "normal": {
+              "left": 50,
+              "top": 50,
+              "right": 230,
+              "bottom": 180
+            }
+          },
+          "monitor": {
+            "cbSize": 40,
+            "monitor": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "work": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "flags": 1
+          },
+          "cloakHr": 0,
+          "frameHr": 0,
+          "cloaked": 0,
+          "ownRootAtNineClientPoints": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-v3.json",
+        "bytes": 2858797,
+        "sha256": "7d713c4e25b8510d3efea90301cb95bb726d0960aba798d434004837126e48b7"
+      },
+      "client": {
+        "scope": "One unchanged SHM client run with new concurrent Windows host visibility observation.",
+        "binary": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control",
+        "binary_sha256": "97a43e003fd93192649689e2f493fac6851c183fedc7f2080f5f54675cc635ac",
+        "start_utc": 1792531198.808575,
+        "environment": {
+          "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+          "WAYLAND_DISPLAY": "wayland-0",
+          "WAYLAND_DEBUG": "client",
+          "ASAN_OPTIONS": "halt_on_error=1:detect_leaks=1",
+          "UBSAN_OPTIONS": "halt_on_error=1"
+        },
+        "pid": 70639,
+        "exit_code": 2,
+        "timeout": false,
+        "seconds": 5.360318643000937,
+        "end_utc": 1792531204.1689167,
+        "stdout": "SHM_FRAME configured=2 done=0 released=0 seconds=5.032496 result=2\n",
+        "protocol_sha256": "46b88fb8124f27a5fb8f458e2d9bd0ff258ba6ce2842f5a4d6bd2c83fb7a1460"
+      },
+      "observation_samples": 54,
+      "samples_inside_client_interval": 46,
+      "coverage_utc": [
+        "2026-10-20T21:19:57.9910493Z",
+        "2026-10-20T21:20:04.1976844Z"
+      ],
+      "rdp_processes": [
+        {
+          "Id": 15792,
+          "ProcessName": "msrdc",
+          "SessionId": 2,
+          "StartTime": "2026-10-20T15:57:50.7092576+02:00"
+        }
+      ],
+      "baseline_window_count": 21,
+      "observed_counts": [
+        21
+      ],
+      "new_handles": 0,
+      "after_counts": [
+        21,
+        21,
+        21,
+        21,
+        21,
+        21
+      ],
+      "baseline_windows": [
+        {
+          "hwnd": 527366,
+          "windowClass": "TsWindow_GeneralWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 724114,
+          "windowClass": "RdpLocalSessionMonitorWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 789692,
+          "windowClass": "00007FF95C949798-PAL_SYS_WIN32_TIMER_WNDCLASS",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 724076,
+          "windowClass": "RDPSoundDVCWnd",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 4850250,
+          "windowClass": "RDPSoundDVCWnd",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 3810320,
+          "windowClass": "RdpClipRdrWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 256,
+            "bottom": 100
+          }
+        },
+        {
+          "hwnd": 1901874,
+          "windowClass": "00007FF95C949798-PAL_SYS_WIN32_TIMER_WNDCLASS",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 1647530,
+          "windowClass": "tooltips_class32",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 6038350,
+          "windowClass": "TscShellContainerClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 312,
+            "top": 70,
+            "right": 778,
+            "bottom": 329
+          }
+        },
+        {
+          "hwnd": 3810176,
+          "windowClass": "MSRDCSysTrayClass_WSL",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 5317348,
+          "windowClass": "MSRDCSessionManager_WSL",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 4916334,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 2098278,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 3285826,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 1576104,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 3416790,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 1844266,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 6431570,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4852324,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4531202,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4006492,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        }
+      ],
+      "own_caption_matches": 0,
+      "context": {
+        "station": "WinSta0",
+        "threadDesktop": "Default",
+        "inputDesktop": "Default",
+        "stationOk": true,
+        "threadOk": true,
+        "inputNameOk": true,
+        "inputCloseOk": true,
+        "inputIoQueryOk": true,
+        "inputOpenError": 0,
+        "threadReceivesInput": 1
+      },
+      "native_reference": [
+        {
+          "hwnd": 23268332,
+          "caption": "NexaUI Windows observer reference v3 20261020",
+          "windowClass": "Button",
+          "processId": 39068,
+          "threadId": 33140,
+          "dpi": 96,
+          "processImage": "C:\\Users\\angel\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe",
+          "existsBefore": true,
+          "existsAfter": true,
+          "visible": true,
+          "iconic": false,
+          "enabled": true,
+          "windowRectOk": true,
+          "clientRectOk": true,
+          "clientOriginOk": true,
+          "placementOk": true,
+          "monitorOk": true,
+          "windowRect": {
+            "left": 50,
+            "top": 50,
+            "right": 230,
+            "bottom": 180
+          },
+          "clientRect": {
+            "left": 0,
+            "top": 0,
+            "right": 164,
+            "bottom": 91
+          },
+          "frameRect": {
+            "left": 57,
+            "top": 50,
+            "right": 223,
+            "bottom": 173
+          },
+          "clientOrigin": {
+            "x": 58,
+            "y": 81
+          },
+          "placement": {
+            "length": 44,
+            "flags": 0,
+            "showCmd": 1,
+            "min": {
+              "x": -1,
+              "y": -1
+            },
+            "max": {
+              "x": -1,
+              "y": -1
+            },
+            "normal": {
+              "left": 50,
+              "top": 50,
+              "right": 230,
+              "bottom": 180
+            }
+          },
+          "monitor": {
+            "cbSize": 40,
+            "monitor": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "work": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "flags": 1
+          },
+          "cloakHr": 0,
+          "frameHr": 0,
+          "cloaked": 0,
+          "ownRootAtNineClientPoints": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-x11.json",
+        "bytes": 2671051,
+        "sha256": "cf7038b85c1c29a20e24b7bbd2b00a8392e40a8c98c5f09c9680c5859b77850f"
+      },
+      "client": {
+        "scope": "One independent X11 client run with new concurrent Windows host visibility observation.",
+        "binary": "/mnt/d/NexaUI/out/wslg-host-visibility-20261020/x11-host-control",
+        "binary_sha256": "c6a8e625ceda35365a4dcdbef72da781b6d7d69aef7b9144dc237bb839c0128b",
+        "start_utc": 1792531497.339337,
+        "environment": {
+          "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+          "WAYLAND_DISPLAY": "wayland-0",
+          "WAYLAND_DEBUG": "client",
+          "ASAN_OPTIONS": "halt_on_error=1:detect_leaks=1",
+          "UBSAN_OPTIONS": "halt_on_error=1",
+          "DISPLAY": ":0"
+        },
+        "pid": 70708,
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 5.190856776000146,
+        "end_utc": 1792531502.530219,
+        "stdout": "X11_HOST map_events=1 expose_events=1 map_state=2 size=128x96 seconds=5.000916\n",
+        "protocol_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "observation_samples": 50,
+      "samples_inside_client_interval": 47,
+      "coverage_utc": [
+        "2026-10-20T21:24:56.9741452Z",
+        "2026-10-20T21:25:02.4622139Z"
+      ],
+      "rdp_processes": [
+        {
+          "Id": 15792,
+          "ProcessName": "msrdc",
+          "SessionId": 2,
+          "StartTime": "2026-10-20T15:57:50.7092576+02:00"
+        }
+      ],
+      "baseline_window_count": 21,
+      "observed_counts": [
+        21
+      ],
+      "new_handles": 0,
+      "after_counts": [
+        21,
+        21,
+        21,
+        21,
+        21,
+        21
+      ],
+      "baseline_windows": [
+        {
+          "hwnd": 527366,
+          "windowClass": "TsWindow_GeneralWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 724114,
+          "windowClass": "RdpLocalSessionMonitorWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 789692,
+          "windowClass": "00007FF95C949798-PAL_SYS_WIN32_TIMER_WNDCLASS",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 724076,
+          "windowClass": "RDPSoundDVCWnd",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 4850250,
+          "windowClass": "RDPSoundDVCWnd",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 3810320,
+          "windowClass": "RdpClipRdrWindowClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 256,
+            "bottom": 100
+          }
+        },
+        {
+          "hwnd": 1901874,
+          "windowClass": "00007FF95C949798-PAL_SYS_WIN32_TIMER_WNDCLASS",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 1647530,
+          "windowClass": "tooltips_class32",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 6038350,
+          "windowClass": "TscShellContainerClass",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 312,
+            "top": 70,
+            "right": 778,
+            "bottom": 329
+          }
+        },
+        {
+          "hwnd": 3810176,
+          "windowClass": "MSRDCSysTrayClass_WSL",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 5317348,
+          "windowClass": "MSRDCSessionManager_WSL",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 136,
+            "bottom": 39
+          }
+        },
+        {
+          "hwnd": 4916334,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 2098278,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 3285826,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 1576104,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 3416790,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 1844266,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 6431570,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4852324,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4531202,
+          "windowClass": "IME",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        },
+        {
+          "hwnd": 4006492,
+          "windowClass": "MSCTFIME UI",
+          "visible": false,
+          "iconic": false,
+          "cloaked": 0,
+          "windowRect": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          }
+        }
+      ],
+      "own_caption_matches": 0,
+      "context": {
+        "station": "WinSta0",
+        "threadDesktop": "Default",
+        "inputDesktop": "Default",
+        "stationOk": true,
+        "threadOk": true,
+        "inputNameOk": true,
+        "inputCloseOk": true,
+        "inputIoQueryOk": true,
+        "inputOpenError": 0,
+        "threadReceivesInput": 1
+      },
+      "native_reference": [
+        {
+          "hwnd": 18287490,
+          "caption": "NexaUI Windows observer reference X11 20261020",
+          "windowClass": "Button",
+          "processId": 39284,
+          "threadId": 26676,
+          "dpi": 96,
+          "processImage": "C:\\Users\\angel\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe",
+          "existsBefore": true,
+          "existsAfter": true,
+          "visible": true,
+          "iconic": false,
+          "enabled": true,
+          "windowRectOk": true,
+          "clientRectOk": true,
+          "clientOriginOk": true,
+          "placementOk": true,
+          "monitorOk": true,
+          "windowRect": {
+            "left": 50,
+            "top": 50,
+            "right": 230,
+            "bottom": 180
+          },
+          "clientRect": {
+            "left": 0,
+            "top": 0,
+            "right": 164,
+            "bottom": 91
+          },
+          "frameRect": {
+            "left": 57,
+            "top": 50,
+            "right": 223,
+            "bottom": 173
+          },
+          "clientOrigin": {
+            "x": 58,
+            "y": 81
+          },
+          "placement": {
+            "length": 44,
+            "flags": 0,
+            "showCmd": 1,
+            "min": {
+              "x": -1,
+              "y": -1
+            },
+            "max": {
+              "x": -1,
+              "y": -1
+            },
+            "normal": {
+              "left": 50,
+              "top": 50,
+              "right": 230,
+              "bottom": 180
+            }
+          },
+          "monitor": {
+            "cbSize": 40,
+            "monitor": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "work": {
+              "left": 0,
+              "top": 0,
+              "right": 1920,
+              "bottom": 1080
+            },
+            "flags": 1
+          },
+          "cloakHr": 0,
+          "frameHr": 0,
+          "cloaked": 0,
+          "ownRootAtNineClientPoints": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    }
+  ],
+  "current_windows_monitors": {
+    "utc": "2026-10-20T21:22:40.1387003Z",
+    "monitors": [
+      {
+        "size": 40,
+        "monitor": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080
+        },
+        "work": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080
+        },
+        "flags": 1
+      }
+    ],
+    "thread_only_dpi_override": true
+  },
+  "current_wayland_outputs": "OUTPUT_GEOMETRY id=11 x=1920 y=290 physical=0x0 subpixel=0 transform=0\nOUTPUT_SCALE id=11 factor=1\nOUTPUT_MODE id=11 flags=3 size=1920x1080 refresh=60000\nOUTPUT_DONE id=11\nLOGICAL_POSITION id=11 x=1920 y=290\nLOGICAL_SIZE id=11 width=1920 height=1080\nLOGICAL_DONE id=11\nOUTPUT_COUNT 1\n",
+  "coordinate_boundary": "Different origins alone are not a bad-layout proof: pinned WSLg to_client_coordinate subtracts Weston output origin and adds the client monitor origin (with scale). Actual live surface placement/translation not traced.",
+  "rdp_existing_event_query": {
+    "scope": "Read existing enabled operational channel only; known WSLg RDP process and graphics/state event IDs, no provider/channel setting changed",
+    "process_id": 15792,
+    "start_utc": "2026-10-20T21:14:00Z",
+    "end_utc": "2026-10-20T21:26:00Z",
+    "events": [],
+    "status": "query_error",
+    "error_id": "NoMatchingEventsFound,Microsoft.PowerShell.Commands.GetWinEventCommand",
+    "error": "No events were found that match the specified selection criteria."
+  },
+  "upstream_commit": "04d436c7d9a0cd55fa64b6612c7fa678d6fcd077",
+  "upstream_sources": [
+    {
+      "url": "https://raw.githubusercontent.com/microsoft/weston/04d436c7d9a0cd55fa64b6612c7fa678d6fcd077/libweston/backend-rdp/rdprail.c",
+      "git_blob": "de9c03cdb69069179c3fa64e0ec3f6b56031203e",
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdprail.c",
+      "bytes": 183242,
+      "sha256": "d5ce4e15d46a06fe8b3df09ab8381e51778d454855dd0e0063fd7a0bfdc6f2b8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/microsoft/weston/04d436c7d9a0cd55fa64b6612c7fa678d6fcd077/rdprail-shell/shell.c",
+      "git_blob": "75fc836732d3cb973da5267d0ddf6698dc20834d",
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-shell.c",
+      "bytes": 153824,
+      "sha256": "5f5e69128d5c8a5a78a566891cb8a9b4ca223d42f5fa5bdf511f292bad333540"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/microsoft/weston/04d436c7d9a0cd55fa64b6612c7fa678d6fcd077/protocol/weston-rdprail-shell.xml",
+      "git_blob": "7ed9b0a7c4d702c372b53ad3c4596417c13bac08",
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-shell.xml",
+      "bytes": 941,
+      "sha256": "d6b665364ae0fcf9b4fb7de0e9b09007b2b3c2381134a6cec4c0528ae5bf6057"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/microsoft/weston/04d436c7d9a0cd55fa64b6612c7fa678d6fcd077/libweston/backend-rdp/rdpdisp.c",
+      "git_blob": "693e2f0eadf304973538030faa651ffe2b860696",
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdpdisp.c",
+      "bytes": 11966,
+      "sha256": "77ed3503d48927cfbfcb089d92c8116ef3f28cf7a12dc979d94d45a9b45f0acb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/microsoft/weston/04d436c7d9a0cd55fa64b6612c7fa678d6fcd077/libweston/backend-rdp/rdp.c",
+      "git_blob": "f135a186ef3fa2fc67614f5d99c8b7b56a2e809f",
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdp.c",
+      "bytes": 73166,
+      "sha256": "0b536fc151fc2e8d1f10c2a1fee81221d5e1d1b60e20fa05849981858285f7f5"
+    }
+  ],
+  "source_findings": [
+    "rdprail.c:1674-1749 creates initially hidden windows without a title; later window update assigns title/show state.",
+    "rdpdisp.c:326-399 translates between client and compositor coordinate spaces; numeric origin difference alone does not establish failure.",
+    "weston-rdprail-shell.xml exports focus proxy, not a surface-to-Windows-handle query.",
+    "Registered ClientActiveXCore metadata has generic connection/graphics events but this inspected metadata supplies no per-surface RAIL WindowCreate correlation. NoMatchingEventsFound for the existing enabled operational-channel query does not prove RDP health."
+  ],
+  "next_boundary": "Need a per-surface server/RAIL WindowCreate/update/activation or matching client trace; sampled top-level HWND absence in one process is insufficient to identify the live branch, another process/child window, or occlusion. No debug/channel/security/display/OS setting changed.",
+  "sanitizer_diagnostic_observed": false,
+  "raw_evidence": [
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\analyze-v3.py",
+      "bytes": 1511,
+      "sha256": "d1864c9d61b69d7e75eef2275ecbe7229f033119f9e4e4ee9362387871439213"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\analyze-x11.py",
+      "bytes": 1536,
+      "sha256": "9cbe8688a85875bcb88b7c693cb891e71f54b47742409237f73cf4ec5608ba02"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-result.json",
+      "bytes": 823,
+      "sha256": "00c7f24e2507aafa72be6d1d7b17f4c6e0d60d4b113a929d545d6227c1f090aa"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-start.json",
+      "bytes": 548,
+      "sha256": "b8c24181aac4e148b4ac468fcc3be2684f7eb9f42706c4da8cdf7a9155cbef2a"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v2-result.json",
+      "bytes": 824,
+      "sha256": "edf3eb73d301db64e345745e4ff79cec705404d0b9fcdff456c5a4138b02cd47"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v2-start.json",
+      "bytes": 548,
+      "sha256": "f7ef6e8384989bad9586df8edf9e5183b600b08ef06767f906b2c57f34186033"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v2.protocol",
+      "bytes": 4165,
+      "sha256": "5770de9b15f0772f4b401c7f8c05a1122449e0ed053957b08060195c3fed54f2"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v2.stdout",
+      "bytes": 67,
+      "sha256": "ff9640b5824ac4a76d1e7b8c5a1fed1ba0987195af0e49b86425acdd65ba948d"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v3-result.json",
+      "bytes": 823,
+      "sha256": "e506205d576da97afa03a08f3b466e14bfe4fba84c2b311925400ad33ec6df0f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v3-start.json",
+      "bytes": 547,
+      "sha256": "d23c43cb5cefa840db5036126e0f46e0b21329dc0f5a55b23d6afa017e57c366"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v3.protocol",
+      "bytes": 4165,
+      "sha256": "46b88fb8124f27a5fb8f458e2d9bd0ff258ba6ce2842f5a4d6bd2c83fb7a1460"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-v3.stdout",
+      "bytes": 67,
+      "sha256": "1a17f9c1257d743df8be0e121cb75b2bcc4bb6f4354c5138b2af7052d397fb20"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-x11-result.json",
+      "bytes": 862,
+      "sha256": "035a93a5dd0db9c4eeed5bd9cdbc0fb8112b569e4fff82b1eea5e87de5de6362"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-x11-start.json",
+      "bytes": 575,
+      "sha256": "083423f9fe51cec94d63821c87164fec41d69ccd79cf9083953bc9685647cd0f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-x11.protocol",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client-x11.stdout",
+      "bytes": 79,
+      "sha256": "592a4fdfa4ed258ada093e36f911c5924e5fb34c6417a6d79df11ce305f1d09e"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client.protocol",
+      "bytes": 4165,
+      "sha256": "823a985e29a10f00c00241c3d3db418d2a773a414f9c4f419fb01d06efa3fe90"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\client.stdout",
+      "bytes": 67,
+      "sha256": "039323459f26835867c9a71f4143708a09b270582974c546a45e0c5ab1e534aa"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\current-windows-monitors.json",
+      "bytes": 389,
+      "sha256": "844be3cfee78150d91b04c0ccf2a3e6b29d843155df923c9515a915bc3445ad5"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\current-wslg-logical.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\current-wslg-logical.stdout",
+      "bytes": 284,
+      "sha256": "f9de13c8a43ddb5bc59417ed527a38d639831bc093da5f21e7686bb1a2563c6c"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\current-wslg-outputs.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\current-wslg-outputs.stdout",
+      "bytes": 187,
+      "sha256": "65894fe6bb44b19da7a2cf3f2dcccd6cfd6f2bc565d2327a96ce5acd2775fb6d"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-v2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-v2.stdout",
+      "bytes": 824,
+      "sha256": "edf3eb73d301db64e345745e4ff79cec705404d0b9fcdff456c5a4138b02cd47"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-v3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-v3.stdout",
+      "bytes": 823,
+      "sha256": "e506205d576da97afa03a08f3b466e14bfe4fba84c2b311925400ad33ec6df0f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-x11.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher-x11.stdout",
+      "bytes": 862,
+      "sha256": "035a93a5dd0db9c4eeed5bd9cdbc0fb8112b569e4fff82b1eea5e87de5de6362"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\launcher.stdout",
+      "bytes": 823,
+      "sha256": "00c7f24e2507aafa72be6d1d7b17f4c6e0d60d4b113a929d545d6227c1f090aa"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\make-observer-v2.py",
+      "bytes": 4692,
+      "sha256": "93fe32b5c9e3c96419365b2295b5b5fe5f77f07af76f95609d7a6bd215159ec3"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\make-observer-v3.py",
+      "bytes": 4175,
+      "sha256": "6d387832d00dc0e501e960b728adfa8418e69bf5c67e8757f6b372a41b2f2724"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\make-output-logical.py",
+      "bytes": 2292,
+      "sha256": "24f588f1263a576a5dd9596b6257b75b0259681ee5ea0d44779b2d96bcc52106"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\make-x11-observer.py",
+      "bytes": 1375,
+      "sha256": "f76bc30549eddc832d4e60cac91efdf8e9d562cf6bb51f8b9668c0e570df2853"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\observe-host-v2.ps1",
+      "bytes": 11836,
+      "sha256": "3280751aa1ba1404026886c792c2e44af794d2624174d7d61bced089373dc477"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\observe-host-v3.ps1",
+      "bytes": 12308,
+      "sha256": "c6c23368caa520c5d9f70f7bf49fab1f3368d45c8f5bf446d2abd6ee9ef33c0b"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\observe-host-x11.ps1",
+      "bytes": 12319,
+      "sha256": "6fa51277dc594c6086b728ee8cfd7aace63dff966a5854e9840d1d44f7907d82"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\observe-host.ps1",
+      "bytes": 8195,
+      "sha256": "1d1cbfd78a9ef540675fa8afb4001d81cae9f59f1ec62342fbb30fe9c1fd9c49"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\observer-v2-preflight.json",
+      "bytes": 2302,
+      "sha256": "cf5c8af6c589913e15393153472129abf9481fbf7108c79760cbdaea71a6f5b7"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\output-control",
+      "bytes": 2860912,
+      "sha256": "a5d6651668881948bcb972a454c167ded26d4def5108608190bf513376fe8235"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\output-control.c",
+      "bytes": 2332,
+      "sha256": "d58cdc0e6b81feb0b63c127b305ef114857dc5605c5b7c7a8eda2ee5aea0f9d1"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\output-logical-control",
+      "bytes": 2876648,
+      "sha256": "20bf7ad25a4004fae7c2bf9e3a89ea1ba6d6f115ec47530bdfaaa10037ad53ec"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\output-logical-control.c",
+      "bytes": 3760,
+      "sha256": "702dcc87a5c68d3c9b7b6ad1d2da0edb96b0d44834346d71226420154137860c"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\rdp-client-provider.xml",
+      "bytes": 24286,
+      "sha256": "23b1213634587810b9a52c9b8761a42d59fe0c3075ebdd789044d18444f7dda7"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\rdp-client-version.json",
+      "bytes": 124,
+      "sha256": "69bba82be7ec2b34faa4bcdecc41d2c641786696f9502a442dd58c691e8635e2"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\rdp-existing-events.json",
+      "bytes": 474,
+      "sha256": "ac77ad4488ea55b364cdf2979e14f1eaca589678204a37db691a1e2af0d9576a"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\rdp-operational-config.xml",
+      "bytes": 914,
+      "sha256": "8dbda4a49ae4e38ebeded5aab7ee76fff9cc5b4ebffed74a5c02cc20234f8eac"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\read-monitors.ps1",
+      "bytes": 1761,
+      "sha256": "6b5101f3b1e5518ae84d698fda67be3c7443fef42162a338ff133393d51f73c5"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\run-client-v2.py",
+      "bytes": 1959,
+      "sha256": "41e00e6485e4e52c9aa25a16759321ceffec80a2b430c5c9b8708a9974c939b5"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\run-client-v3.py",
+      "bytes": 1959,
+      "sha256": "699982bb2af8d71cd59258f2389d3a97c2cb78e0f51f0dfb96d6b8d5c90bdf69"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\run-client-x11.py",
+      "bytes": 1854,
+      "sha256": "039fffc73f901c9fcfc27b23d8cdc4a32f0dc401073a672e2d705bdb30c0165f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\run-client.py",
+      "bytes": 1911,
+      "sha256": "96556459d4cd1803f7b668563290ae5c03f44c278252cc94e8d7c8459ad648be"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdp-paths.json",
+      "bytes": 1953,
+      "sha256": "491634b03360733a889d127ff2907f789ff47fd96f4381b9379ae1366e1e4b47"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdp.c",
+      "bytes": 73166,
+      "sha256": "0b536fc151fc2e8d1f10c2a1fee81221d5e1d1b60e20fa05849981858285f7f5"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdpdisp.c",
+      "bytes": 11966,
+      "sha256": "77ed3503d48927cfbfcb089d92c8116ef3f28cf7a12dc979d94d45a9b45f0acb"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-rdprail.c",
+      "bytes": 183242,
+      "sha256": "d5ce4e15d46a06fe8b3df09ab8381e51778d454855dd0e0063fd7a0bfdc6f2b8"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-shell.c",
+      "bytes": 153824,
+      "sha256": "5f5e69128d5c8a5a78a566891cb8a9b4ca223d42f5fa5bdf511f292bad333540"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\upstream-shell.xml",
+      "bytes": 941,
+      "sha256": "d6b665364ae0fcf9b4fb7de0e9b09007b2b3c2381134a6cec4c0528ae5bf6057"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-v2.json",
+      "bytes": 8453,
+      "sha256": "435a88722a9b330421bd0aa574307ceb1a9fe52a6d5407c86073a1d0f1e08b70"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-v3-analysis.json",
+      "bytes": 321184,
+      "sha256": "ecd41c9731299b252e7e515b1c48d618f6bcca3d2fa322c1b5d6643c6ce0901f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-v3.json",
+      "bytes": 2858797,
+      "sha256": "7d713c4e25b8510d3efea90301cb95bb726d0960aba798d434004837126e48b7"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-x11-analysis.json",
+      "bytes": 320616,
+      "sha256": "54457ac7563d07fa9a7a0201b2f3a480c96166fef4f1f785a45fd745d4df7f7c"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host-x11.json",
+      "bytes": 2671051,
+      "sha256": "cf7038b85c1c29a20e24b7bbd2b00a8392e40a8c98c5f09c9680c5859b77850f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-host.json",
+      "bytes": 11241,
+      "sha256": "be1f0082a99ee95994152533c5026009344df4bce534c90a9fa6ffce4f00937f"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\windows-version.json",
+      "bytes": 102,
+      "sha256": "70599b6471cbfb99f1ca1d2722d3fac89f999f386fe604a68d9faf8dceba527d"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\x11-host-control",
+      "bytes": 2867000,
+      "sha256": "c6a8e625ceda35365a4dcdbef72da781b6d7d69aef7b9144dc237bb839c0128b"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\x11-host-control.c",
+      "bytes": 1539,
+      "sha256": "60498bda602ca6edff6b7451f78a2cafc0af00cb34df708b845222fdb2bbfcad"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\xdg-output-client.h",
+      "bytes": 14776,
+      "sha256": "9d52388be4ad61ff6ccbc288346bdaf6776e4ad5d7c540b007b3cb078fdc52d3"
+    },
+    {
+      "path": "D:\\NexaUI\\out\\wslg-host-visibility-20261020\\xdg-output-protocol.c",
+      "bytes": 2772,
+      "sha256": "4fc34995aad46d9dc7c93cf14f6eb604eb5264a04c781097649d8e1c35be444b"
+    }
+  ]
+}
