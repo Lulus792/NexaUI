@@ -1,5 +1,49 @@
 # Benchmarks
 
+## Text construction and repeated drawing
+
+`nexaui_text_cost_bench` profiles six real-font strings, including mixed scripts
+and wrapped text, through one long-lived context. It separates layout
+construction, Shaping/GSUB/GPOS, cache creation/get/destruction, frame-owned mask
+allocation/copy and placement/command work. Raster time is nested inside cache
+get; GSUB/GPOS are nested inside shaping. Do not add these nested totals.
+Normal and explicitly scaled drawing are compared at1×/1.25×/1.5×/2×, both
+visible and fully clipped. All image comparisons use complete RGBA buffers.
+
+The instrumentation is generated into a new private directory and built only
+as a static developer executable. It does not add hooks to the installed
+library. From the repository root, using a new build/output directory:
+
+```sh
+python tools/prepare_text_cost_profile.py out/new-text-profile \
+  --baseline-commit 0739c4959430ec55fc336ae78f554f3857ad5c37
+cmake -S . -B out/new-text-build -DBUILD_SHARED_LIBS=OFF \
+  -DNEXAUI_BUILD_EXAMPLES=OFF -DNEXAUI_BUILD_TESTS=OFF \
+  -DNEXAUI_BUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release \
+  -DNEXAUI_TEXT_PROFILE_CORE="$PWD/out/new-text-profile/text-cost-core.c" \
+  -DNEXAUI_TEXT_LAYOUT_BASELINE_SOURCE="$PWD/out/new-text-profile/text-layout-baseline.c"
+cmake --build out/new-text-build --config Release --target nexaui_text_cost_bench
+out/new-text-build/nexaui_text_cost_bench /path/to/font.ttf > out/new-text-profile/results.csv
+```
+
+On Visual Studio generators, the executable is in `out/new-text-build/Release/`.
+The shell example uses POSIX line continuations; pass the same CMake arguments
+on one line or use PowerShell continuations on Windows. Fonts are borrowed
+local inputs and are not redistributed. For Debug-ASan use matching sanitized
+compiler/linker flags for the whole build; Windows needs `/RTC1` removed and
+incremental linking disabled.
+
+An optional baseline must have the identical private layout structure, checked
+by the preparation tool before direct paired rendering. Omit `--baseline-commit`
+and the baseline CMake option for a current-only run. Paired constructors follow
+the fixed current/baseline/baseline/current order twice per string,12 calls per
+batch. Destruction, file loading and image composition are outside construction
+timers. Context allocation/peak counters exclude font/layout allocations and
+external runtime memory. Keep complete CSV, exit status, source/binary/font
+hashes, flags and host load with any timing claim.
+
+## Other focused workloads
+
 `nexaui_text_stress_bench` measures five fresh-buffer runs of 32 mixed-script
 insert/delete pairs at 4 KiB, 32 KiB and 128 KiB and verifies byte-for-byte
 restoration. Its dated result and limits are in

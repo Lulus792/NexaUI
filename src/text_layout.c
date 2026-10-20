@@ -205,6 +205,21 @@ static nx_result nx_tl_reshape_lines(nx_text_layout *layout,
                                       size_t work_capacity,
                                       uint8_t *levels) {
     layout->width = 0.0;
+    /* One line covering the complete input is the original shaped paragraph:
+       same bytes, direction, fonts and ppem, with no new line boundary. Keep
+       its glyphs and resolved attachments rather than shaping it a second
+       time. add_line already zeroed trailing-space advances. Sum those in the
+       same order as the general reshape path, preserving exact line widths. */
+    if (layout->line_count == 1u && layout->lines[0].byte_start == 0u &&
+        layout->lines[0].byte_end == layout->length) {
+        nx_text_line *line = &layout->lines[0];
+        line->width = 0.0;
+        for (size_t g = 0; g < line->glyph_count; ++g)
+            line->width += layout->glyphs[line->glyph_start + g].shape.advance_x;
+        if (line->width < 0.0) line->width = 0.0;
+        layout->width = line->width;
+        return NX_OK;
+    }
     size_t scalar_index = 0, byte_cursor = 0;
     for (size_t i = 0; i < layout->line_count; ++i) {
         nx_text_line *line = &layout->lines[i];
