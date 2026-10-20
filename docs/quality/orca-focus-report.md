@@ -1,6 +1,9 @@
 # Orca focus on newly published controls
 
 Source: `10cd3fb2de28674af7ef493cd0c1f249994efa12`, 2026-10-18.
+The later [X11 canvas response report](vulkan-canvas-response-report.md) retains
+a separate renderer investigation and actual old/new Orca comparisons. The
+measurements and acceptance limits below describe this earlier focus correction.
 The [local receipt](orca-focus-local.json) contains commands, hashes, nine actual
 Orca checkpoints and the negative cases. This is a bounded NexaUI framework and
 native-example check; the separate NexaCloud application/pin was not changed.

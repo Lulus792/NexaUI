@@ -782,6 +782,37 @@ still configures/builds and passes its existing D3D12 smoke.
 These are the documented Lavapipe/WSLg results, not hardware performance,
 physical input/DPI, compositor color management or native macOS acceptance.
 
+## Unchanged X11 canvas
+
+The X11 backend can reuse its last successfully submitted canvas when the
+complete preflighted command stream, clear color and draw scale are unchanged.
+It compares canonical command fields and owned copies of every RGBA8/A8 image
+row. Borrowed image addresses and row padding are excluded; changing image bytes
+at the same address invalidates reuse. There is no probabilistic hash match.
+
+The optional CPU proof is bounded to 32 MiB per renderer, including replacement
+allocation peak. Unsupported streams, an exceeded budget or allocation failure
+fall back to normal drawing. A cache miss invalidates the old proof before
+preparation; resize, recovery and teardown release it. The proof becomes valid
+only after successful queue submission. This does not extend borrowed-image
+lifetime beyond the rendering call or permit concurrent source mutation.
+
+A hit keeps the queue-owned canvas in transfer-source layout and still performs
+normal acquisition, copy, presentation, fence retirement and timestamp handling.
+It skips drawing and vertex/bitmap uploads; it does not skip a presentation or
+change its lifetime guarantees. Private diagnostics expose `reused_canvas`,
+`canvas_cache_bytes` and `canvas_cache_hits`. CPU `submit_ms` also includes the
+post-submit proof capture. Existing batching/ring diagnostic comparisons disable
+this independent optimization while measuring drawing work.
+
+Wayland retains its existing redraw path. Exploratory WSLg runs with reuse had
+FIFO presentation timeouts; a successful instrumented run did not resolve that
+liveness gap. See the [response report](../quality/vulkan-canvas-response-report.md)
+for retained failures, the X11-only scope and actual Orca task measurements.
+Changing frames still draw normally and incur the bounded CPU comparison/copy
+cost. Hardware performance, other compositors and human assistive acceptance
+require separate checks.
+
 ## Specification references
 
 - [Timestamp writes and stage scope](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdWriteTimestamp.html)

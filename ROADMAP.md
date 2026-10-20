@@ -23,6 +23,10 @@ exact validation, counterexamples and the remaining physical acceptance.
 The [Orca follow-up](docs/quality/orca-focus-report.md) records a native negative
 case and nine actual control/dialog announcements. Long observed response times,
 human screenreader use and full accessibility/physical acceptance remain open.
+The later [X11 canvas follow-up](docs/quality/vulkan-canvas-response-report.md)
+reduces repeated Vulkan drawing with an exact, owned, 32 MiB CPU proof and
+retains actual Orca comparisons. Wayland keeps its redraw path; local WSLg
+presentation timeouts remain open. This does not close P2 or R01.
 The later [Windows clipboard-fixture correction](docs/quality/clipboard-isolation-report.md)
 executes the local Unicode transfer in an isolated hidden station, with native
 station/busy guards. It does not diagnose the earlier full-suite clipboard failure
