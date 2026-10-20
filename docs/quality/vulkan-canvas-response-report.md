@@ -1,6 +1,9 @@
 # Unchanged X11 canvas and Orca response
 
 Source: `5d7642dbfb2792a551f9d87de0a3b37dee80accb`, 2026-10-20.
+The later [private compositor report](wayland-private-compositor-report.md)
+adds executed Wayland CI coverage. The historical failures and skips below
+remain evidence of this earlier source/run.
 Baseline: `5e47e35104797aa3485ef44b22aecdf68e14adac`.
 This is a framework/native-example follow-up to the
 [Orca focus correction](orca-focus-report.md). NexaCloud's application code and

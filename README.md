@@ -112,7 +112,22 @@ On Linux, run the X11 native tests in an isolated display to avoid interference 
 NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a ctest --test-dir build --output-on-failure --timeout 30
 ```
 
-Wayland native tests additionally need a running compositor. See the [Linux CI workflow](.github/workflows/ci.yml) for the display and renderer test environments.
+To exercise both X11 and Wayland without using your desktop, additionally install
+the developer test dependency `weston` and run the private compositor fixture:
+
+```sh
+NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 NEXAUI_TEST_PRIVATE_X11=1 \
+xvfb-run -a -s '-screen 0 1600x1200x24' \
+  python3 tests/run_weston_native.py --work-dir out/new-wayland-run -- \
+  ctest --test-dir build --output-on-failure --timeout 30 \
+    --output-junit "$PWD/out/new-wayland-run/junit.xml"
+python3 tests/check_wayland_results.py out/new-wayland-run/junit.xml
+```
+
+Use a new work directory for each run. The [native Wayland report](docs/quality/wayland-private-compositor-report.md)
+records actual compositor execution, failure guards and the remaining WSLg and
+physical acceptance gaps. The [Linux CI workflow](.github/workflows/ci.yml) also
+enables Vulkan synchronization validation.
 
 ### Run an example
 

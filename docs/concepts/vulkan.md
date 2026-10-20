@@ -813,6 +813,17 @@ Changing frames still draw normally and incur the bounded CPU comparison/copy
 cost. Hardware performance, other compositors and human assistive acceptance
 require separate checks.
 
+## Private Wayland native checks
+
+The [private compositor fixture](../quality/wayland-private-compositor-report.md)
+runs the existing native suite on actual Weston Wayland surfaces while Xvfb
+provides the compositor's X11 host and virtual input seat. It owns its runtime,
+socket, settings and process groups. CI requires successful execution of all
+seven native Wayland cases in addition to the full CTest result; skips do not
+satisfy that gate. This test-only dependency does not enter NexaUI's runtime or
+public API. It is independent compositor evidence, not physical input, human
+assistive, WSLg FIFO-liveness or Wayland canvas-reuse acceptance.
+
 ## Specification references
 
 - [Timestamp writes and stage scope](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdWriteTimestamp.html)
