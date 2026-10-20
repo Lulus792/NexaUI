@@ -2,13 +2,6 @@ name: Paired Mesa lifetime candidate
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/mesa-cleanup.yml'
-      - 'tools/prepare_ci_mesa.py'
-      - 'tools/check_mesa_cleanup.py'
-      - 'tools/mesa/**'
-      - 'tests/mesa_*.c'
 
 permissions:
   contents: read

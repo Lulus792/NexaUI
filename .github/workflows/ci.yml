@@ -119,14 +119,22 @@ jobs:
 
   sanitizers:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       UBSAN_OPTIONS: halt_on_error=1
       NEXAUI_REQUIRE_VULKAN_TIMING: '1'
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux native dependencies
-        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev xvfb xauth weston libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev
+          wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev
+          xvfb xauth weston libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
+          bison flex patch glslang-tools llvm-20-dev python3-mako python3-yaml python3-packaging
+          libdrm-dev libx11-xcb-dev libxcb-dri3-dev libxcb-present-dev libxcb-randr0-dev
+          libxcb-shm0-dev libxcb-sync-dev libxcb-xfixes0-dev libxshmfence-dev
+          libxrandr-dev libelf-dev libunwind-dev libzstd-dev zlib1g-dev libexpat1-dev
       - name: Prepare present-fence-aware Vulkan validation
         run: python tools/prepare_ci_validation.py "$RUNNER_TEMP/nexaui-validation" --github-env "$GITHUB_ENV"
       - name: Verify pinned Unicode tables
@@ -139,25 +147,73 @@ jobs:
         run: cmake -S tests/sanitizer_probe -B out/asan-probe -DCMAKE_C_COMPILER=clang
       - name: Verify ASan counterexample
         run: cmake --build out/asan-probe && python tests/check_sanitizer_probe.py out/asan-probe/asan_probe
+      - name: Require paired Mesa unload cleanup evidence
+        run: >-
+          /usr/bin/python3 tools/prepare_ci_mesa.py
+          --work-dir "$RUNNER_TEMP/nexaui-mesa"
+          --control "$GITHUB_WORKSPACE/build-asan/nexaui_vulkan_lifetime_control"
+          --before-results "$GITHUB_WORKSPACE/build-asan/mesa-before"
+          --after-results "$GITHUB_WORKSPACE/build-asan/mesa-after"
+          --github-env "$GITHUB_ENV"
       - name: Test
-        run: NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1 NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24' python tests/run_weston_native.py --work-dir build-asan/wayland-session -- ctest --test-dir build-asan --output-on-failure --timeout 60 --output-junit "${{ github.workspace }}/build-asan/native-ctest.xml"
+        env:
+          ASAN_OPTIONS: halt_on_error=1:detect_leaks=1
+        run: >-
+          test -n "$NEXAUI_CI_LVP_MANIFEST" &&
+          VK_DRIVER_FILES="/usr/share/vulkan/icd.d/asahi_icd.json:$NEXAUI_CI_LVP_MANIFEST"
+          NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1
+          VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1
+          NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24'
+          python tests/run_weston_native.py --work-dir build-asan/wayland-session --
+          ctest --test-dir build-asan --output-on-failure --timeout 60
+          --output-junit "$GITHUB_WORKSPACE/build-asan/native-ctest.xml"
       - name: Require executed Wayland results
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
         run: python tests/check_wayland_results.py build-asan/native-ctest.xml
+      - name: Test reverse driver discovery order
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        env:
+          ASAN_OPTIONS: halt_on_error=1:detect_leaks=1
+        run: >-
+          VK_DRIVER_FILES="$NEXAUI_CI_LVP_MANIFEST:/usr/share/vulkan/icd.d/asahi_icd.json"
+          NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1
+          VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1
+          NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24'
+          python tests/run_weston_native.py --work-dir build-asan/reverse-wayland-session --
+          ctest --test-dir build-asan --output-on-failure --timeout 60
+          --output-junit "$GITHUB_WORKSPACE/build-asan/reverse-native-ctest.xml"
+      - name: Require executed reverse-order Wayland results
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        run: python tests/check_wayland_results.py build-asan/reverse-native-ctest.xml
       - name: Attribute Vulkan module lifetime reports
-        if: always()
-        run: xvfb-run -a -s '-screen 0 1600x1200x24' python tools/trace_vulkan_modules.py --app build-asan/examples/10_native_clear/nexaui_native_clear --control build-asan/nexaui_vulkan_lifetime_control --work-dir build-asan/vulkan-module-control
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        run: >-
+          VK_DRIVER_FILES="/usr/share/vulkan/icd.d/asahi_icd.json:$NEXAUI_CI_LVP_MANIFEST"
+          xvfb-run -a -s '-screen 0 1600x1200x24'
+          python tools/trace_vulkan_modules.py
+          --app build-asan/examples/10_native_clear/nexaui_native_clear
+          --control build-asan/nexaui_vulkan_lifetime_control
+          --work-dir build-asan/vulkan-module-control
       - name: Compare two fixed Vulkan driver discovery orders
-        if: always()
-        run: python tools/trace_vulkan_icd_order.py --control build-asan/nexaui_vulkan_lifetime_control --first /usr/share/vulkan/icd.d/asahi_icd.json --second /usr/share/vulkan/icd.d/lvp_icd.json --work-dir build-asan/vulkan-icd-order-control
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        run: >-
+          python tools/trace_vulkan_icd_order.py --control build-asan/nexaui_vulkan_lifetime_control
+          --first /usr/share/vulkan/icd.d/asahi_icd.json --second "$NEXAUI_CI_LVP_MANIFEST"
+          --work-dir build-asan/vulkan-icd-order-control
       - name: Save Linux sanitizer compositor diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: linux-sanitizer-wayland-session
           path: |
+            ${{ runner.temp }}/nexaui-mesa/receipts
+            build-asan/mesa-before
+            build-asan/mesa-after
             build-asan/wayland-session
+            build-asan/reverse-wayland-session
             build-asan/Testing/Temporary
             build-asan/native-ctest.xml
+            build-asan/reverse-native-ctest.xml
             build-asan/vulkan-module-control
             build-asan/vulkan-icd-order-control
           if-no-files-found: ignore

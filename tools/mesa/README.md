@@ -1,8 +1,8 @@
 # Private Mesa lifetime candidate
 
-This is a **candidate dependency correction**, not a NexaUI SDK dependency or
-system driver installation. The ordinary CI workflow keeps its existing gates.
-The separate paired workflow builds a private unmodified/corrected Mesa25.2.8
+This is a **private dependency correction**, not a NexaUI SDK dependency or
+system driver installation. The ordinary CI workflow keeps its existing gates
+and builds a private unmodified/corrected Mesa25.2.8
 and requires the old failure before accepting corrected controls. It also runs
 the complete original sanitized native suite in both ICD orders, including the
 existing no-skip Wayland gate. No suppression, retained DSO handle, preload or
@@ -46,5 +46,7 @@ no blanket license claim is made for the complete external source trees.
 The retained binary artifact includes those complete corresponding source
 archives, notices and the exact patch. Meson is private build tooling, not part
 of the NexaUI SDK. Its original wheel/license is retained in the source bundle.
-The candidate's acceptance requires actual paired CI results; local component
-success alone does not establish a complete driver repair.
+The [paired CI report](../../docs/quality/mesa-cleanup-candidate-report.md)
+records actual unload controls and two complete117-test native sanitizer
+suites. Local component success alone does not establish a complete driver
+repair. The standalone paired workflow is also available manually.
