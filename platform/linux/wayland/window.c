@@ -1516,9 +1516,13 @@ static void nx_wayland_keyboard_enter(void *data,
     if (window->ime_requested) nx_wayland_ime_activate(window);
     memset(window->keys_down, 0, sizeof(window->keys_down));
     nx_wayland_repeat_cancel(&window->repeat);
-    uint32_t *key;
-    wl_array_for_each(key, keys) {
-        if (*key < sizeof(window->keys_down)) window->keys_down[*key] = 1;
+    /* Empty enter snapshots are valid. Older Wayland SDK iteration macros
+       form NULL + 0 for them, before even deciding not to iterate. */
+    if (keys->size) {
+        uint32_t *key;
+        wl_array_for_each(key, keys) {
+            if (*key < sizeof(window->keys_down)) window->keys_down[*key] = 1;
+        }
     }
     nx_event event = {0};
     event.type = NX_EVENT_FOCUS;
