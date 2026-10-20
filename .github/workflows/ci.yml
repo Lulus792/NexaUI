@@ -146,6 +146,9 @@ jobs:
       - name: Attribute Vulkan module lifetime reports
         if: always()
         run: xvfb-run -a -s '-screen 0 1600x1200x24' python tools/trace_vulkan_modules.py --app build-asan/examples/10_native_clear/nexaui_native_clear --control build-asan/nexaui_vulkan_lifetime_control --work-dir build-asan/vulkan-module-control
+      - name: Compare two fixed Vulkan driver discovery orders
+        if: always()
+        run: python tools/trace_vulkan_icd_order.py --control build-asan/nexaui_vulkan_lifetime_control --first /usr/share/vulkan/icd.d/asahi_icd.json --second /usr/share/vulkan/icd.d/lvp_icd.json --work-dir build-asan/vulkan-icd-order-control
       - name: Save Linux sanitizer compositor diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -156,6 +159,7 @@ jobs:
             build-asan/Testing/Temporary
             build-asan/native-ctest.xml
             build-asan/vulkan-module-control
+            build-asan/vulkan-icd-order-control
           if-no-files-found: ignore
 
   windows-asan:
