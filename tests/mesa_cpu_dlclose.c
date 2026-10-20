@@ -25,6 +25,8 @@ int main(int argc, char **argv) {
     if (argc == 3) { puts("CPU fixture: checking process-exit scope"); return 0; }
     assert(dlclose(library) == 0);
     printf("CPU_CLOSE shutdown=%u default_fini=%u freed=%u\n", shutdown_seen, default_fini_seen, freed);
+    /* The expected baseline LSan failure may terminate before stdio teardown. */
+    if (fflush(stdout) != 0) return 2;
     if (!shutdown_seen && !default_fini_seen) return 77; /* libc did not unload; not a passing test */
     return shutdown_seen == 1 && default_fini_seen == 1 && freed == 1 ? 0 : 1;
 }

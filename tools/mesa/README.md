@@ -40,7 +40,8 @@ does not count as a passing unload check.
 
 Mesa's original copyright/license notices remain in the pinned sources.
 The modified source files carry their original MIT-style notices. Mesa's other
-source licenses and the Apache-2.0 SPIR-V dependencies remain in their archives;
+source licenses, SPIRV-Tools' Apache-2.0 license and SPIRV-Headers' per-file
+notices remain in their archives;
 no blanket license claim is made for the complete external source trees.
 The retained binary artifact includes those complete corresponding source
 archives, notices and the exact patch. Meson is private build tooling, not part
