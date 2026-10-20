@@ -156,7 +156,9 @@ successful half of the comparison.
 The normal sanitized CTest suite still passes117/117 and the six ordinary
 attribution controls pass, but the **sanitizer job is failed** because all four
 Asahi-first cases report leaks. These failures propagate normally and remain
-retained. A green reversed order is not a fix. The
+retained. All six ordinary linkage jobs pass: Windows115/115, macOS96/96 and
+Ubuntu117/117, each static/shared. The two optional jobs are skipped. A green
+reversed order is not a fix. The
 [CI receipt](vulkan-lifetime-control-ci.json) includes artifact12292509199,
 all case records, runtime identities, source-specific job status and the eight
 symbolized allocation records.

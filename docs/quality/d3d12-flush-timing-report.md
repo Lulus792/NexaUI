@@ -1,5 +1,9 @@
 # R01: actual cache-file flush boundaries
 
+Follow-up2026-10-20: a [new system-I/O capability preflight](d3d12-system-io-capability-report.md)
+is denied by Windows before session creation. It adds a concrete lower-layer
+permission boundary, not a new timing campaign or a cause attribution.
+
 2026-10-18, source base `1ff63d6b000f65b5b29a0105e4e97e2637cd8c46`
 (production code f7ec75b; renderer998a12c unchanged).
 [Eight complete process receipts, storage controls and helper sources](d3d12-flush-timing-local.json).

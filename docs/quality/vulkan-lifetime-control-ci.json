@@ -3301,6 +3301,69 @@
           }
         }
       ]
+    },
+    "terminal_job_snapshot": {
+      "run_id": 39485330188,
+      "commit": "47813abe7ced79dd9c0a99db5290f0a8631894b4",
+      "jobs": [
+        {
+          "id": 118844142917,
+          "name": "sanitizers",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 118844143196,
+          "name": "core (ubuntu-latest, ON)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143206,
+          "name": "core (macos-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143215,
+          "name": "core (windows-latest, ON)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143283,
+          "name": "core (ubuntu-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143448,
+          "name": "core (macos-latest, ON)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143454,
+          "name": "core (windows-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844144780,
+          "name": "fuzz-campaigns",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 118844145415,
+          "name": "windows-asan",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ],
+      "windows_shared_test_lines": [
+        "2026-10-20T19:48:00.7474264Z 100% tests passed out of 115\r"
+      ]
     }
   }
 }
