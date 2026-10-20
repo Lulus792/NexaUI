@@ -1,0 +1,359 @@
+{
+  "implementation_commit": "63f31eeafe37ab21702106240b7d50603ed91867",
+  "corrective_commit": "66d596d8ef9dbec2579971cc3c351742303f61ba",
+  "scope": "NexaUI D01 native window contract, software automation; physical/application acceptance remains open",
+  "proofs": {
+    "windows_static_baseline": {
+      "path": "out/d01-windows-debug.xml",
+      "sha256": "ff7283cee6c0d5f06f6ca27c5131af8b660ba209bd7d33ed4771324de27f833e",
+      "tests": 116,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "windows_shared_baseline": {
+      "path": "out/d01-windows-shared.xml",
+      "sha256": "c37c91f3b121e09d8bae5a53d3ab251d368cda897b9904621464c5744d739e49",
+      "tests": 116,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "windows_asan_final": {
+      "path": "out/d01-windows-asan-final.xml",
+      "sha256": "395d0d53519ceb7b1d8c64520ada98bfb9e49d5195673e3ba616a41ece655acf",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "windows_shared_final": {
+      "path": "out/d01-windows-shared-focused-final.xml",
+      "sha256": "e6bc826f837f8b34736b6f24f0389071160cf0d50d9ee8af0ccc502a2c3f286c",
+      "tests": 2,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "linux_instrumented_baseline_before_stricter_geometry": {
+      "path": "out/d01-linux-full-final.xml",
+      "sha256": "b7b8da751d86c58842f7404f5dc08946c47b140ab479a5e90e3847c44f113cb7",
+      "tests": 121,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": [
+        "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 1600x1200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+      ]
+    },
+    "openbox_ten_fresh_runs": {
+      "path": "out/d01-linux-openbox-startup-barrier.xml",
+      "sha256": "7b1dba075d450acaf198a9f29c33e8adb1d1b2cd99da09afb9b6582d7c44a217",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "linux_instrumented_final": {
+      "path": "out/d01-management-final-asan.xml",
+      "sha256": "732b6c46a453fc3581177e4056e99f151bbfe3deacb489e4d6e1ea7546a7bd47",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "linux_shared_final": {
+      "path": "out/d01-management-final-shared.xml",
+      "sha256": "9cad1cc05f7dee877bbf6cb1df689e58776cb63c75ca575c69f2fd284b22e041",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": []
+    },
+    "wayland_instrumented_final": {
+      "path": "out/d01-wayland-phased-restore.xml",
+      "sha256": "7040eb294c55ddbdf2440a76ac787774595df35ff06464a544dc45533aef260d",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": [
+        "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+      ]
+    },
+    "wayland_shared_final": {
+      "path": "out/d01-wayland-shared-restore.xml",
+      "sha256": "755acaada41dd4aacf9173da57a7dd617265d61038f940a8a5738c0618f1e227",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "native_output": [
+        "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+      ]
+    },
+    "wayland_zero_size_negative": {
+      "path": "out/d01-wayland-restore-before.xml",
+      "sha256": "6485de6ddd6d0d15b547fa87bebc056ca91253b7a2e27bb436ac8f0f8121f607",
+      "tests": 1,
+      "failed": 1,
+      "skipped": 0,
+      "native_output": []
+    },
+    "openbox_startup_negative": {
+      "path": "out/d01-linux-openbox-native-diagnostic.xml",
+      "sha256": "1035b1aa7088d9520c952e09f67c3acbb28fa659fd1cf0e51b8aa72001385f62",
+      "tests": 1,
+      "failed": 1,
+      "skipped": 0,
+      "native_output": []
+    },
+    "linux_original_full_negative": {
+      "path": "out/d01-linux-full.xml",
+      "sha256": "4d62a613e6bb8ea0d77320fa8211870a372aa33ca3ddd77393c8045044cb7464",
+      "tests": 121,
+      "failed": 1,
+      "skipped": 0,
+      "native_output": [
+        "Native WM: confirmed maximize 1600x1200, restore 1600x1200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+      ]
+    }
+  },
+  "sources": {
+    "include/nexaui/nexaui.h": "d10180f1e2bb5131d00cc5ca628836b293af2eeb9b479ed3aaa15d1c6f274988",
+    "platform/common/window_management.h": "99361d0190af32bac77beb7be94e34069655d53fe904ee0e7a33de5115d9052b",
+    "platform/windows/window.c": "25bdd994c456162402003635d68538beb99d7d1ccf62471a7d80637fca00aeba",
+    "platform/linux/window.c": "7a0367b0e48876d3b85c03bd985ec2930c3c2ee19a2d57a3498e517f53e64f94",
+    "platform/linux/x11/window.c": "d1f699df6a7447d2c749d1f796845117bb5bde6ced485e5f14b531c0a5758c74",
+    "platform/linux/wayland/window.c": "a9fa7f79fc40a4d30fe7031d7b1d5a27962cbd38cf89da78956a6a6109e4692a",
+    "platform/macos/window.m": "0f1f0fb5caa18fc6c3c4da748d0e6065f9eda90bc616233c6c1c5a99a28f7ec6",
+    "platform/unsupported/window.c": "badc901404faf630d5dd3ff10c06406c316f93a8dd642b6693ce329cf175ff1b",
+    "src/nexaui.c": "599b1a23a4febfbc3e7be36a417539617312fa30b946739fac4bb31e00ce38db",
+    "CMakeLists.txt": "826ce1f8fbaa5621f42115a17c4628d2de6f05a076ea7b5446ee60689099dac7",
+    "tests/test_native_management.c": "d440244714c30129d0f1499308d7f38b928703640577ec88af9005ce3e017836",
+    "tests/test_wayland_management.c": "a2847b5445725ae7267fede13e214aef060d9e0f7fa263a894631174cf9c97d6",
+    "tests/test_windows_management.c": "78e3ebaa03c09cdc92d5dea74890e3f34cb8ea3331585c3d25184003b9dc852e",
+    "tests/test_x11_management.c": "de4da4c690694ff6c7f3a07c7eeea7c231a4da17a86313837b24d635b2766d10",
+    "tests/test_macos_window.m": "b05c0b48c351769472aa114c3958074b27b553444cb158626c728a41ffb4275d"
+  },
+  "ci": {
+    "initial": 39506513206,
+    "corrective": 39507858713,
+    "corrective_status": "success",
+    "core_artifacts": [
+      {
+        "name": "linux-static",
+        "artifact_id": 12304088163,
+        "sha256": "9ac265b65144ca0bfac9e3bc6d47a2b59ded43226b78d3898b8d54ee0ff29bcf",
+        "native_macos_output": false,
+        "junit": {
+          "tests": 121,
+          "failures": 0,
+          "skipped": 0
+        },
+        "native_output": {
+          "nexaui_wayland_management_native": "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.",
+          "nexaui_x11_management_native": ""
+        }
+      },
+      {
+        "name": "linux-shared",
+        "artifact_id": 12303278917,
+        "sha256": "f9a022769af9d9e7e68555e02442f780d5a9b63cf58e1c450f08b18700bea297",
+        "native_macos_output": false,
+        "junit": {
+          "tests": 121,
+          "failures": 0,
+          "skipped": 0
+        },
+        "native_output": {
+          "nexaui_wayland_management_native": "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.",
+          "nexaui_x11_management_native": ""
+        }
+      },
+      {
+        "name": "macos-static",
+        "artifact_id": 12304092910,
+        "sha256": "0df8af3200740550715f8e001e14087550059af736c7b0d8f33a90a2f5930868",
+        "native_macos_output": true,
+        "native_log_counts": {
+          "unique_executed": 96,
+          "passed": 96,
+          "skipped": 0
+        },
+        "native_output": {}
+      },
+      {
+        "name": "macos-shared",
+        "artifact_id": 12304521557,
+        "sha256": "008579177a6fdb11737a1c80c8fb5b2bf1f68cb685f4084ea7138e74faf4a573",
+        "native_macos_output": true,
+        "native_log_counts": {
+          "unique_executed": 96,
+          "passed": 96,
+          "skipped": 0
+        },
+        "native_output": {}
+      }
+    ],
+    "sanitizer_artifact": {
+      "artifact_id": 12305012613,
+      "sha256": "5ffcafda96ffbf84c24d747ba4e0d9ada23d9ea4e1a6a7e6cc0bd8eae90c4660",
+      "source_commit": "66d596d8ef9dbec2579971cc3c351742303f61ba",
+      "suites": {
+        "NexaUI/NexaUI/build-asan/native-ctest.xml": {
+          "tests": 121,
+          "failed": 0,
+          "skipped": 0,
+          "required_gate_cases": 11,
+          "wayland_management_output": "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+        },
+        "NexaUI/NexaUI/build-asan/reverse-native-ctest.xml": {
+          "tests": 121,
+          "failed": 0,
+          "skipped": 0,
+          "required_gate_cases": 11,
+          "wayland_management_output": "Native WM before request: state=8 known=14 capabilities=63\nNative WM: confirmed maximize 1600x1200, restore 320x200, 3 state events; minimize observability=0. Physical/visual acceptance remains separate.\n"
+        }
+      },
+      "json_files": [
+        "_temp/nexaui-mesa/receipts/after/lvp_icd.json",
+        "_temp/nexaui-mesa/receipts/before/lvp_icd.json",
+        "_temp/nexaui-mesa/receipts/build.json",
+        "_temp/nexaui-mesa/receipts/components/results.json",
+        "_temp/nexaui-mesa/receipts/corresponding-source/25.2.8-lifetime.json",
+        "NexaUI/NexaUI/build-asan/mesa-before/first-second/results.json",
+        "NexaUI/NexaUI/build-asan/mesa-before/results.json",
+        "NexaUI/NexaUI/build-asan/mesa-before/second-first/results.json",
+        "NexaUI/NexaUI/build-asan/mesa-after/first-second/results.json",
+        "NexaUI/NexaUI/build-asan/mesa-after/results.json",
+        "NexaUI/NexaUI/build-asan/mesa-after/second-first/results.json",
+        "NexaUI/NexaUI/build-asan/wayland-session/result.json",
+        "NexaUI/NexaUI/build-asan/reverse-wayland-session/result.json",
+        "NexaUI/NexaUI/build-asan/vulkan-module-control/explicit-validation/result.json",
+        "NexaUI/NexaUI/build-asan/vulkan-module-control/results.json",
+        "NexaUI/NexaUI/build-asan/vulkan-module-control/without-explicit-validation/result.json",
+        "NexaUI/NexaUI/build-asan/vulkan-icd-order-control/first-second/results.json",
+        "NexaUI/NexaUI/build-asan/vulkan-icd-order-control/results.json",
+        "NexaUI/NexaUI/build-asan/vulkan-icd-order-control/second-first/results.json"
+      ],
+      "patched_dependency_controls": {
+        "count": 8,
+        "failed": 0,
+        "leak_reports": 0
+      },
+      "module_controls": {
+        "runs": 6,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "discovery_order_controls": {
+        "runs": 2,
+        "exit_codes": [
+          0,
+          0
+        ]
+      }
+    },
+    "jobs": [
+      {
+        "id": 118921209432,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209625,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209715,
+        "name": "core (macos-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209716,
+        "name": "core (ubuntu-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209749,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209832,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921209874,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921211525,
+        "name": "fuzz-campaigns",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 39507858713
+      },
+      {
+        "id": 118921211675,
+        "name": "windows-asan",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 39507858713
+      }
+    ],
+    "windows_logs": {
+      "windows-static": {
+        "sha256": "97fc93bcdf72f1a069f949f8aa36b8845b983bdd5d5987e7e7e5661cb0dd38c0",
+        "passed": 116,
+        "skipped": 0
+      },
+      "windows-shared": {
+        "sha256": "a391ad5ec90de71c25974ee92a312ac619d63eabd5bfc26c0c9ad3f484225da5",
+        "passed": 116,
+        "skipped": 0
+      }
+    }
+  },
+  "open": [
+    "R01 profiling rights/lower-layer attribution",
+    "WSLg live surface-to-RAIL mapping",
+    "physical mixed DPI/monitor changes",
+    "physical keyboard/IME",
+    "human accessibility",
+    "NexaCloud pin adoption/composition"
+  ],
+  "openbox_repeat_invocation": {
+    "command": "ctest -R ^nexaui_x11_management_native$ --repeat until-fail:10",
+    "exit_code": 0,
+    "iterations_observed": 10,
+    "junit_stores_last_case_only": true,
+    "exec_session": 75605
+  },
+  "external_source_snapshot": {
+    "path": "out\\d01-window-management-v1\\weston-14.0.2-shell.c",
+    "url": "https://raw.githubusercontent.com/wayland-mirror/weston/14.0.2/desktop-shell/shell.c",
+    "sha256": "0f61c06e41a8ee5177a42d4f9ae4a31edd542b682a5aea5c498a8bc0017abfa3"
+  }
+}

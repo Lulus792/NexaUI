@@ -48,17 +48,16 @@ hide compositor refusals. Both are rejected. Capability reporting plus native
 adapters preserve the common C17 boundary while keeping actual limitations
 visible.
 
-## Acceptance still required
+## Automated coverage and remaining acceptance
 
-Default-window regression, invalid arguments, owner-thread/lifetime guards,
-stale and valid gestures, actual native state/configure messages, decoration
-negotiation and failure cleanup. Windows additionally needs native drag/resize,
-Snap, Alt+Space/system menu, focus, DPI/monitor behavior and accessible controls.
-macOS and both Linux backends need their own executed evidence. Physical
-keyboard/IME/screenreader/full-design checks remain separate open requirements.
-
-Automated Windows, AppKit and Linux results, including their source revisions,
-are listed in the report. These do not close the physical checks above.
+Executed tests cover default-window regression, invalid arguments, owner-thread/
+lifetime guards, stale and accepted gesture requests, native state/configure
+messages, decoration refusal/cleanup and restored dimensions. The report lists
+independent Windows, AppKit, X11 and Wayland evidence and source revisions.
+Windows system-menu forwarding and resize/move loop entry are checked through
+native messages. Physical drag/Snap, mixed DPI/monitor behavior, real keyboard/
+IME, human screenreader use, composed accessible controls and full-design
+acceptance remain open.
 
 ## Application integration
 

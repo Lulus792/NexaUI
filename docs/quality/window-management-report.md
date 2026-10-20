@@ -1,6 +1,6 @@
 # Portable native window management — D01
 
-Implementation and automated verification in progress, 2026-10-21. This is the
+SDK implementation and native automated verification delivered, 2026-10-21. This is the
 NexaCloud handoff's window-control D01, separate from the roadmap's historical
 D3D12-device D01 identifier. Full native/physical/application acceptance remains
 open. No NexaCloud source or tested dependency pin is changed by this work.
@@ -18,10 +18,10 @@ zero their output. Requests do not fabricate observed state.
 
 | Backend | Implementation | Local evidence so far | Remaining acceptance |
 | --- | --- | --- | --- |
-| Windows | Overlapped styles retained; full client NCCALCSIZE/work-area clipping; DPI-based edge hit testing; native nonclient move/resize; ShowWindow state actions; client-mode system menu route | Debug static and DLL suites each 116/116; final DLL checks 2/2 and MSVC-ASan 3/3 | Physical drag/Snap, real mixed DPI/input and composed accessible controls |
-| Wayland | xdg-toplevel configure state/caps; own seat/press serial; decoration negotiation/refusal; normal-size restoration and phased fullscreen exit | Instrumented wire fixture and private Weston native size/state checks; zero-size and fullscreen/maximized restore cases; default regressions | Fresh regular CI for the corrective delta; physical compositor/application acceptance |
-| X11 | ICCCM selection/WM_STATE, EWMH supported/state/active properties and messages; Motif decoration hint | Instrumented wire fixture and real Openbox transitions; startup-barrier fixture passes ten fresh runs | Regular CI and full suite after fixture correction; physical WM/application acceptance; hints may be declined |
-| AppKit | Native titled full-size content, hidden standard buttons; retained own NSEvent drag; native frame resize with limits/Escape; zoom/miniaturize/restore/state | CI 39506513206: static and shared each 96/96, including native management assertions | Physical drag, monitors, input, VoiceOver |
+| Windows | Overlapped styles retained; full client NCCALCSIZE/work-area clipping; DPI-based edge hit testing; native nonclient move/resize; ShowWindow state actions; client-mode system menu route | Corrective CI static/shared116/116 each; local final DLL checks2/2 and MSVC-ASan3/3 | Physical drag/Snap, real mixed DPI/input and composed accessible controls |
+| Wayland | xdg-toplevel configure state/caps; own seat/press serial; decoration negotiation/refusal; normal-size restoration and phased fullscreen exit | Corrective CI Linux static/shared121/121 plus both full sanitizer suites121/121; no skips | Physical compositor/application acceptance |
+| X11 | ICCCM selection/WM_STATE, EWMH supported/state/active properties and messages; Motif decoration hint | Instrumented wire fixture and real Openbox transitions; startup-barrier fixture passes ten fresh runs; corrective CI Linux static/shared121/121 | Physical WM/application acceptance; hints may be declined |
+| AppKit | Native titled full-size content, hidden standard buttons; retained own NSEvent drag; native frame resize with limits/Escape; zoom/miniaturize/restore/state | Corrective CI39507858713: static and shared each96/96, including native management assertions | Physical drag, monitors, input, VoiceOver |
 
 The Windows gesture fixture intercepts `SC_MOVE`/`SC_SIZE` only at native loop
 entry and verifies all nine requests/cancellation. It does not simulate physical
@@ -111,7 +111,30 @@ contains separately successful macOS static/shared jobs (96/96 each) and Ubuntu
 static. It has an Ubuntu shared build failure from the diagnostic link edge;
 do not call the initial workflow wholly green. Logs are preserved under
 `out/d01-window-management-v1/ci-39506513206`. The corrective revision requires
-its own complete CI result.
+its own complete CI result, recorded below.
+
+Corrective [CI39507858713](https://github.com/Lulus792/NexaUI/actions/runs/39507858713)
+on66d596d has successful Linux static/shared121/121 and macOS static/shared96/96
+jobs. Four downloaded artifact ZIP digests match GitHub's metadata. Both Linux
+JUnit files contain121 unique cases, no failed/skipped results and all11 required
+native gate cases. Their native Wayland output confirms1600x1200→320x200.
+Both macOS raw LastTest logs confirm the actual AppKit client-chrome/resize/
+Escape/zoom/miniaturize/restore assertions ran successfully. Both Windows jobs
+also pass116/116, including the new native management case. The required
+sanitizer job is successful: paired private Mesa cleanup, both complete121/121
+suites, both11-case no-skip gates, module attribution and driver-order controls.
+All seven required jobs succeed. Optional Windows-ASan/fuzz CI jobs are skipped
+by workflow configuration; local Windows-ASan evidence above is separate.
+Sanitizer artifact12305012613 is downloaded and its SHA256 matches GitHub:
+`5ffcafda96ffbf84c24d747ba4e0d9ada23d9ea4e1a6a7e6cc0bd8eae90c4660`.
+Both raw JUnit files independently contain121 unique executed cases and all11
+mandatory native cases, without failures/skips. The eight corrected dependency
+controls report no leaks with verified layer state; all six module-attribution
+runs and both discovery-order groups exit0. Sources, original negative controls
+and full archive remain retained. These are SDK/software results, not a WSLg
+live-session, physical input, monitor or full Design-A acceptance.
+Machine-readable hashes and result scopes are in
+[window-management-local.json](window-management-local.json).
 
 ## Limits and integration handoff
 
