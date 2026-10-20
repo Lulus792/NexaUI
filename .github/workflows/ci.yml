@@ -145,7 +145,7 @@ jobs:
         run: python tests/check_wayland_results.py build-asan/native-ctest.xml
       - name: Attribute Vulkan module lifetime reports
         if: always()
-        run: xvfb-run -a -s '-screen 0 1600x1200x24' python tools/trace_vulkan_modules.py --app build-asan/examples/10_native_clear/nexaui_native_clear --work-dir build-asan/vulkan-module-control
+        run: xvfb-run -a -s '-screen 0 1600x1200x24' python tools/trace_vulkan_modules.py --app build-asan/examples/10_native_clear/nexaui_native_clear --control build-asan/nexaui_vulkan_lifetime_control --work-dir build-asan/vulkan-module-control
       - name: Save Linux sanitizer compositor diagnostics
         if: always()
         uses: actions/upload-artifact@v4
