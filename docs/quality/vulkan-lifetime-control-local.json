@@ -1,0 +1,2029 @@
+{
+  "date": "2026-10-20",
+  "source_commit": "6fe63dfcc1cdd493228f549fe0547f3024662f0a",
+  "scope": "Independent Linux Vulkan-only device/draw lifetime controls; no NexaUI linkage; not a production or dependency repair.",
+  "environment": {
+    "uname": {
+      "system": "Linux",
+      "node": "Lulus",
+      "release": "6.18.33.2-microsoft-standard-WSL2",
+      "version": "#1 SMP PREEMPT_DYNAMIC Thu Jun 18 21:54:43 UTC 2026",
+      "machine": "x86_64",
+      "processor": ""
+    },
+    "compiler": "Alpine clang version 22.1.3",
+    "glslang": "Glslang Version: 11:16.2.0\nESSL Version: OpenGL ES GLSL 3.20 glslang Khronos. 16.2.0\nGLSL Version: 4.60 glslang Khronos. 16.2.0\nSPIR-V Version 0x00010600, Revision 1\nGLSL.std.450 Version 100, Revision 1\nKhronos Tool ID 8\nSPIR-V Generator Version 11\nGL_KHR_vulkan_glsl version 100\nARB_GL_gl_spirv version 100\n"
+  },
+  "sources": [
+    {
+      "path": "tools/vulkan_lifetime_control.c",
+      "bytes": 21360,
+      "sha256": "f4a34d6a0d993dc0ccad016995e18e4fb7df2eb13d64be6244d6f1fe6a66b0a4",
+      "git_blob_sha256": "f4a34d6a0d993dc0ccad016995e18e4fb7df2eb13d64be6244d6f1fe6a66b0a4"
+    },
+    {
+      "path": "tools/vulkan_lifetime_shaders.h",
+      "bytes": 5050,
+      "sha256": "5a0cc46541585879b933b6f5fff84c645f5acfe9df2b3e9a97a86d46c15e057c",
+      "git_blob_sha256": "5a0cc46541585879b933b6f5fff84c645f5acfe9df2b3e9a97a86d46c15e057c"
+    },
+    {
+      "path": "tools/vulkan_lifetime.vert",
+      "bytes": 214,
+      "sha256": "c504617777d2a7e28e5b107903e9401cfb21a71a9bc4fda2202b366a6ee39664",
+      "git_blob_sha256": "c504617777d2a7e28e5b107903e9401cfb21a71a9bc4fda2202b366a6ee39664"
+    },
+    {
+      "path": "tools/vulkan_lifetime.frag",
+      "bytes": 131,
+      "sha256": "7810d8273f31e0920aba95a5ad746cdbd55e12a5340102320af03d88ecaf0de6",
+      "git_blob_sha256": "7810d8273f31e0920aba95a5ad746cdbd55e12a5340102320af03d88ecaf0de6"
+    },
+    {
+      "path": "tools/generate_vulkan_lifetime_shaders.py",
+      "bytes": 2017,
+      "sha256": "32871c1359fe14d4bbe9996a7ac811df8aaa691a5f58c873a78d9a0d788fb615",
+      "git_blob_sha256": "32871c1359fe14d4bbe9996a7ac811df8aaa691a5f58c873a78d9a0d788fb615"
+    },
+    {
+      "path": "tools/trace_vulkan_modules.py",
+      "bytes": 8372,
+      "sha256": "a241de7822755df77e3dc98a8758a6402c06cde986206d6917bab460dd0eef7d",
+      "git_blob_sha256": "a241de7822755df77e3dc98a8758a6402c06cde986206d6917bab460dd0eef7d"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 76374,
+      "sha256": "606ac319e783bae3d899b7916612d6e5777f7da640b68ea4406063d82be1acdf",
+      "git_blob_sha256": "a7b4fa1cce34683183a6caa1e45e129026c8d48d41bc70a807c9ef5335b2a32a"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 12132,
+      "sha256": "522d79750fcae33ade508bab86c2e240f7d02c47288ccaeae58d74f1b1a7d8f8",
+      "git_blob_sha256": "bc25c84acb57969daab2782dbcea6ac74ece2ee9f5aed665fcd183995b0e4195"
+    }
+  ],
+  "positive": {
+    "scope": "Fixed controls; leak detection enabled, no suppression. Full CTest is a separate gate.",
+    "binaries": {
+      "control": {
+        "path": "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_lifetime_control",
+        "sha256": "a94e3e3806ac5787e263164e0e9530b0e02f011e490ca6efafd295d39c7dbcdf"
+      }
+    },
+    "libc": null,
+    "module_logging_supported": false,
+    "runs": [
+      {
+        "name": "pure-device-explicit-validation",
+        "command": [
+          "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_lifetime_control",
+          "--device"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x77da9b154000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x73da97600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x73da8a800000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x77da9b154000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x73da97600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x73da8a800000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x77da9b154000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x73da97600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x73da8a800000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "pure-draw-explicit-validation",
+        "command": [
+          "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_lifetime_control",
+          "--draw"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x75d14a365000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x71d146800000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x71d139a00000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x75d14a365000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x71d146800000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x71d139a00000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x75d14a365000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x71d146800000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x71d139a00000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x75d14a365000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x71d146800000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libVkLayer_khronos_validation.so",
+            "base": "0x71d139a00000",
+            "extent": "0x1137b68",
+            "runtime_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "size": 17864640,
+            "sha256": "9480cf5684dc5c69d5f8c32176da9947c5979d48069d861f0889c3ed69a616b6",
+            "disk_build_id": "c7a2d353840a513167b4425c13a663e5626536f1",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "pure-device-without-explicit-validation",
+        "command": [
+          "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_lifetime_control",
+          "--device"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7443b1090000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x7043ad600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7443b1090000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x7043ad600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7443b1090000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x7043ad600000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "pure-draw-without-explicit-validation",
+        "command": [
+          "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_lifetime_control",
+          "--draw"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7cb80ad50000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x78b807200000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7cb80ad50000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x78b807200000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7cb80ad50000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x78b807200000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan.so.1.4.347",
+            "base": "0x7cb80ad50000",
+            "extent": "0x931c8",
+            "runtime_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "size": 599808,
+            "sha256": "eccaefda04ef398e7002c63234f549b0c799e2baa3adedcc5461c5d34a493e66",
+            "disk_build_id": "2d2111973955f0430af510d4667a2f4cd3b5f26a",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/libvulkan_lvp.so",
+            "base": "0x78b807200000",
+            "extent": "0xe10060",
+            "runtime_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "size": 14570592,
+            "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+            "disk_build_id": "a9df98d9c0bf2fa2ffba544cd5f87621c19bd210",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      }
+    ]
+  },
+  "negative": {
+    "records": [
+      {
+        "name": "mutant-build",
+        "command": [
+          "clang",
+          "-std=c17",
+          "-O0",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-I/mnt/d/NexaUI/tools",
+          "/mnt/d/NexaUI/out/vulkan-lifetime-control/no_draw.c",
+          "-lvulkan",
+          "-ldl",
+          "-o",
+          "/mnt/d/NexaUI/out/vulkan-lifetime-control/no_draw"
+        ],
+        "exit_code": 0,
+        "expected": 0
+      },
+      {
+        "name": "mutant-run",
+        "command": [
+          "env",
+          "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
+          "VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation",
+          "VK_LAYER_VALIDATE_SYNC=1",
+          "ASAN_OPTIONS=halt_on_error=1:detect_leaks=1",
+          "/mnt/d/NexaUI/out/vulkan-lifetime-control/no_draw",
+          "--draw"
+        ],
+        "exit_code": 1,
+        "expected": 1
+      },
+      {
+        "name": "missing-marker-run",
+        "command": [
+          "/usr/bin/python3",
+          "/mnt/d/NexaUI/tools/trace_vulkan_modules.py",
+          "--control",
+          "/bin/true",
+          "--work-dir",
+          "/mnt/d/NexaUI/out/vulkan-lifetime-control/missing-marker"
+        ],
+        "exit_code": 1,
+        "expected": 1
+      },
+      {
+        "name": "link-commands",
+        "command": [
+          "ninja",
+          "-C",
+          "/mnt/d/NexaUI/out/vulkan-sanitize",
+          "-t",
+          "commands",
+          "nexaui_vulkan_lifetime_control"
+        ],
+        "exit_code": 0,
+        "expected": 0
+      },
+      {
+        "name": "compiler-version",
+        "command": [
+          "glslangValidator",
+          "--version"
+        ],
+        "exit_code": 0,
+        "expected": 0
+      },
+      {
+        "name": "shader-check",
+        "command": [
+          "/usr/bin/python3",
+          "/mnt/d/NexaUI/tools/generate_vulkan_lifetime_shaders.py",
+          "--check"
+        ],
+        "exit_code": 0,
+        "expected": 0
+      }
+    ],
+    "source_sha256": "f4a34d6a0d993dc0ccad016995e18e4fb7df2eb13d64be6244d6f1fe6a66b0a4",
+    "mutant_sha256": "8dbe737a9a51ff622534cc9cdd4a9bb7b77752234e0a12d49ffe20dfb6022717",
+    "all_expected": true
+  },
+  "link_commands": "/usr/bin/clang   -fsanitize=address,undefined -fno-omit-frame-pointer -g -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/nexaui_vulkan_lifetime_control.dir/tools/vulkan_lifetime_control.c.o -MF CMakeFiles/nexaui_vulkan_lifetime_control.dir/tools/vulkan_lifetime_control.c.o.d -o CMakeFiles/nexaui_vulkan_lifetime_control.dir/tools/vulkan_lifetime_control.c.o -c /mnt/d/NexaUI/tools/vulkan_lifetime_control.c\n: && /usr/bin/clang -fsanitize=address,undefined -fno-omit-frame-pointer -g -fsanitize=address,undefined CMakeFiles/nexaui_vulkan_lifetime_control.dir/tools/vulkan_lifetime_control.c.o -o nexaui_vulkan_lifetime_control  /usr/lib/libvulkan.so  -ldl  -lm && :\n",
+  "mesa_primary_sources": [
+    {
+      "url": "https://gitlab.freedesktop.org/mesa/mesa/-/raw/mesa-25.2.8/src/gallium/auxiliary/rtasm/rtasm_execmem.c",
+      "file": "rtasm_execmem.c",
+      "bytes": 3624,
+      "sha256": "e5a77a4a87803ae0eee5b45fdaea83639ce1e50469ee2c8c80e62182bec9c749",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.freedesktop.org/mesa/mesa/-/raw/mesa-25.2.8/src/util/u_cpu_detect.c",
+      "file": "u_cpu_detect.c",
+      "bytes": 28946,
+      "sha256": "73e81119ccc66069c4957a5e263922c0e3f53e09d6657d6d8e559a05fbc8df4b",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.freedesktop.org/mesa/mesa/-/raw/mesa-26.1.6/src/gallium/auxiliary/rtasm/rtasm_execmem.c",
+      "sha256": "e5a77a4a87803ae0eee5b45fdaea83639ce1e50469ee2c8c80e62182bec9c749",
+      "bytes": 3624
+    },
+    {
+      "url": "https://gitlab.freedesktop.org/mesa/mesa/-/raw/mesa-26.1.6/src/util/u_cpu_detect.c",
+      "sha256": "4feb4ca2ebbbe7efe950412cc86db2c492f0659af7843fcb1909ccf292a413dc",
+      "bytes": 31537
+    }
+  ],
+  "previous_green_ci": {
+    "run": 39481622246,
+    "sha": "4f05d8d5adf518fb3eafafd3ca7eaf5bc6223de9",
+    "source": "https://github.com/Lulus792/NexaUI/actions/runs/39481622246",
+    "jobs": [
+      {
+        "id": 118831358517,
+        "name": "sanitizers",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831358973,
+        "name": "core (windows-latest, ON)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831358980,
+        "name": "core (windows-latest, OFF)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831359029,
+        "name": "core (macos-latest, OFF)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831359078,
+        "name": "core (ubuntu-latest, ON)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831359114,
+        "name": "core (macos-latest, ON)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831359130,
+        "name": "core (ubuntu-latest, OFF)",
+        "conclusion": "success"
+      },
+      {
+        "id": 118831361047,
+        "name": "windows-asan",
+        "conclusion": "skipped"
+      },
+      {
+        "id": 118831361644,
+        "name": "fuzz-campaigns",
+        "conclusion": "skipped"
+      }
+    ],
+    "sanitizer_job": 118831358517,
+    "lines": [
+      "2026-10-20T19:13:58.5911853Z Get:138 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 mesa-vulkan-drivers amd64 25.2.8-0ubuntu0.24.04.4 [17.5 MB]",
+      "2026-10-20T19:16:58.7966195Z 100% tests passed, 0 tests failed out of 117",
+      "2026-10-20T19:17:02.4798515Z {\"name\": \"explicit-validation\", \"command\": [\"/usr/bin/python\", \"/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py\", \"--timeout\", \"120\", \"--work-dir\", \"/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/explicit-validation\", \"--\", \"env\", \"-u\", \"VK_INSTANCE_LAYERS\", \"-u\", \"VK_LAYER_VALIDATE_SYNC\", \"NEXAUI_PLATFORM=x11\", \"NEXAUI_REQUIRE_VULKAN=1\", \"LD_DEBUG=files\", \"ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:fast_unwind_on_malloc=0\", \"LSAN_OPTIONS=report_objects=1\", \"VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation\", \"VK_LAYER_VALIDATE_SYNC=1\", \"/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear\", \"--smoke\"], \"exit_code\": 0, \"validation_library_in_loader_log\": true, \"layer_control_verified\": true, \"smoke_completed\": true, \"leak_report\": false}",
+      "2026-10-20T19:17:04.5988599Z {\"name\": \"without-explicit-validation\", \"command\": [\"/usr/bin/python\", \"/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py\", \"--timeout\", \"120\", \"--work-dir\", \"/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/without-explicit-validation\", \"--\", \"env\", \"-u\", \"VK_INSTANCE_LAYERS\", \"-u\", \"VK_LAYER_VALIDATE_SYNC\", \"NEXAUI_PLATFORM=x11\", \"NEXAUI_REQUIRE_VULKAN=1\", \"LD_DEBUG=files\", \"ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:fast_unwind_on_malloc=0\", \"LSAN_OPTIONS=report_objects=1\", \"/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear\", \"--smoke\"], \"exit_code\": 0, \"validation_library_in_loader_log\": false, \"layer_control_verified\": true, \"smoke_completed\": true, \"leak_report\": false}"
+    ]
+  },
+  "evidence_files": [
+    {
+      "path": "out/vulkan-lifetime-control/26.1.6-rtasm_execmem.c",
+      "bytes": 3624,
+      "sha256": "e5a77a4a87803ae0eee5b45fdaea83639ce1e50469ee2c8c80e62182bec9c749"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/26.1.6-u_cpu_detect.c",
+      "bytes": 31537,
+      "sha256": "4feb4ca2ebbbe7efe950412cc86db2c492f0659af7843fcb1909ccf292a413dc"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/asahi_icd.json",
+      "bytes": 137,
+      "sha256": "1fb3806fdfcd22fa8bce4b0731f4ed4fc29873b8f5c81cd35842cd1ff5a27697"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-fixed.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-fixed.stdout",
+      "bytes": 313,
+      "sha256": "ef206ad9abb8bdbbc167e5f382dc41613466e7b9d43459c13304ef6ea679104d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-snapshots.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-snapshots.stdout",
+      "bytes": 162,
+      "sha256": "8deb04e8e59ec3bd673c3c647154d247fe85c8aa9cd74245ecce12e189451cc3"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-vertex.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build-vertex.stdout",
+      "bytes": 162,
+      "sha256": "8deb04e8e59ec3bd673c3c647154d247fe85c8aa9cd74245ecce12e189451cc3"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build.stderr",
+      "bytes": 450,
+      "sha256": "c2ff4148dfe641b82e0087a4d644b72e81954b1a9b2b10bdc4972ed2cf499e50"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/build.stdout",
+      "bytes": 943,
+      "sha256": "0870f6d996042d77dc04543d4d792a5fa7abdec1f2534709e8034e393d5ac291"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/check-controls.py",
+      "bytes": 2426,
+      "sha256": "a16a7bf5b59d6ae3587020f824fe263e185d2504f19f7621e77c4ac0f193dec0"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/check-empty-success.py",
+      "bytes": 1438,
+      "sha256": "f58a96d7f38adfee153585120d6cfaa7b7c5f7b8eb8749f61f07358b334431bc"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci-independent-controls.json",
+      "bytes": 3748,
+      "sha256": "1e652757938986e4280d3445b9874285f117525a986d8f15d2f8c3a6937935da"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci-order-jobs.json",
+      "bytes": 2855,
+      "sha256": "ef420e19e16d9ee47f0686e1acf5e05f3c4949f728ca3d3697ed7853912e06f2"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci-previous-green.json",
+      "bytes": 3177,
+      "sha256": "6700f5d51fe65bb7728818772cdc8a43eb34cf2c181b2e8a417d38eaf87acf0c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/Testing/Temporary/CTestCostData.txt",
+      "bytes": 3798,
+      "sha256": "5239e29820ec72540c88bc8bdae7f8dd5be97eca8f37a8b21a3eff1a30195cc7"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/explicit-validation/result.json",
+      "bytes": 791,
+      "sha256": "598c07b697c911e8ede8d4d623f9107562441499da830f137c0b6a97d042c243"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/explicit-validation/weston.stderr",
+      "bytes": 75162,
+      "sha256": "c3ba31ad623d0960cc3141fdce2de051065f5694b2d376afbf312170f1f5a737"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/explicit-validation.stderr",
+      "bytes": 52722,
+      "sha256": "eb4c8d35231352b2f8dfb2ce5879f6561c28879e62f7a13d1fd743b50c46dcc8"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-device-explicit-validation.stderr",
+      "bytes": 36523,
+      "sha256": "b9b127ea6281de25a172674ce59328d0ef25104c6ceb1c740cfa004e4392bded"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-device-explicit-validation.stdout",
+      "bytes": 3573,
+      "sha256": "26f6a9de3906d94f4d0abb8f90c0612d09554a7aae712a8cda1a3ff13cdb3464"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-device-without-explicit-validation.stderr",
+      "bytes": 35241,
+      "sha256": "85c1852e3c25d6244aa550689bf3fad769256b9cada8fdd47fc5a0b74f0aa482"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-device-without-explicit-validation.stdout",
+      "bytes": 3245,
+      "sha256": "ef1afccd66b577ac0ff2128c4948a07c42472a2f1774cf8c59ebbafc1774f2f2"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-draw-explicit-validation.stderr",
+      "bytes": 37255,
+      "sha256": "6c119763b702010b086c9858cd86e49ee83a3cc09ff5e3222e73137e3d398d33"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-draw-explicit-validation.stdout",
+      "bytes": 5095,
+      "sha256": "46c150fc1fecee640d76b684a9a3454316cad02261d68d6287a0d92899c9d291"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-draw-without-explicit-validation.stderr",
+      "bytes": 35973,
+      "sha256": "a6e01d628611788b4d585591b220aac0a6ef14f93afcef093c1c279e0dbadc56"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-draw-without-explicit-validation.stdout",
+      "bytes": 4604,
+      "sha256": "f83152c689a6baab9701e79692647146b585b9cc1d043efb2a9bbcf03dac524b"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/results.json",
+      "bytes": 62751,
+      "sha256": "0dbd86355334917d0000a2384178a38c54db3f3c0e9b161e276c2a282861883c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/without-explicit-validation/result.json",
+      "bytes": 799,
+      "sha256": "943725648086a408b060a94b5d24131f12a7f9ae6ae5fb0b7827216058999d2e"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/without-explicit-validation/weston.stderr",
+      "bytes": 75178,
+      "sha256": "daa668cc28b470ab48e1de57f4b117b0a4557d7ad62ed4e9fe4eccace6e8ec86"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/without-explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/without-explicit-validation.stderr",
+      "bytes": 51781,
+      "sha256": "1471452d0db612a79b9c8926a7be1e05cf09e1efa8164c3afb649fd01eaf1ba4"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/without-explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/wayland-session/result.json",
+      "bytes": 842,
+      "sha256": "02d9a562ecaa72be2ce30c43df7b42b7058febb9de0880586ed1e1e79ff83465"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/wayland-session/weston.stderr",
+      "bytes": 2424,
+      "sha256": "c0fc4552159897c551df2e81f7eda1fb7f980de74fd910a48fadc5da5f2f1a93"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-artifact/wayland-session/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39484227995-sanitizers.zip",
+      "bytes": 61900,
+      "sha256": "1f1636fec1ab958475a67df2596492f50b6139342607b9c0064ebfcc29c75eed"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/Testing/Temporary/CTestCostData.txt",
+      "bytes": 3800,
+      "sha256": "958b13223dc1d989f4a239b799d00663281ecece572ef105c5c2d755aab90a27"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-device-explicit-validation.stderr",
+      "bytes": 53330,
+      "sha256": "f6f8fbd87078ab0e818cedaeb3e053277963b690b4449eac2aa6cb974e741f40"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-device-explicit-validation.stdout",
+      "bytes": 1859,
+      "sha256": "1990980559dd031fdf78205708e9e005809e003b6418e118d92cbcbd28d66f17"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-device-without-explicit-validation.stderr",
+      "bytes": 51849,
+      "sha256": "78cba52eb3a22cad34f3d91fdf70abac62860fb3a6399596f36d4bfcf86c9d5d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-device-without-explicit-validation.stdout",
+      "bytes": 1531,
+      "sha256": "30a928bd0cba8cfabad9e271da00bd933549044a0c1d4dd3dbb3c4eef9749334"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-draw-explicit-validation.stderr",
+      "bytes": 57028,
+      "sha256": "15501d5c8aaaceedf6614b18157fd0fcc85e722a9ce0c80275b48456d57c2d71"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-draw-explicit-validation.stdout",
+      "bytes": 2597,
+      "sha256": "1d85be39bcfcf65fa0d4b806b64fb3ddde1740cac61b85471ffe457ad7f32a82"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-draw-without-explicit-validation.stderr",
+      "bytes": 55547,
+      "sha256": "6f48d4beac7b5326bc07a9c1dee4d09d07299702334ff2f8350541495120ac04"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/pure-draw-without-explicit-validation.stdout",
+      "bytes": 2106,
+      "sha256": "46a07bea1a2aa1b8a2ad58d4b78c60cc0f77fd5fc4aebaff27977874c64a0397"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second/results.json",
+      "bytes": 29406,
+      "sha256": "0e73c26d172bd48a640de6b195cbb8c3377747f27024c73c9db36c0779becf6a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/first-second.stdout",
+      "bytes": 1910,
+      "sha256": "03d77385fc95f5ecef5dc1dd16f0dd5f0f477060b1275c94247162168e826b40"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/results.json",
+      "bytes": 65284,
+      "sha256": "945866e8bb2717825e3e9d0ab371852322f5acef332681058485664a6ebd9ecb"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-device-explicit-validation.stderr",
+      "bytes": 30457,
+      "sha256": "d378089d078f5a14763888e2a6225106bf210911cf825dc574cb8d1e045d51d9"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-device-explicit-validation.stdout",
+      "bytes": 1857,
+      "sha256": "035565d4795196e6a892a943965dba7633e664c3ca299a509ceb8d97e09fc1f8"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-device-without-explicit-validation.stderr",
+      "bytes": 29175,
+      "sha256": "5cb8c24e54fc22b64de17658a75b5b3275a02103fca125638c212456abad5ed1"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-device-without-explicit-validation.stdout",
+      "bytes": 1529,
+      "sha256": "6f87a0443cfe3c4e57b2a2bb678a9383bd05fea3dec730c938d84979c28c1ee6"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-draw-explicit-validation.stderr",
+      "bytes": 31189,
+      "sha256": "2fa387cfc8c429c06112cbd78693cffbf2334bd71f946099e9ec6e55fe400109"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-draw-explicit-validation.stdout",
+      "bytes": 2595,
+      "sha256": "bd69b6acd578728abd5c4f18014d6ef5a96e345c44e71007846c98f51d5ae363"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-draw-without-explicit-validation.stderr",
+      "bytes": 29907,
+      "sha256": "a5f16eb0d36420dcef8d12829b0596254a8f20984c886a2b2a9c3117ed807290"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/pure-draw-without-explicit-validation.stdout",
+      "bytes": 2104,
+      "sha256": "e93bd6fcd5d476381abb84a4eeaba8e17261f098847d8a0e9353519d9cd3c22d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first/results.json",
+      "bytes": 29398,
+      "sha256": "813f2a0eb02930e44137a25727c2b673ed8189c725710c32ac8d00f222a3aca6"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-icd-order-control/second-first.stdout",
+      "bytes": 1910,
+      "sha256": "8a6d395632d81ee441da9ef7079ea307bf1417de3dde7cedf7f5b5833d309762"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/explicit-validation/result.json",
+      "bytes": 791,
+      "sha256": "1c381a62e373d1fd8784382980b3946465b9746930150c37f169738cfd06e4e0"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/explicit-validation/weston.stderr",
+      "bytes": 75162,
+      "sha256": "76512804c3774ef47961d2348152e13e59222a2c1065c28e1599e5090405aa81"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/explicit-validation.stderr",
+      "bytes": 52722,
+      "sha256": "4dde154b467b9099dacb1fa504baaa9a032c74ae4fc14e792cf7a3086e7c88b4"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-device-explicit-validation.stderr",
+      "bytes": 36523,
+      "sha256": "d9e7acbb6a08ff9f065d290fa2b0dbbb68f23be4ae57718933384c5665b24c12"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-device-explicit-validation.stdout",
+      "bytes": 3573,
+      "sha256": "c3099edddf450cfa5c62388757cad6122dd185856a7910167e270c1dbcedf2b3"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-device-without-explicit-validation.stderr",
+      "bytes": 35241,
+      "sha256": "e84880e372147f6a4a336bfd49b2a98ce032c1417d2ffb83db67a51dfe1cd202"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-device-without-explicit-validation.stdout",
+      "bytes": 3245,
+      "sha256": "0e94267ed18d1db86a8b9f7bbd72135d886ddab32d4dbcd4c271d743083305bb"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-draw-explicit-validation.stderr",
+      "bytes": 37255,
+      "sha256": "ba59ba958e399d9d348967e77e9373ec36982f2321c74742d48be7ac67698873"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-draw-explicit-validation.stdout",
+      "bytes": 5095,
+      "sha256": "66034ac6e5d182b90f9247a31958c9d660f914eb8b83fffff0a3fddd1b1dcc86"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-draw-without-explicit-validation.stderr",
+      "bytes": 35973,
+      "sha256": "d9bc40e35c3c747ce283317be7dfd07b3eb1de051c9b61dad9946053313d437d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/pure-draw-without-explicit-validation.stdout",
+      "bytes": 4604,
+      "sha256": "ea40f8b56994a3effb2c2f4d11f0f7797fda9dc261134d563ad9942278ffcf94"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/results.json",
+      "bytes": 62751,
+      "sha256": "bf0fc22ce80050f229956ac15239fa2c6d6d8cbe98c1dc2a82d0837ff29f2dcb"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/without-explicit-validation/result.json",
+      "bytes": 799,
+      "sha256": "bd62481d15ea8e6c3d0eb52d28369e5e951e833552b0ed7fcd4971ee4b1f124a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/without-explicit-validation/weston.stderr",
+      "bytes": 75178,
+      "sha256": "78ab100ba7ab1e980585b1bd01da26025700ac82a58c87954c32839006a46878"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/without-explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/without-explicit-validation.stderr",
+      "bytes": 51781,
+      "sha256": "eada7497552484624d48be26c8a60933fe7b1f345873471eb4773f4a4d93d366"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/vulkan-module-control/without-explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/wayland-session/result.json",
+      "bytes": 842,
+      "sha256": "d2af5d58f3734eeacfada2a1963c4c2ebc5ed228417c59cc236b34bbb492b636"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/wayland-session/weston.stderr",
+      "bytes": 2424,
+      "sha256": "61251e03a05b8c2840a2d03dd038b29a5d381cc81aa56da6ab5914516abf76c3"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-artifact/wayland-session/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ci39485330188-sanitizers.zip",
+      "bytes": 108358,
+      "sha256": "e118c4ee1daae65938b308dd163abdce2307f792ce0cba2712644b3c283a117e"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/compiler-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/compiler-version.stdout",
+      "bytes": 308,
+      "sha256": "e1fe4d12c008095929223093e80f74d4144fcb042ee6b37f51d9d8ce4ccead58"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/control-first.c",
+      "bytes": 18998,
+      "sha256": "23ae07d627c84bd0bbf4f270dcd11221aae0aa11b8b2d401d9961e38d5e15316"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/draw-first.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/draw-first.stdout",
+      "bytes": 1645,
+      "sha256": "b851d9ae1c7f83f136d28cbed978cf634b013d53c4636d4af148820d057b1420"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/driver-gnu-unique-symbols.txt",
+      "bytes": 1157,
+      "sha256": "d18c754afa864f21cb258cc99f4eb5003529ea6a713034392f9384849754d789"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-checks.json",
+      "bytes": 1046,
+      "sha256": "2d0dd97ffab236c49ef5bd680678bb12a073203a26390d9f5a35e1b64598c7a2"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-device-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-device-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-draw-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-draw-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules/results.json",
+      "bytes": 2964,
+      "sha256": "ad65e933d9807a0b1e0713f1d434e1ebdac98f9e5df2d8ce33c154de4bd1cc4f"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-modules.stdout",
+      "bytes": 1980,
+      "sha256": "84f6610898587ce183337eb19e4963455e3f94ce0fbc27fa290d0918990ae583"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-device-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-device-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-draw-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-draw-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second/results.json",
+      "bytes": 2964,
+      "sha256": "ad65e933d9807a0b1e0713f1d434e1ebdac98f9e5df2d8ce33c154de4bd1cc4f"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/first-second.stdout",
+      "bytes": 1980,
+      "sha256": "84f6610898587ce183337eb19e4963455e3f94ce0fbc27fa290d0918990ae583"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/results.json",
+      "bytes": 7725,
+      "sha256": "73ea5ae89165567d97782b808d554ca8645f0cfa58f85ea9b7e86065a1022412"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-device-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-device-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-draw-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-draw-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first/results.json",
+      "bytes": 2964,
+      "sha256": "ad65e933d9807a0b1e0713f1d434e1ebdac98f9e5df2d8ce33c154de4bd1cc4f"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order/second-first.stdout",
+      "bytes": 1980,
+      "sha256": "84f6610898587ce183337eb19e4963455e3f94ce0fbc27fa290d0918990ae583"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success-order.stdout",
+      "bytes": 908,
+      "sha256": "7fe1b806a11b856864f95b63b90a2de3820de0b8c992a8bd64d7a36b12647743"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/empty-success.sh",
+      "bytes": 17,
+      "sha256": "306c6ca7407560340797866e077e053627ad409277d1b9da58106fce4cf717cb"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/final-audit.py",
+      "bytes": 2324,
+      "sha256": "c74fb4883b1b200fbe319f5d8013d48554b7b257fc7d9a78d5f2505d65316e20"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/final-ci-receipt.stdout",
+      "bytes": 3030,
+      "sha256": "7118f3dc35947e9c13b40c348dcdf8f1bcbe9129f83cf324f5c1eee77445d2a1"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/final-receipt.stdout",
+      "bytes": 1123,
+      "sha256": "aeb89a9d84b07021341b507ef9e1720cdb4775b91c48487c595ae23bebdad0d9"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/finish-ci-receipt.py",
+      "bytes": 2369,
+      "sha256": "6ed9406b49f92678df534ed7a086d2d30767ff7d9aee3c7fe159f01712d1e2a9"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/gfxstream_vk_icd.json",
+      "bytes": 141,
+      "sha256": "8e16c2df8e110ce422b712a03f3ff4e76c98bc3a30634922fc88e2402c6673d2"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/glibc-2.39-dl-lookup.c",
+      "bytes": 28526,
+      "sha256": "bddde80ad0a1280ef79da019fdf07568b2ae7da2335c582773d9f53e9c28b3a5"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/inspect-loader-primary.py",
+      "bytes": 2020,
+      "sha256": "10478f2cf4dfee07131636ba792ad3c7803411d2018c09210e62c2919f73ba3a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/intel_hasvk_icd.json",
+      "bytes": 143,
+      "sha256": "99c37873336d391b5e62ed594dae60b4355c0ea71463904a2b9d6c0cbe275c0c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/intel_icd.json",
+      "bytes": 137,
+      "sha256": "09e7ca55461c3f2d65e5df6a6b8f06a7ce2c86fc58a93a18d2dbe3575623de83"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/learning-evidence.json",
+      "bytes": 1115,
+      "sha256": "b6ad2b0b02a886f21ca84fd3326a7eaa3a8f24069f86de78e13087092eb98226"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/learning-note.json",
+      "bytes": 901,
+      "sha256": "ae9a5f143114bef0c0907715599083706f5d064172758ff3fe427a290ebd1a8d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/learning-note.md",
+      "bytes": 4977,
+      "sha256": "3d2a37ba79c929f86c21a7b2ea0ba4f238ceb47ed34c923dbd69578153125937"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/learning-revision.json",
+      "bytes": 2263,
+      "sha256": "c665d367a010f1235d81a5fd1ea60e39b4abb1fc934dec3c368025380fc27f18"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/link-commands.stderr",
+      "bytes": 62,
+      "sha256": "525afa46f9f805c72298ee4d8cbb631cb93e87494bbd425485170a22a2978d06"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/link-commands.stdout",
+      "bytes": 662,
+      "sha256": "75578d00f4fa6c476400ba0302e081424b061eb641a9d56918bda99fabc7cf52"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-device-explicit-validation.stderr",
+      "bytes": 224,
+      "sha256": "51cebcbe480f248cd4358c96ccbd24a66f228704e22193fd3257c18bdbe1aac1"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-device-explicit-validation.stdout",
+      "bytes": 1305,
+      "sha256": "93e8355d130ec62f0b311eee8eae0790426561b4b0bd1de0208705dad74f2113"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-device-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-device-without-explicit-validation.stdout",
+      "bytes": 909,
+      "sha256": "e44225e7e2fb687fe936959090bed492b7c19fbe82fcdf19f4b681d7f89a2ba5"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-draw-explicit-validation.stderr",
+      "bytes": 224,
+      "sha256": "51cebcbe480f248cd4358c96ccbd24a66f228704e22193fd3257c18bdbe1aac1"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-draw-explicit-validation.stdout",
+      "bytes": 1715,
+      "sha256": "004c0ba59b8cce9c090f4c0bc3ea02629db6e2f7e0aecbccb42cb46a19df5174"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-draw-without-explicit-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/pure-draw-without-explicit-validation.stdout",
+      "bytes": 1189,
+      "sha256": "2320536dfb5cae4d83cb5c18f85cb1658ba4fe35e6b7997a5ff53fd4bc51d621"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four/results.json",
+      "bytes": 19719,
+      "sha256": "ca818122fe96ccde14abdd46a4e8c0c2e390c497e860b3043f4669ed97222da0"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/local-four.stdout",
+      "bytes": 1874,
+      "sha256": "ad8fd717aa84af48e65bea7c083d17d0e543919ecaef06c0af90e2ce2fb4f269"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/lvp_icd.json",
+      "bytes": 135,
+      "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/make-final-receipt.py",
+      "bytes": 3574,
+      "sha256": "ce38f51e54bc7697f49f294f5d6ecdce8ba96e9066cf34243b05794a7c00ab40"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/make-receipt.py",
+      "bytes": 1999,
+      "sha256": "a689cdc937912af99574719b1efca485fa01f1dba24b66778a99c19e1d865f44"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mesa-new-source-fetch.json",
+      "bytes": 448,
+      "sha256": "100aea9309df0a363bd575053e3307c41771f430d4f5903e411b7cb8e3183755"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mesa-source-fetch.json",
+      "bytes": 569,
+      "sha256": "9225fe60c4fc4aa561493975886f9f4e5f842866639820204fc2728f85277af6"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-device-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-device-without-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-draw-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-draw-without-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker/results.json",
+      "bytes": 2742,
+      "sha256": "49abfb524cbe4c6f3af22bee202a2490c164710cd700cb4349e5fc9de6dbad16"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker-run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/missing-marker-run.stdout",
+      "bytes": 1804,
+      "sha256": "99df5d6a5e670bbddae5299c0431307079a4d18c6ccb959695b10618f87c5d3a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mutant-build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mutant-build.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mutant-run.stderr",
+      "bytes": 324,
+      "sha256": "1538affbc831d8467b6015be28d7f2cef761e8fd1ae15c562e0d19f45df7cbcd"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/mutant-run.stdout",
+      "bytes": 1211,
+      "sha256": "138a9924a831c66298f3b3f5fcad0e0a1477f9e87be0bfb26dce5b44f3789ea5"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/negative-checks.json",
+      "bytes": 2152,
+      "sha256": "28b184020686c16da73b568160562033823c48fe9e15e0c93f6ebb673daa70a4"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/no_draw.c",
+      "bytes": 21360,
+      "sha256": "8dbe737a9a51ff622534cc9cdd4a9bb7b77752234e0a12d49ffe20dfb6022717"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/nouveau_icd.json",
+      "bytes": 139,
+      "sha256": "10971c0a767543fa071fd53958ede312f0fd3a3c7caae509d6bae62c894c5f53"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/official-icd-manifests.json",
+      "bytes": 2502,
+      "sha256": "02f9bf17a3873d16e51bc076d98b83a1f936dde6a3c4c27c9a5498b3a454785a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-identical.stderr",
+      "bytes": 226,
+      "sha256": "e03567edc713981d2c52e380f9b65134c487a12b29404e00060fdc572375a2d5"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-identical.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-device-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-device-without-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-draw-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-draw-without-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second/results.json",
+      "bytes": 2742,
+      "sha256": "49abfb524cbe4c6f3af22bee202a2490c164710cd700cb4349e5fc9de6dbad16"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/first-second.stdout",
+      "bytes": 1804,
+      "sha256": "99df5d6a5e670bbddae5299c0431307079a4d18c6ccb959695b10618f87c5d3a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/results.json",
+      "bytes": 7237,
+      "sha256": "c28b49b9aa54d51bb0e18f3de4539208dd12ff548444c3d6082596b6125a9b6f"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-device-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-device-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-device-without-explicit-validation.stderr",
+      "bytes": 27,
+      "sha256": "9932fd21dfb2462cb3c4657e403170d8c3a4b38333cb1926c1021ea456bf1167"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-device-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-draw-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-draw-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-draw-without-explicit-validation.stderr",
+      "bytes": 25,
+      "sha256": "285dc0b066391ac315234353c6b0c0761245ea05e1d26eac77b464ed570adb2c"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/pure-draw-without-explicit-validation.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first/results.json",
+      "bytes": 2742,
+      "sha256": "49abfb524cbe4c6f3af22bee202a2490c164710cd700cb4349e5fc9de6dbad16"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker/second-first.stdout",
+      "bytes": 1804,
+      "sha256": "99df5d6a5e670bbddae5299c0431307079a4d18c6ccb959695b10618f87c5d3a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/order-missing-marker.stdout",
+      "bytes": 818,
+      "sha256": "7d8b773c8be44528e97dfd7beea3788f522e50af849da86c9f1bdc567febc10d"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/ordered-case-summary.json",
+      "bytes": 5719,
+      "sha256": "c88130c7ef633ea8a90b6bd06f481eb0e50a907214984aa735a1e3eef30a9d5b"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/pure-draw-explicit-validation-loader-summary.txt",
+      "bytes": 3711,
+      "sha256": "37860d775b579a5ecd79cbc49ca8c5422049e310c567daa3c03627fe0547098a"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/pure-draw-without-explicit-validation-loader-summary.txt",
+      "bytes": 3606,
+      "sha256": "b9a0107a7fb1bca236e51e21ae479bb421208c477ef754a6d0d52144ebb7a596"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/radeon_icd.json",
+      "bytes": 138,
+      "sha256": "bc0e4f88754ce48b429c05fc8c691438c5f04a4170d482c925bc5998159db299"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/read-ci-artifact.py",
+      "bytes": 1389,
+      "sha256": "35d3ce4df31dc6b5e384c8b39c879b3982c22e165bac7866fe16538829c6143e"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/read-order-artifact.py",
+      "bytes": 1839,
+      "sha256": "f6aa38dff80a7e2ab610af75e0ebfdd5030df91bc0e579e9155f473a850f1801"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/rtasm_execmem.c",
+      "bytes": 3624,
+      "sha256": "e5a77a4a87803ae0eee5b45fdaea83639ce1e50469ee2c8c80e62182bec9c749"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-check.stdout",
+      "bytes": 82,
+      "sha256": "b722b831db39005aff700bee14caadef248cb5a43ecd8af668b3926071b6f251"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-final.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-final.stdout",
+      "bytes": 82,
+      "sha256": "b722b831db39005aff700bee14caadef248cb5a43ecd8af668b3926071b6f251"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-generate.stdout",
+      "bytes": 82,
+      "sha256": "b722b831db39005aff700bee14caadef248cb5a43ecd8af668b3926071b6f251"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-lf.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shader-lf.stdout",
+      "bytes": 164,
+      "sha256": "aae745290c4693b268fccdd25c260d371f4f29bbe961cb6c187ed6eb0e8fb319"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/shaders-first.h",
+      "bytes": 5312,
+      "sha256": "5806f659c16f2b5a76c1bdcddf5108640aa82cb8e13b568368b03f93cfbc4aea"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/tidy-receipt-helper.py",
+      "bytes": 189,
+      "sha256": "4137796d6a5da64dd4f433ae1972a437b1a822b0089733d73e5a96abc90a0d6f"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/u_cpu_detect.c",
+      "bytes": 28946,
+      "sha256": "73e81119ccc66069c4957a5e263922c0e3f53e09d6657d6d8e559a05fbc8df4b"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/virtio_icd.json",
+      "bytes": 138,
+      "sha256": "2269530452f17a9133717e35b8926b7c4ecd3a458bc2bd530c1aedd2114f4ecb"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/vulkan-loader-1.3.275-driver-interface.md",
+      "bytes": 85447,
+      "sha256": "fc6d2444ffd9c83a8ce9b3c6b03fea7ef7426319e175ba19dcb246e036061b10"
+    }
+  ],
+  "additional_negative_controls": [
+    {
+      "name": "empty-success-modules",
+      "command": [
+        "/usr/bin/python3",
+        "tools/trace_vulkan_modules.py",
+        "--control",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/empty-success.sh",
+        "--work-dir",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/empty-success-modules"
+      ],
+      "exit_code": 1,
+      "child_count": 4,
+      "every_child_exit_zero": true,
+      "every_child_missing_markers_rejected": true
+    },
+    {
+      "name": "empty-success-order",
+      "command": [
+        "/usr/bin/python3",
+        "tools/trace_vulkan_icd_order.py",
+        "--control",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/empty-success.sh",
+        "--first",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/asahi_icd.json",
+        "--second",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/lvp_icd.json",
+        "--work-dir",
+        "/mnt/d/NexaUI/out/vulkan-lifetime-control/empty-success-order"
+      ],
+      "exit_code": 1,
+      "child_count": 8,
+      "every_child_exit_zero": true,
+      "every_child_missing_markers_rejected": true
+    }
+  ],
+  "negative_control_correction": "Earlier /bin/true resolves to BusyBox on Alpine and does not establish zero-exit children; later empty-success.sh proves all 4+8 children exit0 while both runners correctly fail missing markers.",
+  "follow_up_source_commit": "47813abe7ced79dd9c0a99db5290f0a8631894b4",
+  "follow_up_source_files": [
+    {
+      "path": "tools/trace_vulkan_icd_order.py",
+      "bytes": 3784,
+      "sha256": "420a3ccd490c7c489a3c8a42f87f8af6eb55524ad6b31285351e3ebb78e49213"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 12512,
+      "sha256": "c4e4c46c5cb9246a2f537df2f9bbf780870de4288fb0e08b0f7685fa48abc902"
+    }
+  ],
+  "official_manifest_records": [
+    {
+      "path": "./usr/share/vulkan/icd.d/asahi_icd.json",
+      "sha256": "1fb3806fdfcd22fa8bce4b0731f4ed4fc29873b8f5c81cd35842cd1ff5a27697",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_asahi.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/gfxstream_vk_icd.json",
+      "sha256": "8e16c2df8e110ce422b712a03f3ff4e76c98bc3a30634922fc88e2402c6673d2",
+      "content": {
+        "ICD": {
+          "api_version": "1.1.318",
+          "library_path": "libvulkan_gfxstream.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/intel_hasvk_icd.json",
+      "sha256": "99c37873336d391b5e62ed594dae60b4355c0ea71463904a2b9d6c0cbe275c0c",
+      "content": {
+        "ICD": {
+          "api_version": "1.3.318",
+          "library_path": "libvulkan_intel_hasvk.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/intel_icd.json",
+      "sha256": "09e7ca55461c3f2d65e5df6a6b8f06a7ce2c86fc58a93a18d2dbe3575623de83",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_intel.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/lvp_icd.json",
+      "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_lvp.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/nouveau_icd.json",
+      "sha256": "10971c0a767543fa071fd53958ede312f0fd3a3c7caae509d6bae62c894c5f53",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_nouveau.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/radeon_icd.json",
+      "sha256": "bc0e4f88754ce48b429c05fc8c691438c5f04a4170d482c925bc5998159db299",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_radeon.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    },
+    {
+      "path": "./usr/share/vulkan/icd.d/virtio_icd.json",
+      "sha256": "2269530452f17a9133717e35b8926b7c4ecd3a458bc2bd530c1aedd2114f4ecb",
+      "content": {
+        "ICD": {
+          "api_version": "1.4.318",
+          "library_path": "libvulkan_virtio.so"
+        },
+        "file_format_version": "1.0.1"
+      }
+    }
+  ],
+  "additional_primary_sources": [
+    {
+      "path": "out/vulkan-lifetime-control/glibc-2.39-dl-lookup.c",
+      "url": "https://raw.githubusercontent.com/bminor/glibc/glibc-2.39/elf/dl-lookup.c",
+      "bytes": 28526,
+      "sha256": "bddde80ad0a1280ef79da019fdf07568b2ae7da2335c582773d9f53e9c28b3a5"
+    },
+    {
+      "path": "out/vulkan-lifetime-control/vulkan-loader-1.3.275-driver-interface.md",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/v1.3.275/docs/LoaderDriverInterface.md",
+      "bytes": 85447,
+      "sha256": "fc6d2444ffd9c83a8ce9b3c6b03fea7ef7426319e175ba19dcb246e036061b10"
+    }
+  ]
+}

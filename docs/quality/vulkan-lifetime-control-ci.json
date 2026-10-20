@@ -1,0 +1,3306 @@
+{
+  "run_id": 39484227995,
+  "commit": "6fe63dfcc1cdd493228f549fe0547f3024662f0a",
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/39484227995",
+  "sanitizer_job_id": 118840356607,
+  "sanitizer_conclusion": "success",
+  "sanitizer_tests": {
+    "passed": 117,
+    "total": 117
+  },
+  "artifact": {
+    "id": 12291934602,
+    "bytes": 61900,
+    "sha256": "1f1636fec1ab958475a67df2596492f50b6139342607b9c0064ebfcc29c75eed"
+  },
+  "controls": {
+    "scope": "Fixed controls; leak detection enabled, no suppression. Full CTest is a separate gate.",
+    "binaries": {
+      "app": {
+        "path": "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+        "sha256": "c840dbb5943cd3609293aa106785f8f5ccfdfc261e5aa8c8840a3fae3ef01603"
+      },
+      "control": {
+        "path": "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+        "sha256": "e62d9cbbba1eeb95df5c96d3b06379418e3292d205302bb456060235c1858d4c"
+      }
+    },
+    "libc": "glibc 2.39",
+    "module_logging_supported": true,
+    "runs": [
+      {
+        "name": "explicit-validation",
+        "command": [
+          "/usr/bin/python",
+          "/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py",
+          "--timeout",
+          "120",
+          "--work-dir",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/explicit-validation",
+          "--",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+          "--smoke"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false
+      },
+      {
+        "name": "pure-device-explicit-validation",
+        "command": [
+          "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+          "--device"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fe0e8ab4000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fe0e635d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7fe0e4000000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7fe0d7e00000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fe0d7200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7fe0e5288000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7fe0d6200000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7fe0d5000000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7fe0d4400000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+            "base": "0x7fe0d2a00000",
+            "extent": "0x19adda8",
+            "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "size": 26337792,
+            "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+            "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7fe0e8102000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fe0e8ab4000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fe0e635d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7fe0e4000000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7fe0d7e00000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fe0d7200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7fe0e5288000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7fe0d6200000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7fe0d5000000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7fe0d4400000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+            "base": "0x7fe0d2a00000",
+            "extent": "0x19adda8",
+            "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "size": 26337792,
+            "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+            "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7fe0e8102000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fe0e8ab4000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fe0e635d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fe0d7200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "pure-draw-explicit-validation",
+        "command": [
+          "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+          "--draw"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7f72e29cb000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7f72e035d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7f72de000000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7f72d1e00000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7f72d1200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7f72df288000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7f72d0200000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7f72cf000000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7f72ce400000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+            "base": "0x7f72cca00000",
+            "extent": "0x19adda8",
+            "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "size": 26337792,
+            "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+            "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7f72e1f11000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7f72e29cb000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7f72e035d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7f72de000000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7f72d1e00000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7f72d1200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7f72df288000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7f72d0200000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7f72cf000000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7f72ce400000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+            "base": "0x7f72cca00000",
+            "extent": "0x19adda8",
+            "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "size": 26337792,
+            "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+            "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7f72e1f11000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7f72e29cb000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7f72e035d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7f72de000000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7f72d1e00000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7f72d1200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7f72df288000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7f72d0200000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7f72cf000000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7f72ce400000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+            "base": "0x7f72cca00000",
+            "extent": "0x19adda8",
+            "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "size": 26337792,
+            "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+            "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7f72e1f11000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7f72e29cb000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7f72e035d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7f72d1200000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "without-explicit-validation",
+        "command": [
+          "/usr/bin/python",
+          "/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py",
+          "--timeout",
+          "120",
+          "--work-dir",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/without-explicit-validation",
+          "--",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+          "--smoke"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false
+      },
+      {
+        "name": "pure-device-without-explicit-validation",
+        "command": [
+          "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+          "--device"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fc3a6fae000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fc3a495d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7fc3a2600000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7fc396400000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fc395800000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7fc3a3888000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7fc394800000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7fc393600000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7fc392a00000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7fc3a61b4000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fc3a6fae000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fc3a495d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7fc3a2600000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7fc396400000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fc395800000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7fc3a3888000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7fc394800000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7fc393600000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7fc392a00000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7fc3a61b4000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7fc3a6fae000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7fc3a495d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7fc395800000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      },
+      {
+        "name": "pure-draw-without-explicit-validation",
+        "command": [
+          "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+          "--draw"
+        ],
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "modules": [
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7ffbdcd4b000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7ffbda75d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7ffbd8400000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7ffbcc200000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7ffbcb600000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7ffbd9688000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7ffbca600000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7ffbc9400000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7ffbc8800000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-created",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7ffbdc110000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7ffbdcd4b000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7ffbda75d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7ffbd8400000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7ffbcc200000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7ffbcb600000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7ffbd9688000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7ffbca600000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7ffbc9400000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7ffbc8800000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "draw-completed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7ffbdc110000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7ffbdcd4b000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7ffbda75d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so",
+            "base": "0x7ffbd8400000",
+            "extent": "0xe86d08",
+            "runtime_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "size": 15211192,
+            "sha256": "db177dceb616b9aa2572a75f834a15b9ceb3adcd57a1f2b90f0bddf1663c9f0b",
+            "disk_build_id": "b9b8a62af688c09b054fc2a3411bcf690cf98df3",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel.so",
+            "base": "0x7ffbcc200000",
+            "extent": "0x14387f0",
+            "runtime_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "size": 21174784,
+            "sha256": "01a6aa501cf9f4cb87ea0b3c9465317e783ff58d1c021b5b59d09f8e6ecde857",
+            "disk_build_id": "5ec32eb7556abab54d97f6dee25aa22467dd9aef",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7ffbcb600000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_virtio.so",
+            "base": "0x7ffbd9688000",
+            "extent": "0x177348",
+            "runtime_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "size": 1530424,
+            "sha256": "bc223dfe78164d904ab69aacea45f9f992d018f862f16dff9be91ea09bf6d0f0",
+            "disk_build_id": "e09d1d54f1220252b0de93711e77bdc925959aee",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_nouveau.so",
+            "base": "0x7ffbca600000",
+            "extent": "0xf363f8",
+            "runtime_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "size": 15937968,
+            "sha256": "0b5f9f9ee56d64d0e0beeacba9231e14c9d3ba7e92f0a052749bc551a93940f2",
+            "disk_build_id": "e556aee4e51ab8708567ed7c632face20b914f84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so",
+            "base": "0x7ffbc9400000",
+            "extent": "0x106f598",
+            "runtime_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "size": 17221864,
+            "sha256": "b406b960c746e4cacb815b30314c535d1a53888a4e55b110eecf415150e7a810",
+            "disk_build_id": "84abf38d43d0fc0673cff7ca768ba8349e44465b",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+            "base": "0x7ffbc8800000",
+            "extent": "0xb501e8",
+            "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "size": 11837328,
+            "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+            "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "device-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+            "base": "0x7ffbdc110000",
+            "extent": "0x19590",
+            "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "size": 97744,
+            "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+            "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+            "base": "0x7ffbdcd4b000",
+            "extent": "0x7d370",
+            "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "size": 510592,
+            "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+            "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_gfxstream.so",
+            "base": "0x7ffbda75d000",
+            "extent": "0x1f9428",
+            "runtime_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "size": 2067440,
+            "sha256": "601ac14fdc31a98d5d8e800a1e4ddda3461d86e2c1d10e172a5ea66d3d273d16",
+            "disk_build_id": "4b44076334caccd00ba7468dbcfd2777b3610a26",
+            "build_id_matches_disk": true
+          },
+          {
+            "phase": "instance-destroyed",
+            "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+            "base": "0x7ffbcb600000",
+            "extent": "0xb8c100",
+            "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "size": 11929384,
+            "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+            "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+            "build_id_matches_disk": true
+          }
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": true
+      }
+    ]
+  },
+  "loader_comparison": [
+    {
+      "run": 39468622435,
+      "pid": 8158,
+      "source": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation.stderr",
+      "lines": [
+        "      8158:\tactivating NODELETE for /lib/x86_64-linux-gnu/libstdc++.so.6 [0]",
+        "      8158:\tactivating NODELETE for /lib/x86_64-linux-gnu/libLLVM.so.20.1 [0]",
+        "      8158:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_asahi.so [0]",
+        "      8158:\tcalling fini: /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]",
+        "      8158:\tfile=/lib/x86_64-linux-gnu/libvulkan_lvp.so [0];  destroying link map"
+      ]
+    },
+    {
+      "run": 39484227995,
+      "pid": 8051,
+      "source": "out/vulkan-lifetime-control/ci39484227995-artifact/vulkan-module-control/pure-draw-without-explicit-validation.stderr",
+      "lines": [
+        "      8051:\tactivating NODELETE for /lib/x86_64-linux-gnu/libstdc++.so.6 [0]",
+        "      8051:\tactivating NODELETE for /lib/x86_64-linux-gnu/libLLVM.so.20.1 [0]",
+        "      8051:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]",
+        "      8051:\tcalling fini: /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]"
+      ]
+    }
+  ],
+  "log_receipt": {
+    "run": 39484227995,
+    "sha": "6fe63dfcc1cdd493228f549fe0547f3024662f0a",
+    "source": "https://github.com/Lulus792/NexaUI/actions/runs/39484227995",
+    "sanitizer_job": 118840356607,
+    "conclusion": "success",
+    "lines": [
+      "2026-10-20T19:35:10.0265868Z 100% tests passed, 0 tests failed out of 117",
+      "2026-10-20T19:35:13.3585515Z {\"name\": \"explicit-validation\", \"command\": [\"/usr/bin/python\", \"/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py\", \"--timeout\", \"120\", \"--work-dir\", \"/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/explicit-validation\", \"--\", \"/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear\", \"--smoke\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": true, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": null, \"leak_report\": false}",
+      "2026-10-20T19:35:14.0876118Z {\"name\": \"pure-device-explicit-validation\", \"command\": [\"/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control\", \"--device\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": true, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": null, \"leak_report\": false, \"snapshots\": [\"device-created\", \"device-destroyed\", \"instance-destroyed\"], \"identity_errors\": [], \"lvp_loaded_after_instance_destroy\": true}",
+      "2026-10-20T19:35:14.9609495Z {\"name\": \"pure-draw-explicit-validation\", \"command\": [\"/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control\", \"--draw\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": true, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": true, \"leak_report\": false, \"snapshots\": [\"device-created\", \"draw-completed\", \"device-destroyed\", \"instance-destroyed\"], \"identity_errors\": [], \"lvp_loaded_after_instance_destroy\": true}",
+      "2026-10-20T19:35:17.0302335Z {\"name\": \"without-explicit-validation\", \"command\": [\"/usr/bin/python\", \"/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py\", \"--timeout\", \"120\", \"--work-dir\", \"/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/without-explicit-validation\", \"--\", \"/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear\", \"--smoke\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": false, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": null, \"leak_report\": false}",
+      "2026-10-20T19:35:17.4306141Z {\"name\": \"pure-device-without-explicit-validation\", \"command\": [\"/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control\", \"--device\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": false, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": null, \"leak_report\": false, \"snapshots\": [\"device-created\", \"device-destroyed\", \"instance-destroyed\"], \"identity_errors\": [], \"lvp_loaded_after_instance_destroy\": true}",
+      "2026-10-20T19:35:17.8810074Z {\"name\": \"pure-draw-without-explicit-validation\", \"command\": [\"/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control\", \"--draw\"], \"exit_code\": 0, \"timeout\": false, \"validation_library_observed\": false, \"layer_control_verified\": true, \"smoke_completed\": true, \"all_pixels_verified\": true, \"leak_report\": false, \"snapshots\": [\"device-created\", \"draw-completed\", \"device-destroyed\", \"instance-destroyed\"], \"identity_errors\": [], \"lvp_loaded_after_instance_destroy\": true}"
+    ]
+  },
+  "scope": "Independent API red/green order pair on one CI runner and identical driver: Asahi-first unloads Lavapipe and leaks128 device/240 draw; reversed order retains it and reports no leak. CTest117/117 is separate, whole sanitizer job remains failed. Dependency cleanup repair and exact unique symbol binding are not proved.",
+  "ordered_follow_up": {
+    "run_id": 39485330188,
+    "source_commit": "47813abe7ced79dd9c0a99db5290f0a8631894b4",
+    "url": "https://github.com/Lulus792/NexaUI/actions/runs/39485330188",
+    "sanitizer_job_id": 118844142917,
+    "sanitizer_conclusion": "failure",
+    "normal_ctest": {
+      "passed": 117,
+      "total": 117
+    },
+    "failed_step": "Compare two fixed Vulkan driver discovery orders",
+    "artifact": {
+      "id": 12292509199,
+      "bytes": 108358,
+      "sha256": "e118c4ee1daae65938b308dd163abdce2307f792ce0cba2712644b3c283a117e"
+    },
+    "results": {
+      "scope": "Two fixed discovery orders, no suppression or retention workaround. Failures propagate.",
+      "control": "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+      "control_sha256": "e62d9cbbba1eeb95df5c96d3b06379418e3292d205302bb456060235c1858d4c",
+      "manifests": [
+        {
+          "path": "/usr/share/vulkan/icd.d/asahi_icd.json",
+          "sha256": "1fb3806fdfcd22fa8bce4b0731f4ed4fc29873b8f5c81cd35842cd1ff5a27697",
+          "library": "libvulkan_asahi.so"
+        },
+        {
+          "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+          "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398",
+          "library": "libvulkan_lvp.so"
+        }
+      ],
+      "runs": [
+        {
+          "name": "first-second",
+          "command": [
+            "/usr/bin/python",
+            "/home/runner/work/NexaUI/NexaUI/tools/trace_vulkan_modules.py",
+            "--control",
+            "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+            "--work-dir",
+            "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-icd-order-control/first-second"
+          ],
+          "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/asahi_icd.json:/usr/share/vulkan/icd.d/lvp_icd.json",
+          "exit_code": 1,
+          "four_controls_recorded": true,
+          "controls": [
+            {
+              "name": "pure-device-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--device"
+              ],
+              "exit_code": 1,
+              "timeout": false,
+              "validation_library_observed": true,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "leak_report": true,
+              "snapshots": [
+                "device-created",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb5449f9000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb540800000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb53f800000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7fb533200000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fb543d46000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb5449f9000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb540800000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb53f800000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7fb533200000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fb543d46000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb5449f9000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb540800000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--draw"
+              ],
+              "exit_code": 1,
+              "timeout": false,
+              "validation_library_observed": true,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "leak_report": true,
+              "snapshots": [
+                "device-created",
+                "draw-completed",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f492d573000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4929400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4928400000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f491be00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f492c901000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f492d573000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4929400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4928400000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f491be00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f492c901000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f492d573000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4929400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4928400000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f491be00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f492c901000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f492d573000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4929400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--device"
+              ],
+              "exit_code": 1,
+              "timeout": false,
+              "validation_library_observed": false,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "leak_report": true,
+              "snapshots": [
+                "device-created",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f6065e73000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f6061c00000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f6060c00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f6065301000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f6065e73000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f6061c00000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f6060c00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f6065301000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f6065e73000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f6061c00000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--draw"
+              ],
+              "exit_code": 1,
+              "timeout": false,
+              "validation_library_observed": false,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "leak_report": true,
+              "snapshots": [
+                "device-created",
+                "draw-completed",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc2bd905000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc2b9600000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc2b8600000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fc2bcf06000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc2bd905000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc2b9600000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc2b8600000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fc2bcf06000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc2bd905000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc2b9600000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc2b8600000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fc2bcf06000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc2bd905000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc2b9600000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            }
+          ]
+        },
+        {
+          "name": "second-first",
+          "command": [
+            "/usr/bin/python",
+            "/home/runner/work/NexaUI/NexaUI/tools/trace_vulkan_modules.py",
+            "--control",
+            "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+            "--work-dir",
+            "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-icd-order-control/second-first"
+          ],
+          "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json:/usr/share/vulkan/icd.d/asahi_icd.json",
+          "exit_code": 0,
+          "four_controls_recorded": true,
+          "controls": [
+            {
+              "name": "pure-device-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--device"
+              ],
+              "exit_code": 0,
+              "timeout": false,
+              "validation_library_observed": true,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "leak_report": false,
+              "snapshots": [
+                "device-created",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc973bb1000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc96fa00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc963e00000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7fc962400000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fc972f0d000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc973bb1000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc96fa00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fc963e00000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7fc962400000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fc972f0d000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fc973bb1000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fc96fa00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--draw"
+              ],
+              "exit_code": 0,
+              "timeout": false,
+              "validation_library_observed": true,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "leak_report": false,
+              "snapshots": [
+                "device-created",
+                "draw-completed",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f463912d000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4635000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4629400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f4627a00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f46381e6000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f463912d000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4635000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4629400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f4627a00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f46381e6000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f463912d000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4635000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7f4629400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+                  "base": "0x7f4627a00000",
+                  "extent": "0x19adda8",
+                  "runtime_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "size": 26337792,
+                  "sha256": "89e618526d6d1532096dbbd62ee1dc710dda647061cd3b7b66b542dc7dbce104",
+                  "disk_build_id": "9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7f46381e6000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7f463912d000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7f4635000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--device"
+              ],
+              "exit_code": 0,
+              "timeout": false,
+              "validation_library_observed": false,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "leak_report": false,
+              "snapshots": [
+                "device-created",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fdef9fd6000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fdef5e00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fdeea200000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fdef9330000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fdef9fd6000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fdef5e00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fdeea200000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fdef9330000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fdef9fd6000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fdef5e00000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "command": [
+                "/home/runner/work/NexaUI/NexaUI/build-asan/nexaui_vulkan_lifetime_control",
+                "--draw"
+              ],
+              "exit_code": 0,
+              "timeout": false,
+              "validation_library_observed": false,
+              "layer_control_verified": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "leak_report": false,
+              "snapshots": [
+                "device-created",
+                "draw-completed",
+                "device-destroyed",
+                "instance-destroyed"
+              ],
+              "modules": [
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb2172a5000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb213000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb207400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-created",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fb216707000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb2172a5000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb213000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb207400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "draw-completed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fb216707000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb2172a5000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb213000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_asahi.so",
+                  "base": "0x7fb207400000",
+                  "extent": "0xb501e8",
+                  "runtime_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "size": 11837328,
+                  "sha256": "19fb1b6cfe0c996db5cd7a7e6bf5ac353e920801289bd548c89fd295713f6784",
+                  "disk_build_id": "2fc5b236280b5f2188caa5f8925288ca06a61d84",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "device-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libVkLayer_MESA_device_select.so",
+                  "base": "0x7fb216707000",
+                  "extent": "0x19590",
+                  "runtime_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "size": 97744,
+                  "sha256": "3d960f263ec9dc0f4da64dc06d75bd71005202759a02f834b74b26fe5930a000",
+                  "disk_build_id": "963396d5ef88600eb3e5a981cffbc6d2754a3200",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+                  "base": "0x7fb2172a5000",
+                  "extent": "0x7d370",
+                  "runtime_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "size": 510592,
+                  "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e",
+                  "disk_build_id": "32e77fd13d177aaa6ceeba4862c3407d9246e422",
+                  "build_id_matches_disk": true
+                },
+                {
+                  "phase": "instance-destroyed",
+                  "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+                  "base": "0x7fb213000000",
+                  "extent": "0xb8c100",
+                  "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "size": 11929384,
+                  "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+                  "disk_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+                  "build_id_matches_disk": true
+                }
+              ],
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            }
+          ]
+        }
+      ]
+    },
+    "summary": [
+      {
+        "order": "first-second",
+        "case": "pure-device-explicit-validation",
+        "exit_code": 1,
+        "smoke_completed": true,
+        "pixels": null,
+        "leak": true,
+        "leak_allocations_bytes": [
+          128
+        ],
+        "leak_total_bytes": 128,
+        "lvp_loaded_after_instance_destroy": false,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8147:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_asahi.so [0]",
+          "      8147:\tfile=/lib/x86_64-linux-gnu/libvulkan_lvp.so [0];  destroying link map"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-explicit-validation",
+        "exit_code": 1,
+        "smoke_completed": true,
+        "pixels": true,
+        "leak": true,
+        "leak_allocations_bytes": [
+          128,
+          56,
+          56
+        ],
+        "leak_total_bytes": 240,
+        "lvp_loaded_after_instance_destroy": false,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8160:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_asahi.so [0]",
+          "      8160:\tfile=/lib/x86_64-linux-gnu/libvulkan_lvp.so [0];  destroying link map"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-device-without-explicit-validation",
+        "exit_code": 1,
+        "smoke_completed": true,
+        "pixels": null,
+        "leak": true,
+        "leak_allocations_bytes": [
+          128
+        ],
+        "leak_total_bytes": 128,
+        "lvp_loaded_after_instance_destroy": false,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8175:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_asahi.so [0]",
+          "      8175:\tfile=/lib/x86_64-linux-gnu/libvulkan_lvp.so [0];  destroying link map"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-without-explicit-validation",
+        "exit_code": 1,
+        "smoke_completed": true,
+        "pixels": true,
+        "leak": true,
+        "leak_allocations_bytes": [
+          128,
+          56,
+          56
+        ],
+        "leak_total_bytes": 240,
+        "lvp_loaded_after_instance_destroy": false,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8188:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_asahi.so [0]",
+          "      8188:\tfile=/lib/x86_64-linux-gnu/libvulkan_lvp.so [0];  destroying link map"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "second-first",
+        "case": "pure-device-explicit-validation",
+        "exit_code": 0,
+        "smoke_completed": true,
+        "pixels": null,
+        "leak": false,
+        "leak_allocations_bytes": [],
+        "leak_total_bytes": 0,
+        "lvp_loaded_after_instance_destroy": true,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8203:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "second-first",
+        "case": "pure-draw-explicit-validation",
+        "exit_code": 0,
+        "smoke_completed": true,
+        "pixels": true,
+        "leak": false,
+        "leak_allocations_bytes": [],
+        "leak_total_bytes": 0,
+        "lvp_loaded_after_instance_destroy": true,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8215:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "second-first",
+        "case": "pure-device-without-explicit-validation",
+        "exit_code": 0,
+        "smoke_completed": true,
+        "pixels": null,
+        "leak": false,
+        "leak_allocations_bytes": [],
+        "leak_total_bytes": 0,
+        "lvp_loaded_after_instance_destroy": true,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8228:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      },
+      {
+        "order": "second-first",
+        "case": "pure-draw-without-explicit-validation",
+        "exit_code": 0,
+        "smoke_completed": true,
+        "pixels": true,
+        "leak": false,
+        "leak_allocations_bytes": [],
+        "leak_total_bytes": 0,
+        "lvp_loaded_after_instance_destroy": true,
+        "identity_errors": [],
+        "driver_identities": {
+          "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+        },
+        "loader_lines": [
+          "      8240:\tactivating NODELETE for /lib/x86_64-linux-gnu/libvulkan_lvp.so [0]"
+        ],
+        "device": "DEVICE\tllvmpipe (LLVM 20.1.2, 256 bits)\t65541\t104865800"
+      }
+    ],
+    "attributed_allocations": [
+      {
+        "order": "first-second",
+        "case": "pure-device-explicit-validation",
+        "kind": "Direct",
+        "bytes": 128,
+        "runtime_pc": "0x7fb53f950de3",
+        "runtime_base": "0x7fb53f800000",
+        "module_offset": "0x150de3",
+        "symbol": "get_cpu_topology",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-explicit-validation",
+        "kind": "Direct",
+        "bytes": 128,
+        "runtime_pc": "0x7f4928550de3",
+        "runtime_base": "0x7f4928400000",
+        "module_offset": "0x150de3",
+        "symbol": "get_cpu_topology",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-explicit-validation",
+        "kind": "Indirect",
+        "bytes": 56,
+        "runtime_pc": "0x7f49288504b1",
+        "runtime_base": "0x7f4928400000",
+        "module_offset": "0x4504b1",
+        "symbol": "u_mmInit",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-explicit-validation",
+        "kind": "Indirect",
+        "bytes": 56,
+        "runtime_pc": "0x7f492885048d",
+        "runtime_base": "0x7f4928400000",
+        "module_offset": "0x45048d",
+        "symbol": "u_mmInit",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-device-without-explicit-validation",
+        "kind": "Direct",
+        "bytes": 128,
+        "runtime_pc": "0x7f6060d50de3",
+        "runtime_base": "0x7f6060c00000",
+        "module_offset": "0x150de3",
+        "symbol": "get_cpu_topology",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-without-explicit-validation",
+        "kind": "Direct",
+        "bytes": 128,
+        "runtime_pc": "0x7fc2b8750de3",
+        "runtime_base": "0x7fc2b8600000",
+        "module_offset": "0x150de3",
+        "symbol": "get_cpu_topology",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-without-explicit-validation",
+        "kind": "Indirect",
+        "bytes": 56,
+        "runtime_pc": "0x7fc2b8a504b1",
+        "runtime_base": "0x7fc2b8600000",
+        "module_offset": "0x4504b1",
+        "symbol": "u_mmInit",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      },
+      {
+        "order": "first-second",
+        "case": "pure-draw-without-explicit-validation",
+        "kind": "Indirect",
+        "bytes": 56,
+        "runtime_pc": "0x7fc2b8a5048d",
+        "runtime_base": "0x7fc2b8600000",
+        "module_offset": "0x45048d",
+        "symbol": "u_mmInit",
+        "runtime_build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+        "disk_sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      }
+    ],
+    "job_snapshot": {
+      "run_id": 39485330188,
+      "commit": "47813abe7ced79dd9c0a99db5290f0a8631894b4",
+      "jobs": [
+        {
+          "id": 118844142917,
+          "name": "sanitizers",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 118844143196,
+          "name": "core (ubuntu-latest, ON)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143206,
+          "name": "core (macos-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143215,
+          "name": "core (windows-latest, ON)",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 118844143283,
+          "name": "core (ubuntu-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143448,
+          "name": "core (macos-latest, ON)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844143454,
+          "name": "core (windows-latest, OFF)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118844144780,
+          "name": "fuzz-campaigns",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 118844145415,
+          "name": "windows-asan",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ],
+      "log_checks": [
+        {
+          "status": "fulfilled",
+          "value": {
+            "id": 118844143196,
+            "name": "core (ubuntu-latest, ON)",
+            "conclusion": "success",
+            "test_results": [
+              "2026-10-20T19:41:37.9319251Z 100% tests passed, 0 tests failed out of 117"
+            ]
+          }
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "id": 118844143206,
+            "name": "core (macos-latest, OFF)",
+            "conclusion": "success",
+            "test_results": [
+              "2026-10-20T19:40:59.1897370Z 100% tests passed out of 96"
+            ]
+          }
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "id": 118844143283,
+            "name": "core (ubuntu-latest, OFF)",
+            "conclusion": "success",
+            "test_results": [
+              "2026-10-20T19:41:37.6799984Z 100% tests passed, 0 tests failed out of 117",
+              "2026-10-20T19:41:44.0178257Z 100% tests passed, 0 tests failed out of 1"
+            ]
+          }
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "id": 118844143448,
+            "name": "core (macos-latest, ON)",
+            "conclusion": "success",
+            "test_results": [
+              "2026-10-20T19:40:51.4869590Z 100% tests passed out of 96"
+            ]
+          }
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "id": 118844143454,
+            "name": "core (windows-latest, OFF)",
+            "conclusion": "success",
+            "test_results": [
+              "2026-10-20T19:46:27.4127088Z 100% tests passed out of 115\r"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

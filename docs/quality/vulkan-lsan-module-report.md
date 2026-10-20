@@ -1,5 +1,12 @@
 # Vulkan LeakSanitizer module attribution
 
+Follow-up: the [independent Vulkan device/draw control](vulkan-lifetime-control-report.md)
+adds full-pixel validation and runtime/disk driver identities without NexaUI
+linkage. Its executed two-order comparison reproduces128/240-byte leaks after
+Lavapipe unload and no report when the loader retains that same driver. A
+dependency cleanup correction remains open; its results and boundaries are
+recorded separately from these older failed runs.
+
 Observed runs, 2026-10-20:
 [39468622435](https://github.com/Lulus792/NexaUI/actions/runs/39468622435)
 (documentation source0739c495, production unchanged fromd06fc38), and
