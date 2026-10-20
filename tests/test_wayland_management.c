@@ -22,8 +22,9 @@ static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_res
 static void configure(server *s) {
     struct wl_array a; wl_array_init(&a);
     uint32_t *v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_ACTIVATED;
-    if (s->state) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_MAXIMIZED; }
-    xdg_toplevel_send_configure(s->top,240,120,&a); wl_array_release(&a);
+    if (s->state&1u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_MAXIMIZED; }
+    if (s->state&2u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_FULLSCREEN; }
+    xdg_toplevel_send_configure(s->top,s->state ? 480 : 0,s->state ? 240 : 0,&a); wl_array_release(&a);
     xdg_surface_send_configure(s->xdg,++s->serial);
 }
 static void caps(server *s,int enabled) {
@@ -51,6 +52,13 @@ static void commit(struct wl_client *c,struct wl_resource *r) {
     case 5: wl_pointer_send_leave(s->pointer,2,s->surface); break;
     case 6: wl_seat_send_capabilities(s->seat,0); break;
     case 7: xdg_toplevel_send_close(s->top); break;
+    case 8: s->state=2; configure(s); break;
+    case 10: s->state=3; configure(s); break;
+    case 9: {
+        struct wl_array a; wl_array_init(&a);
+        xdg_toplevel_send_configure(s->top,300,150,&a); wl_array_release(&a);
+        xdg_surface_send_configure(s->xdg,++s->serial); break;
+    }
     }
 }
 static void attach(struct wl_client *c,struct wl_resource *r,struct wl_resource *buffer,int32_t x,int32_t y) {
@@ -80,8 +88,9 @@ static void bind_seat(struct wl_client *c,void *data,uint32_t version,uint32_t i
     wl_resource_set_implementation(s->seat,&seat_impl,s,NULL); wl_seat_send_capabilities(s->seat,WL_SEAT_CAPABILITY_POINTER);
 }
 static void string(struct wl_client *c,struct wl_resource *r,const char *text) { (void)c;(void)r;(void)text; }
-static void maximize(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state=1; configure(s); }
-static void restore(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state=0; configure(s); }
+static void maximize(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state|=1; configure(s); }
+static void restore(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); if(!(s->state&2u)) s->state&=~1u; configure(s); }
+static void unfullscreen(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state&=~2u; configure(s); }
 static void minimize(struct wl_client *c,struct wl_resource *r) { (void)c; atomic_fetch_add(&((server *)wl_resource_get_user_data(r))->minimizes,1); }
 static void move(struct wl_client *c,struct wl_resource *r,struct wl_resource *seat,uint32_t serial) {
     (void)c; server *s=wl_resource_get_user_data(r); CHECK(seat==s->seat && serial==0); atomic_fetch_add(&s->moves,1);
@@ -91,12 +100,12 @@ static void resize(struct wl_client *c,struct wl_resource *r,struct wl_resource 
     int i=atomic_fetch_add(&s->resizes,1); CHECK(seat==s->seat && serial==0 && i<8 && edge==expected[i]);
 }
 static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=string,
-    .set_maximized=maximize,.unset_maximized=restore,.unset_fullscreen=restore,.set_minimized=minimize,.move=move,.resize=resize};
+    .set_maximized=maximize,.unset_maximized=restore,.unset_fullscreen=unfullscreen,.set_minimized=minimize,.move=move,.resize=resize};
 static void top(struct wl_client *c,struct wl_resource *r,uint32_t id) {
     server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,5,id); CHECK(s->top);
     wl_resource_set_implementation(s->top,&top_impl,s,NULL);
 }
-static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r; CHECK(x==0 && y==0 && w==240 && h==120); }
+static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r; CHECK(x==0 && y==0 && ((w==240 && h==120) || (w==480 && h==240) || (w==300 && h==150))); }
 static void ack(struct wl_client *c,struct wl_resource *r,uint32_t serial) { (void)c; server *s=wl_resource_get_user_data(r); CHECK(serial>0 && serial<=s->serial); atomic_fetch_add(&s->acks,1); }
 static const struct xdg_surface_interface xdg_impl={.destroy=destroy,.get_toplevel=top,.set_window_geometry=geometry,.ack_configure=ack};
 static void xdg(struct wl_client *c,struct wl_resource *r,uint32_t id,struct wl_resource *surface) {
@@ -148,7 +157,21 @@ static void test(int client_mode,int reject) {
         CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)9)==NX_ERROR_ARGUMENT);
         CHECK(nx_window_maximize(w)==NX_OK && nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_MAXIMIZED));
         roundtrip(w); CHECK(nx_window_get_status(w,&status)==NX_OK && (status.state&NX_WINDOW_STATE_MAXIMIZED));
+        nx_window_info dimensions; CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==480 && dimensions.height==240);
         CHECK(nx_window_restore(w)==NX_OK); roundtrip(w); CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_MAXIMIZED));
+        CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==240 && dimensions.height==120);
+        send(&s,w,10); CHECK(nx_window_get_status(w,&status)==NX_OK &&
+            (status.state&(NX_WINDOW_STATE_FULLSCREEN|NX_WINDOW_STATE_MAXIMIZED))==(NX_WINDOW_STATE_FULLSCREEN|NX_WINDOW_STATE_MAXIMIZED));
+        CHECK(nx_window_restore(w)==NX_OK); roundtrip(w); roundtrip(w); roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&(NX_WINDOW_STATE_FULLSCREEN|NX_WINDOW_STATE_MAXIMIZED)));
+        CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==240 && dimensions.height==120);
+        send(&s,w,8); CHECK(nx_window_get_status(w,&status)==NX_OK && (status.state&NX_WINDOW_STATE_FULLSCREEN));
+        CHECK(nx_window_restore(w)==NX_OK); roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_FULLSCREEN));
+        CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==240 && dimensions.height==120);
+        send(&s,w,9); CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==300 && dimensions.height==150);
+        CHECK(nx_window_maximize(w)==NX_OK); roundtrip(w); CHECK(nx_window_restore(w)==NX_OK); roundtrip(w);
+        CHECK(nx_window_get_info(w,&dimensions)==NX_OK && dimensions.width==300 && dimensions.height==150);
         CHECK(nx_window_minimize(w)==NX_OK); roundtrip(w); CHECK(atomic_load(&s.minimizes)==1 && nx_window_get_status(w,&status)==NX_OK && !(status.known&NX_WINDOW_STATE_MINIMIZED));
         for(int i=0;i<9;++i) {
             send(&s,w,1); CHECK(i==8 ? nx_window_begin_move(w)==NX_OK : nx_window_begin_resize(w,(nx_window_resize_edge)(i+1))==NX_OK);

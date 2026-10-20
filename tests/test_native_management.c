@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 static nx_window *owned_window;
 static nx_context *owned_context;
 static int failure(const char *file,int line,const char *expression) {
@@ -20,13 +21,24 @@ static int failure(const char *file,int line,const char *expression) {
     return 1;
 }
 #define CHECK(e) do { if (!(e)) return failure(__FILE__,__LINE__,#e); } while (0)
+static double now(void) { struct timespec t; if(clock_gettime(CLOCK_MONOTONIC,&t)) abort(); return (double)t.tv_sec+(double)t.tv_nsec/1e9; }
 static int wait_state(nx_window *w,uint32_t bit,int enabled) {
     nx_window_status s={0};
-    for(unsigned i=0;i<500;++i) {
+    double deadline=now()+5;
+    do {
         CHECK(nx_window_poll(w,10)==NX_OK && nx_window_get_status(w,&s)==NX_OK);
         if((s.known&bit) && !!(s.state&bit)==enabled) return 0;
-    }
+    } while(now()<deadline);
     fprintf(stderr,"Unconfirmed state bit=%u expected=%d observed=%u known=%u capabilities=%u\n",bit,enabled,s.state,s.known,s.capabilities);
+    CHECK(0);
+}
+static int wait_geometry(nx_window *w,int maximized) {
+    nx_window_info info={0}; double deadline=now()+5;
+    do {
+        CHECK(nx_window_poll(w,10)==NX_OK && nx_window_get_info(w,&info)==NX_OK);
+        if(maximized ? info.width>320 && info.height>200 : info.width==320 && info.height==200) return 0;
+    } while(now()<deadline);
+    fprintf(stderr,"Unconfirmed geometry: %.0fx%.0f expected %s\n",info.width,info.height,maximized ? "larger than 320x200" : "320x200");
     CHECK(0);
 }
 int main(void) {
@@ -37,19 +49,22 @@ int main(void) {
     nx_window_status s;
     /* Root capabilities can appear before Openbox adopts this mapped window.
        Wait for an actual per-window state observation, not just WM startup. */
-    for(unsigned i=0;i<300;++i) {
+    double deadline=now()+3;
+    do {
         CHECK(nx_window_poll(w,10)==NX_OK && nx_window_get_status(w,&s)==NX_OK);
         if((s.capabilities&NX_WINDOW_CAP_MAXIMIZE) && (s.known&NX_WINDOW_STATE_MAXIMIZED)) break;
-    }
+    } while(now()<deadline);
     printf("Native WM before request: state=%u known=%u capabilities=%u\n",s.state,s.known,s.capabilities);
     fflush(stdout);
     CHECK(s.client_chrome && (s.capabilities&NX_WINDOW_CAP_MAXIMIZE) && (s.known&NX_WINDOW_STATE_MAXIMIZED));
     CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,NX_WINDOW_RESIZE_RIGHT)==NX_ERROR_STATE);
     CHECK(nx_window_maximize(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_MAXIMIZED,1)==0);
+    CHECK(wait_geometry(w,1)==0);
     nx_window_info maximized; CHECK(nx_window_get_info(w,&maximized)==NX_OK && maximized.width>320 && maximized.height>200);
     CHECK(nx_window_maximize(w)==NX_OK && nx_window_poll(w,20)==NX_OK);
     CHECK(nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MAXIMIZED));
     CHECK(nx_window_restore(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_MAXIMIZED,0)==0);
+    CHECK(wait_geometry(w,0)==0);
     nx_window_info restored; CHECK(nx_window_get_info(w,&restored)==NX_OK && restored.width>0 && restored.height>0);
     nx_context *context=NULL; CHECK(nx_context_create(NULL,&owned_context)==NX_OK); context=owned_context;
     size_t routed; CHECK(nx_window_route_events(w,context,&routed)==NX_OK && routed>0);

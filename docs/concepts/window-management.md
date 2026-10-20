@@ -57,6 +57,9 @@ Snap, Alt+Space/system menu, focus, DPI/monitor behavior and accessible controls
 macOS and both Linux backends need their own executed evidence. Physical
 keyboard/IME/screenreader/full-design checks remain separate open requirements.
 
+Automated Windows, AppKit and Linux results, including their source revisions,
+are listed in the report. These do not close the physical checks above.
+
 ## Application integration
 
 Create the window with `NX_WINDOW_CLIENT_CHROME | NX_WINDOW_STATE_EVENTS`.
@@ -97,6 +100,10 @@ the protocol's client-decoration default applies; with it, server-side refusal
 returns `NX_ERROR_UNSUPPORTED`, including a later renegotiation. The application
 must handle that error. Minimize cannot be observed or undone directly through
 xdg-shell; applications must not claim successful unminimization from restore.
+Restore retains the last normal client dimensions when a configure leaves an
+axis to the client (size zero), while honoring explicit compositor dimensions.
+Fullscreen restore waits for the exit configure before unmaximizing an
+underlying maximized state; state notifications continue to report observations.
 X11 client chrome is a Motif hint and can be ignored by the WM. AppKit resize
 uses actual native event coordinates and NSWindow frames/limits; its move uses
 the public Window Server drag method.

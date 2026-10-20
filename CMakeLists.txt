@@ -427,7 +427,7 @@ if(NEXAUI_BUILD_TESTS)
         set_tests_properties(nexaui_wayland_window PROPERTIES TIMEOUT 15
             SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
         add_executable(nexaui_native_management_tests tests/test_native_management.c)
-        target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI)
+        target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI X11::X11)
         add_test(NAME nexaui_wayland_management_native COMMAND nexaui_native_management_tests)
         set_tests_properties(nexaui_wayland_management_native PROPERTIES TIMEOUT 20
             SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)

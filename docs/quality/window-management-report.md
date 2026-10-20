@@ -19,9 +19,9 @@ zero their output. Requests do not fabricate observed state.
 | Backend | Implementation | Local evidence so far | Remaining acceptance |
 | --- | --- | --- | --- |
 | Windows | Overlapped styles retained; full client NCCALCSIZE/work-area clipping; DPI-based edge hit testing; native nonclient move/resize; ShowWindow state actions; client-mode system menu route | Debug static and DLL suites each 116/116; final DLL checks 2/2 and MSVC-ASan 3/3 | Physical drag/Snap, real mixed DPI/input and composed accessible controls |
-| Wayland | xdg-toplevel configure state/caps; own seat/press serial; xdg-decoration negotiation/refusal; no invented minimized state/unminimize | Real isolated server-wire fixture passes ASan/UBSan/LSan including serial zero, eight edges, release/leave/seat-removal, refusal cleanup and default event regression | Real private Weston state suite and regular CI; physical compositor/application acceptance |
+| Wayland | xdg-toplevel configure state/caps; own seat/press serial; decoration negotiation/refusal; normal-size restoration and phased fullscreen exit | Instrumented wire fixture and private Weston native size/state checks; zero-size and fullscreen/maximized restore cases; default regressions | Fresh regular CI for the corrective delta; physical compositor/application acceptance |
 | X11 | ICCCM selection/WM_STATE, EWMH supported/state/active properties and messages; Motif decoration hint | Instrumented wire fixture and real Openbox transitions; startup-barrier fixture passes ten fresh runs | Regular CI and full suite after fixture correction; physical WM/application acceptance; hints may be declined |
-| AppKit | Native titled full-size content, hidden standard buttons; retained own NSEvent drag; native frame resize with limits/Escape; zoom/miniaturize/restore/state | Source and native test implemented; no macOS execution claimed yet | Native macOS CI and physical drag, monitors, input, VoiceOver |
+| AppKit | Native titled full-size content, hidden standard buttons; retained own NSEvent drag; native frame resize with limits/Escape; zoom/miniaturize/restore/state | CI 39506513206: static and shared each 96/96, including native management assertions | Physical drag, monitors, input, VoiceOver |
 
 The Windows gesture fixture intercepts `SC_MOVE`/`SC_SIZE` only at native loop
 entry and verifies all nine requests/cancellation. It does not simulate physical
@@ -64,6 +64,54 @@ maximize control receives no Windows 11 hover Snap-layout flyout automatically.
 - Full native platform runs and CI results will be appended after execution.
   The Wayland no-skip gate now additionally requires both management fixtures;
   historical 117-test/7-Wayland reports remain historical evidence.
+
+## Corrective native geometry checks after 63f31ee
+
+The complete local instrumented rerun passes 121/121 without skips, 178.91s
+(`out/d01-linux-full-final.xml`; native no-skip gate includes 11 cases). That
+baseline originally checked restored state and positive dimensions separately;
+it did not prove returning to the previous normal dimensions. It must not be
+used as the stronger geometry acceptance below.
+
+The additional check found two independent issues:
+
+1. X11 state properties can change before the ConfigureNotify has updated the
+   cached geometry. The native test now waits independently for both observed
+   state and dimensions, against monotonic deadlines. The SDK does not promise
+   an atomic snapshot across those two APIs. The shared-link diagnostic test
+   also needs its own direct X11 link dependency; static linkage had supplied it
+   transitively. Initial CI's Ubuntu shared build caught that declaration error.
+2. A normal Wayland configure with zero width/height needs the previously normal
+   dimensions, rather than the maximized dimensions. A new real server-wire
+   counterexample fails before the cache correction
+   (`out/d01-wayland-restore-before.xml`). Maximize, fullscreen, combined
+   fullscreen/maximized and a later user normal-size change are now covered.
+   Actual Weston tracing also identifies the original unconditional
+   unset_fullscreen after unset_maximized as a separate issue: it can replace
+   the normal-size configure with the still-committed maximized dimensions.
+   The [Weston 14.0.2 shell implementation](https://github.com/wayland-mirror/weston/blob/14.0.2/desktop-shell/shell.c#L2290)
+   explicitly uses current or pending maximized state for that size. A single-
+   maximize control still fails, ruling out repeated maximize as the cause.
+   Fullscreen exit is now sent only for observed fullscreen, and unmaximizing
+   an underlying state waits for the exit configure. Explicit compositor size
+   proposals continue to be honored.
+
+The failed traces and controls are retained:
+`out/d01-wayland-restore-trace.log`, `out/d01-wayland-single-max-control.log`
+and their private compositor directories. No compositor/OS setting was changed.
+Final focused instrumented and shared suites each pass 3/3
+(`out/d01-management-final-asan.xml`, `out/d01-management-final-shared.xml`).
+Private Weston plus legacy window regression, native dimensions and protocol
+fixture each pass 3/3 in static ASan/UBSan/LSan and shared builds
+(`out/d01-wayland-phased-restore.xml`, `out/d01-wayland-shared-restore.xml`).
+The native result now proves maximize 1600x1200 and restore 320x200.
+
+[Initial CI 39506513206](https://github.com/Lulus792/NexaUI/actions/runs/39506513206)
+contains separately successful macOS static/shared jobs (96/96 each) and Ubuntu
+static. It has an Ubuntu shared build failure from the diagnostic link edge;
+do not call the initial workflow wholly green. Logs are preserved under
+`out/d01-window-management-v1/ci-39506513206`. The corrective revision requires
+its own complete CI result.
 
 ## Limits and integration handoff
 

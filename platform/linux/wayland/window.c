@@ -139,10 +139,12 @@ struct nx_wayland_window {
     int width, height, scale;
     int background_width, background_height, cursor_width, cursor_height;
     int pending_width, pending_height;
+    int normal_width, normal_height;
     int configured, should_close, hidden, buffer_attached;
     int external_renderer;
     uint32_t flags, state, pending_state, reported_state, wm_caps;
     int wm_caps_known;
+    int restore_after_fullscreen;
     uint32_t left_serial;
     int left_pressed;
     int pointer_inside;
@@ -1918,13 +1920,24 @@ static void nx_wayland_surface_configure(void *data,
     xdg_surface_ack_configure(xdg_surface, serial);
     if (window->decoration && window->decoration_mode != ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE)
         window->error = NX_ERROR_UNSUPPORTED;
+    int restoring = (window->state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN)) &&
+        !(window->pending_state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN));
     window->state = window->pending_state;
+    if (window->restore_after_fullscreen && !(window->state & NX_WINDOW_STATE_FULLSCREEN)) {
+        window->restore_after_fullscreen = 0;
+        if (window->state & NX_WINDOW_STATE_MAXIMIZED)
+            xdg_toplevel_unset_maximized(window->toplevel);
+    }
     nx_window_state_event(&window->event_queue, window->flags,
         &window->reported_state, window->state);
     int width = window->pending_width > 0 ? window->pending_width :
-                window->width;
+                restoring ? window->normal_width : window->width;
     int height = window->pending_height > 0 ? window->pending_height :
-                 window->height;
+                 restoring ? window->normal_height : window->height;
+    if (!(window->state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN))) {
+        window->normal_width = width;
+        window->normal_height = height;
+    }
     int resized = width != window->width || height != window->height;
     if (resized) {
         window->width = width;
@@ -1982,6 +1995,8 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
     }
     window->width = (int)width;
     window->height = (int)height;
+    window->normal_width = window->width;
+    window->normal_height = window->height;
     window->scale = 1;
     window->hidden = (desc->flags & NX_WINDOW_HIDDEN) != 0;
     window->flags = desc->flags;
@@ -2186,6 +2201,7 @@ nx_result nx_wayland_window_minimize(nx_wayland_window *window) {
     nx_window_status status; nx_result result = nx_wayland_window_get_status(window, &status);
     if (result != NX_OK) return result;
     if (!(status.capabilities & NX_WINDOW_CAP_MINIMIZE)) return NX_ERROR_UNSUPPORTED;
+    window->restore_after_fullscreen = 0;
     xdg_toplevel_set_minimized(window->toplevel);
     return nx_wayland_management_flush(window);
 }
@@ -2194,6 +2210,7 @@ nx_result nx_wayland_window_maximize(nx_wayland_window *window) {
     nx_window_status status; nx_result result = nx_wayland_window_get_status(window, &status);
     if (result != NX_OK) return result;
     if (!(status.capabilities & NX_WINDOW_CAP_MAXIMIZE)) return NX_ERROR_UNSUPPORTED;
+    window->restore_after_fullscreen = 0;
     xdg_toplevel_set_maximized(window->toplevel);
     return nx_wayland_management_flush(window);
 }
@@ -2201,8 +2218,16 @@ nx_result nx_wayland_window_maximize(nx_wayland_window *window) {
 nx_result nx_wayland_window_restore(nx_wayland_window *window) {
     nx_result result = nx_wayland_management_ready(window);
     if (result != NX_OK) return result;
-    xdg_toplevel_unset_maximized(window->toplevel);
-    xdg_toplevel_unset_fullscreen(window->toplevel);
+    /* Exit observed fullscreen first; an underlying maximized state is
+       unmaximized at its next configure. Some compositors ignore unmaximize
+       while fullscreen, or reinterpret a redundant unset_fullscreen using
+       the still-committed maximized dimensions (Weston 14). */
+    if (window->state & NX_WINDOW_STATE_FULLSCREEN) {
+        if (!window->restore_after_fullscreen) {
+            window->restore_after_fullscreen = 1;
+            xdg_toplevel_unset_fullscreen(window->toplevel);
+        }
+    } else xdg_toplevel_unset_maximized(window->toplevel);
     return nx_wayland_management_flush(window);
 }
 
