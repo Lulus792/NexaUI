@@ -1,0 +1,120 @@
+--- a/src/util/u_cpu_detect.c
++++ b/src/util/u_cpu_detect.c
+@@ -105,6 +105,21 @@
+    .once_flag = ONCE_FLAG_INIT,
+    .detect_done = 0,
+ };
++
++
++/* Release process-global topology data when an ELF driver is unloaded. Run
++ * after default-priority finalizers, including queue/worker shutdown hooks.
++ * The published caps copy aliases this allocation; it is not a second owner.
++ */
++#if defined(__ELF__) && defined(__GNUC__)
++__attribute__((destructor(101))) static void
++util_cpu_detect_fini(void)
++{
++   free(util_cpu_caps.L3_affinity_mask);
++   util_cpu_caps.L3_affinity_mask = NULL;
++   _util_cpu_caps_state.caps.L3_affinity_mask = NULL;
++}
++#endif
+ 
+ #if DETECT_ARCH_X86 || DETECT_ARCH_X86_64
+ static int has_cpuid(void);
+--- a/src/gallium/auxiliary/rtasm/rtasm_execmem.c
++++ b/src/gallium/auxiliary/rtasm/rtasm_execmem.c
+@@ -67,26 +67,57 @@
+ static unsigned char *exec_mem = NULL;
+ 
+ 
++/* Called with exec_mutex held. Freeing the last allocation coalesces the
++ * entire heap into one free block. Other live code must keep its pool alive.
++ */
++static void
++free_heap_if_idle(void)
++{
++   if (!exec_heap || !exec_heap->next->free ||
++       exec_heap->next->next != exec_heap)
++      return;
++
++   /* Keep ownership if the OS refuses the unmap, so the pool can be retried. */
++   if (exec_mem && munmap(exec_mem, EXEC_HEAP_SIZE) != 0)
++      return;
++
++   u_mmDestroy(exec_heap);
++   exec_heap = NULL;
++   exec_mem = NULL;
++}
++
++
+ static int
+ init_heap(void)
+ {
+-   if (!exec_heap)
+-      exec_heap = u_mmInit( 0, EXEC_HEAP_SIZE );
+-
+-   if (!exec_mem)
++   if (!exec_heap) {
++      exec_heap = u_mmInit(0, EXEC_HEAP_SIZE);
++      if (!exec_heap)
++         return 0;
++   }
++
++   if (!exec_mem) {
+       exec_mem = (unsigned char *) mmap(NULL, EXEC_HEAP_SIZE,
+          PROT_EXEC | PROT_READ | PROT_WRITE,
+          MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+-
+-   return (exec_mem != MAP_FAILED);
+-}
+-
++      if (exec_mem == MAP_FAILED) {
++         exec_mem = NULL;
++         free_heap_if_idle();
++         return 0;
++      }
++   }
++
++   return 1;
++}
+ 
+ void *
+ rtasm_exec_malloc(size_t size)
+ {
+    struct mem_block *block = NULL;
+    void *addr = NULL;
++
++   if (!size || size > EXEC_HEAP_SIZE)
++      return NULL;
+ 
+    simple_mtx_lock(&exec_mutex);
+ 
+@@ -104,6 +135,8 @@
+       debug_printf("rtasm_exec_malloc failed\n");
+ 
+ bail:
++   if (!addr)
++      free_heap_if_idle();
+    simple_mtx_unlock(&exec_mutex);
+ 
+    return addr;
+@@ -113,13 +146,16 @@
+ void
+ rtasm_exec_free(void *addr)
+ {
++   if (!addr)
++      return;
++
+    simple_mtx_lock(&exec_mutex);
+ 
+    if (exec_heap) {
+       struct mem_block *block = u_mmFindBlock(exec_heap, (unsigned char *)addr - exec_mem);
+ 
+-      if (block)
+-         u_mmFreeMem(block);
++      if (block && u_mmFreeMem(block) == 0)
++         free_heap_if_idle();
+    }
+ 
+    simple_mtx_unlock(&exec_mutex);

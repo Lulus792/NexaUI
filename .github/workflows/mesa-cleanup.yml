@@ -1,0 +1,93 @@
+name: Paired Mesa lifetime candidate
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/mesa-cleanup.yml'
+      - 'tools/prepare_ci_mesa.py'
+      - 'tools/check_mesa_cleanup.py'
+      - 'tools/mesa/**'
+      - 'tests/mesa_*.c'
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      UBSAN_OPTIONS: halt_on_error=1
+      NEXAUI_REQUIRE_VULKAN_TIMING: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install isolated runner build prerequisites
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev
+          wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev
+          xvfb xauth weston libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
+          bison flex patch llvm-20-dev python3-mako python3-yaml python3-packaging
+          libdrm-dev libx11-xcb-dev libxcb-dri3-dev libxcb-present-dev libxcb-randr0-dev
+          libxcb-shm0-dev libxcb-sync-dev libxcb-xfixes0-dev libxshmfence-dev
+          libxrandr-dev libelf-dev libunwind-dev libzstd-dev zlib1g-dev libexpat1-dev
+      - name: Prepare existing pinned validation layer
+        run: python tools/prepare_ci_validation.py "$RUNNER_TEMP/nexaui-validation" --github-env "$GITHUB_ENV"
+      - name: Configure original NexaUI sanitizer suite
+        run: cmake -S . -B build-asan -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer' -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+      - name: Build original suite and independent controls
+        run: cmake --build build-asan --parallel 4
+      - name: Build paired unmodified and cleanup-candidate drivers
+        run: >-
+          /usr/bin/python3 tools/prepare_ci_mesa.py
+          --work-dir "$RUNNER_TEMP/nexaui-mesa"
+          --control "$GITHUB_WORKSPACE/build-asan/nexaui_vulkan_lifetime_control"
+          --before-results "$GITHUB_WORKSPACE/build-asan/mesa-before"
+          --after-results "$GITHUB_WORKSPACE/build-asan/mesa-after"
+          --github-env "$GITHUB_ENV"
+      - name: Full original suite with Asahi before the candidate
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        env:
+          ASAN_OPTIONS: halt_on_error=1:detect_leaks=1
+        run: >-
+          VK_DRIVER_FILES="/usr/share/vulkan/icd.d/asahi_icd.json:$NEXAUI_CI_LVP_MANIFEST"
+          NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1
+          VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1
+          NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24'
+          python tests/run_weston_native.py --work-dir build-asan/mesa-first-wayland --
+          ctest --test-dir build-asan --output-on-failure --timeout 60
+          --output-junit "$GITHUB_WORKSPACE/build-asan/mesa-first.xml"
+      - name: Require executed first-order Wayland tests
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        run: python tests/check_wayland_results.py build-asan/mesa-first.xml
+      - name: Full original suite with the candidate before Asahi
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        env:
+          ASAN_OPTIONS: halt_on_error=1:detect_leaks=1
+        run: >-
+          VK_DRIVER_FILES="$NEXAUI_CI_LVP_MANIFEST:/usr/share/vulkan/icd.d/asahi_icd.json"
+          NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1
+          VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1
+          NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24'
+          python tests/run_weston_native.py --work-dir build-asan/mesa-second-wayland --
+          ctest --test-dir build-asan --output-on-failure --timeout 60
+          --output-junit "$GITHUB_WORKSPACE/build-asan/mesa-second.xml"
+      - name: Require executed second-order Wayland tests
+        if: always() && env.NEXAUI_CI_LVP_MANIFEST != ''
+        run: python tests/check_wayland_results.py build-asan/mesa-second.xml
+      - name: Retain source/runtime identity, negative controls and native results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-cleanup-candidate
+          path: |
+            ${{ runner.temp }}/nexaui-mesa/receipts
+            build-asan/mesa-before
+            build-asan/mesa-after
+            build-asan/mesa-first-wayland
+            build-asan/mesa-second-wayland
+            build-asan/mesa-first.xml
+            build-asan/mesa-second.xml
+            build-asan/Testing/Temporary
+          if-no-files-found: error
