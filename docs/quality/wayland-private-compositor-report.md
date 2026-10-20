@@ -99,6 +99,11 @@ SDK directly.
 
 ## CI results and unresolved leak observation
 
+Later documentation/source runs reproduce the Vulkan leak reports. Their
+same-process driver mapping and package-side allocation symbols are retained
+in the [module follow-up](vulkan-lsan-module-report.md). The historical green
+run below remains its own result and is not treated as a leak repair.
+
 [Run39466687698](https://github.com/Lulus792/NexaUI/actions/runs/39466687698),
 source `d06fc382732e10d586db71f417e3a9f79867b748`, passes all seven regular
 jobs: Windows static/shared114/114 each, macOS95/95 each, Ubuntu static/shared

@@ -1,0 +1,4164 @@
+{
+  "date": "2026-10-20",
+  "runs": [
+    {
+      "source_commit": "0739c4959430ec55fc336ae78f554f3857ad5c37",
+      "run_id": 39468622435,
+      "job_id": 118786501007,
+      "conclusion": "failure",
+      "artifact_id": 12285617915
+    },
+    {
+      "source_commit": "2f4199e86ccd4bee7dcd7cdc04383343998163f5",
+      "run_id": 39473369268,
+      "job_id": 118802942760,
+      "conclusion": "failure"
+    }
+  ],
+  "scope": "Same-process loader identity plus package-side symbols. Runtime CI driver ELF hash/BuildID not captured. Allocation sites assigned; lifetime cause and repair not closed.",
+  "controls": {
+    "scope": "Two fixed native Vulkan smoke runs; no leak suppression. Full CTest remains a separate gate.",
+    "app": "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+    "app_sha256": "b176be1f3d7b545d3e7ac29186d0babf7a4d20b58e8643a2dab1fb121ef539db",
+    "libc": "glibc 2.39",
+    "module_logging_supported": true,
+    "runs": [
+      {
+        "name": "explicit-validation",
+        "command": [
+          "/usr/bin/python",
+          "/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py",
+          "--timeout",
+          "120",
+          "--work-dir",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/explicit-validation",
+          "--",
+          "env",
+          "-u",
+          "VK_INSTANCE_LAYERS",
+          "-u",
+          "VK_LAYER_VALIDATE_SYNC",
+          "NEXAUI_PLATFORM=x11",
+          "NEXAUI_REQUIRE_VULKAN=1",
+          "LD_DEBUG=files",
+          "ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:fast_unwind_on_malloc=0",
+          "LSAN_OPTIONS=report_objects=1",
+          "VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation",
+          "VK_LAYER_VALIDATE_SYNC=1",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+          "--smoke"
+        ],
+        "exit_code": 1,
+        "validation_library_in_loader_log": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "leak_report": true
+      },
+      {
+        "name": "without-explicit-validation",
+        "command": [
+          "/usr/bin/python",
+          "/home/runner/work/NexaUI/NexaUI/tests/run_weston_native.py",
+          "--timeout",
+          "120",
+          "--work-dir",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/vulkan-module-control/without-explicit-validation",
+          "--",
+          "env",
+          "-u",
+          "VK_INSTANCE_LAYERS",
+          "-u",
+          "VK_LAYER_VALIDATE_SYNC",
+          "NEXAUI_PLATFORM=x11",
+          "NEXAUI_REQUIRE_VULKAN=1",
+          "LD_DEBUG=files",
+          "ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:fast_unwind_on_malloc=0",
+          "LSAN_OPTIONS=report_objects=1",
+          "/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear",
+          "--smoke"
+        ],
+        "exit_code": 1,
+        "validation_library_in_loader_log": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "leak_report": true
+      }
+    ]
+  },
+  "attribution": [
+    {
+      "case": "explicit-validation",
+      "app_pid": 8134,
+      "summary": "SUMMARY: AddressSanitizer: 240 byte(s) leaked in 3 allocation(s).",
+      "leak_report": [
+        "==8134==ERROR: LeakSanitizer: detected memory leaks",
+        "",
+        "Direct leak of 128 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x559c0c4fa0a0 in realloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x2290a0) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fc305d50de3  (<unknown module>)",
+        "    #2 0x7fc305d512b6  (<unknown module>)",
+        "    #3 0x7fc3168a1fb2  (/lib/x86_64-linux-gnu/libc.so.6+0xa1fb2) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #4 0x7fc305f8ce32  (<unknown module>)",
+        "    #5 0x7fc305c6115f  (<unknown module>)",
+        "    #6 0x7fc305d0c1dc  (<unknown module>)",
+        "    #7 0x7fc305d0c13f  (<unknown module>)",
+        "    #8 0x7fc305ce4ff4  (<unknown module>)",
+        "    #9 0x7fc305ce6333  (<unknown module>)",
+        "    #10 0x7fc305cd1348  (<unknown module>)",
+        "    #11 0x7fc305cd1f11  (<unknown module>)",
+        "    #12 0x7fc316bcc196  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x29196) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #13 0x7fc316bcc92c  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x2992c) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #14 0x7fc3015680e3  (/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so+0xb680e3) (BuildId: 9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6)",
+        "    #15 0x7fc300e60336  (/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so+0x460336) (BuildId: 9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6)",
+        "    #16 0x7fc315f85b3e  (<unknown module>)",
+        "    #17 0x7fc316bc5f59  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x22f59) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #18 0x7fc316bd9fb1 in vkCreateInstance (/lib/x86_64-linux-gnu/libvulkan.so.1+0x36fb1) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #19 0x559c0c85c8bd in nx_vk_create device.c",
+        "    #20 0x559c0c85d77f in nx_vk_device_create_for_surface (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x58c77f) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #21 0x559c0c7f979f in nx_vk_open_native renderer.c",
+        "    #22 0x559c0c7f8db9 in nx_vulkan_renderer_create_config (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x527db9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #23 0x559c0c7fbeb7 in nx_vulkan_renderer_create (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x52aeb7) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #24 0x559c0c818bf9 in nx_vulkan_driver_open (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x547bf9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #25 0x559c0c538854 in main (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x267854) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #26 0x7fc31682a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #27 0x7fc31682a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "",
+        "Objects leaked above:",
+        "0x50c000003700 (128 bytes)",
+        "",
+        "Indirect leak of 56 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x559c0c4f9e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fc3060504b1  (<unknown module>)",
+        "    #2 0x7fc305e9922b  (<unknown module>)",
+        "    #3 0x7fc305e8a290  (<unknown module>)",
+        "    #4 0x7fc305e8a469  (<unknown module>)",
+        "    #5 0x7fc305e0fd1e  (<unknown module>)",
+        "    #6 0x7fc305e12ad1  (<unknown module>)",
+        "    #7 0x7fc305e0d5d4  (<unknown module>)",
+        "    #8 0x7fc305dbbaaf  (<unknown module>)",
+        "    #9 0x7fc305df43ab  (<unknown module>)",
+        "    #10 0x7fc305df0997  (<unknown module>)",
+        "    #11 0x7fc305d990e2  (<unknown module>)",
+        "    #12 0x7fc305d920c4  (<unknown module>)",
+        "    #13 0x7fc305d9255f  (<unknown module>)",
+        "    #14 0x7fc305d92a2c  (<unknown module>)",
+        "    #15 0x7fc305f90b4c  (<unknown module>)",
+        "    #16 0x7fc305cf65cd  (<unknown module>)",
+        "    #17 0x7fc305cf8089  (<unknown module>)",
+        "    #18 0x7fc305ce4c4b  (<unknown module>)",
+        "    #19 0x7fc305c86da5  (<unknown module>)",
+        "    #20 0x7fc305c8705d  (<unknown module>)",
+        "    #21 0x7fc305d7eb0b  (<unknown module>)",
+        "    #22 0x559c0c4f776c in asan_thread_start(void*) asan_interceptors.cpp.o",
+        "    #23 0x7fc31689cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #24 0x7fc316929ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "",
+        "Objects leaked above:",
+        "0x50600013ee00 (56 bytes)",
+        "",
+        "Indirect leak of 56 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x559c0c4f9e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fc30605048d  (<unknown module>)",
+        "    #2 0x7fc305e9922b  (<unknown module>)",
+        "    #3 0x7fc305e8a290  (<unknown module>)",
+        "    #4 0x7fc305e8a469  (<unknown module>)",
+        "    #5 0x7fc305e0fd1e  (<unknown module>)",
+        "    #6 0x7fc305e12ad1  (<unknown module>)",
+        "    #7 0x7fc305e0d5d4  (<unknown module>)",
+        "    #8 0x7fc305dbbaaf  (<unknown module>)",
+        "    #9 0x7fc305df43ab  (<unknown module>)",
+        "    #10 0x7fc305df0997  (<unknown module>)",
+        "    #11 0x7fc305d990e2  (<unknown module>)",
+        "    #12 0x7fc305d920c4  (<unknown module>)",
+        "    #13 0x7fc305d9255f  (<unknown module>)",
+        "    #14 0x7fc305d92a2c  (<unknown module>)",
+        "    #15 0x7fc305f90b4c  (<unknown module>)",
+        "    #16 0x7fc305cf65cd  (<unknown module>)",
+        "    #17 0x7fc305cf8089  (<unknown module>)",
+        "    #18 0x7fc305ce4c4b  (<unknown module>)",
+        "    #19 0x7fc305c86da5  (<unknown module>)",
+        "    #20 0x7fc305c8705d  (<unknown module>)",
+        "    #21 0x7fc305d7eb0b  (<unknown module>)",
+        "    #22 0x559c0c4f776c in asan_thread_start(void*) asan_interceptors.cpp.o",
+        "    #23 0x7fc31689cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #24 0x7fc316929ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "",
+        "Objects leaked above:",
+        "0x50600013eda0 (56 bytes)",
+        "",
+        "SUMMARY: AddressSanitizer: 240 byte(s) leaked in 3 allocation(s)."
+      ],
+      "app_modules": [
+        {
+          "name": "libxkbcommon.so.0",
+          "namespace": 0,
+          "base": 140475879489536,
+          "size": 295272,
+          "line": 4
+        },
+        {
+          "name": "libX11.so.6",
+          "namespace": 0,
+          "base": 140475878187008,
+          "size": 1301800,
+          "line": 10
+        },
+        {
+          "name": "libwayland-client.so.0",
+          "namespace": 0,
+          "base": 140475878121472,
+          "size": 62600,
+          "line": 16
+        },
+        {
+          "name": "libm.so.6",
+          "namespace": 0,
+          "base": 140475877167104,
+          "size": 950296,
+          "line": 22
+        },
+        {
+          "name": "libvulkan.so.1",
+          "namespace": 0,
+          "base": 140475876651008,
+          "size": 512880,
+          "line": 28
+        },
+        {
+          "name": "libresolv.so.2",
+          "namespace": 0,
+          "base": 140475876569088,
+          "size": 71816,
+          "line": 34
+        },
+        {
+          "name": "libgcc_s.so.1",
+          "namespace": 0,
+          "base": 140475876380672,
+          "size": 185256,
+          "line": 40
+        },
+        {
+          "name": "libc.so.6",
+          "namespace": 0,
+          "base": 140475872837632,
+          "size": 2174352,
+          "line": 46
+        },
+        {
+          "name": "libxcb.so.1",
+          "namespace": 0,
+          "base": 140475876212736,
+          "size": 164488,
+          "line": 52
+        },
+        {
+          "name": "libffi.so.8",
+          "namespace": 0,
+          "base": 140475876163584,
+          "size": 46608,
+          "line": 58
+        },
+        {
+          "name": "libXau.so.6",
+          "namespace": 0,
+          "base": 140475876130816,
+          "size": 20720,
+          "line": 64
+        },
+        {
+          "name": "libXdmcp.so.6",
+          "namespace": 0,
+          "base": 140475876098048,
+          "size": 28776,
+          "line": 70
+        },
+        {
+          "name": "libbsd.so.0",
+          "namespace": 0,
+          "base": 140475876007936,
+          "size": 86208,
+          "line": 76
+        },
+        {
+          "name": "libmd.so.0",
+          "namespace": 0,
+          "base": 140475875946496,
+          "size": 57448,
+          "line": 82
+        },
+        {
+          "name": "libXcursor.so.1",
+          "namespace": 0,
+          "base": 140475875573760,
+          "size": 45488,
+          "line": 186
+        },
+        {
+          "name": "libXrender.so.1",
+          "namespace": 0,
+          "base": 140475875524608,
+          "size": 45648,
+          "line": 192
+        },
+        {
+          "name": "libXfixes.so.3",
+          "namespace": 0,
+          "base": 140475875491840,
+          "size": 28904,
+          "line": 198
+        },
+        {
+          "name": "libvulkan_virtio.so",
+          "namespace": 0,
+          "base": 140475837050880,
+          "size": 1536840,
+          "line": 215
+        },
+        {
+          "name": "libz.so.1",
+          "namespace": 0,
+          "base": 140475875377152,
+          "size": 110744,
+          "line": 221
+        },
+        {
+          "name": "libzstd.so.1",
+          "namespace": 0,
+          "base": 140475865784320,
+          "size": 757816,
+          "line": 227
+        },
+        {
+          "name": "libdrm.so.2",
+          "namespace": 0,
+          "base": 140475875282944,
+          "size": 93144,
+          "line": 233
+        },
+        {
+          "name": "libX11-xcb.so.1",
+          "namespace": 0,
+          "base": 140475875262464,
+          "size": 16400,
+          "line": 239
+        },
+        {
+          "name": "libxcb-dri3.so.0",
+          "namespace": 0,
+          "base": 140475875233792,
+          "size": 24664,
+          "line": 245
+        },
+        {
+          "name": "libxcb-present.so.0",
+          "namespace": 0,
+          "base": 140475875213312,
+          "size": 16456,
+          "line": 251
+        },
+        {
+          "name": "libxcb-xfixes.so.0",
+          "namespace": 0,
+          "base": 140475875172352,
+          "size": 36936,
+          "line": 257
+        },
+        {
+          "name": "libxcb-sync.so.1",
+          "namespace": 0,
+          "base": 140475875135488,
+          "size": 32856,
+          "line": 263
+        },
+        {
+          "name": "libxcb-randr.so.0",
+          "namespace": 0,
+          "base": 140475875065856,
+          "size": 65608,
+          "line": 269
+        },
+        {
+          "name": "libxcb-shm.so.0",
+          "namespace": 0,
+          "base": 140475875045376,
+          "size": 16472,
+          "line": 275
+        },
+        {
+          "name": "libxshmfence.so.1",
+          "namespace": 0,
+          "base": 140475875024896,
+          "size": 16480,
+          "line": 281
+        },
+        {
+          "name": "libexpat.so.1",
+          "namespace": 0,
+          "base": 140475867873280,
+          "size": 184448,
+          "line": 287
+        },
+        {
+          "name": "libvulkan_gfxstream.so",
+          "namespace": 0,
+          "base": 140475818336256,
+          "size": 2069544,
+          "line": 334
+        },
+        {
+          "name": "libstdc++.so.6",
+          "namespace": 0,
+          "base": 140475814117376,
+          "size": 2609472,
+          "line": 340
+        },
+        {
+          "name": "libvulkan_radeon.so",
+          "namespace": 0,
+          "base": 140475797340160,
+          "size": 15232264,
+          "line": 355
+        },
+        {
+          "name": "libLLVM.so.20.1",
+          "namespace": 0,
+          "base": 140475652636672,
+          "size": 144235209,
+          "line": 361
+        },
+        {
+          "name": "libelf.so.1",
+          "namespace": 0,
+          "base": 140475867746304,
+          "size": 123336,
+          "line": 367
+        },
+        {
+          "name": "libdrm_amdgpu.so.1",
+          "namespace": 0,
+          "base": 140475867693056,
+          "size": 49776,
+          "line": 373
+        },
+        {
+          "name": "libedit.so.2",
+          "namespace": 0,
+          "base": 140475865546752,
+          "size": 233600,
+          "line": 379
+        },
+        {
+          "name": "libxml2.so.2",
+          "namespace": 0,
+          "base": 140475650662400,
+          "size": 1973784,
+          "line": 385
+        },
+        {
+          "name": "libtinfo.so.6",
+          "namespace": 0,
+          "base": 140475864236032,
+          "size": 211240,
+          "line": 391
+        },
+        {
+          "name": "libicuuc.so.74",
+          "namespace": 0,
+          "base": 140475648442368,
+          "size": 2147232,
+          "line": 397
+        },
+        {
+          "name": "liblzma.so.5",
+          "namespace": 0,
+          "base": 140475864031232,
+          "size": 200728,
+          "line": 403
+        },
+        {
+          "name": "libicudata.so.74",
+          "namespace": 0,
+          "base": 140475616985088,
+          "size": 30797840,
+          "line": 409
+        },
+        {
+          "name": "libvulkan_asahi.so",
+          "namespace": 0,
+          "base": 140475604402176,
+          "size": 11862504,
+          "line": 448
+        },
+        {
+          "name": "libvulkan_lvp.so",
+          "namespace": 0,
+          "base": 140475591819264,
+          "size": 12108032,
+          "line": 460
+        },
+        {
+          "name": "libvulkan_nouveau.so",
+          "namespace": 0,
+          "base": 140475575042048,
+          "size": 15950840,
+          "line": 471
+        },
+        {
+          "name": "libvulkan_intel.so",
+          "namespace": 0,
+          "base": 140475551973376,
+          "size": 21202928,
+          "line": 482
+        },
+        {
+          "name": "libvulkan_intel_hasvk.so",
+          "namespace": 0,
+          "base": 140475533099008,
+          "size": 17233304,
+          "line": 493
+        },
+        {
+          "name": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+          "namespace": 0,
+          "base": 140475505836032,
+          "size": 26926504,
+          "line": 580
+        },
+        {
+          "name": "libVkLayer_MESA_device_select.so",
+          "namespace": 0,
+          "base": 140475863924736,
+          "size": 103824,
+          "line": 591
+        }
+      ],
+      "frames": [
+        {
+          "frame": 0,
+          "pc": "0x559c0c4fa0a0",
+          "text": "    #0 0x559c0c4fa0a0 in realloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x2290a0) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fc305d50de3",
+          "text": "    #1 0x7fc305d50de3  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x150de3",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fc305d512b6",
+          "text": "    #2 0x7fc305d512b6  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1512b6",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fc3168a1fb2",
+          "text": "    #3 0x7fc3168a1fb2  (/lib/x86_64-linux-gnu/libc.so.6+0xa1fb2) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0xa1fb2",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fc305f8ce32",
+          "text": "    #4 0x7fc305f8ce32  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x38ce32",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fc305c6115f",
+          "text": "    #5 0x7fc305c6115f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x6115f",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fc305d0c1dc",
+          "text": "    #6 0x7fc305d0c1dc  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x10c1dc",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fc305d0c13f",
+          "text": "    #7 0x7fc305d0c13f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x10c13f",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fc305ce4ff4",
+          "text": "    #8 0x7fc305ce4ff4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4ff4",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fc305ce6333",
+          "text": "    #9 0x7fc305ce6333  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe6333",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fc305cd1348",
+          "text": "    #10 0x7fc305cd1348  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xd1348",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fc305cd1f11",
+          "text": "    #11 0x7fc305cd1f11  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xd1f11",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fc316bcc196",
+          "text": "    #12 0x7fc316bcc196  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x29196) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x29196",
+              "base": "0x7fc316ba3000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fc316bcc92c",
+          "text": "    #13 0x7fc316bcc92c  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x2992c) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x2992c",
+              "base": "0x7fc316ba3000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fc3015680e3",
+          "text": "    #14 0x7fc3015680e3  (/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so+0xb680e3) (BuildId: 9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6)",
+          "candidates": [
+            {
+              "module": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+              "offset": "0xb680e3",
+              "base": "0x7fc300a00000",
+              "map_line": 580
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fc300e60336",
+          "text": "    #15 0x7fc300e60336  (/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so+0x460336) (BuildId: 9a2e3a6c45e88fb1bdde9c7e5561b5bffa1046a6)",
+          "candidates": [
+            {
+              "module": "/home/runner/work/_temp/nexaui-validation/libVkLayer_khronos_validation.so",
+              "offset": "0x460336",
+              "base": "0x7fc300a00000",
+              "map_line": 580
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x7fc315f85b3e",
+          "text": "    #16 0x7fc315f85b3e  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libVkLayer_MESA_device_select.so",
+              "offset": "0x5b3e",
+              "base": "0x7fc315f80000",
+              "map_line": 591
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0x7fc316bc5f59",
+          "text": "    #17 0x7fc316bc5f59  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x22f59) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x22f59",
+              "base": "0x7fc316ba3000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0x7fc316bd9fb1",
+          "text": "    #18 0x7fc316bd9fb1 in vkCreateInstance (/lib/x86_64-linux-gnu/libvulkan.so.1+0x36fb1) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x36fb1",
+              "base": "0x7fc316ba3000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x559c0c85c8bd",
+          "text": "    #19 0x559c0c85c8bd in nx_vk_create device.c",
+          "candidates": []
+        },
+        {
+          "frame": 20,
+          "pc": "0x559c0c85d77f",
+          "text": "    #20 0x559c0c85d77f in nx_vk_device_create_for_surface (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x58c77f) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 21,
+          "pc": "0x559c0c7f979f",
+          "text": "    #21 0x559c0c7f979f in nx_vk_open_native renderer.c",
+          "candidates": []
+        },
+        {
+          "frame": 22,
+          "pc": "0x559c0c7f8db9",
+          "text": "    #22 0x559c0c7f8db9 in nx_vulkan_renderer_create_config (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x527db9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x559c0c7fbeb7",
+          "text": "    #23 0x559c0c7fbeb7 in nx_vulkan_renderer_create (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x52aeb7) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 24,
+          "pc": "0x559c0c818bf9",
+          "text": "    #24 0x559c0c818bf9 in nx_vulkan_driver_open (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x547bf9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 25,
+          "pc": "0x559c0c538854",
+          "text": "    #25 0x559c0c538854 in main (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x267854) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 26,
+          "pc": "0x7fc31682a1c9",
+          "text": "    #26 0x7fc31682a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x2a1c9",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 27,
+          "pc": "0x7fc31682a28a",
+          "text": "    #27 0x7fc31682a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x2a28a",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 0,
+          "pc": "0x559c0c4f9e6d",
+          "text": "    #0 0x559c0c4f9e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fc3060504b1",
+          "text": "    #1 0x7fc3060504b1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x4504b1",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fc305e9922b",
+          "text": "    #2 0x7fc305e9922b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x29922b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fc305e8a290",
+          "text": "    #3 0x7fc305e8a290  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a290",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fc305e8a469",
+          "text": "    #4 0x7fc305e8a469  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a469",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fc305e0fd1e",
+          "text": "    #5 0x7fc305e0fd1e  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20fd1e",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fc305e12ad1",
+          "text": "    #6 0x7fc305e12ad1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x212ad1",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fc305e0d5d4",
+          "text": "    #7 0x7fc305e0d5d4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20d5d4",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fc305dbbaaf",
+          "text": "    #8 0x7fc305dbbaaf  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1bbaaf",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fc305df43ab",
+          "text": "    #9 0x7fc305df43ab  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f43ab",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fc305df0997",
+          "text": "    #10 0x7fc305df0997  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f0997",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fc305d990e2",
+          "text": "    #11 0x7fc305d990e2  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1990e2",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fc305d920c4",
+          "text": "    #12 0x7fc305d920c4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1920c4",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fc305d9255f",
+          "text": "    #13 0x7fc305d9255f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x19255f",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fc305d92a2c",
+          "text": "    #14 0x7fc305d92a2c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x192a2c",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fc305f90b4c",
+          "text": "    #15 0x7fc305f90b4c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x390b4c",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x7fc305cf65cd",
+          "text": "    #16 0x7fc305cf65cd  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf65cd",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0x7fc305cf8089",
+          "text": "    #17 0x7fc305cf8089  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf8089",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0x7fc305ce4c4b",
+          "text": "    #18 0x7fc305ce4c4b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4c4b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x7fc305c86da5",
+          "text": "    #19 0x7fc305c86da5  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x86da5",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x7fc305c8705d",
+          "text": "    #20 0x7fc305c8705d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x8705d",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x7fc305d7eb0b",
+          "text": "    #21 0x7fc305d7eb0b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x17eb0b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 22,
+          "pc": "0x559c0c4f776c",
+          "text": "    #22 0x559c0c4f776c in asan_thread_start(void*) asan_interceptors.cpp.o",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x7fc31689cb83",
+          "text": "    #23 0x7fc31689cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x9cb83",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 24,
+          "pc": "0x7fc316929ecb",
+          "text": "    #24 0x7fc316929ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x129ecb",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 0,
+          "pc": "0x559c0c4f9e6d",
+          "text": "    #0 0x559c0c4f9e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fc30605048d",
+          "text": "    #1 0x7fc30605048d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x45048d",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fc305e9922b",
+          "text": "    #2 0x7fc305e9922b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x29922b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fc305e8a290",
+          "text": "    #3 0x7fc305e8a290  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a290",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fc305e8a469",
+          "text": "    #4 0x7fc305e8a469  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a469",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fc305e0fd1e",
+          "text": "    #5 0x7fc305e0fd1e  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20fd1e",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fc305e12ad1",
+          "text": "    #6 0x7fc305e12ad1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x212ad1",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fc305e0d5d4",
+          "text": "    #7 0x7fc305e0d5d4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20d5d4",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fc305dbbaaf",
+          "text": "    #8 0x7fc305dbbaaf  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1bbaaf",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fc305df43ab",
+          "text": "    #9 0x7fc305df43ab  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f43ab",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fc305df0997",
+          "text": "    #10 0x7fc305df0997  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f0997",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fc305d990e2",
+          "text": "    #11 0x7fc305d990e2  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1990e2",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fc305d920c4",
+          "text": "    #12 0x7fc305d920c4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1920c4",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fc305d9255f",
+          "text": "    #13 0x7fc305d9255f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x19255f",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fc305d92a2c",
+          "text": "    #14 0x7fc305d92a2c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x192a2c",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fc305f90b4c",
+          "text": "    #15 0x7fc305f90b4c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x390b4c",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x7fc305cf65cd",
+          "text": "    #16 0x7fc305cf65cd  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf65cd",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0x7fc305cf8089",
+          "text": "    #17 0x7fc305cf8089  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf8089",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0x7fc305ce4c4b",
+          "text": "    #18 0x7fc305ce4c4b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4c4b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x7fc305c86da5",
+          "text": "    #19 0x7fc305c86da5  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x86da5",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x7fc305c8705d",
+          "text": "    #20 0x7fc305c8705d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x8705d",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x7fc305d7eb0b",
+          "text": "    #21 0x7fc305d7eb0b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x17eb0b",
+              "base": "0x7fc305c00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 22,
+          "pc": "0x559c0c4f776c",
+          "text": "    #22 0x559c0c4f776c in asan_thread_start(void*) asan_interceptors.cpp.o",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x7fc31689cb83",
+          "text": "    #23 0x7fc31689cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x9cb83",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 24,
+          "pc": "0x7fc316929ecb",
+          "text": "    #24 0x7fc316929ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x129ecb",
+              "base": "0x7fc316800000",
+              "map_line": 46
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "without-explicit-validation",
+      "app_pid": 8158,
+      "summary": "SUMMARY: AddressSanitizer: 240 byte(s) leaked in 3 allocation(s).",
+      "leak_report": [
+        "==8158==ERROR: LeakSanitizer: detected memory leaks",
+        "",
+        "Direct leak of 128 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x55fbe37f30a0 in realloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x2290a0) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fe12ab50de3  (<unknown module>)",
+        "    #2 0x7fe12ab512b6  (<unknown module>)",
+        "    #3 0x7fe13b6a1fb2  (/lib/x86_64-linux-gnu/libc.so.6+0xa1fb2) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #4 0x7fe12ad8ce32  (<unknown module>)",
+        "    #5 0x7fe12aa6115f  (<unknown module>)",
+        "    #6 0x7fe12ab0c1dc  (<unknown module>)",
+        "    #7 0x7fe12ab0c13f  (<unknown module>)",
+        "    #8 0x7fe12aae4ff4  (<unknown module>)",
+        "    #9 0x7fe12aae6333  (<unknown module>)",
+        "    #10 0x7fe12aad1348  (<unknown module>)",
+        "    #11 0x7fe12aad1f11  (<unknown module>)",
+        "    #12 0x7fe13b95f196  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x29196) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #13 0x7fe13b95f92c  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x2992c) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #14 0x7fe13ad2bdb1  (<unknown module>)",
+        "    #15 0x7fe13b96abdc in vkEnumeratePhysicalDevices (/lib/x86_64-linux-gnu/libvulkan.so.1+0x34bdc) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+        "    #16 0x55fbe3b5ee46 in nx_vk_enumerate device.c",
+        "    #17 0x55fbe3b59849 in nx_vk_select device.c",
+        "    #18 0x55fbe3b56377 in nx_vk_create device.c",
+        "    #19 0x55fbe3b5677f in nx_vk_device_create_for_surface (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x58c77f) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #20 0x55fbe3af279f in nx_vk_open_native renderer.c",
+        "    #21 0x55fbe3af1db9 in nx_vulkan_renderer_create_config (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x527db9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #22 0x55fbe3af4eb7 in nx_vulkan_renderer_create (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x52aeb7) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #23 0x55fbe3b11bf9 in nx_vulkan_driver_open (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x547bf9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #24 0x55fbe3831854 in main (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x267854) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #25 0x7fe13b62a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #26 0x7fe13b62a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #27 0x55fbe3757e34 in _start (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x18de34) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "",
+        "Objects leaked above:",
+        "0x50c000003640 (128 bytes)",
+        "",
+        "Indirect leak of 56 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x55fbe37f2e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fe12ae504b1  (<unknown module>)",
+        "    #2 0x7fe12ac9922b  (<unknown module>)",
+        "    #3 0x7fe12ac8a290  (<unknown module>)",
+        "    #4 0x7fe12ac8a469  (<unknown module>)",
+        "    #5 0x7fe12ac0fd1e  (<unknown module>)",
+        "    #6 0x7fe12ac12ad1  (<unknown module>)",
+        "    #7 0x7fe12ac0d5d4  (<unknown module>)",
+        "    #8 0x7fe12abbbaaf  (<unknown module>)",
+        "    #9 0x7fe12abf43ab  (<unknown module>)",
+        "    #10 0x7fe12abf0997  (<unknown module>)",
+        "    #11 0x7fe12ab990e2  (<unknown module>)",
+        "    #12 0x7fe12ab920c4  (<unknown module>)",
+        "    #13 0x7fe12ab9255f  (<unknown module>)",
+        "    #14 0x7fe12ab92a2c  (<unknown module>)",
+        "    #15 0x7fe12ad90b4c  (<unknown module>)",
+        "    #16 0x7fe12aaf65cd  (<unknown module>)",
+        "    #17 0x7fe12aaf8089  (<unknown module>)",
+        "    #18 0x7fe12aae4c4b  (<unknown module>)",
+        "    #19 0x7fe12aa86da5  (<unknown module>)",
+        "    #20 0x7fe12aa8705d  (<unknown module>)",
+        "    #21 0x7fe12ab7eb0b  (<unknown module>)",
+        "    #22 0x55fbe37f076c in asan_thread_start(void*) asan_interceptors.cpp.o",
+        "    #23 0x7fe13b69cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #24 0x7fe13b729ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "",
+        "Objects leaked above:",
+        "0x50600011de00 (56 bytes)",
+        "",
+        "Indirect leak of 56 byte(s) in 1 object(s) allocated from:",
+        "    #0 0x55fbe37f2e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+        "    #1 0x7fe12ae5048d  (<unknown module>)",
+        "    #2 0x7fe12ac9922b  (<unknown module>)",
+        "    #3 0x7fe12ac8a290  (<unknown module>)",
+        "    #4 0x7fe12ac8a469  (<unknown module>)",
+        "    #5 0x7fe12ac0fd1e  (<unknown module>)",
+        "    #6 0x7fe12ac12ad1  (<unknown module>)",
+        "    #7 0x7fe12ac0d5d4  (<unknown module>)",
+        "    #8 0x7fe12abbbaaf  (<unknown module>)",
+        "    #9 0x7fe12abf43ab  (<unknown module>)",
+        "    #10 0x7fe12abf0997  (<unknown module>)",
+        "    #11 0x7fe12ab990e2  (<unknown module>)",
+        "    #12 0x7fe12ab920c4  (<unknown module>)",
+        "    #13 0x7fe12ab9255f  (<unknown module>)",
+        "    #14 0x7fe12ab92a2c  (<unknown module>)",
+        "    #15 0x7fe12ad90b4c  (<unknown module>)",
+        "    #16 0x7fe12aaf65cd  (<unknown module>)",
+        "    #17 0x7fe12aaf8089  (<unknown module>)",
+        "    #18 0x7fe12aae4c4b  (<unknown module>)",
+        "    #19 0x7fe12aa86da5  (<unknown module>)",
+        "    #20 0x7fe12aa8705d  (<unknown module>)",
+        "    #21 0x7fe12ab7eb0b  (<unknown module>)",
+        "    #22 0x55fbe37f076c in asan_thread_start(void*) asan_interceptors.cpp.o",
+        "    #23 0x7fe13b69cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "    #24 0x7fe13b729ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+        "",
+        "Objects leaked above:",
+        "0x50600011dda0 (56 bytes)",
+        "",
+        "SUMMARY: AddressSanitizer: 240 byte(s) leaked in 3 allocation(s)."
+      ],
+      "app_modules": [
+        {
+          "name": "libxkbcommon.so.0",
+          "namespace": 0,
+          "base": 140605346721792,
+          "size": 295272,
+          "line": 4
+        },
+        {
+          "name": "libX11.so.6",
+          "namespace": 0,
+          "base": 140605345419264,
+          "size": 1301800,
+          "line": 10
+        },
+        {
+          "name": "libwayland-client.so.0",
+          "namespace": 0,
+          "base": 140605345353728,
+          "size": 62600,
+          "line": 16
+        },
+        {
+          "name": "libm.so.6",
+          "namespace": 0,
+          "base": 140605344399360,
+          "size": 950296,
+          "line": 22
+        },
+        {
+          "name": "libvulkan.so.1",
+          "namespace": 0,
+          "base": 140605343883264,
+          "size": 512880,
+          "line": 28
+        },
+        {
+          "name": "libresolv.so.2",
+          "namespace": 0,
+          "base": 140605343801344,
+          "size": 71816,
+          "line": 34
+        },
+        {
+          "name": "libgcc_s.so.1",
+          "namespace": 0,
+          "base": 140605343612928,
+          "size": 185256,
+          "line": 40
+        },
+        {
+          "name": "libc.so.6",
+          "namespace": 0,
+          "base": 140605340516352,
+          "size": 2174352,
+          "line": 46
+        },
+        {
+          "name": "libxcb.so.1",
+          "namespace": 0,
+          "base": 140605343444992,
+          "size": 164488,
+          "line": 52
+        },
+        {
+          "name": "libffi.so.8",
+          "namespace": 0,
+          "base": 140605343395840,
+          "size": 46608,
+          "line": 58
+        },
+        {
+          "name": "libXau.so.6",
+          "namespace": 0,
+          "base": 140605343363072,
+          "size": 20720,
+          "line": 64
+        },
+        {
+          "name": "libXdmcp.so.6",
+          "namespace": 0,
+          "base": 140605343330304,
+          "size": 28776,
+          "line": 70
+        },
+        {
+          "name": "libbsd.so.0",
+          "namespace": 0,
+          "base": 140605343240192,
+          "size": 86208,
+          "line": 76
+        },
+        {
+          "name": "libmd.so.0",
+          "namespace": 0,
+          "base": 140605343178752,
+          "size": 57448,
+          "line": 82
+        },
+        {
+          "name": "libXcursor.so.1",
+          "namespace": 0,
+          "base": 140605342806016,
+          "size": 45488,
+          "line": 186
+        },
+        {
+          "name": "libXrender.so.1",
+          "namespace": 0,
+          "base": 140605342756864,
+          "size": 45648,
+          "line": 192
+        },
+        {
+          "name": "libXfixes.so.3",
+          "namespace": 0,
+          "base": 140605342724096,
+          "size": 28904,
+          "line": 198
+        },
+        {
+          "name": "libvulkan_virtio.so",
+          "namespace": 0,
+          "base": 140605304729600,
+          "size": 1536840,
+          "line": 215
+        },
+        {
+          "name": "libz.so.1",
+          "namespace": 0,
+          "base": 140605335625728,
+          "size": 110744,
+          "line": 221
+        },
+        {
+          "name": "libzstd.so.1",
+          "namespace": 0,
+          "base": 140605333463040,
+          "size": 757816,
+          "line": 227
+        },
+        {
+          "name": "libdrm.so.2",
+          "namespace": 0,
+          "base": 140605335531520,
+          "size": 93144,
+          "line": 233
+        },
+        {
+          "name": "libX11-xcb.so.1",
+          "namespace": 0,
+          "base": 140605342703616,
+          "size": 16400,
+          "line": 239
+        },
+        {
+          "name": "libxcb-dri3.so.0",
+          "namespace": 0,
+          "base": 140605335502848,
+          "size": 24664,
+          "line": 245
+        },
+        {
+          "name": "libxcb-present.so.0",
+          "namespace": 0,
+          "base": 140605335482368,
+          "size": 16456,
+          "line": 251
+        },
+        {
+          "name": "libxcb-xfixes.so.0",
+          "namespace": 0,
+          "base": 140605335441408,
+          "size": 36936,
+          "line": 257
+        },
+        {
+          "name": "libxcb-sync.so.1",
+          "namespace": 0,
+          "base": 140605335404544,
+          "size": 32856,
+          "line": 263
+        },
+        {
+          "name": "libxcb-randr.so.0",
+          "namespace": 0,
+          "base": 140605335334912,
+          "size": 65608,
+          "line": 269
+        },
+        {
+          "name": "libxcb-shm.so.0",
+          "namespace": 0,
+          "base": 140605335314432,
+          "size": 16472,
+          "line": 275
+        },
+        {
+          "name": "libxshmfence.so.1",
+          "namespace": 0,
+          "base": 140605335293952,
+          "size": 16480,
+          "line": 281
+        },
+        {
+          "name": "libexpat.so.1",
+          "namespace": 0,
+          "base": 140605333274624,
+          "size": 184448,
+          "line": 287
+        },
+        {
+          "name": "libvulkan_gfxstream.so",
+          "namespace": 0,
+          "base": 140605286014976,
+          "size": 2069544,
+          "line": 334
+        },
+        {
+          "name": "libstdc++.so.6",
+          "namespace": 0,
+          "base": 140605281796096,
+          "size": 2609472,
+          "line": 340
+        },
+        {
+          "name": "libvulkan_radeon.so",
+          "namespace": 0,
+          "base": 140605265018880,
+          "size": 15232264,
+          "line": 355
+        },
+        {
+          "name": "libLLVM.so.20.1",
+          "namespace": 0,
+          "base": 140605120315392,
+          "size": 144235209,
+          "line": 361
+        },
+        {
+          "name": "libelf.so.1",
+          "namespace": 0,
+          "base": 140605332000768,
+          "size": 123336,
+          "line": 367
+        },
+        {
+          "name": "libdrm_amdgpu.so.1",
+          "namespace": 0,
+          "base": 140605333221376,
+          "size": 49776,
+          "line": 373
+        },
+        {
+          "name": "libedit.so.2",
+          "namespace": 0,
+          "base": 140605331763200,
+          "size": 233600,
+          "line": 379
+        },
+        {
+          "name": "libxml2.so.2",
+          "namespace": 0,
+          "base": 140605118341120,
+          "size": 1973784,
+          "line": 385
+        },
+        {
+          "name": "libtinfo.so.6",
+          "namespace": 0,
+          "base": 140605331550208,
+          "size": 211240,
+          "line": 391
+        },
+        {
+          "name": "libicuuc.so.74",
+          "namespace": 0,
+          "base": 140605116121088,
+          "size": 2147232,
+          "line": 397
+        },
+        {
+          "name": "liblzma.so.5",
+          "namespace": 0,
+          "base": 140605331345408,
+          "size": 200728,
+          "line": 403
+        },
+        {
+          "name": "libicudata.so.74",
+          "namespace": 0,
+          "base": 140605084663808,
+          "size": 30797840,
+          "line": 409
+        },
+        {
+          "name": "libvulkan_asahi.so",
+          "namespace": 0,
+          "base": 140605072080896,
+          "size": 11862504,
+          "line": 448
+        },
+        {
+          "name": "libvulkan_lvp.so",
+          "namespace": 0,
+          "base": 140605059497984,
+          "size": 12108032,
+          "line": 460
+        },
+        {
+          "name": "libvulkan_nouveau.so",
+          "namespace": 0,
+          "base": 140605042720768,
+          "size": 15950840,
+          "line": 471
+        },
+        {
+          "name": "libvulkan_intel.so",
+          "namespace": 0,
+          "base": 140605019652096,
+          "size": 21202928,
+          "line": 482
+        },
+        {
+          "name": "libvulkan_intel_hasvk.so",
+          "namespace": 0,
+          "base": 140605000777728,
+          "size": 17233304,
+          "line": 493
+        },
+        {
+          "name": "libVkLayer_MESA_device_select.so",
+          "namespace": 0,
+          "base": 140605331238912,
+          "size": 103824,
+          "line": 580
+        }
+      ],
+      "frames": [
+        {
+          "frame": 0,
+          "pc": "0x55fbe37f30a0",
+          "text": "    #0 0x55fbe37f30a0 in realloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x2290a0) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fe12ab50de3",
+          "text": "    #1 0x7fe12ab50de3  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x150de3",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fe12ab512b6",
+          "text": "    #2 0x7fe12ab512b6  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1512b6",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fe13b6a1fb2",
+          "text": "    #3 0x7fe13b6a1fb2  (/lib/x86_64-linux-gnu/libc.so.6+0xa1fb2) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0xa1fb2",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fe12ad8ce32",
+          "text": "    #4 0x7fe12ad8ce32  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x38ce32",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fe12aa6115f",
+          "text": "    #5 0x7fe12aa6115f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x6115f",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fe12ab0c1dc",
+          "text": "    #6 0x7fe12ab0c1dc  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x10c1dc",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fe12ab0c13f",
+          "text": "    #7 0x7fe12ab0c13f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x10c13f",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fe12aae4ff4",
+          "text": "    #8 0x7fe12aae4ff4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4ff4",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fe12aae6333",
+          "text": "    #9 0x7fe12aae6333  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe6333",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fe12aad1348",
+          "text": "    #10 0x7fe12aad1348  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xd1348",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fe12aad1f11",
+          "text": "    #11 0x7fe12aad1f11  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xd1f11",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fe13b95f196",
+          "text": "    #12 0x7fe13b95f196  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x29196) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x29196",
+              "base": "0x7fe13b936000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fe13b95f92c",
+          "text": "    #13 0x7fe13b95f92c  (/lib/x86_64-linux-gnu/libvulkan.so.1+0x2992c) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x2992c",
+              "base": "0x7fe13b936000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fe13ad2bdb1",
+          "text": "    #14 0x7fe13ad2bdb1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libVkLayer_MESA_device_select.so",
+              "offset": "0x4db1",
+              "base": "0x7fe13ad27000",
+              "map_line": 580
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fe13b96abdc",
+          "text": "    #15 0x7fe13b96abdc in vkEnumeratePhysicalDevices (/lib/x86_64-linux-gnu/libvulkan.so.1+0x34bdc) (BuildId: 32e77fd13d177aaa6ceeba4862c3407d9246e422)",
+          "candidates": [
+            {
+              "module": "libvulkan.so.1",
+              "offset": "0x34bdc",
+              "base": "0x7fe13b936000",
+              "map_line": 28
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x55fbe3b5ee46",
+          "text": "    #16 0x55fbe3b5ee46 in nx_vk_enumerate device.c",
+          "candidates": []
+        },
+        {
+          "frame": 17,
+          "pc": "0x55fbe3b59849",
+          "text": "    #17 0x55fbe3b59849 in nx_vk_select device.c",
+          "candidates": []
+        },
+        {
+          "frame": 18,
+          "pc": "0x55fbe3b56377",
+          "text": "    #18 0x55fbe3b56377 in nx_vk_create device.c",
+          "candidates": []
+        },
+        {
+          "frame": 19,
+          "pc": "0x55fbe3b5677f",
+          "text": "    #19 0x55fbe3b5677f in nx_vk_device_create_for_surface (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x58c77f) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 20,
+          "pc": "0x55fbe3af279f",
+          "text": "    #20 0x55fbe3af279f in nx_vk_open_native renderer.c",
+          "candidates": []
+        },
+        {
+          "frame": 21,
+          "pc": "0x55fbe3af1db9",
+          "text": "    #21 0x55fbe3af1db9 in nx_vulkan_renderer_create_config (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x527db9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 22,
+          "pc": "0x55fbe3af4eb7",
+          "text": "    #22 0x55fbe3af4eb7 in nx_vulkan_renderer_create (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x52aeb7) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x55fbe3b11bf9",
+          "text": "    #23 0x55fbe3b11bf9 in nx_vulkan_driver_open (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x547bf9) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 24,
+          "pc": "0x55fbe3831854",
+          "text": "    #24 0x55fbe3831854 in main (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x267854) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 25,
+          "pc": "0x7fe13b62a1c9",
+          "text": "    #25 0x7fe13b62a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x2a1c9",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 26,
+          "pc": "0x7fe13b62a28a",
+          "text": "    #26 0x7fe13b62a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x2a28a",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 27,
+          "pc": "0x55fbe3757e34",
+          "text": "    #27 0x55fbe3757e34 in _start (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x18de34) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 0,
+          "pc": "0x55fbe37f2e6d",
+          "text": "    #0 0x55fbe37f2e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fe12ae504b1",
+          "text": "    #1 0x7fe12ae504b1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x4504b1",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fe12ac9922b",
+          "text": "    #2 0x7fe12ac9922b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x29922b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fe12ac8a290",
+          "text": "    #3 0x7fe12ac8a290  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a290",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fe12ac8a469",
+          "text": "    #4 0x7fe12ac8a469  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a469",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fe12ac0fd1e",
+          "text": "    #5 0x7fe12ac0fd1e  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20fd1e",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fe12ac12ad1",
+          "text": "    #6 0x7fe12ac12ad1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x212ad1",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fe12ac0d5d4",
+          "text": "    #7 0x7fe12ac0d5d4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20d5d4",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fe12abbbaaf",
+          "text": "    #8 0x7fe12abbbaaf  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1bbaaf",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fe12abf43ab",
+          "text": "    #9 0x7fe12abf43ab  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f43ab",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fe12abf0997",
+          "text": "    #10 0x7fe12abf0997  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f0997",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fe12ab990e2",
+          "text": "    #11 0x7fe12ab990e2  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1990e2",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fe12ab920c4",
+          "text": "    #12 0x7fe12ab920c4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1920c4",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fe12ab9255f",
+          "text": "    #13 0x7fe12ab9255f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x19255f",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fe12ab92a2c",
+          "text": "    #14 0x7fe12ab92a2c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x192a2c",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fe12ad90b4c",
+          "text": "    #15 0x7fe12ad90b4c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x390b4c",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x7fe12aaf65cd",
+          "text": "    #16 0x7fe12aaf65cd  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf65cd",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0x7fe12aaf8089",
+          "text": "    #17 0x7fe12aaf8089  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf8089",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0x7fe12aae4c4b",
+          "text": "    #18 0x7fe12aae4c4b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4c4b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x7fe12aa86da5",
+          "text": "    #19 0x7fe12aa86da5  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x86da5",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x7fe12aa8705d",
+          "text": "    #20 0x7fe12aa8705d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x8705d",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x7fe12ab7eb0b",
+          "text": "    #21 0x7fe12ab7eb0b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x17eb0b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 22,
+          "pc": "0x55fbe37f076c",
+          "text": "    #22 0x55fbe37f076c in asan_thread_start(void*) asan_interceptors.cpp.o",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x7fe13b69cb83",
+          "text": "    #23 0x7fe13b69cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x9cb83",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 24,
+          "pc": "0x7fe13b729ecb",
+          "text": "    #24 0x7fe13b729ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x129ecb",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 0,
+          "pc": "0x55fbe37f2e6d",
+          "text": "    #0 0x55fbe37f2e6d in calloc (/home/runner/work/NexaUI/NexaUI/build-asan/examples/10_native_clear/nexaui_native_clear+0x228e6d) (BuildId: 443aa5dd52007280f7dcdb3b74cfd92757b821ef)",
+          "candidates": []
+        },
+        {
+          "frame": 1,
+          "pc": "0x7fe12ae5048d",
+          "text": "    #1 0x7fe12ae5048d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x45048d",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x7fe12ac9922b",
+          "text": "    #2 0x7fe12ac9922b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x29922b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x7fe12ac8a290",
+          "text": "    #3 0x7fe12ac8a290  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a290",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x7fe12ac8a469",
+          "text": "    #4 0x7fe12ac8a469  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x28a469",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x7fe12ac0fd1e",
+          "text": "    #5 0x7fe12ac0fd1e  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20fd1e",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x7fe12ac12ad1",
+          "text": "    #6 0x7fe12ac12ad1  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x212ad1",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x7fe12ac0d5d4",
+          "text": "    #7 0x7fe12ac0d5d4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x20d5d4",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x7fe12abbbaaf",
+          "text": "    #8 0x7fe12abbbaaf  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1bbaaf",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x7fe12abf43ab",
+          "text": "    #9 0x7fe12abf43ab  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f43ab",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x7fe12abf0997",
+          "text": "    #10 0x7fe12abf0997  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1f0997",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x7fe12ab990e2",
+          "text": "    #11 0x7fe12ab990e2  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1990e2",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x7fe12ab920c4",
+          "text": "    #12 0x7fe12ab920c4  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x1920c4",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x7fe12ab9255f",
+          "text": "    #13 0x7fe12ab9255f  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x19255f",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x7fe12ab92a2c",
+          "text": "    #14 0x7fe12ab92a2c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x192a2c",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x7fe12ad90b4c",
+          "text": "    #15 0x7fe12ad90b4c  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x390b4c",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0x7fe12aaf65cd",
+          "text": "    #16 0x7fe12aaf65cd  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf65cd",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0x7fe12aaf8089",
+          "text": "    #17 0x7fe12aaf8089  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xf8089",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0x7fe12aae4c4b",
+          "text": "    #18 0x7fe12aae4c4b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0xe4c4b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x7fe12aa86da5",
+          "text": "    #19 0x7fe12aa86da5  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x86da5",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x7fe12aa8705d",
+          "text": "    #20 0x7fe12aa8705d  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x8705d",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x7fe12ab7eb0b",
+          "text": "    #21 0x7fe12ab7eb0b  (<unknown module>)",
+          "candidates": [
+            {
+              "module": "libvulkan_lvp.so",
+              "offset": "0x17eb0b",
+              "base": "0x7fe12aa00000",
+              "map_line": 460
+            }
+          ]
+        },
+        {
+          "frame": 22,
+          "pc": "0x55fbe37f076c",
+          "text": "    #22 0x55fbe37f076c in asan_thread_start(void*) asan_interceptors.cpp.o",
+          "candidates": []
+        },
+        {
+          "frame": 23,
+          "pc": "0x7fe13b69cb83",
+          "text": "    #23 0x7fe13b69cb83  (/lib/x86_64-linux-gnu/libc.so.6+0x9cb83) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x9cb83",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        },
+        {
+          "frame": 24,
+          "pc": "0x7fe13b729ecb",
+          "text": "    #24 0x7fe13b729ecb  (/lib/x86_64-linux-gnu/libc.so.6+0x129ecb) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)",
+          "candidates": [
+            {
+              "module": "libc.so.6",
+              "offset": "0x129ecb",
+              "base": "0x7fe13b600000",
+              "map_line": 46
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": [
+    {
+      "case": "explicit-validation",
+      "frames": [
+        {
+          "frame": 1,
+          "pc": "0x150de3",
+          "symbols": [
+            {
+              "name": "get_cpu_topology",
+              "inside": "0x4c3"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x1512b6",
+          "symbols": [
+            {
+              "name": "_util_cpu_detect_once",
+              "inside": "0x366"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x38ce32",
+          "symbols": [
+            {
+              "name": "llvmpipe_create_screen",
+              "inside": "0x372"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x6115f",
+          "symbols": [
+            {
+              "name": "sw_screen_create_vk",
+              "inside": "0x3f"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x10c1dc",
+          "symbols": [
+            {
+              "name": "pipe_loader_sw_create_screen",
+              "inside": "0x1c"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x10c13f",
+          "symbols": [
+            {
+              "name": "pipe_loader_create_screen_vk",
+              "inside": "0x8f"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0xe4ff4",
+          "symbols": [
+            {
+              "name": "lvp_physical_device_init",
+              "inside": "0x94"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0xe6333",
+          "symbols": [
+            {
+              "name": "lvp_enumerate_physical_devices",
+              "inside": "0xb3"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0xd1348",
+          "symbols": [
+            {
+              "name": "enumerate_physical_devices",
+              "inside": "0x58"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0xd1f11",
+          "symbols": [
+            {
+              "name": "vk_common_EnumeratePhysicalDevices",
+              "inside": "0x31"
+            }
+          ]
+        },
+        {
+          "frame": 1,
+          "pc": "0x4504b1",
+          "symbols": [
+            {
+              "name": "u_mmInit",
+              "inside": "0x51"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x29922b",
+          "symbols": [
+            {
+              "name": "rtasm_exec_malloc",
+              "inside": "0xcb"
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x28a290",
+          "symbols": [
+            {
+              "name": "reserve",
+              "inside": "0xc0"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x28a469",
+          "symbols": [
+            {
+              "name": "x86_init_func_common",
+              "inside": "0x59"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x20fd1e",
+          "symbols": [
+            {
+              "name": "build_vertex_emit",
+              "inside": "0xde"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x212ad1",
+          "symbols": [
+            {
+              "name": "translate_sse2_create",
+              "inside": "0x261"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x20d5d4",
+          "symbols": [
+            {
+              "name": "translate_create",
+              "inside": "0x14"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x1bbaaf",
+          "symbols": [
+            {
+              "name": "translate_cache_find",
+              "inside": "0x9f"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x1f43ab",
+          "symbols": [
+            {
+              "name": "draw_pt_emit_prepare",
+              "inside": "0x20b"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x1f0997",
+          "symbols": [
+            {
+              "name": "llvm_middle_end_prepare",
+              "inside": "0x737"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x1990e2",
+          "symbols": [
+            {
+              "name": "vsplit_prepare",
+              "inside": "0x52"
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x1920c4",
+          "symbols": [
+            {
+              "name": "draw_pt_arrays.isra.0",
+              "inside": "0x104"
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x19255f",
+          "symbols": [
+            {
+              "name": "draw_instances",
+              "inside": "0x28f"
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x192a2c",
+          "symbols": [
+            {
+              "name": "draw_vbo",
+              "inside": "0x25c"
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x390b4c",
+          "symbols": [
+            {
+              "name": "llvmpipe_draw_vbo",
+              "inside": "0x27c"
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0xf65cd",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmd_buffer",
+              "inside": "0x23fd"
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0xf8089",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmds",
+              "inside": "0x169"
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0xe4c4b",
+          "symbols": [
+            {
+              "name": "lvp_queue_submit",
+              "inside": "0x13b"
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x86da5",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_final",
+              "inside": "0x1c5"
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x8705d",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_thread_func",
+              "inside": "0x7d"
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x17eb0b",
+          "symbols": [
+            {
+              "name": "impl_thrd_routine",
+              "inside": "0x1b"
+            }
+          ]
+        },
+        {
+          "frame": 1,
+          "pc": "0x45048d",
+          "symbols": [
+            {
+              "name": "u_mmInit",
+              "inside": "0x2d"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x29922b",
+          "symbols": [
+            {
+              "name": "rtasm_exec_malloc",
+              "inside": "0xcb"
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x28a290",
+          "symbols": [
+            {
+              "name": "reserve",
+              "inside": "0xc0"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x28a469",
+          "symbols": [
+            {
+              "name": "x86_init_func_common",
+              "inside": "0x59"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x20fd1e",
+          "symbols": [
+            {
+              "name": "build_vertex_emit",
+              "inside": "0xde"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x212ad1",
+          "symbols": [
+            {
+              "name": "translate_sse2_create",
+              "inside": "0x261"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x20d5d4",
+          "symbols": [
+            {
+              "name": "translate_create",
+              "inside": "0x14"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x1bbaaf",
+          "symbols": [
+            {
+              "name": "translate_cache_find",
+              "inside": "0x9f"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x1f43ab",
+          "symbols": [
+            {
+              "name": "draw_pt_emit_prepare",
+              "inside": "0x20b"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x1f0997",
+          "symbols": [
+            {
+              "name": "llvm_middle_end_prepare",
+              "inside": "0x737"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x1990e2",
+          "symbols": [
+            {
+              "name": "vsplit_prepare",
+              "inside": "0x52"
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x1920c4",
+          "symbols": [
+            {
+              "name": "draw_pt_arrays.isra.0",
+              "inside": "0x104"
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x19255f",
+          "symbols": [
+            {
+              "name": "draw_instances",
+              "inside": "0x28f"
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x192a2c",
+          "symbols": [
+            {
+              "name": "draw_vbo",
+              "inside": "0x25c"
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x390b4c",
+          "symbols": [
+            {
+              "name": "llvmpipe_draw_vbo",
+              "inside": "0x27c"
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0xf65cd",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmd_buffer",
+              "inside": "0x23fd"
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0xf8089",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmds",
+              "inside": "0x169"
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0xe4c4b",
+          "symbols": [
+            {
+              "name": "lvp_queue_submit",
+              "inside": "0x13b"
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x86da5",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_final",
+              "inside": "0x1c5"
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x8705d",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_thread_func",
+              "inside": "0x7d"
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x17eb0b",
+          "symbols": [
+            {
+              "name": "impl_thrd_routine",
+              "inside": "0x1b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "without-explicit-validation",
+      "frames": [
+        {
+          "frame": 1,
+          "pc": "0x150de3",
+          "symbols": [
+            {
+              "name": "get_cpu_topology",
+              "inside": "0x4c3"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x1512b6",
+          "symbols": [
+            {
+              "name": "_util_cpu_detect_once",
+              "inside": "0x366"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x38ce32",
+          "symbols": [
+            {
+              "name": "llvmpipe_create_screen",
+              "inside": "0x372"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x6115f",
+          "symbols": [
+            {
+              "name": "sw_screen_create_vk",
+              "inside": "0x3f"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x10c1dc",
+          "symbols": [
+            {
+              "name": "pipe_loader_sw_create_screen",
+              "inside": "0x1c"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x10c13f",
+          "symbols": [
+            {
+              "name": "pipe_loader_create_screen_vk",
+              "inside": "0x8f"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0xe4ff4",
+          "symbols": [
+            {
+              "name": "lvp_physical_device_init",
+              "inside": "0x94"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0xe6333",
+          "symbols": [
+            {
+              "name": "lvp_enumerate_physical_devices",
+              "inside": "0xb3"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0xd1348",
+          "symbols": [
+            {
+              "name": "enumerate_physical_devices",
+              "inside": "0x58"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0xd1f11",
+          "symbols": [
+            {
+              "name": "vk_common_EnumeratePhysicalDevices",
+              "inside": "0x31"
+            }
+          ]
+        },
+        {
+          "frame": 1,
+          "pc": "0x4504b1",
+          "symbols": [
+            {
+              "name": "u_mmInit",
+              "inside": "0x51"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x29922b",
+          "symbols": [
+            {
+              "name": "rtasm_exec_malloc",
+              "inside": "0xcb"
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x28a290",
+          "symbols": [
+            {
+              "name": "reserve",
+              "inside": "0xc0"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x28a469",
+          "symbols": [
+            {
+              "name": "x86_init_func_common",
+              "inside": "0x59"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x20fd1e",
+          "symbols": [
+            {
+              "name": "build_vertex_emit",
+              "inside": "0xde"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x212ad1",
+          "symbols": [
+            {
+              "name": "translate_sse2_create",
+              "inside": "0x261"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x20d5d4",
+          "symbols": [
+            {
+              "name": "translate_create",
+              "inside": "0x14"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x1bbaaf",
+          "symbols": [
+            {
+              "name": "translate_cache_find",
+              "inside": "0x9f"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x1f43ab",
+          "symbols": [
+            {
+              "name": "draw_pt_emit_prepare",
+              "inside": "0x20b"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x1f0997",
+          "symbols": [
+            {
+              "name": "llvm_middle_end_prepare",
+              "inside": "0x737"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x1990e2",
+          "symbols": [
+            {
+              "name": "vsplit_prepare",
+              "inside": "0x52"
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x1920c4",
+          "symbols": [
+            {
+              "name": "draw_pt_arrays.isra.0",
+              "inside": "0x104"
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x19255f",
+          "symbols": [
+            {
+              "name": "draw_instances",
+              "inside": "0x28f"
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x192a2c",
+          "symbols": [
+            {
+              "name": "draw_vbo",
+              "inside": "0x25c"
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x390b4c",
+          "symbols": [
+            {
+              "name": "llvmpipe_draw_vbo",
+              "inside": "0x27c"
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0xf65cd",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmd_buffer",
+              "inside": "0x23fd"
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0xf8089",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmds",
+              "inside": "0x169"
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0xe4c4b",
+          "symbols": [
+            {
+              "name": "lvp_queue_submit",
+              "inside": "0x13b"
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x86da5",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_final",
+              "inside": "0x1c5"
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x8705d",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_thread_func",
+              "inside": "0x7d"
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x17eb0b",
+          "symbols": [
+            {
+              "name": "impl_thrd_routine",
+              "inside": "0x1b"
+            }
+          ]
+        },
+        {
+          "frame": 1,
+          "pc": "0x45048d",
+          "symbols": [
+            {
+              "name": "u_mmInit",
+              "inside": "0x2d"
+            }
+          ]
+        },
+        {
+          "frame": 2,
+          "pc": "0x29922b",
+          "symbols": [
+            {
+              "name": "rtasm_exec_malloc",
+              "inside": "0xcb"
+            }
+          ]
+        },
+        {
+          "frame": 3,
+          "pc": "0x28a290",
+          "symbols": [
+            {
+              "name": "reserve",
+              "inside": "0xc0"
+            }
+          ]
+        },
+        {
+          "frame": 4,
+          "pc": "0x28a469",
+          "symbols": [
+            {
+              "name": "x86_init_func_common",
+              "inside": "0x59"
+            }
+          ]
+        },
+        {
+          "frame": 5,
+          "pc": "0x20fd1e",
+          "symbols": [
+            {
+              "name": "build_vertex_emit",
+              "inside": "0xde"
+            }
+          ]
+        },
+        {
+          "frame": 6,
+          "pc": "0x212ad1",
+          "symbols": [
+            {
+              "name": "translate_sse2_create",
+              "inside": "0x261"
+            }
+          ]
+        },
+        {
+          "frame": 7,
+          "pc": "0x20d5d4",
+          "symbols": [
+            {
+              "name": "translate_create",
+              "inside": "0x14"
+            }
+          ]
+        },
+        {
+          "frame": 8,
+          "pc": "0x1bbaaf",
+          "symbols": [
+            {
+              "name": "translate_cache_find",
+              "inside": "0x9f"
+            }
+          ]
+        },
+        {
+          "frame": 9,
+          "pc": "0x1f43ab",
+          "symbols": [
+            {
+              "name": "draw_pt_emit_prepare",
+              "inside": "0x20b"
+            }
+          ]
+        },
+        {
+          "frame": 10,
+          "pc": "0x1f0997",
+          "symbols": [
+            {
+              "name": "llvm_middle_end_prepare",
+              "inside": "0x737"
+            }
+          ]
+        },
+        {
+          "frame": 11,
+          "pc": "0x1990e2",
+          "symbols": [
+            {
+              "name": "vsplit_prepare",
+              "inside": "0x52"
+            }
+          ]
+        },
+        {
+          "frame": 12,
+          "pc": "0x1920c4",
+          "symbols": [
+            {
+              "name": "draw_pt_arrays.isra.0",
+              "inside": "0x104"
+            }
+          ]
+        },
+        {
+          "frame": 13,
+          "pc": "0x19255f",
+          "symbols": [
+            {
+              "name": "draw_instances",
+              "inside": "0x28f"
+            }
+          ]
+        },
+        {
+          "frame": 14,
+          "pc": "0x192a2c",
+          "symbols": [
+            {
+              "name": "draw_vbo",
+              "inside": "0x25c"
+            }
+          ]
+        },
+        {
+          "frame": 15,
+          "pc": "0x390b4c",
+          "symbols": [
+            {
+              "name": "llvmpipe_draw_vbo",
+              "inside": "0x27c"
+            }
+          ]
+        },
+        {
+          "frame": 16,
+          "pc": "0xf65cd",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmd_buffer",
+              "inside": "0x23fd"
+            }
+          ]
+        },
+        {
+          "frame": 17,
+          "pc": "0xf8089",
+          "symbols": [
+            {
+              "name": "lvp_execute_cmds",
+              "inside": "0x169"
+            }
+          ]
+        },
+        {
+          "frame": 18,
+          "pc": "0xe4c4b",
+          "symbols": [
+            {
+              "name": "lvp_queue_submit",
+              "inside": "0x13b"
+            }
+          ]
+        },
+        {
+          "frame": 19,
+          "pc": "0x86da5",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_final",
+              "inside": "0x1c5"
+            }
+          ]
+        },
+        {
+          "frame": 20,
+          "pc": "0x8705d",
+          "symbols": [
+            {
+              "name": "vk_queue_submit_thread_func",
+              "inside": "0x7d"
+            }
+          ]
+        },
+        {
+          "frame": 21,
+          "pc": "0x17eb0b",
+          "symbols": [
+            {
+              "name": "impl_thrd_routine",
+              "inside": "0x1b"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "package_extraction": {
+    "build_id": "b3fb0cf7870efc6646e21939393d3d2ad05cf1dc",
+    "load_extent": "0xb8c100",
+    "records": [
+      {
+        "package": "mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb",
+        "compressed_member": "/mnt/d/NexaUI/out/ci-mesa-25.2.8-symbols/mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb.data.tar.zst",
+        "tar_member": "./usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+        "target": "/mnt/d/NexaUI/out/ci-mesa-25.2.8-symbols/libvulkan_lvp.so",
+        "bytes": 11929384,
+        "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c",
+        "early_stop": true,
+        "decoder": "existing libzstd1.5.7 via verified public streaming ABI"
+      },
+      {
+        "package": "mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb",
+        "compressed_member": "/mnt/d/NexaUI/out/ci-mesa-25.2.8-symbols/mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb.data.tar.zst",
+        "tar_member": "./usr/lib/debug/.build-id/b3/fb0cf7870efc6646e21939393d3d2ad05cf1dc.debug",
+        "target": "/mnt/d/NexaUI/out/ci-mesa-25.2.8-symbols/b3fb0cf7870efc6646e21939393d3d2ad05cf1dc.debug",
+        "bytes": 11361224,
+        "sha256": "c1ca4ec47f02b3e474bceb001c21b609cbedbf0422b7694e1ebc81c1e9e2a47d",
+        "early_stop": true,
+        "decoder": "existing libzstd1.5.7 via verified public streaming ABI"
+      }
+    ]
+  },
+  "packages": [
+    {
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/m/mesa/mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb",
+      "file": "D:\\NexaUI\\out\\ci-mesa-25.2.8-symbols\\mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb",
+      "bytes": 17496794,
+      "sha256": "a4ec58cb952b4e2a8b7c7a9b4ea80fa3d2914e347ad13b11dfb67518b409fb57"
+    },
+    {
+      "url": "https://ddebs.ubuntu.com/pool/main/m/mesa/mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb",
+      "file": "D:\\NexaUI\\out\\ci-mesa-25.2.8-symbols\\mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb",
+      "bytes": 97537048,
+      "sha256": "3445f8908944610e3cb5a3923946afa5b477ce11da21c74aa4f6600c4df1bcd1"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "out/private-weston-14/ci-118786501007.log",
+      "bytes": 665354,
+      "sha256": "55cca1e2661213f707d8ca9cb129e7a2b0627575335cc5d17e8b16354f07dba9"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-sanitizers.zip",
+      "bytes": 68554,
+      "sha256": "7e717f60531411bfcee6e1b456f63ab15f3940ae43345f1c524bd0b411561ba5"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-module-attribution.json",
+      "bytes": 83618,
+      "sha256": "6f9599b5d07f43c4af8c313e8e88c7fbe381ba18214b86ee51589a18fc389610"
+    },
+    {
+      "path": "out/extract-ci-mesa-symbols.py",
+      "bytes": 4099,
+      "sha256": "71efee21553bea3ebb4fc179db6ee1b195e8ea8423e4a6a233cf1fe9df37016a"
+    },
+    {
+      "path": "tests/test_vulkan_validation.c",
+      "bytes": 5604,
+      "sha256": "e1f5ec259d15ea6925fededa4d859a308b6a70f8e36d6c3b5681bbe9d8cb0f6a"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 75890,
+      "sha256": "3f5a749a1d8959fc5e1ba15ea8314657cb4045ccfedfc315178e7d15926d897a"
+    },
+    {
+      "path": "out/r03-text-cost-v4/ci-118802942760.log",
+      "bytes": 678383,
+      "sha256": "09f628d4af7a81f8586465cb3e0867a579ca4bbbd22fcabfa8db356ac797f001"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/all-allocation-symbols.json",
+      "bytes": 20997,
+      "sha256": "cd28f96338f305ac34e76be56941a80977eca81d4aec8408274511a431339ea0"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/allocation-symbol-table.json",
+      "bytes": 1189,
+      "sha256": "d15933575ecf572b3f29b358414758c2f8fc74f5af8c1695d6aca55ebb33a878"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/allocation-symbols.txt",
+      "bytes": 544,
+      "sha256": "299dd50ed072f867d49ef3a1fc0d5c3928862b4b4b6bf034c8ccf325a9c5f720"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/b3fb0cf7870efc6646e21939393d3d2ad05cf1dc.debug",
+      "bytes": 11361224,
+      "sha256": "c1ca4ec47f02b3e474bceb001c21b609cbedbf0422b7694e1ebc81c1e9e2a47d"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/download-plan.json",
+      "bytes": 226,
+      "sha256": "49669162d1175e3cded1a1062ddec620b19f2d685fda5230c41ed2be1abf2b2f"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/downloads.json",
+      "bytes": 708,
+      "sha256": "e3a35844b34f3f784d9f2a537326d956d2ea892fadb5b7966802a56ada036979"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/elf-notes.txt",
+      "bytes": 418,
+      "sha256": "fe946abc0c207a9bea12d24ec3122c19b89b000d7851db88d220b34cd680f6c3"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extract-missing-cli.stderr",
+      "bytes": 1456,
+      "sha256": "8b5a4c694ffd6a6b80858512786fb242361fdebea1b3e71a1038f1d5022bb120"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extract-missing-cli.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extract-v1.py",
+      "bytes": 2503,
+      "sha256": "9e1af554c5347e24356ddb58dd2a8faf3bcd9dd16c00980ee10840e25fb99b5b"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extract.stderr",
+      "bytes": 19267,
+      "sha256": "318b28eef225a7e36e58af3e6f0e1869e3a738367b4e051f00828eaf206b0e97"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extract.stdout",
+      "bytes": 1888,
+      "sha256": "e0afb9291f4c18b81b842d16c8020b205f5dad379af4c8c9ea11c9cdcd7e0f64"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/extraction.json",
+      "bytes": 1343,
+      "sha256": "197ad93f5561d5e27be89b30e530c433de43c47bb7b8c81b0977892eb1b5bac8"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/libvulkan_lvp.so",
+      "bytes": 11929384,
+      "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb",
+      "bytes": 97537048,
+      "sha256": "3445f8908944610e3cb5a3923946afa5b477ce11da21c74aa4f6600c4df1bcd1"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb",
+      "bytes": 17496794,
+      "sha256": "a4ec58cb952b4e2a8b7c7a9b4ea80fa3d2914e347ad13b11dfb67518b409fb57"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/archive-members.json",
+      "bytes": 1085,
+      "sha256": "b99767b1e66622f75186dfe67b00bbbbb7ada35ffc3deae6d37f76784d51f5a9"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/native-ctest.xml",
+      "bytes": 386694,
+      "sha256": "ef0ed3f93c4efcc75259785b88e8e311ca1fd0d9e15a6f99618765771a6e0987"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation.stderr",
+      "bytes": 75194,
+      "sha256": "03c87defd33233c6c157baa92ab039248d9d8d40c16df3212c7fe3cbb2cea611"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/results.json",
+      "bytes": 2369,
+      "sha256": "4b4148833759c534f6de8e256b61cda97508397afa23115cc22a1514e2246430"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation.stderr",
+      "bytes": 74246,
+      "sha256": "659b5cb56dea574dbdc2f1734ef304efb0aba6aab2dc7e454a24cc42dfd9210b"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation.stdout",
+      "bytes": 26,
+      "sha256": "9faa20fee2263f6bb93d63ada2d2845a7291fbe06cb642159b32abd9045608ad"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/wayland-session/result.json",
+      "bytes": 852,
+      "sha256": "c3fad7f84adf21e6b7c96d9d5823cc8342de4bc2edfedebfc5e57bc5e0011569"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/wayland-session/weston.ini",
+      "bytes": 42,
+      "sha256": "7e862596aa533a8978f37caf4486bf89bab9912baafe2febf89d886ae560451e"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/wayland-session/weston.stderr",
+      "bytes": 2439,
+      "sha256": "4f154c9dfb86ed83c1722ab440f6215aca97a3b5fe0dcf204917b96b70b6aaeb"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/wayland-session/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/Testing/Temporary/CTestCostData.txt",
+      "bytes": 4059,
+      "sha256": "5e01d186691b6727be9f2a717cdab7276c17d9b88449afef2b1c80f96242be35"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/Testing/Temporary/LastTest.log",
+      "bytes": 424802,
+      "sha256": "5767497e0aded562a85ecfb2933047fbdf466f1fa63c0a1d7744d5fb96c53c65"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/Testing/Temporary/LastTestsFailed.log",
+      "bytes": 426,
+      "sha256": "b16bfe017c83c2979bb778f4688ac8c97a995e83548d631d4114d1f71582e9d5"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation/result.json",
+      "bytes": 1162,
+      "sha256": "30988633d794d7bea2359a2e7a3ab5c3ac213313709158a34494cc9d953357f3"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation/weston.ini",
+      "bytes": 42,
+      "sha256": "7e862596aa533a8978f37caf4486bf89bab9912baafe2febf89d886ae560451e"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation/weston.stderr",
+      "bytes": 2428,
+      "sha256": "c1fc32d7cdddfd3dd485c10cfc010cd37465ee6312e62a02537b7f0eb4caaba8"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation/result.json",
+      "bytes": 1081,
+      "sha256": "5cefe7b23892dd6e27d9bac4326c024398a3fd4e990db410e3cf3a0d8c15155d"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation/weston.ini",
+      "bytes": 42,
+      "sha256": "7e862596aa533a8978f37caf4486bf89bab9912baafe2febf89d886ae560451e"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation/weston.stderr",
+      "bytes": 2444,
+      "sha256": "25509ebec5d44b2baf63055c5e1b8f499837807cbb7c7aa9c5643f9898261d91"
+    },
+    {
+      "path": "out/private-weston-14/ci39468622435-artifact/vulkan-module-control/without-explicit-validation/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/ci-mesa-25.2.8-symbols/duplicate-payload-cleanup.json",
+      "bytes": 908,
+      "sha256": "aabf728862be9a77c064a7470e44e52d025eaa485b8a7eeb4013a0b8f70ed976"
+    }
+  ],
+  "cleanup": {
+    "reason": "Compressed archive members are byte-identical derivatives; retain official archives, selected ELF/debug, source, failed diagnostics and symbol receipts.",
+    "files": [
+      {
+        "path": "D:\\NexaUI\\out\\ci-mesa-25.2.8-symbols\\mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb.data.tar.zst",
+        "bytes": 17494949,
+        "sha256": "6044e7b1f8c56a66b0ec094ae31f9bd91eb48558148619aa2f025a2ee73cd216",
+        "retained_package": "mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb"
+      },
+      {
+        "path": "D:\\NexaUI\\out\\ci-mesa-25.2.8-symbols\\mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb.data.tar.zst",
+        "bytes": 97535784,
+        "sha256": "00a3f8c5f674949b75fce293b82fb4c2afc23cc07e0b7b0e5f82015b27fa04ad",
+        "retained_package": "mesa-vulkan-drivers-dbgsym_25.2.8-0ubuntu0.24.04.4_amd64.ddeb"
+      }
+    ],
+    "freed_bytes": 115030733
+  }
+}

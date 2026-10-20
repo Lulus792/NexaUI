@@ -151,3 +151,12 @@ logical ink bounds include raster padding and can differ slightly by density,
 while the original layout measurements remain unchanged. The
 [validation report](../quality/text-density-report.md) and
 [comparison example](../../examples/16_text_density/README.md) record the scope.
+
+## Complete single-line construction
+
+A layout whose single line covers the complete input reuses its original
+paragraph shaping. New line boundaries retain reshaping. Font borrowing,
+measurements, selection/caret behavior and frame-owned draw masks keep their
+existing contracts. The [text-cost report](../quality/text-cost-report.md)
+records paired real-font timings, full old/current comparisons and the
+remaining wrapped-text, application and CI limits.
