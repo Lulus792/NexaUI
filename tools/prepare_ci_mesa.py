@@ -94,7 +94,11 @@ def main():
         entry = dict(name=name, command=[str(x) for x in command]); report['commands'].append(entry); save()
         start = time.monotonic()
         with (receipts/(name+'.stdout')).open('wb') as out, (receipts/(name+'.stderr')).open('wb') as err:
-            result = subprocess.run(entry['command'], env=env, stdout=out, stderr=err, timeout=1200)
+            try:
+                result = subprocess.run(entry['command'], env=env, stdout=out, stderr=err, timeout=1200)
+            except subprocess.TimeoutExpired:
+                entry.update(exit_code=None, timed_out=True, seconds=time.monotonic()-start); save()
+                raise
         entry.update(exit_code=result.returncode, seconds=time.monotonic()-start); save()
         print(name+': exit='+str(result.returncode), flush=True)
         if result.returncode not in accepted:
@@ -104,14 +108,19 @@ def main():
     acquire(MESA_URL, MESA_SHA, mesa_archive,
             args.archives/mesa_archive.name if args.archives else None)
     source = extract(mesa_archive, work/'source')
+    bundle = receipts/'corresponding-source'; bundle.mkdir()
+    shutil.copy2(mesa_archive, bundle/mesa_archive.name)
+    report['source_bundle'] = [dict(file=mesa_archive.name, sha256=sha(mesa_archive))]
     inputs = json.loads((DATA/'build-inputs.json').read_text())
     directories = {}
     for item in inputs:
         name = item['name']
-        filename = name+'.tar.gz' if name != 'meson' else 'meson.whl'
+        filename = item.get('filename', name+'.tar.gz' if name != 'meson' else 'meson.whl')
         archive = work/filename
         acquire(item['url'], item['sha256'], archive,
                 args.archives/filename if args.archives else None)
+        shutil.copy2(archive, bundle/filename)
+        report['source_bundle'].append(dict(file=filename, sha256=sha(archive)))
         report['inputs'].append(item); save()
         if name == 'meson':
             destination = work/'meson-runtime'; destination.mkdir()
@@ -123,6 +132,9 @@ def main():
             directories[name] = destination
         else:
             directories[name] = extract(archive, work/name)
+    for filename in ('25.2.8-lifetime.patch', '25.2.8-lifetime.json', 'README.md', 'LICENSES.md'):
+        shutil.copy2(DATA/filename, bundle/filename)
+    save()
     prefix = work/'dependencies'
     run('spirv-configure', ['cmake', '-S', directories['SPIRV-Tools'], '-B', work/'spirv-build',
         '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_POSITION_INDEPENDENT_CODE=ON',
@@ -131,11 +143,17 @@ def main():
         '-DSPIRV_SKIP_TESTS=ON', '-DSPIRV_SKIP_EXECUTABLES=ON'])
     run('spirv-build', ['cmake', '--build', work/'spirv-build', '--target', 'install', '--parallel', '4'])
     env = os.environ.copy()
-    env['PATH'] = '/usr/lib/llvm-20/bin:'+env.get('PATH', '')
+    # Meson's generators must use the /usr/bin Python whose Mako/YAML packages
+    # were installed on the isolated runner, even if another Python is on PATH.
+    env['PATH'] = '/usr/lib/llvm-20/bin:/usr/bin:'+env.get('PATH', '')
     env['PYTHONPATH'] = str(directories['meson'])+os.pathsep+env.get('PYTHONPATH', '')
-    env['PKG_CONFIG_PATH'] = str(prefix/'lib/pkgconfig')+os.pathsep+env.get('PKG_CONFIG_PATH', '')
+    env['PKG_CONFIG_PATH'] = os.pathsep.join([str(prefix/'lib/pkgconfig'),
+        str(prefix/'share/pkgconfig'), env.get('PKG_CONFIG_PATH', '')])
     run('llvm-version', ['llvm-config', '--version'], env)
     meson = [sys.executable, '-m', 'mesonbuild.mesonmain']
+    run('protocols-configure', [*meson, 'setup', work/'protocols-build',
+        directories['wayland-protocols'], '--prefix='+str(prefix), '-Dtests=false'], env)
+    run('protocols-install', [*meson, 'install', '-C', work/'protocols-build'], env)
     build = work/'build'
     run('mesa-configure', [*meson, 'setup', build, source, '--buildtype=debugoptimized',
         '--wrap-mode=nofallback', '-Db_ndebug=true', '-Dgallium-drivers=llvmpipe',

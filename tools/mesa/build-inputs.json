@@ -20,5 +20,14 @@
     "url": "https://files.pythonhosted.org/packages/4b/bf/1a2f345a6e8908cd0b17c2f0a3c4f41667f724def84276ff1ce87d003594/meson-1.8.3-py3-none-any.whl",
     "sha256": "ef02b806ce0c5b6becd5bb5dc9fa67662320b29b337e7ace73e4354500590233",
     "bytes": 1014616
+  },
+  {
+    "name": "wayland-protocols",
+    "version": "1.41",
+    "filename": "wayland-protocols.tar.xz",
+    "url": "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.41/downloads/wayland-protocols-1.41.tar.xz",
+    "sha256": "2786b6b1b79965e313f2c289c12075b9ed700d41844810c51afda10ee329576b",
+    "bytes": 120224,
+    "checksum_source": "Pinned Mesa25.2.8 subprojects/wayland-protocols.wrap"
   }
 ]

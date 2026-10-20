@@ -19,7 +19,8 @@ Source hashes before/after applying the patch are in `25.2.8-lifetime.json`.
 Unknown or already modified source is rejected before applying anything.
 The official [Mesa25.2.8 checksum](https://docs.mesa3d.org/relnotes/25.2.8.html)
 pins the source archive. `build-inputs.json` pins SPIRV-Tools2025.1, the exact
-SPIRV-Headers revision from that release's DEPS and Meson1.8.3. Source archives
+SPIRV-Headers revision from that release's DEPS, Meson1.8.3 and the protocol1.41
+XML package named/hashed by Mesa's own wrap file. Source archives
 are hashed before extraction. Only the isolated runner's private directories
 are built; no Mesa installation step changes the system driver.
 
@@ -41,5 +42,8 @@ Mesa's original copyright/license notices remain in the pinned sources.
 The modified source files carry their original MIT-style notices. Mesa's other
 source licenses and the Apache-2.0 SPIR-V dependencies remain in their archives;
 no blanket license claim is made for the complete external source trees.
+The retained binary artifact includes those complete corresponding source
+archives, notices and the exact patch. Meson is private build tooling, not part
+of the NexaUI SDK. Its original wheel/license is retained in the source bundle.
 The candidate's acceptance requires actual paired CI results; local component
 success alone does not establish a complete driver repair.
