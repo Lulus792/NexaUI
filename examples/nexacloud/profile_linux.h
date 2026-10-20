@@ -140,6 +140,9 @@ static int vk_profile_images_equal(const char *left_path, const char *right_path
 static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_driver *renderer,
     const char *prefix, const char *workload) {
     if (!cloud_vk_profile_enabled) return 1;
+    /* Compare actual drawing/batching/ring work on both sides. Unchanged-canvas
+       reuse is independently measured by the normal interactive task. */
+    if (nx_vulkan_test_set_canvas_cache(renderer->backend.user,0) != NX_OK) return 0;
     static const int batched[]={0,1,1,0};
     char baseline[1200]={0};
     for (unsigned block=0;block<4;++block) {
@@ -158,5 +161,6 @@ static int vk_profile_compare(nx_window *window, cloud_scene *scene, nx_renderer
         }
     }
     return nx_vulkan_test_set_batching(renderer->backend.user,1) == NX_OK &&
-        nx_vulkan_test_set_frame_slots(renderer->backend.user,3) == NX_OK;
+        nx_vulkan_test_set_frame_slots(renderer->backend.user,3) == NX_OK &&
+        nx_vulkan_test_set_canvas_cache(renderer->backend.user,1) == NX_OK;
 }

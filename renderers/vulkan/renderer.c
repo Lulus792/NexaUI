@@ -5,6 +5,7 @@
 #include "renderer.h"
 #include "pipeline.h"
 #include "timing_history.h"
+#include "canvas_cache.h"
 #include "internal.h"
 #include "window_internal.h"
 #include "x11/window_internal.h"
@@ -70,7 +71,7 @@ struct nx_vulkan_renderer {
     uint64_t completed_present_fences;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     unsigned char test_faults[NX_VK_TEST_QUERY_POOL_MEMORY + 1];
-    int disable_batching, disable_gpu_timing;
+    int disable_batching, disable_gpu_timing, disable_canvas_cache;
     VkSemaphore gate;
     uint64_t gate_value;
     int gate_signaled;
@@ -79,6 +80,8 @@ struct nx_vulkan_renderer {
     uint64_t submitted_frames, retired_frames;
     nx_vulkan_frame_profile last_frame;
     nx_vk_timing_history timings;
+    nx_vk_canvas_cache canvas_cache;
+    uint64_t canvas_cache_hits;
     int timing_supported;
     uint64_t swapchain_generation;
     int leased, dirty, broken, readback, drawing;
@@ -277,6 +280,7 @@ static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
 }
 
 static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
+    nx_vk_canvas_cache_drop(&renderer->canvas_cache, renderer->allocator);
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     for (unsigned i = 0; i < NX_VK_FRAME_SLOTS; ++i) {
         nx_vk_frame_slot *slot = &renderer->slots[i];
@@ -700,8 +704,21 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
         renderer->test_faults[NX_VK_TEST_BITMAP_UPLOAD_MEMORY] = 0;
     }
 #endif
-    nx_result prepared = nx_vk_painter_prepare(&renderer->painter, &renderer->native,
-        renderer->format, renderer->extent, draw_commands, draw_count, scale);
+    /* Keep Wayland's established redraw path until unchanged-frame FIFO
+       callback liveness is accepted on native compositors (including WSLg). */
+    int cache_supported = nx_window_x11_display(renderer->window) != NULL;
+    int reuse = cache_supported && renderer->painter.canvas != VK_NULL_HANDLE &&
+        nx_vk_canvas_cache_match(&renderer->canvas_cache, draw_commands, draw_count,
+                                 scale, clear, profile.batched);
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    if (renderer->disable_canvas_cache) reuse = 0;
+#endif
+    nx_result prepared = NX_OK;
+    if (!reuse) {
+        renderer->canvas_cache.valid = 0;
+        prepared = nx_vk_painter_prepare(&renderer->painter, &renderer->native,
+            renderer->format, renderer->extent, draw_commands, draw_count, scale);
+    }
     if (prepared != NX_OK) {
         if (prepared == NX_ERROR_STATE) renderer->broken = renderer->device_lost = 1;
         return prepared;
@@ -775,31 +792,40 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     VkImage target = buffered ? renderer->painter.canvas : renderer->images[index];
     barrier.image = target;
     barrier.subresourceRange = (VkImageSubresourceRange){VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    barrier.srcAccessMask = buffered ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : 0;
-    vkCmdPipelineBarrier(renderer->slots[renderer->slot_index].commands,
-        buffered ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
-    VkClearColorValue color = {{floorf(clear.r * 255.0f + 0.5f) / 255.0f,
-        floorf(clear.g * 255.0f + 0.5f) / 255.0f,
-        floorf(clear.b * 255.0f + 0.5f) / 255.0f,
-        floorf(clear.a * 255.0f + 0.5f) / 255.0f}};
-    vkCmdClearColorImage(renderer->slots[renderer->slot_index].commands, target,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &color, 1, &barrier.subresourceRange);
-    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     VkPipelineStageFlags source_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    if (renderer->painter.vertex_count) {
-        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        vkCmdPipelineBarrier(renderer->slots[renderer->slot_index].commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
-        nx_vk_painter_record(&renderer->painter, renderer->slots[renderer->slot_index].commands, renderer->extent);
-        barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-        source_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+    if (!reuse) {
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.srcAccessMask = buffered ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : 0;
+        vkCmdPipelineBarrier(renderer->slots[renderer->slot_index].commands,
+            buffered ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
+        VkClearColorValue color = {{floorf(clear.r * 255.0f + 0.5f) / 255.0f,
+            floorf(clear.g * 255.0f + 0.5f) / 255.0f,
+            floorf(clear.b * 255.0f + 0.5f) / 255.0f,
+            floorf(clear.a * 255.0f + 0.5f) / 255.0f}};
+        vkCmdClearColorImage(renderer->slots[renderer->slot_index].commands, target,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &color, 1, &barrier.subresourceRange);
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        if (renderer->painter.vertex_count) {
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            vkCmdPipelineBarrier(renderer->slots[renderer->slot_index].commands, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
+            nx_vk_painter_record(&renderer->painter, renderer->slots[renderer->slot_index].commands, renderer->extent);
+            barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+            source_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+        }
     }
     if (readback != VK_NULL_HANDLE || buffered) {
+        if (reuse) {
+            /* Canvas/history are shared only by this graphics queue. The last
+               submitted canvas ends in TRANSFER_SRC; retain it, still copy/
+               present normally, and keep every acquire/fence/retirement path. */
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        }
         barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         vkCmdPipelineBarrier(renderer->slots[renderer->slot_index].commands, source_stage,
@@ -893,20 +919,31 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     renderer->slots[renderer->slot_index].pending = 1;
     profile.submission = ++renderer->submitted_frames;
     renderer->slots[renderer->slot_index].submission = profile.submission;
-    profile.draw_records = renderer->painter.vertex_count/6u;
-    profile.draw_calls = renderer->painter.recorded_draws;
-    profile.render_passes = renderer->painter.recorded_passes;
-    profile.history_copies = renderer->painter.recorded_history_copies;
-    profile.history_copy_bytes = renderer->painter.recorded_history_bytes;
-    profile.vertex_upload_bytes = renderer->painter.vertex_upload_bytes;
-    profile.bitmap_upload_bytes = (uint64_t)renderer->painter.bitmap_extent.width*renderer->painter.bitmap_extent.height*4u;
+    profile.reused_canvas = reuse;
+    profile.draw_records = reuse ? 0 : renderer->painter.vertex_count/6u;
+    profile.draw_calls = reuse ? 0 : renderer->painter.recorded_draws;
+    profile.render_passes = reuse ? 0 : renderer->painter.recorded_passes;
+    profile.history_copies = reuse ? 0 : renderer->painter.recorded_history_copies;
+    profile.history_copy_bytes = reuse ? 0 : renderer->painter.recorded_history_bytes;
+    profile.vertex_upload_bytes = reuse ? 0 : renderer->painter.vertex_upload_bytes;
+    profile.bitmap_upload_bytes = reuse ? 0 : (uint64_t)renderer->painter.bitmap_extent.width*renderer->painter.bitmap_extent.height*4u;
+    if (reuse) {
+        if (renderer->canvas_cache_hits != UINT64_MAX) ++renderer->canvas_cache_hits;
+    } else if (buffered && cache_supported
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+               && !renderer->disable_canvas_cache
+#endif
+    ) {
+        renderer->canvas_cache.valid = nx_vk_canvas_cache_capture(&renderer->canvas_cache,
+            renderer->allocator, draw_commands, draw_count, scale, clear, profile.batched);
+    }
     profile.present_copy_bytes = buffered && !offscreen ? (uint64_t)renderer->extent.width*renderer->extent.height*4u : 0;
     profile.submit_ms = nx_vk_profile_ms(phase,nx_vk_profile_now(),&profile.cpu_timing_valid);
     renderer->last_frame = profile;
     nx_vk_timing_begin(&renderer->timings, &profile, renderer->native.timestamp_valid_bits,
                       renderer->native.timestamp_period_ns, readback != VK_NULL_HANDLE);
     phase = nx_vk_profile_now();
-    renderer->last_submitted_vertices = renderer->painter.vertex_count;
+    renderer->last_submitted_vertices = reuse ? 0 : renderer->painter.vertex_count;
     renderer->slot_index = (renderer->slot_index + 1u) % renderer->frame_slots;
     if (offscreen) { *presented = 1; return NX_OK; }
     VkPresentInfoKHR present = {0};
@@ -1016,6 +1053,8 @@ nx_result nx_vulkan_renderer_get_info(nx_vulkan_renderer *renderer,
     out_info->timestamp_period_ns = renderer->native.timestamp_period_ns;
     out_info->last_completed_gpu = renderer->timings.last_completed;
     out_info->retired_frames = renderer->retired_frames;
+    out_info->canvas_cache_bytes = renderer->canvas_cache.capacity;
+    out_info->canvas_cache_hits = renderer->canvas_cache_hits;
     out_info->frame_slots = renderer->frame_slots;
     for (unsigned i = 0; i < NX_VK_FRAME_SLOTS; ++i) {
         out_info->pending_submissions += renderer->slots[i].pending != 0;
@@ -1133,6 +1172,12 @@ nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
     if (!renderer || fault < NX_VK_TEST_RETIRE_TIMEOUT || fault > NX_VK_TEST_QUERY_POOL_MEMORY)
         return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer)) return NX_ERROR_STATE;
+    /* A requested preparation fault must actually exercise preparation rather
+       than be bypassed by the independent unchanged-canvas optimization. */
+    if (fault == NX_VK_TEST_PIPELINE_MEMORY || fault == NX_VK_TEST_VERTEX_MEMORY ||
+        fault == NX_VK_TEST_DRAW_MEMORY || fault == NX_VK_TEST_BITMAP_RECORD_MEMORY ||
+        fault == NX_VK_TEST_ATLAS_MEMORY || fault == NX_VK_TEST_BITMAP_UPLOAD_MEMORY)
+        renderer->canvas_cache.valid = 0;
     /* Readback checks submission once for copying and once during cleanup.
        Hold both waits to exercise ownership across the entire failed call. */
     renderer->test_faults[fault] = fault == NX_VK_TEST_SUBMISSION_WAIT_TIMEOUT ? 2 : 1;
@@ -1143,6 +1188,13 @@ nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled)
     if (!renderer || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
     if (!nx_vk_renderer_owner(renderer) || renderer->closing || renderer->broken) return NX_ERROR_STATE;
     renderer->disable_batching = !enabled; return NX_OK;
+}
+nx_result nx_vulkan_test_set_canvas_cache(nx_vulkan_renderer *renderer, int enabled) {
+    if (!renderer || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_vk_renderer_owner(renderer) || renderer->closing || renderer->broken) return NX_ERROR_STATE;
+    renderer->disable_canvas_cache = !enabled;
+    renderer->canvas_cache.valid = 0;
+    return NX_OK;
 }
 nx_result nx_vulkan_test_invalidate(nx_vulkan_renderer *renderer, int broken) {
     if (!renderer) return NX_ERROR_ARGUMENT;

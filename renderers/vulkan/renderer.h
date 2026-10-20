@@ -14,7 +14,7 @@ typedef struct nx_vulkan_frame_profile {
     uint64_t history_copies, history_copy_bytes, vertex_upload_bytes, bitmap_upload_bytes, present_copy_bytes;
     uint32_t pixel_width, pixel_height, frame_slot, frames_in_flight;
     double draw_scale, retirement_ms, prepare_ms, acquire_ms, encode_ms, submit_ms, present_ms;
-    int cpu_timing_valid, batched;
+    int cpu_timing_valid, batched, reused_canvas;
 } nx_vulkan_frame_profile;
 
 #define NX_VULKAN_TIMING_HISTORY 64u
@@ -68,6 +68,7 @@ typedef struct nx_vulkan_renderer_info {
     uint32_t timestamp_valid_bits;
     double timestamp_period_ns;
     nx_vulkan_gpu_timing last_completed_gpu;
+    uint64_t canvas_cache_bytes, canvas_cache_hits;
 } nx_vulkan_renderer_info;
 
 /* Private Linux clear/present and initial drawing path. The window must outlive the renderer;
@@ -147,6 +148,8 @@ nx_result nx_vulkan_test_fail_next(nx_vulkan_renderer *renderer,
 /* Subsequent encoding only; pending commands remain immutable. Production
    always batches. Both test modes use the same per-instance vertex format. */
 nx_result nx_vulkan_test_set_batching(nx_vulkan_renderer *renderer, int enabled);
+/* Isolate batching/encoding measurements from unchanged-canvas reuse. */
+nx_result nx_vulkan_test_set_canvas_cache(nx_vulkan_renderer *renderer, int enabled);
 /* Drains before changing the diagnostic pacing mode. Production uses 3 slots. */
 nx_result nx_vulkan_test_set_frame_slots(nx_vulkan_renderer *renderer, unsigned slots);
 /* Future submissions only; pending pools/commands remain immutable. */

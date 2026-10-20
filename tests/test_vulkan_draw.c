@@ -147,7 +147,9 @@ static int test_draws(nx_window *window) {
     }
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
     uint64_t allocations = info.vertex_buffer_allocations, capacity = info.vertex_capacity_bytes;
-    CHECK(allocations == 1 && capacity && info.last_submitted_vertices);
+    int cached = nx_window_x11_display(window) != NULL;
+    CHECK(allocations == 1 && capacity && info.last_frame.reused_canvas == cached &&
+          info.last_submitted_vertices == (cached ? 0u : 6u));
     nx_command many[256];
     for (unsigned i = 0; i < 256; ++i) {
         float x = (float)((i * 17u) % 145u) - 12.5f;
@@ -610,7 +612,8 @@ static int test_preflight_and_driver(nx_window *window) {
     CHECK(nx_renderer_run(&driver, target, commands, 1, (nx_color){0,0,0,1}, &outcome) == NX_OK);
     CHECK(outcome == NX_RENDER_READY);
     CHECK(nx_vulkan_renderer_get_info(renderer, &after) == NX_OK &&
-          after.presented_frames > before.presented_frames && after.last_submitted_vertices == 6);
+          after.presented_frames > before.presented_frames && !after.last_frame.reused_canvas &&
+          after.last_submitted_vertices == 6);
     CHECK(nx_vulkan_test_invalidate(renderer, 1) == NX_OK);
     CHECK(nx_renderer_run(&driver, target, commands, 1, (nx_color){0,0,0,1}, &outcome) == NX_OK &&
           outcome == NX_RENDER_DEVICE_LOST);
@@ -626,6 +629,8 @@ static int test_preflight_and_driver(nx_window *window) {
 static int test_batches(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
     CHECK(create_serial(window,NULL,&renderer) == NX_OK);
+    /* Measure batching itself; other cases exercise default canvas reuse. */
+    CHECK(nx_vulkan_test_set_canvas_cache(renderer,0) == NX_OK);
     const uint8_t mask[]={0,51,127,255,172,1};
     nx_command stream[]={
         rect(0,0,31,29,(nx_color){1,0,0,1}),
@@ -693,6 +698,65 @@ static int test_independent_windows(nx_window *first) {
     return 0;
 }
 
+static int test_canvas_cache(nx_window *window) {
+    nx_vulkan_renderer *renderer=NULL;
+    CHECK(create_serial(window,NULL,&renderer)==NX_OK);
+    int cached=nx_window_x11_display(window)!=NULL;
+    CHECK(nx_vulkan_test_set_canvas_cache(renderer,2)==NX_ERROR_ARGUMENT);
+    uint8_t *rgba=malloc(32),*replacement=malloc(32);
+    CHECK(rgba&&replacement);
+    const uint8_t original[32]={255,0,0,255,0,255,0,127,0,0,255,255,91,92,93,94,
+                               20,30,40,255,150,60,50,200,250,240,90,33,95,96,97,98};
+    memcpy(rgba,original,32);
+    uint8_t mask[10]={0,80,255,93,94,255,127,1,95,96};
+    nx_command commands[]={clip(3.25f,4.75f,130,91),
+        round_rect(1,2,145,104,7,(nx_color){.1f,.6f,.8f,.6f}),
+        bitmap(5.5f,6.25f,93,71,(nx_bitmap_view){rgba,3,2,16,NX_BITMAP_RGBA8},(nx_color){1,.7f,.8f,.8f}),
+        bitmap(23.25f,27.5f,91,62,(nx_bitmap_view){mask,3,2,5,NX_BITMAP_A8},(nx_color){.8f,.2f,.9f,.7f}),
+        {.type=NX_COMMAND_POP_CLIP}};
+    nx_color clear={.02f,.06f,.12f,.6f};
+    const double scales[]={1,1.25,1.5,2};
+    nx_vulkan_renderer_info info;
+    for(unsigned i=0;i<4;++i){
+        CHECK(compare(window,renderer,commands,5,scales[i],clear)==0);
+        CHECK(nx_vulkan_renderer_get_info(renderer,&info)==NX_OK && info.last_frame.reused_canvas==cached &&
+              (cached ? !info.last_frame.draw_calls && !info.last_frame.bitmap_upload_bytes :
+                        info.last_frame.draw_calls>0 && !info.canvas_cache_bytes) &&
+              info.canvas_cache_bytes<=32u*1024u*1024u);
+        rgba[3]^=127;mask[1]^=31;
+        CHECK(compare(window,renderer,commands,5,scales[i],clear)==0);
+        commands[0].rect.x+=.25f;commands[1].radius+=.5f;clear.a=1;
+        CHECK(compare(window,renderer,commands,5,scales[i],clear)==0);
+    }
+    memcpy(replacement,rgba,32);free(rgba);commands[2].bitmap.pixels=replacement;
+    CHECK(compare(window,renderer,commands,5,2,clear)==0);
+    CHECK(nx_vulkan_test_invalidate(renderer,0)==NX_OK);
+    CHECK(compare(window,renderer,commands,5,2,clear)==0);
+    CHECK(nx_vulkan_test_invalidate(renderer,1)==NX_OK);
+    CHECK(nx_vulkan_renderer_recover(renderer)==NX_OK);
+    CHECK(compare(window,renderer,commands,5,1,clear)==0);
+    CHECK(nx_vulkan_test_set_frame_slots(renderer,3)==NX_OK);
+    for(unsigned i=0;i<12;++i) {
+        int presented=0;
+        CHECK(nx_vulkan_render(renderer,commands,5,1,clear,&presented)==NX_OK && presented);
+    }
+    CHECK(compare(window,renderer,commands,5,1,clear)==0);
+    CHECK(nx_vulkan_renderer_get_info(renderer,&info)==NX_OK &&
+          (cached ? info.canvas_cache_hits>=12 : !info.canvas_cache_hits) && info.last_frame.reused_canvas==cached);
+    /* Eight duplicate4MiB image views exceed the proof budget. The actual
+       drawing must still succeed and remain byte-exact without the cache. */
+    uint8_t *big=malloc(4u*1024u*1024u);CHECK(big);memset(big,109,4u*1024u*1024u);
+    nx_command many[8];
+    for(unsigned i=0;i<8;++i)many[i]=bitmap((float)i*11,8,29,31,
+        (nx_bitmap_view){big,1024,1024,4096,NX_BITMAP_RGBA8},(nx_color){1,1,1,.7f});
+    CHECK(compare(window,renderer,many,8,1,clear)==0);
+    CHECK(nx_vulkan_renderer_get_info(renderer,&info)==NX_OK && !info.last_frame.reused_canvas && !info.canvas_cache_bytes);
+    CHECK(nx_vulkan_renderer_destroy(renderer)==NX_OK);free(big);free(replacement);
+    printf("Vulkan canvas %s: exact RGBA/A8 mutations, clips, densities, source lifetime, resize/recovery,3 slots and budget fallback passed.\n",
+           cached ? "reuse" : "redraw fallback");
+    return 0;
+}
+
 int main(int argc, char **argv) {
     const char *backend = getenv("NEXAUI_PLATFORM");
     if (!backend) return 1;
@@ -708,7 +772,8 @@ int main(int argc, char **argv) {
             !strcmp(argv[1], "storage") ? test_owned_storage(window) :
             !strcmp(argv[1], "shapes") ? test_shapes(window) :
             !strcmp(argv[1], "bitmaps") ? (test_bitmaps(window)||test_paints(window)) :
-            !strcmp(argv[1], "batches") ? test_batches(window) : 1;
+            !strcmp(argv[1], "batches") ? test_batches(window) :
+            !strcmp(argv[1], "cache") ? test_canvas_cache(window) : 1;
         nx_window_destroy(window); return selected;
     }
     int status = test_draws(window);
@@ -720,6 +785,7 @@ int main(int argc, char **argv) {
     if (!status) status = test_preflight_and_driver(window);
     if (!status) status = test_independent_windows(window);
     if (!status) status = test_batches(window);
+    if (!status) status = test_canvas_cache(window);
     nx_window_destroy(window);
     return status;
 }
