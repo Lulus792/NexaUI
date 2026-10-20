@@ -1,0 +1,385 @@
+{
+  "date": "2026-10-20",
+  "source": "1cea7b94c958a9f4937135f4974857a287a7922f",
+  "scope": "New protocol-level WSLg boundary; no compositor defect, physical visibility, FIFO repair or full P2 acceptance claimed.",
+  "native": {
+    "scope": "One bounded protocol-level WSLg diagnostic, not a repeated-until-green or physical acceptance run.",
+    "source": "1cea7b94c958a9f4937135f4974857a287a7922f",
+    "binary": {
+      "path": "/mnt/d/NexaUI/out/vulkan-sanitize/nexaui_vulkan_present_tests",
+      "sha256": "4067496396da3a966b5bc591024492491fe12ec0db648b3eccbbd4ee1c2b27b9",
+      "bytes": 10673864
+    },
+    "driver": {
+      "path": "/usr/lib/libvulkan_lvp.so",
+      "sha256": "256f60307ea0c0f36ba296aa9aaf961478f4304723bbad7d184e38e2523d6426",
+      "bytes": 14570592
+    },
+    "manifest": {
+      "path": "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
+      "sha256": "bbc5b3bb82e070fb3e700e13219aec754b235f043eab7f23fc280ef807997198",
+      "bytes": 174
+    },
+    "versions": "WSLg ( x86_64 ): 1.0.73.2\nBuilt at: Mon May 18 22:31:53 UTC 2026\nAzure Linux: VERSION=\"3.0.20260510\"\nDirectX-Headers:\nmesa:\npulseaudio: c33051f2296af748ac5cd13e51abfac4d129e4c7\nFreeRDP: c4030980b29322a9cb2190711a5fadeeeb8b6a33\nweston: 04d436c7d9a0cd55fa64b6612c7fa678d6fcd077\n",
+    "environment": {
+      "NEXAUI_PLATFORM": "wayland",
+      "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+      "WAYLAND_DISPLAY": "wayland-0",
+      "WAYLAND_DEBUG": "client",
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
+      "VK_LAYER_PATH": "/usr/share/vulkan/explicit_layer.d",
+      "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+      "VK_LAYER_VALIDATE_SYNC": "1",
+      "ASAN_OPTIONS": "halt_on_error=1:detect_leaks=1",
+      "UBSAN_OPTIONS": "halt_on_error=1"
+    },
+    "other_native_process_names": [],
+    "pid": 66222,
+    "diagnostic_timeout": true,
+    "gdb_exit": 0,
+    "exit_code": -15,
+    "seconds": 15.716159649000474,
+    "raw_logs": [
+      {
+        "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/protocol.stderr",
+        "sha256": "d1846ec0bce3e5098f842510ab4b08c1ad1ba5fad92ff4357ef40843f8f96257",
+        "bytes": 30458
+      }
+    ]
+  },
+  "shm": {
+    "plan": "Exactly one WSLg SHM control, then one private Weston SHM control, fixed before launch.",
+    "binary": {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control",
+      "sha256": "97a43e003fd93192649689e2f493fac6851c183fedc7f2080f5f54675cc635ac",
+      "bytes": 2914952
+    },
+    "source": {
+      "path": "/mnt/d/NexaUI/tools/wayland_frame_control.c",
+      "sha256": "a567c9ba106d8d732d885b264853b17a6e1855de084695dbc095a8afb53cb82f",
+      "bytes": 5771
+    },
+    "original_wslg": {
+      "name": "shm-wslg",
+      "command": [
+        "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control"
+      ],
+      "exit_code": 2,
+      "seconds": 5.199257287000364,
+      "stdout": "SHM_FRAME configured=2 done=0 released=0 seconds=5.021955 result=2\n",
+      "stderr_sha256": "c41f5cde232527e724f4ce36e088961cd38bfb0da5e4b11eafa066482549d9c1"
+    },
+    "private_weston": {
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 1600x1200x24",
+        "python3",
+        "/mnt/d/NexaUI/tests/run_weston_native.py",
+        "--work-dir",
+        "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final-session",
+        "--timeout",
+        "12",
+        "--",
+        "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6212684749989421,
+      "stdout": "SHM_FRAME configured=2 done=1 released=0 seconds=0.046730 result=0\n",
+      "stderr_sha256": "421b2a65bd9eb2ddd5118c12deb11b402d7c5ebc463148badb80632e0821cdf6",
+      "correction": "Restore both existing private-tool requirements: libexec_weston search directory and absolute X11 backend module map. Earlier failures never launched the probe. Probe source/binary unchanged; WSLg control not rerun."
+    },
+    "setup_failures": [
+      {
+        "outcome": "Weston failed to load libexec_weston; client never launched",
+        "result": {
+          "name": "shm-private",
+          "command": [
+            "xvfb-run",
+            "-a",
+            "-s",
+            "-screen 0 1600x1200x24",
+            "python3",
+            "/mnt/d/NexaUI/tests/run_weston_native.py",
+            "--work-dir",
+            "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-session",
+            "--timeout",
+            "12",
+            "--",
+            "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control"
+          ],
+          "exit_code": 1,
+          "seconds": 0.3725373320012295,
+          "stdout": "",
+          "stderr_sha256": "b2c0baf4770c2d12464249d391ba7939efcd3db31103b5d842860563234f00fe"
+        }
+      },
+      {
+        "outcome": "Weston missing absolute private X11 module map; client never launched",
+        "result": {
+          "command": [
+            "xvfb-run",
+            "-a",
+            "-s",
+            "-screen 0 1600x1200x24",
+            "python3",
+            "/mnt/d/NexaUI/tests/run_weston_native.py",
+            "--work-dir",
+            "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected-session",
+            "--timeout",
+            "12",
+            "--",
+            "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control"
+          ],
+          "exit_code": 1,
+          "seconds": 0.4222410940019472,
+          "stdout": "",
+          "stderr_sha256": "6eed1e956d47c42a34f555361a3076b4ee613dc40bdbbb2afd781f8a142921e0",
+          "correction": "Only the private Weston launcher now includes its known libexec_weston directory. Probe source/binary unchanged; WSLg control not rerun."
+        }
+      }
+    ],
+    "private_lifecycle": {
+      "status": "passed",
+      "command": [
+        "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control"
+      ],
+      "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+      "weston_command": [
+        "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/private-weston-final",
+        "--backend=x11-backend.so",
+        "--use-pixman",
+        "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+        "--width=1600",
+        "--height=1200",
+        "--idle-time=0",
+        "--socket=nexaui-test",
+        "--config=/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final-session/weston.ini"
+      ],
+      "display": ":101",
+      "weston_pid": 66513,
+      "child_pid": 66516,
+      "startup_seconds": 0.1000633520015981,
+      "child_exit": 0,
+      "weston_exit": 0,
+      "elapsed_seconds": 0.3205462410005566,
+      "exit_code": 0
+    },
+    "no_sdk_or_vulkan_linkage": "\t/lib/ld-musl-x86_64.so.1 (0x7d7aef254000)\n\tlibwayland-client.so.0 => /usr/lib/libwayland-client.so.0 (0x7d7aee7af000)\n\tlibgcc_s.so.1 => /usr/lib/libgcc_s.so.1 (0x7d7aee783000)\n\tlibc.musl-x86_64.so.1 => /lib/ld-musl-x86_64.so.1 (0x7d7aef254000)\n\tlibffi.so.8 => /usr/lib/libffi.so.8 (0x7d7aee779000)\n"
+  },
+  "dependencies": [
+    {
+      "path": "/usr/lib/libwayland-client.so.0.25.0",
+      "sha256": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839",
+      "bytes": 51864
+    },
+    {
+      "path": "/usr/share/wayland/wayland.xml",
+      "sha256": "08fb558d96742b41eab330c386f7b0c17d82169e69edad612ea89c17d6b1d53e",
+      "bytes": 165075
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/vulkan-sanitize/generated/wayland/xdg-shell-client-protocol.h",
+      "sha256": "6d99a2d4ab9bdb3a7b96e8ff25a523a7596460b40fd66f3d487a3d3660fca4e2",
+      "bytes": 86018
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/vulkan-sanitize/generated/wayland/xdg-shell-protocol.c",
+      "sha256": "6acb725de29bab4d19a0ef629f1e97ed4fe05e8028f147daa4685f388077aaf3",
+      "bytes": 5999
+    }
+  ],
+  "native_stack": [
+    "#4  0x0000742ff6b6d8c2 in ?? () from /usr/lib/libwayland-client.so.0",
+    "#5  0x0000742ff6b7148c in wl_display_dispatch_queue_timeout () from /usr/lib/libwayland-client.so.0",
+    "#6  0x0000742ff6b71525 in wl_display_dispatch_queue () from /usr/lib/libwayland-client.so.0",
+    "#7  0x0000702ff3021e97 in ?? () from /usr/lib/libvulkan_lvp.so",
+    "#8  0x0000702ff3015140 in ?? () from /usr/lib/libvulkan_lvp.so",
+    "#9  0x0000702fe6286e1f in ?? () from /usr/lib/libVkLayer_khronos_validation.so",
+    "#10 0x0000702fe62832dd in ?? () from /usr/lib/libVkLayer_khronos_validation.so",
+    "#11 0x00005c9ee49a7245 in nx_vk_present (renderer=0x727ff6680100, draw_commands=0x0, draw_count=0, scale=1, clear=..., readback=0x0, offscreen=0, presented=0x702ff52f0620) at /mnt/d/NexaUI/renderers/vulkan/renderer.c:972",
+    "#12 0x00005c9ee49941bb in nx_vulkan_render (renderer=0x727ff6680100, commands=0x0, count=0, scale=1, clear=..., out_presented=0x702ff52f0620) at /mnt/d/NexaUI/renderers/vulkan/renderer.c:1028",
+    "#13 0x00005c9ee4993e1a in nx_vulkan_clear_present (renderer=0x727ff6680100, clear=..., out_presented=0x702ff52f0620) at /mnt/d/NexaUI/renderers/vulkan/renderer.c:1009",
+    "#14 0x00005c9ee498d034 in show_frame (window=0x708ff6680620, renderer=0x727ff6680100, color=...) at /mnt/d/NexaUI/tests/test_vulkan_present.c:51",
+    "#15 0x00005c9ee4987741 in test_renderer (window=0x708ff6680620) at /mnt/d/NexaUI/tests/test_vulkan_present.c:197",
+    "#16 0x00005c9ee4986a23 in main () at /mnt/d/NexaUI/tests/test_vulkan_present.c:359"
+  ],
+  "native_protocol_boundary": [
+    "[3848220.821] {Default Queue}  -> wl_surface#11.commit()",
+    "[3848234.298] {Default Queue}  -> wl_surface#11.commit()",
+    "[3848730.247] {mesa vk display queue}  -> wl_surface#11.attach(wl_buffer#36, 0, 0)",
+    "[3848730.751] {mesa vk display queue}  -> wl_surface#11.damage_buffer(0, 0, 2147483647, 2147483647)",
+    "[3848731.216] {mesa vk display queue}  -> wl_surface#11.frame(new id wl_callback#45)",
+    "[3848731.674] {mesa vk display queue}  -> wl_surface#11.commit()",
+    "[3848741.324] {Default Queue} xdg_surface#13.configure(348)",
+    "[3848741.763] {Default Queue}  -> xdg_surface#13.ack_configure(348)",
+    "[3848744.487] {Default Queue} wl_buffer#18.release()",
+    "[3848745.285] {Default Queue}  -> wl_buffer#18.destroy()"
+  ],
+  "interpretation": "Missing callback45 also occurs as missing callback11 in the separate SHM-only client; same SHM executable receives a callback on private Weston. Native-host visibility/occlusion/RDP cause not measured.",
+  "next_measurement": "Correlate owned SHM surface with actual Windows host mapping/minimize/cloak/bounds and output/occlusion/RDP records; do not change present mode or shared compositor settings.",
+  "protocol_reference": {
+    "url": "https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_surface-request-frame",
+    "read": "2026-10-20",
+    "scope": "Frame requests take effect at commit; invisible/fully obscured surfaces may have notifications withheld. Missing callback alone is not proof of compositor nonconformance."
+  },
+  "raw_evidence": [
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control",
+      "sha256": "97a43e003fd93192649689e2f493fac6851c183fedc7f2080f5f54675cc635ac",
+      "bytes": 2914952
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/frame-control.c",
+      "sha256": "a567c9ba106d8d732d885b264853b17a6e1855de084695dbc095a8afb53cb82f",
+      "bytes": 5771
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/main-stack.stderr",
+      "sha256": "22b60d003038801e759b7305c66e0548dc94de7afd031c860055e5b98354023a",
+      "bytes": 71
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/main-stack.stdout",
+      "sha256": "433654b90816bf2ea23b78c499ca3c19938c081afc80309c09a8d3cc29f9b61e",
+      "bytes": 2549
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/private-weston",
+      "sha256": "cef11f8a585b261d59206332b3699fe20649407bfd1860c46b450217eee5c943",
+      "bytes": 149
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/private-weston-corrected",
+      "sha256": "85d77eceac4371e55f25989cc6426d5b34e01afd33f4f7349d1db187cd7a5a76",
+      "bytes": 205
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/private-weston-final",
+      "sha256": "f56fa852ccb75bc7cb0a2a17be43d41e70829691ca97200979f23c93be75c36f",
+      "bytes": 317
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/protocol.stderr",
+      "sha256": "d1846ec0bce3e5098f842510ab4b08c1ad1ba5fad92ff4357ef40843f8f96257",
+      "bytes": 30458
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/run-private-shm-corrected.py",
+      "sha256": "9bbf76057039bd2bc03af3e65a61faf68a20182bea24539392897d0bee53919e",
+      "bytes": 1652
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/run-private-shm-final-exact.py",
+      "sha256": "76069f9ea5f1bf3c922683193a88d39016ecf324afa3d8f2c506258d755ccebb",
+      "bytes": 1792
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/run-private-shm-final.py",
+      "sha256": "bf3e8013892fe78d155c3445f56f054677507c990f25c13aa1115b94338dfbbc",
+      "bytes": 798
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/run-shm-controls.py",
+      "sha256": "c473723c289ab75dd34e6ac9233875948c8038db237dd7fc95e2efda8cf12272",
+      "bytes": 2285
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected-session/weston.ini",
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+      "bytes": 212
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected-session/weston.stderr",
+      "sha256": "397b2ae15ec66392249b52bc52b5f4bef593e289f856627ce7b1baceae3d81c6",
+      "bytes": 1169
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected-session/weston.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected.stderr",
+      "sha256": "6eed1e956d47c42a34f555361a3076b4ee613dc40bdbbb2afd781f8a142921e0",
+      "bytes": 1227
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-corrected.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final-session/weston.ini",
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+      "bytes": 212
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final-session/weston.stderr",
+      "sha256": "258af20eeddf7d8d325a58af7b32a461f1e41b0842df5bf8563e8609b4cfc304",
+      "bytes": 17832
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final-session/weston.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final.stderr",
+      "sha256": "421b2a65bd9eb2ddd5118c12deb11b402d7c5ebc463148badb80632e0821cdf6",
+      "bytes": 4980
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-final.stdout",
+      "sha256": "69bd4cc803af398413928316d12d3b1a629ec3b613ae11e8b64557ea2b209869",
+      "bytes": 67
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-session/weston.ini",
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+      "bytes": 212
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-session/weston.stderr",
+      "sha256": "9594ac856797049898021bde4939ee1d64d9c901effb0c9879c191327fad87a9",
+      "bytes": 245
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private-session/weston.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private.stderr",
+      "sha256": "b2c0baf4770c2d12464249d391ba7939efcd3db31103b5d842860563234f00fe",
+      "bytes": 305
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-private.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-wslg.stderr",
+      "sha256": "c41f5cde232527e724f4ce36e088961cd38bfb0da5e4b11eafa066482549d9c1",
+      "bytes": 4165
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/shm-wslg.stdout",
+      "sha256": "86e5a71f9ba67eadc1f601c71c7f6ead0eef6f06658f969b3da49f7cf67615fd",
+      "bytes": 67
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/wslg-fifo-protocol-20261020/stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "completed_shm_sanitizer_diagnostic_observed": false
+}

@@ -1,5 +1,9 @@
 # Independent Vulkan lifetime control
 
+The subsequent [paired private Mesa cleanup](mesa-cleanup-candidate-report.md)
+provides a source-level correction and actual unload/full-suite evidence. The
+original diagnostic and failed stock-driver controls below remain preserved.
+
 Source: `6fe63dfcc1cdd493228f549fe0547f3024662f0a`, 2026-10-20.
 The diagnostic executable links Vulkan and `dl`, with no NexaUI library or
 implementation source. It observes loaded modules without opening or retaining

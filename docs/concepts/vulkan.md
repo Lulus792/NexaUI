@@ -824,6 +824,28 @@ satisfy that gate. This test-only dependency does not enter NexaUI's runtime or
 public API. It is independent compositor evidence, not physical input, human
 assistive, WSLg FIFO-liveness or Wayland canvas-reuse acceptance.
 
+The later [WSLg frame-callback diagnosis](../quality/wslg-frame-callback-report.md)
+reproduces a missing notification in an independent actual SHM client without
+Vulkan or NexaUI. The same executable receives a notification on private Weston.
+This narrows the symptom but does not establish host visibility/occlusion or a
+WSLg/RDP cause; the protocol permits withholding callbacks on invisible surfaces.
+
+## Private CI driver cleanup
+
+The sanitizer job builds pinned original/corrected Mesa25.2.8 in private runner
+directories. The original must reproduce the independent unload leak before the
+two-file CPU/rtasm ownership patch can be accepted. Corrected controls and the
+full native suite then run in both fixed ICD orders, with actual unload,
+validation and no-skip Wayland checks. Both DSOs accompany their complete source
+archives/notices. No system-driver installation, retained handle, preload or
+sanitizer suppression supplies the result.
+
+The [paired cleanup report](../quality/mesa-cleanup-candidate-report.md) identifies
+the actual117/117 runs, component checks, source/binary hashes and instrumentation
+limits. This is a private CI dependency correction; SDK consumers continue to use
+their configured driver. Upstream adoption, hardware/performance acceptance and
+R01/physical/assistive requirements remain separate.
+
 ## Specification references
 
 - [Timestamp writes and stage scope](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdWriteTimestamp.html)

@@ -415,5 +415,618 @@
     "native_failed": 14,
     "scope": "Latest ordinary sanitizer job still used the installed unmodified driver; leak summaries are present. Six static/shared platform jobs passed; optional Windows-ASan/fuzz jobs skipped."
   },
-  "frozen_local_evidence": "out/mesa-cleanup-v1/ci39494137019; mesa-third-ci.zip; mesa-third-ci.verified.json"
+  "frozen_local_evidence": "out/mesa-cleanup-v1/ci39494137019; mesa-third-ci.zip; mesa-third-ci.verified.json",
+  "regular_ci_integration": {
+    "archive_sha256": "6fa5c1e9287c0df8560523f96e43724034caf6c8b8605c410bcf44f5a1f64225",
+    "build_commands": [
+      {
+        "name": "spirv-configure",
+        "exit_code": 0,
+        "seconds": 4.572663823999989
+      },
+      {
+        "name": "spirv-build",
+        "exit_code": 0,
+        "seconds": 182.133947149
+      },
+      {
+        "name": "llvm-version",
+        "exit_code": 0,
+        "seconds": 0.0035966319999829466
+      },
+      {
+        "name": "protocols-configure",
+        "exit_code": 0,
+        "seconds": 0.9654986209999947
+      },
+      {
+        "name": "protocols-install",
+        "exit_code": 0,
+        "seconds": 0.26443968500001347
+      },
+      {
+        "name": "mesa-configure",
+        "exit_code": 0,
+        "seconds": 7.126848584000015
+      },
+      {
+        "name": "mesa-before-build",
+        "exit_code": 0,
+        "seconds": 95.086934547
+      },
+      {
+        "name": "before-orders",
+        "exit_code": 1,
+        "seconds": 6.525383277000003
+      },
+      {
+        "name": "component-checks",
+        "exit_code": 0,
+        "seconds": 3.17050788399996
+      },
+      {
+        "name": "mesa-after-build",
+        "exit_code": 0,
+        "seconds": 1.366262991000042
+      },
+      {
+        "name": "after-orders",
+        "exit_code": 0,
+        "seconds": 3.8209054339999966
+      }
+    ],
+    "patch": {
+      "files": {
+        "src/util/u_cpu_detect.c": {
+          "before_sha256": "73e81119ccc66069c4957a5e263922c0e3f53e09d6657d6d8e559a05fbc8df4b",
+          "after_sha256": "341fb80115d8f20ca1d59e1da2a6debe16fdf54da266b07db89378e881a2a8e8"
+        },
+        "src/gallium/auxiliary/rtasm/rtasm_execmem.c": {
+          "before_sha256": "e5a77a4a87803ae0eee5b45fdaea83639ce1e50469ee2c8c80e62182bec9c749",
+          "after_sha256": "c3c2e14eef367f47cbe1aaecbbc594de09aba86aa804c11378a270f6d2ed59de"
+        }
+      },
+      "patch_sha256": "85088cdddd2340e4c0c3a2bbd72b15f64bb7f4deeec84f3d9019ae82a23fb76a",
+      "stdout": "patching file src/util/u_cpu_detect.c\npatching file src/gallium/auxiliary/rtasm/rtasm_execmem.c\n",
+      "stderr": ""
+    },
+    "components": {
+      "scope": "Actual source component tests, separate from full Vulkan/native suite.",
+      "commands": [
+        {
+          "name": "cpu-close-build",
+          "exit_code": 0
+        },
+        {
+          "name": "rtasm-before-build",
+          "exit_code": 0
+        },
+        {
+          "name": "rtasm-before",
+          "exit_code": -6
+        },
+        {
+          "name": "cpu-before-build",
+          "exit_code": 0
+        },
+        {
+          "name": "cpu-before-exit",
+          "exit_code": 0
+        },
+        {
+          "name": "cpu-before-dlclose",
+          "exit_code": 1
+        },
+        {
+          "name": "rtasm-after-build",
+          "exit_code": 0
+        },
+        {
+          "name": "rtasm-after",
+          "exit_code": 0
+        },
+        {
+          "name": "cpu-after-build",
+          "exit_code": 0
+        },
+        {
+          "name": "cpu-after-exit",
+          "exit_code": 0
+        },
+        {
+          "name": "cpu-after-dlclose",
+          "exit_code": 0
+        }
+      ],
+      "dlclose_exercised": true,
+      "component_checks_passed": true
+    },
+    "drivers": {
+      "before": {
+        "size": 61676712,
+        "sha256": "99bc20ca0348de7f5e953fb1ae0400ff482665b373cc5f9d0b2f363ce1da9652",
+        "disk_build_id": "447aaccfe2b0d0004aa660c42cde37150c912f66"
+      },
+      "after": {
+        "size": 61677416,
+        "sha256": "7c8680599df392fbf8ade7a7217b6f28c4d1d71c6376d5049ef2b7213958585e",
+        "disk_build_id": "110b181b97a0182f90b60c1dbbd3fc231db6b1f1"
+      }
+    },
+    "controls": {
+      "before": [
+        {
+          "order": "first-second",
+          "cases": [
+            {
+              "name": "pure-device-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "exit_code": 1,
+              "leak_report": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "exit_code": 1,
+              "leak_report": true,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            }
+          ]
+        },
+        {
+          "order": "second-first",
+          "cases": [
+            {
+              "name": "pure-device-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "order": "first-second",
+          "cases": [
+            {
+              "name": "pure-device-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": false
+            }
+          ]
+        },
+        {
+          "order": "second-first",
+          "cases": [
+            {
+              "name": "pure-device-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-device-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": null,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            },
+            {
+              "name": "pure-draw-without-explicit-validation",
+              "exit_code": 0,
+              "leak_report": false,
+              "smoke_completed": true,
+              "all_pixels_verified": true,
+              "layer_control_verified": true,
+              "identity_errors": [],
+              "lvp_loaded_after_instance_destroy": true
+            }
+          ]
+        }
+      ]
+    },
+    "suites": {
+      "native-ctest.xml": {
+        "total": 117,
+        "passed": 117,
+        "failed": [],
+        "skipped": [],
+        "seconds": 117.95478975,
+        "wayland": [
+          "nexaui_vulkan_wayland_present",
+          "nexaui_vulkan_wayland_draw",
+          "nexaui_vulkan_wayland_timing",
+          "nexaui_vulkan_wayland_ring",
+          "nexaui_wayland_cursor",
+          "nexaui_wayland_repeat",
+          "nexaui_wayland_window",
+          "nexaui_wayland_text_input_v1",
+          "nexaui_wayland_text_input_v3",
+          "nexaui_nexacloud_wayland_native_example",
+          "nexaui_vulkan_wayland_example"
+        ]
+      },
+      "reverse-native-ctest.xml": {
+        "total": 117,
+        "passed": 117,
+        "failed": [],
+        "skipped": [],
+        "seconds": 115.72098833999999,
+        "wayland": [
+          "nexaui_vulkan_wayland_present",
+          "nexaui_vulkan_wayland_draw",
+          "nexaui_vulkan_wayland_timing",
+          "nexaui_vulkan_wayland_ring",
+          "nexaui_wayland_cursor",
+          "nexaui_wayland_repeat",
+          "nexaui_wayland_window",
+          "nexaui_wayland_text_input_v1",
+          "nexaui_wayland_text_input_v3",
+          "nexaui_nexacloud_wayland_native_example",
+          "nexaui_vulkan_wayland_example"
+        ]
+      }
+    },
+    "source_bundle": [
+      {
+        "file": "mesa-25.2.8.tar.xz",
+        "sha256": "097842f3e49d996868b38688db87b006f7d4541e93ce86d2f341d8b3e7be7c93"
+      },
+      {
+        "file": "SPIRV-Tools.tar.gz",
+        "sha256": "5fbd56baf226a04435656bae408287365102b69a24fa73bab8353c5f44b55615"
+      },
+      {
+        "file": "SPIRV-Headers.tar.gz",
+        "sha256": "6d4aad5a86d7d5af144747aee1d616f624897d64d842f282aca7777f84244318"
+      },
+      {
+        "file": "meson.whl",
+        "sha256": "ef02b806ce0c5b6becd5bb5dc9fa67662320b29b337e7ace73e4354500590233"
+      },
+      {
+        "file": "wayland-protocols.tar.xz",
+        "sha256": "2786b6b1b79965e313f2c289c12075b9ed700d41844810c51afda10ee329576b"
+      }
+    ],
+    "run_id": 39496339864,
+    "job_id": 118882253009,
+    "source": "1cea7b94c958a9f4937135f4974857a287a7922f",
+    "url": "https://github.com/Lulus792/NexaUI/actions/runs/39496339864",
+    "artifact_id": 12297732929,
+    "artifact_bytes": 103078211,
+    "scope": "Actual regular CI integration, retaining original failure, component checks, both full native suites and existing diagnostics.",
+    "unmodified_device_observation": "This runner unloads the original device-only driver without a reported CPU leak. Both original draws still leak112bytes. Earlier paired run reports device128/draw240. CPU seeded-alias component negative/positive controls remain mandatory; no CPU-feature cause is inferred from this runner difference.",
+    "module_controls": [
+      {
+        "name": "explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false
+      },
+      {
+        "name": "pure-device-explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": false
+      },
+      {
+        "name": "pure-draw-explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": true,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": false
+      },
+      {
+        "name": "without-explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false
+      },
+      {
+        "name": "pure-device-without-explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": null,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": false
+      },
+      {
+        "name": "pure-draw-without-explicit-validation",
+        "exit_code": 0,
+        "timeout": false,
+        "validation_library_observed": false,
+        "layer_control_verified": true,
+        "smoke_completed": true,
+        "all_pixels_verified": true,
+        "leak_report": false,
+        "snapshots": [
+          "device-created",
+          "draw-completed",
+          "device-destroyed",
+          "instance-destroyed"
+        ],
+        "identity_errors": [],
+        "lvp_loaded_after_instance_destroy": false
+      }
+    ],
+    "repeated_order_gate": [
+      {
+        "order": "first-second",
+        "cases": [
+          {
+            "name": "pure-device-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": null,
+            "lvp_loaded_after_instance_destroy": false
+          },
+          {
+            "name": "pure-draw-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": true,
+            "lvp_loaded_after_instance_destroy": false
+          },
+          {
+            "name": "pure-device-without-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": null,
+            "lvp_loaded_after_instance_destroy": false
+          },
+          {
+            "name": "pure-draw-without-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": true,
+            "lvp_loaded_after_instance_destroy": false
+          }
+        ]
+      },
+      {
+        "order": "second-first",
+        "cases": [
+          {
+            "name": "pure-device-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": null,
+            "lvp_loaded_after_instance_destroy": true
+          },
+          {
+            "name": "pure-draw-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": true,
+            "lvp_loaded_after_instance_destroy": true
+          },
+          {
+            "name": "pure-device-without-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": null,
+            "lvp_loaded_after_instance_destroy": true
+          },
+          {
+            "name": "pure-draw-without-explicit-validation",
+            "exit_code": 0,
+            "leak_report": false,
+            "all_pixels_verified": true,
+            "lvp_loaded_after_instance_destroy": true
+          }
+        ]
+      }
+    ],
+    "jobs": [
+      {
+        "id": 118882253009,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253412,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253508,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253592,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253672,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253676,
+        "name": "core (ubuntu-latest, ON)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882253697,
+        "name": "core (macos-latest, ON)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 118882255416,
+        "name": "fuzz-campaigns",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "id": 118882255880,
+        "name": "windows-asan",
+        "status": "completed",
+        "conclusion": "skipped"
+      }
+    ],
+    "frozen_raw_evidence": "out/mesa-cleanup-v1/ci39496339864; mesa-integrated-ci.zip; mesa-integrated-ci.verified.json"
+  }
 }

@@ -138,8 +138,31 @@ counterexample, explicit Khronos/synchronization validation, independent module
 diagnostics, ordered controls and no-skip Wayland gates remain. Both DSOs and
 their complete corresponding source/notices are retained with the results.
 The standalone paired workflow remains available manually; its duplicate push
-trigger is removed. The new integrated job still needs its own source-specific
-CI result; the standalone result above does not claim to execute that workflow.
+trigger is removed.
+
+[Regular run39496339864](https://github.com/Lulus792/NexaUI/actions/runs/39496339864)
+at source `1cea7b94c958a9f4937135f4974857a287a7922f` completes successfully:
+all six regular static/shared Windows/macOS/Ubuntu jobs and the sanitizer job
+pass. Optional Windows-ASan and fuzz campaigns are skipped. The sanitizer's
+deliberate ASan counterexample is detected; both complete suites pass117/117,
+with no failure/skip/duplicate JUnit records and both seven-case Wayland gates.
+The existing six module controls and eight additional ordered controls pass.
+All pure first-order controls demonstrate actual driver unload. The downloaded
+artifact digest, source bundle, driver hashes/build IDs and records were verified;
+both DSOs are byte-identical to the earlier paired run's corresponding DSOs.
+The integrated records are included separately in the machine receipt.
+
+This runner's unmodified device-only controls unload without a reported CPU
+leak; its unmodified draws still reproduce112bytes in two rtasm allocations.
+That differs from the earlier runner's device128/draw240 observations. The
+builder already permits a device-only zero-leak result while requiring the
+original draw leak and actual unload. The instrumented seeded-alias CPU fixture
+still reproduces the original128-byte leak and verifies the corrected free.
+No CPU-feature explanation for the runner difference is inferred. The first
+local artifact reader assumed all original device controls must leak; its
+failed assertion is retained, and the integrated reader checks these actual
+per-case results instead. No runtime, CI gate or test is rerun or relaxed to
+change the observation.
 
 This is a private CI runtime correction. Unmodified system packages and end-user
 driver installations are not repaired by committing the patch. No upstream
