@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Linux native dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev xvfb xauth weston libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev xvfb xauth weston openbox libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
       - name: Prepare present-fence-aware Vulkan validation
         if: runner.os == 'Linux'
         run: python tools/prepare_ci_validation.py "$RUNNER_TEMP/nexaui-validation" --github-env "$GITHUB_ENV"
@@ -130,7 +130,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y
           libx11-dev libxext-dev libwayland-dev libwayland-bin libxkbcommon-dev
           wayland-protocols pkg-config dbus libdbus-1-dev at-spi2-core libatspi2.0-dev
-          xvfb xauth weston libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
+          xvfb xauth weston openbox libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers zstd
           bison flex patch glslang-tools llvm-20-dev python3-mako python3-yaml python3-packaging
           libdrm-dev libx11-xcb-dev libxcb-dri3-dev libxcb-present-dev libxcb-randr0-dev
           libxcb-shm0-dev libxcb-sync-dev libxcb-xfixes0-dev libxshmfence-dev

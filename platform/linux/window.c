@@ -142,6 +142,46 @@ nx_result nx_window_get_reduced_motion(nx_window *window, int *out_enabled) {
         nx_x11_window_get_reduced_motion(window->native.x11, out_enabled);
 }
 
+nx_result nx_window_get_status(nx_window *window, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_get_status(window->native.wayland, out) : nx_x11_window_get_status(window->native.x11, out);
+}
+
+nx_result nx_window_minimize(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_minimize(window->native.wayland) : nx_x11_window_minimize(window->native.x11);
+}
+nx_result nx_window_maximize(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_maximize(window->native.wayland) : nx_x11_window_maximize(window->native.x11);
+}
+nx_result nx_window_restore(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_restore(window->native.wayland) : nx_x11_window_restore(window->native.x11);
+}
+nx_result nx_window_begin_move(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_begin_move(window->native.wayland) : nx_x11_window_begin_move(window->native.x11);
+}
+nx_result nx_window_begin_resize(nx_window *window, nx_window_resize_edge edge) {
+    if (!window || edge < NX_WINDOW_RESIZE_TOP_LEFT || edge > NX_WINDOW_RESIZE_LEFT) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return window->backend == NX_LINUX_WAYLAND ?
+        nx_wayland_window_begin_resize(window->native.wayland, edge) : nx_x11_window_begin_resize(window->native.x11, edge);
+}
+
 nx_result nx_window_set_ime_rect(nx_window *window, nx_rect caret) {
     if (!window) return NX_ERROR_ARGUMENT;
     return window->backend == NX_LINUX_WAYLAND ?

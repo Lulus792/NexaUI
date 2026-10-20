@@ -618,6 +618,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         case NX_EVENT_IME_DELETE_SURROUNDING:
         case NX_EVENT_IME_DELETE_RANGE:
         case NX_EVENT_RESIZE:
+        case NX_EVENT_WINDOW_STATE:
         case NX_EVENT_TOUCH_DOWN:
         case NX_EVENT_TOUCH_MOVE:
         case NX_EVENT_TOUCH_UP:
@@ -700,6 +701,10 @@ static int nx_valid_event(const nx_event *event) {
         return isfinite(event->width) && isfinite(event->height) &&
                isfinite(event->scale) && event->width >= 0 &&
                event->height >= 0 && event->scale > 0;
+    case NX_EVENT_WINDOW_STATE:
+        return !(event->window_state & ~(NX_WINDOW_STATE_MINIMIZED |
+            NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN |
+            NX_WINDOW_STATE_ACTIVE));
     default:
         return 0;
     }

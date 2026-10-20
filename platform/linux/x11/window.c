@@ -4,6 +4,7 @@
 #include "event_queue.h"
 #include "backend.h"
 #include "uri_list.h"
+#include "window_management.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -17,6 +18,7 @@
 #include <poll.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -73,6 +75,8 @@ struct nx_x11_window {
     float scale;
     float width, height;
     int should_close, alive;
+    uint32_t flags, reported_state;
+    int left_pressed, press_root_x, press_root_y;
     int detectable_repeat;
     unsigned char keys_down[256];
     char *ime_preedit;
@@ -84,6 +88,7 @@ struct nx_x11_window {
 
 static _Thread_local nx_x11_window *nx_x11_thread_windows;
 static uint64_t nx_x11_now_ns(void);
+static void nx_x11_report_state(nx_x11_window *window);
 
 static void nx_x11_preedit_clear(nx_x11_window *window) {
     int changed = window->ime_preedit != NULL;
@@ -886,6 +891,18 @@ static void nx_x11_dnd_drop(nx_x11_window *window,
 static nx_result nx_x11_process_drop(nx_x11_window *window);
 
 static void nx_x11_dispatch(nx_x11_window *window, XEvent *native) {
+    if (native->type == PropertyNotify && (window->flags & NX_WINDOW_STATE_EVENTS)) {
+        Atom state = XInternAtom(window->display, "_NET_WM_STATE", False);
+        Atom iconic = XInternAtom(window->display, "WM_STATE", False);
+        Atom active = XInternAtom(window->display, "_NET_ACTIVE_WINDOW", False);
+        if ((native->xproperty.window == window->xid &&
+             (native->xproperty.atom == state || native->xproperty.atom == iconic)) ||
+            (native->xproperty.window == DefaultRootWindow(window->display) &&
+             native->xproperty.atom == active)) {
+            nx_x11_report_state(window);
+            return;
+        }
+    }
     if (native->type == PropertyNotify &&
         native->xproperty.state == PropertyDelete &&
         native->xproperty.window != window->xid) {
@@ -986,6 +1003,7 @@ static void nx_x11_dispatch(nx_x11_window *window, XEvent *native) {
         }
         if (!event.focused) memset(window->keys_down, 0,
                                    sizeof(window->keys_down));
+        if (!event.focused) window->left_pressed = 0;
         nx_platform_event_queue_push(&window->event_queue, event);
         break;
     case MotionNotify:
@@ -1013,6 +1031,11 @@ static void nx_x11_dispatch(nx_x11_window *window, XEvent *native) {
         }
         event.button = nx_x11_button(button);
         if (!event.button) break;
+        if (event.button == NX_BUTTON_LEFT) {
+            window->left_pressed = native->type == ButtonPress;
+            window->press_root_x = native->xbutton.x_root;
+            window->press_root_y = native->xbutton.y_root;
+        }
         event.type = native->type == ButtonPress ?
             NX_EVENT_POINTER_DOWN : NX_EVENT_POINTER_UP;
         event.x = (float)native->xbutton.x / window->scale;
@@ -1032,7 +1055,7 @@ nx_result nx_x11_window_create(const nx_window_desc *desc, nx_x11_window **out_w
     *out_window = NULL;
     if (!desc || !isfinite(desc->width) || !isfinite(desc->height) ||
         desc->width <= 0.0f || desc->height <= 0.0f ||
-        (desc->flags & ~NX_WINDOW_HIDDEN)) return NX_ERROR_ARGUMENT;
+        (desc->flags & ~NX_WINDOW_FLAGS_ALL)) return NX_ERROR_ARGUMENT;
     double width = ceil((double)desc->width);
     double height = ceil((double)desc->height);
     if (width > UINT16_MAX || height > UINT16_MAX) return NX_ERROR_LIMIT;
@@ -1054,6 +1077,7 @@ nx_result nx_x11_window_create(const nx_window_desc *desc, nx_x11_window **out_w
     if (!window) return NX_ERROR_MEMORY;
     memset(window, 0, sizeof(*window));
     window->allocator = allocator;
+    window->flags = desc->flags;
     window->owner_thread = pthread_self();
     window->scale = 1.0f;
     window->width = (float)width;
@@ -1075,6 +1099,14 @@ nx_result nx_x11_window_create(const nx_window_desc *desc, nx_x11_window **out_w
                   WhitePixel(window->display, DefaultScreen(window->display)));
     if (!window->xid) { result = NX_ERROR_PLATFORM; goto fail; }
     window->alive = 1;
+    if (desc->flags & NX_WINDOW_CLIENT_CHROME) {
+        Atom motif = XInternAtom(window->display, "_MOTIF_WM_HINTS", False);
+        unsigned long hints[5] = {2, 0, 0, 0, 0};
+        XChangeProperty(window->display, window->xid, motif, motif, 32,
+            PropModeReplace, (const unsigned char *)hints, 5);
+    }
+    if (desc->flags & NX_WINDOW_STATE_EVENTS)
+        XSelectInput(window->display, DefaultRootWindow(window->display), PropertyChangeMask);
     XSelectInput(window->display, window->xid,
         StructureNotifyMask | FocusChangeMask | PointerMotionMask |
         ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask |
@@ -1205,6 +1237,168 @@ nx_result nx_x11_window_get_info(nx_x11_window *window, nx_window_info *out_info
                                  window->height / window->scale,
                                  window->scale, window->should_close};
     return NX_OK;
+}
+
+static nx_result nx_x11_management_ready(nx_x11_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    return nx_x11_on_owner_thread(window) && window->alive && !window->should_close ? NX_OK : NX_ERROR_STATE;
+}
+
+static int nx_x11_atoms(nx_x11_window *window, Window target, const char *name,
+    Atom expected, Atom *values, size_t capacity, size_t *count) {
+    Atom actual = None; int format = 0;
+    unsigned long n = 0, remaining = 0; unsigned char *bytes = NULL;
+    *count = 0;
+    int result = XGetWindowProperty(window->display, target,
+        XInternAtom(window->display, name, False), 0, (long)capacity,
+        False, expected, &actual, &format, &n, &remaining, &bytes);
+    int valid = result == Success && actual == expected && format == 32 &&
+        n <= capacity && !remaining;
+    if (valid) {
+        if (n) memcpy(values, bytes, (size_t)n * sizeof(Atom));
+        *count = (size_t)n;
+    }
+    if (bytes) XFree(bytes);
+    return valid;
+}
+
+static int nx_x11_supported(nx_x11_window *window, const char *name) {
+    Atom atoms[512]; size_t count = 0;
+    if (!nx_x11_atoms(window, DefaultRootWindow(window->display), "_NET_SUPPORTED",
+                     XA_ATOM, atoms, 512, &count)) return 0;
+    Atom atom = XInternAtom(window->display, name, False);
+    for (size_t i = 0; i < count; ++i) if (atoms[i] == atom) return 1;
+    return 0;
+}
+
+nx_result nx_x11_window_get_status(nx_x11_window *window, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    nx_result result = nx_x11_management_ready(window);
+    if (result != NX_OK) return result;
+    out->client_chrome = !!(window->flags & NX_WINDOW_CLIENT_CHROME);
+    out->capabilities = NX_WINDOW_CAP_CLIENT_CHROME;
+    char selection[32];
+    snprintf(selection, sizeof(selection), "WM_S%d", DefaultScreen(window->display));
+    if (XGetSelectionOwner(window->display, XInternAtom(window->display, selection, False)) == None)
+        return NX_OK;
+    out->capabilities |= NX_WINDOW_CAP_MINIMIZE | NX_WINDOW_CAP_RESTORE | NX_WINDOW_CAP_RESTORE_MINIMIZED;
+    if (nx_x11_supported(window, "_NET_WM_STATE_MAXIMIZED_VERT") &&
+        nx_x11_supported(window, "_NET_WM_STATE_MAXIMIZED_HORZ"))
+        out->capabilities |= NX_WINDOW_CAP_MAXIMIZE;
+    if (nx_x11_supported(window, "_NET_WM_MOVERESIZE"))
+        out->capabilities |= NX_WINDOW_CAP_MOVE | NX_WINDOW_CAP_RESIZE;
+    Atom values[512]; size_t count = 0;
+    Atom wm_state = XInternAtom(window->display, "WM_STATE", False);
+    if (nx_x11_atoms(window, window->xid, "WM_STATE", wm_state, values, 2, &count) && count) {
+        out->known |= NX_WINDOW_STATE_MINIMIZED;
+        if (values[0] == IconicState) out->state |= NX_WINDOW_STATE_MINIMIZED;
+    }
+    if (nx_x11_atoms(window, window->xid, "_NET_WM_STATE", XA_ATOM, values, 512, &count)) {
+        int horizontal = 0, vertical = 0;
+        Atom h = XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+        Atom v = XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+        Atom f = XInternAtom(window->display, "_NET_WM_STATE_FULLSCREEN", False);
+        out->known |= NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN;
+        for (size_t i = 0; i < count; ++i) {
+            horizontal |= values[i] == h; vertical |= values[i] == v;
+            if (values[i] == f) out->state |= NX_WINDOW_STATE_FULLSCREEN;
+        }
+        if (horizontal && vertical) out->state |= NX_WINDOW_STATE_MAXIMIZED;
+    }
+    if (nx_x11_atoms(window, DefaultRootWindow(window->display), "_NET_ACTIVE_WINDOW",
+                     XA_WINDOW, values, 1, &count) && count == 1) {
+        out->known |= NX_WINDOW_STATE_ACTIVE;
+        if (values[0] == window->xid) out->state |= NX_WINDOW_STATE_ACTIVE;
+    }
+    return NX_OK;
+}
+
+static void nx_x11_report_state(nx_x11_window *window) {
+    nx_window_status status;
+    if (nx_x11_window_get_status(window, &status) == NX_OK)
+        nx_window_state_event(&window->event_queue, window->flags,
+            &window->reported_state, status.state);
+}
+
+static nx_result nx_x11_send_management(nx_x11_window *window, const char *name,
+    long a, long b, long c, long d, long e) {
+    XEvent event = {0}; event.xclient.type = ClientMessage;
+    event.xclient.display = window->display; event.xclient.window = window->xid;
+    event.xclient.message_type = XInternAtom(window->display, name, False);
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = a; event.xclient.data.l[1] = b; event.xclient.data.l[2] = c;
+    event.xclient.data.l[3] = d; event.xclient.data.l[4] = e;
+    if (!XSendEvent(window->display, DefaultRootWindow(window->display), False,
+                   SubstructureRedirectMask | SubstructureNotifyMask, &event)) return NX_ERROR_PLATFORM;
+    XFlush(window->display);
+    return NX_OK;
+}
+
+nx_result nx_x11_window_minimize(nx_x11_window *window) {
+    nx_window_status status;
+    nx_result result = nx_x11_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_MINIMIZE)) return NX_ERROR_UNSUPPORTED;
+    if (!XIconifyWindow(window->display, window->xid, DefaultScreen(window->display))) return NX_ERROR_PLATFORM;
+    XFlush(window->display); return NX_OK;
+}
+
+nx_result nx_x11_window_maximize(nx_x11_window *window) {
+    nx_window_status status;
+    nx_result result = nx_x11_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_MAXIMIZE)) return NX_ERROR_UNSUPPORTED;
+    return nx_x11_send_management(window, "_NET_WM_STATE", 1,
+        (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False),
+        (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_VERT", False), 1, 0);
+}
+
+nx_result nx_x11_window_restore(nx_x11_window *window) {
+    nx_window_status status;
+    nx_result result = nx_x11_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_RESTORE)) return NX_ERROR_UNSUPPORTED;
+    if (status.capabilities & NX_WINDOW_CAP_MAXIMIZE) {
+        result = nx_x11_send_management(window, "_NET_WM_STATE", 0,
+            (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False),
+            (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_VERT", False), 1, 0);
+        if (result != NX_OK) return result;
+    }
+    if (nx_x11_supported(window, "_NET_WM_STATE_FULLSCREEN")) {
+        result = nx_x11_send_management(window, "_NET_WM_STATE", 0,
+            (long)XInternAtom(window->display, "_NET_WM_STATE_FULLSCREEN", False), 0, 1, 0);
+        if (result != NX_OK) return result;
+    }
+    if (status.state & NX_WINDOW_STATE_MINIMIZED) XMapWindow(window->display, window->xid);
+    XFlush(window->display); return NX_OK;
+}
+
+static nx_result nx_x11_begin_native(nx_x11_window *window, long direction) {
+    nx_result result = nx_x11_management_ready(window);
+    if (result != NX_OK) return result;
+    if (!window->left_pressed || window->should_close) return NX_ERROR_STATE;
+    nx_window_status status;
+    result = nx_x11_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & (direction == 8 ? NX_WINDOW_CAP_MOVE : NX_WINDOW_CAP_RESIZE)))
+        return NX_ERROR_UNSUPPORTED;
+    if (direction != 8 && (status.state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN)))
+        return NX_ERROR_STATE;
+    XUngrabPointer(window->display, CurrentTime);
+    result = nx_x11_send_management(window, "_NET_WM_MOVERESIZE",
+        window->press_root_x, window->press_root_y, direction, 1, 1);
+    if (result == NX_OK) {
+        window->left_pressed = 0;
+        nx_event cancel = {0}; cancel.type = NX_EVENT_POINTER_CANCEL;
+        nx_platform_event_queue_push(&window->event_queue, cancel);
+    }
+    return result == NX_OK ? window->event_queue.error : result;
+}
+
+nx_result nx_x11_window_begin_move(nx_x11_window *window) { return nx_x11_begin_native(window, 8); }
+nx_result nx_x11_window_begin_resize(nx_x11_window *window, nx_window_resize_edge edge) {
+    return nx_window_edge_valid(edge) ? nx_x11_begin_native(window, edge - 1) : NX_ERROR_ARGUMENT;
 }
 
 nx_result nx_x11_window_set_cursor(nx_x11_window *window, nx_cursor_shape shape) {

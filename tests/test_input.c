@@ -13,6 +13,7 @@ typedef struct prior_event_layout {
 } prior_event_layout;
 _Static_assert(sizeof(nx_event)==sizeof(prior_event_layout),"event ABI size");
 _Static_assert(offsetof(nx_event,text_command)==offsetof(prior_event_layout,scalar),"event payload ABI");
+_Static_assert(offsetof(nx_event,window_state)==offsetof(prior_event_layout,scalar),"window state payload ABI");
 _Static_assert(offsetof(nx_event,ime_target)==offsetof(prior_event_layout,ime_target),"event target ABI");
 
 #ifdef _WIN32
@@ -286,6 +287,20 @@ static int test_consumed_key_and_text_command(void) {
 }
 
 int main(void) {
+    nx_context *state_context=NULL;
+    CHECK(nx_context_create(NULL,&state_context)==NX_OK);
+    nx_event state_event={0}; state_event.type=NX_EVENT_WINDOW_STATE;
+    state_event.window_state=NX_WINDOW_STATE_MAXIMIZED|NX_WINDOW_STATE_ACTIVE;
+    CHECK(nx_context_queue_event(state_context,&state_event)==NX_OK);
+    state_event.window_state=0x80000000u;
+    CHECK(nx_context_queue_event(state_context,&state_event)==NX_ERROR_ARGUMENT);
+    CHECK(nx_begin_frame(state_context,100,100,0)==NX_OK);
+    const nx_event *state_events; size_t state_count;
+    CHECK(nx_frame_events(state_context,&state_events,&state_count)==NX_OK && state_count==1 &&
+        state_events[0].window_state==(NX_WINDOW_STATE_MAXIMIZED|NX_WINDOW_STATE_ACTIVE));
+    nx_input_snapshot state_input;
+    CHECK(nx_frame_input(state_context,&state_input)==NX_OK && !state_input.buttons_down && !state_input.focused);
+    CHECK(nx_end_frame(state_context)==NX_OK); nx_context_destroy(state_context);
     if (test_consumed_key_and_text_command()) return 1;
     if (test_frame_transitions()) return 1;
     if (test_focus_and_validation()) return 1;

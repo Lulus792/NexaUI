@@ -7,6 +7,8 @@
 #include "uri_list.h"
 #include "../../../src/secure_zero.h"
 #include "xdg-shell-client-protocol.h"
+#include "xdg-decoration-client-protocol.h"
+#include "window_management.h"
 #include "text-input-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
@@ -119,6 +121,9 @@ struct nx_wayland_window {
     struct wl_surface *cursor_surface;
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *toplevel;
+    struct zxdg_decoration_manager_v1 *decoration_manager;
+    struct zxdg_toplevel_decoration_v1 *decoration;
+    uint32_t decoration_mode;
     nx_wayland_buffer *buffers;
     nx_wayland_output *outputs;
     nx_wayland_clipboard_source *sources, *owned_source;
@@ -136,6 +141,10 @@ struct nx_wayland_window {
     int pending_width, pending_height;
     int configured, should_close, hidden, buffer_attached;
     int external_renderer;
+    uint32_t flags, state, pending_state, reported_state, wm_caps;
+    int wm_caps_known;
+    uint32_t left_serial;
+    int left_pressed;
     int pointer_inside;
     uint32_t pointer_serial;
     nx_cursor_shape cursor_shape;
@@ -560,7 +569,16 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
     else if (!strcmp(interface, xdg_wm_base_interface.name) &&
              !window->wm_base)
         window->wm_base = wl_registry_bind(registry, name,
-            &xdg_wm_base_interface, 1);
+            &xdg_wm_base_interface,
+#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+            version < 5 ? version : 5);
+#else
+            1);
+#endif
+    else if (!strcmp(interface, zxdg_decoration_manager_v1_interface.name) &&
+             (window->flags & NX_WINDOW_CLIENT_CHROME) && !window->decoration_manager)
+        window->decoration_manager = wl_registry_bind(registry, name,
+            &zxdg_decoration_manager_v1_interface, 1);
     else if (!strcmp(interface, wl_shm_interface.name) && !window->shm)
         window->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
     else if (!strcmp(interface, wl_seat_interface.name) && !window->seat &&
@@ -648,6 +666,7 @@ static void nx_wayland_pointer_leave(void *data, struct wl_pointer *pointer,
     (void)serial;
     if (surface == window->surface) {
         window->pointer_inside = 0;
+        window->left_pressed = 0;
         window->axis_x = window->axis_y = 0.0f;
         window->axis_steps_x = window->axis_steps_y = 0;
     }
@@ -687,6 +706,10 @@ static void nx_wayland_pointer_button(void *data, struct wl_pointer *pointer,
     case BTN_SIDE: logical = NX_BUTTON_X1; break;
     case BTN_EXTRA: logical = NX_BUTTON_X2; break;
     default: return;
+    }
+    if (logical == NX_BUTTON_LEFT) {
+        window->left_pressed = state == WL_POINTER_BUTTON_STATE_PRESSED;
+        if (window->left_pressed) window->left_serial = serial;
     }
     nx_event event = {0};
     event.type = state == WL_POINTER_BUTTON_STATE_PRESSED ?
@@ -1658,6 +1681,7 @@ static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_release(window->pointer);
         window->pointer = NULL;
         window->pointer_inside = 0;
+        window->left_pressed = 0;
         window->selection_serial = 0;
     }
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !window->keyboard) {
@@ -1833,9 +1857,15 @@ static void nx_wayland_toplevel_configure(void *data,
                                           struct wl_array *states) {
     nx_wayland_window *window = (nx_wayland_window *)data;
     (void)toplevel;
-    (void)states;
     window->pending_width = width;
     window->pending_height = height;
+    window->pending_state = 0;
+    if (states && states->data) for (size_t i = 0; i + sizeof(uint32_t) <= states->size; i += sizeof(uint32_t)) {
+        uint32_t state; memcpy(&state, (const char *)states->data + i, sizeof(state));
+        if (state == XDG_TOPLEVEL_STATE_MAXIMIZED) window->pending_state |= NX_WINDOW_STATE_MAXIMIZED;
+        if (state == XDG_TOPLEVEL_STATE_FULLSCREEN) window->pending_state |= NX_WINDOW_STATE_FULLSCREEN;
+        if (state == XDG_TOPLEVEL_STATE_ACTIVATED) window->pending_state |= NX_WINDOW_STATE_ACTIVE;
+    }
 }
 
 static void nx_wayland_toplevel_close(void *data,
@@ -1845,8 +1875,40 @@ static void nx_wayland_toplevel_close(void *data,
     window->should_close = 1;
 }
 
+#ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
+static void nx_wayland_configure_bounds(void *data, struct xdg_toplevel *top, int32_t width, int32_t height) {
+    (void)data; (void)top; (void)width; (void)height;
+}
+#endif
+#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+static void nx_wayland_wm_caps(void *data, struct xdg_toplevel *top, struct wl_array *caps) {
+    nx_wayland_window *window = data; (void)top;
+    window->wm_caps = 0; window->wm_caps_known = 1;
+    if (caps && caps->data) for (size_t i = 0; i + sizeof(uint32_t) <= caps->size; i += sizeof(uint32_t)) {
+        uint32_t cap; memcpy(&cap, (const char *)caps->data + i, sizeof(cap));
+        if (cap == XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE) window->wm_caps |= NX_WINDOW_CAP_MAXIMIZE;
+        if (cap == XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE) window->wm_caps |= NX_WINDOW_CAP_MINIMIZE;
+    }
+}
+#endif
 static const struct xdg_toplevel_listener nx_wayland_toplevel_listener = {
-    nx_wayland_toplevel_configure, nx_wayland_toplevel_close, NULL, NULL
+    .configure = nx_wayland_toplevel_configure, .close = nx_wayland_toplevel_close,
+#ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
+    .configure_bounds = nx_wayland_configure_bounds,
+#endif
+#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+    .wm_capabilities = nx_wayland_wm_caps,
+#endif
+};
+
+static void nx_wayland_decoration_configure(void *data, struct zxdg_toplevel_decoration_v1 *decoration, uint32_t mode) {
+    nx_wayland_window *window = data; (void)decoration;
+    window->decoration_mode = mode;
+    if (window->configured && mode != ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE)
+        window->error = NX_ERROR_UNSUPPORTED;
+}
+static const struct zxdg_toplevel_decoration_v1_listener nx_wayland_decoration_listener = {
+    nx_wayland_decoration_configure
 };
 
 static void nx_wayland_surface_configure(void *data,
@@ -1854,6 +1916,11 @@ static void nx_wayland_surface_configure(void *data,
                                          uint32_t serial) {
     nx_wayland_window *window = (nx_wayland_window *)data;
     xdg_surface_ack_configure(xdg_surface, serial);
+    if (window->decoration && window->decoration_mode != ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE)
+        window->error = NX_ERROR_UNSUPPORTED;
+    window->state = window->pending_state;
+    nx_window_state_event(&window->event_queue, window->flags,
+        &window->reported_state, window->state);
     int width = window->pending_width > 0 ? window->pending_width :
                 window->width;
     int height = window->pending_height > 0 ? window->pending_height :
@@ -1889,7 +1956,7 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
     *out_window = NULL;
     if (!desc || !isfinite(desc->width) || !isfinite(desc->height) ||
         desc->width <= 0 || desc->height <= 0 ||
-        (desc->flags & ~NX_WINDOW_HIDDEN)) return NX_ERROR_ARGUMENT;
+        (desc->flags & ~NX_WINDOW_FLAGS_ALL)) return NX_ERROR_ARGUMENT;
     double width = ceil((double)desc->width);
     double height = ceil((double)desc->height);
     if (width > UINT16_MAX || height > UINT16_MAX) return NX_ERROR_LIMIT;
@@ -1917,6 +1984,7 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
     window->height = (int)height;
     window->scale = 1;
     window->hidden = (desc->flags & NX_WINDOW_HIDDEN) != 0;
+    window->flags = desc->flags;
     nx_result result = nx_platform_event_queue_init(&window->event_queue,
                                                      allocator, 64u);
     if (result != NX_OK) goto fail;
@@ -1987,6 +2055,16 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
         goto fail;
     }
     xdg_toplevel_set_title(window->toplevel, title);
+    if (window->decoration_manager) {
+        window->decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(
+            window->decoration_manager, window->toplevel);
+        if (!window->decoration || zxdg_toplevel_decoration_v1_add_listener(window->decoration,
+                &nx_wayland_decoration_listener, window) != 0) {
+            result = NX_ERROR_PLATFORM; goto fail;
+        }
+        zxdg_toplevel_decoration_v1_set_mode(window->decoration,
+            ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
+    }
     xdg_toplevel_set_app_id(window->toplevel, "nexaui");
     xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
                                      window->width, window->height);
@@ -1995,6 +2073,9 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
         window->error != NX_OK) {
         result = window->error != NX_OK ? window->error : NX_ERROR_PLATFORM;
         goto fail;
+    }
+    if (window->decoration && window->decoration_mode != ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+        result = NX_ERROR_UNSUPPORTED; goto fail;
     }
     *out_window = window;
     window->thread_next = nx_wayland_thread_windows;
@@ -2073,6 +2154,80 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                  (float)window->height, (float)window->scale,
                                  window->should_close};
     return NX_OK;
+}
+
+static nx_result nx_wayland_management_ready(nx_wayland_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window) || !window->toplevel || window->should_close)
+        return NX_ERROR_STATE;
+    return window->error;
+}
+
+nx_result nx_wayland_window_get_status(nx_wayland_window *window, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    nx_result result = nx_wayland_management_ready(window);
+    if (result != NX_OK) return result;
+    out->state = window->state;
+    out->known = NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN | NX_WINDOW_STATE_ACTIVE;
+    out->client_chrome = !!(window->flags & NX_WINDOW_CLIENT_CHROME);
+    out->capabilities = NX_WINDOW_CAP_CLIENT_CHROME | NX_WINDOW_CAP_RESTORE;
+    if (window->seat && window->pointer) out->capabilities |= NX_WINDOW_CAP_MOVE | NX_WINDOW_CAP_RESIZE;
+    out->capabilities |= window->wm_caps_known ? window->wm_caps :
+        NX_WINDOW_CAP_MINIMIZE | NX_WINDOW_CAP_MAXIMIZE;
+    return NX_OK;
+}
+
+static nx_result nx_wayland_management_flush(nx_wayland_window *window) {
+    return wl_display_flush(window->display) >= 0 || errno == EAGAIN ? NX_OK : NX_ERROR_PLATFORM;
+}
+
+nx_result nx_wayland_window_minimize(nx_wayland_window *window) {
+    nx_window_status status; nx_result result = nx_wayland_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_MINIMIZE)) return NX_ERROR_UNSUPPORTED;
+    xdg_toplevel_set_minimized(window->toplevel);
+    return nx_wayland_management_flush(window);
+}
+
+nx_result nx_wayland_window_maximize(nx_wayland_window *window) {
+    nx_window_status status; nx_result result = nx_wayland_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_MAXIMIZE)) return NX_ERROR_UNSUPPORTED;
+    xdg_toplevel_set_maximized(window->toplevel);
+    return nx_wayland_management_flush(window);
+}
+
+nx_result nx_wayland_window_restore(nx_wayland_window *window) {
+    nx_result result = nx_wayland_management_ready(window);
+    if (result != NX_OK) return result;
+    xdg_toplevel_unset_maximized(window->toplevel);
+    xdg_toplevel_unset_fullscreen(window->toplevel);
+    return nx_wayland_management_flush(window);
+}
+
+static nx_result nx_wayland_begin_native(nx_wayland_window *window, uint32_t edge) {
+    nx_result result = nx_wayland_management_ready(window);
+    if (result != NX_OK) return result;
+    if (!window->left_pressed || !window->pointer_inside || window->hidden) return NX_ERROR_STATE;
+    if (!window->seat || !window->pointer) return NX_ERROR_UNSUPPORTED;
+    if (edge && (window->state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN))) return NX_ERROR_STATE;
+    nx_event cancel = {0}; cancel.type = NX_EVENT_POINTER_CANCEL;
+    nx_platform_event_queue_push(&window->event_queue, cancel);
+    if (window->event_queue.error != NX_OK) return window->event_queue.error;
+    window->left_pressed = 0;
+    if (edge) xdg_toplevel_resize(window->toplevel, window->seat, window->left_serial, edge);
+    else xdg_toplevel_move(window->toplevel, window->seat, window->left_serial);
+    return nx_wayland_management_flush(window);
+}
+
+nx_result nx_wayland_window_begin_move(nx_wayland_window *window) { return nx_wayland_begin_native(window, 0); }
+nx_result nx_wayland_window_begin_resize(nx_wayland_window *window, nx_window_resize_edge edge) {
+    if (!nx_window_edge_valid(edge)) return NX_ERROR_ARGUMENT;
+    static const uint32_t edges[] = {XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT, XDG_TOPLEVEL_RESIZE_EDGE_TOP,
+        XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT, XDG_TOPLEVEL_RESIZE_EDGE_RIGHT, XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT,
+        XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM, XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT, XDG_TOPLEVEL_RESIZE_EDGE_LEFT};
+    return nx_wayland_begin_native(window, edges[edge - 1]);
 }
 
 nx_result nx_wayland_window_set_external_renderer(nx_wayland_window *window,
@@ -2592,6 +2747,8 @@ void nx_wayland_window_destroy(nx_wayland_window *window) {
                                      sizeof(*buffer));
         buffer = next;
     }
+    if (window->decoration) zxdg_toplevel_decoration_v1_destroy(window->decoration);
+    if (window->decoration_manager) zxdg_decoration_manager_v1_destroy(window->decoration_manager);
     if (window->toplevel) xdg_toplevel_destroy(window->toplevel);
     if (window->xdg_surface) xdg_surface_destroy(window->xdg_surface);
     nx_wayland_ime_deactivate(window);

@@ -1,4 +1,4 @@
-"""Require actual successful execution of every native Wayland CTest case."""
+"""Require actual execution of Wayland and native window-management cases."""
 import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -8,6 +8,9 @@ REQUIRED = (
     'nexaui_vulkan_wayland_timing', 'nexaui_vulkan_wayland_ring',
     'nexaui_wayland_window', 'nexaui_nexacloud_wayland_native_example',
     'nexaui_vulkan_wayland_example',
+    'nexaui_wayland_management',
+    'nexaui_wayland_management_native',
+    'nexaui_x11_management', 'nexaui_x11_management_native',
 )
 
 
@@ -23,7 +26,7 @@ def main():
         case = matching[0]
         if case.get('status') not in (None, 'run') or any(case.find(tag) is not None for tag in ('failure', 'error', 'skipped')):
             parser.error(f'{name}: did not execute successfully (skips are not acceptance)')
-    print('Native Wayland: all 7 required cases executed successfully; no skips.')
+    print(f'Native Wayland/window management: all {len(REQUIRED)} required cases executed successfully; no skips.')
     return 0
 
 

@@ -11,6 +11,7 @@
 #include "accessibility.h"
 #include "event_queue.h"
 #include "drop_queue.h"
+#include "window_management.h"
 
 #include <limits.h>
 #include <math.h>
@@ -28,6 +29,8 @@ struct nx_window {
     nx_platform_event_queue event_queue;
     nx_platform_drop_queue drop_queue;
     uint32_t pointer_buttons;
+    uint32_t flags, reported_state;
+    POINT left_press;
     uint16_t pending_high_surrogate;
     char *ime_preedit;
     size_t ime_preedit_length;
@@ -359,6 +362,34 @@ static void nx_window_emit_utf16(nx_window *window, uint16_t unit) {
     }
 }
 
+static uint32_t nx_window_native_state(nx_window *window) {
+    return (IsIconic(window->hwnd) ? NX_WINDOW_STATE_MINIMIZED : 0u) |
+        (IsZoomed(window->hwnd) ? NX_WINDOW_STATE_MAXIMIZED : 0u) |
+        (GetActiveWindow() == window->hwnd ? NX_WINDOW_STATE_ACTIVE : 0u);
+}
+
+static void nx_window_report_state(nx_window *window) {
+    nx_window_state_event(&window->event_queue, window->flags,
+        &window->reported_state, nx_window_native_state(window));
+}
+
+static LRESULT nx_window_client_hit(nx_window *window, LPARAM position) {
+    RECT rect;
+    if (IsZoomed(window->hwnd) || !GetWindowRect(window->hwnd, &rect)) return HTCLIENT;
+    UINT dpi = GetDpiForWindow(window->hwnd);
+    if (!dpi) dpi = 96;
+    int border = GetSystemMetricsForDpi(SM_CXSIZEFRAME, dpi) +
+        GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+    int x = GET_X_LPARAM(position), y = GET_Y_LPARAM(position);
+    int left = x >= rect.left && x < rect.left + border;
+    int right = x < rect.right && x >= rect.right - border;
+    int top = y >= rect.top && y < rect.top + border;
+    int bottom = y < rect.bottom && y >= rect.bottom - border;
+    if (top) return left ? HTTOPLEFT : right ? HTTOPRIGHT : HTTOP;
+    if (bottom) return left ? HTBOTTOMLEFT : right ? HTBOTTOMRIGHT : HTBOTTOM;
+    return left ? HTLEFT : right ? HTRIGHT : HTCLIENT;
+}
+
 static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     nx_window *window = (nx_window *)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
     if (message == WM_NCCREATE) {
@@ -368,6 +399,19 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)window);
     }
     if (window) {
+        if ((window->flags & NX_WINDOW_CLIENT_CHROME) && message == WM_NCCALCSIZE) {
+            RECT *client = wparam ? &((NCCALCSIZE_PARAMS *)lparam)->rgrc[0] : (RECT *)lparam;
+            if (IsZoomed(hwnd)) {
+                MONITORINFO monitor = {0}; monitor.cbSize = sizeof(monitor);
+                RECT clipped;
+                if (GetMonitorInfoW(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitor) &&
+                    IntersectRect(&clipped, client, &monitor.rcWork))
+                    *client = clipped;
+            }
+            return 0;
+        }
+        if ((window->flags & NX_WINDOW_CLIENT_CHROME) && message == WM_NCHITTEST)
+            return nx_window_client_hit(window, lparam);
         if (message == WM_IME_SETCONTEXT) {
             window->ime_context_active = !!wparam;
             window->ime_context_options = lparam;
@@ -387,6 +431,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             return 0;
         }
         if (message == WM_SIZE) {
+            nx_window_report_state(window);
             nx_uia_geometry(window->accessibility);
             nx_window_emit_resize(window);
             return 0;
@@ -407,6 +452,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             return 0;
         }
         if (message == WM_SETFOCUS || message == WM_KILLFOCUS) {
+            nx_window_report_state(window);
             nx_uia_geometry(window->accessibility);
             nx_event event = {0};
             event.type = NX_EVENT_FOCUS;
@@ -485,6 +531,10 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
                        message == WM_MBUTTONDOWN || message == WM_XBUTTONDOWN;
             if (down) {
                 window->pointer_buttons |= button;
+                if (button == NX_BUTTON_LEFT) {
+                    window->left_press = (POINT){GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+                    ClientToScreen(hwnd, &window->left_press);
+                }
                 SetCapture(hwnd);
             } else {
                 window->pointer_buttons &= ~button;
@@ -532,6 +582,8 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
                 return DefWindowProcW(hwnd, message, wparam, lparam);
             return 0;
         }
+        if (message == WM_SYSCHAR && (window->flags & NX_WINDOW_CLIENT_CHROME))
+            return DefWindowProcW(hwnd, message, wparam, lparam);
         if (message == WM_CHAR || message == WM_SYSCHAR) {
             nx_window_emit_utf16(window, (uint16_t)wparam);
             return 0;
@@ -543,6 +595,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
         }
         if (message == WM_GETOBJECT && window->accessibility && nx_uia_object_id(lparam))
             return nx_uia_get_object(window->accessibility,wparam,lparam);
+        if (message == WM_ACTIVATE) nx_window_report_state(window);
         if (message == WM_WINDOWPOSCHANGED || message == WM_SHOWWINDOW || message == WM_ACTIVATE || message == WM_ENABLE)
             nx_uia_geometry(window->accessibility);
         if (message == WM_DESTROY && window->accessibility) {
@@ -581,7 +634,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     *out_window = NULL;
     if (!desc || !isfinite(desc->width) || !isfinite(desc->height) ||
         desc->width <= 0.0f || desc->height <= 0.0f ||
-        (desc->flags & ~NX_WINDOW_HIDDEN)) return NX_ERROR_ARGUMENT;
+        (desc->flags & ~NX_WINDOW_FLAGS_ALL)) return NX_ERROR_ARGUMENT;
     nx_allocator a = desc->allocator;
     if ((a.allocate == NULL) != (a.deallocate == NULL)) return NX_ERROR_ARGUMENT;
     if (!a.allocate) {
@@ -611,6 +664,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     }
     memset(window, 0, sizeof(*window));
     window->allocator = a;
+    window->flags = desc->flags;
     nx_platform_drop_queue_init(&window->drop_queue, a);
     window->owner_thread = GetCurrentThreadId();
     if (nx_platform_event_queue_init(&window->event_queue, a, 64u) != NX_OK) {
@@ -635,7 +689,8 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     if (pixel_width <= INT_MAX && pixel_height <= INT_MAX) {
         RECT bounds = {0, 0, (LONG)pixel_width, (LONG)pixel_height};
         DWORD style = WS_OVERLAPPEDWINDOW;
-        if (AdjustWindowRectExForDpi(&bounds, style, FALSE, 0, dpi)) {
+        if ((window->flags & NX_WINDOW_CLIENT_CHROME) ||
+            AdjustWindowRectExForDpi(&bounds, style, FALSE, 0, dpi)) {
             long long outer_width = (long long)bounds.right - bounds.left;
             long long outer_height = (long long)bounds.bottom - bounds.top;
             HINSTANCE instance = GetModuleHandleW(NULL);
@@ -697,6 +752,81 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     out_info->scale = window->scale;
     out_info->should_close = window->should_close;
     return NX_OK;
+}
+
+static nx_result nx_window_management_ready(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    return GetCurrentThreadId() == window->owner_thread && window->hwnd && !window->should_close
+        ? NX_OK : NX_ERROR_STATE;
+}
+
+nx_result nx_window_get_status(nx_window *window, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    nx_result result = nx_window_management_ready(window);
+    if (result != NX_OK) return result;
+    out->state = nx_window_native_state(window);
+    out->known = NX_WINDOW_STATE_MINIMIZED | NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_ACTIVE;
+    out->capabilities = NX_WINDOW_CAPS_NATIVE;
+    out->client_chrome = !!(window->flags & NX_WINDOW_CLIENT_CHROME);
+    return NX_OK;
+}
+
+nx_result nx_window_minimize(nx_window *window) {
+    nx_result result = nx_window_management_ready(window);
+    if (result != NX_OK) return result;
+    ShowWindow(window->hwnd, SW_MINIMIZE);
+    nx_window_report_state(window);
+    return window->event_queue.error;
+}
+
+nx_result nx_window_maximize(nx_window *window) {
+    nx_result result = nx_window_management_ready(window);
+    if (result != NX_OK) return result;
+    ShowWindow(window->hwnd, SW_MAXIMIZE);
+    nx_window_report_state(window);
+    return window->event_queue.error;
+}
+
+nx_result nx_window_restore(nx_window *window) {
+    nx_result result = nx_window_management_ready(window);
+    if (result != NX_OK) return result;
+    ShowWindow(window->hwnd, SW_RESTORE);
+    nx_window_report_state(window);
+    return window->event_queue.error;
+}
+
+static nx_result nx_window_begin_native(nx_window *window, int hit) {
+    nx_result result = nx_window_management_ready(window);
+    if (result != NX_OK) return result;
+    if (!(window->pointer_buttons & NX_BUTTON_LEFT) || window->should_close ||
+        IsIconic(window->hwnd) || !IsWindowVisible(window->hwnd) ||
+        (hit != HTCAPTION && IsZoomed(window->hwnd))) return NX_ERROR_STATE;
+    POINT point = window->left_press;
+    if (point.x < SHRT_MIN || point.x > SHRT_MAX || point.y < SHRT_MIN || point.y > SHRT_MAX)
+        return NX_ERROR_LIMIT;
+    if (GetCapture() == window->hwnd) ReleaseCapture();
+    if (window->pointer_buttons) {
+        window->pointer_buttons = 0;
+        nx_event cancel = {0}; cancel.type = NX_EVENT_POINTER_CANCEL;
+        nx_window_push_event(window, cancel);
+    }
+    if (window->event_queue.error != NX_OK) return window->event_queue.error;
+    DefWindowProcW(window->hwnd, WM_NCLBUTTONDOWN, (WPARAM)hit,
+        MAKELPARAM((short)point.x, (short)point.y));
+    nx_window_report_state(window);
+    return window->event_queue.error;
+}
+
+nx_result nx_window_begin_move(nx_window *window) {
+    return nx_window_begin_native(window, HTCAPTION);
+}
+
+nx_result nx_window_begin_resize(nx_window *window, nx_window_resize_edge edge) {
+    if (!nx_window_edge_valid(edge)) return NX_ERROR_ARGUMENT;
+    static const int hits[] = {HTTOPLEFT, HTTOP, HTTOPRIGHT, HTRIGHT,
+        HTBOTTOMRIGHT, HTBOTTOM, HTBOTTOMLEFT, HTLEFT};
+    return nx_window_begin_native(window, hits[edge - 1]);
 }
 
 nx_result nx_window_set_cursor(nx_window *window, nx_cursor_shape shape) {

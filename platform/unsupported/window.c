@@ -32,6 +32,20 @@ nx_result nx_window_get_reduced_motion(nx_window *window, int *out_enabled) {
     return NX_ERROR_UNSUPPORTED;
 }
 
+nx_result nx_window_get_status(nx_window *window, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT;
+}
+nx_result nx_window_minimize(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
+nx_result nx_window_maximize(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
+nx_result nx_window_restore(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
+nx_result nx_window_begin_move(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
+nx_result nx_window_begin_resize(nx_window *window, nx_window_resize_edge edge) {
+    if (!window || edge < NX_WINDOW_RESIZE_TOP_LEFT || edge > NX_WINDOW_RESIZE_LEFT) return NX_ERROR_ARGUMENT;
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_set_ime_rect(nx_window *window, nx_rect caret) {
     (void)window;
     (void)caret;

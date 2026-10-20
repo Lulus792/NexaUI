@@ -52,6 +52,18 @@ elseif(UNIX AND NOT APPLE)
         ${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v1.xml)
     set(NEXAUI_TEXT_INPUT_V3_XML
         ${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v3.xml)
+    set(NEXAUI_DECORATION_XML
+        ${WAYLAND_PROTOCOLS_DIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml)
+    add_custom_command(
+        OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-client-protocol.h
+               ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${NEXAUI_WAYLAND_PROTOCOL_DIR}
+        COMMAND ${WAYLAND_SCANNER} client-header ${NEXAUI_DECORATION_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-client-protocol.h
+        COMMAND ${WAYLAND_SCANNER} private-code ${NEXAUI_DECORATION_XML}
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
+        DEPENDS ${NEXAUI_DECORATION_XML}
+        VERBATIM)
     add_custom_command(
         OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-client-protocol.h
                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -89,6 +101,7 @@ elseif(UNIX AND NOT APPLE)
         platform/linux/x11/window.c platform/linux/wayland/window.c
         platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
         platform/posix/snapshot_lock.c)
@@ -413,29 +426,46 @@ if(NEXAUI_BUILD_TESTS)
             COMMAND nexaui_wayland_window_tests)
         set_tests_properties(nexaui_wayland_window PROPERTIES TIMEOUT 15
             SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        add_executable(nexaui_native_management_tests tests/test_native_management.c)
+        target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI)
+        add_test(NAME nexaui_wayland_management_native COMMAND nexaui_native_management_tests)
+        set_tests_properties(nexaui_wayland_management_native PROPERTIES TIMEOUT 20
+            SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
         pkg_check_modules(WAYLAND_SERVER QUIET IMPORTED_TARGET wayland-server)
         if(WAYLAND_SERVER_FOUND)
             add_custom_command(
                 OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                       ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-unstable-v1-server-protocol.h
                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h
                 COMMAND ${CMAKE_COMMAND} -E make_directory
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}
                 COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_XDG_SHELL_XML}
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_DECORATION_XML}
+                        ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-unstable-v1-server-protocol.h
                 COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_TEXT_INPUT_V3_XML}
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h
                 COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_TEXT_INPUT_V1_XML}
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
-                DEPENDS ${NEXAUI_XDG_SHELL_XML} ${NEXAUI_TEXT_INPUT_V1_XML}
+                DEPENDS ${NEXAUI_XDG_SHELL_XML} ${NEXAUI_DECORATION_XML} ${NEXAUI_TEXT_INPUT_V1_XML}
                         ${NEXAUI_TEXT_INPUT_V3_XML}
                 VERBATIM)
             # One producer owns shared outputs. Independent test targets must
             # not race to run the same scanner command in a parallel build.
             add_custom_target(nexaui_wayland_test_protocols DEPENDS
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-server-protocol.h
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-unstable-v1-server-protocol.h
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h)
+            add_executable(nexaui_wayland_management_tests tests/test_wayland_management.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c)
+            add_dependencies(nexaui_wayland_management_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_management_tests PRIVATE ${NEXAUI_WAYLAND_PROTOCOL_DIR} platform/linux)
+            target_link_libraries(nexaui_wayland_management_tests PRIVATE NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_management COMMAND nexaui_wayland_management_tests)
+            set_tests_properties(nexaui_wayland_management PROPERTIES TIMEOUT 20)
             add_executable(nexaui_wayland_text_input_v1_tests
                 tests/test_wayland_text_input_v1.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -549,6 +579,23 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         if(Python3_Interpreter_FOUND AND NEXAUI_XVFB_EXECUTABLE
                 AND NEXAUI_XAUTH_EXECUTABLE)
+            add_executable(nexaui_x11_management_tests tests/test_x11_management.c)
+            target_include_directories(nexaui_x11_management_tests PRIVATE platform/linux/x11)
+            target_link_libraries(nexaui_x11_management_tests PRIVATE NexaUI::NexaUI X11::X11 Threads::Threads)
+            add_test(NAME nexaui_x11_management
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                    $<TARGET_FILE:nexaui_x11_management_tests> --private-xvfb)
+            set_tests_properties(nexaui_x11_management PROPERTIES TIMEOUT 30
+                ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+            find_program(NEXAUI_OPENBOX_EXECUTABLE openbox)
+            if(NEXAUI_OPENBOX_EXECUTABLE)
+                add_test(NAME nexaui_x11_management_native
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_openbox_native.py
+                        ${NEXAUI_OPENBOX_EXECUTABLE} $<TARGET_FILE:nexaui_native_management_tests>)
+                set_tests_properties(nexaui_x11_management_native PROPERTIES TIMEOUT 45
+                    ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+            endif()
             add_test(NAME nexaui_x11_private
                 COMMAND ${Python3_EXECUTABLE}
                     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
@@ -815,6 +862,10 @@ if(NEXAUI_BUILD_TESTS)
         set_tests_properties(nexaui_design_a_uia PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
         set_tests_properties(nexaui_uia nexaui_uia_mta nexaui_uia_owned_com PROPERTIES TIMEOUT 120 RESOURCE_LOCK native_display)
         add_executable(nexaui_multi_window_tests tests/test_multi_window.c)
+        add_executable(nexaui_windows_management_tests tests/test_windows_management.c)
+        target_link_libraries(nexaui_windows_management_tests PRIVATE NexaUI::NexaUI user32)
+        add_test(NAME nexaui_windows_management COMMAND nexaui_windows_management_tests)
+        set_tests_properties(nexaui_windows_management PROPERTIES TIMEOUT 20 RESOURCE_LOCK native_display)
         target_link_libraries(nexaui_multi_window_tests PRIVATE NexaUI::NexaUI user32)
         add_test(NAME nexaui_multi_window COMMAND nexaui_multi_window_tests)
         set_tests_properties(nexaui_multi_window PROPERTIES TIMEOUT 15)

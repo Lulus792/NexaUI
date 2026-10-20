@@ -37,6 +37,10 @@ static int find(nx_window *w, nx_event_type type, nx_event *out) {
 typedef struct thread_case { nx_window *window; nx_result poll, info, create; } thread_case;
 static void *wrong_thread(void *user) {
     thread_case *t = user; nx_window_info info;
+    nx_window_status status; memset(&status,0xff,sizeof(status));
+    if (nx_window_get_status(t->window,&status)!=NX_ERROR_STATE || status.state || status.known || status.capabilities || status.client_chrome ||
+        nx_window_minimize(t->window)!=NX_ERROR_STATE || nx_window_maximize(t->window)!=NX_ERROR_STATE || nx_window_restore(t->window)!=NX_ERROR_STATE ||
+        nx_window_begin_move(t->window)!=NX_ERROR_STATE || nx_window_begin_resize(t->window,NX_WINDOW_RESIZE_LEFT)!=NX_ERROR_STATE) abort();
     t->poll = nx_window_poll(t->window,0); t->info = nx_window_get_info(t->window,&info);
     nx_window_destroy(t->window);
     nx_window *other = NULL; nx_window_desc d = {"wrong thread",100,100,NX_WINDOW_HIDDEN,{0}};
@@ -214,6 +218,59 @@ static int test_native_commands(nx_window *w) {
     nx_text_buffer_destroy(model);
     return 0;
 }
+static NSEvent *mouse(NSWindow *w,NSEventType type,NSPoint screen) {
+    return [NSEvent mouseEventWithType:type location:[w convertPointFromScreen:screen] modifierFlags:0 timestamp:0
+        windowNumber:[w windowNumber] context:nil eventNumber:1 clickCount:1 pressure:1];
+}
+static int test_management(void) {
+    heap h={0}; nx_window *w=NULL; nx_window_desc d={"AppKit client chrome",360,240,
+        NX_WINDOW_CLIENT_CHROME|NX_WINDOW_STATE_EVENTS,{&h,allocate,deallocate}};
+    CHECK(nx_window_create(&d,&w)==NX_OK);
+    NSWindow *native=nx_window_native_nswindow(w); NSView *view=nx_window_native_nsview(w);
+    CHECK(([native styleMask]&NSWindowStyleMaskFullSizeContentView) && [native titleVisibility]==NSWindowTitleHidden &&
+        [native titlebarAppearsTransparent] && [[native standardWindowButton:NSWindowCloseButton] isHidden]);
+    CHECK(fabs([view bounds].size.width-360)<1 && fabs([view bounds].size.height-240)<1);
+    nx_window_status s; CHECK(nx_window_get_status(w,&s)==NX_OK && s.client_chrome && s.known==15u && s.capabilities==127u);
+    CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)0)==NX_ERROR_ARGUMENT);
+    NSRect base=[native frame];
+    for(int i=1;i<=8;++i) {
+        [native setFrame:base display:YES]; NSPoint start=NSMakePoint(base.origin.x+100,base.origin.y+80);
+        [view mouseDown:mouse(native,NSEventTypeLeftMouseDown,start)];
+        CHECK(nx_window_begin_resize(w,(nx_window_resize_edge)i)==NX_OK && nx_window_begin_move(w)==NX_ERROR_STATE);
+        [view mouseDragged:mouse(native,NSEventTypeLeftMouseDragged,NSMakePoint(start.x+12,start.y+8))];
+        NSRect frame=[native frame];
+        int left=i==1 || i==7 || i==8, right=i==3 || i==4 || i==5;
+        int top=i==1 || i==2 || i==3, bottom=i==5 || i==6 || i==7;
+        CHECK(fabs(frame.size.width-(base.size.width+(right?12:left?-12:0)))<1 &&
+            fabs(frame.size.height-(base.size.height+(top?8:bottom?-8:0)))<1);
+        CHECK(fabs(frame.origin.x-(base.origin.x+(left?12:0)))<1 && fabs(frame.origin.y-(base.origin.y+(bottom?8:0)))<1);
+        [view mouseUp:mouse(native,NSEventTypeLeftMouseUp,start)];
+        CHECK(nx_window_begin_resize(w,NX_WINDOW_RESIZE_LEFT)==NX_ERROR_STATE);
+    }
+    [native setFrame:base display:YES];
+    NSPoint start=NSMakePoint(base.origin.x+100,base.origin.y+80);
+    [view mouseDown:mouse(native,NSEventTypeLeftMouseDown,start)];
+    CHECK(nx_window_begin_resize(w,NX_WINDOW_RESIZE_RIGHT)==NX_OK);
+    [view mouseDragged:mouse(native,NSEventTypeLeftMouseDragged,NSMakePoint(start.x+20,start.y))];
+    [view keyDown:[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0
+        windowNumber:[native windowNumber] context:nil characters:@"\033" charactersIgnoringModifiers:@"\033" isARepeat:NO keyCode:53]];
+    CHECK(NSEqualRects([native frame],base) && nx_window_begin_move(w)==NX_ERROR_STATE);
+    CHECK(nx_window_maximize(w)==NX_OK); for(int i=0;i<100 && ![native isZoomed];++i) CHECK(nx_window_poll(w,10)==NX_OK);
+    CHECK([native isZoomed] && nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MAXIMIZED));
+    CHECK(nx_window_restore(w)==NX_OK); for(int i=0;i<100 && [native isZoomed];++i) CHECK(nx_window_poll(w,10)==NX_OK);
+    CHECK(![native isZoomed]);
+    CHECK(nx_window_minimize(w)==NX_OK); for(int i=0;i<100 && ![native isMiniaturized];++i) CHECK(nx_window_poll(w,10)==NX_OK);
+    CHECK([native isMiniaturized] && nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MINIMIZED));
+    CHECK(nx_window_restore(w)==NX_OK); for(int i=0;i<100 && [native isMiniaturized];++i) CHECK(nx_window_poll(w,10)==NX_OK);
+    CHECK(![native isMiniaturized]);
+    nx_event event; CHECK(find(w,NX_EVENT_WINDOW_STATE,&event)==0);
+    [native performClose:nil]; memset(&s,0xff,sizeof(s));
+    CHECK(nx_window_get_status(w,&s)==NX_ERROR_STATE && !s.state && !s.known && !s.capabilities && !s.client_chrome);
+    CHECK(nx_window_minimize(w)==NX_ERROR_STATE && nx_window_maximize(w)==NX_ERROR_STATE && nx_window_restore(w)==NX_ERROR_STATE);
+    nx_window_destroy(w); CHECK(!h.live);
+    puts("AppKit client chrome, eight native frame resize directions, Escape cancellation and native zoom/miniaturize/restore passed; physical input remains separate.");
+    return 0;
+}
 int main(void) {
     @autoreleasepool {
         for (size_t fail = 1; fail <= 2; ++fail) {
@@ -264,6 +321,7 @@ int main(void) {
         [nx_window_native_nswindow(w) performClose:nil];
         CHECK(nx_window_get_info(w,&info) == NX_OK && info.should_close);
         nx_window_destroy(w); CHECK(!h.live);
+        CHECK(test_management()==0);
         puts("AppKit window, input, preedit, clipboard, drops and ownership passed.");
     }
     return 0;

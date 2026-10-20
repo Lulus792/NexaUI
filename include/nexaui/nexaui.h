@@ -279,7 +279,8 @@ typedef enum nx_event_type {
     NX_EVENT_TEXT_COMMAND,
     /* Physical state only: the native text system owns the corresponding
        edit/action. Widgets must not repeat it from this key event. */
-    NX_EVENT_KEY_DOWN_CONSUMED
+    NX_EVENT_KEY_DOWN_CONSUMED,
+    NX_EVENT_WINDOW_STATE /* Opt-in native state change; window_state below. */
 } nx_event_type;
 
 /* Every field is backend-neutral. Unused fields are zero. Mouse and touch
@@ -298,6 +299,7 @@ typedef struct nx_event {
     union {
         uint32_t scalar; /* NX_EVENT_TEXT. */
         uint32_t text_command; /* NX_EVENT_TEXT_COMMAND: command plus flags. */
+        uint32_t window_state; /* NX_EVENT_WINDOW_STATE: NX_WINDOW_STATE_* bits. */
     };
     int repeat;
     int focused;
@@ -335,11 +337,44 @@ typedef struct nx_interaction_state {
 } nx_interaction_state;
 
 #define NX_WINDOW_HIDDEN 1u
+#define NX_WINDOW_CLIENT_CHROME 2u
+#define NX_WINDOW_STATE_EVENTS 4u
+
+#define NX_WINDOW_STATE_MINIMIZED 1u
+#define NX_WINDOW_STATE_MAXIMIZED 2u
+#define NX_WINDOW_STATE_FULLSCREEN 4u
+#define NX_WINDOW_STATE_ACTIVE 8u
+
+#define NX_WINDOW_CAP_CLIENT_CHROME 1u
+#define NX_WINDOW_CAP_MINIMIZE 2u
+#define NX_WINDOW_CAP_MAXIMIZE 4u
+#define NX_WINDOW_CAP_RESTORE 8u
+#define NX_WINDOW_CAP_MOVE 16u
+#define NX_WINDOW_CAP_RESIZE 32u
+#define NX_WINDOW_CAP_RESTORE_MINIMIZED 64u
+
+typedef enum nx_window_resize_edge {
+    NX_WINDOW_RESIZE_TOP_LEFT = 1,
+    NX_WINDOW_RESIZE_TOP,
+    NX_WINDOW_RESIZE_TOP_RIGHT,
+    NX_WINDOW_RESIZE_RIGHT,
+    NX_WINDOW_RESIZE_BOTTOM_RIGHT,
+    NX_WINDOW_RESIZE_BOTTOM,
+    NX_WINDOW_RESIZE_BOTTOM_LEFT,
+    NX_WINDOW_RESIZE_LEFT
+} nx_window_resize_edge;
+
+typedef struct nx_window_status {
+    uint32_t state;        /* Observed NX_WINDOW_STATE_* bits, never a request. */
+    uint32_t known;        /* Which state bits the backend can observe. */
+    uint32_t capabilities; /* NX_WINDOW_CAP_* requests supported by this backend/WM. */
+    int client_chrome;     /* This window was created with client chrome. */
+} nx_window_status;
 
 typedef struct nx_window_desc {
     const char *title_utf8; /* NUL-terminated; NULL selects "NexaUI". Borrowed. */
     float width, height;    /* Positive finite logical client size. */
-    uint32_t flags;         /* NX_WINDOW_HIDDEN or zero. */
+    uint32_t flags;         /* NX_WINDOW_HIDDEN, CLIENT_CHROME, STATE_EVENTS. */
     nx_allocator allocator; /* Optional callback pair. */
 } nx_window_desc;
 
@@ -379,6 +414,31 @@ typedef struct nx_file_drop_info {
 NX_API nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window);
 NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
+/* Owner-thread native window management. Default flags retain the existing OS
+   window. CLIENT_CHROME lets the client draw the title area; unsupported or
+   rejected decoration negotiation fails creation rather than silently changing
+   the requested mode. No native handle is exposed. STATE_EVENTS opts into
+   NX_EVENT_WINDOW_STATE; query status.known to interpret unknown state bits.
+   Requests may be asynchronous or declined by the window manager: NX_OK means
+   submission, not confirmation. State events/get_status report observations.
+   Wayland cannot observe minimized state or request unminimization; RESTORE
+   there only unmaximizes/unfullscreens. RESTORE_MINIMIZED identifies backends
+   that can also restore an iconic window. Status output is zero on failure;
+   management rejects windows already marked should_close. Existing struct
+   sizes are unchanged. X11 decoration is a WM hint and can be declined. */
+NX_API nx_result nx_window_get_status(nx_window *window, nx_window_status *out_status);
+NX_API nx_result nx_window_minimize(nx_window *window);
+NX_API nx_result nx_window_maximize(nx_window *window);
+NX_API nx_result nx_window_restore(nx_window *window);
+/* Begin a native interaction from the latest still-held left pointer press in
+   this window. The backend owns serial/event provenance; callers cannot supply
+   a fabricated serial or a foreign window. Missing/stale/cancelled presses
+   return NX_ERROR_STATE; invalid edges return NX_ERROR_ARGUMENT. Acceptance
+   cancels client pointer capture so the initiating control cannot also click.
+   Native move/resize may run a nested OS event loop. Do not destroy the window
+   reentrantly; its renderer/window lifetime contract continues to apply. */
+NX_API nx_result nx_window_begin_move(nx_window *window);
+NX_API nx_result nx_window_begin_resize(nx_window *window, nx_window_resize_edge edge);
 /* Select the cursor for this window's client area. The shape persists until
    changed, is independent for each window, and takes effect on the next native
    cursor update (or immediately while this window owns the pointer). Call on

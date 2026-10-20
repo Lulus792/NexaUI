@@ -5,6 +5,7 @@
 #include "drop_queue.h"
 #include "accessibility.h"
 #include "text_command.h"
+#include "window_management.h"
 #include <objc/runtime.h>
 
 #include <limits.h>
@@ -30,6 +31,12 @@ struct nx_window {
     nx_rect caret;
     nx_cursor_shape cursor;
     uint32_t modifiers, buttons;
+    uint32_t flags, reported_state;
+    NSEvent *left_press;
+    NSPoint left_press_screen, resize_start_mouse;
+    NSRect resize_start_frame;
+    nx_window_resize_edge resize_edge;
+    int after_fullscreen;
     nx_key pressed[128];
     char *preedit;
     size_t preedit_length;
@@ -47,6 +54,44 @@ static void nx_mac_free(void *user, void *p, size_t size) { (void)user; (void)si
 static int nx_mac_owner(nx_window *w) { return w && pthread_main_np(); }
 static void nx_mac_push(nx_window *w, nx_event event) {
     if (w) nx_platform_event_queue_push(&w->events, event);
+}
+static uint32_t nx_mac_native_state(nx_window *w) {
+    return ([w->native isMiniaturized] ? NX_WINDOW_STATE_MINIMIZED : 0u) |
+        ([w->native isZoomed] ? NX_WINDOW_STATE_MAXIMIZED : 0u) |
+        (([w->native styleMask] & NSWindowStyleMaskFullScreen) ? NX_WINDOW_STATE_FULLSCREEN : 0u) |
+        ([w->native isKeyWindow] ? NX_WINDOW_STATE_ACTIVE : 0u);
+}
+static void nx_mac_report_state(nx_window *w) {
+    if (w) nx_window_state_event(&w->events, w->flags, &w->reported_state, nx_mac_native_state(w));
+}
+static void nx_mac_clear_press(nx_window *w) { [w->left_press release]; w->left_press = nil; }
+static void nx_mac_cancel_pointer(nx_window *w) {
+    if (w->buttons) { nx_event event = {0}; event.type = NX_EVENT_POINTER_CANCEL; nx_mac_push(w,event); }
+    w->buttons = 0; nx_mac_clear_press(w);
+}
+static int nx_mac_resize_pointer(nx_window *w, NSEvent *event) {
+    if (!w->resize_edge) return 0;
+    if ([event type] == NSEventTypeLeftMouseUp) { w->resize_edge = 0; return 1; }
+    if ([event type] != NSEventTypeLeftMouseDragged) return 0;
+    NSPoint point = [w->native convertPointToScreen:[event locationInWindow]];
+    double dx = point.x - w->resize_start_mouse.x, dy = point.y - w->resize_start_mouse.y;
+    NSRect original = w->resize_start_frame, frame = original;
+    nx_window_resize_edge edge = w->resize_edge;
+    int left = edge == NX_WINDOW_RESIZE_LEFT || edge == NX_WINDOW_RESIZE_TOP_LEFT || edge == NX_WINDOW_RESIZE_BOTTOM_LEFT;
+    int right = edge == NX_WINDOW_RESIZE_RIGHT || edge == NX_WINDOW_RESIZE_TOP_RIGHT || edge == NX_WINDOW_RESIZE_BOTTOM_RIGHT;
+    int top = edge == NX_WINDOW_RESIZE_TOP || edge == NX_WINDOW_RESIZE_TOP_LEFT || edge == NX_WINDOW_RESIZE_TOP_RIGHT;
+    int bottom = edge == NX_WINDOW_RESIZE_BOTTOM || edge == NX_WINDOW_RESIZE_BOTTOM_LEFT || edge == NX_WINDOW_RESIZE_BOTTOM_RIGHT;
+    if (left) frame.size.width -= dx;
+    if (right) frame.size.width += dx;
+    if (top) frame.size.height += dy;
+    if (bottom) frame.size.height -= dy;
+    NSSize minimum = [w->native minSize], maximum = [w->native maxSize];
+    frame.size.width = fmax(fmax(1, minimum.width), fmin(frame.size.width, maximum.width));
+    frame.size.height = fmax(fmax(1, minimum.height), fmin(frame.size.height, maximum.height));
+    if (left) frame.origin.x = NSMaxX(original) - frame.size.width;
+    if (bottom) frame.origin.y = NSMaxY(original) - frame.size.height;
+    [w->native setFrame:frame display:YES]; nx_mac_report_state(w);
+    return 1;
 }
 static uint32_t nx_mac_modifiers(NSEventModifierFlags flags) {
     return ((flags & NSEventModifierFlagShift) ? NX_MOD_SHIFT : 0u) |
@@ -70,6 +115,7 @@ static NSCursor *nx_mac_cursor(nx_cursor_shape shape) {
 }
 static void nx_mac_resize(nx_window *w) {
     if (!w) return;
+    nx_mac_report_state(w);
     NSSize size = [[w->native contentView] bounds].size;
     nx_event event = {0}; event.type = NX_EVENT_RESIZE;
     event.width = [w->native isMiniaturized] ? 0 : (float)size.width;
@@ -259,11 +305,17 @@ static void nx_mac_command(nx_window *w,uint32_t command) {
 - (void)cursorUpdate:(NSEvent *)event { (void)event; if (owner) [nx_mac_cursor(owner->cursor) set]; }
 - (void)nxPointer:(NSEvent *)native type:(nx_event_type)type button:(uint32_t)button {
     if (!owner) return;
+    if (nx_mac_resize_pointer(owner,native)) return;
     NSPoint point = [self convertPoint:[native locationInWindow] fromView:nil];
     nx_event event = {0}; event.type = type; event.x = (float)point.x; event.y = (float)point.y;
     event.button = button; event.modifiers = nx_mac_modifiers([native modifierFlags]);
     if (type == NX_EVENT_POINTER_DOWN) owner->buttons |= button;
     if (type == NX_EVENT_POINTER_UP) owner->buttons &= ~button;
+    if (button == NX_BUTTON_LEFT && type == NX_EVENT_POINTER_DOWN) {
+        nx_mac_clear_press(owner); owner->left_press = [native retain];
+        owner->left_press_screen = [owner->native convertPointToScreen:[native locationInWindow]];
+    }
+    if (button == NX_BUTTON_LEFT && type == NX_EVENT_POINTER_UP) nx_mac_clear_press(owner);
     nx_mac_push(owner, event);
 }
 - (void)mouseMoved:(NSEvent *)event { [self nxPointer:event type:NX_EVENT_POINTER_MOVE button:0]; }
@@ -298,6 +350,10 @@ static void nx_mac_command(nx_window *w,uint32_t command) {
 }
 - (void)keyDown:(NSEvent *)native {
     if (!owner) return;
+    if (owner->resize_edge && [native keyCode] == 53) {
+        owner->resize_edge = 0; [owner->native setFrame:owner->resize_start_frame display:YES];
+        nx_mac_cancel_pointer(owner); return;
+    }
     owner->modifiers = nx_mac_modifiers([native modifierFlags]);
     nx_key key = nx_mac_key(native); unsigned code = [native keyCode];
     if (code < 128 && owner->pressed[code] != NX_KEY_UNKNOWN) key = owner->pressed[code];
@@ -451,10 +507,12 @@ static void nx_mac_discard(nx_window *w) {
 static void nx_mac_focus(nx_window *w, int focused) {
     if (!w) return;
     if (!focused) {
+        w->resize_edge = 0; nx_mac_clear_press(w);
         nx_mac_discard(w); w->modifiers = 0; memset(w->pressed, 0, sizeof(w->pressed));
         if (w->buttons) { nx_event cancel = {0}; cancel.type = NX_EVENT_POINTER_CANCEL; nx_mac_push(w, cancel); w->buttons = 0; }
     }
     nx_event event = {0}; event.type = NX_EVENT_FOCUS; event.focused = focused; nx_mac_push(w, event);
+    nx_mac_report_state(w);
 }
 
 @interface NXMacWindowDelegate : NSObject <NSWindowDelegate> { @public nx_window *owner; }
@@ -467,13 +525,23 @@ static void nx_mac_focus(nx_window *w, int focused) {
 - (void)windowDidChangeBackingProperties:(NSNotification *)note { (void)note; nx_mac_resize(owner); }
 - (void)windowDidMiniaturize:(NSNotification *)note { (void)note; nx_mac_focus(owner,0); nx_mac_resize(owner); }
 - (void)windowDidDeminiaturize:(NSNotification *)note { (void)note; nx_mac_resize(owner); }
+- (void)windowDidEnterFullScreen:(NSNotification *)note { (void)note; nx_mac_resize(owner); }
+- (void)windowDidExitFullScreen:(NSNotification *)note {
+    (void)note;
+    if (owner && owner->after_fullscreen) {
+        int action = owner->after_fullscreen; owner->after_fullscreen = 0;
+        if ((action == 1 && [owner->native isZoomed]) || (action == 2 && ![owner->native isZoomed]))
+            [owner->native zoom:nil];
+    }
+    nx_mac_resize(owner);
+}
 @end
 
 nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     if (!out_window) return NX_ERROR_ARGUMENT;
     *out_window = NULL;
     if (!desc || !isfinite(desc->width) || !isfinite(desc->height) || desc->width <= 0 || desc->height <= 0 ||
-        (desc->flags & ~NX_WINDOW_HIDDEN) || (!!desc->allocator.allocate != !!desc->allocator.deallocate)) return NX_ERROR_ARGUMENT;
+        (desc->flags & ~NX_WINDOW_FLAGS_ALL) || (!!desc->allocator.allocate != !!desc->allocator.deallocate)) return NX_ERROR_ARGUMENT;
     if (!pthread_main_np()) return NX_ERROR_STATE;
     if (desc->width > 32768 || desc->height > 32768) return NX_ERROR_LIMIT;
     const char *title = desc->title_utf8 ? desc->title_utf8 : "NexaUI";
@@ -483,7 +551,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     if (!a.allocate) a = (nx_allocator){NULL,nx_mac_allocate,nx_mac_free};
     nx_window *w = a.allocate(a.user, sizeof(*w));
     if (!w) return NX_ERROR_MEMORY;
-    *w = (nx_window){0}; w->allocator = a;
+    *w = (nx_window){0}; w->allocator = a; w->flags = desc->flags;
     nx_platform_drop_queue_init(&w->drops, a);
     nx_result result = nx_platform_event_queue_init(&w->events, a, 64);
     if (result != NX_OK) { a.deallocate(a.user,w,sizeof(*w)); return result; }
@@ -502,20 +570,36 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
             nx_macos_application_delegate = [[NXMacApplicationDelegate alloc] init];
             [NSApp setDelegate:nx_macos_application_delegate];
         }
+        NSWindowStyleMask style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+            NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+        if (desc->flags & NX_WINDOW_CLIENT_CHROME) style |= NSWindowStyleMaskFullSizeContentView;
         w->native = [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,desc->width,desc->height)
-            styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
-                      NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:NO];
+            styleMask:style backing:NSBackingStoreBuffered defer:NO];
         [w->native setReleasedWhenClosed:NO];
         w->view = [[NXMacView alloc] initWithFrame:NSMakeRect(0,0,desc->width,desc->height)];
         w->delegate = [[NXMacWindowDelegate alloc] init];
         if (!w->native || !w->view || !w->delegate) result = NX_ERROR_MEMORY;
         if (result == NX_OK) {
+            if (desc->flags & NX_WINDOW_CLIENT_CHROME) {
+                [w->native setTitleVisibility:NSWindowTitleHidden];
+                [w->native setTitlebarAppearsTransparent:YES];
+                [[w->native standardWindowButton:NSWindowCloseButton] setHidden:YES];
+                [[w->native standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+                [[w->native standardWindowButton:NSWindowZoomButton] setHidden:YES];
+            }
             w->view->owner = w; w->delegate->owner = w;
             [w->native setReleasedWhenClosed:NO]; [w->native setDelegate:w->delegate];
             [w->native setTitle:[[[NSString alloc] initWithBytes:title length:title_length encoding:NSUTF8StringEncoding] autorelease]];
             [w->view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
             [w->view registerForDraggedTypes:@[NSPasteboardTypeFileURL]];
             [w->native setContentView:w->view]; [w->native setAcceptsMouseMovedEvents:YES];
+            if (desc->flags & NX_WINDOW_CLIENT_CHROME) {
+                /* Full-size content includes the title area. The descriptor
+                   specifies that entire client size, not a second caption. */
+                NSRect frame = [w->native frame];
+                frame.size = NSMakeSize(desc->width,desc->height);
+                [w->native setFrame:frame display:NO];
+            }
             [w->native makeFirstResponder:w->view]; [w->native center];
             w->next = nx_macos_windows; nx_macos_windows = w;
             if (!(desc->flags & NX_WINDOW_HIDDEN)) [w->native makeKeyAndOrderFront:nil];
@@ -552,6 +636,71 @@ nx_result nx_window_get_info(nx_window *w, nx_window_info *out) {
         out->height = [w->native isMiniaturized] ? 0 : (float)size.height;
         out->scale = (float)[w->native backingScaleFactor]; out->should_close = w->should_close;
         return NX_OK;
+    }
+}
+nx_result nx_window_get_status(nx_window *w, nx_window_status *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (nx_window_status){0};
+    if (!w) return NX_ERROR_ARGUMENT;
+    if (!nx_mac_owner(w) || !w->native || w->should_close) return NX_ERROR_STATE;
+    @autoreleasepool {
+        out->state = nx_mac_native_state(w); out->known = NX_WINDOW_STATES_ALL;
+        out->capabilities = NX_WINDOW_CAPS_NATIVE;
+        out->client_chrome = !!(w->flags & NX_WINDOW_CLIENT_CHROME);
+        return NX_OK;
+    }
+}
+static nx_result nx_mac_management_ready(nx_window *w) {
+    if (!w) return NX_ERROR_ARGUMENT;
+    return nx_mac_owner(w) && w->native && !w->should_close ? NX_OK : NX_ERROR_STATE;
+}
+nx_result nx_window_minimize(nx_window *w) {
+    nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
+    @autoreleasepool { [w->native miniaturize:nil]; nx_mac_report_state(w); return w->events.error; }
+}
+nx_result nx_window_maximize(nx_window *w) {
+    nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
+    @autoreleasepool {
+        if ([w->native isMiniaturized]) [w->native deminiaturize:nil];
+        if (w->after_fullscreen) { w->after_fullscreen = 2; return NX_OK; }
+        if ([w->native styleMask] & NSWindowStyleMaskFullScreen) {
+            w->after_fullscreen = 2; [w->native toggleFullScreen:nil];
+        } else if (![w->native isZoomed]) [w->native zoom:nil];
+        nx_mac_report_state(w); return w->events.error;
+    }
+}
+nx_result nx_window_restore(nx_window *w) {
+    nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
+    @autoreleasepool {
+        if ([w->native isMiniaturized]) [w->native deminiaturize:nil];
+        if (w->after_fullscreen) { w->after_fullscreen = 1; return NX_OK; }
+        if ([w->native styleMask] & NSWindowStyleMaskFullScreen) {
+            w->after_fullscreen = 1; [w->native toggleFullScreen:nil];
+        } else if ([w->native isZoomed]) [w->native zoom:nil];
+        nx_mac_report_state(w); return w->events.error;
+    }
+}
+nx_result nx_window_begin_move(nx_window *w) {
+    nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
+    @autoreleasepool {
+        if (!(w->buttons & NX_BUTTON_LEFT) || !w->left_press || ![w->native isVisible] ||
+            [w->native isMiniaturized] || w->resize_edge) return NX_ERROR_STATE;
+        NSEvent *press = [w->left_press retain]; nx_mac_cancel_pointer(w);
+        if (w->events.error != NX_OK) { [press release]; return w->events.error; }
+        [w->native performWindowDragWithEvent:press]; [press release]; nx_mac_report_state(w);
+        return w->events.error;
+    }
+}
+nx_result nx_window_begin_resize(nx_window *w, nx_window_resize_edge edge) {
+    if (!nx_window_edge_valid(edge)) return NX_ERROR_ARGUMENT;
+    nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
+    @autoreleasepool {
+        if (!(w->buttons & NX_BUTTON_LEFT) || !w->left_press || ![w->native isVisible] ||
+            [w->native isMiniaturized] || [w->native isZoomed] || w->resize_edge ||
+            ([w->native styleMask] & NSWindowStyleMaskFullScreen)) return NX_ERROR_STATE;
+        w->resize_start_mouse = w->left_press_screen; w->resize_start_frame = [w->native frame];
+        nx_mac_cancel_pointer(w); if (w->events.error != NX_OK) return w->events.error;
+        w->resize_edge = edge; return NX_OK;
     }
 }
 nx_result nx_window_next_event(nx_window *w, nx_event *event, int *available) {
@@ -670,6 +819,7 @@ nx_result nx_window_renderer_release(nx_window *w, const void *owner) {
 void nx_window_destroy(nx_window *w) {
     if (!nx_mac_owner(w) || w->renderer_owner) return;
     @autoreleasepool {
+        nx_mac_clear_press(w); w->resize_edge = 0;
         nx_window **slot = &nx_macos_windows;
         while (*slot && *slot != w) slot = &(*slot)->next;
         if (*slot) *slot = w->next;
