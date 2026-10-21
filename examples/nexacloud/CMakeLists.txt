@@ -76,6 +76,21 @@ if(NEXAUI_BUILD_TESTS)
         add_test(NAME nexaui_nexacloud_text_reflow COMMAND nexaui_nexacloud_reflow
             "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud-reflow")
         set_tests_properties(nexaui_nexacloud_text_reflow PROPERTIES TIMEOUT 120)
+        add_executable(nexaui_nexacloud_dialogs dialog_test.c)
+        target_link_libraries(nexaui_nexacloud_dialogs PRIVATE nexacloud_scene)
+        target_compile_features(nexaui_nexacloud_dialogs PRIVATE c_std_17)
+        if(MSVC)
+            target_compile_options(nexaui_nexacloud_dialogs PRIVATE /W4 /utf-8)
+        else()
+            target_compile_options(nexaui_nexacloud_dialogs PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+        if(WIN32 AND BUILD_SHARED_LIBS)
+            add_custom_command(TARGET nexaui_nexacloud_dialogs POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:nexaui> $<TARGET_FILE_DIR:nexaui_nexacloud_dialogs> VERBATIM)
+        endif()
+        add_test(NAME nexaui_nexacloud_dialogs COMMAND nexaui_nexacloud_dialogs "${_cloud_font}")
+        set_tests_properties(nexaui_nexacloud_dialogs PROPERTIES TIMEOUT 30)
         add_test(NAME nexaui_nexacloud_example COMMAND nexaui_nexacloud --smoke
             "${_cloud_font}" "${CMAKE_CURRENT_BINARY_DIR}/nexacloud")
         set_tests_properties(nexaui_nexacloud_example PROPERTIES TIMEOUT 60)

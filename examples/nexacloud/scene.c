@@ -48,6 +48,7 @@ struct cloud_scene {
     int page, selected, details, list_view, dialog, paused, light, reduced_motion;
     int pending_theme, folder_depth;
     float detail_x, detail_y;
+    float dialog_x, dialog_y;
     float scroll_x, scroll_y, dashboard_y, dashboard_x;
     float width, height, text_scale, requested_text_scale;
     float pixel_scale,requested_pixel_scale;
@@ -659,7 +660,8 @@ static int file_browser(cloud_scene *s, nx_rect r) {
     if (click && s->selected >= 0) { s->files[s->selected].deleted ^= 1; s->details = 0; s->selected = -1; notify(s, s->page == TRASH ? "Datei wiederhergestellt." : "Datei in den Papierkorb verschoben."); }
     REQUIRE(action(s, 203, 1, box(r.x + r.width - 56, toolbar_y, 42, toolbar_h), "Dateidetails umschalten", NX_ICON_INFO, NX_ACTION_SECONDARY, s->details, s->selected < 0, &click));
     if (click) { if (r.width < 950 * s->text_scale) { s->dialog = 6; s->details = 1; } else s->details ^= 1; }
-    float inspector = s->details && s->selected >= 0 && r.width >= 950 * scale ? 350 * scale : 0.0f;
+    /* A details modal keeps ownership of its controls across a wide resize. */
+    float inspector = s->dialog != 6 && s->details && s->selected >= 0 && r.width >= 950 * scale ? 350 * scale : 0.0f;
     nx_rect content = box(r.x + 16, r.y + 38 + toolbar_h, r.width - 32 - (inspector ? inspector + 16 : 0), r.height - 54 - toolbar_h);
     selected_file = s->selected >= 0 ? 1000u + (unsigned)s->selected : 0;
     nx_semantic_desc files_group = {219,1,NX_ROLE_LIST,content,span("Dateiauswahl"),{0},{0},0,0};
@@ -810,6 +812,10 @@ static int settings(cloud_scene *s, nx_rect r) {
 }
 
 static int dialog(cloud_scene *s) {
+    int details_dialog = s->dialog == 6;
+    uint64_t scroll_id = details_dialog ? 310 : 510;
+    float *scroll_x = details_dialog ? &s->detail_x : &s->dialog_x;
+    float *scroll_y = details_dialog ? &s->detail_y : &s->dialog_y;
     float scale = s->text_scale, w = fminf(540 * scale, s->width - 40);
     float button_h = 44 * scale, header_h = 44 * scale + 24;
     float h = fminf(310 * scale, s->height - 40);
@@ -820,12 +826,12 @@ static int dialog(cloud_scene *s) {
     d.backdrop_id = 501; d.dismiss_on_escape = 1; d.dismiss_on_outside = 1;
     int dismiss; TRY(nx_modal_begin(s->ui, &d, &dismiss));
     REQUIRE(wrapped_text(s, 500, titles[s->dialog], r.x + 24, r.y + 20, 20, color(s, NX_COLOR_TEXT), w - 48, NULL));
-    nx_scroll_area_desc ds = {0}; ds.id = 310; ds.parent_id = 500; ds.name = span("Dialoginhalt scrollen");
+    nx_scroll_area_desc ds = {0}; ds.id = scroll_id; ds.parent_id = 500; ds.name = span("Dialoginhalt scrollen");
     ds.viewport = box(r.x + 8, r.y + header_h, r.width - 16, r.height - header_h - button_h - 40);
-    ds.axes = NX_SCROLL_Y; ds.thumb_y_id = 311;
+    ds.axes = NX_SCROLL_Y; ds.thumb_y_id = scroll_id + 1;
     if (s->dialog == 6 && s->selected >= 0) {
         ds.content_size = (nx_size){ds.viewport.width, detail_height(s, ds.viewport.width - 10)};
-        nx_scroll_info info; TRY(nx_scroll_area_begin(s->ui, &ds, &s->detail_x, &s->detail_y, &info));
+        nx_scroll_info info; TRY(nx_scroll_area_begin(s->ui, &ds, scroll_x, scroll_y, &info));
         REQUIRE(detail_panel(s, box(ds.viewport.x, ds.viewport.y - s->detail_y, ds.viewport.width - 10, ds.content_size.height), 310));
         TRY(nx_scroll_area_end(s->ui));
         if (!s->details) dismiss = 1;
@@ -837,21 +843,21 @@ static int dialog(cloud_scene *s) {
         nx_text_layout *b = wrapped_layout(s, second, 13, w - 64); REQUIRE(a && b);
         ds.content_size = (nx_size){ds.viewport.width, s->dialog == 5 ? 240 :
             48 + (float)nx_text_layout_height(a) + (float)nx_text_layout_height(b)};
-        nx_scroll_info info; TRY(nx_scroll_area_begin(s->ui, &ds, &s->detail_x, &s->detail_y, &info));
-        float y = ds.viewport.y + 16 - s->detail_y, line;
+        nx_scroll_info info; TRY(nx_scroll_area_begin(s->ui, &ds, scroll_x, scroll_y, &info));
+        float y = ds.viewport.y + 16 - *scroll_y, line;
         if (s->dialog == 5 && s->selected >= 0) {
             float iw = fminf(w - 64, 320);
-            TRY(nx_image(s->ui, 505, 310, box(r.x + 24, y, iw, iw * .625f), span(s->files[s->selected].name), thumbnail(s, (unsigned)s->selected), rgb(255,255,255)));
+            TRY(nx_image(s->ui, 505, scroll_id, box(r.x + 24, y, iw, iw * .625f), span(s->files[s->selected].name), thumbnail(s, (unsigned)s->selected), rgb(255,255,255)));
         } else {
-            REQUIRE(wrapped_text(s, 310, message, r.x + 24, y, 14, color(s, NX_COLOR_TEXT_MUTED), w - 64, &line));
-            REQUIRE(wrapped_text(s, 310, second, r.x + 24, y + line + 16, 13, color(s, NX_COLOR_TEXT), w - 64, NULL));
+            REQUIRE(wrapped_text(s, scroll_id, message, r.x + 24, y, 14, color(s, NX_COLOR_TEXT_MUTED), w - 64, &line));
+            REQUIRE(wrapped_text(s, scroll_id, second, r.x + 24, y + line + 16, 13, color(s, NX_COLOR_TEXT), w - 64, NULL));
         }
         TRY(nx_scroll_area_end(s->ui));
     }
     int click;
     REQUIRE(action(s, 502, 500, box(r.x + 24, r.y + h - button_h - 20, w - 48, button_h), "Schließen", NX_ICON_CLOSE, NX_ACTION_PRIMARY, 0, 0, &click));
     TRY(nx_overlay_end(s->ui));
-    if (dismiss || click) { TRY(nx_overlay_close(s->ui)); s->dialog = 0; s->detail_y = 0; }
+    if (dismiss || click) { TRY(nx_overlay_close(s->ui)); s->dialog = 0; *scroll_y = 0; }
     return 1;
 }
 
@@ -868,7 +874,7 @@ static int reveal_focus(cloud_scene *s) {
                 TRY(nx_semantics_find(s->ui, node.parent_id, &index));
                 TRY(nx_semantics_get(s->ui, index, &node));
                 if (node.role != NX_ROLE_SCROLL_AREA) continue;
-                float *offset = node.id == 35 ? &s->nav_y : node.id == 310 ? &s->detail_y :
+                float *offset = node.id == 35 ? &s->nav_y : node.id == 310 ? &s->detail_y : node.id == 510 ? &s->dialog_y :
                     node.id == 211 ? &s->scroll_y : node.id == 100 || node.id == 410 || node.id == 610 ? &s->dashboard_y : NULL;
                 if (offset) {
                     float delta = bounds.y < node.bounds.y ? bounds.y - node.bounds.y :
