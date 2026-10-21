@@ -13,7 +13,7 @@
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s failed\n",__FILE__,__LINE__,#x); return 1; } } while (0)
 #define OK(x) do { HRESULT checked_hr=(x); if (FAILED(checked_hr)) { fprintf(stderr,"%s:%d: %s returned %08lx\n",__FILE__,__LINE__,#x,(unsigned long)checked_hr); return 1; } } while (0)
-static HANDLE commands,acks;
+static HANDLE commands,acks,read_complete;
 static int host(unsigned command,unsigned *reply) {
     DWORD bytes=0;
     if (!WriteFile(commands,&command,sizeof(command),&bytes,NULL) || bytes!=sizeof(command)) return 1;
@@ -323,6 +323,9 @@ static int run(HWND hwnd) {
     OK(IUIAutomation_AddAutomationEventHandler(uia,UIA_SelectionItem_ElementRemovedFromSelectionEventId,root,TreeScope_Subtree,NULL,&events->automation));
     OK(IUIAutomation_AddAutomationEventHandler(uia,UIA_Selection_InvalidatedEventId,root,TreeScope_Subtree,NULL,&events->automation));
     CHECK(name_is(button,L"\x00d6" L"ffnen \xd83d\xdcc1"));
+    unsigned read_reply=0;
+    CHECK(host(UIA_TEST_READ_WITHOUT_OWNER_PUMP,&read_reply)==0);
+    CHECK(name_is(button,L"\x00d6" L"ffnen \xd83d\xdcc1") && SetEvent(read_complete));
     CONTROLTYPEID type=0; OK(IUIAutomationElement_get_CurrentControlType(button,&type)); CHECK(type==UIA_ButtonControlTypeId);
     BOOL value=FALSE; OK(IUIAutomationElement_get_CurrentIsEnabled(disabled,&value)); CHECK(!value);
     CHECK(invoke(disabled,0));
@@ -559,11 +562,12 @@ int wmain(int argc,WCHAR **argv) {
         setvbuf(stdout,NULL,_IONBF,0); /* Keep progress when a parent deadline fires. */
         return cloud_probe((HWND)(UINT_PTR)_wcstoui64(argv[2],NULL,10));
     }
-    if (argc!=4&&argc!=5) return 2;
+    if (argc!=5&&argc!=6) return 2;
     HWND hwnd=(HWND)(UINT_PTR)_wcstoui64(argv[1],NULL,10);
     commands=(HANDLE)(UINT_PTR)_wcstoui64(argv[2],NULL,10); acks=(HANDLE)(UINT_PTR)_wcstoui64(argv[3],NULL,10);
+    read_complete=(HANDLE)(UINT_PTR)_wcstoui64(argv[4],NULL,10);
     int result;
-    if(argc==5&&wcscmp(argv[4],L"--design")==0) {
+    if(argc==6&&wcscmp(argv[5],L"--design")==0) {
         result=1;IUIAutomation *uia=NULL;IUIAutomationElement *root=NULL;
         HRESULT init=CoInitializeEx(NULL,COINIT_MULTITHREADED);
         if(SUCCEEDED(init)) {
@@ -575,5 +579,5 @@ int wmain(int argc,WCHAR **argv) {
             if(root)IUIAutomationElement_Release(root);if(uia)IUIAutomation_Release(uia);CoUninitialize();
         }
     } else result=run(hwnd);
-    CloseHandle(commands); CloseHandle(acks); return result;
+    CloseHandle(commands); CloseHandle(acks); CloseHandle(read_complete); return result;
 }

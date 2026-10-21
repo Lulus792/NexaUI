@@ -213,7 +213,7 @@ static int can_value(const nx_uia_node *n) {
 }
 static HRESULT STDMETHODCALLTYPE simple_options(IRawElementProviderSimple *self,enum ProviderOptions *out) {
     (void)self; if (!out) return E_POINTER;
-    *out=ProviderOptions_ServerSideProvider|ProviderOptions_UseComThreading; return S_OK;
+    *out=ProviderOptions_ServerSideProvider|ProviderOptions_ProviderOwnsSetFocus; return S_OK;
 }
 static HRESULT STDMETHODCALLTYPE simple_pattern(IRawElementProviderSimple *self,PATTERNID pattern,IUnknown **out) {
     if (!out) return E_POINTER; *out=NULL;

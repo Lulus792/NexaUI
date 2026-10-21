@@ -179,15 +179,17 @@ static int run(const WCHAR *client,int design_only) {
     CHECK(nx_window_publish_semantics(window,s.ctx)==NX_ERROR_MEMORY && !allocations.fail_next);
     CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
     SECURITY_ATTRIBUTES security={sizeof(security),NULL,TRUE};
+    HANDLE read_complete=CreateEventW(&security,TRUE,FALSE,NULL); CHECK(read_complete);
     HANDLE command_read,command_write,ack_read,ack_write;
     CHECK(CreatePipe(&command_read,&command_write,&security,0));
     CHECK(CreatePipe(&ack_read,&ack_write,&security,0));
     CHECK(SetHandleInformation(command_read,HANDLE_FLAG_INHERIT,0));
     CHECK(SetHandleInformation(ack_write,HANDLE_FLAG_INHERIT,0));
     WCHAR command[4096];
-    CHECK(swprintf_s(command,4096,L"\"%s\" %llu %llu %llu%s",client,
+    CHECK(swprintf_s(command,4096,L"\"%s\" %llu %llu %llu %llu%s",client,
         (unsigned long long)(UINT_PTR)hwnd,(unsigned long long)(UINT_PTR)command_write,
-        (unsigned long long)(UINT_PTR)ack_read,design_only?L" --design":L"")>0);
+        (unsigned long long)(UINT_PTR)ack_read,(unsigned long long)(UINT_PTR)read_complete,
+        design_only?L" --design":L"")>0);
     HANDLE log_read,log_write;
     CHECK(CreatePipe(&log_read,&log_write,&security,0));
     CHECK(SetHandleInformation(log_read,HANDLE_FLAG_INHERIT,0));
@@ -222,7 +224,7 @@ static int run(const WCHAR *client,int design_only) {
             CHECK(GetLastError()==ERROR_BROKEN_PIPE); available=0; /* Child can close pipes before process exit. */
         }
         if (available>=sizeof(unsigned)) {
-            unsigned request,reply=0; DWORD bytes=0;
+            unsigned request,reply=0; DWORD bytes=0; int block_read=0;
             CHECK(ReadFile(command_read,&request,sizeof(request),&bytes,NULL) && bytes==sizeof(request));
             if (request==UIA_TEST_MOVE_UNPUBLISHED || request==UIA_TEST_MOVE_SELECTION || request==UIA_TEST_RESTORE_SELECTION) {
                 s.selection_moved=request!=UIA_TEST_RESTORE_SELECTION; s.other_choice=0;
@@ -296,6 +298,8 @@ static int run(const WCHAR *client,int design_only) {
                     CHECK(frame(&s)==0); CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
                 }
                 reply=s.total_clicks;
+            } else if (request==UIA_TEST_READ_WITHOUT_OWNER_PUMP) {
+                CHECK(ResetEvent(read_complete)); block_read=1;
             } else if (request==UIA_TEST_SHOW) {
                 ShowWindow(hwnd,SW_SHOWNOACTIVATE);
             } else if (request==UIA_TEST_MOVE) {
@@ -303,6 +307,17 @@ static int run(const WCHAR *client,int design_only) {
                 CHECK(SetWindowPos(hwnd,NULL,r.left+40,r.top+30,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE));
             } else CHECK(0);
             CHECK(WriteFile(ack_write,&reply,sizeof(reply),&bytes,NULL) && bytes==sizeof(reply));
+            if (block_read) {
+                /* The external current-name query must read the published copy
+                   without any owner COM/window pumping or frame execution. */
+                DWORD read_wait=WaitForSingleObject(read_complete,2000);
+                if (read_wait!=WAIT_OBJECT_0) {
+                    fprintf(stderr,"UIA snapshot read needs the blocked owner: %lu\n",read_wait);
+                    TerminateProcess(process.hProcess,1);
+                    WaitForSingleObject(process.hProcess,5000);
+                }
+                CHECK(read_wait==WAIT_OBJECT_0);
+            }
         }
         if (auto_frames && GetTickCount64()>=next_frame) {
             size_t actions=0; CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
@@ -322,7 +337,7 @@ static int run(const WCHAR *client,int design_only) {
     }
     CloseHandle(log_read);
     DWORD status=1; CHECK(GetExitCodeProcess(process.hProcess,&status));
-    CloseHandle(process.hProcess); CloseHandle(command_read); CloseHandle(ack_write);
+    CloseHandle(process.hProcess); CloseHandle(command_read); CloseHandle(ack_write); CloseHandle(read_complete);
     if (s.ctx) nx_context_destroy(s.ctx); if (old_context) nx_context_destroy(old_context);
     design_a_free(&s.design);
     if (window) nx_window_destroy(window);
