@@ -172,7 +172,19 @@ def generate() -> tuple[str, str]:
         for first, last, value in ranges:
             body.append(f"    {{0x{first:X}u, 0x{last:X}u, {value}u}},\n")
         body.append("};\n")
+        # Boundary rebuilds repeatedly classify common ASCII scalars. Derive
+        # the direct table from the same pinned ranges as the general lookup.
+        ascii_values = [0] * 128
+        for first, last, value in ranges:
+            for scalar in range(first, min(last, 127) + 1):
+                ascii_values[scalar] = value
+        body.append(f"static const uint8_t nx_ucd_{prefix}_ascii[128] = {{\n")
+        for offset in range(0, 128, 16):
+            body.append("    " + ", ".join(f"{value}u" for value in
+                        ascii_values[offset:offset + 16]) + ",\n")
+        body.append("};\n")
         body.append(f"uint8_t nx_ucd_{prefix}(uint32_t scalar) {{\n")
+        body.append(f"    if (scalar < 128u) return nx_ucd_{prefix}_ascii[scalar];\n")
         body.append(f"    return nx_ucd_find(nx_ucd_{prefix}_ranges,\n")
         body.append(f"        sizeof(nx_ucd_{prefix}_ranges) / sizeof(nx_ucd_{prefix}_ranges[0]), scalar);\n")
         body.append("}\n")

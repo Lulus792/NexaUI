@@ -1408,7 +1408,18 @@ static const nx_ucd_range nx_ucd_gcb_ranges[] = {
     {0xE0100u, 0xE01EFu, 3u},
     {0xE01F0u, 0xE0FFFu, 2u},
 };
+static const uint8_t nx_ucd_gcb_ascii[128] = {
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 5u, 2u, 2u, 1u, 2u, 2u,
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 2u,
+};
 uint8_t nx_ucd_gcb(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_gcb_ascii[scalar];
     return nx_ucd_find(nx_ucd_gcb_ranges,
         sizeof(nx_ucd_gcb_ranges) / sizeof(nx_ucd_gcb_ranges[0]), scalar);
 }
@@ -2528,7 +2539,18 @@ static const nx_ucd_range nx_ucd_wb_ranges[] = {
     {0xE0020u, 0xE007Fu, 4u},
     {0xE0100u, 0xE01EFu, 4u},
 };
+static const uint8_t nx_ucd_wb_ascii[128] = {
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 9u, 13u, 13u, 2u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    17u, 0u, 3u, 0u, 0u, 0u, 0u, 16u, 0u, 0u, 0u, 0u, 11u, 0u, 12u, 0u,
+    14u, 14u, 14u, 14u, 14u, 14u, 14u, 14u, 14u, 14u, 10u, 11u, 0u, 0u, 0u, 0u,
+    0u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 0u, 0u, 0u, 0u, 5u,
+    0u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 0u, 0u, 0u, 0u, 0u,
+};
 uint8_t nx_ucd_wb(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_wb_ascii[scalar];
     return nx_ucd_find(nx_ucd_wb_ranges,
         sizeof(nx_ucd_wb_ranges) / sizeof(nx_ucd_wb_ranges[0]), scalar);
 }
@@ -5478,7 +5500,18 @@ static const nx_ucd_range nx_ucd_lb_ranges[] = {
     {0xE0020u, 0xE007Fu, 13u},
     {0xE0100u, 0xE01EFu, 13u},
 };
+static const uint8_t nx_ucd_lb_ascii[128] = {
+    13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 7u, 31u, 9u, 9u, 15u, 13u, 13u,
+    13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u,
+    42u, 18u, 38u, 3u, 37u, 36u, 3u, 38u, 35u, 14u, 3u, 37u, 27u, 24u, 27u, 43u,
+    34u, 34u, 34u, 34u, 34u, 34u, 34u, 34u, 34u, 34u, 27u, 27u, 3u, 3u, 3u, 18u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 35u, 37u, 14u, 3u, 3u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 35u, 7u, 12u, 3u, 13u,
+};
 uint8_t nx_ucd_lb(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_lb_ascii[scalar];
     return nx_ucd_find(nx_ucd_lb_ranges,
         sizeof(nx_ucd_lb_ranges) / sizeof(nx_ucd_lb_ranges[0]), scalar);
 }
@@ -8951,7 +8984,18 @@ static const nx_ucd_range nx_ucd_gc_ranges[] = {
     {0xF0000u, 0xFFFFDu, 3u},
     {0x100000u, 0x10FFFDu, 3u},
 };
+static const uint8_t nx_ucd_gc_ascii[128] = {
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    29u, 21u, 21u, 21u, 23u, 21u, 21u, 21u, 22u, 18u, 21u, 25u, 21u, 17u, 21u, 21u,
+    13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 13u, 21u, 21u, 25u, 25u, 25u, 21u,
+    21u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u,
+    9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 9u, 22u, 21u, 18u, 24u, 16u,
+    24u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u,
+    5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 5u, 22u, 25u, 18u, 25u, 1u,
+};
 uint8_t nx_ucd_gc(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_gc_ascii[scalar];
     return nx_ucd_find(nx_ucd_gc_ranges,
         sizeof(nx_ucd_gc_ranges) / sizeof(nx_ucd_gc_ranges[0]), scalar);
 }
@@ -9278,7 +9322,18 @@ static const nx_ucd_range nx_ucd_eaw_ranges[] = {
     {0xF0000u, 0xFFFFDu, 1u},
     {0x100000u, 0x10FFFDu, 1u},
 };
+static const uint8_t nx_ucd_eaw_ascii[128] = {
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 0u,
+};
 uint8_t nx_ucd_eaw(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_eaw_ascii[scalar];
     return nx_ucd_find(nx_ucd_eaw_ranges,
         sizeof(nx_ucd_eaw_ranges) / sizeof(nx_ucd_eaw_ranges[0]), scalar);
 }
@@ -9440,7 +9495,18 @@ static const nx_ucd_range nx_ucd_ep_ranges[] = {
     {0x1FA6Eu, 0x1FAFFu, 1u},
     {0x1FC00u, 0x1FFFDu, 1u},
 };
+static const uint8_t nx_ucd_ep_ascii[128] = {
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+};
 uint8_t nx_ucd_ep(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_ep_ascii[scalar];
     return nx_ucd_find(nx_ucd_ep_ranges,
         sizeof(nx_ucd_ep_ranges) / sizeof(nx_ucd_ep_ranges[0]), scalar);
 }
@@ -9929,7 +9995,18 @@ static const nx_ucd_range nx_ucd_incb_ranges[] = {
     {0xE0020u, 0xE007Fu, 2u},
     {0xE0100u, 0xE01EFu, 2u},
 };
+static const uint8_t nx_ucd_incb_ascii[128] = {
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+};
 uint8_t nx_ucd_incb(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_incb_ascii[scalar];
     return nx_ucd_find(nx_ucd_incb_ranges,
         sizeof(nx_ucd_incb_ranges) / sizeof(nx_ucd_incb_ranges[0]), scalar);
 }
@@ -9952,7 +10029,18 @@ static const nx_ucd_range nx_ucd_di_ranges[] = {
     {0x1D173u, 0x1D17Au, 1u},
     {0xE0000u, 0xE0FFFu, 1u},
 };
+static const uint8_t nx_ucd_di_ascii[128] = {
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+};
 uint8_t nx_ucd_di(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_di_ascii[scalar];
     return nx_ucd_find(nx_ucd_di_ranges,
         sizeof(nx_ucd_di_ranges) / sizeof(nx_ucd_di_ranges[0]), scalar);
 }
@@ -10724,7 +10812,18 @@ static const nx_ucd_range nx_ucd_bidi_ranges[] = {
     {0xFFFFEu, 0xFFFFFu, 4u},
     {0x10FFFEu, 0x10FFFFu, 4u},
 };
+static const uint8_t nx_ucd_bidi_ascii[128] = {
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 21u, 3u, 21u, 22u, 3u, 4u, 4u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u, 3u, 3u, 3u, 21u,
+    22u, 14u, 14u, 8u, 8u, 8u, 14u, 14u, 14u, 14u, 14u, 7u, 5u, 7u, 5u, 5u,
+    6u, 6u, 6u, 6u, 6u, 6u, 6u, 6u, 6u, 6u, 5u, 14u, 14u, 14u, 14u, 14u,
+    14u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 14u, 14u, 14u, 14u, 14u,
+    14u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 14u, 14u, 14u, 14u, 4u,
+};
 uint8_t nx_ucd_bidi(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_bidi_ascii[scalar];
     return nx_ucd_find(nx_ucd_bidi_ranges,
         sizeof(nx_ucd_bidi_ranges) / sizeof(nx_ucd_bidi_ranges[0]), scalar);
 }
@@ -11729,7 +11828,18 @@ static const nx_ucd_range nx_ucd_script_ranges[] = {
     {0xE0020u, 0xE007Fu, 26u},
     {0xE0100u, 0xE01EFu, 59u},
 };
+static const uint8_t nx_ucd_script_ascii[128] = {
+    26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u,
+    26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u,
+    26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u,
+    26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u, 26u,
+    26u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u,
+    76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 26u, 26u, 26u, 26u, 26u,
+    26u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u,
+    76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 76u, 26u, 26u, 26u, 26u, 26u,
+};
 uint8_t nx_ucd_script(uint32_t scalar) {
+    if (scalar < 128u) return nx_ucd_script_ascii[scalar];
     return nx_ucd_find(nx_ucd_script_ranges,
         sizeof(nx_ucd_script_ranges) / sizeof(nx_ucd_script_ranges[0]), scalar);
 }

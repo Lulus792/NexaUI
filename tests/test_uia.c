@@ -309,7 +309,10 @@ static int run(const WCHAR *client,int design_only) {
             CHECK(frame(&s)==0); CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
             next_frame=GetTickCount64()+10;
         }
-        Sleep(1);
+        /* Incoming UIA/COM calls must wake the owner thread immediately.
+           Keep the same pipe-poll interval without delaying native messages. */
+        DWORD idle=MsgWaitForMultipleObjectsEx(1,&process.hProcess,1,QS_ALLINPUT,MWMO_INPUTAVAILABLE);
+        CHECK(idle!=WAIT_FAILED);
     }
     DWORD logs=0;
     while (PeekNamedPipe(log_read,NULL,0,NULL,&logs,NULL) && logs) {

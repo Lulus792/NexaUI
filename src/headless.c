@@ -140,10 +140,40 @@ static void nx_paint_shape(uint8_t *pixels, uint32_t width, uint32_t height,
     uint32_t y1 = nx_first_pixel(bounds.bottom, height);
     uint8_t src[4] = {nx_byte(cmd->color.r), nx_byte(cmd->color.g),
                       nx_byte(cmd->color.b), nx_byte(cmd->color.a)};
+    /* Hoist the rounded contour constants per command and its Y calculation
+     * per row. Keep the original floating-point
+     * expression for every sample, including tiny-radius boundary rounding. */
+    int rounded = cmd->type == NX_COMMAND_FILL_ROUND_RECT;
+    double inner_left = 0, inner_top = 0, inner_right = 0, inner_bottom = 0, radius2 = 0;
+    if (rounded) {
+        nx_bounds outer = nx_rect_bounds(cmd->rect);
+        double radius = fmin(cmd->radius, fmin(cmd->rect.width, cmd->rect.height) / 2.0);
+        inner_left = outer.left + radius;
+        inner_right = outer.right - radius;
+        inner_top = outer.top + radius;
+        inner_bottom = outer.bottom - radius;
+        radius2 = radius * radius;
+    }
     for (uint32_t y = y0; y < y1; ++y) {
         uint8_t *row = pixels + (size_t)y * stride;
+        double dy2 = 0;
+        if (rounded) {
+            double py = (double)y + 0.5;
+            double cy = fmax(inner_top, fmin(py, inner_bottom));
+            double dy = py - cy;
+            dy2 = dy * dy;
+        }
         for (uint32_t x = x0; x < x1; ++x) {
-            if (nx_shape_contains(cmd, (double)x + 0.5, (double)y + 0.5))
+            int covered;
+            if (rounded) {
+                double px = (double)x + 0.5;
+                double cx = fmax(inner_left, fmin(px, inner_right));
+                double dx = px - cx;
+                covered = dx * dx + dy2 <= radius2;
+            } else {
+                covered = nx_shape_contains(cmd, (double)x + 0.5, (double)y + 0.5);
+            }
+            if (covered)
                 nx_blend(row + (size_t)x * 4u, src);
         }
     }

@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUIDependencyAuditFixture LANGUAGES C)
+project(NexaUIDependencyAuditFixture LANGUAGES NONE)
+
+# Rejected fixtures stop inside the configure-time audit, before generation.
+# Only successful fixtures need compiler detection and a generated C target.
+if(AUDIT_CASE STREQUAL "clean" OR
+        (AUDIT_CASE STREQUAL "appkit" AND CMAKE_HOST_APPLE))
+    enable_language(C)
+endif()
 
 if(AUDIT_CASE STREQUAL "header")
     add_library(probe STATIC forbidden.c)

@@ -252,7 +252,14 @@ static int selection_probe(IUIAutomation *uia,IUIAutomationElement *root,observe
     CHECK(FAILED(IUIAutomationSelectionItemPattern_Select(pa)));
     CHECK(selection_id(req,51)==0); /* Acceptance does not publish a fake selection. */
     unsigned reply=0; CHECK(host(UIA_TEST_SELECTION_APPLY,&reply)==0 && (reply&255u)==52);
-    CHECK(wait_event(&events->selections,selected_before) && wait_event(&events->invalidations,invalidated_before));
+    ULONGLONG selection_event_start=GetTickCount64();
+    int selected_event=wait_event(&events->selections,selected_before);
+    int invalidated_event=selected_event && wait_event(&events->invalidations,invalidated_before);
+    if (!selected_event || !invalidated_event)
+        fprintf(stderr,"Selection events after %llu ms: selected %ld -> %ld, invalidated %ld -> %ld; waits selected=%d invalidated=%d\n",
+            GetTickCount64()-selection_event_start,selected_before,InterlockedCompareExchange(&events->selections,0,0),
+            invalidated_before,InterlockedCompareExchange(&events->invalidations,0,0),selected_event,invalidated_event);
+    CHECK(selected_event && invalidated_event);
     CHECK(selection_id(req,52)==0); OK(IUIAutomationSelectionItemPattern_get_CurrentIsSelected(pa,&value)); CHECK(!value);
     OK(IUIAutomationSelectionItemPattern_AddToSelection(pc));
     CHECK(host(UIA_TEST_ROUTE_SELECTION,&reply)==0); /* Forward, republish the same completed frame. */
