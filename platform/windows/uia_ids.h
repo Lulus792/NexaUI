@@ -66,6 +66,7 @@ enum {
     NX_UIA_SelectionItemSelectionContainerPropertyId = 30080,
     NX_UIA_Selection_InvalidatedEventId = 20013,
     NX_UIA_SelectionItem_ElementSelectedEventId = 20012,
+    NX_UIA_SelectionItem_ElementAddedToSelectionEventId = 20010,
     NX_UIA_SelectionItem_ElementRemovedFromSelectionEventId = 20011,
 };
 #endif

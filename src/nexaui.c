@@ -4,6 +4,7 @@
 #include "context_identity.h"
 #include "text_command.h"
 #include "text_value.h"
+#include "selection_model.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -67,6 +68,10 @@ typedef struct nx_semantic_record {
     size_t value_offset, value_length;
     uint32_t state, actions;
     nx_text_value_target text_value;
+    nx_selection_target selection_target;
+    uint64_t selection_membership;
+    nx_selection_model *selection_model; /* Building frame only. */
+    int selection_bound, selection_changed, selection_disabled;
     size_t radio_outer_command, radio_inner_command;
     nx_color radio_unchecked_color;
     int has_radio_visual;
@@ -115,6 +120,15 @@ typedef struct nx_text_value_request {
     size_t length;
     nx_text_value_guard guard;
 } nx_text_value_request;
+
+typedef struct nx_multi_selection_request {
+    uint64_t id, parent_id, owner_id, owner_parent_id, source_frame;
+    nx_selection_target target;
+    uint64_t membership;
+    uint32_t action;
+    int required;
+    nx_selection_guard guard;
+} nx_multi_selection_request;
 
 struct nx_context {
     nx_allocator allocator;
@@ -171,6 +185,10 @@ struct nx_context {
     size_t accessible_request_count;
     nx_text_value_request text_values[64];
     size_t text_value_count;
+    nx_multi_selection_request multi_requests[64];
+    size_t multi_request_count;
+    uint32_t multi_owners[64];
+    size_t multi_owner_count;
     size_t semantic_initial_capacity, semantic_text_initial_capacity;
 };
 
@@ -219,6 +237,13 @@ static nx_region *nx_hit_test_scroll(nx_region_buffer *buffer, float x, float y,
 static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_event_route *route);
 static void nx_region_buffer_clear(nx_region_buffer *buffer);
 static uint32_t nx_semantic_find_index(const nx_semantic_buffer *buffer, uint64_t id);
+
+static void nx_multi_requests_clear(nx_context *ctx) {
+    for (size_t i = 0; i < ctx->multi_request_count; ++i)
+        if (ctx->multi_requests[i].guard.release)
+            ctx->multi_requests[i].guard.release(ctx->multi_requests[i].guard.user);
+    ctx->multi_request_count = 0;
+}
 
 static void nx_text_value_dispose(nx_context *ctx, nx_text_value_request *r) {
     if (r->bytes) ctx->allocator.deallocate(ctx->allocator.user, r->bytes, r->length + 1u);
@@ -341,6 +366,7 @@ uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->fram
 void nx_context_destroy(nx_context *ctx) {
     if (!ctx) return;
     nx_text_values_clear(ctx);
+    nx_multi_requests_clear(ctx);
     if (ctx->ime_active_window)
         (void)nx_window_set_ime_enabled(ctx->ime_active_window, 0);
     nx_allocator a = ctx->allocator;
@@ -529,6 +555,11 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     for (size_t i = 0; i < ctx->text_value_count; ++i)
         if (ctx->text_values[i].source_frame != ctx->frame_serial)
             nx_text_value_dispose(ctx, &ctx->text_values[i]);
+    /* Multi-selection work is never carried past the immediately following
+       completed frame. A failed end_frame retains it for the same-frame retry. */
+    if (ctx->multi_request_count &&
+        ctx->multi_requests[0].source_frame != ctx->frame_serial)
+        nx_multi_requests_clear(ctx);
     nx_free_owned_bitmaps(ctx, NULL);
     if (++ctx->frame_serial == 0) ++ctx->frame_serial;
     ctx->state = 1u;
@@ -539,6 +570,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     ctx->command_count = 0;
     ctx->semantics.count = 0;
     ctx->semantics.text_count = 0;
+    ctx->multi_owner_count = 0;
     if (ctx->semantics.slots)
         memset(ctx->semantics.slots, 0,
                ctx->semantics.slot_capacity * sizeof(uint32_t));
@@ -1411,7 +1443,10 @@ static nx_result nx_semantics_add_impl(nx_context *ctx, const nx_semantic_desc *
         uint32_t parent = nx_semantic_find_index(buffer, desc->parent_id);
         if (parent == UINT32_MAX) return NX_ERROR_ARGUMENT;
         depth = buffer->nodes[parent].depth + 1u;
-        owner = (buffer->nodes[parent].state & NX_SEM_SELECTION_SINGLE) ? parent : buffer->nodes[parent].selection_owner;
+        owner = (buffer->nodes[parent].state & (NX_SEM_SELECTION_SINGLE | NX_SEM_SELECTION_MULTIPLE)) ? parent : buffer->nodes[parent].selection_owner;
+        /* Table header SELECT means sort, not row membership. */
+        if (desc->role == NX_ROLE_COLUMN_HEADER && owner != UINT32_MAX &&
+            (buffer->nodes[owner].state & NX_SEM_SELECTION_MULTIPLE)) owner = UINT32_MAX;
         if (depth >= NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
     }
     nx_utf8_span spans[3] = {desc->name, desc->description, desc->value};
@@ -1479,6 +1514,228 @@ nx_result nx_selection_group(nx_context *ctx, const nx_semantic_desc *desc, int 
     nx_result result = nx_semantics_add_impl(ctx, &group, NULL, 1);
     if (result != NX_OK) return result;
     return nx_selection_apply(ctx, desc->id, required, selected_id);
+}
+
+static int nx_selection_target_equal(nx_selection_target a, nx_selection_target b) {
+    return a.identity == b.identity && a.revision == b.revision;
+}
+
+static uint32_t nx_multi_nearest_owner(const nx_context *ctx, uint64_t parent_id) {
+    while (parent_id) {
+        uint32_t at = nx_semantic_find_index(&ctx->semantics, parent_id);
+        if (at == UINT32_MAX) break;
+        const nx_semantic_record *n = &ctx->semantics.nodes[at];
+        if (n->state & (NX_SEM_SELECTION_SINGLE | NX_SEM_SELECTION_MULTIPLE)) return at;
+        parent_id = n->parent_id;
+    }
+    return UINT32_MAX;
+}
+
+static int nx_multi_enabled(const nx_context *ctx, const nx_semantic_record *node) {
+    int modal_member = !ctx->current_overlay_id;
+    for (;;) {
+        if (node->state & NX_SEM_DISABLED) return 0;
+        if (node->id == ctx->current_overlay_id) modal_member = 1;
+        const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+        if (region) {
+            if (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) return 0;
+            if (region->overlay_id == ctx->current_overlay_id) modal_member = 1;
+        }
+        if (!node->parent_id) return modal_member;
+        uint32_t parent = nx_semantic_find_index(&ctx->semantics, node->parent_id);
+        if (parent == UINT32_MAX) return 0;
+        node = &ctx->semantics.nodes[parent];
+    }
+}
+
+nx_result nx_selection_bind_owner(nx_context *ctx, uint64_t owner_id,
+    nx_selection_model *model, int required) {
+    if (!ctx || !owner_id || !model || (required != 0 && required != 1)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, owner_id);
+    if (at == UINT32_MAX) return NX_ERROR_STATE;
+    nx_semantic_record *owner = &ctx->semantics.nodes[at];
+    if ((owner->role != NX_ROLE_GROUP && owner->role != NX_ROLE_LIST &&
+         owner->role != NX_ROLE_TREE && owner->role != NX_ROLE_TABLE) || owner->actions)
+        return NX_ERROR_ARGUMENT;
+    if (owner->state & (NX_SEM_SELECTION_SINGLE | NX_SEM_SELECTION_MULTIPLE)) return NX_ERROR_STATE;
+    if (ctx->multi_owner_count == 64u) return NX_ERROR_LIMIT;
+    nx_selection_target target = nx_selection_model_target(model);
+    if (!target.identity) return NX_ERROR_STATE;
+    for (size_t i = 0; i < ctx->multi_owner_count; ++i)
+        if (ctx->semantics.nodes[ctx->multi_owners[i]].selection_target.identity == target.identity)
+            return NX_ERROR_STATE;
+    /* Header children may already exist, e.g. nx_table_headers. Do not insert a
+       new owner above a selectable or already bound descendant. */
+    for (size_t i = at + 1u; i < ctx->semantics.count; ++i) {
+        const nx_semantic_record *n = &ctx->semantics.nodes[i];
+        if ((!(n->actions & NX_ACTION_SELECT) || n->role == NX_ROLE_COLUMN_HEADER) && !n->selection_bound) continue;
+        uint64_t parent_id = n->parent_id;
+        while (parent_id) {
+            if (parent_id == owner_id) return NX_ERROR_STATE;
+            uint32_t parent = nx_semantic_find_index(&ctx->semantics, parent_id);
+            if (parent == UINT32_MAX) break;
+            parent_id = ctx->semantics.nodes[parent].parent_id;
+        }
+    }
+    owner->selection_model = model;
+    owner->selection_target = target;
+    owner->state |= NX_SEM_SELECTION_MULTIPLE | (required ? NX_SEM_SELECTION_REQUIRED : 0u);
+    ctx->multi_owners[ctx->multi_owner_count++] = at;
+    return NX_OK;
+}
+
+nx_result nx_selection_bind_item(nx_context *ctx, uint64_t owner_id,
+    uint64_t item_id, int offscreen) {
+    if (!ctx || !owner_id || !item_id || (offscreen != 0 && offscreen != 1)) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 1u) return NX_ERROR_STATE;
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, item_id);
+    uint32_t group = nx_semantic_find_index(&ctx->semantics, owner_id);
+    if (at == UINT32_MAX || group == UINT32_MAX) return NX_ERROR_STATE;
+    nx_semantic_record *n = &ctx->semantics.nodes[at], *owner = &ctx->semantics.nodes[group];
+    if (!(owner->state & NX_SEM_SELECTION_MULTIPLE) || !owner->selection_model || n->selection_bound ||
+        nx_multi_nearest_owner(ctx, n->parent_id) != group) return NX_ERROR_STATE;
+    if (n->role != NX_ROLE_LIST_ITEM && n->role != NX_ROLE_TREE_ITEM &&
+        n->role != NX_ROLE_ROW && n->role != NX_ROLE_CUSTOM) return NX_ERROR_ARGUMENT;
+    if (offscreen && (nx_region_find(&ctx->current_regions, item_id) || (n->actions & NX_ACTION_FOCUS)))
+        return NX_ERROR_STATE;
+    int is_selected = 0, disabled = 0;
+    nx_result result = nx_selection_model_item(owner->selection_model, item_id, 0, &is_selected, &disabled);
+    if (result != NX_OK) return result;
+    n->selection_owner = group;
+    n->selection_bound = 1;
+    n->selection_disabled = (n->state & NX_SEM_DISABLED) != 0;
+    n->actions |= NX_ACTION_SELECT;
+    n->state &= ~NX_SEM_SELECTED;
+    n->state |= (is_selected ? NX_SEM_SELECTED : 0u) | (disabled ? NX_SEM_DISABLED : 0u) |
+        (offscreen ? NX_SEM_OFFSCREEN : 0u);
+    return NX_OK;
+}
+
+nx_selection_target nx_context_selection_target(const nx_context *ctx, uint64_t id) {
+    if (!ctx || ctx->state != 2u) return (nx_selection_target){0};
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, id);
+    if (at == UINT32_MAX) return (nx_selection_target){0};
+    const nx_semantic_record *n = &ctx->semantics.nodes[at];
+    if (n->state & NX_SEM_SELECTION_MULTIPLE) return n->selection_target;
+    return n->selection_bound && n->selection_owner != UINT32_MAX && (n->actions & NX_ACTION_SELECT)
+        ? ctx->semantics.nodes[n->selection_owner].selection_target : (nx_selection_target){0};
+}
+
+uint64_t nx_context_selection_membership(const nx_context *ctx, uint64_t id) {
+    if (!ctx || ctx->state != 2u) return 0;
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, id);
+    return at != UINT32_MAX ? ctx->semantics.nodes[at].selection_membership : 0;
+}
+
+nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
+    uint32_t action, const nx_selection_guard *guard) {
+    if (!ctx || !id || (guard && (!guard->retain || !guard->release || !guard->current)))
+        return NX_ERROR_ARGUMENT;
+    if (action != NX_ACTION_SELECT && action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
+        return NX_ERROR_UNSUPPORTED;
+    if (ctx->state != 2u) return NX_ERROR_STATE;
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, id);
+    if (at == UINT32_MAX) return NX_ERROR_STATE;
+    const nx_semantic_record *n = &ctx->semantics.nodes[at];
+    if (!n->selection_bound || !(n->actions & NX_ACTION_SELECT) || n->selection_owner == UINT32_MAX ||
+        !nx_multi_enabled(ctx, n)) return NX_ERROR_STATE;
+    const nx_semantic_record *owner = &ctx->semantics.nodes[n->selection_owner];
+    if (!(owner->state & NX_SEM_SELECTION_MULTIPLE)) return NX_ERROR_STATE;
+    if (ctx->multi_request_count == 64u) return NX_ERROR_LIMIT;
+    nx_multi_selection_request r = {0};
+    r.id = id; r.parent_id = n->parent_id; r.owner_id = owner->id;
+    r.owner_parent_id = owner->parent_id; r.source_frame = ctx->frame_serial;
+    r.target = owner->selection_target;
+    r.membership = n->selection_membership;
+    r.action = action;
+    r.required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
+    if (guard) { r.guard = *guard; r.guard.retain(r.guard.user); }
+    ctx->multi_requests[ctx->multi_request_count++] = r;
+    return NX_OK;
+}
+
+/* No allocations or application call-outs. All models are prepared and their
+   complete selected projection is checked before committing the first group. */
+static nx_result nx_multi_finish(nx_context *ctx) {
+    for (size_t group = 0; group < ctx->multi_owner_count; ++group) {
+        uint32_t index = ctx->multi_owners[group];
+        nx_semantic_record *owner = &ctx->semantics.nodes[index];
+        nx_selection_model *model = owner->selection_model;
+        nx_selection_view view;
+        nx_result result = nx_selection_model_get(model, &view);
+        if (result != NX_OK) return result;
+        nx_selection_target target = nx_selection_model_target(model);
+        int required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
+        nx_selection_change changes[64]; size_t count = 0;
+        for (size_t i = 0; i < ctx->multi_request_count; ++i) {
+            const nx_multi_selection_request *r = &ctx->multi_requests[i];
+            if (r->owner_id != owner->id || r->owner_parent_id != owner->parent_id ||
+                r->required != required || r->source_frame == UINT64_MAX ||
+                r->source_frame + 1u != ctx->frame_serial || !nx_selection_target_equal(r->target, target)) continue;
+            uint32_t at = nx_semantic_find_index(&ctx->semantics, r->id);
+            if (at == UINT32_MAX) continue;
+            const nx_semantic_record *n = &ctx->semantics.nodes[at];
+            int chosen = 0, disabled = 0;
+            if (!n->selection_bound || n->selection_owner != index || n->parent_id != r->parent_id ||
+                !nx_multi_enabled(ctx, n) ||
+                nx_selection_model_item(model, n->id, 0, &chosen, &disabled) != NX_OK || disabled ||
+                r->membership != nx_selection_model_membership(model, n->id)) continue;
+            if (r->guard.current) {
+                uint64_t identity = 0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+                identity = ctx->native_identity;
+#endif
+                if (!r->guard.current(r->guard.user, r->guard.token, identity, n->id, owner->id, target)) continue;
+            }
+            changes[count++] = (nx_selection_change){r->id, r->action};
+        }
+        size_t selected_count = 0; int changed = 0;
+        result = nx_selection_model_prepare(model, changes, count, required, &changed, &selected_count);
+        /* An admitted batch may become invalid, e.g. removing the last required
+           member. Drop that batch, preserve the current application selection. */
+        if (result == NX_ERROR_STATE)
+            result = nx_selection_model_prepare(model, NULL, 0, required, &changed, &selected_count);
+        if (result != NX_OK) return result;
+        size_t projected = 0;
+        for (size_t i = 0; i < ctx->semantics.count; ++i) {
+            const nx_semantic_record *n = &ctx->semantics.nodes[i];
+            if (n->selection_owner != index) continue;
+            if (!n->selection_bound) {
+                if (n->actions & NX_ACTION_SELECT) return NX_ERROR_STATE;
+                continue;
+            }
+            if ((n->state & NX_SEM_OFFSCREEN) && nx_region_find(&ctx->current_regions, n->id))
+                return NX_ERROR_STATE;
+            int chosen = 0, disabled = 0;
+            if (nx_selection_model_item(model, n->id, 1, &chosen, &disabled) == NX_OK && chosen) ++projected;
+        }
+        if (projected != selected_count) return NX_ERROR_STATE;
+        owner->selection_changed = changed;
+    }
+    for (size_t group = 0; group < ctx->multi_owner_count; ++group) {
+        uint32_t index = ctx->multi_owners[group];
+        nx_semantic_record *owner = &ctx->semantics.nodes[index];
+        nx_selection_model_commit(owner->selection_model, owner->selection_changed);
+        owner->selection_target = nx_selection_model_target(owner->selection_model);
+        owner->selection_count = 0;
+        for (size_t i = 0; i < ctx->semantics.count; ++i) {
+            nx_semantic_record *n = &ctx->semantics.nodes[i];
+            if (!n->selection_bound || n->selection_owner != index) continue;
+            int chosen = 0, disabled = 0;
+            n->state &= ~(NX_SEM_SELECTED | NX_SEM_DISABLED);
+            n->selection_membership = nx_selection_model_membership(owner->selection_model, n->id);
+            if (n->selection_disabled) n->state |= NX_SEM_DISABLED;
+            if (nx_selection_model_item(owner->selection_model, n->id, 0, &chosen, &disabled) != NX_OK)
+                n->actions &= ~NX_ACTION_SELECT; /* Membership removed during frame. */
+            else {
+                if (chosen) { n->state |= NX_SEM_SELECTED; ++owner->selection_count; }
+                if (disabled) n->state |= NX_SEM_DISABLED;
+            }
+        }
+        owner->selection_model = NULL;
+    }
+    return NX_OK;
 }
 
 static void nx_semantics_rollback_last(nx_context *ctx, uint64_t id,
@@ -1566,8 +1823,11 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
     view->actions = node->actions;
     if ((node->actions & NX_ACTION_SELECT) && node->selection_owner != UINT32_MAX) {
         view->actions |= NX_ACTION_ADD_SELECTION;
-        if (!(ctx->semantics.nodes[node->selection_owner].state & NX_SEM_SELECTION_REQUIRED)) view->actions |= NX_ACTION_DESELECT;
+        if ((ctx->semantics.nodes[node->selection_owner].state & NX_SEM_SELECTION_MULTIPLE) ||
+            !(ctx->semantics.nodes[node->selection_owner].state & NX_SEM_SELECTION_REQUIRED)) view->actions |= NX_ACTION_DESELECT;
     }
+    if ((node->selection_bound || (node->state & NX_SEM_SELECTION_MULTIPLE)) &&
+        !nx_multi_enabled(ctx, node)) view->state |= NX_SEM_DISABLED;
     const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
     if (region && (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))) view->state |= NX_SEM_DISABLED;
@@ -1590,6 +1850,9 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
     if (index == UINT32_MAX) return NX_ERROR_STATE;
     const nx_semantic_record *node = &ctx->semantics.nodes[index];
+    if (node->selection_bound && (action == NX_ACTION_SELECT ||
+        action == NX_ACTION_ADD_SELECTION || action == NX_ACTION_DESELECT))
+        return nx_semantics_request_selection_guarded(ctx, id, action, NULL);
     const nx_region *region = nx_region_find(&ctx->current_regions, id);
     if (!region || (node->state & NX_SEM_DISABLED) ||
         (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
@@ -1762,11 +2025,13 @@ nx_result nx_end_frame(nx_context *ctx) {
         nx_semantic_record *n = &ctx->semantics.nodes[i];
         if (n->selection_owner != UINT32_MAX && (n->actions & NX_ACTION_SELECT) &&
             (n->state & (n->role == NX_ROLE_RADIO ? NX_SEM_CHECKED : NX_SEM_SELECTED))) {
-            if (++ctx->semantics.nodes[n->selection_owner].selection_count > 1u) return NX_ERROR_STATE;
+            nx_semantic_record *owner = &ctx->semantics.nodes[n->selection_owner];
+            if (++owner->selection_count > 1u && !(owner->state & NX_SEM_SELECTION_MULTIPLE)) return NX_ERROR_STATE;
         }
     }
     for (size_t i = 0; i < ctx->semantics.count; ++i)
-        if ((ctx->semantics.nodes[i].state & NX_SEM_SELECTION_REQUIRED) && !ctx->semantics.nodes[i].selection_count) return NX_ERROR_STATE;
+        if ((ctx->semantics.nodes[i].state & (NX_SEM_SELECTION_REQUIRED | NX_SEM_SELECTION_SINGLE)) ==
+            (NX_SEM_SELECTION_REQUIRED | NX_SEM_SELECTION_SINGLE) && !ctx->semantics.nodes[i].selection_count) return NX_ERROR_STATE;
     if (ctx->current_overlay_id) {
         nx_region *focused_overlay = nx_region_find(&ctx->current_regions,
                                                      ctx->focused_id);
@@ -1850,8 +2115,11 @@ nx_result nx_end_frame(nx_context *ctx) {
             ctx->ime_active_password = ctx->ime_candidate_password;
     }
     ctx->ime_active_id = ctx->ime_active_window ? ctx->ime_candidate_id : 0;
+    nx_result selection_result = nx_multi_finish(ctx);
+    if (selection_result != NX_OK) return selection_result;
     ctx->state = 2u;
     nx_text_values_clear(ctx);
+    nx_multi_requests_clear(ctx);
     return NX_OK;
 }
 

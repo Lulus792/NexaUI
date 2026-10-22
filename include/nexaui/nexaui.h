@@ -678,6 +678,9 @@ typedef enum nx_semantic_role {
 /* Derived by nx_selection_group; not accepted in ordinary semantic descs. */
 #define NX_SEM_SELECTION_SINGLE 2048u
 #define NX_SEM_SELECTION_REQUIRED 4096u
+/* Derived by explicit multi-selection bindings, not ordinary descriptors. */
+#define NX_SEM_SELECTION_MULTIPLE 8192u
+#define NX_SEM_OFFSCREEN 16384u
 
 #define NX_ACTION_PRESS       1u
 #define NX_ACTION_FOCUS       2u
@@ -1790,6 +1793,71 @@ NX_API nx_result nx_selection_group(nx_context *context, const nx_semantic_desc 
    only its matching optional selection. Context owner thread, during a frame. */
 NX_API nx_result nx_selection_apply(nx_context *context, uint64_t group_id,
                                     int required, uint64_t *selected_id);
+
+/* Logical multi-selection model, independent of the current paint/virtual range.
+   Existing single-selection APIs above retain their original behavior. */
+typedef struct nx_selection_model nx_selection_model;
+#define NX_SELECTION_MAX_ITEMS 65536u
+#define NX_SELECTION_MAX_CHANGES 64u
+#define NX_SELECTION_ITEM_DISABLED 1u
+typedef struct nx_selection_item {
+    uint64_t id;
+    uint32_t flags; /* Zero or NX_SELECTION_ITEM_DISABLED. IDs are nonzero/unique. */
+} nx_selection_item;
+typedef struct nx_selection_change {
+    uint64_t id;
+    uint32_t action; /* NX_ACTION_SELECT, ADD_SELECTION or DESELECT. */
+} nx_selection_change;
+typedef struct nx_selection_view {
+    const nx_selection_item *items;
+    size_t item_count;
+    const uint64_t *selected_ids; /* Catalog order, independent of action order. */
+    size_t selected_count;
+    uint64_t active_id; /* Logical active row; not selection or keyboard focus. */
+} nx_selection_view;
+/* max_items is 1..NX_SELECTION_MAX_ITEMS. Owner-thread calls only; keep the model
+   alive through every call. NULL allocator selects malloc/free. */
+NX_API nx_result nx_selection_model_create(size_t max_items,
+    const nx_allocator *allocator, nx_selection_model **out_model);
+NX_API void nx_selection_model_destroy(nx_selection_model *model);
+/* Copy full logical membership, preserving selected IDs that remain present.
+   Removed/disabled active IDs become zero; disabled selected IDs are retained.
+   Failure preserves all state. Input may borrow the current model view. */
+NX_API nx_result nx_selection_model_set_items(nx_selection_model *model,
+    const nx_selection_item *items, size_t count);
+/* Application whole-set replacement, including disabled members. IDs must be
+   unique and in the catalog. Does not change active_id. Both application setters
+   invalidate older requests even when replacing with equal data. */
+NX_API nx_result nx_selection_model_set_selected(nx_selection_model *model,
+    const uint64_t *ids, size_t count);
+/* Atomically apply <=64 changes. SELECT replaces even an already selected member
+   of a larger set; ADD/DESELECT are idempotent. Unknown/disabled targets return
+   STATE, invalid input ARGUMENT, bounds LIMIT. required=1 rejects an empty final
+   set. No allocation occurs. Failure clears changed and preserves all model state.
+   Selection actions never move the active row or request keyboard focus. */
+NX_API nx_result nx_selection_model_apply(nx_selection_model *model,
+    const nx_selection_change *changes, size_t count, int required, int *changed);
+NX_API nx_result nx_selection_model_set_active(nx_selection_model *model, uint64_t id);
+/* View remains borrowed until the next successful mutation or destruction.
+   Reentrant calls during allocating setters return STATE; allocator callbacks
+   must not destroy the model. Error clears the output view. */
+NX_API nx_result nx_selection_model_get(const nx_selection_model *model,
+    nx_selection_view *out_view);
+/* Bind an already registered GROUP/LIST/TREE/TABLE before registering its
+   selectable descendants. At most 64 owners per frame, one owner per model.
+   Keep the model alive through end_frame, including an end_frame retry. Queued
+   native actions are revalidated/applied at successful frame completion; they
+   do not change active_id or keyboard focus. No model is retained afterwards. */
+NX_API nx_result nx_selection_bind_owner(nx_context *context, uint64_t owner_id,
+    nx_selection_model *model, int required);
+/* Bind an already registered LIST_ITEM/TREE_ITEM/ROW/CUSTOM descendant to its
+   nearest selection owner. Derives SELECT/selected/disabled from the model.
+   offscreen=1 requires no interactive region and derives OFFSCREEN. Otherwise
+   normal regions, if registered, retain their separate hit/focus behavior.
+   Every selected model ID must have a bound semantic member at end_frame,
+   including offscreen IDs; missing projections reject the frame atomically. */
+NX_API nx_result nx_selection_bind_item(nx_context *context, uint64_t owner_id,
+    uint64_t item_id, int offscreen);
 
 /* IDs are stable across frames for identical hierarchy and byte sequences.
    Labels are borrowed only for the duration of the call and may contain any
