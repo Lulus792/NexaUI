@@ -14,6 +14,11 @@
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s failed\n",__FILE__,__LINE__,#x); return 1; } } while (0)
 #define OK(x) do { HRESULT checked_hr=(x); if (FAILED(checked_hr)) { fprintf(stderr,"%s:%d: %s returned %08lx\n",__FILE__,__LINE__,#x,(unsigned long)checked_hr); return 1; } } while (0)
 static HANDLE commands,acks,read_complete;
+static HRESULT set_value(IUIAutomationValuePattern *pattern,const WCHAR *text) {
+    BSTR value=SysAllocString(text);
+    if(!value){fputs("UIA client BSTR allocation failed\n",stderr);exit(EXIT_FAILURE);}
+    HRESULT hr=IUIAutomationValuePattern_SetValue(pattern,value);SysFreeString(value);return hr;
+}
 static int host(unsigned command,unsigned *reply) {
     DWORD bytes=0;
     if (!WriteFile(commands,&command,sizeof(command),&bytes,NULL) || bytes!=sizeof(command)) return 1;
@@ -95,7 +100,7 @@ static int design_probe(IUIAutomation *uia,IUIAutomationElement *root,HWND hwnd)
     OK(IUIAutomationElement_GetCurrentPatternAs(plot,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&value));
     OK(IUIAutomationValuePattern_get_CurrentIsReadOnly(value,&readonly));CHECK(readonly);
     OK(IUIAutomationValuePattern_get_CurrentValue(value,&current));CHECK(current&&wcsncmp(current,L"x=",2)==0);SysFreeString(current);
-    CHECK(FAILED(IUIAutomationValuePattern_SetValue(value,L"x=999")));
+    CHECK(FAILED(set_value(value,L"x=999")));
     IUIAutomationElement *guard=find(uia,root,1904);IUIAutomationValuePattern *guard_value=NULL;CHECK(guard);
     OK(IUIAutomationElement_GetCurrentPatternAs(guard,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&guard_value));
     OK(IUIAutomationValuePattern_get_CurrentValue(guard_value,&current));CHECK(current&&!wcscmp(current,L"fixture-value"));SysFreeString(current);
@@ -103,7 +108,7 @@ static int design_probe(IUIAutomation *uia,IUIAutomationElement *root,HWND hwnd)
         CHECK(!host(guard_mode?UIA_TEST_DESIGN_EDITABLE:UIA_TEST_DESIGN_PROTECT,&reply));
         current=NULL;HRESULT hr=IUIAutomationValuePattern_get_CurrentValue(guard_value,&current);
         CHECK(FAILED(hr)||!current||!*current);SysFreeString(current);
-        CHECK(FAILED(IUIAutomationValuePattern_SetValue(guard_value,L"overwrite")));
+        CHECK(FAILED(set_value(guard_value,L"overwrite")));
         IUIAutomationValuePattern *unsupported=NULL;
         hr=IUIAutomationElement_GetCurrentPatternAs(guard,UIA_ValuePatternId,&IID_IUIAutomationValuePattern,(void **)&unsupported);
         /* UIAutomationCore can retain the static COM pattern interface. Its
@@ -111,7 +116,7 @@ static int design_probe(IUIAutomation *uia,IUIAutomationElement *root,HWND hwnd)
         if(SUCCEEDED(hr)&&unsupported) {
             current=NULL;hr=IUIAutomationValuePattern_get_CurrentValue(unsupported,&current);
             CHECK(FAILED(hr)||!current||!*current);SysFreeString(current);
-            CHECK(FAILED(IUIAutomationValuePattern_SetValue(unsupported,L"overwrite")));
+            CHECK(FAILED(set_value(unsupported,L"overwrite")));
             IUIAutomationValuePattern_Release(unsupported);
         } else CHECK(!unsupported);
     }
@@ -142,7 +147,7 @@ static int design_probe(IUIAutomation *uia,IUIAutomationElement *root,HWND hwnd)
     CHECK(!host(UIA_TEST_DESIGN_END,&reply));
     current=NULL;HRESULT stale_value=IUIAutomationValuePattern_get_CurrentValue(value,&current);
     CHECK(FAILED(stale_value)||!current||!*current);SysFreeString(current);CHECK(unavailable(plot));
-    CHECK(FAILED(IUIAutomationValuePattern_SetValue(value,L"x=999")));IUIAutomationValuePattern_Release(value);
+    CHECK(FAILED(set_value(value,L"x=999")));IUIAutomationValuePattern_Release(value);
     IUIAutomationElement_Release(plot);
     puts("Design A independent UIA properties, effect toggles and posted HWND keys passed");return 0;
 }
@@ -331,8 +336,12 @@ static int run(HWND hwnd) {
     CHECK(invoke(disabled,0));
     OK(IUIAutomationElement_get_CurrentIsPassword(secret,&value)); CHECK(value);
     VARIANT property; VariantInit(&property);
-    OK(IUIAutomationElement_GetCurrentPropertyValue(secret,UIA_ValueValuePropertyId,&property));
-    CHECK(V_VT(&property)==VT_BSTR && SysStringLen(V_BSTR(&property))==0); VariantClear(&property);
+    HRESULT protected_hr=IUIAutomationElement_GetCurrentPropertyValueEx(secret,UIA_ValueValuePropertyId,TRUE,&property);
+    if(SUCCEEDED(protected_hr)) {
+        BOOL unsupported=FALSE;OK(IUIAutomation_CheckNotSupported(uia,property,&unsupported));
+        CHECK(unsupported&&V_VT(&property)==VT_UNKNOWN);
+    } else CHECK(protected_hr==E_ACCESSDENIED || protected_hr==(HRESULT)UIA_E_NOTSUPPORTED);
+    CHECK(V_VT(&property)!=VT_BSTR);VariantClear(&property);
     OK(IUIAutomationElement_get_CurrentIsOffscreen(outside,&value)); CHECK(value);
     RECT first_bounds,second_bounds; OK(IUIAutomationElement_get_CurrentBoundingRectangle(button,&first_bounds));
     CHECK(first_bounds.right>first_bounds.left && first_bounds.bottom>first_bounds.top);

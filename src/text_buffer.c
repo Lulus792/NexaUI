@@ -297,6 +297,17 @@ nx_result nx_text_buffer_replace(nx_text_buffer *buffer,
     return nx_tb_edit(buffer, start, end - start, bytes, length);
 }
 
+nx_result nx_text_buffer_replace_all(nx_text_buffer *buffer,
+                                      const char *bytes, size_t length) {
+    if (!buffer || (!bytes && length)) return NX_ERROR_ARGUMENT;
+    if (length == SIZE_MAX) return NX_ERROR_LIMIT;
+    if (nx_utf8_validate(bytes, length, NULL) != NX_OK)
+        return NX_ERROR_ARGUMENT;
+    if (length == buffer->length &&
+        (!length || memcmp(bytes, buffer->bytes, length) == 0)) return NX_OK;
+    return nx_tb_edit(buffer, 0, buffer->length, bytes, length);
+}
+
 nx_result nx_text_buffer_delete_surrounding(nx_text_buffer *buffer,
     size_t before, size_t after) {
     if (!buffer) return NX_ERROR_ARGUMENT;

@@ -112,3 +112,35 @@ nx_context_destroy(ui);
 ```
 
 Production callers must check each return value and keep command storage valid until rendering finishes. The example under `examples/00_headless` demonstrates error handling and file output.
+
+## Whole-text accessibility edits
+
+`nx_text_buffer_replace_all(buffer, bytes, length)` replaces all text as one
+atomic history operation without first changing the selection. Undo restores the
+original selection within the configured history budget. Failure preserves text,
+selection and history; equal text is a no-op preserving pending redo and selection.
+Input may borrow a substring of the current buffer. Like replace, this low-level
+buffer operation accepts valid UTF-8 including embedded NUL; SIZE_MAX is rejected
+before reading input. Sensitive buffers still have no history and scrub owned
+text allocations when freed.
+
+Call `nx_semantics_request_text_value(context, id, value)` on the owner thread
+between completed frames to copy a request for a standard owned text/numeric
+editor. It admits at most 64 targets and 65,536 UTF-8 bytes per value, rejecting
+malformed UTF-8, embedded NUL, oversized payloads, single-line CR/LF, disabled or
+modal-blocked targets, read-only/protected fields and unbound custom semantics.
+Admission does not edit the field. The next widget submission must still match
+the model identity, parent, application revision and edit policy. Then it applies
+one undoable replacement; validation still judges the resulting draft and no
+submission is synthesized. Missing or invalidated targets expire. Edit allocation
+failures leave the model unchanged; a later paint failure retains the existing
+retry-without-replaying-input behavior.
+
+`nx_text_field_set_read_only(field, 1/0)` affects the next widget submission
+without changing descriptor size. Read-only fields keep focus, selection,
+navigation and Copy while suppressing edits, undo/redo, paste/cut and IME input.
+Application set_text remains allowed and retains its existing history-reset
+contract. Policy changes and application whole-model replacements invalidate
+pending accessibility edits even if policy is restored before the next frame.
+Keep all field operations on its owner thread. The Windows native adapter copies
+and guards these requests as described in the [accessibility contract](../concepts/accessibility.md#windows-owned-editor-values).

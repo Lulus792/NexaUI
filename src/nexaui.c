@@ -3,6 +3,7 @@
 #include "secure_zero.h"
 #include "context_identity.h"
 #include "text_command.h"
+#include "text_value.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -65,6 +66,7 @@ typedef struct nx_semantic_record {
     size_t description_offset, description_length;
     size_t value_offset, value_length;
     uint32_t state, actions;
+    nx_text_value_target text_value;
     size_t radio_outer_command, radio_inner_command;
     nx_color radio_unchecked_color;
     int has_radio_visual;
@@ -105,6 +107,14 @@ typedef struct nx_scroll_scope {
     int show_x, show_y;
     int disabled;
 } nx_scroll_scope;
+
+typedef struct nx_text_value_request {
+    uint64_t id, parent_id, source_frame;
+    nx_text_value_target target;
+    char *bytes;
+    size_t length;
+    nx_text_value_guard guard;
+} nx_text_value_request;
 
 struct nx_context {
     nx_allocator allocator;
@@ -159,6 +169,8 @@ struct nx_context {
     struct { uint64_t id, owner_id; uint32_t action; } selection_requests[64];
     size_t selection_request_count;
     size_t accessible_request_count;
+    nx_text_value_request text_values[64];
+    size_t text_value_count;
     size_t semantic_initial_capacity, semantic_text_initial_capacity;
 };
 
@@ -170,6 +182,7 @@ typedef struct nx_field_pointer {
 
 struct nx_numeric_field {
     nx_text_buffer *buffer;
+    nx_text_value_target text_value;
     double committed;
     size_t history_bytes;
     const nx_context *last_context;
@@ -182,8 +195,9 @@ struct nx_numeric_field {
 
 struct nx_text_field {
     nx_text_buffer *buffer;
+    nx_text_value_target text_value;
     size_t history_bytes;
-    int sensitive;
+    int sensitive, read_only;
     const nx_context *last_context;
     uint64_t last_frame_serial;
     size_t next_event_index;
@@ -205,6 +219,29 @@ static nx_region *nx_hit_test_scroll(nx_region_buffer *buffer, float x, float y,
 static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_event_route *route);
 static void nx_region_buffer_clear(nx_region_buffer *buffer);
 static uint32_t nx_semantic_find_index(const nx_semantic_buffer *buffer, uint64_t id);
+
+static void nx_text_value_dispose(nx_context *ctx, nx_text_value_request *r) {
+    if (r->bytes) ctx->allocator.deallocate(ctx->allocator.user, r->bytes, r->length + 1u);
+    if (r->guard.release) r->guard.release(r->guard.user);
+    *r = (nx_text_value_request){0};
+}
+
+static void nx_text_values_clear(nx_context *ctx) {
+    for (size_t i = 0; i < ctx->text_value_count; ++i)
+        nx_text_value_dispose(ctx, &ctx->text_values[i]);
+    ctx->text_value_count = 0;
+}
+
+static nx_result nx_text_model_create(nx_text_value_target *target) {
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    target->identity = nx_native_next_identity();
+    if (!target->identity) return NX_ERROR_LIMIT;
+#else
+    target->identity = 0; /* No native identity on unsupported window backends. */
+#endif
+    target->revision = 1;
+    return NX_OK;
+}
 
 static void *nx_default_allocate(void *user, size_t size) {
     (void)user;
@@ -303,6 +340,7 @@ uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->fram
 
 void nx_context_destroy(nx_context *ctx) {
     if (!ctx) return;
+    nx_text_values_clear(ctx);
     if (ctx->ime_active_window)
         (void)nx_window_set_ime_enabled(ctx->ime_active_window, 0);
     nx_allocator a = ctx->allocator;
@@ -486,6 +524,11 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         width <= 0.0f || height <= 0.0f || delta_seconds < 0.0)
         return NX_ERROR_ARGUMENT;
     if (ctx->state == 1u) return NX_ERROR_STATE;
+    /* Normally end_frame has expired unused requests. Keep this check explicit
+       rather than allowing a source-frame counter wrap to revive old work. */
+    for (size_t i = 0; i < ctx->text_value_count; ++i)
+        if (ctx->text_values[i].source_frame != ctx->frame_serial)
+            nx_text_value_dispose(ctx, &ctx->text_values[i]);
     nx_free_owned_bitmaps(ctx, NULL);
     if (++ctx->frame_serial == 0) ++ctx->frame_serial;
     ctx->state = 1u;
@@ -1569,6 +1612,134 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     return NX_OK;
 }
 
+nx_text_value_target nx_context_text_value_target(const nx_context *ctx,
+                                                  uint64_t id) {
+    if (!ctx || ctx->state != 2u) return (nx_text_value_target){0};
+    uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
+    return i == UINT32_MAX ? (nx_text_value_target){0} : ctx->semantics.nodes[i].text_value;
+}
+
+static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_record *node) {
+    /* Match native disabled-state inheritance even when the child descriptor
+       itself is enabled. Parents are already submitted before their children. */
+    for (;;) {
+        if (node->state & NX_SEM_DISABLED) return 1;
+        const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+        if (region && (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE))) return 1;
+        if (!node->parent_id) return 0;
+        uint32_t i = nx_semantic_find_index(&ctx->semantics, node->parent_id);
+        if (i == UINT32_MAX) return 1;
+        node = &ctx->semantics.nodes[i];
+    }
+}
+
+nx_result nx_semantics_request_text_value_guarded(nx_context *ctx, uint64_t id,
+    nx_utf8_span value, const nx_text_value_guard *guard) {
+    if (!ctx || !id || (!value.data && value.length) ||
+        (guard && (!guard->retain || !guard->release || !guard->current)))
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state != 2u) return NX_ERROR_STATE;
+    if (value.length > NX_TEXT_VALUE_MAX_BYTES) return NX_ERROR_LIMIT;
+    if (!nx_valid_span(value)) return NX_ERROR_ARGUMENT;
+    uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
+    if (i == UINT32_MAX) return NX_ERROR_STATE;
+    const nx_semantic_record *node = &ctx->semantics.nodes[i];
+    const nx_region *region = nx_region_find(&ctx->current_regions, id);
+    if (nx_text_value_disabled(ctx, node) || (node->state & (NX_SEM_READONLY | NX_SEM_PROTECTED)))
+        return NX_ERROR_STATE;
+    if (node->role != NX_ROLE_TEXT_FIELD || !node->text_value.identity ||
+        !(node->actions & NX_ACTION_SET_VALUE)) return NX_ERROR_UNSUPPORTED;
+    if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+        (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))
+        return NX_ERROR_STATE;
+    if (!node->text_value.multiline && value.length &&
+        (memchr(value.data, '\r', value.length) || memchr(value.data, '\n', value.length)))
+        return NX_ERROR_ARGUMENT;
+    for (size_t n = 0; n < ctx->text_value_count; ++n)
+        if (ctx->text_values[n].id == id) return NX_ERROR_LIMIT;
+    if (ctx->text_value_count == 64u) return NX_ERROR_LIMIT;
+    nx_text_value_request request = {0};
+    request.id = id; request.parent_id = node->parent_id;
+    request.source_frame = ctx->frame_serial; request.target = node->text_value;
+    char *copy = ctx->allocator.allocate(ctx->allocator.user, value.length + 1u);
+    if (!copy) return NX_ERROR_MEMORY;
+    /* User allocation can reenter admission (including native owner routing).
+       No queue slot or borrowed semantic node is reserved across that call. */
+    nx_result admission = NX_OK;
+    if (ctx->state != 2u || ctx->frame_serial != request.source_frame) admission = NX_ERROR_STATE;
+    else if (ctx->text_value_count >= 64u) admission = NX_ERROR_LIMIT;
+    else for (size_t n = 0; n < ctx->text_value_count; ++n)
+        if (ctx->text_values[n].id == id) { admission = NX_ERROR_LIMIT; break; }
+    if (admission != NX_OK) {
+        ctx->allocator.deallocate(ctx->allocator.user, copy, value.length + 1u);
+        return admission;
+    }
+    if (value.length) memcpy(copy, value.data, value.length);
+    copy[value.length] = 0;
+    request.bytes = copy; request.length = value.length;
+    if (guard) { request.guard = *guard; guard->retain(guard->user); }
+    ctx->text_values[ctx->text_value_count++] = request;
+    return NX_OK;
+}
+
+nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
+                                          nx_utf8_span value) {
+    return nx_semantics_request_text_value_guarded(ctx, id, value, NULL);
+}
+
+static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
+                                      nx_text_buffer *buffer, int *changed) {
+    *changed = 0;
+    for (size_t i = 0; i < ctx->text_value_count; ++i) {
+        nx_text_value_request *r = &ctx->text_values[i];
+        if (r->id != node->id) continue;
+        const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+        int valid = r->source_frame != UINT64_MAX && r->source_frame + 1u == ctx->frame_serial &&
+            r->parent_id == node->parent_id &&
+            r->target.identity == node->text_value.identity &&
+            r->target.revision == node->text_value.revision &&
+            r->target.multiline == node->text_value.multiline &&
+            !nx_text_value_disabled(ctx, node) && !(node->state & (NX_SEM_READONLY | NX_SEM_PROTECTED)) &&
+            (node->actions & NX_ACTION_SET_VALUE) && region &&
+            !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
+            (!ctx->current_overlay_id || region->overlay_id == ctx->current_overlay_id);
+        if (valid && r->guard.current) {
+            uint64_t identity = 0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+            identity = ctx->native_identity;
+#endif
+            valid = r->guard.current(r->guard.user, r->guard.token, identity, node->id, node->text_value);
+        }
+        if (!valid) { nx_text_value_dispose(ctx, r); return NX_OK; }
+        /* Reserve semantic storage before editing the model. A later paint
+           failure follows the existing retry-without-replaying-events contract. */
+        nx_result result = nx_semantic_reserve_text(ctx, r->length ? r->length + 1u : 0);
+        if (result != NX_OK) return result;
+        /* Both reserve allocation and release are user call-outs. Native
+           disable/re-enable or detach there revokes a previously valid lease. */
+        if (r->guard.current) {
+            uint64_t identity = 0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+            identity = ctx->native_identity;
+#endif
+            if (!r->guard.current(r->guard.user, r->guard.token, identity, node->id, node->text_value)) {
+                nx_text_value_dispose(ctx, r); return NX_OK;
+            }
+        }
+        const char *before = NULL; size_t before_length = 0;
+        result = nx_text_buffer_text(buffer, &before, &before_length);
+        if (result != NX_OK) return result;
+        int different = before_length != r->length ||
+            (before_length && memcmp(before, r->bytes, before_length) != 0);
+        result = nx_text_buffer_replace_all(buffer, r->bytes, r->length);
+        if (result != NX_OK) return result;
+        nx_text_value_dispose(ctx, r);
+        *changed = different;
+        return NX_OK;
+    }
+    return NX_OK;
+}
+
 nx_result nx_semantics_find(const nx_context *ctx, uint64_t id,
                             uint32_t *out_index) {
     if (!out_index) return NX_ERROR_ARGUMENT;
@@ -1680,6 +1851,7 @@ nx_result nx_end_frame(nx_context *ctx) {
     }
     ctx->ime_active_id = ctx->ime_active_window ? ctx->ime_candidate_id : 0;
     ctx->state = 2u;
+    nx_text_values_clear(ctx);
     return NX_OK;
 }
 
@@ -5108,6 +5280,8 @@ nx_result nx_numeric_field_create(double initial_value,
     }
     field->committed = initial_value;
     field->history_bytes = history_bytes;
+    result = nx_text_model_create(&field->text_value);
+    if (result != NX_OK) { nx_text_buffer_destroy(field->buffer); free(field); return result; }
     *out_field = field;
     return NX_OK;
 }
@@ -5120,6 +5294,7 @@ void nx_numeric_field_destroy(nx_numeric_field *field) {
 
 nx_result nx_numeric_field_set_value(nx_numeric_field *field, double value) {
     if (!field || !isfinite(value)) return NX_ERROR_ARGUMENT;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
     char text[64];
     size_t length = 0;
     nx_result result = nx_value_format(value, text, &length);
@@ -5130,6 +5305,7 @@ nx_result nx_numeric_field_set_value(nx_numeric_field *field, double value) {
     if (result != NX_OK) return result;
     nx_text_buffer_destroy(field->buffer);
     field->buffer = replacement;
+    ++field->text_value.revision;
     field->committed = value;
     field->suppress_caret_reveal=0;
     field->pointer=(nx_field_pointer){0};
@@ -5282,6 +5458,12 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     result = nx_widget_register(ctx, &widget, &state);
     if (result != NX_OK) return result;
     nx_text_layout *layout = NULL;
+    ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
+    int value_changed = 0;
+    result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
+                                  field->buffer, &value_changed);
+    if (result != NX_OK) goto rollback;
+    if (value_changed) { field->pointer.active = 0; field->suppress_caret_reveal = 0; }
     if (field->last_context != ctx ||
         field->last_frame_serial != ctx->frame_serial) {
         if (field->last_context!=ctx || field->last_frame_serial+1u!=ctx->frame_serial)
@@ -5392,6 +5574,8 @@ static nx_result nx_text_field_create_impl(const char *initial,
     if (result != NX_OK) { free(field); return result; }
     field->history_bytes = sensitive ? 0u : history_bytes;
     field->sensitive = sensitive;
+    result = nx_text_model_create(&field->text_value);
+    if (result != NX_OK) { nx_text_buffer_destroy(field->buffer); free(field); return result; }
     *out_field = field;
     return NX_OK;
 }
@@ -5423,6 +5607,7 @@ void nx_text_field_destroy(nx_text_field *field) {
 nx_result nx_text_field_set_text(nx_text_field *field,
                                  const char *text, size_t length) {
     if (!field) return NX_ERROR_ARGUMENT;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
     if (field->sensitive && text && length &&
         (memchr(text, '\n', length) || memchr(text, '\r', length)))
         return NX_ERROR_ARGUMENT;
@@ -5434,6 +5619,7 @@ nx_result nx_text_field_set_text(nx_text_field *field,
     if (result != NX_OK) return result;
     nx_text_buffer_destroy(field->buffer);
     field->buffer = replacement;
+    ++field->text_value.revision;
     field->last_context = NULL;
     field->last_frame_serial = 0;
     field->next_event_index = 0;
@@ -5443,6 +5629,15 @@ nx_result nx_text_field_set_text(nx_text_field *field,
     field->command_caret_valid = 0;
     field->suppress_caret_reveal = 0;
     field->scroll_x = field->scroll_y = 0.0;
+    return NX_OK;
+}
+
+nx_result nx_text_field_set_read_only(nx_text_field *field, int read_only) {
+    if (!field || (read_only != 0 && read_only != 1)) return NX_ERROR_ARGUMENT;
+    if (field->read_only == read_only) return NX_OK;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
+    field->read_only = read_only;
+    ++field->text_value.revision;
     return NX_OK;
 }
 
@@ -5764,6 +5959,21 @@ static int nx_field_ime_surrounding(nx_utf8_span text,
     return 1;
 }
 
+static int nx_readonly_edit_event(const nx_event *event) {
+    if (event->type == NX_EVENT_TEXT || event->type == NX_EVENT_IME_DELETE_RANGE ||
+        event->type == NX_EVENT_IME_DELETE_SURROUNDING) return 1;
+    if (event->type == NX_EVENT_TEXT_COMMAND) {
+        uint32_t c = nx_text_command_base(event->text_command);
+        return (c >= NX_TEXT_COMMAND_DELETE_BACKWARD && c <= NX_TEXT_COMMAND_DELETE_PARAGRAPH_END) ||
+            c == NX_TEXT_COMMAND_NEWLINE || c == NX_TEXT_COMMAND_CUT ||
+            c == NX_TEXT_COMMAND_PASTE || c == NX_TEXT_COMMAND_UNDO || c == NX_TEXT_COMMAND_REDO;
+    }
+    if (event->type != NX_EVENT_KEY_DOWN) return 0;
+    if (event->key == NX_KEY_BACKSPACE || event->key == NX_KEY_DELETE || event->key == NX_KEY_ENTER) return 1;
+    return nx_edit_primary(event->modifiers) &&
+        (event->key == NX_KEY_X || event->key == NX_KEY_V || event->key == NX_KEY_Z || event->key == NX_KEY_Y);
+}
+
 nx_result nx_text_field_widget(nx_context *ctx,
                                const nx_text_field_desc *desc,
                                nx_text_field *field,
@@ -5799,8 +6009,9 @@ nx_result nx_text_field_widget(nx_context *ctx,
     widget.semantic.value = desc->password ? (nx_utf8_span){0} : draft;
     widget.semantic.state = (valid ? 0u : NX_SEM_INVALID) |
                             (desc->disabled ? NX_SEM_DISABLED : 0u) |
-                            (desc->password ? NX_SEM_PROTECTED : 0u);
-    widget.semantic.actions = NX_ACTION_FOCUS | NX_ACTION_SET_VALUE;
+                            (desc->password ? NX_SEM_PROTECTED : 0u) |
+                            (field->read_only ? NX_SEM_READONLY : 0u);
+    widget.semantic.actions = NX_ACTION_FOCUS | (field->read_only ? 0u : NX_ACTION_SET_VALUE);
     widget.flags = NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
     size_t old_text_count = ctx->semantics.text_count;
     size_t old_command_count = ctx->command_count;
@@ -5815,6 +6026,16 @@ nx_result nx_text_field_widget(nx_context *ctx,
     nx_text_layout *layout = NULL;
     char *ime_preedit_copy = NULL;
     size_t ime_preedit_capacity = 0;
+    field->text_value.multiline = !!desc->multiline;
+    ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
+    int value_changed = 0;
+    result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
+                                  field->buffer, &value_changed);
+    if (result != NX_OK) goto rollback;
+    if (value_changed) {
+        field->pointer.active = 0;
+        field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
+    }
     if (field->last_context != ctx ||
         field->last_frame_serial != ctx->frame_serial) {
         if (field->last_context!=ctx || field->last_frame_serial+1u!=ctx->frame_serial)
@@ -5853,6 +6074,10 @@ nx_result nx_text_field_widget(nx_context *ctx,
             }
             if (route->focus_id!=desc->id) {
                 ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
+                ++field->next_event_index; continue;
+            }
+            if (field->read_only && nx_readonly_edit_event(event)) {
+                ime_batch_target = ime_batch_revision = 0; ime_batch_accepted = 0;
                 ++field->next_event_index; continue;
             }
             if ((event->type==NX_EVENT_KEY_DOWN && event->key!=NX_KEY_C) ||
@@ -5990,7 +6215,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
     else node->state |= NX_SEM_INVALID;
     nx_utf8_span ime_preedit = {0};
     int32_t ime_begin = 0, ime_end = 0;
-    if (state.focused && !desc->disabled && desc->ime_window &&
+    if (state.focused && !desc->disabled && !field->read_only && desc->ime_window &&
         ((!desc->password && !ctx->ime_active_password &&
           (!ctx->ime_active_window ||
            (ctx->ime_active_window == desc->ime_window &&
@@ -6033,7 +6258,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
     if (result != NX_OK) goto rollback;
     if (caret_visible && desc->ime_window)
         (void)nx_window_set_ime_rect(desc->ime_window, caret_rect);
-    if (state.focused && !desc->disabled && desc->ime_window) {
+    if (state.focused && !desc->disabled && !field->read_only && desc->ime_window) {
         if (desc->password) {
             (void)nx_window_set_ime_surrounding_text(desc->ime_window,
                 desc->id, nx_field_ime_revision(field), "", 0, 0, 0);

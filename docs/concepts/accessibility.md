@@ -56,13 +56,13 @@ UIA callbacks read the current snapshot under an SRW lock. They never dereferenc
 
 The fragment root is the native HWND; semantic roots appear below it. Parent/child/sibling navigation, fragment hit testing, stable runtime IDs, logical-to-physical client bounds, enabled/focused/protected state, names and descriptions are present. A semantic window node maps to a pane below the native window. A bridge epoch and per-node incarnation distinguish removed/recreated or retyped controls, replaced contexts, detach/reattach and reused HWND values. Continuity refers to consecutive published snapshots; applications must still assign IDs consistently.
 
-The bridge advertises Invoke for press-capable controls, Toggle for checkboxes/switches, and Selection/SelectionItem for explicit single-selection groups and their members. Selection exposes its current zero/one-element array, required flag, membership, and Select/AddToSelection/RemoveFromSelection. Adding a different member to an occupied single selection and removing the required selected member are rejected. Focus on a group delegates to an eligible selected member, or its first eligible member. Multi-selection, editable Value/Text/TextRange, RangeValue, ExpandCollapse, Grid/Table and scrolling patterns remain pending. Protected nodes publish an empty value even if a custom widget supplies plaintext. The password widget itself also keeps its semantic value empty.
+The bridge advertises Invoke for press-capable controls, Toggle for checkboxes/switches, and Selection/SelectionItem for explicit single-selection groups and their members. Selection exposes its current zero/one-element array, required flag, membership, and Select/AddToSelection/RemoveFromSelection. Adding a different member to an occupied single selection and removing the required selected member are rejected. Focus on a group delegates to an eligible selected member, or its first eligible member. Standard owned text/numeric editors additionally support the Windows ValuePattern contract below. Multi-selection, Text/TextRange, RangeValue, ExpandCollapse, Grid/Table and scrolling patterns remain pending. Protected nodes never expose their semantic value to native readers, even if a custom widget supplies plaintext. The password widget itself also keeps its semantic value empty.
 
 Native requests enter a separate bounded 64-entry queue and are forwarded by `nx_window_route_events` on the owner thread. Repeated focus requests coalesce to the latest requested target. Duplicate press requests and full native queues return a busy error. A full context queue defers already accepted native work until a later routing/frame iteration. One native selection transaction per group may remain pending through a genuinely newer completed publication. An identical pending operation is idempotent; a conflicting one returns busy. Republishing the same completed frame does not acknowledge it. This also keeps AddToSelection admission consistent while the owner has not applied an earlier operation. A stale or newly disabled target is discarded rather than redirected. Native HWND enablement is copied on the owner thread, including `WM_ENABLE`: a disabled host reports its root and descendants disabled, rejects new requests, and cancels native work that has not yet been forwarded to the context. Re-enabling it does not replay those canceled requests. Route through the context that was most recently published: a different context returns `NX_ERROR_STATE` before consuming window events. If the live context has advanced ahead of its published snapshot, native requests wait for publication and are then revalidated. A queued selection includes its original group identity, so moving an item between groups does not redirect an earlier request. Publishing a different context invalidates old elements and pending requests; a process-wide identity prevents pointer-address reuse from retargeting them.
 
 `nx_window_publish_semantics(window, NULL)` detaches the bridge. Retained element handles become unavailable; teardown may also surface an OS COM disconnection error. Reattaching creates a new bridge epoch. The application must keep the NexaUI module loaded until external provider references are released; safe arbitrary DLL unloading while clients retain elements is not accepted yet. The bridge balances its own COM initialization without uninitializing a caller-owned STA/MTA apartment. Windows' message pump must continue while clients and the application are still using that apartment, including after a particular window is destroyed.
 
-Event transport reports structural invalidation, actual published focus changes and committed selection changes. Selection flags, current arrays and events follow the completed model projection. Selected/removed and IsSelected property-change notifications use copied provider identities outside the snapshot lock; group selection changes invalidate its selection. No-op selections do not fabricate model changes. COM QueryInterface keeps a static interface set; GetPatternProvider and each operation separately validate current UIA capabilities. It does not synthesize Invoke completion when a request is merely queued. Name/value/toggle property-change events, text changes, live regions and richer announcements remain pending. Bounds use window DPI and client origin; full ancestor clipping and offscreen behavior beyond client intersection still need acceptance work.
+Event transport reports structural invalidation, actual published focus changes and committed selection changes. Selection flags, current arrays and events follow the completed model projection. Selected/removed and IsSelected property-change notifications use copied provider identities outside the snapshot lock; group selection changes invalidate its selection. No-op selections do not fabricate model changes. COM QueryInterface keeps a static interface set; GetPatternProvider and each operation separately validate current UIA capabilities. It does not synthesize Invoke completion when a request is merely queued. Value, read-only, enabled, ValuePattern-availability and password property changes are copied before call-outs. Values are never included across a protected transition. Name/toggle property-change events, rich text changes, live regions and richer announcements remain pending. Bounds use window DPI and client origin; full ancestor clipping and offscreen behavior beyond client intersection still need acceptance work.
 
 ## Validation and remaining acceptance
 
@@ -80,6 +80,57 @@ The [headless accessibility example](../../examples/12_accessibility/README.md) 
 
 Native design references: Microsoft [server-side providers](https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-serversideprovider), [client threading](https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-threading), [provider options](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/ne-uiautomationcore-provideroptions), [runtime IDs](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragment-getruntimeid), [HWND teardown](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider) and [provider disconnection](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiadisconnectprovider).
 
+## Windows owned editor values
+
+An unprotected `NX_ROLE_TEXT_FIELD` exposes ValuePattern, its current UTF-16
+value and IsReadOnly. Standard `nx_text_field_widget` and `nx_numeric_field_widget`
+instances supply a stable model identity; a semantic SET_VALUE flag alone does
+not bind an arbitrary custom editor to writable state. A genuine empty field is
+supported and returns an empty BSTR. Use `GetCurrentPropertyValueEx(..., TRUE, ...)`
+and `CheckNotSupported` to distinguish it from UIA's default for unsupported data.
+Protected value queries are denied or surfaced as NotSupported; no protected
+value is published. In the checked Windows runtime the strict availability query
+for an unsupported protected pattern itself can be NotSupported, while the normal
+availability property is false and GetCurrentPattern returns no pattern.
+
+SetValue copies at most `NX_TEXT_VALUE_MAX_BYTES` (65,536) UTF-8 bytes from a
+bounded, validated UTF-16 string into a separate native request. Malformed
+surrogates, oversized UTF-8 output and CR/LF in single-line fields are rejected.
+The native LPCWSTR API is NUL-terminated; embedded NUL cannot express a longer
+value. The explicit portable UTF-8-span API rejects embedded NUL. Duplicate/full
+queues are busy; protected, disabled and read-only targets reject writes.
+
+`nx_window_route_events` forwards the request on the context owner thread using
+`nx_semantics_request_text_value`; the next actual editor submission rechecks
+model identity, application text/policy revision, parent, inherited disabled state
+and current modal scope. It performs one atomic whole-text edit with normal
+validation, selection and undo history. Numeric fields replace their draft;
+this does not submit or commit the numeric value. Application set_text/set_value
+or a read-only policy change invalidates an older request. A new field under the
+same semantic ID has a new identity. Omitted requests expire at end_frame;
+destruction frees payloads and lifetime references. The native lease also revokes
+already forwarded requests after window disable/re-enable, context roundtrip,
+detach/reattach or HWND destruction without retaining a context/editor pointer.
+
+A successful native setter acknowledges admission, not application completion.
+Continue owner routing, widget frames and publication, then verify the reflected
+Value. UIAutomation may wait for owner mediation before returning from SetValue;
+owner-independent action completion or a latency limit is not promised. Route
+counts aggregate native events and focus/actions, rather than counting text
+replacements alone. Actual value/read-only/enabled property events reflect
+published model changes. A retired pattern's property accessor can still return
+an empty default: require an element-lifetime error and a rejected write rather
+than treating that default as an empty live editor.
+
+`nexaui_text_value` covers the portable owner contract. Three independent native
+C17 client cases (`nexaui_uia_value`, `nexaui_uia_value_mta`,
+`nexaui_uia_value_owned_com`) use real standard editors, strict properties,
+SetValue/GetValue, Unicode/empty values, events, bounds, owner-copy OOM and
+lifetime revocation. Their [validation report](../quality/windows-edit-value-report.md)
+keeps local, external CI and physical acceptance separate. This is Windows
+ValuePattern support, not ITextProvider, Narrator acceptance, native IME input,
+new AppKit setters or AT-SPI EditableText coverage.
+
 ## Windows custom read-only values
 
 Windows publishes a non-protected `NX_ROLE_CUSTOM` semantic string through a
@@ -91,8 +142,8 @@ to use Name and HelpText; the cursor string does not supply per-series readings.
 SetValue is rejected. Every retained pattern call rechecks the published node,
 incarnation, protection and capability under the snapshot lock. Retired reads
 can normalize to empty in UIAutomationCore; they must never return a replacement
-node's value or mutate it. Editable Value/Text, RangeValue and value-change
-notifications remain separate work.
+node's value or mutate it. Standard editable Value support is described below;
+Text/TextRange and numeric RangeValue remain separate work.
 
 The private `nexaui_design_a_fallback` test covers four density factors and
 normal/high-contrast/reduced-effects modes; `nexaui_design_a_uia` uses a separate

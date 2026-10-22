@@ -2,6 +2,7 @@
 #define NOMINMAX
 #include "accessibility.h"
 #include "../../src/context_identity.h"
+#include "../../src/text_value.h"
 #include <objbase.h>
 #include <oleauto.h>
 /* The SDK also defines this external const object in the provider header.
@@ -15,6 +16,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <wchar.h>
 #include <math.h>
 
 #define NX_UIA_NONE UINT32_MAX
@@ -28,6 +30,8 @@ typedef struct nx_uia_node {
     uint32_t selection_owner, selected, focus_target, selection_events;
     nx_semantic_role role;
     uint32_t state, actions;
+    nx_text_value_target text_value;
+    uint32_t property_events;
     nx_rect bounds;
     WCHAR *name, *help, *value;
 } nx_uia_node;
@@ -44,9 +48,18 @@ typedef struct nx_uia_element nx_uia_element;
 typedef struct nx_uia_request {
     uint64_t id, incarnation; uint32_t action;
     uint64_t owner_id, owner_incarnation, source_frame;
-    int forwarded;
+    uint64_t value_generation, request_key;
+    nx_text_value_target text_value;
+    char *text;
+    size_t text_length;
+    int forwarded, routing;
 } nx_uia_request;
 typedef struct nx_uia_selection_event { uint64_t id, incarnation; uint32_t flags; } nx_uia_selection_event;
+typedef struct nx_uia_property_event {
+    uint64_t id, incarnation;
+    PROPERTYID property;
+    VARIANT before, after;
+} nx_uia_property_event;
 struct nx_uia_bridge {
     LONG refs;
     SRWLOCK lock;
@@ -57,6 +70,8 @@ struct nx_uia_bridge {
     uint64_t incarnation, context_identity, epoch, source_frame;
     uint64_t published_focus_id, published_focus_inc;
     int published_native_focus;
+    int published_enabled;
+    uint64_t value_generation, request_sequence;
     POINT origin;
     double scale, width, height;
     int visible, enabled, focused, publishing, com_balance;
@@ -85,6 +100,16 @@ static void bridge_release(nx_uia_bridge *b) {
         if (b->title) HeapFree(GetProcessHeap(),0,b->title);
         HeapFree(GetProcessHeap(),0,b);
     }
+}
+static void value_guard_retain(void *user) { bridge_add(user); }
+static void value_guard_release(void *user) { bridge_release(user); }
+static void request_remove(nx_uia_bridge *b, size_t at) {
+    if (b->requests[at].text) HeapFree(GetProcessHeap(),0,b->requests[at].text);
+    --b->request_count;
+    memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
+}
+static void requests_clear(nx_uia_bridge *b) {
+    while (b->request_count) request_remove(b,b->request_count-1u);
 }
 static ULONG element_add(nx_uia_element *e) { return (ULONG)InterlockedIncrement(&e->refs); }
 static ULONG element_release(nx_uia_element *e) {
@@ -206,10 +231,27 @@ static HRESULT string_value(VARIANT *out,const WCHAR *text) {
     V_VT(out)=VT_BSTR; V_BSTR(out)=SysAllocString(text ? text : L"");
     return V_BSTR(out) ? S_OK : E_OUTOFMEMORY;
 }
-/* A custom widget's semantic string (e.g. a plot cursor) is read-only.
-   Editable/protected text and numeric RangeValue contracts are separate work. */
+/* Custom strings remain read-only. Only standard owned editors have a native
+   write target; semantic SET_VALUE alone must not invent a model binding. */
 static int can_value(const nx_uia_node *n) {
-    return n&&n->role==NX_ROLE_CUSTOM&&!(n->state&NX_SEM_PROTECTED)&&!(n->actions&NX_ACTION_SET_VALUE);
+    return n && !(n->state&NX_SEM_PROTECTED) &&
+        (n->role==NX_ROLE_TEXT_FIELD || (n->role==NX_ROLE_CUSTOM && !(n->actions&NX_ACTION_SET_VALUE)));
+}
+static int editable_value(const nx_uia_node *n) {
+    return can_value(n) && n->role==NX_ROLE_TEXT_FIELD && n->text_value.identity &&
+        !(n->state&NX_SEM_READONLY) && (n->actions&NX_ACTION_SET_VALUE);
+}
+static int value_guard_current(void *user,uint64_t token,uint64_t context_id,
+                                uint64_t id,nx_text_value_target target) {
+    nx_uia_bridge *b=user;
+    AcquireSRWLockShared(&b->lock);
+    uint32_t i=find(b->snapshot,id);
+    const nx_uia_node *n=i==NX_UIA_NONE ? NULL : &b->snapshot->nodes[i];
+    int okay=b->hwnd && b->enabled && b->context_identity==context_id &&
+        b->value_generation!=UINT64_MAX && b->value_generation==token && editable_value(n) &&
+        !(n->state&NX_SEM_DISABLED) && n->text_value.identity==target.identity &&
+        n->text_value.revision==target.revision && n->text_value.multiline==target.multiline;
+    ReleaseSRWLockShared(&b->lock);return okay;
 }
 static HRESULT STDMETHODCALLTYPE simple_options(IRawElementProviderSimple *self,enum ProviderOptions *out) {
     (void)self; if (!out) return E_POINTER;
@@ -249,7 +291,12 @@ static HRESULT STDMETHODCALLTYPE simple_property(IRawElementProviderSimple *self
     uint32_t state=(n ? n->state : 0) | (b->enabled ? 0u : NX_SEM_DISABLED),actions=n ? n->actions : NX_ACTION_FOCUS;
     if (property==NX_UIA_NamePropertyId) { hr=string_value(out,n ? n->name : b->title);
     } else if (property==NX_UIA_HelpTextPropertyId) { hr=string_value(out,n ? n->help : L"");
-    } else if (property==NX_UIA_ValueValuePropertyId) { hr=string_value(out,n && !(state&NX_SEM_PROTECTED) ? n->value : L"");
+    } else if (property==NX_UIA_ValueValuePropertyId) {
+        if (state&NX_SEM_PROTECTED) hr=E_ACCESSDENIED;
+        else if (can_value(n)) hr=string_value(out,n->value);
+    } else if (property==NX_UIA_IsValuePatternAvailablePropertyId) { V_VT(out)=VT_BOOL;V_BOOL(out)=can_value(n)?VARIANT_TRUE:VARIANT_FALSE;
+    } else if (property==NX_UIA_ValueIsReadOnlyPropertyId) {
+        if(can_value(n)) { V_VT(out)=VT_BOOL;V_BOOL(out)=editable_value(n)?VARIANT_FALSE:VARIANT_TRUE; }
     } else if (property==NX_UIA_FrameworkIdPropertyId) { hr=string_value(out,L"NexaUI");
     } else if (property==NX_UIA_AutomationIdPropertyId) { {
         WCHAR id[48]; swprintf_s(id,48,L"nexa-%016llx",(unsigned long long)e->id); hr=string_value(out,id);
@@ -360,8 +407,7 @@ static HRESULT request(nx_uia_element *e,uint32_t action) {
         if (action==NX_ACTION_FOCUS) {
             for (size_t i=0;i<b->request_count;) {
                 if (b->requests[i].action==NX_ACTION_FOCUS) {
-                    --b->request_count;
-                    memmove(b->requests+i,b->requests+i+1,(b->request_count-i)*sizeof(*b->requests));
+                    request_remove(b,i);
                 } else ++i;
             }
         }
@@ -456,11 +502,51 @@ static HRESULT STDMETHODCALLTYPE value_readonly(IValueProvider *self,BOOL *out) 
     nx_uia_element *e=value_object(self);nx_uia_bridge *b=e->bridge;nx_uia_node *n;
     AcquireSRWLockShared(&b->lock);HRESULT hr=current(e,&n);
     if(SUCCEEDED(hr)&&!can_value(n))hr=UIA_E_NOTSUPPORTED;
+    if(SUCCEEDED(hr))*out=!editable_value(n);
     ReleaseSRWLockShared(&b->lock);return hr;
 }
 static HRESULT STDMETHODCALLTYPE value_set(IValueProvider *self,LPCWSTR text) {
-    (void)text;BOOL readonly;HRESULT hr=value_readonly(self,&readonly);
-    return FAILED(hr)?hr:UIA_E_NOTSUPPORTED;
+    nx_uia_element *e=value_object(self);nx_uia_bridge *b=e->bridge;nx_uia_node *n;
+    HWND hwnd=NULL;char *copy=NULL;
+    AcquireSRWLockExclusive(&b->lock);HRESULT hr=current(e,&n);
+    if(SUCCEEDED(hr)&&!can_value(n))hr=UIA_E_NOTSUPPORTED;
+    if(SUCCEEDED(hr)&&(!b->enabled || (n->state&NX_SEM_DISABLED)))hr=UIA_E_ELEMENTNOTENABLED;
+    if(SUCCEEDED(hr)&&!editable_value(n))hr=UIA_E_INVALIDOPERATION;
+    if(SUCCEEDED(hr)&&(b->value_generation==UINT64_MAX||b->request_sequence==UINT64_MAX))hr=UIA_E_INVALIDOPERATION;
+    if(SUCCEEDED(hr)&&!text)hr=E_INVALIDARG;
+    if(SUCCEEDED(hr)) {
+        for(size_t i=0;i<b->request_count;++i)
+            if(b->requests[i].id==e->id && b->requests[i].action==NX_ACTION_SET_VALUE) {hr=HRESULT_FROM_WIN32(ERROR_BUSY);break;}
+        if(b->request_count==64)hr=HRESULT_FROM_WIN32(ERROR_BUSY);
+    }
+    size_t length=0;int bytes=0;
+    if(SUCCEEDED(hr)) {
+        while(length<=NX_TEXT_VALUE_MAX_BYTES && text[length])++length;
+        if(length>NX_TEXT_VALUE_MAX_BYTES)hr=HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
+        else if(!n->text_value.multiline && (wmemchr(text,L'\r',length)||wmemchr(text,L'\n',length)))hr=E_INVALIDARG;
+        else if(length) {
+            bytes=WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,text,(int)length,NULL,0,NULL,NULL);
+            if(!bytes)hr=E_INVALIDARG;
+            else if((size_t)bytes>NX_TEXT_VALUE_MAX_BYTES)hr=HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
+        }
+    }
+    if(SUCCEEDED(hr)) {
+        copy=HeapAlloc(GetProcessHeap(),0,(size_t)bytes+1u);
+        if(!copy)hr=E_OUTOFMEMORY;
+        else if(bytes && WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,text,(int)length,copy,bytes,NULL,NULL)!=bytes)hr=E_INVALIDARG;
+    }
+    if(SUCCEEDED(hr)) {
+        copy[bytes]=0;
+        nx_uia_request r={0};r.id=e->id;r.incarnation=e->incarnation;r.action=NX_ACTION_SET_VALUE;
+        r.text_value=n->text_value;r.text=copy;r.text_length=(size_t)bytes;
+        r.value_generation=b->value_generation;r.request_key=++b->request_sequence;
+        b->requests[b->request_count++]=r;
+        copy=NULL;hwnd=b->hwnd;
+    }
+    ReleaseSRWLockExclusive(&b->lock);
+    if(copy)HeapFree(GetProcessHeap(),0,copy);
+    if(hwnd)PostMessageW(hwnd,NX_UIA_WAKE,0,0);
+    return hr;
 }
 static HRESULT STDMETHODCALLTYPE toggle_state(IToggleProvider *self,enum ToggleState *out) {
     if (!out) return E_POINTER; *out=ToggleState_Off;
@@ -550,7 +636,9 @@ void nx_uia_geometry(nx_uia_bridge *b) {
     UINT dpi=GetDpiForWindow(hwnd); if (!dpi) dpi=96;
     int visible=IsWindowVisible(hwnd) && !IsIconic(hwnd),enabled=IsWindowEnabled(hwnd);
     int focused=enabled && GetFocus()==hwnd && GetForegroundWindow()==hwnd;
-    AcquireSRWLockExclusive(&b->lock); b->origin=origin; b->scale=(double)dpi/96.;
+    AcquireSRWLockExclusive(&b->lock);
+    if(b->enabled && !enabled && b->value_generation!=UINT64_MAX)++b->value_generation;
+    b->origin=origin; b->scale=(double)dpi/96.;
     b->width=r.right-r.left; b->height=r.bottom-r.top; b->visible=visible; b->enabled=enabled; b->focused=focused;
     ReleaseSRWLockExclusive(&b->lock);
 }
@@ -558,6 +646,7 @@ nx_result nx_uia_create(HWND hwnd,nx_allocator allocator,nx_uia_bridge **out) {
     *out=NULL; nx_uia_bridge *b=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,sizeof(*b));
     if (!b) return NX_ERROR_MEMORY;
     b->refs=1; InitializeSRWLock(&b->lock); b->hwnd=hwnd; b->allocator=allocator;
+    b->value_generation=1;
     b->epoch=nx_native_next_identity();
     if (!b->epoch) { bridge_release(b); return NX_ERROR_LIMIT; }
     HRESULT hr=CoInitializeEx(NULL,COINIT_APARTMENTTHREADED);
@@ -582,6 +671,52 @@ static WCHAR *copy_text(WCHAR **cursor,nx_utf8_span text) {
     WCHAR *start=*cursor; int count=units(text);
     if (count>0) MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,text.data,(int)text.length,start,count);
     start[count>0 ? count : 0]=0; *cursor+=count>0 ? (size_t)count+1u : 1u; return start;
+}
+static void property_events_free(nx_uia_property_event *events,size_t count) {
+    for(size_t i=0;i<count;++i) { VariantClear(&events[i].before);VariantClear(&events[i].after); }
+    if(events)HeapFree(GetProcessHeap(),0,events);
+}
+/* Own event arguments before any UIA call-out. Do not emit old/new values across
+   a protected transition, even though the old snapshot once held clear text. */
+static nx_result property_events_prepare(nx_uia_bridge *b,nx_uia_snapshot *s,
+    nx_uia_property_event **out,size_t *out_count) {
+    *out=NULL;*out_count=0;size_t count=0;
+    for(size_t i=0;i<s->count;++i) {
+        nx_uia_node *n=&s->nodes[i];uint32_t oi=find(b->snapshot,n->id);
+        const nx_uia_node *p=oi!=NX_UIA_NONE && b->snapshot->nodes[oi].incarnation==n->incarnation ? &b->snapshot->nodes[oi] : NULL;
+        if(!p)continue;
+        if(can_value(p)&&can_value(n)&&wcscmp(p->value,n->value))n->property_events|=1u;
+        if(can_value(p)&&can_value(n)&&!!editable_value(p)!=!!editable_value(n))n->property_events|=2u;
+        if(!!(b->published_enabled&&!(p->state&NX_SEM_DISABLED))!=!!(b->enabled&&!(n->state&NX_SEM_DISABLED)))n->property_events|=4u;
+        if(!!can_value(p)!=!!can_value(n))n->property_events|=8u;
+        if(!!(p->state&NX_SEM_PROTECTED)!=!!(n->state&NX_SEM_PROTECTED))n->property_events|=16u;
+        for(unsigned flag=1;flag<=16;flag<<=1)if(n->property_events&flag)++count;
+    }
+    if(!count)return NX_OK;
+    nx_uia_property_event *events=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,count*sizeof(*events));
+    if(!events)return NX_ERROR_MEMORY;
+    size_t at=0;
+    for(size_t i=0;i<s->count;++i) {
+        nx_uia_node *n=&s->nodes[i];if(!n->property_events)continue;
+        const nx_uia_node *p=&b->snapshot->nodes[find(b->snapshot,n->id)];
+        for(unsigned flag=1;flag<=16;flag<<=1)if(n->property_events&flag) {
+            nx_uia_property_event *e=&events[at++];e->id=n->id;e->incarnation=n->incarnation;
+            if(flag==1u) {
+                e->property=NX_UIA_ValueValuePropertyId;
+                V_VT(&e->before)=V_VT(&e->after)=VT_BSTR;
+                V_BSTR(&e->before)=SysAllocString(p->value);V_BSTR(&e->after)=SysAllocString(n->value);
+                if(!V_BSTR(&e->before)||!V_BSTR(&e->after)) {property_events_free(events,at);return NX_ERROR_MEMORY;}
+            } else {
+                V_VT(&e->before)=V_VT(&e->after)=VT_BOOL;int before=0,after=0;
+                if(flag==2u) {e->property=NX_UIA_ValueIsReadOnlyPropertyId;before=!editable_value(p);after=!editable_value(n);}
+                if(flag==4u) {e->property=NX_UIA_IsEnabledPropertyId;before=b->published_enabled&&!(p->state&NX_SEM_DISABLED);after=b->enabled&&!(n->state&NX_SEM_DISABLED);}
+                if(flag==8u) {e->property=NX_UIA_IsValuePatternAvailablePropertyId;before=can_value(p);after=can_value(n);}
+                if(flag==16u) {e->property=NX_UIA_IsPasswordPropertyId;before=!!(p->state&NX_SEM_PROTECTED);after=!!(n->state&NX_SEM_PROTECTED);}
+                V_BOOL(&e->before)=before?VARIANT_TRUE:VARIANT_FALSE;V_BOOL(&e->after)=after?VARIANT_TRUE:VARIANT_FALSE;
+            }
+        }
+    }
+    *out=events;*out_count=at;return NX_OK;
 }
 nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
     if (b->publishing) return NX_ERROR_STATE;
@@ -614,6 +749,7 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
         nx_semantic_view v; if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK) return NX_ERROR_STATE;
         nx_uia_node *n=&s->nodes[i]; memset(n,0,sizeof(*n));
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+        n->text_value=nx_context_text_value_target(context,v.id);
         n->first=n->last=n->next=n->previous=NX_UIA_NONE;
         n->selected=n->focus_target=n->selection_owner=NX_UIA_NONE;
         n->parent=find(s,v.parent_id);
@@ -629,7 +765,8 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
                 (owner->focus_target==NX_UIA_NONE || selected(n))) owner->focus_target=(uint32_t)i;
         }
         uint32_t old=b->context_identity==nx_context_identity(context) ? find(b->snapshot,v.id) : NX_UIA_NONE;
-        if (old!=NX_UIA_NONE && b->snapshot->nodes[old].role==v.role) n->incarnation=b->snapshot->nodes[old].incarnation;
+        if (old!=NX_UIA_NONE && b->snapshot->nodes[old].role==v.role &&
+            b->snapshot->nodes[old].text_value.identity==n->text_value.identity) n->incarnation=b->snapshot->nodes[old].incarnation;
         else { if (incarnation==UINT64_MAX) return NX_ERROR_LIMIT; n->incarnation=++incarnation; }
         n->name=copy_text(&text,v.name); n->help=copy_text(&text,v.description);
         n->value=copy_text(&text,(v.state&NX_SEM_PROTECTED) ? (nx_utf8_span){0} : v.value);
@@ -664,20 +801,28 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
             events[at++]=(nx_uia_selection_event){s->nodes[i].id,s->nodes[i].incarnation,s->nodes[i].selection_events};
     } else event_count=0;
     nx_uia_geometry(b);
+    nx_uia_property_event *property_events=NULL;size_t property_count=0;
+    result=property_events_prepare(b,s,&property_events,&property_count);
+    if(result!=NX_OK) {if(events)HeapFree(GetProcessHeap(),0,events);return result;}
     AcquireSRWLockExclusive(&b->lock); nx_uia_snapshot *old=b->snapshot;
     b->snapshot=s; b->spare=old; b->incarnation=incarnation; b->publishing=1;
     uint64_t binding=nx_context_identity(context);
-    if (b->context_identity!=binding) b->request_count=0;
+    if (b->context_identity!=binding) {
+        requests_clear(b);
+        if(b->value_generation!=UINT64_MAX)++b->value_generation;
+    }
     b->context_identity=binding;
+    b->published_enabled=b->enabled;
     uint64_t frame_serial=nx_context_frame_serial(context); b->source_frame=frame_serial;
     for (size_t i=0;i<b->request_count;) {
-        if (b->requests[i].forwarded && b->requests[i].source_frame!=frame_serial) {
-            --b->request_count; memmove(b->requests+i,b->requests+i+1,(b->request_count-i)*sizeof(*b->requests));
+        if ((b->requests[i].forwarded && b->requests[i].source_frame!=frame_serial) ||
+            (b->requests[i].action==NX_ACTION_SET_VALUE && b->requests[i].value_generation!=b->value_generation)) {
+            request_remove(b,i);
         } else ++i;
     }
     ReleaseSRWLockExclusive(&b->lock);
-    /* Initial event transport: real focus and structural changes. Rich text,
-       value/live-region and Invoke-completion events remain separate work. */
+    /* Property arguments above survive reentrant native teardown, just as the
+       copied selection identities do. Rich text/live regions remain separate. */
     int changed=!old || old->count!=s->count;
     uint64_t focus=0;
     for (size_t i=0;i<s->count;++i) {
@@ -708,18 +853,36 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
             }
             element_release(target);
         }
+        for(size_t i=0;i<property_count;++i) {
+            nx_uia_property_event *p=&property_events[i];nx_uia_element *target=NULL;
+            if(FAILED(create_element(b,p->id,p->incarnation,&target)))continue;
+            UiaRaiseAutomationPropertyChangedEvent(&target->simple,p->property,p->before,p->after);
+            element_release(target);
+        }
         if (focus && focus_changed && focused) {
             nx_uia_element *e=NULL;
             if (SUCCEEDED(create_element(b,focus,focus_inc,&e))) { UiaRaiseAutomationEvent(&e->simple,NX_UIA_AutomationFocusChangedEventId); element_release(e); }
         }
     }
     if (events) HeapFree(GetProcessHeap(),0,events);
+    property_events_free(property_events,property_count);
     b->publishing=0; element_release(event_root); bridge_release(b); return NX_OK;
 }
 int nx_uia_matches_context(nx_uia_bridge *b,const nx_context *context) {
     return !b || b->context_identity==nx_context_identity(context);
 }
-nx_result nx_uia_route(nx_uia_bridge *b,nx_context *context,size_t *count) {
+/* Caller holds b->lock. No borrowed snapshot pointer escapes a call-out. */
+static int value_request_current(nx_uia_bridge *b,const nx_uia_request *r,nx_context *context) {
+    uint32_t index=find(b->snapshot,r->id);
+    if(!b->hwnd||!b->enabled||index==NX_UIA_NONE||
+       b->context_identity!=nx_context_identity(context)||b->source_frame!=nx_context_frame_serial(context))return 0;
+    const nx_uia_node *n=&b->snapshot->nodes[index];
+    return n->incarnation==r->incarnation && editable_value(n) && !(n->state&NX_SEM_DISABLED) &&
+        b->value_generation!=UINT64_MAX && r->value_generation==b->value_generation &&
+        r->text_value.identity==n->text_value.identity && r->text_value.revision==n->text_value.revision &&
+        r->text_value.multiline==n->text_value.multiline;
+}
+static nx_result route_requests(nx_uia_bridge *b,nx_context *context,size_t *count) {
     *count=0; if (!b) return NX_OK;
     if (b->context_identity!=nx_context_identity(context)) return NX_ERROR_STATE;
     /* The live context can advance before its next publication. Never resolve
@@ -731,17 +894,54 @@ nx_result nx_uia_route(nx_uia_bridge *b,nx_context *context,size_t *count) {
     AcquireSRWLockShared(&b->lock); remaining=b->request_count; ReleaseSRWLockShared(&b->lock);
     for (size_t i=0;i<remaining;++i) {
         AcquireSRWLockExclusive(&b->lock);
-        size_t at=0; while (at<b->request_count && b->requests[at].forwarded) ++at;
+        if(!b->hwnd||b->context_identity!=nx_context_identity(context)||b->source_frame!=nx_context_frame_serial(context)) {
+            ReleaseSRWLockExclusive(&b->lock);break;
+        }
+        size_t at=0; while (at<b->request_count && (b->requests[at].forwarded||b->requests[at].routing)) ++at;
         if (at==b->request_count) { ReleaseSRWLockExclusive(&b->lock); break; }
         nx_uia_request r=b->requests[at]; uint32_t index=find(b->snapshot,r.id);
         int valid=b->enabled && (!r.id || (index!=NX_UIA_NONE && b->snapshot->nodes[index].incarnation==r.incarnation));
+        if(valid && r.action==NX_ACTION_SET_VALUE) {
+            valid=value_request_current(b,&r,context);
+        }
         if (valid && r.owner_id) {
             nx_uia_node *n=&b->snapshot->nodes[index];
             valid=can_select(b->snapshot,n) && b->snapshot->nodes[n->selection_owner].id==r.owner_id &&
                 b->snapshot->nodes[n->selection_owner].incarnation==r.owner_incarnation;
         }
-        nx_result result=valid && r.id ? nx_semantics_request_action(context,r.id,r.action) : NX_OK;
+        nx_result result=NX_OK;
+        if(valid && r.action==NX_ACTION_SET_VALUE) {
+            /* The context allocator is user code: WM_ENABLE, detach or nested
+               routing may run synchronously. Move payload ownership out of the
+               queue, pin the bridge in nx_uia_route and identify the surviving
+               stub by a never-reused key, not an index shifted by callbacks. */
+            b->requests[at].text=NULL;b->requests[at].routing=1;
+            ReleaseSRWLockExclusive(&b->lock);
+            nx_text_value_guard guard={b,r.value_generation,value_guard_retain,value_guard_release,value_guard_current};
+            result=nx_semantics_request_text_value_guarded(context,r.id,(nx_utf8_span){r.text,r.text_length},&guard);
+            size_t semantic_count=0;
+            int retry=result==NX_ERROR_LIMIT||result==NX_ERROR_MEMORY||
+                (result==NX_ERROR_STATE&&nx_semantics_count(context,&semantic_count)!=NX_OK);
+            AcquireSRWLockExclusive(&b->lock);
+            at=0;while(at<b->request_count&&b->requests[at].request_key!=r.request_key)++at;
+            int live=at<b->request_count&&value_request_current(b,&r,context);
+            if(live&&retry) {
+                b->requests[at].text=r.text;b->requests[at].routing=0;r.text=NULL;
+            } else if(live&&result==NX_OK) {
+                b->requests[at].routing=0;b->requests[at].forwarded=1;
+                b->requests[at].source_frame=nx_context_frame_serial(context);
+                b->requests[at].text_length=0;++*count;
+            } else if(at<b->request_count)request_remove(b,at);
+            ReleaseSRWLockExclusive(&b->lock);
+            if(r.text)HeapFree(GetProcessHeap(),0,r.text);
+            if(live&&retry)return result==NX_ERROR_LIMIT?NX_OK:result;
+            continue;
+        }
+        if(valid && r.id) {
+            result=nx_semantics_request_action(context,r.id,r.action);
+        }
         if (result==NX_ERROR_LIMIT) { ReleaseSRWLockExclusive(&b->lock); return NX_OK; } /* Retry after the next frame consumes core work. */
+        if (result==NX_ERROR_MEMORY) { ReleaseSRWLockExclusive(&b->lock); return result; }
         /* Active-frame errors also retain work; stale/disabled targets are dropped
            only once the completed tree can authoritatively reject them. */
         if (result==NX_ERROR_STATE) {
@@ -750,15 +950,25 @@ nx_result nx_uia_route(nx_uia_bridge *b,nx_context *context,size_t *count) {
         }
         HWND focus_window=valid && result==NX_OK && (!r.id || r.action==NX_ACTION_FOCUS) ? b->hwnd : NULL;
         if (valid && result==NX_OK) ++*count;
-        if (valid && result==NX_OK && r.owner_id) {
+        if (valid && result==NX_OK && (r.owner_id || r.action==NX_ACTION_SET_VALUE)) {
             b->requests[at].forwarded=1; b->requests[at].source_frame=nx_context_frame_serial(context);
+            if(b->requests[at].text) {
+                HeapFree(GetProcessHeap(),0,b->requests[at].text);
+                b->requests[at].text=NULL;b->requests[at].text_length=0;
+            }
         } else {
-            --b->request_count; memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
+            request_remove(b,at);
         }
         ReleaseSRWLockExclusive(&b->lock);
         if (focus_window) SetFocus(focus_window); /* Native call-out after dequeue/unlock. */
     }
     return NX_OK;
+}
+nx_result nx_uia_route(nx_uia_bridge *b,nx_context *context,size_t *count) {
+    *count=0;if(!b)return NX_OK;
+    /* Detach can release every native/provider reference during a user
+       allocator callback, including when core admission fails. */
+    bridge_add(b);nx_result result=route_requests(b,context,count);bridge_release(b);return result;
 }
 uint64_t nx_native_next_identity(void) {
     static __declspec(align(8)) volatile LONG64 sequence;
@@ -781,7 +991,7 @@ LRESULT nx_uia_get_object(nx_uia_bridge *b,WPARAM wparam,LPARAM lparam) {
 }
 void nx_uia_destroy(nx_uia_bridge *b) {
     if (!b) return;
-    AcquireSRWLockExclusive(&b->lock); HWND hwnd=b->hwnd; b->hwnd=NULL; b->request_count=0;
+    AcquireSRWLockExclusive(&b->lock); HWND hwnd=b->hwnd; b->hwnd=NULL; requests_clear(b);
     nx_uia_snapshot *snapshot=b->snapshot,*spare=b->spare; b->snapshot=b->spare=NULL;
     nx_uia_element *root=b->root; b->root=NULL;
     ReleaseSRWLockExclusive(&b->lock);

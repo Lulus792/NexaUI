@@ -1747,6 +1747,23 @@ NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
    cannot be cleared. Disabled, modal-blocked and unsupported targets are rejected.
    Duplicate/full 64-entry queues return LIMIT. Owner thread, between frames. */
 NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
+/* Maximum UTF-8 bytes per queued whole-text replacement (excluding terminator). */
+#define NX_TEXT_VALUE_MAX_BYTES 65536u
+/* Copy a whole-text replacement for a standard text/numeric field from a
+   completed frame. Owner thread, between frames; at most 64 pending targets,
+   one request per ID (duplicate/full returns LIMIT). NUL and malformed UTF-8
+   return ARGUMENT, oversized input returns LIMIT; CR/LF are rejected for a
+   single-line field. Disabled/modal-blocked/read-only/protected fields reject
+   writes. Custom semantic nodes without an owned editor return UNSUPPORTED.
+   NX_OK acknowledges admission only: the same live editor must be submitted
+   in the next frame, with matching identity, parent and edit policy. Otherwise
+   the request expires. Widget construction revalidates current restrictions,
+   applies one undoable atomic edit and reports any edit allocation failure.
+   Validation callbacks still judge drafts normally; admission is not validation
+   or submission. Omitted fields and pending requests at destruction are freed.
+   A later native window detach/context switch can revoke native requests. */
+NX_API nx_result nx_semantics_request_text_value(nx_context *context,
+    uint64_t id, nx_utf8_span value);
 /* Publish an owned native accessibility snapshot of a completed context frame.
    Window/context owner thread only. The context may change or be destroyed after
    return. Route window events through this context while it remains published;
@@ -2078,6 +2095,12 @@ NX_API nx_result nx_text_field_create_password(const char *initial,
 NX_API void nx_text_field_destroy(nx_text_field *field);
 NX_API nx_result nx_text_field_set_text(nx_text_field *field,
                                        const char *text, size_t length);
+/* Owner thread, between widget submissions. Read-only fields retain focus,
+   selection/navigation and Copy, but reject user/IME and accessibility edits.
+   Application set_text remains allowed. Changing the policy invalidates pending
+   accessibility writes even if it is changed back before the next frame.
+   Does not change the descriptor layout or erase the editor's undo history. */
+NX_API nx_result nx_text_field_set_read_only(nx_text_field *field, int read_only);
 NX_API nx_result nx_text_field_text(const nx_text_field *field,
                                    nx_utf8_span *out_text);
 NX_API nx_result nx_text_field_selection(const nx_text_field *field,
@@ -2366,6 +2389,14 @@ NX_API nx_result nx_text_buffer_set_selection(nx_text_buffer *buffer,
    unchanged. An empty replacement deletes the selection. */
 NX_API nx_result nx_text_buffer_replace(nx_text_buffer *buffer,
                                          const char *bytes, size_t length);
+/* Replace the entire buffer as one edit, independent of the current selection.
+   Failure preserves text, selection and history. Undo restores the original
+   selection (within the configured history budget); success collapses at the
+   end. Identical text is a no-op, preserving selection and undo/redo. Input may
+   alias the borrowed buffer text. SIZE_MAX length returns LIMIT before reading
+   input. As with replace, valid UTF-8 including embedded NUL is accepted. */
+NX_API nx_result nx_text_buffer_replace_all(nx_text_buffer *buffer,
+                                             const char *bytes, size_t length);
 /* Apply a native IME deletion measured in UTF-8 bytes before and after the
    current selection. The selection itself is removed as part of the edit.
    Bounds must fall at Unicode scalar boundaries; invalid edits leave the

@@ -407,7 +407,59 @@ static int test_text_commands(void) {
     nx_text_buffer_destroy(buffer); return 0;
 }
 
+static int test_replace_all(void) {
+    const char initial[] = "Ae\xcc\x81\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\x92\xbb Z";
+    const char next[] = "\xe6\x9d\xb1\xe4\xba\xac\xf0\x9f\x8c\x8d";
+    nx_text_buffer *buffer = NULL;
+    CHECK(nx_text_buffer_create(initial, sizeof(initial)-1, 4096, &buffer) == NX_OK);
+    CHECK(nx_text_buffer_set_selection(buffer, sizeof(initial)-1, 1) == NX_OK);
+    CHECK(nx_text_buffer_replace_all(buffer, next, sizeof(next)-1) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, sizeof(next)-1, sizeof(next)-1) == 0);
+    CHECK(nx_text_buffer_undo(buffer) == NX_OK);
+    CHECK(expect_text(buffer, initial, sizeof(initial)-1, sizeof(initial)-1, 1) == 0);
+    CHECK(nx_text_buffer_can_redo(buffer));
+    /* Equal values do not erase the original selection or redo record. */
+    const char *borrowed = NULL; size_t length = 0;
+    CHECK(nx_text_buffer_text(buffer, &borrowed, &length) == NX_OK);
+    CHECK(nx_text_buffer_replace_all(buffer, borrowed, length) == NX_OK);
+    CHECK(expect_text(buffer, initial, sizeof(initial)-1, sizeof(initial)-1, 1) == 0);
+    CHECK(nx_text_buffer_can_redo(buffer) && !nx_text_buffer_can_undo(buffer));
+    CHECK(nx_text_buffer_replace_all(buffer, "\xed\xa0\x80", 3) == NX_ERROR_ARGUMENT);
+    CHECK(nx_text_buffer_replace_all(buffer, NULL, 1) == NX_ERROR_ARGUMENT);
+    CHECK(nx_text_buffer_replace_all(buffer, "", SIZE_MAX) == NX_ERROR_LIMIT);
+    CHECK(expect_text(buffer, initial, sizeof(initial)-1, sizeof(initial)-1, 1) == 0);
+    CHECK(nx_text_buffer_redo(buffer) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, sizeof(next)-1, sizeof(next)-1) == 0);
+    /* A changed value may borrow a substring of the old allocation. */
+    CHECK(nx_text_buffer_text(buffer, &borrowed, &length) == NX_OK);
+    CHECK(nx_text_buffer_set_selection(buffer, 6, 3) == NX_OK);
+    CHECK(nx_text_buffer_replace_all(buffer, borrowed+3, length-3) == NX_OK);
+    CHECK(expect_text(buffer, next+3, sizeof(next)-4, sizeof(next)-4, sizeof(next)-4) == 0);
+    CHECK(nx_text_buffer_undo(buffer) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, 6, 3) == 0);
+    CHECK(nx_text_buffer_replace_all(buffer, NULL, 0) == NX_OK);
+    CHECK(expect_text(buffer, "", 0, 0, 0) == 0);
+    CHECK(!nx_text_buffer_can_redo(buffer));
+    CHECK(nx_text_buffer_undo(buffer) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, 6, 3) == 0);
+    const char embedded[] = {'A', 0, 'B'};
+    CHECK(nx_text_buffer_replace_all(buffer, embedded, sizeof(embedded)) == NX_OK);
+    CHECK(expect_text(buffer, embedded, sizeof(embedded), 3, 3) == 0);
+    CHECK(nx_text_buffer_undo(buffer) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, 6, 3) == 0);
+    nx_text_buffer_destroy(buffer);
+    CHECK(nx_text_buffer_replace_all(NULL, "", 0) == NX_ERROR_ARGUMENT);
+    /* Sensitive buffers use the same atomic edit without creating history. */
+    CHECK(nx_text_buffer_create_sensitive(initial, sizeof(initial)-1, &buffer) == NX_OK);
+    CHECK(nx_text_buffer_replace_all(buffer, next, sizeof(next)-1) == NX_OK);
+    CHECK(expect_text(buffer, next, sizeof(next)-1, sizeof(next)-1, sizeof(next)-1) == 0);
+    CHECK(!nx_text_buffer_can_undo(buffer) && !nx_text_buffer_can_redo(buffer));
+    nx_text_buffer_destroy(buffer);
+    return 0;
+}
+
 int main(void) {
+    if (test_replace_all()) return 1;
     if (test_text_commands()) return 1;
     if (test_edit_and_history()) return 1;
     if (test_ime_delete_surrounding()) return 1;
