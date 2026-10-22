@@ -121,13 +121,20 @@ typedef struct nx_text_value_request {
     nx_text_value_guard guard;
 } nx_text_value_request;
 
+typedef struct nx_selection_ancestor {
+    uint64_t id;
+    nx_semantic_role role;
+} nx_selection_ancestor;
+
 typedef struct nx_multi_selection_request {
     uint64_t id, parent_id, owner_id, owner_parent_id, source_frame;
     nx_selection_target target;
     uint64_t membership;
-    uint32_t action;
+    uint32_t action, ancestor_count;
+    nx_semantic_role role;
     int required;
     nx_selection_guard guard;
+    nx_selection_ancestor ancestors[NX_SEMANTIC_MAX_DEPTH];
 } nx_multi_selection_request;
 
 struct nx_context {
@@ -1628,6 +1635,35 @@ uint64_t nx_context_selection_membership(const nx_context *ctx, uint64_t id) {
     return at != UINT32_MAX ? ctx->semantics.nodes[at].selection_membership : 0;
 }
 
+static nx_result nx_multi_capture_ancestry(const nx_context *ctx, const nx_semantic_record *node,
+    nx_multi_selection_request *request) {
+    request->role = node->role;
+    uint64_t parent = node->parent_id;
+    while (parent) {
+        if (request->ancestor_count == NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
+        uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
+        if (at == UINT32_MAX) return NX_ERROR_STATE;
+        const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
+        request->ancestors[request->ancestor_count++] = (nx_selection_ancestor){ancestor->id, ancestor->role};
+        parent = ancestor->parent_id;
+    }
+    return NX_OK;
+}
+
+static int nx_multi_ancestry_live(const nx_context *ctx, const nx_semantic_record *node,
+    const nx_multi_selection_request *request) {
+    if (node->role != request->role) return 0;
+    uint64_t parent = node->parent_id;
+    for (uint32_t i = 0; i < request->ancestor_count; ++i) {
+        uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
+        if (at == UINT32_MAX) return 0;
+        const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
+        if (ancestor->id != request->ancestors[i].id || ancestor->role != request->ancestors[i].role) return 0;
+        parent = ancestor->parent_id;
+    }
+    return parent == 0;
+}
+
 nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
     uint32_t action, const nx_selection_guard *guard) {
     if (!ctx || !id || (guard && (!guard->retain || !guard->release || !guard->current)))
@@ -1650,6 +1686,8 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
     r.membership = n->selection_membership;
     r.action = action;
     r.required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
+    nx_result ancestry = nx_multi_capture_ancestry(ctx, n, &r);
+    if (ancestry != NX_OK) return ancestry;
     if (guard) { r.guard = *guard; r.guard.retain(r.guard.user); }
     ctx->multi_requests[ctx->multi_request_count++] = r;
     return NX_OK;
@@ -1678,6 +1716,7 @@ static nx_result nx_multi_finish(nx_context *ctx) {
             const nx_semantic_record *n = &ctx->semantics.nodes[at];
             int chosen = 0, disabled = 0;
             if (!n->selection_bound || n->selection_owner != index || n->parent_id != r->parent_id ||
+                !nx_multi_ancestry_live(ctx, n, r) ||
                 !nx_multi_enabled(ctx, n) ||
                 nx_selection_model_item(model, n->id, 0, &chosen, &disabled) != NX_OK || disabled ||
                 r->membership != nx_selection_model_membership(model, n->id)) continue;

@@ -256,9 +256,43 @@ static int table_and_owner_bounds(void) {
     for(size_t i=0;i<65;++i)nx_selection_model_destroy(models[i]);
     return 0;
 }
-int main(void) {
+static int ancestor_frame(nx_context *ctx,nx_selection_model *m,int kind) {
+    CHECK(nx_begin_frame(ctx,240,160,0)==NX_OK);
+    nx_semantic_desc d=desc(100,0,kind==4?NX_ROLE_TREE:NX_ROLE_LIST);
+    CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK && nx_selection_bind_owner(ctx,100,m,0)==NX_OK);
+    d=desc(110,100,kind==1?NX_ROLE_CUSTOM:NX_ROLE_PANEL);CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK);
+    d=desc(111,100,NX_ROLE_PANEL);CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK);
+    d=desc(120,kind==2?111:110,NX_ROLE_PANEL);CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK);
+    for(uint64_t id=101;id<=103;++id) {
+        d=desc(id,120,kind==3 && id==102?NX_ROLE_TREE_ITEM:NX_ROLE_LIST_ITEM);d.bounds=(nx_rect){0,0,0,0};
+        CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK && nx_selection_bind_item(ctx,100,id,1)==NX_OK);
+    }
+    CHECK(nx_end_frame(ctx)==NX_OK);return 0;
+}
+static int ancestor_identity(int only) {
+    for(int kind=1;kind<=4;++kind) {
+        if(only && only!=kind)continue;
+        nx_context *ctx=NULL;nx_selection_model *m=NULL;uint64_t old=101;
+        CHECK(nx_context_create(NULL,&ctx)==NX_OK && model(&m,101)==0);
+        CHECK(nx_selection_model_set_selected(m,&old,1)==NX_OK && ancestor_frame(ctx,m,0)==0);
+        CHECK(nx_semantics_request_action(ctx,102,NX_ACTION_SELECT)==NX_OK);
+        CHECK(ancestor_frame(ctx,m,kind)==0);
+        nx_selection_view actual;CHECK(nx_selection_model_get(m,&actual)==NX_OK);
+        if(actual.selected_count!=1 || actual.selected_ids[0]!=old)
+            fprintf(stderr,"stale-kind=%d actual-count=%zu actual-first=%llu expected=%llu\n",kind,
+                actual.selected_count,(unsigned long long)(actual.selected_count?actual.selected_ids[0]:0),(unsigned long long)old);
+        CHECK(selected(m,&old,1,0)==0);
+        nx_context_destroy(ctx);nx_selection_model_destroy(m);
+    }
+    return 0;
+}
+int main(int argc,char **argv) {
+    if(argc==2 && !strncmp(argv[1],"ancestor-",9)) {
+        int kind=atoi(argv[1]+9);CHECK(kind>=1 && kind<=4);return ancestor_identity(kind);
+    }
     CHECK(operations()==0);CHECK(stale_and_policy()==0);CHECK(atomic_projection()==0);
     CHECK(bounds_and_oom()==0);CHECK(binding_validation()==0);
     CHECK(table_and_owner_bounds()==0);
+    CHECK(ancestor_identity(0)==0);
     puts("Multi-selection owner binding, offscreen projection, stale/policy, atomicity and bounds passed");return 0;
 }
