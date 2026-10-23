@@ -12,12 +12,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Read package metadata and compare byte-identical prefixes
+      - name: Compare bounded APT downloads and HTTP headers
         run: python3 validation/probe.py evidence
       - name: Retain measurements
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bounded-package-transfer
-          path: evidence/result.json
+          path: |
+            evidence/result.json
+            evidence/*.stdout
+            evidence/*.stderr
           if-no-files-found: error
