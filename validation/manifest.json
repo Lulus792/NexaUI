@@ -1,0 +1,76 @@
+{
+  "date": "2026-10-23T18:02:16.658734+00:00",
+  "base": "58714d140657ef1e29c4b1fa5eddd5d9839fb6f8",
+  "branch": "codex/native-multiselection",
+  "scope": "Static correction/review preparation only, not compiled/native acceptance",
+  "sources": [
+    {
+      "path": "CMakeLists.txt",
+      "sha256": "6af2e1b50b09c009e6cff531982087b4842e637d17246e1ada3b3c3095cf8a0e",
+      "git_lf_sha256": "f1d2ad4e802a8933534ec75fa186d8d5015ae75ab79f79e11f98d82e9efc09f4",
+      "bytes": 89244
+    },
+    {
+      "path": "platform/macos/accessibility.m",
+      "sha256": "0afb8bf709175ae77ba8b559e6ec499dd6c979e8f4a48f0c304a5f3822674b92",
+      "git_lf_sha256": "3565bdff668011b102bf8b395cccb8dc52015d399261a37c9b6655d6fe00be95",
+      "bytes": 47458
+    },
+    {
+      "path": "platform/macos/window.m",
+      "sha256": "ba6ff97a1bf57e5b7c57a7f0235a46dd672628977ac3385053b8b933b07de555",
+      "git_lf_sha256": "3a840142c84f54e4ee3c5abef54d947c19247565f613dfa1163decd2fbf53947",
+      "bytes": 49789
+    },
+    {
+      "path": "src/nexaui.c",
+      "sha256": "15d894ca9a63526db56b677952a69858d27f121c201e8a89eb4451d510acc92d",
+      "git_lf_sha256": "15d894ca9a63526db56b677952a69858d27f121c201e8a89eb4451d510acc92d",
+      "bytes": 398977
+    },
+    {
+      "path": "src/selection_model.c",
+      "sha256": "a1ca9eda3397a037e9f0dc1338e9026787e363f648a369183991a82e11b1e5c5",
+      "git_lf_sha256": "70c64e3da2f488a6ea51db38652c2a67c4255870f41bdfa9bda12968e4c3145e",
+      "bytes": 14136
+    },
+    {
+      "path": "src/selection_model.h",
+      "sha256": "4ad6e21111ee58ef32046da1595907374d7c60d9200a0185ddb0806bb040be15",
+      "git_lf_sha256": "90e59b19dfdaac950afd925e64cf455eee587f5ca882ca4822a4d198ee1024c0",
+      "bytes": 2816
+    },
+    {
+      "path": "tests/test_macos_multiselection.m",
+      "sha256": "98ee81531424973e8ba25175cca074edeb174e6000372af79fce986703930c1e",
+      "git_lf_sha256": "98ee81531424973e8ba25175cca074edeb174e6000372af79fce986703930c1e",
+      "bytes": 25517
+    },
+    {
+      "path": "tests/test_selection_replace.c",
+      "sha256": "2adadf83ee543de62b182ec4630b4939bfc8805cfe4897b586ebd323626b5651",
+      "git_lf_sha256": "2adadf83ee543de62b182ec4630b4939bfc8805cfe4897b586ebd323626b5651",
+      "bytes": 7726
+    },
+    {
+      "path": "tests/test_selection_set.c",
+      "sha256": "dbbc938a0e72da483686d6ab1883874f6162c20831942828e7ce9ddd019f3c76",
+      "git_lf_sha256": "dbbc938a0e72da483686d6ab1883874f6162c20831942828e7ce9ddd019f3c76",
+      "bytes": 15766
+    }
+  ],
+  "patch_sha256": "7aacad3759b23fe0401b573d809eb42efce6359949e91d29ac93dce24b98e77e",
+  "fixes_from_v1_sha256": "72fd9a19314060e4e4e8ec7d167512c1d1280f17ff6dcbd04965dcf98f3ce077",
+  "previous_manifest_sha256": "c8586e39e26776f82ed12cc76caef3d9f00800d029927760e9d0d0da94351dec",
+  "previous_evidence_manifest_sha256": "42d8e01eb8fa8637cbe1784289bcac2771d84d9985b46ae5c2b4c113427e234c",
+  "previous_1947_evidence_files_rehashed": true,
+  "changes": [
+    "Monotone publication revision checked before any snapshot dereference after NSArray.objectAtIndex; fixed original scratch bound and checked result index",
+    "Publication counter fails LIMIT at UINT64_MAX; owned selected-array getter also rejects publication ABA",
+    "Strict incarnation comparison when old OR new side is Multi; Single-to-Single remains unchanged",
+    "Actual two-buffer ABA fixture using runtime ivar addresses, prewarmed buffers, two real frame publications and shifted target index",
+    "Multi-to-Single retained owner/member retirement, forwarded request and re-promotion tests; legacy Single reparent retained"
+  ],
+  "runtime_status": "No new compilation or execution. User Mac switched off; no SSH since notification. Hosted validation still to arrange. Prior native results cover v1 only.",
+  "publication": "No feature commit/push/main update. V1 not approved; v2 full native regression/counterproof and exact-package re-review required."
+}

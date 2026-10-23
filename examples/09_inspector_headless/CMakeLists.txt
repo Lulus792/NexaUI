@@ -1,2 +1,0 @@
-add_executable(nexaui_inspector_headless main.c)
-target_link_libraries(nexaui_inspector_headless PRIVATE NexaUI::NexaUI)

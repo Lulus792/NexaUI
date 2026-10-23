@@ -1,0 +1,1827 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 294e987..7cdc640 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -939,6 +939,13 @@ if(NEXAUI_BUILD_TESTS)
+     add_test(NAME nexaui_input COMMAND nexaui_input_tests)
+     set_tests_properties(nexaui_input PROPERTIES TIMEOUT 15)
+     if(APPLE)
++        add_executable(nexaui_macos_multiselection_tests tests/test_macos_multiselection.m)
++        target_include_directories(nexaui_macos_multiselection_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
++        target_link_libraries(nexaui_macos_multiselection_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
++        target_compile_options(nexaui_macos_multiselection_tests PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
++        set_target_properties(nexaui_macos_multiselection_tests PROPERTIES OBJC_STANDARD 17 OBJC_STANDARD_REQUIRED YES OBJC_EXTENSIONS NO)
++        add_test(NAME nexaui_macos_multiselection COMMAND nexaui_macos_multiselection_tests)
++        set_tests_properties(nexaui_macos_multiselection PROPERTIES TIMEOUT 60 RESOURCE_LOCK native_display)
+         add_executable(nexaui_macos_accessibility_tests tests/test_macos_accessibility.m)
+         target_include_directories(nexaui_macos_accessibility_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
+         target_link_libraries(nexaui_macos_accessibility_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
+@@ -993,6 +1000,32 @@ if(NEXAUI_BUILD_TESTS)
+     endif()
+     add_test(NAME nexaui_selection_model COMMAND nexaui_selection_model_tests)
+     set_tests_properties(nexaui_selection_model PROPERTIES TIMEOUT 15)
++    # Isolated private model component; no SDK link or test-only exported API.
++    add_executable(nexaui_selection_replace_tests tests/test_selection_replace.c src/selection_model.c)
++    target_include_directories(nexaui_selection_replace_tests PRIVATE include src)
++    set_target_properties(nexaui_selection_replace_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
++    if(MSVC)
++        target_compile_options(nexaui_selection_replace_tests PRIVATE /W4)
++    else()
++        target_compile_options(nexaui_selection_replace_tests PRIVATE -Wall -Wextra -Wpedantic)
++    endif()
++    add_test(NAME nexaui_selection_replace COMMAND nexaui_selection_replace_tests)
++    set_tests_properties(nexaui_selection_replace PROPERTIES TIMEOUT 15)
++    # Internal routing entry points stay private. Static-only direct core tests
++    # complement the real native shared/static adapter tests.
++    if(NOT BUILD_SHARED_LIBS)
++        add_executable(nexaui_selection_set_tests tests/test_selection_set.c)
++        target_include_directories(nexaui_selection_set_tests PRIVATE src)
++        target_link_libraries(nexaui_selection_set_tests PRIVATE NexaUI::NexaUI)
++        set_target_properties(nexaui_selection_set_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
++        if(MSVC)
++            target_compile_options(nexaui_selection_set_tests PRIVATE /W4)
++        else()
++            target_compile_options(nexaui_selection_set_tests PRIVATE -Wall -Wextra -Wpedantic)
++        endif()
++        add_test(NAME nexaui_selection_set COMMAND nexaui_selection_set_tests)
++        set_tests_properties(nexaui_selection_set PROPERTIES TIMEOUT 15)
++    endif()
+     add_executable(nexaui_multiselection_tests tests/test_multiselection.c)
+     target_link_libraries(nexaui_multiselection_tests PRIVATE NexaUI::NexaUI)
+     set_target_properties(nexaui_multiselection_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+diff --git a/platform/macos/accessibility.m b/platform/macos/accessibility.m
+index 145031f..8bacf4a 100644
+--- a/platform/macos/accessibility.m
++++ b/platform/macos/accessibility.m
+@@ -1,19 +1,28 @@
+ #import "accessibility.h"
+ #include "../../src/context_identity.h"
++#include "../../src/selection_model.h"
+ #include <pthread.h>
+ #include <stdatomic.h>
+ #include <stdint.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
++#include <objc/runtime.h>
+ 
+ #define NX_AX_NONE UINT32_MAX
+ #define NX_AX_BYTES (32u*1024u*1024u)
+ #define NX_AX_NODES 65536u
++#define NX_AX_SELECTION (NX_SEM_SELECTION_SINGLE|NX_SEM_SELECTION_MULTIPLE)
++#define NX_AX_MULTI_BYTES (8u*1024u*1024u)
+ typedef struct nx_ax_node {
+     uint64_t id, incarnation;
+     nx_semantic_role role;
+     nx_rect bounds;
+     uint32_t state, actions, parent, first, last, next, owner, selected, focus;
++    uint32_t selected_last, next_selected, selected_count, member_count;
++    uint64_t membership, policy_epoch;
++    nx_selection_target target;
++    int owner_multiple;
+     const char *name, *help, *value;
+ } nx_ax_node;
+ typedef struct nx_ax_snapshot {
+@@ -21,10 +30,33 @@ typedef struct nx_ax_snapshot {
+     uint32_t first, *slots;
+     nx_ax_node nodes[];
+ } nx_ax_snapshot;
++
++/* Main-thread snapshots are borrowed only during current(). Lifetime callbacks
++   touch C reference counts and system memory, never an Objective-C deallocator
++   or an application allocator. A detached bridge revokes before freeing buffers. */
++typedef struct nx_ax_multi_lease {
++    atomic_uint references;
++    uint64_t generation, context;
++    nx_ax_snapshot *snapshot;
++    int live;
++} nx_ax_multi_lease;
++typedef struct nx_ax_multi_item { uint64_t id, incarnation, membership; } nx_ax_multi_item;
++typedef struct nx_ax_multi_request {
++    atomic_uint references;
++    nx_ax_multi_lease *lease;
++    uint64_t generation, context, owner_id, owner_incarnation, policy_epoch;
++    uint64_t id, incarnation;
++    nx_selection_target target;
++    uint32_t action;
++    int whole;
++    size_t bytes, member_count, desired_count;
++    nx_ax_multi_item members[];
++} nx_ax_multi_request;
+ typedef struct nx_ax_request {
+     uint64_t id, incarnation, owner_id, owner_incarnation, frame;
+     uint32_t action;
+     int forwarded;
++    nx_ax_multi_request *multi;
+ } nx_ax_request;
+ 
+ @class NXMacAXElement;
+@@ -34,16 +66,20 @@ typedef struct nx_ax_request {
+     NSView *view; /* Borrowed only until owner-thread detach. */
+     nx_ax_snapshot *snapshot, *spare;
+     NSMutableDictionary *elements;
+-    uint64_t context_identity, frame, incarnation, published_focus;
++    uint64_t context_identity, frame, incarnation, published_focus, publication;
+     int publishing, published_native_focus;
+     nx_ax_request requests[64];
+     size_t request_count;
++    size_t request_bytes, admission_bytes, admission_count;
++    nx_ax_multi_lease *lease;
+ }
+ - (id)element:(uint64_t)identity;
+ - (NSArray *)children:(uint32_t)parent;
+ - (id)hit:(NSPoint)point;
+ - (id)focused;
+ - (BOOL)request:(NXMacAXElement *)element action:(uint32_t)action;
++- (BOOL)requestSet:(NXMacAXElement *)owner children:(NSArray *)children rowsOnly:(BOOL)rows;
++- (NSArray *)selected:(NXMacAXElement *)owner rowsOnly:(BOOL)rows;
+ - (nx_result)publish:(const nx_context *)context;
+ - (nx_result)route:(nx_context *)context count:(size_t *)count;
+ - (void)detach;
+@@ -83,7 +119,107 @@ static uint32_t find(nx_ax_snapshot *s,uint64_t id) {
+ static int selected(nx_ax_node *n) {
+     return !!(n->state&(n->role==NX_ROLE_RADIO ? NX_SEM_CHECKED : NX_SEM_SELECTED));
+ }
+-static int member(nx_ax_node *n) { return (n->actions&NX_ACTION_SELECT) && n->owner!=NX_AX_NONE; }
++static int member(nx_ax_node *n) {
++    return (n->actions&NX_ACTION_SELECT) && n->owner!=NX_AX_NONE &&
++        (!n->owner_multiple || (n->membership && n->target.identity));
++}
++static int row_role(nx_semantic_role role) { return role==NX_ROLE_ROW || role==NX_ROLE_LIST_ITEM || role==NX_ROLE_TREE_ITEM; }
++static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
++static void lease_retain(nx_ax_multi_lease *l) { atomic_fetch_add_explicit(&l->references,1,memory_order_relaxed); }
++static void lease_release(nx_ax_multi_lease *l) {
++    if (l && atomic_fetch_sub_explicit(&l->references,1,memory_order_acq_rel)==1) free(l);
++}
++static void multi_retain(void *user) {
++    nx_ax_multi_request *r=user; atomic_fetch_add_explicit(&r->references,1,memory_order_relaxed);
++}
++static void multi_release(void *user) {
++    nx_ax_multi_request *r=user;
++    if (r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
++        nx_ax_multi_lease *l=r->lease;free(r);lease_release(l);
++    }
++}
++static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
++static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
++    uint64_t owner_id,nx_selection_target target) {
++    if (!pthread_main_np()) return 0;
++    nx_ax_multi_request *r=user;nx_ax_multi_lease *l=r->lease;
++    if (!l->live || !l->snapshot || l->generation!=r->generation || token!=r->generation ||
++        context!=r->context || l->context!=context || owner_id!=r->owner_id ||
++        id!=(r->whole?r->owner_id:r->id) || !target_equal(target,r->target)) return 0;
++    nx_ax_snapshot *s=l->snapshot;uint32_t group=find(s,owner_id);
++    if (group==NX_AX_NONE) return 0;
++    nx_ax_node *owner=&s->nodes[group];
++    if (!(owner->state&NX_SEM_SELECTION_MULTIPLE) || (owner->state&NX_SEM_DISABLED) ||
++        owner->incarnation!=r->owner_incarnation || owner->policy_epoch!=r->policy_epoch ||
++        !target_equal(owner->target,r->target) || (r->whole && owner->member_count!=r->member_count)) return 0;
++    for (size_t i=0;i<r->member_count;++i) {
++        uint32_t at=find(s,r->members[i].id);if(at==NX_AX_NONE)return 0;
++        nx_ax_node *n=&s->nodes[at];
++        if (!member(n) || n->owner!=group || n->incarnation!=r->members[i].incarnation ||
++            n->membership!=r->members[i].membership || !target_equal(n->target,r->target) ||
++            (!r->whole && (n->state&NX_SEM_DISABLED))) return 0;
++    }
++    return 1;
++}
++static void remove_request(NXMacAXBridge *b,size_t at) {
++    nx_ax_multi_request *r=b->requests[at].multi;
++    if (r) { b->request_bytes-=r->bytes;multi_release(r); }
++    --b->request_count;memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
++}
++static void clear_requests(NXMacAXBridge *b) { while(b->request_count)remove_request(b,b->request_count-1); }
++static int queue_space(NXMacAXBridge *b,size_t bytes,size_t own) {
++    size_t slots=b->request_count+b->admission_count;
++    size_t allocated=b->request_bytes+b->admission_bytes;
++    return slots>=own && slots-own<64u && allocated<=NX_AX_MULTI_BYTES && bytes<=NX_AX_MULTI_BYTES-allocated;
++}
++static void wake_owner(void) {
++    NSEvent *wake=[NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint modifierFlags:0
++        timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0];
++    if (wake) [NSApp postEvent:wake atStart:NO];
++}
++static nx_ax_multi_request *make_multi(NXMacAXBridge *b,nx_ax_node *owner,size_t members,int whole) {
++    if(members>NX_AX_NODES)return NULL;
++    size_t bytes=sizeof(nx_ax_multi_request)+members*(sizeof(nx_ax_multi_item)+(whole?sizeof(uint64_t):0u));
++    if (bytes>NX_AX_MULTI_BYTES) return NULL;
++    nx_ax_multi_request *r=calloc(1,bytes);if(!r)return NULL;
++    atomic_init(&r->references,1);r->lease=b->lease;lease_retain(r->lease);
++    r->generation=b->lease->generation;r->context=b->context_identity;r->owner_id=owner->id;
++    r->owner_incarnation=owner->incarnation;r->policy_epoch=owner->policy_epoch;r->target=owner->target;
++    r->bytes=bytes;r->member_count=members;r->whole=whole;return r;
++}
++static int same_ancestry(nx_ax_snapshot *a,uint32_t ai,nx_ax_snapshot *b,uint32_t bi) {
++    while(ai!=NX_AX_NONE && bi!=NX_AX_NONE) {
++        nx_ax_node *x=&a->nodes[ai],*y=&b->nodes[bi];
++        if(x->id!=y->id || x->role!=y->role || x->incarnation!=y->incarnation)return 0;
++        ai=x->parent;bi=y->parent;
++    }
++    return ai==bi;
++}
++static int selected_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,nx_ax_node *y,int rows) {
++    size_t before=0,after=0;
++    for(uint32_t i=x->selected;i!=NX_AX_NONE;i=a->nodes[i].next_selected)
++        if(!rows || row_role(a->nodes[i].role))++before;
++    for(uint32_t i=y->selected;i!=NX_AX_NONE;i=b->nodes[i].next_selected) {
++        nx_ax_node *n=&b->nodes[i];if(rows && !row_role(n->role))continue;
++        ++after;uint32_t old=find(a,n->id);
++        if(old==NX_AX_NONE || a->nodes[old].incarnation!=n->incarnation || !selected(&a->nodes[old]) ||
++            a->nodes[old].owner!=(uint32_t)(x-a->nodes))return 0;
++    }
++    return before==after;
++}
++static int owner_policy_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,nx_ax_node *y) {
++    if(!target_equal(x->target,y->target) || x->member_count!=y->member_count ||
++        ((x->state^y->state)&(NX_SEM_DISABLED|NX_SEM_SELECTION_REQUIRED)))return 0;
++    uint32_t group=(uint32_t)(y-b->nodes);
++    for(size_t i=0;i<b->count;++i) {
++        nx_ax_node *n=&b->nodes[i];if(n->owner!=group || !member(n))continue;
++        uint32_t old=find(a,n->id);if(old==NX_AX_NONE)return 0;
++        nx_ax_node *p=&a->nodes[old];
++        if(!member(p) || p->owner!=(uint32_t)(x-a->nodes) || p->incarnation!=n->incarnation ||
++            ((p->state^n->state)&NX_SEM_DISABLED))return 0;
++    }
++    return 1;
++}
+ static int choosing(uint32_t action) {
+     return action==NX_ACTION_SELECT || action==NX_ACTION_ADD_SELECTION || action==NX_ACTION_DESELECT;
+ }
+@@ -141,7 +277,7 @@ static NSRect screen(NXMacAXBridge *b,nx_ax_node *n) {
+ }
+ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     NSWindow *window=[b->view window];
+-    return !window || ![window isVisible] || [window isMiniaturized] ||
++    return (n->state&NX_SEM_OFFSCREEN) || !window || ![window isVisible] || [window isMiniaturized] ||
+         NSIsEmptyRect(NSIntersectionRect(logical(n),[b->view bounds]));
+ }
+ 
+@@ -197,9 +333,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ }
+ - (BOOL)isAccessibilitySelected { nx_ax_node *n=[self current]; return n && selected(n); }
+ - (NSArray *)accessibilitySelectedChildren {
+-    nx_ax_node *n=[self current];
+-    if (!n || !(n->state&NX_SEM_SELECTION_SINGLE) || n->selected==NX_AX_NONE) return @[];
+-    id item=[bridge element:bridge->snapshot->nodes[n->selected].id]; return item ? @[item] : @[];
++    if(!pthread_main_np())return nil;
++    NXMacAXBridge *b=[bridge retain];NSArray *result=[b selected:self rowsOnly:NO];[b release];return result;
+ }
+ - (NSArray *)accessibilityTabs {
+     nx_ax_node *n=[self current]; NSMutableArray *tabs=[NSMutableArray array];
+@@ -233,11 +368,21 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     return rows;
+ }
+ - (NSArray *)accessibilitySelectedRows {
++    if(!pthread_main_np())return nil;
++    nx_ax_node *n=[self current];
++    if(n && (n->state&NX_AX_SELECTION) && (n->role==NX_ROLE_LIST || n->role==NX_ROLE_TREE || n->role==NX_ROLE_TABLE)) {
++        NXMacAXBridge *b=[bridge retain];NSArray *result=[b selected:self rowsOnly:YES];[b release];return result;
++    }
+     NSMutableArray *rows=[NSMutableArray array];
+     for (id item in [self accessibilityRows]) if ([item isAccessibilitySelected]) [rows addObject:item];
+     return rows;
+ }
+-- (void)setAccessibilitySelectedRows:(NSArray *)rows { [self setAccessibilitySelectedChildren:rows]; }
++- (void)setAccessibilitySelectedRows:(NSArray *)rows {
++    nx_ax_node *n=[self current];
++    if(n && (n->state&NX_SEM_SELECTION_MULTIPLE)) {
++        NXMacAXBridge *b=[bridge retain];[b requestSet:self children:rows rowsOnly:YES];[b release];
++    } else [self setAccessibilitySelectedChildren:rows];
++}
+ - (BOOL)isAccessibilityFocused {
+     nx_ax_node *n=[self current]; NSWindow *window=n ? [bridge->view window] : nil;
+     return n && (n->state&NX_SEM_FOCUSED) && [window isKeyWindow] && [window firstResponder]==bridge->view;
+@@ -249,7 +394,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ - (void)setAccessibilityFocused:(BOOL)value {
+     nx_ax_node *n=[self current]; if (!value || !n || (n->state&NX_SEM_DISABLED)) return;
+     NXMacAXElement *target=self;
+-    if (n->state&NX_SEM_SELECTION_SINGLE) {
++    if (n->state&NX_AX_SELECTION) {
+         if (n->focus==NX_AX_NONE) return;
+         target=[bridge element:bridge->snapshot->nodes[n->focus].id];
+     }
+@@ -257,10 +402,14 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ }
+ - (void)setAccessibilitySelected:(BOOL)value {
+     nx_ax_node *n=[self current];
+-    if (n && member(n)) [bridge request:self action:value ? NX_ACTION_SELECT : NX_ACTION_DESELECT];
++    if (n && member(n)) [bridge request:self action:value ?
++        (n->owner_multiple?NX_ACTION_ADD_SELECTION:NX_ACTION_SELECT) : NX_ACTION_DESELECT];
+ }
+ - (void)setAccessibilitySelectedChildren:(NSArray *)children {
+     nx_ax_node *n=[self current];
++    if(n && (n->state&NX_SEM_SELECTION_MULTIPLE)) {
++        NXMacAXBridge *b=[bridge retain];[b requestSet:self children:children rowsOnly:NO];[b release];return;
++    }
+     if (!n || !(n->state&NX_SEM_SELECTION_SINGLE) || (n->state&NX_SEM_DISABLED) ||
+         ![children isKindOfClass:[NSArray class]] || [children count]>1) return;
+     if (![children count]) {
+@@ -277,11 +426,12 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     int enabled=!(n->state&NX_SEM_DISABLED);
+     if (selector==@selector(accessibilityPerformPress)) return enabled && press_action(n);
+     if (selector==@selector(setAccessibilityFocused:))
+-        return enabled && ((n->actions&NX_ACTION_FOCUS) || ((n->state&NX_SEM_SELECTION_SINGLE) && n->focus!=NX_AX_NONE));
++        return enabled && ((n->actions&NX_ACTION_FOCUS) || ((n->state&NX_AX_SELECTION) && n->focus!=NX_AX_NONE));
+     if (selector==@selector(setAccessibilitySelected:)) return enabled && member(n);
+-    if (selector==@selector(setAccessibilitySelectedChildren:)) return enabled && (n->state&NX_SEM_SELECTION_SINGLE);
++    if (selector==@selector(setAccessibilitySelectedChildren:)) return enabled && (n->state&NX_AX_SELECTION);
+     if (selector==@selector(setAccessibilitySelectedRows:))
+-        return enabled && (n->state&NX_SEM_SELECTION_SINGLE) && (n->role==NX_ROLE_LIST || n->role==NX_ROLE_TREE);
++        return enabled && (n->state&NX_AX_SELECTION) && (n->role==NX_ROLE_LIST || n->role==NX_ROLE_TREE ||
++            (n->role==NX_ROLE_TABLE && (n->state&NX_SEM_SELECTION_MULTIPLE)));
+     NSString *name=NSStringFromSelector(selector);
+     if ([name hasPrefix:@"setAccessibility"] || [name hasPrefix:@"accessibilityPerform"]) return NO;
+     return [super isAccessibilitySelectorAllowed:selector];
+@@ -289,6 +439,102 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ @end
+ 
+ @implementation NXMacAXBridge
++- (NSArray *)selected:(NXMacAXElement *)ownerElement rowsOnly:(BOOL)rows {
++    nx_ax_node *owner=[ownerElement current];
++    if(!owner || ownerElement->bridge!=self)return nil;
++    if(!(owner->state&NX_AX_SELECTION))return @[];
++    nx_ax_snapshot *s=snapshot;size_t count=0;
++    for(uint32_t at=owner->selected;at!=NX_AX_NONE;at=s->nodes[at].next_selected)
++        if(!rows || row_role(s->nodes[at].role))++count;
++    if(!count)return @[];
++    nx_ax_multi_item *copy=malloc(count*sizeof(*copy));if(!copy)return nil;
++    size_t k=0;
++    for(uint32_t at=owner->selected;at!=NX_AX_NONE;at=s->nodes[at].next_selected) {
++        nx_ax_node *n=&s->nodes[at];if(rows && !row_role(n->role))continue;
++        copy[k++]=(nx_ax_multi_item){n->id,n->incarnation,n->membership};
++    }
++    uint64_t generation=lease->generation, revision=publication;
++    NSMutableArray *result=[NSMutableArray arrayWithCapacity:count];BOOL valid=YES;
++    for(size_t i=0;i<count;++i) {
++        NXMacAXElement *item=[self element:copy[i].id];
++        if(publication!=revision || snapshot!=s || !lease->live || lease->generation!=generation || !item ||
++            item->incarnation!=copy[i].incarnation || item->bridge!=self) {valid=NO;break;}
++        [result addObject:item];
++    }
++    free(copy);
++    if(!valid || publication!=revision || snapshot!=s || !lease->live || lease->generation!=generation)return nil;
++    return [[result copy] autorelease];
++}
++- (BOOL)requestSet:(NXMacAXElement *)element children:(NSArray *)children rowsOnly:(BOOL)rows {
++    if(!pthread_main_np())return NO;
++    if(!children)children=@[];
++    if(![children isKindOfClass:[NSArray class]])return NO;
++    NSUInteger input=[children count];
++    nx_ax_node *owner=[element current];
++    if(!owner || element->bridge!=self || !(owner->state&NX_SEM_SELECTION_MULTIPLE) ||
++        (owner->state&NX_SEM_DISABLED) || input>owner->member_count ||
++        (rows && owner->role!=NX_ROLE_LIST && owner->role!=NX_ROLE_TREE && owner->role!=NX_ROLE_TABLE))return NO;
++    nx_ax_snapshot *s=snapshot;uint32_t group=(uint32_t)(owner-s->nodes);
++    /* The active/spare pair can return to the same address after two nested
++       publications. Address and lease generation alone do not identify it. */
++    uint64_t source_publication=publication;
++    size_t source_count=s->count;
++    size_t bytes=sizeof(nx_ax_multi_request)+owner->member_count*(sizeof(nx_ax_multi_item)+sizeof(uint64_t));
++    size_t reservation=bytes+source_count;
++    if(!queue_space(self,reservation,0))return NO;
++    ++admission_count;admission_bytes+=reservation;
++    nx_ax_multi_request *r=make_multi(self,owner,owner->member_count,1);
++    unsigned char *wanted=calloc(source_count,1);BOOL valid=r && wanted,accepted=NO,queued=NO;
++    if(valid) {
++        size_t member_index=0;
++        for(size_t i=0;i<source_count;++i) {
++            nx_ax_node *n=&s->nodes[i];if(n->owner!=group || !member(n))continue;
++            r->members[member_index++]=(nx_ax_multi_item){n->id,n->incarnation,n->membership};
++            if(rows && !row_role(n->role) && selected(n))wanted[i]=1;
++        }
++        for(NSUInteger i=0;valid && i<input;++i) {
++            id value=[children objectAtIndex:i];
++            /* This is an application NSArray call-out. Check the monotone
++               identity before dereferencing any borrowed snapshot pointer. */
++            if(publication!=source_publication || snapshot!=s || !lease->live ||
++                lease->generation!=r->generation || s->count!=source_count ||
++                object_getClass(value)!=[NXMacAXElement class]) {valid=NO;break;}
++            NXMacAXElement *item=value;uint32_t at=find(s,item->identity);
++            if(item->bridge!=self || at==NX_AX_NONE || at>=source_count || item->incarnation!=s->nodes[at].incarnation ||
++                !member(&s->nodes[at]) || s->nodes[at].owner!=group || wanted[at] ||
++                (rows && !row_role(s->nodes[at].role))) {valid=NO;break;}
++            wanted[at]=1;
++        }
++        for(size_t i=0;valid && i<source_count;++i) {
++            nx_ax_node *n=&s->nodes[i];if(n->owner!=group || !member(n))continue;
++            if((n->state&NX_SEM_DISABLED) && selected(n)!=!!wanted[i]) {valid=NO;break;}
++            if(wanted[i])multi_ids(r)[r->desired_count++]=n->id;
++        }
++        if(valid && (owner->state&NX_SEM_SELECTION_REQUIRED) && !r->desired_count)valid=NO;
++        if(valid && !multi_current(r,r->generation,r->context,r->owner_id,r->owner_id,r->target))valid=NO;
++        BOOL busy=NO;
++        for(size_t i=0;valid && i<request_count;++i) {
++            nx_ax_request *old=&requests[i];if(old->owner_id!=r->owner_id)continue;
++            busy=YES;nx_ax_multi_request *prior=old->multi;
++            accepted=prior && prior->whole && prior->desired_count==r->desired_count &&
++                target_equal(prior->target,r->target) && prior->policy_epoch==r->policy_epoch &&
++                !memcmp(multi_ids(prior),multi_ids(r),r->desired_count*sizeof(uint64_t));break;
++        }
++        if(valid && !busy) {
++            BOOL same=r->desired_count==owner->selected_count;
++            for(uint32_t at=owner->selected;same && at!=NX_AX_NONE;at=s->nodes[at].next_selected)
++                if(!wanted[at])same=NO;
++            if(same)accepted=YES;
++            else if(queue_space(self,0,1)) {
++                nx_ax_request q={0};q.id=q.owner_id=r->owner_id;q.incarnation=q.owner_incarnation=r->owner_incarnation;
++                q.multi=r;requests[request_count++]=q;request_bytes+=r->bytes;queued=accepted=YES;
++            }
++        }
++    }
++    free(wanted);--admission_count;admission_bytes-=reservation;
++    if(!queued)multi_release(r);
++    if(queued)wake_owner();return accepted;
++}
+ - (id)element:(uint64_t)identity {
+     if (!pthread_main_np()) return nil;
+     uint32_t index=find(snapshot,identity); if (index==NX_AX_NONE) return nil;
+@@ -337,40 +583,57 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+             if (r->owner_id==owner->id && r->owner_incarnation==owner->incarnation)
+                 return r->id==n->id && r->incarnation==n->incarnation && r->action==action;
+         }
+-        if ((action==NX_ACTION_DESELECT && !selected(n)) || (action!=NX_ACTION_DESELECT && selected(n))) return YES;
+-        if ((action==NX_ACTION_DESELECT && (owner->state&NX_SEM_SELECTION_REQUIRED)) ||
+-            (action==NX_ACTION_ADD_SELECTION && owner->selected!=NX_AX_NONE)) return NO;
++        if(n->owner_multiple) {
++            if((action==NX_ACTION_DESELECT && !selected(n)) || (action==NX_ACTION_ADD_SELECTION && selected(n)) ||
++                (action==NX_ACTION_SELECT && selected(n) && owner->selected_count==1))return YES;
++            if(action==NX_ACTION_DESELECT && owner->selected_count==1 && (owner->state&NX_SEM_SELECTION_REQUIRED))return NO;
++        } else {
++            if ((action==NX_ACTION_DESELECT && !selected(n)) || (action!=NX_ACTION_DESELECT && selected(n))) return YES;
++            if ((action==NX_ACTION_DESELECT && (owner->state&NX_SEM_SELECTION_REQUIRED)) ||
++                (action==NX_ACTION_ADD_SELECTION && owner->selected!=NX_AX_NONE)) return NO;
++        }
+     }
+     if (action==NX_ACTION_FOCUS) {
+         for (size_t i=0;i<request_count;) {
+             if (requests[i].action==NX_ACTION_FOCUS) {
+-                --request_count; memmove(requests+i,requests+i+1,(request_count-i)*sizeof(*requests));
++                remove_request(self,i);
+             } else ++i;
+         }
+     }
+     for (size_t i=0;i<request_count;++i)
+         if (requests[i].id==n->id && requests[i].incarnation==n->incarnation && requests[i].action==action) return NO;
+-    if (request_count==64) return NO;
++    size_t multi_bytes=owner && n->owner_multiple ? sizeof(nx_ax_multi_request)+sizeof(nx_ax_multi_item) : 0;
++    if (!queue_space(self,multi_bytes,0)) return NO;
+     nx_ax_request r={0}; r.id=n->id; r.incarnation=n->incarnation; r.action=action;
+     if (owner) { r.owner_id=owner->id; r.owner_incarnation=owner->incarnation; }
++    if(multi_bytes) {
++        r.multi=make_multi(self,owner,1,0);if(!r.multi)return NO;
++        r.multi->id=n->id;r.multi->incarnation=n->incarnation;r.multi->action=action;
++        r.multi->members[0]=(nx_ax_multi_item){n->id,n->incarnation,n->membership};
++        request_bytes+=r.multi->bytes;
++    }
+     requests[request_count++]=r;
+-    NSEvent *wake=[NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint modifierFlags:0
+-        timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0];
+-    if (wake) [NSApp postEvent:wake atStart:NO];
++    wake_owner();
+     return YES;
+ }
+ - (void)detach {
+     if (!pthread_main_np()) return;
++    if(lease) {lease->live=0;lease->snapshot=NULL;lease->context=0;if(lease->generation!=UINT64_MAX)++lease->generation;}
++    nx_ax_snapshot *active=snapshot,*inactive=spare;snapshot=spare=NULL;view=nil;
++    clear_requests(self);
+     NSArray *cached=[elements allValues];
+     for (NXMacAXElement *item in cached) [item retire];
+-    [elements removeAllObjects]; view=nil; request_count=0;
+-    if (snapshot) allocator.deallocate(allocator.user,snapshot,snapshot->capacity);
+-    if (spare) allocator.deallocate(allocator.user,spare,spare->capacity);
+-    snapshot=spare=NULL;
++    [elements removeAllObjects];
++    if (active) allocator.deallocate(allocator.user,active,active->capacity);
++    if (inactive) allocator.deallocate(allocator.user,inactive,inactive->capacity);
+ }
+-- (void)dealloc { [elements release]; [super dealloc]; }
++- (void)dealloc { [elements release];lease_release(lease);[super dealloc]; }
+ - (nx_result)publish:(const nx_context *)context {
+-    if (publishing) return NX_ERROR_STATE;
++    if(!lease || !lease->live || !view)return NX_ERROR_STATE;
++    uint64_t binding=nx_context_identity(context),source_frame=nx_context_frame_serial(context),generation=lease->generation;
++    NSView *source_view=view;
++    if(publication==UINT64_MAX)return NX_ERROR_LIMIT;
++    if(context_identity!=binding && lease->generation==UINT64_MAX)return NX_ERROR_LIMIT;
+     size_t count; nx_result result=nx_semantics_count(context,&count); if (result!=NX_OK) return result;
+     if (count>NX_AX_NODES) return NX_ERROR_LIMIT;
+     size_t slots=16; while (slots<count*2u) slots*=2u;
+@@ -386,35 +649,62 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     nx_ax_snapshot *s=spare;
+     if (!s || s->capacity<bytes) {
+         size_t capacity=4096; while (capacity<bytes) capacity*=2u;
+-        s=allocator.allocate(allocator.user,capacity); if (!s) return NX_ERROR_MEMORY;
++        /* Withdraw ownership before either user call-out. Detach must not free
++           the spare a second time from inside its own deallocator. */
++        nx_ax_snapshot *retired=spare;spare=NULL;
++        s=allocator.allocate(allocator.user,capacity);
++        int live=lease->live && lease->generation==generation && view==source_view &&
++            nx_context_identity(context)==binding && nx_context_frame_serial(context)==source_frame;
++        if(!s && live) {spare=retired;return NX_ERROR_MEMORY;}
++        if(retired)allocator.deallocate(allocator.user,retired,retired->capacity);
++        live=live && lease->live && lease->generation==generation && view==source_view &&
++            nx_context_identity(context)==binding && nx_context_frame_serial(context)==source_frame;
++        if(!live) {if(s)allocator.deallocate(allocator.user,s,capacity);return NX_ERROR_STATE;}
++        if(!s)return NX_ERROR_MEMORY;
+         s->capacity=capacity;
+-        if (spare) allocator.deallocate(allocator.user,spare,spare->capacity);
+         spare=s;
+     }
+     s->count=count; s->slot_count=slots; s->first=NX_AX_NONE;
+     s->slots=(uint32_t *)(s->nodes+count); memset(s->slots,0,slots*sizeof(uint32_t));
+     char *text=(char *)(s->slots+slots);
+-    uint64_t next_incarnation=incarnation, binding=nx_context_identity(context);
++    uint64_t next_incarnation=incarnation;
+     uint32_t root_last=NX_AX_NONE;
+     for (size_t i=0;i<count;++i) {
+         nx_semantic_view v; if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK) return NX_ERROR_STATE;
+         nx_ax_node *n=&s->nodes[i]; *n=(nx_ax_node){0};
+         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+-        n->first=n->last=n->next=n->owner=n->selected=n->focus=NX_AX_NONE;
++        n->first=n->last=n->next=n->owner=n->selected=n->focus=n->selected_last=n->next_selected=NX_AX_NONE;
++        n->target=nx_context_selection_target(context,n->id);
++        n->membership=nx_context_selection_membership(context,n->id);
+         n->parent=find(s,v.parent_id);
+         if (n->parent!=NX_AX_NONE) {
+             nx_ax_node *parent=&s->nodes[n->parent];
+-            n->state|=parent->state&NX_SEM_DISABLED;
+-            n->owner=(parent->state&NX_SEM_SELECTION_SINGLE) ? n->parent : parent->owner;
++            n->state|=parent->state&(NX_SEM_DISABLED|NX_SEM_OFFSCREEN);
++            n->owner=(parent->state&NX_AX_SELECTION) ? n->parent : parent->owner;
++            if(n->owner!=NX_AX_NONE)n->owner_multiple=!!(s->nodes[n->owner].state&NX_SEM_SELECTION_MULTIPLE);
+         }
+         if (member(n)) {
+             nx_ax_node *owner=&s->nodes[n->owner];
+-            if (selected(n)) owner->selected=(uint32_t)i;
+-            if ((n->actions&NX_ACTION_FOCUS) && !(n->state&NX_SEM_DISABLED) && (owner->focus==NX_AX_NONE || selected(n)))
++            ++owner->member_count;
++            if (selected(n)) {
++                if(owner->selected_last!=NX_AX_NONE)s->nodes[owner->selected_last].next_selected=(uint32_t)i;
++                else owner->selected=(uint32_t)i;
++                owner->selected_last=(uint32_t)i;++owner->selected_count;
++            }
++            if ((n->actions&NX_ACTION_FOCUS) && !(n->state&NX_SEM_DISABLED) &&
++                (owner->focus==NX_AX_NONE || (n->owner_multiple ? !!(n->state&NX_SEM_FOCUSED) : selected(n))))
+                 owner->focus=(uint32_t)i;
+         }
+         uint32_t old=context_identity==binding ? find(snapshot,n->id) : NX_AX_NONE;
+-        if (old!=NX_AX_NONE && snapshot->nodes[old].role==n->role) n->incarnation=snapshot->nodes[old].incarnation;
++        int same=old!=NX_AX_NONE && snapshot->nodes[old].role==n->role;
++        if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
++            (snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || snapshot->nodes[old].owner_multiple)) {
++            nx_ax_node *prior=&snapshot->nodes[old];
++            same=n->target.identity==prior->target.identity && n->membership==prior->membership &&
++                n->owner_multiple==prior->owner_multiple &&
++                same_ancestry(s,n->parent,snapshot,prior->parent);
++        }
++        if(same)n->incarnation=snapshot->nodes[old].incarnation;
+         else { if (next_incarnation==UINT64_MAX) return NX_ERROR_LIMIT; n->incarnation=++next_incarnation; }
+         nx_utf8_span spans[3]={v.name,v.description,(v.state&NX_SEM_PROTECTED) ? (nx_utf8_span){0} : v.value};
+         const char **dest[3]={&n->name,&n->help,&n->value};
+@@ -429,6 +719,13 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         size_t at=slot(n->id,slots); while (s->slots[at]) at=(at+1u)&(slots-1u);
+         s->slots[at]=(uint32_t)i+1u;
+     }
++    for(size_t i=0;i<s->count;++i) {
++        nx_ax_node *n=&s->nodes[i];if(!(n->state&NX_SEM_SELECTION_MULTIPLE))continue;
++        uint32_t old=context_identity==binding?find(snapshot,n->id):NX_AX_NONE;
++        if(old!=NX_AX_NONE && snapshot->nodes[old].incarnation==n->incarnation &&
++            owner_policy_equal(snapshot,&snapshot->nodes[old],s,n))n->policy_epoch=snapshot->nodes[old].policy_epoch;
++        else {n->policy_epoch=nx_native_next_identity();if(!n->policy_epoch)return NX_ERROR_LIMIT;}
++    }
+     int structure=!snapshot || snapshot->count!=s->count;
+     uint64_t focus=0;
+     for (size_t i=0;i<s->count;++i) {
+@@ -450,23 +747,24 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+             nx_ax_node *a=&snapshot->nodes[prior], *b=&s->nodes[next];
+             if (value_changed(a,b))
+                 [notifications addObject:@[item,NSAccessibilityValueChangedNotification]];
+-            uint64_t before=a->selected==NX_AX_NONE ? 0 : snapshot->nodes[a->selected].id;
+-            uint64_t after=b->selected==NX_AX_NONE ? 0 : s->nodes[b->selected].id;
+-            uint64_t before_inc=a->selected==NX_AX_NONE ? 0 : snapshot->nodes[a->selected].incarnation;
+-            uint64_t after_inc=b->selected==NX_AX_NONE ? 0 : s->nodes[b->selected].incarnation;
+-            if ((b->state&NX_SEM_SELECTION_SINGLE) && (before!=after || before_inc!=after_inc)) {
++            if ((b->state&NX_AX_SELECTION) && !selected_equal(snapshot,a,s,b,0)) {
+                 [notifications addObject:@[item,NSAccessibilitySelectedChildrenChangedNotification]];
+-                if (b->role==NX_ROLE_LIST || b->role==NX_ROLE_TREE)
++                if ((b->role==NX_ROLE_LIST || b->role==NX_ROLE_TREE || b->role==NX_ROLE_TABLE) &&
++                    !selected_equal(snapshot,a,s,b,1))
+                     [notifications addObject:@[item,NSAccessibilitySelectedRowsChangedNotification]];
+             }
+         }
+     }
+     nx_ax_snapshot *old=snapshot; snapshot=s; spare=old; incarnation=next_incarnation;
+-    if (context_identity!=binding) request_count=0;
++    ++publication;
++    if (context_identity!=binding) {++lease->generation;clear_requests(self);}
+     context_identity=binding; frame=nx_context_frame_serial(context);
++    lease->context=binding;lease->snapshot=s;
+     for (size_t i=0;i<request_count;) {
+-        if (requests[i].forwarded && requests[i].frame!=frame) {
+-            --request_count; memmove(requests+i,requests+i+1,(request_count-i)*sizeof(*requests));
++        nx_ax_multi_request *r=requests[i].multi;
++        if ((requests[i].forwarded && requests[i].frame!=frame) ||
++            (r && !multi_current(r,r->generation,r->context,r->whole?r->owner_id:r->id,r->owner_id,r->target))) {
++            remove_request(self,i);
+         } else ++i;
+     }
+     int native_focus=[[view window] isKeyWindow] && [[view window] firstResponder]==view;
+@@ -474,10 +772,10 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         id target=[self element:focus]; if (target) [notifications addObject:@[target,NSAccessibilityFocusedUIElementChangedNotification]];
+     }
+     published_focus=focus; published_native_focus=native_focus;
+-    NSView *root=[view retain]; publishing=1;
++    NSView *root=[view retain];
+     if (structure) NSAccessibilityPostNotification(root,NSAccessibilityLayoutChangedNotification);
+     for (NSArray *event in notifications) NSAccessibilityPostNotification([event objectAtIndex:0],[event objectAtIndex:1]);
+-    publishing=0; [root release]; return NX_OK;
++    [root release]; return NX_OK;
+ }
+ - (nx_result)route:(nx_context *)context count:(size_t *)count {
+     *count=0;
+@@ -488,6 +786,30 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         size_t at=0; while (at<request_count && requests[at].forwarded) ++at;
+         if (at==request_count) break;
+         nx_ax_request r=requests[at]; uint32_t index=find(snapshot,r.id);
++        if(r.multi) {
++            nx_ax_multi_request *m=r.multi;multi_retain(m);
++            int valid=multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
++            nx_result result=NX_OK;
++            if(valid) {
++                nx_selection_guard g={m,m->generation,multi_retain,multi_release,multi_current};
++                result=m->whole ? nx_semantics_request_selection_set_guarded(context,m->owner_id,
++                    multi_ids(m),m->desired_count,&g) :
++                    nx_semantics_request_selection_guarded(context,m->id,m->action,&g);
++            }
++            /* Core allocation may detach, republish, or remove/reorder this
++               native queue. Keep the C payload and find its exact identity. */
++            at=0;while(at<request_count && requests[at].multi!=m)++at;
++            int live=multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
++            if(valid && live && at<request_count && (result==NX_ERROR_LIMIT || result==NX_ERROR_MEMORY)) {
++                multi_release(m);return result==NX_ERROR_LIMIT?NX_OK:result;
++            }
++            if(at<request_count) {
++                if(valid && live && result==NX_OK) {
++                    requests[at].forwarded=1;requests[at].frame=frame;++*count;
++                } else remove_request(self,at);
++            }
++            multi_release(m);continue;
++        }
+         int valid=index!=NX_AX_NONE && snapshot->nodes[index].incarnation==r.incarnation;
+         if (valid && r.owner_id) {
+             nx_ax_node *n=&snapshot->nodes[index];
+@@ -506,7 +828,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         if (valid && result==NX_OK && r.owner_id) {
+             requests[at].forwarded=1; requests[at].frame=frame;
+         } else {
+-            --request_count; memmove(requests+at,requests+at+1,(request_count-at)*sizeof(*requests));
++            remove_request(self,at);
+         }
+     }
+     if (focus_window) {
+@@ -521,6 +843,9 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ NXMacAXBridge *nx_mac_ax_create(NSView *view,nx_allocator allocator) {
+     if (!pthread_main_np()) return nil;
+     NXMacAXBridge *b=[[NXMacAXBridge alloc] init]; if (!b) return nil;
++    b->lease=calloc(1,sizeof(*b->lease));
++    if(!b->lease){[b release];return nil;}
++    atomic_init(&b->lease->references,1);b->lease->generation=1;b->lease->live=1;
+     b->elements=[[NSMutableDictionary alloc] init];
+     if (!b->elements) { [b release]; return nil; }
+     b->view=view; b->allocator=allocator; return b;
+@@ -528,7 +853,9 @@ NXMacAXBridge *nx_mac_ax_create(NSView *view,nx_allocator allocator) {
+ void nx_mac_ax_destroy(NXMacAXBridge *b) { if (b && pthread_main_np()) { [b detach]; [b release]; } }
+ nx_result nx_mac_ax_publish(NXMacAXBridge *b,const nx_context *context) {
+     if (!pthread_main_np()) return NX_ERROR_STATE;
+-    [b retain]; nx_result result=[b publish:context]; [b release]; return result;
++    if(!b || !context)return NX_ERROR_ARGUMENT;
++    if(b->publishing)return NX_ERROR_STATE;
++    [b retain];b->publishing=1;nx_result result=[b publish:context];b->publishing=0;[b release];return result;
+ }
+ int nx_mac_ax_matches(NXMacAXBridge *b,const nx_context *context) {
+     return !b || (pthread_main_np() && b->context_identity==nx_context_identity(context));
+diff --git a/platform/macos/window.m b/platform/macos/window.m
+index 0d08dde..96d9a46 100644
+--- a/platform/macos/window.m
++++ b/platform/macos/window.m
+@@ -845,18 +845,20 @@ nx_result nx_window_publish_semantics(nx_window *window, const nx_context *conte
+     if (!window) return NX_ERROR_ARGUMENT;
+     if (!nx_mac_owner(window)) return NX_ERROR_STATE;
+     @autoreleasepool {
+-        NXMacView *view=window->view;
++        NXMacView *view=[window->view retain];
++        nx_allocator allocator=window->allocator;
+         if (!context) {
+             NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil;
+-            nx_mac_ax_destroy(bridge); return NX_OK;
++            nx_mac_ax_destroy(bridge);[view release];return NX_OK;
+         }
+         int created=!view->accessibility;
+-        if (created) view->accessibility=nx_mac_ax_create(view,window->allocator);
+-        if (!view->accessibility) return NX_ERROR_MEMORY;
+-        nx_result result=nx_mac_ax_publish(view->accessibility,context);
+-        if (created && result!=NX_OK) {
++        if (created) view->accessibility=nx_mac_ax_create(view,allocator);
++        if (!view->accessibility) {[view release];return NX_ERROR_MEMORY;}
++        NXMacAXBridge *published=view->accessibility;
++        nx_result result=nx_mac_ax_publish(published,context);
++        if (created && result!=NX_OK && view->accessibility==published) {
+             NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil; nx_mac_ax_destroy(bridge);
+         }
+-        return result;
++        [view release];return result;
+     }
+ }
+diff --git a/src/nexaui.c b/src/nexaui.c
+index a255c62..b0359b5 100644
+--- a/src/nexaui.c
++++ b/src/nexaui.c
+@@ -126,6 +126,15 @@ typedef struct nx_selection_ancestor {
+     nx_semantic_role role;
+ } nx_selection_ancestor;
+ 
++typedef struct nx_multi_set_entry {
++    uint64_t id, parent_id, membership;
++    uint32_t role, flags;
++} nx_multi_set_entry;
++
++enum { NX_MULTI_SET_NEEDED=1u, NX_MULTI_SET_MEMBER=2u,
++       NX_MULTI_SET_WANTED=4u, NX_MULTI_SET_SELECTED=8u,
++       NX_MULTI_SET_DISABLED=16u };
++
+ typedef struct nx_multi_selection_request {
+     uint64_t id, parent_id, owner_id, owner_parent_id, source_frame;
+     nx_selection_target target;
+@@ -135,6 +144,8 @@ typedef struct nx_multi_selection_request {
+     int required;
+     nx_selection_guard guard;
+     nx_selection_ancestor ancestors[NX_SEMANTIC_MAX_DEPTH];
++    void *payload;
++    size_t payload_bytes, set_capacity, set_entries, set_count;
+ } nx_multi_selection_request;
+ 
+ struct nx_context {
+@@ -194,6 +205,9 @@ struct nx_context {
+     size_t text_value_count;
+     nx_multi_selection_request multi_requests[64];
+     size_t multi_request_count;
++    size_t multi_payload_bytes;
++    size_t multi_admission_bytes, multi_admission_count;
++    int multi_cleanup;
+     uint32_t multi_owners[64];
+     size_t multi_owner_count;
+     size_t semantic_initial_capacity, semantic_text_initial_capacity;
+@@ -246,10 +260,19 @@ static void nx_region_buffer_clear(nx_region_buffer *buffer);
+ static uint32_t nx_semantic_find_index(const nx_semantic_buffer *buffer, uint64_t id);
+ 
+ static void nx_multi_requests_clear(nx_context *ctx) {
+-    for (size_t i = 0; i < ctx->multi_request_count; ++i)
+-        if (ctx->multi_requests[i].guard.release)
+-            ctx->multi_requests[i].guard.release(ctx->multi_requests[i].guard.user);
++    nx_multi_selection_request old[64];
++    size_t count = ctx->multi_request_count;
++    if (count) memcpy(old, ctx->multi_requests, count * sizeof(*old));
+     ctx->multi_request_count = 0;
++    ctx->multi_payload_bytes = 0;
++    int before = ctx->multi_cleanup;
++    ctx->multi_cleanup = 1;
++    for (size_t i = 0; i < count; ++i) {
++        if (old[i].payload)
++            ctx->allocator.deallocate(ctx->allocator.user, old[i].payload, old[i].payload_bytes);
++        if (old[i].guard.release) old[i].guard.release(old[i].guard.user);
++    }
++    ctx->multi_cleanup = before;
+ }
+ 
+ static void nx_text_value_dispose(nx_context *ctx, nx_text_value_request *r) {
+@@ -372,6 +395,7 @@ uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->fram
+ 
+ void nx_context_destroy(nx_context *ctx) {
+     if (!ctx) return;
++    ctx->multi_cleanup = 1;
+     nx_text_values_clear(ctx);
+     nx_multi_requests_clear(ctx);
+     if (ctx->ime_active_window)
+@@ -1671,6 +1695,7 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
+     if (action != NX_ACTION_SELECT && action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
+         return NX_ERROR_UNSUPPORTED;
+     if (ctx->state != 2u) return NX_ERROR_STATE;
++    if (ctx->multi_cleanup) return NX_ERROR_LIMIT;
+     uint32_t at = nx_semantic_find_index(&ctx->semantics, id);
+     if (at == UINT32_MAX) return NX_ERROR_STATE;
+     const nx_semantic_record *n = &ctx->semantics.nodes[at];
+@@ -1678,7 +1703,10 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
+         !nx_multi_enabled(ctx, n)) return NX_ERROR_STATE;
+     const nx_semantic_record *owner = &ctx->semantics.nodes[n->selection_owner];
+     if (!(owner->state & NX_SEM_SELECTION_MULTIPLE)) return NX_ERROR_STATE;
+-    if (ctx->multi_request_count == 64u) return NX_ERROR_LIMIT;
++    for (size_t i = 0; i < ctx->multi_request_count; ++i)
++        if (ctx->multi_requests[i].owner_id == owner->id && ctx->multi_requests[i].payload)
++            return NX_ERROR_LIMIT;
++    if (ctx->multi_request_count + ctx->multi_admission_count >= 64u) return NX_ERROR_LIMIT;
+     nx_multi_selection_request r = {0};
+     r.id = id; r.parent_id = n->parent_id; r.owner_id = owner->id;
+     r.owner_parent_id = owner->parent_id; r.source_frame = ctx->frame_serial;
+@@ -1693,6 +1721,157 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
+     return NX_OK;
+ }
+ 
++static int nx_multi_set_queue_available(const nx_context *ctx, uint64_t owner, size_t bytes, size_t own_reservation) {
++    size_t reservations = ctx->multi_request_count + ctx->multi_admission_count;
++    size_t allocated = ctx->multi_payload_bytes + ctx->multi_admission_bytes;
++    if (ctx->multi_cleanup || reservations < own_reservation || reservations - own_reservation >= 64u ||
++        allocated > NX_SELECTION_SET_MAX_QUEUED_BYTES ||
++        bytes > NX_SELECTION_SET_MAX_QUEUED_BYTES - allocated) return 0;
++    for (size_t i = 0; i < ctx->multi_request_count; ++i)
++        if (ctx->multi_requests[i].owner_id == owner) return 0;
++    return 1;
++}
++
++static void nx_multi_set_mark(const nx_context *ctx, unsigned char *marks, uint32_t at) {
++    while (at != UINT32_MAX && !(marks[at] & NX_MULTI_SET_NEEDED)) {
++        marks[at] |= NX_MULTI_SET_NEEDED;
++        at = nx_semantic_find_index(&ctx->semantics, ctx->semantics.nodes[at].parent_id);
++    }
++}
++
++static const uint64_t *nx_multi_set_ids(const nx_multi_selection_request *r) {
++    return (const uint64_t *)((const nx_multi_set_entry *)r->payload + r->set_capacity);
++}
++
++nx_result nx_semantics_request_selection_set_guarded(nx_context *ctx,
++    uint64_t owner_id, const uint64_t *ids, size_t count, const nx_selection_guard *guard) {
++    if (!ctx || !owner_id || (!ids && count) ||
++        (guard && (!guard->retain || !guard->release || !guard->current))) return NX_ERROR_ARGUMENT;
++    if (ctx->state != 2u) return NX_ERROR_STATE;
++    if (count > NX_SELECTION_MAX_ITEMS) return NX_ERROR_LIMIT;
++    uint32_t at = nx_semantic_find_index(&ctx->semantics, owner_id);
++    if (at == UINT32_MAX) return NX_ERROR_STATE;
++    const nx_semantic_record *owner = &ctx->semantics.nodes[at];
++    if (!(owner->state & NX_SEM_SELECTION_MULTIPLE) || !nx_multi_enabled(ctx, owner)) return NX_ERROR_STATE;
++    nx_multi_selection_request r = {0};
++    r.id = r.owner_id = owner_id; r.parent_id = r.owner_parent_id = owner->parent_id;
++    r.target = owner->selection_target; r.source_frame = ctx->frame_serial;
++    r.required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
++    if (r.required && !count) return NX_ERROR_STATE;
++    r.set_capacity = ctx->semantics.count; r.set_count = count;
++    size_t ids_bytes = count * sizeof(*ids);
++    if (r.set_capacity > (NX_SELECTION_SET_MAX_QUEUED_BYTES - ids_bytes) /
++        (sizeof(nx_multi_set_entry) + 1u)) return NX_ERROR_LIMIT;
++    r.payload_bytes = r.set_capacity * (sizeof(nx_multi_set_entry) + 1u) + ids_bytes;
++    if (!nx_multi_set_queue_available(ctx, owner_id, r.payload_bytes, 0)) return NX_ERROR_LIMIT;
++    /* Retain scalar native lifetime and reserve bounded admission capacity
++       before the allocator can detach/reenter. Never reserve a queue index or
++       retain a semantic pointer across the application call. Frame cleanup does
++       not erase an in-flight reservation; post-call validation can reject it. */
++    if (guard) { r.guard = *guard; r.guard.retain(r.guard.user); }
++    ++ctx->multi_admission_count;
++    ctx->multi_admission_bytes += r.payload_bytes;
++    r.payload = ctx->allocator.allocate(ctx->allocator.user, r.payload_bytes);
++    nx_result result = r.payload ? NX_OK : NX_ERROR_MEMORY;
++    if (result == NX_OK && (ctx->state != 2u || ctx->frame_serial != r.source_frame ||
++        ctx->semantics.count != r.set_capacity)) result = NX_ERROR_STATE;
++    if (result == NX_OK && !nx_multi_set_queue_available(ctx, owner_id, 0, 1)) result = NX_ERROR_LIMIT;
++    at = result == NX_OK ? nx_semantic_find_index(&ctx->semantics, owner_id) : UINT32_MAX;
++    if (result == NX_OK) {
++        owner = at == UINT32_MAX ? NULL : &ctx->semantics.nodes[at];
++        if (!owner || owner->parent_id != r.owner_parent_id ||
++            !(owner->state & NX_SEM_SELECTION_MULTIPLE) || !nx_multi_enabled(ctx, owner) ||
++            !nx_selection_target_equal(owner->selection_target, r.target) ||
++            ((owner->state & NX_SEM_SELECTION_REQUIRED) != 0) != r.required) result = NX_ERROR_STATE;
++    }
++    if (result == NX_OK) {
++        nx_multi_set_entry *entries = r.payload;
++        uint64_t *copy = (uint64_t *)(entries + r.set_capacity);
++        unsigned char *marks = (unsigned char *)(copy + count);
++        memset(marks, 0, r.set_capacity);
++        nx_multi_set_mark(ctx, marks, at);
++        for (size_t i = 0; i < r.set_capacity; ++i) {
++            const nx_semantic_record *n = &ctx->semantics.nodes[i];
++            if (!n->selection_bound || n->selection_owner != at || !n->selection_membership ||
++                !(n->actions & NX_ACTION_SELECT)) continue;
++            nx_multi_set_mark(ctx, marks, (uint32_t)i);
++            marks[i] |= NX_MULTI_SET_MEMBER;
++        }
++        for (size_t i = 0; i < count; ++i) {
++            if (!ids[i]) { result = NX_ERROR_ARGUMENT; break; }
++            uint32_t item = nx_semantic_find_index(&ctx->semantics, ids[i]);
++            if (item == UINT32_MAX || !(marks[item] & NX_MULTI_SET_MEMBER)) { result = NX_ERROR_STATE; break; }
++            if (marks[item] & NX_MULTI_SET_WANTED) { result = NX_ERROR_ARGUMENT; break; }
++            marks[item] |= NX_MULTI_SET_WANTED;
++            copy[i] = ids[i];
++        }
++        for (size_t i = 0; result == NX_OK && i < r.set_capacity; ++i) {
++            if (!(marks[i] & NX_MULTI_SET_NEEDED)) continue;
++            const nx_semantic_record *n = &ctx->semantics.nodes[i];
++            uint32_t flags = marks[i] & NX_MULTI_SET_MEMBER;
++            if (flags) {
++                int selected = (n->state & NX_SEM_SELECTED) != 0;
++                if (!nx_multi_enabled(ctx, n)) {
++                    flags |= NX_MULTI_SET_DISABLED;
++                    if (selected != ((marks[i] & NX_MULTI_SET_WANTED) != 0)) { result = NX_ERROR_STATE; break; }
++                }
++                if (selected) flags |= NX_MULTI_SET_SELECTED;
++            }
++            entries[r.set_entries++] = (nx_multi_set_entry){n->id, n->parent_id,
++                flags & NX_MULTI_SET_MEMBER ? n->selection_membership : 0, (uint32_t)n->role, flags};
++        }
++    }
++    if (result == NX_OK && r.guard.current) {
++        uint64_t identity = 0;
++#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
++        identity = ctx->native_identity;
++#endif
++        if (!r.guard.current(r.guard.user, r.guard.token, identity, owner_id, owner_id, r.target))
++            result = NX_ERROR_STATE;
++    }
++    if (result != NX_OK) {
++        if (r.payload) ctx->allocator.deallocate(ctx->allocator.user, r.payload, r.payload_bytes);
++        --ctx->multi_admission_count;
++        ctx->multi_admission_bytes -= r.payload_bytes;
++        if (r.guard.release) r.guard.release(r.guard.user);
++        return result;
++    }
++    --ctx->multi_admission_count;
++    ctx->multi_admission_bytes -= r.payload_bytes;
++    ctx->multi_payload_bytes += r.payload_bytes;
++    ctx->multi_requests[ctx->multi_request_count++] = r;
++    return NX_OK;
++}
++
++static int nx_multi_set_live(const nx_context *ctx, const nx_multi_selection_request *r,
++    uint32_t group, nx_selection_model *model, nx_selection_target target) {
++    const nx_multi_set_entry *entries = r->payload;
++    for (size_t i = 0; i < r->set_entries; ++i) {
++        const nx_multi_set_entry *e = &entries[i];
++        uint32_t at = nx_semantic_find_index(&ctx->semantics, e->id);
++        if (at == UINT32_MAX) return 0;
++        const nx_semantic_record *n = &ctx->semantics.nodes[at];
++        if (n->parent_id != e->parent_id || (uint32_t)n->role != e->role) return 0;
++        if (e->flags & NX_MULTI_SET_MEMBER) {
++            int chosen = 0, disabled = 0;
++            if (!n->selection_bound || n->selection_owner != group || !(n->actions & NX_ACTION_SELECT) ||
++                e->membership != nx_selection_model_membership(model, n->id) ||
++                nx_selection_model_item(model, n->id, 0, &chosen, &disabled) != NX_OK ||
++                chosen != ((e->flags & NX_MULTI_SET_SELECTED) != 0) ||
++                (!nx_multi_enabled(ctx, n) || disabled) != ((e->flags & NX_MULTI_SET_DISABLED) != 0)) return 0;
++        }
++    }
++    if (!nx_multi_enabled(ctx, &ctx->semantics.nodes[group])) return 0;
++    if (r->guard.current) {
++        uint64_t identity = 0;
++#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
++        identity = ctx->native_identity;
++#endif
++        if (!r->guard.current(r->guard.user, r->guard.token, identity, r->owner_id, r->owner_id, target)) return 0;
++    }
++    return 1;
++}
++
+ /* No allocations or application call-outs. All models are prepared and their
+    complete selected projection is checked before committing the first group. */
+ static nx_result nx_multi_finish(nx_context *ctx) {
+@@ -1706,11 +1885,16 @@ static nx_result nx_multi_finish(nx_context *ctx) {
+         nx_selection_target target = nx_selection_model_target(model);
+         int required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
+         nx_selection_change changes[64]; size_t count = 0;
++        const nx_multi_selection_request *set = NULL;
+         for (size_t i = 0; i < ctx->multi_request_count; ++i) {
+             const nx_multi_selection_request *r = &ctx->multi_requests[i];
+             if (r->owner_id != owner->id || r->owner_parent_id != owner->parent_id ||
+                 r->required != required || r->source_frame == UINT64_MAX ||
+                 r->source_frame + 1u != ctx->frame_serial || !nx_selection_target_equal(r->target, target)) continue;
++            if (r->payload) {
++                if (nx_multi_set_live(ctx, r, index, model, target)) set = r;
++                continue;
++            }
+             uint32_t at = nx_semantic_find_index(&ctx->semantics, r->id);
+             if (at == UINT32_MAX) continue;
+             const nx_semantic_record *n = &ctx->semantics.nodes[at];
+@@ -1730,7 +1914,9 @@ static nx_result nx_multi_finish(nx_context *ctx) {
+             changes[count++] = (nx_selection_change){r->id, r->action};
+         }
+         size_t selected_count = 0; int changed = 0;
+-        result = nx_selection_model_prepare(model, changes, count, required, &changed, &selected_count);
++        result = set ? nx_selection_model_prepare_set(model, nx_multi_set_ids(set), set->set_count,
++            required, &changed, &selected_count) :
++            nx_selection_model_prepare(model, changes, count, required, &changed, &selected_count);
+         /* An admitted batch may become invalid, e.g. removing the last required
+            member. Drop that batch, preserve the current application selection. */
+         if (result == NX_ERROR_STATE)
+diff --git a/src/selection_model.c b/src/selection_model.c
+index 402010d..1797c2c 100644
+--- a/src/selection_model.c
++++ b/src/selection_model.c
+@@ -251,6 +251,36 @@ nx_result nx_selection_model_prepare(nx_selection_model *model,
+     return NX_OK;
+ }
+ 
++nx_result nx_selection_model_prepare_set(nx_selection_model *model,
++    const uint64_t *ids, size_t count, int required, int *changed,
++    size_t *out_count) {
++    if (out_count) *out_count = 0;
++    if (!changed) return NX_ERROR_ARGUMENT;
++    *changed = 0;
++    if (!model || (!ids && count) || (required != 0 && required != 1)) return NX_ERROR_ARGUMENT;
++    if (model->busy) return NX_ERROR_STATE;
++    nx_selection_storage *s = &model->storage;
++    if (count > s->count) return NX_ERROR_LIMIT;
++    if (s->count) memset(s->scratch, 0, s->count);
++    for (size_t i = 0; i < count; ++i) {
++        if (!ids[i]) return NX_ERROR_ARGUMENT;
++        size_t at = nx_selection_find(s, ids[i]);
++        if (at == SIZE_MAX) return NX_ERROR_STATE;
++        if (s->scratch[at]) return NX_ERROR_ARGUMENT;
++        s->scratch[at] = 1;
++    }
++    if (required && !count) return NX_ERROR_STATE;
++    for (size_t i = 0; i < s->count; ++i)
++        if ((s->items[i].flags & NX_SELECTION_ITEM_DISABLED) &&
++            s->scratch[i] != s->selected[i]) return NX_ERROR_STATE;
++    int different = s->count && memcmp(s->selected, s->scratch, s->count) != 0;
++    if (out_count) *out_count = count;
++    if (!different) return NX_OK;
++    if (model->target.revision == UINT64_MAX) return NX_ERROR_LIMIT;
++    *changed = 1;
++    return NX_OK;
++}
++
+ void nx_selection_model_commit(nx_selection_model *model, int changed) {
+     if (!changed) return;
+     nx_selection_storage *s = &model->storage;
+diff --git a/src/selection_model.h b/src/selection_model.h
+index 3b6c692..51bbd3a 100644
+--- a/src/selection_model.h
++++ b/src/selection_model.h
+@@ -15,6 +15,12 @@ nx_result nx_selection_model_prepare(nx_selection_model *model,
+     const nx_selection_change *changes, size_t count, int required,
+     int *changed, size_t *selected_count);
+ void nx_selection_model_commit(nx_selection_model *model, int changed);
++/* Whole native selection replacement, independent of the 64 action-batch
++   limit. Allocates nothing and only stages scratch. A disabled member may be
++   preserved but may not be added/removed by a native replacement. */
++nx_result nx_selection_model_prepare_set(nx_selection_model *model,
++    const uint64_t *ids, size_t count, int required, int *changed,
++    size_t *selected_count);
+ nx_result nx_selection_model_item(const nx_selection_model *model, uint64_t id,
+     int staged, int *selected, int *disabled);
+ 
+@@ -32,4 +38,12 @@ nx_selection_target nx_context_selection_target(const nx_context *context, uint6
+ uint64_t nx_context_selection_membership(const nx_context *context, uint64_t id);
+ nx_result nx_semantics_request_selection_guarded(nx_context *context, uint64_t id,
+     uint32_t action, const nx_selection_guard *guard);
++/* Private complete-set admission. Borrow ids only until return; the native
++   caller owns a stable copy across allocator call-outs and retains its request
++   separately. current receives owner_id for both id and owner_id. No model
++   pointer crosses admission. Pending payloads share an 8 MiB context budget. */
++#define NX_SELECTION_SET_MAX_QUEUED_BYTES (8u * 1024u * 1024u)
++nx_result nx_semantics_request_selection_set_guarded(nx_context *context,
++    uint64_t owner_id, const uint64_t *ids, size_t count,
++    const nx_selection_guard *guard);
+ #endif
+diff --git a/tests/test_macos_multiselection.m b/tests/test_macos_multiselection.m
+new file mode 100644
+index 0000000..dba6710
+--- /dev/null
++++ b/tests/test_macos_multiselection.m
+@@ -0,0 +1,361 @@
++#import <AppKit/AppKit.h>
++#include "nexaui/nexaui.h"
++#include "window_internal.h"
++#include <pthread.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <objc/runtime.h>
++
++#define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
++typedef struct allocation { void *p; size_t bytes; } allocation;
++typedef struct heap {
++    allocation live[4096]; size_t count,calls; int fail,when;
++    void (*hook)(void *); void *user;
++} heap;
++static void call(heap *h,int when) {
++    if(h->hook && h->when==when) {void (*f)(void *)=h->hook;h->hook=NULL;f(h->user);}
++}
++static void *allocate(void *user,size_t bytes) {
++    heap *h=user;++h->calls;call(h,1);if(h->fail){h->fail=0;return NULL;}
++    void *p=malloc(bytes);if(p){if(h->count==4096)abort();h->live[h->count++]=(allocation){p,bytes};}return p;
++}
++static void deallocate(void *user,void *p,size_t bytes) {
++    heap *h=user;size_t at=0;while(at<h->count && h->live[at].p!=p)++at;
++    if(at==h->count || h->live[at].bytes!=bytes)abort();
++    h->live[at]=h->live[--h->count];call(h,2);free(p);
++}
++typedef struct scene {
++    nx_context *ctx;nx_window *window;nx_selection_model *model,*table;
++    heap core,native;int required,disabled,kind,large,moved,clicks,native_attempt,demoted;
++    size_t big,padding;uint64_t legacy,other,demoted_choice;
++    nx_result callback_result;
++} scene;
++static nx_semantic_desc desc(uint64_t id,uint64_t parent,nx_semantic_role role) {
++    nx_semantic_desc d={0};d.id=id;d.parent_id=parent;d.role=role;
++    d.name=(nx_utf8_span){"Choice",6};d.bounds=(nx_rect){10,10,100,20};return d;
++}
++static int frame(scene *s) {
++    CHECK(nx_begin_frame(s->ctx,640,480,0)==NX_OK);
++    nx_semantic_desc d=desc(1,0,NX_ROLE_WINDOW);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    d=desc(100,1,s->kind==4?NX_ROLE_TREE:NX_ROLE_LIST);if(s->disabled)d.state=NX_SEM_DISABLED;
++    char long_name[65536];if(s->large){memset(long_name,'X',sizeof(long_name));d.name=(nx_utf8_span){long_name,sizeof(long_name)};}
++    if(s->demoted)CHECK(nx_selection_group(s->ctx,&d,0,&s->demoted_choice)==NX_OK);
++    else CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK && nx_selection_bind_owner(s->ctx,100,s->model,s->required)==NX_OK);
++    d=desc(110,100,s->kind==1?NX_ROLE_CUSTOM:NX_ROLE_PANEL);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    d=desc(111,100,NX_ROLE_PANEL);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    d=desc(120,s->kind==2?111:110,NX_ROLE_PANEL);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    for(size_t i=0;i<s->padding;++i) {
++        d=desc(20000+i,1,NX_ROLE_TEXT);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    }
++    for(uint64_t i=0;i<(s->big?s->big:67);++i) {
++        d=desc(1000+i,120,s->kind==3 && i==1?NX_ROLE_TREE_ITEM:NX_ROLE_LIST_ITEM);
++        if(i && !s->demoted)d.bounds=(nx_rect){0,0,0,0};else d.actions=NX_ACTION_FOCUS;
++        if(s->demoted) {
++            d.actions|=NX_ACTION_SELECT;if(d.id==s->demoted_choice)d.state=NX_SEM_SELECTED;
++            nx_widget_desc widget={0};widget.semantic=d;widget.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
++            nx_interaction_state state;CHECK(nx_widget_register(s->ctx,&widget,&state)==NX_OK);continue;
++        }
++        CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++        if(!i){nx_interaction_state state;CHECK(nx_interact_region(s->ctx,d.id,d.bounds,NX_REGION_FOCUSABLE,&state)==NX_OK);}
++        CHECK(nx_selection_bind_item(s->ctx,100,d.id,i!=0)==NX_OK);
++    }
++    if(s->big){CHECK(nx_end_frame(s->ctx)==NX_OK);return 0;}
++    d=desc(200,1,NX_ROLE_TABLE);CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK && nx_selection_bind_owner(s->ctx,200,s->table,0)==NX_OK);
++    for(uint64_t i=0;i<3;++i) {
++        d=desc(2000+i,200,i==2?NX_ROLE_CUSTOM:NX_ROLE_ROW);d.bounds=(nx_rect){0,0,0,0};
++        CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK && nx_selection_bind_item(s->ctx,200,d.id,1)==NX_OK);
++    }
++    d=desc(210,200,NX_ROLE_COLUMN_HEADER);d.actions=NX_ACTION_SELECT;CHECK(nx_semantics_add(s->ctx,&d,NULL)==NX_OK);
++    for(unsigned g=0;g<2;++g) {
++        uint64_t owner=g?400:300;d=desc(owner,1,NX_ROLE_LIST);
++        CHECK(nx_selection_group(s->ctx,&d,0,g?&s->other:&s->legacy)==NX_OK);
++        for(uint64_t i=0;i<2;++i) {
++            if((!g && s->moved && !i) || (g && (!s->moved || i)))continue;
++            d=desc(301+i,owner,NX_ROLE_LIST_ITEM);d.actions=NX_ACTION_SELECT;
++            if((g?s->other:s->legacy)==d.id)d.state=NX_SEM_SELECTED;
++            nx_widget_desc w={0};w.semantic=d;w.flags=NX_WIDGET_INTERACTIVE;
++            nx_interaction_state state;CHECK(nx_widget_register(s->ctx,&w,&state)==NX_OK);
++        }
++    }
++    s->clicks=0;
++    for(uint64_t i=0;i<65;++i) {
++        nx_control_desc c={0};c.id=5000+i;c.parent_id=1;c.name=(nx_utf8_span){"Queued",6};c.bounds=(nx_rect){200,20,100,20};
++        nx_interaction_state state;CHECK(nx_button(s->ctx,&c,&state)==NX_OK);s->clicks+=state.clicked;
++    }
++    CHECK(nx_end_frame(s->ctx)==NX_OK);return 0;
++}
++static id find(id root,uint64_t value) {
++    NSString *wanted=[NSString stringWithFormat:@"nexa-%016llx",(unsigned long long)value];
++    if([[root accessibilityIdentifier] isEqual:wanted])return root;
++    for(id child in [root accessibilityChildren]){id result=find(child,value);if(result)return result;}return nil;
++}
++static id element(scene *s,uint64_t value) {return find(nx_window_native_nsview(s->window),value);}
++static int selected(nx_selection_model *m,const uint64_t *ids,size_t count,uint64_t active) {
++    nx_selection_view v;CHECK(nx_selection_model_get(m,&v)==NX_OK);
++    CHECK(v.selected_count==count && v.active_id==active);
++    CHECK(!count || !memcmp(v.selected_ids,ids,count*sizeof(*ids)));return 0;
++}
++static int publish(scene *s) {
++    CHECK(frame(s)==0);nx_result r=nx_window_publish_semantics(s->window,s->ctx);
++    if(r!=NX_OK)fprintf(stderr,"publish result=%d\n",r);
++    CHECK(r==NX_OK);return 0;
++}
++static int advance(scene *s,size_t expected) {
++    size_t routed=999;nx_result r=nx_window_route_events(s->window,s->ctx,&routed);
++    if(r!=NX_OK || routed!=expected)fprintf(stderr,"route result=%d actual=%zu expected=%zu\n",r,routed,expected);
++    CHECK(r==NX_OK && routed==expected);
++    CHECK(publish(s)==0 && ![nx_window_native_nswindow(s->window) isVisible]);return 0;
++}
++static int setup(scene *s) {
++    nx_context_desc cd={0};cd.allocator=(nx_allocator){&s->core,allocate,deallocate};
++    CHECK(nx_context_create(&cd,&s->ctx)==NX_OK);
++    size_t count=s->big?s->big:67;
++    CHECK(nx_selection_model_create(count,NULL,&s->model)==NX_OK && nx_selection_model_create(3,NULL,&s->table)==NX_OK);
++    nx_selection_item *items=calloc(count,sizeof(*items));CHECK(items);
++    for(uint64_t i=0;i<count;++i)items[i]=(nx_selection_item){1000+i,0};
++    nx_result ir=nx_selection_model_set_items(s->model,items,count);free(items);CHECK(ir==NX_OK);
++    nx_selection_item rows[]={{2000,0},{2001,0},{2002,0}};
++    CHECK(nx_selection_model_set_items(s->table,rows,3)==NX_OK && nx_selection_model_set_active(s->model,1000+count-1)==NX_OK);
++    nx_window_desc wd={"Hidden multi-selection contract",640,480,NX_WINDOW_HIDDEN,{&s->native,allocate,deallocate}};
++    CHECK(nx_window_create(&wd,&s->window)==NX_OK && publish(s)==0);
++    CHECK(![nx_window_native_nswindow(s->window) isVisible]);
++    /* Creation queues a real resize event. Drain it before counting native AX
++       admissions; route_events reports both ordinary input and AX deliveries. */
++    size_t initial=0;CHECK(nx_window_route_events(s->window,s->ctx,&initial)==NX_OK);return 0;
++}
++static int cleanup(scene *s) {
++    if(s->window){CHECK(![nx_window_native_nswindow(s->window) isVisible]);nx_window_destroy(s->window);s->window=NULL;}
++    nx_context_destroy(s->ctx);nx_selection_model_destroy(s->model);nx_selection_model_destroy(s->table);
++    CHECK(!s->native.count && !s->core.count);return 0;
++}
++typedef struct worker_case {id owner,item;int okay;} worker_case;
++static void *off_thread(void *p) {
++    worker_case *w=p;@autoreleasepool{w->okay=[w->owner accessibilitySelectedChildren]==nil && [w->owner accessibilitySelectedRows]==nil && ![w->item accessibilityPerformPress];}return NULL;
++}
++static int operations(void) {
++    scene s={0};CHECK(setup(&s)==0);id owner=[element(&s,100) retain],a=[element(&s,1000) retain],b=[element(&s,1001) retain];
++    uint64_t all[65];for(size_t i=0;i<65;++i)all[i]=1000+i;
++    CHECK(nx_selection_model_set_selected(s.model,all,65)==NX_OK && publish(&s)==0);
++    NSArray *snapshot=[[owner accessibilitySelectedChildren] retain];CHECK([snapshot count]==65 && ![snapshot isKindOfClass:[NSMutableArray class]]);
++    CHECK([[owner accessibilitySelectedRows] count]==65 && [[owner accessibilityRows] count]==67);
++    CHECK([snapshot objectAtIndex:64]==element(&s,1064) && [element(&s,1064) isAccessibilitySelected]);
++    CHECK([element(&s,1064) isAccessibilityHidden] && ![[owner accessibilityVisibleRows] count]);
++    worker_case w={owner,b,0};pthread_t worker;CHECK(!pthread_create(&worker,NULL,off_thread,&w) && !pthread_join(worker,NULL) && w.okay);
++    [owner setAccessibilitySelectedChildren:@[]];CHECK(selected(s.model,all,65,1066)==0 && advance(&s,1)==0 && selected(s.model,NULL,0,1066)==0);
++    CHECK([snapshot count]==65 && [snapshot objectAtIndex:0]==a && ![a isAccessibilitySelected]);
++    NSMutableArray *reverse=[NSMutableArray array];for(size_t i=65;i>0;--i)[reverse addObject:element(&s,1000+i-1)];
++    [owner setAccessibilitySelectedChildren:reverse];CHECK(advance(&s,1)==0 && selected(s.model,all,65,1066)==0);
++    [element(&s,1066) setAccessibilitySelected:YES];CHECK(advance(&s,1)==0);
++    nx_selection_view v;CHECK(nx_selection_model_get(s.model,&v)==NX_OK && v.selected_count==66 && v.active_id==1066);
++    [a setAccessibilitySelected:NO];CHECK(advance(&s,1)==0);
++    CHECK(nx_selection_model_get(s.model,&v)==NX_OK && v.selected_count==65 && v.selected_ids[0]==1001);
++    CHECK([b accessibilityPerformPress] && advance(&s,1)==0);uint64_t one=1001;CHECK(selected(s.model,&one,1,1066)==0);
++    [owner setAccessibilitySelectedChildren:@[a,a]];[owner setAccessibilitySelectedChildren:@[element(&s,2000)]];
++    [owner setAccessibilitySelectedChildren:@[@"invalid"]];CHECK(advance(&s,0)==0 && selected(s.model,&one,1,1066)==0);
++    [owner setAccessibilitySelectedChildren:@[a,b]];[owner setAccessibilitySelectedChildren:@[a,b]];[owner setAccessibilitySelectedChildren:@[a]];
++    CHECK(advance(&s,1)==0);uint64_t two[]={1000,1001};CHECK(selected(s.model,two,2,1066)==0);
++    s.required=1;CHECK(publish(&s)==0);[owner setAccessibilitySelectedChildren:@[]];CHECK(advance(&s,0)==0 && selected(s.model,two,2,1066)==0);
++    [a release];[b release];[owner release];[snapshot release];CHECK(cleanup(&s)==0);puts("native complete65/add/remove/exclusive/required/immutable/owner serialization passed");return 0;
++}
++static int table_and_disabled(void) {
++    scene s={0};CHECK(setup(&s)==0);id table=element(&s,200),row=element(&s,2001),custom=element(&s,2002);
++    uint64_t before[]={2000,2002},after[]={2001,2002};CHECK(nx_selection_model_set_selected(s.table,before,2)==NX_OK && publish(&s)==0);
++    CHECK([[table accessibilitySelectedChildren] count]==2 && [[table accessibilitySelectedRows] count]==1);
++    CHECK([table isAccessibilitySelectorAllowed:@selector(setAccessibilitySelectedRows:)]);
++    [table setAccessibilitySelectedRows:@[row]];CHECK(advance(&s,1)==0 && selected(s.table,after,2,0)==0);
++    [table setAccessibilitySelectedRows:@[custom]];[table setAccessibilitySelectedChildren:@[element(&s,210)]];
++    CHECK(advance(&s,0)==0 && selected(s.table,after,2,0)==0);
++    nx_selection_item items[67];for(uint64_t i=0;i<67;++i)items[i]=(nx_selection_item){1000+i,i==2?NX_SELECTION_ITEM_DISABLED:0};
++    uint64_t disabled=1002,both[]={1001,1002};CHECK(nx_selection_model_set_items(s.model,items,67)==NX_OK);
++    CHECK(nx_selection_model_set_selected(s.model,&disabled,1)==NX_OK && publish(&s)==0);
++    id owner=element(&s,100);[owner setAccessibilitySelectedChildren:@[element(&s,1001)]];
++    CHECK(advance(&s,0)==0 && selected(s.model,&disabled,1,1066)==0);
++    [owner setAccessibilitySelectedChildren:@[element(&s,1002),element(&s,1001)]];
++    CHECK(advance(&s,1)==0 && selected(s.model,both,2,1066)==0);
++    CHECK(cleanup(&s)==0);puts("native table row subset preserves custom; disabled selected member policy passed");return 0;
++}
++static int stale(void) {
++    for(int whole=0;whole<2;++whole)for(int forwarded=0;forwarded<2;++forwarded)for(int kind=1;kind<=7;++kind) {
++        scene s={0};CHECK(setup(&s)==0);uint64_t one=1000;CHECK(nx_selection_model_set_selected(s.model,&one,1)==NX_OK && publish(&s)==0);
++        id owner=[element(&s,100) retain],item=[element(&s,1001) retain];
++        if(whole)[owner setAccessibilitySelectedChildren:@[item]];else CHECK([item accessibilityPerformPress]);
++        if(forwarded){size_t n=0;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && n==1);}
++        if(kind<=4)s.kind=kind;
++        else if(kind==5){CHECK(nx_window_publish_semantics(s.window,NULL)==NX_OK);}
++        else if(kind==6){CHECK(nx_selection_model_set_selected(s.model,&one,1)==NX_OK);}
++        else {s.disabled=1;CHECK(publish(&s)==0);s.disabled=0;}
++        CHECK(publish(&s)==0 && advance(&s,0)==0 && selected(s.model,&one,1,1066)==0);
++        if(kind<=5)CHECK(![item isAccessibilityElement]);
++        [owner release];[item release];CHECK(cleanup(&s)==0);
++    }
++    puts("native pending/forwarded single/whole leases:4 ancestry changes, detach, equal model revision, disable/enable passed");return 0;
++}
++static void detach(void *p) {scene *s=p;s->callback_result=nx_window_publish_semantics(s->window,NULL);}
++static void destroy_window(void *p) {scene *s=p;nx_window *w=s->window;s->window=NULL;nx_window_destroy(w);s->callback_result=NX_OK;}
++static void republish(void *p) {scene *s=p;s->callback_result=nx_window_publish_semantics(s->window,s->ctx);}
++@interface NXReentryArray : NSArray {
++@public
++    NSArray *payload;void (*callback)(void *);void *user;NSUInteger visits;
++}
++@end
++@implementation NXReentryArray
++- (NSUInteger)count {return [payload count];}
++- (id)objectAtIndex:(NSUInteger)index {
++    ++visits;if(callback){void (*f)(void *)=callback;callback=NULL;f(user);}return [payload objectAtIndex:index];
++}
++- (void)dealloc {[payload release];[super dealloc];}
++@end
++/* Observe actual private snapshot addresses and their first two scalar fields.
++   The production interface stays opaque; this proves address ABA rather than
++   substituting an address or assuming that two publications reused storage. */
++static int snapshot_info(scene *s,void **address,size_t *capacity,size_t *count) {
++    NSView *view=nx_window_native_nsview(s->window);CHECK(view);
++    Ivar v=class_getInstanceVariable(object_getClass(view),"accessibility");CHECK(v);
++    id bridge=nil;memcpy(&bridge,(const char *)(void *)view+ivar_getOffset(v),sizeof(bridge));CHECK(bridge);
++    Ivar field=class_getInstanceVariable(object_getClass(bridge),"snapshot");CHECK(field);
++    void *snapshot=NULL;memcpy(&snapshot,(const char *)(void *)bridge+ivar_getOffset(field),sizeof(snapshot));CHECK(snapshot);
++    size_t scalars[2];memcpy(scalars,snapshot,sizeof(scalars));
++    *address=snapshot;*capacity=scalars[0];*count=scalars[1];return 0;
++}
++typedef struct aba_case {
++    scene *s;void *before,*middle,*after;size_t capacity,count,after_count,native_calls;int okay;
++} aba_case;
++static void twice_publish(void *p) {
++    aba_case *a=p;size_t capacity=0,count=0;
++    if(publish(a->s) || snapshot_info(a->s,&a->middle,&capacity,&count))return;
++    a->s->padding=150;
++    if(publish(a->s) || snapshot_info(a->s,&a->after,&capacity,&a->after_count))return;
++    a->okay=a->before!=a->middle && a->before==a->after &&
++        a->after_count==a->count+150 && capacity==a->capacity && a->s->native.calls==a->native_calls;
++    uint32_t index=0;
++    if(nx_semantics_find(a->s->ctx,1066,&index)!=NX_OK || (size_t)index<a->count)a->okay=0;
++    fprintf(stderr,"NSArray-callback ABA before=%p middle=%p after=%p old-count=%zu new-count=%zu index=%u verified=%d\n",
++        a->before,a->middle,a->after,a->count,a->after_count,index,a->okay);
++}
++static int snapshot_aba(void) {
++    scene s={0};CHECK(setup(&s)==0);
++    /* Grow both actual native buffers, then shrink their logical node/text
++       contents. The callback can add nodes without allocating a third buffer. */
++    s.large=1;CHECK(publish(&s)==0 && publish(&s)==0);s.large=0;CHECK(publish(&s)==0);
++    id owner=[element(&s,100) retain],item=[element(&s,1066) retain];CHECK(owner && item);
++    aba_case a={0};a.s=&s;CHECK(snapshot_info(&s,&a.before,&a.capacity,&a.count)==0);a.native_calls=s.native.calls;
++    NXReentryArray *array=[NXReentryArray new];array->payload=[@[item] retain];array->callback=twice_publish;array->user=&a;
++    [owner setAccessibilitySelectedChildren:array];
++    uint32_t index=0;CHECK(nx_semantics_find(s.ctx,1066,&index)==NX_OK);
++    fprintf(stderr,"snapshot-ABA before=%p middle=%p after=%p old-count=%zu new-count=%zu target-index=%u verified=%d\n",
++        a.before,a.middle,a.after,a.count,a.after_count,index,a.okay);
++    CHECK(array->visits==1 && a.okay && (size_t)index>=a.count);
++    CHECK(advance(&s,0)==0 && selected(s.model,NULL,0,1066)==0);
++    [array release];[owner release];[item release];CHECK(cleanup(&s)==0);
++    puts("native real snapshot ABA rejects stale scratch before shifted row index passed");return 0;
++}
++static int scope_demotion(void) {
++    for(int forwarded=0;forwarded<2;++forwarded) {
++        scene s={0};CHECK(setup(&s)==0);uint64_t one=1000;
++        CHECK(nx_selection_model_set_selected(s.model,&one,1)==NX_OK && publish(&s)==0);
++        id old_owner=[element(&s,100) retain],old_item=[element(&s,1001) retain];CHECK(old_owner && old_item);
++        if(forwarded){size_t n=0;CHECK([old_item accessibilityPerformPress]);CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && n==1);}
++        s.demoted=1;s.demoted_choice=1000;CHECK(publish(&s)==0);
++        int owner_live=[old_owner isAccessibilityElement],item_live=[old_item isAccessibilityElement];
++        [old_item setAccessibilitySelected:YES];size_t routed=0;
++        CHECK(nx_window_route_events(s.window,s.ctx,&routed)==NX_OK && publish(&s)==0);
++        fprintf(stderr,"multi-to-single forwarded=%d old-owner=%d old-item=%d routed=%zu actual=%llu expected=1000\n",
++            forwarded,owner_live,item_live,routed,(unsigned long long)s.demoted_choice);
++        CHECK(!owner_live && !item_live && !routed && s.demoted_choice==1000 && selected(s.model,&one,1,1066)==0);
++        s.demoted=0;CHECK(publish(&s)==0 && ![old_owner isAccessibilityElement] && ![old_item isAccessibilityElement]);
++        CHECK(element(&s,100)!=old_owner && element(&s,1001)!=old_item);
++        [old_owner release];[old_item release];CHECK(cleanup(&s)==0);
++    }
++    puts("native Multi-to-Single revokes old owner/member handles and does not revive on promotion passed");return 0;
++}
++static void extra_button(void *p) {scene *s=p;s->native_attempt=[element(s,5063) accessibilityPerformPress];}
++typedef struct nested_array {id owner;NXReentryArray *next;} nested_array;
++static void enqueue_array(void *p) {nested_array *n=p;[n->owner setAccessibilitySelectedChildren:n->next];}
++static int byte_backpressure(void) {
++    scene s={0};s.big=65500;CHECK(setup(&s)==0);
++    id owner=element(&s,100);NXReentryArray *arrays[4];nested_array nested[3];
++    for(size_t i=0;i<4;++i){arrays[i]=[NXReentryArray new];arrays[i]->payload=[@[element(&s,1001+i)] retain];}
++    for(size_t i=0;i<3;++i){nested[i]=(nested_array){owner,arrays[i+1]};arrays[i]->callback=enqueue_array;arrays[i]->user=&nested[i];}
++    [owner setAccessibilitySelectedChildren:arrays[0]];
++    /* Each retained full member payload plus its scratch marks exceeds2MiB.
++       Three in-flight admissions fit8MiB; a fourth must stop before the next
++       user NSArray access, even though all three outer requests are unqueued. */
++    CHECK(arrays[0]->visits==1 && arrays[1]->visits==1 && arrays[2]->visits==1 && !arrays[3]->visits);
++    CHECK(advance(&s,1)==0);uint64_t one=1003;CHECK(selected(s.model,&one,1,66499)==0);
++    CHECK([[owner accessibilitySelectedChildren] count]==1 && [[owner accessibilitySelectedChildren] firstObject]==element(&s,1003));
++    for(size_t i=0;i<4;++i)[arrays[i] release];CHECK(cleanup(&s)==0);
++    puts("native8MiB includes three retained in-flight65500-member payloads; fourth NSArray admission blocked passed");return 0;
++}
++static int array_callouts_and_slots(void) {
++    scene s={0};CHECK(setup(&s)==0);
++    for(uint64_t i=0;i<63;++i)CHECK([element(&s,5000+i) accessibilityPerformPress]);
++    NXReentryArray *array=[NXReentryArray new];array->payload=[@[element(&s,1001)] retain];array->callback=extra_button;array->user=&s;
++    [element(&s,100) setAccessibilitySelectedChildren:array];
++    CHECK(array->visits==1 && !s.native_attempt && ![element(&s,5064) accessibilityPerformPress]);
++    CHECK(advance(&s,64)==0 && s.clicks==63);uint64_t one=1001;CHECK(selected(s.model,&one,1,1066)==0);
++    CHECK([element(&s,5063) accessibilityPerformPress] && advance(&s,1)==0 && s.clicks==1);
++    [array release];CHECK(cleanup(&s)==0);
++    for(int destroy=0;destroy<2;++destroy) {
++        scene t={0};CHECK(setup(&t)==0);id old=[element(&t,100) retain];
++        array=[NXReentryArray new];array->payload=[@[element(&t,1001)] retain];array->callback=destroy?destroy_window:detach;array->user=&t;
++        [old setAccessibilitySelectedChildren:array];CHECK(array->visits==1 && ![old isAccessibilityElement] && t.callback_result==NX_OK);
++        CHECK(frame(&t)==0 && selected(t.model,NULL,0,1066)==0);[array release];[old release];CHECK(cleanup(&t)==0);
++    }
++    puts("native NSArray detach/destroy and in-flight64-slot reservation with actual63-button delivery passed");return 0;
++}
++static int callouts(void) {
++    {
++        scene s={0};CHECK(setup(&s)==0 && publish(&s)==0);id old=[element(&s,100) retain];s.large=1;CHECK(frame(&s)==0);
++        s.native.fail=1;CHECK(nx_window_publish_semantics(s.window,s.ctx)==NX_ERROR_MEMORY && !s.native.fail);
++        CHECK([old isAccessibilityElement] && [[old accessibilityLabel] isEqual:@"Choice"]);
++        s.native.hook=republish;s.native.user=&s;s.native.when=1;
++        CHECK(nx_window_publish_semantics(s.window,s.ctx)==NX_OK && !s.native.hook && s.callback_result==NX_ERROR_STATE);
++        CHECK(element(&s,100)==old && [[old accessibilityLabel] length]==65536);
++        [old release];CHECK(cleanup(&s)==0);
++    }
++    for(int action=0;action<3;++action) {
++        scene s={0};CHECK(setup(&s)==0);uint64_t one=1000;CHECK(nx_selection_model_set_selected(s.model,&one,1)==NX_OK && publish(&s)==0);
++        id old=[element(&s,1001) retain];[element(&s,100) setAccessibilitySelectedChildren:@[old]];
++        if(!action) {
++            s.core.fail=1;size_t n=0;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_ERROR_MEMORY && !n && !s.core.fail);
++            CHECK(advance(&s,1)==0);one=1001;CHECK(selected(s.model,&one,1,1066)==0);
++        } else {
++            s.core.hook=action==1?detach:destroy_window;s.core.user=&s;s.core.when=1;
++            size_t n=0;nx_window *w=s.window;CHECK(nx_window_route_events(w,s.ctx,&n)==NX_OK && !n && !s.core.hook && s.callback_result==NX_OK);
++            CHECK(frame(&s)==0 && selected(s.model,&one,1,1066)==0 && ![old isAccessibilityElement]);
++        }
++        [old release];CHECK(cleanup(&s)==0);
++    }
++    for(int when=1;when<=2;++when)for(int destroy=0;destroy<2;++destroy) {
++        scene s={0};CHECK(setup(&s)==0 && publish(&s)==0);id old=[element(&s,1000) retain];s.large=1;
++        CHECK(frame(&s)==0);s.native.hook=destroy?destroy_window:detach;s.native.user=&s;s.native.when=when;
++        nx_window *w=s.window;CHECK(nx_window_publish_semantics(w,s.ctx)==NX_ERROR_STATE && !s.native.hook && s.callback_result==NX_OK);
++        CHECK(![old isAccessibilityElement]);[old release];CHECK(cleanup(&s)==0);
++    }
++    puts("native core OOM retry and allocator/deallocator detach/destroy lifetime passed");return 0;
++}
++static int legacy_single(void) {
++    scene s={0};CHECK(setup(&s)==0);id held=[element(&s,301) retain];[held setAccessibilitySelected:YES];
++    CHECK(advance(&s,1)==0 && s.legacy==301);s.legacy=0;s.moved=1;CHECK(publish(&s)==0);
++    CHECK(element(&s,301)==held);[held setAccessibilitySelected:YES];CHECK(advance(&s,1)==0 && s.other==301);
++    [held release];CHECK(cleanup(&s)==0);puts("legacy Single retained item remains canonical after reparent passed");return 0;
++}
++int main(int argc,char **argv) {
++    @autoreleasepool {
++        if(argc==2) {
++            if(!strcmp(argv[1],"operations"))return operations();
++            if(!strcmp(argv[1],"table"))return table_and_disabled();
++            if(!strcmp(argv[1],"stale"))return stale();
++            if(!strcmp(argv[1],"callouts"))return callouts();
++            if(!strcmp(argv[1],"array"))return array_callouts_and_slots();
++            if(!strcmp(argv[1],"bytes"))return byte_backpressure();
++            if(!strcmp(argv[1],"aba"))return snapshot_aba();
++            if(!strcmp(argv[1],"demotion"))return scope_demotion();
++            if(!strcmp(argv[1],"single"))return legacy_single();
++            return 2;
++        }
++        CHECK(operations()==0 && table_and_disabled()==0 && stale()==0 && callouts()==0 && array_callouts_and_slots()==0 && byte_backpressure()==0 && snapshot_aba()==0 && scope_demotion()==0 && legacy_single()==0);
++        puts("Hidden native AppKit multi-selection checks passed; no window fronting, focus requests, external AX or physical acceptance");return 0;
++    }
++}
+diff --git a/tests/test_selection_replace.c b/tests/test_selection_replace.c
+new file mode 100644
+index 0000000..17f1208
+--- /dev/null
++++ b/tests/test_selection_replace.c
+@@ -0,0 +1,123 @@
++#include "selection_model.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s failed\n",__FILE__,__LINE__,#x); return 1; } } while (0)
++
++/* This executable links only the production model component. Its identity
++   source is owner-local; native transport identity is tested in SDK suites. */
++uint64_t nx_native_next_identity(void) {
++    static uint64_t sequence;
++    return sequence == UINT64_MAX ? 0 : ++sequence;
++}
++
++typedef struct tracker {
++    nx_selection_model *model;
++    size_t allocations, releases, live, reentries;
++    int forbid, callback_failed;
++} tracker;
++
++static void busy_probe(tracker *t) {
++    if (!t->model) return;
++    int changed = 9; size_t count = 9;
++    nx_result r = nx_selection_model_prepare_set(t->model,NULL,0,0,&changed,&count);
++    if (r != NX_ERROR_STATE || changed || count) t->callback_failed = 1;
++    ++t->reentries;
++}
++static void *allocate(void *user,size_t bytes) {
++    tracker *t=user; ++t->allocations; busy_probe(t);
++    if(t->forbid)return NULL;
++    void *p=malloc(bytes); if(p)++t->live; return p;
++}
++static void release(void *user,void *p,size_t bytes) {
++    tracker *t=user; (void)bytes; ++t->releases; busy_probe(t);
++    if(t->forbid)t->callback_failed=1;
++    if(p){--t->live;free(p);}
++}
++static int selection(nx_selection_model *m,const uint64_t *ids,size_t count) {
++    nx_selection_view v; CHECK(nx_selection_model_get(m,&v)==NX_OK);
++    CHECK(v.selected_count==count);
++    CHECK(!count || !memcmp(v.selected_ids,ids,count*sizeof(*ids)));
++    /* The public selected-ID cache alone cannot detect an early write to the
++       live membership flags before the cache is rebuilt at commit. */
++    for(size_t i=0;i<v.item_count;++i) {
++        int actual=0,disabled=0,expected=0;
++        for(size_t j=0;j<count;++j)if(ids[j]==v.items[i].id)expected=1;
++        CHECK(nx_selection_model_item(m,v.items[i].id,0,&actual,&disabled)==NX_OK && actual==expected);
++    }
++    return 0;
++}
++static int operations(void) {
++    nx_selection_item items[]={{9,0},{3,NX_SELECTION_ITEM_DISABLED},{7,0},{1,0}};
++    tracker t={0}; nx_allocator a={&t,allocate,release}; nx_selection_model *m=NULL;
++    CHECK(nx_selection_model_create(4,&a,&m)==NX_OK);t.model=m;
++    CHECK(nx_selection_model_set_items(m,items,4)==NX_OK);
++    uint64_t old[]={3,7};CHECK(nx_selection_model_set_selected(m,old,2)==NX_OK);
++    CHECK(nx_selection_model_set_active(m,1)==NX_OK);
++    size_t before=t.allocations,freed=t.releases; t.forbid=1;
++    int changed=0;size_t count=0;nx_selection_target target=nx_selection_model_target(m);
++    uint64_t wanted[]={1,3,9},canonical[]={9,3,1};
++    CHECK(nx_selection_model_prepare_set(m,wanted,3,1,&changed,&count)==NX_OK && changed==1 && count==3);
++    CHECK(selection(m,old,2)==0); /* Staging does not change a live model. */
++    CHECK(nx_selection_model_target(m).revision==target.revision);
++    nx_selection_model_commit(m,changed);CHECK(selection(m,canonical,3)==0);
++    CHECK(nx_selection_model_target(m).revision==target.revision+1);
++    nx_selection_view v;CHECK(nx_selection_model_get(m,&v)==NX_OK && v.active_id==1);
++    target=nx_selection_model_target(m);
++    CHECK(nx_selection_model_prepare_set(m,wanted,3,1,&changed,&count)==NX_OK && !changed && count==3);
++    nx_selection_model_commit(m,changed);CHECK(nx_selection_model_target(m).revision==target.revision);
++    uint64_t duplicate[]={9,9},missing[]={9,55},zero[]={0},remove_disabled[]={9,1};
++    CHECK(nx_selection_model_prepare_set(m,duplicate,2,0,&changed,&count)==NX_ERROR_ARGUMENT && !changed && !count);
++    CHECK(selection(m,canonical,3)==0);
++    CHECK(nx_selection_model_prepare_set(m,missing,2,0,&changed,&count)==NX_ERROR_STATE && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,zero,1,0,&changed,&count)==NX_ERROR_ARGUMENT && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,remove_disabled,2,0,&changed,&count)==NX_ERROR_STATE && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,1,&changed,&count)==NX_ERROR_STATE && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,0,&changed,&count)==NX_ERROR_STATE && !changed && !count);
++    CHECK(selection(m,canonical,3)==0 && nx_selection_model_target(m).revision==target.revision);
++    CHECK(t.allocations==before && t.releases==freed && !t.callback_failed);
++    t.forbid=0;
++    uint64_t only[]={9};CHECK(nx_selection_model_set_selected(m,only,1)==NX_OK);
++    CHECK(nx_selection_model_prepare_set(m,old,2,0,&changed,&count)==NX_ERROR_STATE); /* Cannot add disabled3. */
++    CHECK(selection(m,only,1)==0);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,0,&changed,&count)==NX_OK && changed && !count);
++    CHECK(selection(m,only,1)==0);nx_selection_model_commit(m,changed);CHECK(selection(m,NULL,0)==0);
++    CHECK(nx_selection_model_prepare_set(m,only,5,0,&changed,&count)==NX_ERROR_LIMIT && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,NULL,1,0,&changed,&count)==NX_ERROR_ARGUMENT);
++    CHECK(nx_selection_model_prepare_set(NULL,NULL,0,0,&changed,&count)==NX_ERROR_ARGUMENT);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,2,&changed,&count)==NX_ERROR_ARGUMENT);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,0,NULL,&count)==NX_ERROR_ARGUMENT && !count);
++    t.model=NULL;nx_selection_model_destroy(m);CHECK(!t.live && t.reentries && !t.callback_failed);return 0;
++}
++static int complete_catalog(void) {
++    const size_t maximum=NX_SELECTION_MAX_ITEMS;
++    nx_selection_item *items=malloc(maximum*sizeof(*items));uint64_t *ids=malloc(maximum*sizeof(*ids));
++    CHECK(items && ids);for(size_t i=0;i<maximum;++i){items[i]=(nx_selection_item){i+1,0};ids[i]=maximum-i;}
++    tracker t={0};nx_allocator a={&t,allocate,release};nx_selection_model *m=NULL;
++    CHECK(nx_selection_model_create(maximum,&a,&m)==NX_OK);t.model=m;
++    CHECK(nx_selection_model_set_items(m,items,maximum)==NX_OK);
++    size_t before=t.allocations,freed=t.releases;int changed=0;size_t count=0;t.forbid=1;
++    CHECK(nx_selection_model_prepare_set(m,ids,65,1,&changed,&count)==NX_OK && changed && count==65);
++    nx_selection_model_commit(m,changed);
++    nx_selection_view v;CHECK(nx_selection_model_get(m,&v)==NX_OK && v.selected_count==65 && v.selected_ids[0]==maximum-64);
++    CHECK(nx_selection_model_prepare_set(m,ids,maximum,1,&changed,&count)==NX_OK && changed && count==maximum);
++    CHECK(nx_selection_model_get(m,&v)==NX_OK && v.selected_count==65);
++    int live=1,disabled=0;
++    CHECK(nx_selection_model_item(m,1,0,&live,&disabled)==NX_OK && !live);
++    nx_selection_model_commit(m,changed);CHECK(nx_selection_model_get(m,&v)==NX_OK && v.selected_count==maximum);
++    for(size_t i=0;i<maximum;++i)CHECK(v.selected_ids[i]==i+1);
++    CHECK(nx_selection_model_prepare_set(m,v.selected_ids,v.selected_count,1,&changed,&count)==NX_OK && !changed && count==maximum);
++    CHECK(nx_selection_model_prepare_set(m,ids,maximum+1,0,&changed,&count)==NX_ERROR_LIMIT && !changed && !count);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,1,&changed,&count)==NX_ERROR_STATE && !changed && !count);
++    CHECK(nx_selection_model_get(m,&v)==NX_OK && v.selected_count==maximum);
++    CHECK(nx_selection_model_prepare_set(m,NULL,0,0,&changed,&count)==NX_OK && changed && !count);
++    nx_selection_model_commit(m,changed);CHECK(selection(m,NULL,0)==0);
++    CHECK(t.allocations==before && t.releases==freed && !t.callback_failed);
++    t.forbid=0;t.model=NULL;nx_selection_model_destroy(m);CHECK(!t.live);
++    free(ids);free(items);return 0;
++}
++int main(void) {
++    if(operations() || complete_catalog())return 1;
++    puts("atomic native replacement: staging, disabled preservation, 65/65536, bounds and no allocator callouts passed");return 0;
++}
+diff --git a/tests/test_selection_set.c b/tests/test_selection_set.c
+new file mode 100644
+index 0000000..3cc1cad
+--- /dev/null
++++ b/tests/test_selection_set.c
+@@ -0,0 +1,243 @@
++#include "selection_model.h"
++#include "context_identity.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s failed\n",__FILE__,__LINE__,#x); return 1; } } while (0)
++
++typedef struct scenario { int required,owner_disabled,disabled_index,skip_index,ancestor_role,move_ancestor,modal; } scenario;
++static scenario normal(void) { scenario s={0,0,-1,-1,0,0,0};return s; }
++static nx_semantic_desc desc(uint64_t id,uint64_t parent,nx_semantic_role role) {
++    nx_semantic_desc d={0};d.id=id;d.parent_id=parent;d.role=role;
++    d.name=(nx_utf8_span){"Set",3};return d;
++}
++static int add(nx_context *ctx,uint64_t id,uint64_t parent,nx_semantic_role role,int disabled) {
++    nx_semantic_desc d=desc(id,parent,role);if(disabled)d.state=NX_SEM_DISABLED;
++    CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK);return 0;
++}
++static int make(nx_selection_model **m,size_t count,uint64_t first) {
++    nx_selection_item *items=count?malloc(count*sizeof(*items)):NULL;CHECK(!count || items);
++    for(size_t i=0;i<count;++i)items[i]=(nx_selection_item){first+i,0};
++    CHECK(nx_selection_model_create(count?count:1,NULL,m)==NX_OK);
++    CHECK(nx_selection_model_set_items(*m,items,count)==NX_OK);free(items);return 0;
++}
++static int group(nx_context *ctx,nx_selection_model *m,uint64_t owner,uint64_t first,size_t count,scenario s) {
++    CHECK(add(ctx,owner,10,NX_ROLE_LIST,s.owner_disabled)==0);
++    CHECK(nx_selection_bind_owner(ctx,owner,m,s.required)==NX_OK);
++    CHECK(add(ctx,owner+10,owner,s.ancestor_role?NX_ROLE_CUSTOM:NX_ROLE_PANEL,0)==0);
++    CHECK(add(ctx,owner+11,owner,NX_ROLE_PANEL,0)==0);
++    CHECK(add(ctx,owner+20,owner+(s.move_ancestor?11:10),NX_ROLE_PANEL,0)==0);
++    for(size_t i=0;i<count;++i) {
++        if((int)i==s.skip_index)continue;
++        CHECK(add(ctx,first+i,owner+20,NX_ROLE_LIST_ITEM,(int)i==s.disabled_index)==0);
++        CHECK(nx_selection_bind_item(ctx,owner,first+i,1)==NX_OK);
++    }
++    return 0;
++}
++static int begin(nx_context *ctx,nx_selection_model *a,nx_selection_model *b,size_t count,scenario s) {
++    CHECK(nx_begin_frame(ctx,300,200,0)==NX_OK && add(ctx,10,0,NX_ROLE_PANEL,0)==0);
++    CHECK(group(ctx,a,100,1000,count,s)==0);
++    if(b)CHECK(group(ctx,b,200,2000000,3,normal())==0);
++    if(s.modal) {
++        nx_overlay_desc o={0};o.panel.id=900;o.backdrop_id=901;o.panel.bounds=(nx_rect){0,0,100,100};
++        o.panel.name=(nx_utf8_span){"Modal",5};int dismissed=0;
++        CHECK(nx_modal_begin(ctx,&o,&dismissed)==NX_OK && nx_overlay_end(ctx)==NX_OK);
++    }
++    return 0;
++}
++static int frame(nx_context *ctx,nx_selection_model *a,nx_selection_model *b,size_t count,scenario s) {
++    CHECK(begin(ctx,a,b,count,s)==0 && nx_end_frame(ctx)==NX_OK);return 0;
++}
++static int selection(nx_selection_model *m,const uint64_t *ids,size_t count) {
++    nx_selection_view v;CHECK(nx_selection_model_get(m,&v)==NX_OK && v.selected_count==count);
++    CHECK(!count || !memcmp(v.selected_ids,ids,count*sizeof(*ids)));
++    for(size_t i=0;i<v.item_count;++i) {
++        int expected=0,actual=0,disabled=0;
++        for(size_t j=0;j<count;++j)if(v.items[i].id==ids[j])expected=1;
++        CHECK(nx_selection_model_item(m,v.items[i].id,0,&actual,&disabled)==NX_OK && actual==expected);
++    }
++    return 0;
++}
++typedef struct lease { uint64_t context,owner,token;nx_selection_target target;int live,refs,checks,failed; } lease;
++static void retain(void *p) { lease *l=p;++l->refs; }
++static void release(void *p) { lease *l=p;--l->refs;if(l->refs<0)l->failed=1; }
++static int current(void *p,uint64_t token,uint64_t context,uint64_t id,uint64_t owner,nx_selection_target target) {
++    lease *l=p;++l->checks;
++    if(l->refs<1 || context!=l->context || id!=l->owner || owner!=l->owner ||
++       target.identity!=l->target.identity || target.revision!=l->target.revision)l->failed=1;
++    return !l->failed && l->live && token==l->token;
++}
++static nx_selection_guard guard(lease *l,nx_context *ctx,nx_selection_model *m) {
++    memset(l,0,sizeof(*l));l->context=nx_context_identity(ctx);l->owner=100;
++    l->target=nx_selection_model_target(m);l->token=9;l->live=1;
++    nx_selection_guard g={l,9,retain,release,current};return g;
++}
++typedef struct tracker {
++    size_t allocations,releases,live;int fail,allocate_action,release_action,callback_failed;
++    nx_context *ctx;nx_selection_model *model;lease *lease;nx_result callback_result;
++} tracker;
++static void callback(tracker *t,int action) {
++    if(!action)return;
++    if(action==1) {
++        if(!t->lease || t->lease->refs<1)t->callback_failed=1;
++        if(t->lease)t->lease->live=0;
++    } else if(action==2) {
++        uint64_t id=1002;t->callback_result=nx_semantics_request_selection_set_guarded(t->ctx,100,&id,1,NULL);
++    } else if(action==3) {
++        if(frame(t->ctx,t->model,NULL,3,normal()))t->callback_failed=1;
++    } else if(action==4) {
++        uint64_t id=1000;t->callback_result=nx_selection_model_set_selected(t->model,&id,1);
++    } else if(action==5) {
++        t->callback_result=nx_semantics_request_selection_set_guarded(t->ctx,400,NULL,0,NULL);
++    } else if(action==6) {
++        t->callback_result=nx_semantics_request_action(t->ctx,1000,NX_ACTION_ADD_SELECTION);
++    }
++}
++static void *allocate(void *p,size_t bytes) {
++    tracker *t=p;++t->allocations;if(t->fail)return NULL;
++    void *result=malloc(bytes);if(result)++t->live;
++    int action=t->allocate_action;t->allocate_action=0;callback(t,action);return result;
++}
++static void deallocate(void *p,void *memory,size_t bytes) {
++    tracker *t=p;(void)bytes;++t->releases;
++    int action=t->release_action;t->release_action=0;callback(t,action);
++    if(memory){--t->live;free(memory);}
++}
++static int context(tracker *t,nx_context **ctx) {
++    nx_context_desc cd={0};cd.allocator=(nx_allocator){t,allocate,deallocate};
++    CHECK(nx_context_create(&cd,ctx)==NX_OK);t->ctx=*ctx;return 0;
++}
++static int operations_and_atomicity(void) {
++    nx_context *ctx=NULL;nx_selection_model *a=NULL,*b=NULL;tracker t={0};
++    CHECK(context(&t,&ctx)==0 && make(&a,65,1000)==0 && make(&b,3,2000000)==0);
++    CHECK(nx_selection_model_set_active(a,1007)==NX_OK && frame(ctx,a,b,65,normal())==0);
++    uint64_t ids[65];for(size_t i=0;i<65;++i)ids[i]=1064-i;
++    lease l;nx_selection_guard g=guard(&l,ctx,a);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,ids,65,&g)==NX_OK && l.refs==1 && l.checks==1);
++    memset(ids,0,sizeof(ids));CHECK(selection(a,NULL,0)==0);
++    CHECK(nx_semantics_request_action(ctx,1000,NX_ACTION_SELECT)==NX_ERROR_LIMIT);
++    uint64_t peer=2000001;CHECK(nx_semantics_request_action(ctx,peer,NX_ACTION_SELECT)==NX_OK);
++    CHECK(frame(ctx,a,b,65,normal())==0 && l.refs==0 && l.checks==2 && !l.failed);
++    nx_selection_view v;CHECK(nx_selection_model_get(a,&v)==NX_OK && v.selected_count==65 && v.active_id==1007);
++    for(size_t i=0;i<65;++i)CHECK(v.selected_ids[i]==1000+i);
++    CHECK(selection(b,&peer,1)==0);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,NULL,0,NULL)==NX_OK);
++    CHECK(frame(ctx,a,b,65,normal())==0 && selection(a,NULL,0)==0);
++    uint64_t wanted[]={1000,1001},both_b[]={2000001,2000002};
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,wanted,2,NULL)==NX_OK);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,200,both_b,2,NULL)==NX_OK);
++    CHECK(begin(ctx,a,NULL,65,normal())==0);
++    scenario omit=normal();omit.skip_index=1;CHECK(group(ctx,b,200,2000000,3,omit)==0);
++    CHECK(nx_end_frame(ctx)==NX_ERROR_STATE && selection(a,NULL,0)==0 && selection(b,&peer,1)==0);
++    CHECK(add(ctx,peer,220,NX_ROLE_LIST_ITEM,0)==0 && nx_selection_bind_item(ctx,200,peer,1)==NX_OK);
++    CHECK(nx_end_frame(ctx)==NX_OK && selection(a,wanted,2)==0 && selection(b,both_b,2)==0);
++    uint64_t duplicate[]={1001,1001},bad[]={1000,9999999},zero=0;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,duplicate,2,NULL)==NX_ERROR_ARGUMENT);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,bad,2,NULL)==NX_ERROR_STATE);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&zero,1,NULL)==NX_ERROR_ARGUMENT);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,NULL,1,NULL)==NX_ERROR_ARGUMENT);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,wanted,NX_SELECTION_MAX_ITEMS+1u,NULL)==NX_ERROR_LIMIT);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,10,NULL,0,NULL)==NX_ERROR_STATE);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,wanted,2,NULL)==NX_OK);
++    t.release_action=2;CHECK(frame(ctx,a,b,65,normal())==0 && t.callback_result==NX_ERROR_LIMIT);
++    for(size_t i=0;i<63;++i)CHECK(nx_semantics_request_action(ctx,1000,NX_ACTION_ADD_SELECTION)==NX_OK);
++    size_t calls=t.allocations;t.allocate_action=6;
++    nx_result outer=nx_semantics_request_selection_set_guarded(ctx,200,NULL,0,NULL);
++    if(outer!=NX_OK || t.callback_result!=NX_ERROR_LIMIT || t.allocations!=calls+1)
++        fprintf(stderr,"in-flight slot: outer=%d nested=%d allocations=%zu\n",outer,t.callback_result,t.allocations-calls);
++    CHECK(outer==NX_OK && t.callback_result==NX_ERROR_LIMIT && t.allocations==calls+1);
++    CHECK(frame(ctx,a,b,65,normal())==0 && selection(b,NULL,0)==0);
++    CHECK(!t.callback_failed);nx_context_destroy(ctx);nx_selection_model_destroy(a);nx_selection_model_destroy(b);
++    CHECK(!t.live);return 0;
++}
++static int lifecycle_and_callouts(void) {
++    nx_context *ctx=NULL;nx_selection_model *a=NULL,*replacement=NULL;tracker t={0};
++    CHECK(context(&t,&ctx)==0 && make(&a,3,1000)==0 && make(&replacement,3,1000)==0);t.model=a;
++    uint64_t old=1000,wanted=1001;CHECK(nx_selection_model_set_selected(a,&old,1)==NX_OK);
++    CHECK(frame(ctx,a,NULL,3,normal())==0);
++    for(int kind=0;kind<7;++kind) {
++        CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_OK);
++        scenario s=normal();
++        if(kind==0)s.ancestor_role=1;
++        if(kind==1)s.move_ancestor=1;
++        if(kind==2)s.owner_disabled=1;
++        if(kind==3)s.disabled_index=1;
++        if(kind==4)s.required=1;
++        if(kind==5)s.modal=1;
++        if(kind==6)s.skip_index=1;
++        CHECK(frame(ctx,a,NULL,3,s)==0 && selection(a,&old,1)==0);
++        CHECK(frame(ctx,a,NULL,3,normal())==0);
++    }
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_OK);
++    CHECK(nx_selection_model_set_selected(a,&old,1)==NX_OK); /* Equal replacement revokes old target. */
++    CHECK(frame(ctx,a,NULL,3,normal())==0 && selection(a,&old,1)==0);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_OK);
++    CHECK(nx_selection_model_set_selected(replacement,&old,1)==NX_OK);
++    CHECK(frame(ctx,replacement,NULL,3,normal())==0 && selection(replacement,&old,1)==0);
++    CHECK(frame(ctx,a,NULL,3,normal())==0);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_OK);
++    nx_selection_item reduced[]={{1000,0},{1002,0}},restored[]={{1000,0},{1001,0},{1002,0}};
++    CHECK(nx_selection_model_set_items(a,reduced,2)==NX_OK && nx_selection_model_set_items(a,restored,3)==NX_OK);
++    CHECK(frame(ctx,a,NULL,3,normal())==0 && selection(a,&old,1)==0);
++    lease l;nx_selection_guard g=guard(&l,ctx,a);t.lease=&l;t.allocate_action=1;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,&g)==NX_ERROR_STATE && !l.refs && l.checks==1);
++    CHECK(selection(a,&old,1)==0 && !t.callback_failed && !l.failed);
++    g=guard(&l,ctx,a);t.fail=1;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,&g)==NX_ERROR_MEMORY && !l.refs);
++    t.fail=0;t.allocate_action=2;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_ERROR_LIMIT && t.callback_result==NX_OK);
++    uint64_t nested=1002;CHECK(frame(ctx,a,NULL,3,normal())==0 && selection(a,&nested,1)==0);
++    t.allocate_action=3;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_ERROR_STATE && !t.callback_failed);
++    CHECK(selection(a,&nested,1)==0);
++    t.allocate_action=4;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_OK && t.callback_result==NX_OK);
++    CHECK(frame(ctx,a,NULL,3,normal())==0 && selection(a,&old,1)==0);
++    g=guard(&l,ctx,a);CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,&g)==NX_OK);
++    CHECK(begin(ctx,a,NULL,3,normal())==0);
++    char large[16384];memset(large,'A',sizeof(large));nx_semantic_desc d=desc(800,0,NX_ROLE_TEXT);d.name=(nx_utf8_span){large,sizeof(large)};
++    t.allocate_action=1;CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK && !l.live);
++    CHECK(nx_end_frame(ctx)==NX_OK && selection(a,&old,1)==0 && !l.refs && !l.failed);
++    /* Required/disabled policy at admission and preservation of disabled old selection. */
++    scenario s=normal();s.required=1;CHECK(frame(ctx,a,NULL,3,s)==0);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,NULL,0,NULL)==NX_ERROR_STATE);
++    s=normal();s.disabled_index=0;CHECK(frame(ctx,a,NULL,3,s)==0);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,&wanted,1,NULL)==NX_ERROR_STATE);
++    uint64_t keep[]={1000,1001};CHECK(nx_semantics_request_selection_set_guarded(ctx,100,keep,2,NULL)==NX_OK);
++    CHECK(frame(ctx,a,NULL,3,s)==0 && selection(a,keep,2)==0);
++    CHECK(!t.callback_failed);nx_context_destroy(ctx);nx_selection_model_destroy(a);nx_selection_model_destroy(replacement);
++    CHECK(!t.live);return 0;
++}
++static int maximum_and_budget(void) {
++    nx_context *ctx=NULL;tracker t={0};nx_selection_model *a=NULL,*empty[3]={0};
++    CHECK(context(&t,&ctx)==0 && make(&a,NX_SELECTION_MAX_ITEMS,1000)==0);
++    for(size_t i=0;i<3;++i)CHECK(make(&empty[i],0,0)==0);
++    CHECK(begin(ctx,a,NULL,NX_SELECTION_MAX_ITEMS,normal())==0);
++    for(size_t i=0;i<3;++i)CHECK(group(ctx,empty[i],200+100*i,0,0,normal())==0);
++    CHECK(nx_end_frame(ctx)==NX_OK);
++    uint64_t *ids=malloc(NX_SELECTION_MAX_ITEMS*sizeof(*ids));CHECK(ids);
++    for(size_t i=0;i<NX_SELECTION_MAX_ITEMS;++i)ids[i]=1000+i;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,100,ids,NX_SELECTION_MAX_ITEMS,NULL)==NX_OK);
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,200,NULL,0,NULL)==NX_OK);
++    size_t before=t.allocations;t.allocate_action=5;
++    nx_result outer=nx_semantics_request_selection_set_guarded(ctx,300,NULL,0,NULL);
++    if(outer!=NX_OK || t.callback_result!=NX_ERROR_LIMIT || t.allocations!=before+1)
++        fprintf(stderr,"in-flight bytes: outer=%d nested=%d allocations=%zu\n",outer,t.callback_result,t.allocations-before);
++    CHECK(outer==NX_OK && t.callback_result==NX_ERROR_LIMIT && t.allocations==before+1);
++    size_t calls=t.allocations;
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,400,NULL,0,NULL)==NX_ERROR_LIMIT && t.allocations==calls);
++    CHECK(begin(ctx,a,NULL,NX_SELECTION_MAX_ITEMS,normal())==0);
++    for(size_t i=0;i<3;++i)CHECK(group(ctx,empty[i],200+100*i,0,0,normal())==0);
++    CHECK(nx_end_frame(ctx)==NX_OK);
++    nx_selection_view v;CHECK(nx_selection_model_get(a,&v)==NX_OK && v.selected_count==NX_SELECTION_MAX_ITEMS);
++    CHECK(!memcmp(v.selected_ids,ids,NX_SELECTION_MAX_ITEMS*sizeof(*ids)));
++    CHECK(nx_semantics_request_selection_set_guarded(ctx,400,NULL,0,NULL)==NX_OK); /* Budget released. */
++    nx_context_destroy(ctx);nx_selection_model_destroy(a);for(size_t i=0;i<3;++i)nx_selection_model_destroy(empty[i]);
++    free(ids);CHECK(!t.live);return 0;
++}
++int main(int argc,char **argv) {
++    if(argc==2 && !strcmp(argv[1],"budget"))return maximum_and_budget();
++    if(argc==2 && !strcmp(argv[1],"slots"))return operations_and_atomicity();
++    if(operations_and_atomicity() || lifecycle_and_callouts() || maximum_and_budget())return 1;
++    puts("complete context selection sets: atomic owners, 65/65536, scalar ancestry/lease, OOM/reentry, disabled/required and byte bounds passed");return 0;
++}

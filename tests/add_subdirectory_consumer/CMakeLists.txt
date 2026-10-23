@@ -1,7 +1,0 @@
-cmake_minimum_required(VERSION 3.21)
-project(NexaUIAddSubdirectoryConsumer LANGUAGES C)
-set(NEXAUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(NEXAUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../.." nexaui-build)
-add_executable(consumer ../package_consumer/main.c)
-target_link_libraries(consumer PRIVATE NexaUI::NexaUI)
