@@ -1,6 +1,6 @@
 {
   "base": "12ce9c5b549201773bb19f0ff6888437be6982fe",
-  "patch_sha256": "c49274be190129cbc66c97271db1d27b037d7fd800a1d6f7681edc2a59bc16ff",
+  "patch_sha256": "fa529d8e8db28c6908ef482dce1e2ede7a17f05ed24b3116369e3322195173eb",
   "sources": [
     {
       "path": "CMakeLists.txt",
@@ -11,12 +11,36 @@
       "git_lf_sha256": "4e4bcbbddada12848d5fc9420afb490a4ba0167c429fce4bcd9b87361c14ce9b"
     },
     {
+      "path": "src/nexaui.c",
+      "git_lf_sha256": "77dd7998995c889e052dffd800c49a9e5d5b5e48ba7cba1b6a93e9e3ba2a5fd4"
+    },
+    {
       "path": "tests/macos_text_value_fixture.h",
       "git_lf_sha256": "b943ab41fbcbe30a495ef65f13b2fdc4c9c5b2c18527d419bbd9eee5f5e78e16"
     },
     {
       "path": "tests/test_macos_text_value.m",
-      "git_lf_sha256": "4d9649433fe20f834aa4d31ff13ef154db453ea10e910a7012d18ca9e603d33c"
+      "git_lf_sha256": "85ad557d4d2eafdeca04deba8f250945689e871acb40f7a29278254d92cf2eed"
+    },
+    {
+      "path": "tests/test_text_value.c",
+      "git_lf_sha256": "9f50f7dab2fa3592b7a3a6824d2dc3a250ae2bf4bacdcf4a7327b6a055e6cf14"
+    }
+  ],
+  "controls": [
+    {
+      "name": "old-base",
+      "path": "old-base.dylib",
+      "sha256": "f2f56e63152274251b15387155b95c125afd5115a3f0a24c2ce4bab76b809bf8",
+      "original_zip_sha256": "0a4f2540ab6c850ff3261f9a258c0e5127e4e514aca0106fc3a5ef7ca510a9ad",
+      "original_member": "shared-release/libnexaui.0.dylib"
+    },
+    {
+      "name": "old-core",
+      "path": "old-core.dylib",
+      "sha256": "4cbb49d6300b4f6f39364f35bd2774f4386d8c87bd6efceacaab2f9dfa73c067",
+      "original_zip_sha256": "2aa1c27afbf6926607ce5d4c42260e2ae4901ce3968dd09e412e5b2405d777b5",
+      "original_member": "shared-release/libnexaui.0.dylib"
     }
   ]
 }

@@ -263,6 +263,71 @@ index 8bacf4a..a242648 100644
          if(r.multi) {
              nx_ax_multi_request *m=r.multi;multi_retain(m);
              int valid=multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
+diff --git a/src/nexaui.c b/src/nexaui.c
+index b0359b5..2e1ce99 100644
+--- a/src/nexaui.c
++++ b/src/nexaui.c
+@@ -119,6 +119,8 @@ typedef struct nx_text_value_request {
+     char *bytes;
+     size_t length;
+     nx_text_value_guard guard;
++    uint32_t ancestor_count;
++    struct { uint64_t id; nx_semantic_role role; } ancestors[NX_SEMANTIC_MAX_DEPTH];
+ } nx_text_value_request;
+ 
+ typedef struct nx_selection_ancestor {
+@@ -2121,6 +2123,34 @@ static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_recor
+     }
+ }
+ 
++static nx_result nx_text_value_capture_ancestry(const nx_context *ctx,
++    const nx_semantic_record *node, nx_text_value_request *request) {
++    uint64_t parent = node->parent_id;
++    while (parent) {
++        if (request->ancestor_count == NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
++        uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
++        if (at == UINT32_MAX) return NX_ERROR_STATE;
++        const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
++        request->ancestors[request->ancestor_count].id = ancestor->id;
++        request->ancestors[request->ancestor_count++].role = ancestor->role;
++        parent = ancestor->parent_id;
++    }
++    return NX_OK;
++}
++
++static int nx_text_value_ancestry_live(const nx_context *ctx,
++    const nx_semantic_record *node, const nx_text_value_request *request) {
++    uint64_t parent = node->parent_id;
++    for (uint32_t i = 0; i < request->ancestor_count; ++i) {
++        uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
++        if (at == UINT32_MAX) return 0;
++        const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
++        if (ancestor->id != request->ancestors[i].id || ancestor->role != request->ancestors[i].role) return 0;
++        parent = ancestor->parent_id;
++    }
++    return parent == 0;
++}
++
+ nx_result nx_semantics_request_text_value_guarded(nx_context *ctx, uint64_t id,
+     nx_utf8_span value, const nx_text_value_guard *guard) {
+     if (!ctx || !id || (!value.data && value.length) ||
+@@ -2149,6 +2179,8 @@ nx_result nx_semantics_request_text_value_guarded(nx_context *ctx, uint64_t id,
+     nx_text_value_request request = {0};
+     request.id = id; request.parent_id = node->parent_id;
+     request.source_frame = ctx->frame_serial; request.target = node->text_value;
++    nx_result ancestry = nx_text_value_capture_ancestry(ctx, node, &request);
++    if (ancestry != NX_OK) return ancestry;
+     char *copy = ctx->allocator.allocate(ctx->allocator.user, value.length + 1u);
+     if (!copy) return NX_ERROR_MEMORY;
+     /* User allocation can reenter admission (including native owner routing).
+@@ -2184,6 +2216,7 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
+         const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+         int valid = r->source_frame != UINT64_MAX && r->source_frame + 1u == ctx->frame_serial &&
+             r->parent_id == node->parent_id &&
++            nx_text_value_ancestry_live(ctx, node, r) &&
+             r->target.identity == node->text_value.identity &&
+             r->target.revision == node->text_value.revision &&
+             r->target.multiline == node->text_value.multiline &&
 diff --git a/tests/macos_text_value_fixture.h b/tests/macos_text_value_fixture.h
 new file mode 100644
 index 0000000..9b8a955
@@ -382,10 +447,10 @@ index 0000000..9b8a955
 +#endif
 diff --git a/tests/test_macos_text_value.m b/tests/test_macos_text_value.m
 new file mode 100644
-index 0000000..9c72f52
+index 0000000..dbf4bf7
 --- /dev/null
 +++ b/tests/test_macos_text_value.m
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,189 @@
 +#include "macos_text_value_fixture.h"
 +
 +static int operations(void) {
@@ -520,21 +585,25 @@ index 0000000..9c72f52
 +}
 +
 +static int slots(void) {
-+    for(int nested=0;nested<2;++nested) {
++    for(int nested=0;nested<3;++nested) {
 +        scene s={0};s.plain=1;s.field_count=65;CHECK(setup(&s)==0);
-+        if(nested) {
-+            callback c={&s,6,0,0,0,0,nil};NXCallbackString *value=callback_string(&c,1);
++        callback c={&s,6,0,0,0,0,nil};
++        if(nested==1) {
++            NXCallbackString *value=callback_string(&c,1);
 +            CHECK(admit(element(&s,1200),value) && c.fired==1 && !c.error && c.accepted==63 && c.rejected==1);[value release];
++        } else if(nested==2) {
++            CHECK(admit(element(&s,1200),@"outer"));s.core.hook=change;s.core.user=&c;s.core.when=1;
 +        } else {
 +            for(uint64_t i=0;i<64;++i)CHECK(admit(element(&s,1200+i),@"queued"));
 +            CHECK(!admit(element(&s,1264),@"excess"));
 +        }
 +        CHECK(advance(&s,64)==0);
++        if(nested==2)CHECK(!s.core.hook && c.fired==1 && !c.error && c.accepted==63 && c.rejected==1);
 +        for(size_t i=0;i<65;++i)CHECK(text(s.fields[i],i==64?"seed":nested?(i?"nested":"outer"):"queued")==0);
 +        CHECK(admit(element(&s,1264),@"retry") && advance(&s,1)==0 && text(s.fields[64],"retry")==0);
 +        CHECK(cleanup(&s)==0);
 +    }
-+    puts("AppKit pending and NSString in-flight64-slot boundary with actual64 model updates passed");return 0;
++    puts("AppKit pending/NSString/core allocator in-flight64-slot boundary with actual64 model updates passed");return 0;
 +}
 +static int core_callouts(void) {
 +    {
@@ -550,7 +619,16 @@ index 0000000..9c72f52
 +        CHECK(![held isAccessibilityElement] && frame(&s)==0 && text(s.fields[0],"seed")==0);
 +        [held release];CHECK(cleanup(&s)==0);
 +    }
-+    puts("AppKit core-copy OOM retry and allocator detach/destroy lifetime passed");return 0;
++    for(int when=1;when<=2;++when)for(int kind=1;kind<=2;++kind) {
++        scene s={0};CHECK(setup(&s)==0 && publish(&s)==0);id held=[element(&s,1200) retain];
++        char bytes[8192];memset(bytes,'s',sizeof(bytes));NSString *large=[[NSString alloc] initWithBytes:bytes length:sizeof(bytes) encoding:NSUTF8StringEncoding];
++        CHECK(admit(held,large));size_t n=0;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && n==1);
++        callback c={&s,kind,0,0,0,0,held};s.core.hook=change;s.core.user=&c;s.core.when=when;s.core.threshold=8193;s.core.free_after_allocate=when==2;
++        CHECK(frame(&s)==0);fprintf(stderr,"text reserve callback when=%d kind=%d bytes=%zu fired=%d\n",when,kind,s.core.hook_bytes,c.fired);
++        CHECK(!s.core.hook && c.fired==1 && !c.error && ![held isAccessibilityElement] && text(s.fields[0],"seed")==0);
++        [large release];[held release];CHECK(cleanup(&s)==0);
++    }
++    puts("AppKit core-copy OOM retry and allocation/release before commit detach/destroy lifetime passed");return 0;
 +}
 +int main(int argc,char **argv) {@autoreleasepool{
 +    if(argc==2) {
@@ -562,3 +640,45 @@ index 0000000..9c72f52
 +    CHECK(operations()==0 && boundaries()==0 && worker_rejection()==0 && string_callouts()==0 && stale()==0 && slots()==0 && core_callouts()==0);
 +    puts("Hidden AppKit editable Value native checks passed");return 0;
 +}}
+diff --git a/tests/test_text_value.c b/tests/test_text_value.c
+index 49c83ae..ba73994 100644
+--- a/tests/test_text_value.c
++++ b/tests/test_text_value.c
+@@ -242,10 +242,36 @@ static int reentrant_admission(nx_font_collection *fonts) {
+     return 0;
+ }
+ 
+-int main(void) {
++static int ancestor_frame(nx_context *ctx,nx_text_field *field,nx_font_collection *fonts,int kind) {
++    CHECK(nx_begin_frame(ctx,300,160,0)==NX_OK);
++    const uint64_t ids[]={100,200,110,120};
++    const uint64_t parents[]={0,0,kind==4?200:100,kind==3?200:110};
++    for(size_t i=0;i<4;++i) {
++        nx_semantic_desc d={0};d.id=ids[i];d.parent_id=parents[i];d.bounds=(nx_rect){0,0,300,160};
++        d.role=(kind==1 && i==2) || (kind==2 && i==3)?NX_ROLE_CUSTOM:NX_ROLE_PANEL;
++        d.name=(nx_utf8_span){"Ancestor",8};CHECK(nx_semantics_add(ctx,&d,NULL)==NX_OK);
++    }
++    nx_text_field_desc d=descriptor(fonts,1);d.parent_id=120;
++    CHECK(submit(ctx,field,&d)==0 && nx_end_frame(ctx)==NX_OK);return 0;
++}
++static int ancestor_identity(nx_font_collection *fonts,int kind) {
++    nx_context *ctx=NULL;nx_text_field *field=NULL;
++    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("old",3,4096,&field)==NX_OK);
++    CHECK(ancestor_frame(ctx,field,fonts,0)==0 && nx_semantics_request_text_value(ctx,1,(nx_utf8_span){"stale",5})==NX_OK);
++    CHECK(ancestor_frame(ctx,field,fonts,kind)==0);nx_utf8_span actual;CHECK(nx_text_field_text(field,&actual)==NX_OK);
++    int correct=kind?actual.length==3 && !memcmp(actual.data,"old",3):actual.length==5 && !memcmp(actual.data,"stale",5);
++    fprintf(stderr,"text ancestor kind=%d actual=%.*s expected=%s\n",kind,(int)actual.length,actual.data,kind?"old":"stale");
++    nx_text_field_destroy(field);nx_context_destroy(ctx);CHECK(correct);return 0;
++}
++int main(int argc,char **argv) {
+     uint8_t bytes[512];font_fixture(bytes);nx_font *font=NULL;nx_font_collection *fonts=NULL;
+     CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK && nx_font_collection_create(NULL,&fonts)==NX_OK);
+     CHECK(nx_font_collection_add(fonts,font)==NX_OK);
++    if(argc==2 && !strncmp(argv[1],"ancestor-",9)) {
++        int kind=atoi(argv[1]+9);CHECK(kind>=0 && kind<=4);int result=ancestor_identity(fonts,kind);
++        nx_font_collection_destroy(fonts);nx_font_close(font);return result;
++    }
++    for(int kind=0;kind<=4;++kind)CHECK(ancestor_identity(fonts,kind)==0);
+     if(reentrant_admission(fonts)||value_and_undo(fonts)||policy_and_identity(fonts)||modal_and_validation(fonts)||bounds_and_allocation(fonts))return 1;
+     nx_font_collection_destroy(fonts);nx_font_close(font);
+     puts("owned text-value admission, identity/policy/modal revalidation, bounds, undo and OOM passed");return 0;
