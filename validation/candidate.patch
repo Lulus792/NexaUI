@@ -349,10 +349,10 @@ index b0359b5..2e1ce99 100644
              r->target.multiline == node->text_value.multiline &&
 diff --git a/tests/macos_text_value_client.c b/tests/macos_text_value_client.c
 new file mode 100644
-index 0000000..5740faa
+index 0000000..e125c98
 --- /dev/null
 +++ b/tests/macos_text_value_client.c
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,83 @@
 +/* Independent C17 AXUIElement/AXObserver client: OS frameworks only. */
 +#include <ApplicationServices/ApplicationServices.h>
 +#include <stdio.h>
@@ -390,7 +390,8 @@ index 0000000..5740faa
 +    int same=error==kAXErrorSuccess && value && CFGetTypeID(value)==CFStringGetTypeID() && CFEqual(value,wanted);if(value)CFRelease(value);return same;
 +}
 +static int wait_value(AXUIElementRef element,CFStringRef wanted){double end=now()+5;do{if(value_equals(element,wanted))return 1;tick();}while(now()<end);return 0;}
-+static int settable(AXUIElementRef element,int expected){Boolean yes=false;return AXUIElementIsAttributeSettable(element,kAXValueAttribute,&yes)==kAXErrorSuccess && !!yes==expected;}
++static int settable(AXUIElementRef element,int expected){Boolean yes=false;AXError error=AXUIElementIsAttributeSettable(element,kAXValueAttribute,&yes);
++    fprintf(stderr,"external AXValue settable error=%d actual=%d expected=%d\n",(int)error,!!yes,expected);return error==kAXErrorSuccess && !!yes==expected;}
 +static int command(const char *directory,const char *name){
 +    static unsigned sequence;char request[512],reply[512];snprintf(request,sizeof(request),"%s/request",directory);snprintf(reply,sizeof(reply),"%s/reply",directory);
 +    FILE *file=fopen(request,"w");if(!file)return 0;fprintf(file,"%u %s\n",++sequence,name);fclose(file);
@@ -403,7 +404,7 @@ index 0000000..5740faa
 +    pid_t pid=(pid_t)strtol(argv[1],NULL,10);AXUIElementRef app=AXUIElementCreateApplication(pid);CHECK(app && AXUIElementSetMessagingTimeout(app,1.0)==kAXErrorSuccess);
 +    AXUIElementRef editor=wait_find(app,1200);if(!editor){CFRelease(app);return 78;}
 +    AXUIElementRef others[7];const unsigned ids[]={1201,1202,1203,1204,1205,1500,1600};
-+    for(unsigned i=0;i<7;++i){others[i]=wait_find(app,ids[i]);CHECK(others[i] && settable(others[i],i==3 || i==4 || i==5));}
++    for(unsigned i=0;i<7;++i){others[i]=wait_find(app,ids[i]);fprintf(stderr,"external AX id=%u found=%d\n",ids[i],others[i]!=NULL);CHECK(others[i] && settable(others[i],i==3 || i==4 || i==5));}
 +    CHECK(settable(editor,1) && value_equals(others[2],CFSTR("")));
 +    CFTypeRef held=NULL;CHECK(AXUIElementCopyAttributeValue(editor,kAXValueAttribute,&held)==kAXErrorSuccess && held && CFEqual(held,CFSTR("seed")));
 +    AXObserverRef observer=NULL;CHECK(AXObserverCreate(pid,observed,&observer)==kAXErrorSuccess && AXObserverAddNotification(observer,editor,kAXValueChangedNotification,NULL)==kAXErrorSuccess);
@@ -554,10 +555,10 @@ index 0000000..9b8a955
 +#endif
 diff --git a/tests/macos_text_value_host.m b/tests/macos_text_value_host.m
 new file mode 100644
-index 0000000..5d2c07d
+index 0000000..e7a1550
 --- /dev/null
 +++ b/tests/macos_text_value_host.m
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,73 @@
 +#include "macos_text_value_fixture.h"
 +#include <spawn.h>
 +#include <sys/wait.h>
@@ -603,6 +604,8 @@ index 0000000..5d2c07d
 +    @autoreleasepool {
 +        scene s={0};CHECK(setup(&s)==0);NSWindow *native=nx_window_native_nswindow(s.window);
 +        int visible=!strcmp(argv[2],"visible");if(visible)[native orderFront:nil];CHECK(!![native isVisible]==visible);
++        const uint64_t identities[]={1200,1201,1202,1203,1204,1205,1500,1600};
++        for(size_t i=0;i<sizeof(identities)/sizeof(*identities);++i)fprintf(stderr,"native text id=%llu setter=%d\n",(unsigned long long)identities[i],[element(&s,identities[i]) isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
 +        char directory[]="/tmp/nexaui-ax-value-XXXXXX";CHECK(mkdtemp(directory));
 +        char request[512],reply[512],pid[32];snprintf(request,sizeof(request),"%s/request",directory);snprintf(reply,sizeof(reply),"%s/reply",directory);snprintf(pid,sizeof(pid),"%ld",(long)getpid());
 +        char *args[]={argv[1],pid,directory,NULL};pid_t child=0;CHECK(posix_spawn(&child,argv[1],NULL,NULL,args,environ)==0);

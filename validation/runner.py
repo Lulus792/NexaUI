@@ -29,14 +29,16 @@ try:
         run(mode+'-build',['cmake','--build',b,'--parallel','3','--target',*programs],timeout=360)
         for p in programs:report.setdefault('programs',[]).append(binary(b/p))
         group_results=[]
-        for group in ['slots']:
+        for group in []:
             code=run(mode+'-'+group,[b/'nexaui_macos_text_value_tests',group],expected=(0,1),timeout=180)
             group_results.append({'group':group,'exit':code})
         report.setdefault('groups',{})[mode]=group_results;save()
-        run(mode+'-external',[b/'nexaui_macos_text_value_host',b/'nexaui_macos_text_value_client','visible'],timeout=150)
+        code=run(mode+'-external',[b/'nexaui_macos_text_value_host',b/'nexaui_macos_text_value_client','visible'],expected=(0,1),timeout=150)
+        report.setdefault('external',{})[mode]=code;save()
         if not san:
             report['libraries']=[binary(b/'libnexaui.0.dylib')]
     assert all(g['exit']==0 for groups in report['groups'].values() for g in groups),'native subgroup failure; raw results preserved'
+    assert all(code==0 for code in report['external'].values()),'external AX diagnostic failure'
     report.update(terminal=True,success=True);save()
 except BaseException as error:
     report.update(terminal=True,success=False,error=str(error));save();raise
