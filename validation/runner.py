@@ -28,8 +28,8 @@ try:
     run('host-build',[clang,'-isysroot',sdk,'-std=c17','-O2','-DNDEBUG','-fno-objc-arc','-I'+str(source/'tests'),'-I'+str(source/'include'),'-I'+str(source/'platform/macos'),payload/'host.m','-L'+str(b),'-lnexaui','-Wl,-rpath,'+str(b),'-framework','AppKit','-o',w/'host'])
     for name in ['host','client']:
         p=w/name;report.setdefault('programs',[]).append({'name':name,'sha256':sha(p),'uuid':subprocess.check_output(['dwarfdump','--uuid',p],text=True),'linked':subprocess.check_output(['otool','-L',p],text=True)})
-    hidden=run('hidden-client',[w/'host',w/'client','hidden'],(0,78),90);report['hidden_hierarchy_reachable']=hidden==0
-    if hidden==78:run('hosted-visible-client',[w/'host',w/'client','visible'],timeout=90)
+    hidden=run('hidden-client',[w/'host',w/'client','hidden'],(0,78),150);report['hidden_hierarchy_reachable']=hidden==0
+    if hidden==78:run('hosted-visible-client',[w/'host',w/'client','visible'],timeout=150)
     report.update(terminal=True,success=True,external_acceptance=True);save()
 except BaseException as error:
     if isinstance(error,SystemExit) and error.code==0:raise

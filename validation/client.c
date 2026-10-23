@@ -46,11 +46,21 @@ static AXError set(AXUIElementRef e,CFStringRef attribute,AXUIElementRef *items,
     CFArrayRef a=CFArrayCreate(NULL,(const void**)items,(CFIndex)count,&kCFTypeArrayCallBacks);
     AXError error=AXUIElementSetAttributeValue(e,attribute,a);CFRelease(a);return error;
 }
+static int command(const char *directory,const char *name){
+    static unsigned sequence;char request[512],reply[512];
+    snprintf(request,sizeof(request),"%s/request",directory);snprintf(reply,sizeof(reply),"%s/reply",directory);
+    FILE *f=fopen(request,"w");if(!f)return 0;fprintf(f,"%u %s\n",++sequence,name);fclose(f);
+    double end=now()+5;do{unsigned serial=0;f=fopen(reply,"r");if(f){int fields=fscanf(f,"%u",&serial);fclose(f);if(fields==1 && serial==sequence)return 1;}tick();}while(now()<end);return 0;
+}
+static int retired(AXUIElementRef e){
+    CFTypeRef value=NULL;AXError error=AXUIElementCopyAttributeValue(e,kAXRoleAttribute,&value);
+    if(value)CFRelease(value);return error!=kAXErrorSuccess;
+}
 int main(int argc,char **argv){
-    if(argc!=2)return 2;
+    if(argc!=2 && argc!=3)return 2;
     int trusted=AXIsProcessTrusted();printf("AXIsProcessTrusted=%d; no prompt requested\n",trusted);fflush(stdout);
     if(!trusted)return 77;if(!strcmp(argv[1],"--trust"))return 0;
-    pid_t pid=(pid_t)strtol(argv[1],NULL,10);AXUIElementRef app=AXUIElementCreateApplication(pid);CHECK(app);
+    CHECK(argc==3);pid_t pid=(pid_t)strtol(argv[1],NULL,10);AXUIElementRef app=AXUIElementCreateApplication(pid);CHECK(app);
     CHECK(AXUIElementSetMessagingTimeout(app,1.0)==kAXErrorSuccess);
     AXUIElementRef owner=wait_find(app,100);
     if(!owner){puts("OS AX cannot discover test owner in this window visibility state");CFRelease(app);return 78;}
@@ -76,7 +86,29 @@ int main(int argc,char **argv){
     CHECK(set(table,CFSTR("AXSelectedRows"),NULL,0)==kAXErrorSuccess && wait_set(table,kAXSelectedChildrenAttribute,custom,1) && wait_set(table,CFSTR("AXSelectedRows"),NULL,0));
     double end=now()+5;while((children_events<8 || rows_events<8) && now()<end)tick();
     printf("independent observer children=%u rows=%u\n",children_events,rows_events);CHECK(children_events>=8 && rows_events>=8);
+    AXUIElementRef many[65];unsigned many_ids[65];
+    for(unsigned i=0;i<65;++i){many_ids[i]=1000+i;many[i]=wait_find(app,many_ids[i]);CHECK(many[i]);}
+    CHECK(set(owner,kAXSelectedChildrenAttribute,many,65)==kAXErrorSuccess && wait_set(owner,kAXSelectedChildrenAttribute,many_ids,65) && wait_set(owner,CFSTR("AXSelectedRows"),many_ids,65));
+    CHECK(set(owner,kAXSelectedChildrenAttribute,NULL,0)==kAXErrorSuccess && wait_set(owner,kAXSelectedChildrenAttribute,NULL,0));
+    for(unsigned i=0;i<65;++i)CFRelease(many[i]);
+    const char *changes[]={"ancestry","detach","context","demote"};
+    for(unsigned i=0;i<4;++i){
+        AXUIElementRef old_owner=wait_find(app,100),old_item=wait_find(app,1001);CHECK(old_owner && old_item);
+        CHECK(command(argv[2],changes[i]));
+        CHECK(retired(old_item));
+        if(i)CHECK(retired(old_owner));
+        AXUIElementRef current=wait_find(app,100);CHECK(current);
+        CHECK(i?!CFEqual(current,old_owner):CFEqual(current,old_owner));
+        (void)set(old_owner,kAXSelectedChildrenAttribute,&old_item,1);
+        (void)AXUIElementSetAttributeValue(old_item,kAXSelectedAttribute,kCFBooleanTrue);
+        CHECK(command(argv[2],"verify"));
+        CHECK(command(argv[2],"reset"));
+        CHECK(retired(old_item));if(i)CHECK(retired(old_owner));
+        AXUIElementRef restored=wait_find(app,100);CHECK(restored && wait_set(restored,kAXSelectedChildrenAttribute,NULL,0));
+        CFRelease(restored);CFRelease(current);CFRelease(old_owner);CFRelease(old_item);
+        printf("external stale %s rejected; original model and Single value preserved\n",changes[i]);
+    }
     CFRunLoopRemoveSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);CFRelease(observer);
     for(unsigned i=0;i<4;++i)CFRelease(items[i]);for(unsigned i=0;i<3;++i)CFRelease(table_items[i]);CFRelease(table);CFRelease(owner);CFRelease(app);
-    puts("Independent OS AX complete set, offscreen add/remove, table row subset and actual observer delivery passed");return 0;
+    puts("Independent OS AX complete65, stale ancestry/detach/context/demotion, row subset and observer delivery passed");return 0;
 }
