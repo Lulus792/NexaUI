@@ -1,7 +1,0 @@
-# Unicode Character Database 18.0.0
-
-These files are unmodified source data from the [Unicode 18.0.0 UCD](https://www.unicode.org/Public/18.0.0/ucd/). The included [license](license.txt) applies to the data. `tools/generate_unicode.py` pins each file by SHA-256 and generates `src/unicode_data.h` and `src/unicode_data.c`. It uses only Python's standard library. `GraphemeBreakTest.txt`, `WordBreakTest.txt`, `LineBreakTest.txt`, `BidiCharacterTest.txt` and `BidiTest.txt` are pinned alongside the property files and exercised by the C test suite.
-
-Run `python tools/generate_unicode.py` from any directory to regenerate the tables, or `python tools/generate_unicode.py --check` to verify the checked-in output. The generator rejects altered source files and overlapping explicit ranges. Unicode data does not need to be downloaded at build time.
-
-The tables contain Grapheme_Cluster_Break, Word_Break, Line_Break, General_Category, East_Asian_Width, Extended_Pictographic, Indic_Conjunct_Break, Default_Ignorable_Code_Point, Bidi_Class, Bidi_Paired_Bracket and Script. Script names are mapped to four-character ISO 15924 tags using `PropertyValueAliases.txt`. Line_Break and East_Asian_Width are generated from the complete extracted files, whose precise `@missing` ranges override the broad descriptions in the source property files. Bidi_Class also applies ordered `@missing` ranges. Default grapheme, word and line boundaries and single-line paragraph bidi resolution have separate public APIs.

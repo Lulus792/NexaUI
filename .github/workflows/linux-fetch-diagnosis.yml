@@ -1,0 +1,23 @@
+name: Bounded Linux package transfer diagnosis
+on:
+  push:
+    branches: [codex/ci-package-fetch-validation]
+permissions:
+  contents: read
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read package metadata and compare byte-identical prefixes
+        run: python3 validation/probe.py evidence
+      - name: Retain measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bounded-package-transfer
+          path: evidence/result.json
+          if-no-files-found: error

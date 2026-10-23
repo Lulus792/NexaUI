@@ -1,9 +1,0 @@
-# Unicode inputs are hashed byte-for-byte against the published files.
-# Preserve their exact bytes even when a checkout enables core.autocrlf.
-/data/unicode/** -text
-/tests/baselines/*.ppm -text
-*.png -text
-# Authored HLSL is hashed and compiled byte-for-byte by the DXBC verifier.
-/renderers/d3d12/shaders/*.hlsl text eol=lf
-# A unified diff's blank context lines have one required leading space.
-/tools/mesa/*.patch text eol=lf whitespace=-blank-at-eol
