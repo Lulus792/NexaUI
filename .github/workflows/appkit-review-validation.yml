@@ -1,4 +1,4 @@
-name: AppKit editable Value ancestry validation
+name: AppKit editable Value external Value validation
 on:
   push:
     branches: [codex/appkit-review-validation]
@@ -19,13 +19,13 @@ jobs:
           ref: 12ce9c5b549201773bb19f0ff6888437be6982fe
           path: source
           persist-credentials: false
-      - name: Validate core ancestry fix, native lifetime and identical-program controls
+      - name: Validate expanded native Value groups and new external AX clients and corrected slot schedule
         run: python3 harness/validation/runner.py source evidence
       - name: Preserve diagnostics and native program identity
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: appkit-text-value-ancestry-evidence
+          name: appkit-text-value-external-evidence
           if-no-files-found: error
           path: |
             evidence/result.json
@@ -36,6 +36,8 @@ jobs:
             evidence/*/nexaui_text_value_tests
             evidence/*/nexaui_text_field_tests
             evidence/*/nexaui_numeric_field_tests
+            evidence/*/nexaui_macos_text_value_host
+            evidence/*/nexaui_macos_text_value_client
             evidence/*/nexaui_macos_text_value_tests
             evidence/*/nexaui_macos_multiselection_tests
             evidence/*/nexaui_macos_accessibility_tests
@@ -44,8 +46,8 @@ jobs:
             evidence/*/CMakeFiles/nexaui_text_field_tests.dir/link.txt
             evidence/*/CMakeFiles/nexaui_numeric_field_tests.dir/link.txt
             evidence/*/CMakeFiles/nexaui.dir/link.txt
+            evidence/*/CMakeFiles/nexaui_macos_text_value_host.dir/link.txt
+            evidence/*/CMakeFiles/nexaui_macos_text_value_client.dir/link.txt
             evidence/*/CMakeFiles/nexaui_macos_text_value_tests.dir/link.txt
             evidence/*/CMakeFiles/nexaui_macos_multiselection_tests.dir/link.txt
             evidence/*/CMakeFiles/nexaui_macos_accessibility_tests.dir/link.txt
-            evidence/*/old-base/libnexaui.0.dylib
-            evidence/*/old-core/libnexaui.0.dylib

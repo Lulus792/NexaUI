@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 26db907..1f82790 100644
+index 26db907..9d8a95f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -940,6 +940,13 @@ if(NEXAUI_BUILD_TESTS)
@@ -16,6 +16,25 @@ index 26db907..1f82790 100644
          target_include_directories(nexaui_macos_multiselection_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
          target_link_libraries(nexaui_macos_multiselection_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
          target_compile_options(nexaui_macos_multiselection_tests PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
+@@ -963,6 +970,18 @@ if(NEXAUI_BUILD_TESTS)
+         endif()
+         add_test(NAME nexaui_macos_multiselection_external COMMAND nexaui_macos_multiselection_host $<TARGET_FILE:nexaui_macos_multiselection_client> ${nexaui_macos_ax_visibility})
+         set_tests_properties(nexaui_macos_multiselection_external PROPERTIES TIMEOUT 180 RESOURCE_LOCK native_display SKIP_RETURN_CODE 77)
++        add_executable(nexaui_macos_text_value_host tests/macos_text_value_host.m)
++        target_include_directories(nexaui_macos_text_value_host PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
++        target_link_libraries(nexaui_macos_text_value_host PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
++        target_compile_options(nexaui_macos_text_value_host PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
++        set_target_properties(nexaui_macos_text_value_host PROPERTIES OBJC_STANDARD 17 OBJC_STANDARD_REQUIRED YES OBJC_EXTENSIONS NO)
++        add_executable(nexaui_macos_text_value_client tests/macos_text_value_client.c)
++        target_link_libraries(nexaui_macos_text_value_client PRIVATE "-framework ApplicationServices" "-framework CoreFoundation")
++        target_compile_options(nexaui_macos_text_value_client PRIVATE -Wall -Wextra -Wpedantic)
++        set_target_properties(nexaui_macos_text_value_client PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
++        add_dependencies(nexaui_macos_text_value_host nexaui_macos_text_value_client)
++        add_test(NAME nexaui_macos_text_value_external COMMAND nexaui_macos_text_value_host $<TARGET_FILE:nexaui_macos_text_value_client> ${nexaui_macos_ax_visibility})
++        set_tests_properties(nexaui_macos_text_value_external PROPERTIES TIMEOUT 180 RESOURCE_LOCK native_display SKIP_RETURN_CODE 77)
+         add_executable(nexaui_macos_accessibility_tests tests/test_macos_accessibility.m)
+         target_include_directories(nexaui_macos_accessibility_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
+         target_link_libraries(nexaui_macos_accessibility_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
 diff --git a/platform/macos/accessibility.m b/platform/macos/accessibility.m
 index 8bacf4a..a242648 100644
 --- a/platform/macos/accessibility.m
@@ -328,6 +347,94 @@ index b0359b5..2e1ce99 100644
              r->target.identity == node->text_value.identity &&
              r->target.revision == node->text_value.revision &&
              r->target.multiline == node->text_value.multiline &&
+diff --git a/tests/macos_text_value_client.c b/tests/macos_text_value_client.c
+new file mode 100644
+index 0000000..5740faa
+--- /dev/null
++++ b/tests/macos_text_value_client.c
+@@ -0,0 +1,82 @@
++/* Independent C17 AXUIElement/AXObserver client: OS frameworks only. */
++#include <ApplicationServices/ApplicationServices.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <time.h>
++#include <unistd.h>
++#define CHECK(x) do{if(!(x)){fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x);return 1;}}while(0)
++static unsigned events;
++static double now(void){struct timespec t;clock_gettime(CLOCK_MONOTONIC,&t);return t.tv_sec+t.tv_nsec/1.e9;}
++static void tick(void){CFRunLoopRunInMode(kCFRunLoopDefaultMode,.02,true);}
++static void settle(void){double end=now()+.25;while(now()<end)tick();}
++static void observed(AXObserverRef observer,AXUIElementRef element,CFStringRef notification,void *user){
++    (void)observer;(void)element;(void)user;if(CFEqual(notification,kAXValueChangedNotification))++events;
++}
++static int identified(AXUIElementRef element,unsigned id){
++    CFTypeRef value=NULL;char bytes[40];snprintf(bytes,sizeof(bytes),"nexa-%016llx",(unsigned long long)id);
++    CFStringRef wanted=CFStringCreateWithCString(NULL,bytes,kCFStringEncodingUTF8);
++    AXError error=AXUIElementCopyAttributeValue(element,CFSTR("AXIdentifier"),&value);
++    int yes=error==kAXErrorSuccess && value && CFGetTypeID(value)==CFStringGetTypeID() && CFEqual(value,wanted);
++    if(value)CFRelease(value);CFRelease(wanted);return yes;
++}
++static AXUIElementRef find(AXUIElementRef root,unsigned id,unsigned depth,unsigned *budget){
++    if(depth>64 || !*budget)return NULL;--*budget;if(identified(root,id))return (AXUIElementRef)CFRetain(root);
++    CFTypeRef children=NULL;AXUIElementRef found=NULL;
++    if(AXUIElementCopyAttributeValue(root,kAXChildrenAttribute,&children)==kAXErrorSuccess && children && CFGetTypeID(children)==CFArrayGetTypeID())
++        for(CFIndex i=0;i<CFArrayGetCount(children) && !found;++i){CFTypeRef child=CFArrayGetValueAtIndex(children,i);if(CFGetTypeID(child)==AXUIElementGetTypeID())found=find((AXUIElementRef)child,id,depth+1,budget);}
++    if(children)CFRelease(children);return found;
++}
++static AXUIElementRef wait_find(AXUIElementRef root,unsigned id){
++    double end=now()+5;AXUIElementRef found=NULL;do{unsigned budget=8192;found=find(root,id,0,&budget);if(!found)tick();}while(!found && now()<end);return found;
++}
++static int value_equals(AXUIElementRef element,CFStringRef wanted){
++    CFTypeRef value=NULL;AXError error=AXUIElementCopyAttributeValue(element,kAXValueAttribute,&value);
++    int same=error==kAXErrorSuccess && value && CFGetTypeID(value)==CFStringGetTypeID() && CFEqual(value,wanted);if(value)CFRelease(value);return same;
++}
++static int wait_value(AXUIElementRef element,CFStringRef wanted){double end=now()+5;do{if(value_equals(element,wanted))return 1;tick();}while(now()<end);return 0;}
++static int settable(AXUIElementRef element,int expected){Boolean yes=false;return AXUIElementIsAttributeSettable(element,kAXValueAttribute,&yes)==kAXErrorSuccess && !!yes==expected;}
++static int command(const char *directory,const char *name){
++    static unsigned sequence;char request[512],reply[512];snprintf(request,sizeof(request),"%s/request",directory);snprintf(reply,sizeof(reply),"%s/reply",directory);
++    FILE *file=fopen(request,"w");if(!file)return 0;fprintf(file,"%u %s\n",++sequence,name);fclose(file);
++    double end=now()+5;do{unsigned serial=0;file=fopen(reply,"r");if(file){int fields=fscanf(file,"%u",&serial);fclose(file);if(fields==1 && serial==sequence)return 1;}tick();}while(now()<end);return 0;
++}
++static int retired(AXUIElementRef element){CFTypeRef value=NULL;AXError error=AXUIElementCopyAttributeValue(element,kAXRoleAttribute,&value);if(value)CFRelease(value);return error!=kAXErrorSuccess;}
++int main(int argc,char **argv){
++    if(argc!=2 && argc!=3)return 2;int trusted=AXIsProcessTrusted();printf("AXIsProcessTrusted=%d; no prompt requested\n",trusted);fflush(stdout);
++    if(!trusted)return 77;if(!strcmp(argv[1],"--trust"))return 0;CHECK(argc==3);
++    pid_t pid=(pid_t)strtol(argv[1],NULL,10);AXUIElementRef app=AXUIElementCreateApplication(pid);CHECK(app && AXUIElementSetMessagingTimeout(app,1.0)==kAXErrorSuccess);
++    AXUIElementRef editor=wait_find(app,1200);if(!editor){CFRelease(app);return 78;}
++    AXUIElementRef others[7];const unsigned ids[]={1201,1202,1203,1204,1205,1500,1600};
++    for(unsigned i=0;i<7;++i){others[i]=wait_find(app,ids[i]);CHECK(others[i] && settable(others[i],i==3 || i==4 || i==5));}
++    CHECK(settable(editor,1) && value_equals(others[2],CFSTR("")));
++    CFTypeRef held=NULL;CHECK(AXUIElementCopyAttributeValue(editor,kAXValueAttribute,&held)==kAXErrorSuccess && held && CFEqual(held,CFSTR("seed")));
++    AXObserverRef observer=NULL;CHECK(AXObserverCreate(pid,observed,&observer)==kAXErrorSuccess && AXObserverAddNotification(observer,editor,kAXValueChangedNotification,NULL)==kAXErrorSuccess);
++    CFRunLoopAddSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);settle();CHECK(!events);
++    CHECK(command(argv[2],"pause"));CFStringRef unicode=CFSTR("東京🌍");
++    CHECK(AXUIElementSetAttributeValue(editor,kAXValueAttribute,unicode)==kAXErrorSuccess);settle();
++    CHECK(!events && value_equals(editor,CFSTR("seed")) && command(argv[2],"resume_seed"));
++    CHECK(wait_value(editor,unicode) && command(argv[2],"verify_unicode"));settle();CHECK(events==1 && CFEqual(held,CFSTR("seed")));
++    CHECK(AXUIElementSetAttributeValue(editor,kAXValueAttribute,unicode)==kAXErrorSuccess && command(argv[2],"verify_unicode"));settle();CHECK(events==1);
++    CHECK(AXUIElementSetAttributeValue(editor,kAXValueAttribute,CFSTR(""))==kAXErrorSuccess && wait_value(editor,CFSTR("")) && command(argv[2],"verify_empty"));settle();CHECK(events==2);
++    CHECK(AXUIElementSetAttributeValue(editor,kAXValueAttribute,CFSTR("seed"))==kAXErrorSuccess && wait_value(editor,CFSTR("seed")) && command(argv[2],"verify_seed"));settle();CHECK(events==3);
++    CHECK(AXUIElementSetAttributeValue(others[3],kAXValueAttribute,CFSTR("new\nlines"))==kAXErrorSuccess && wait_value(others[3],CFSTR("new\nlines")) && command(argv[2],"verify_multiline"));
++    const CFStringRef drafts[]={CFSTR("73.5"),CFSTR("invalid"),CFSTR("1000")};const char *checks[]={"verify_numeric","verify_invalid","verify_range"};
++    for(unsigned i=0;i<3;++i)CHECK(AXUIElementSetAttributeValue(others[5],kAXValueAttribute,drafts[i])==kAXErrorSuccess && wait_value(others[5],drafts[i]) && command(argv[2],checks[i]));
++    for(unsigned i=0;i<3;++i)(void)AXUIElementSetAttributeValue(others[i],kAXValueAttribute,CFSTR("forbidden"));
++    (void)AXUIElementSetAttributeValue(others[6],kAXValueAttribute,CFSTR("forbidden"));CHECK(command(argv[2],"verify_seed"));settle();CHECK(events==3);
++    printf("independent ValueChanged events=%u; admission/equal writes produced none\n",events);
++    CFRunLoopRemoveSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);CFRelease(observer);CFRelease(held);CFRelease(editor);
++    for(unsigned i=0;i<7;++i)CFRelease(others[i]);
++    const char *transitions[]={"ancestry","detach","context","model"};
++    for(unsigned forwarded=0;forwarded<2;++forwarded)for(unsigned i=0;i<4;++i){
++        editor=wait_find(app,1200);CHECK(editor && command(argv[2],"pause"));
++        CHECK(AXUIElementSetAttributeValue(editor,kAXValueAttribute,CFSTR("stale"))==kAXErrorSuccess);
++        char name[32];snprintf(name,sizeof(name),"%c_%s",forwarded?'f':'p',transitions[i]);CHECK(command(argv[2],name) && retired(editor));
++        (void)AXUIElementSetAttributeValue(editor,kAXValueAttribute,CFSTR("retired"));CHECK(command(argv[2],"verify_seed") && command(argv[2],"reset"));
++        AXUIElementRef fresh=wait_find(app,1200);CHECK(fresh && !CFEqual(fresh,editor) && wait_value(fresh,CFSTR("seed")));
++        CHECK(AXUIElementSetAttributeValue(fresh,kAXValueAttribute,CFSTR(""))==kAXErrorSuccess && wait_value(fresh,CFSTR("")) && command(argv[2],"verify_empty"));
++        CHECK(command(argv[2],"reset"));CFRelease(fresh);CFRelease(editor);printf("external text stale forwarded=%u transition=%s preserved actual model; fresh retry passed\n",forwarded,transitions[i]);
++    }
++    CFRelease(app);puts("Independent AXValue Unicode/empty/multiline/numeric policies, protected/readonly, observer timing and eight stale transitions passed");return 0;
++}
 diff --git a/tests/macos_text_value_fixture.h b/tests/macos_text_value_fixture.h
 new file mode 100644
 index 0000000..9b8a955
@@ -445,12 +552,89 @@ index 0000000..9b8a955
 +    [bridge release];[editor release];return result;
 +}
 +#endif
+diff --git a/tests/macos_text_value_host.m b/tests/macos_text_value_host.m
+new file mode 100644
+index 0000000..5d2c07d
+--- /dev/null
++++ b/tests/macos_text_value_host.m
+@@ -0,0 +1,71 @@
++#include "macos_text_value_fixture.h"
++#include <spawn.h>
++#include <sys/wait.h>
++#include <signal.h>
++#include <unistd.h>
++extern char **environ;
++static int numeric(scene *s,const char *draft) {
++    nx_utf8_span got;double committed=0;
++    CHECK(nx_numeric_field_text(s->number,&got)==NX_OK && got.length==strlen(draft) && (!got.length || !memcmp(got.data,draft,got.length)));
++    CHECK(nx_numeric_field_value(s->number,&committed)==NX_OK && committed==42);return 0;
++}
++static int control(scene *s,const char *command,int *paused) {
++    if(!strcmp(command,"pause"))*paused=1;
++    else if(!strcmp(command,"resume_seed")){CHECK(text(s->fields[0],"seed")==0);*paused=0;}
++    else if(!strcmp(command,"verify_unicode"))CHECK(text(s->fields[0],"\xe6\x9d\xb1\xe4\xba\xac\xf0\x9f\x8c\x8d")==0);
++    else if(!strcmp(command,"verify_empty"))CHECK(text(s->fields[0],"")==0);
++    else if(!strcmp(command,"verify_seed"))CHECK(text(s->fields[0],"seed")==0);
++    else if(!strcmp(command,"verify_multiline"))CHECK(text(s->fields[4],"new\nlines")==0);
++    else if(!strcmp(command,"verify_numeric"))CHECK(numeric(s,"73.5")==0);
++    else if(!strcmp(command,"verify_invalid"))CHECK(numeric(s,"invalid")==0);
++    else if(!strcmp(command,"verify_range"))CHECK(numeric(s,"1000")==0);
++    else if(!strcmp(command,"reset")) {
++        s->kind=0;CHECK(nx_text_field_set_text(s->fields[0],"seed",4)==NX_OK);*paused=0;
++    } else {
++        int forwarded=!strncmp(command,"f_",2);const char *kind=command+2;
++        CHECK(*paused && (!strncmp(command,"p_",2) || forwarded));
++        if(forwarded){size_t n=0;CHECK(nx_window_route_events(s->window,s->ctx,&n)==NX_OK && n==1);}
++        if(!strcmp(kind,"ancestry"))s->kind=2;
++        else if(!strcmp(kind,"detach"))CHECK(nx_window_publish_semantics(s->window,NULL)==NX_OK);
++        else if(!strcmp(kind,"context")) {
++            nx_context *old=s->ctx;nx_context_desc d={0};d.allocator=(nx_allocator){&s->core,allocate,deallocate};
++            CHECK(nx_context_create(&d,&s->ctx)==NX_OK && publish(s)==0);nx_context_destroy(old);
++        } else if(!strcmp(kind,"model")) {
++            nx_text_field *old=s->fields[0];CHECK(nx_text_field_create("seed",4,131072,&s->fields[0])==NX_OK);nx_text_field_destroy(old);
++        } else return 1;
++        CHECK(publish(s)==0 && text(s->fields[0],"seed")==0);
++    }
++    CHECK(text(s->fields[1],"seed")==0 && text(s->fields[2],"seed")==0 && text(s->fields[3],"seed")==0 && text(s->fields[5],"peer")==0);
++    CHECK(nx_focus_id(s->ctx)==0 && publish(s)==0);return 0;
++}
++int main(int argc,char **argv) {
++    if(argc!=3)return 2;
++    @autoreleasepool {
++        scene s={0};CHECK(setup(&s)==0);NSWindow *native=nx_window_native_nswindow(s.window);
++        int visible=!strcmp(argv[2],"visible");if(visible)[native orderFront:nil];CHECK(!![native isVisible]==visible);
++        char directory[]="/tmp/nexaui-ax-value-XXXXXX";CHECK(mkdtemp(directory));
++        char request[512],reply[512],pid[32];snprintf(request,sizeof(request),"%s/request",directory);snprintf(reply,sizeof(reply),"%s/reply",directory);snprintf(pid,sizeof(pid),"%ld",(long)getpid());
++        char *args[]={argv[1],pid,directory,NULL};pid_t child=0;CHECK(posix_spawn(&child,argv[1],NULL,NULL,args,environ)==0);
++        printf("AX text host pid=%ld client=%ld visible=%d\n",(long)getpid(),(long)child,visible);fflush(stdout);
++        double start=[[NSProcessInfo processInfo] systemUptime];int status=0,failed=0,paused=0;unsigned last=0,commands=0;
++        for(;;) {
++            pid_t done=waitpid(child,&status,WNOHANG);if(done==child)break;if(done<0){failed=1;break;}
++            size_t routed=0;
++            if([[NSProcessInfo processInfo] systemUptime]-start>100 || nx_window_poll(s.window,0)!=NX_OK ||
++                (!paused && nx_window_route_events(s.window,s.ctx,&routed)!=NX_OK) || publish(&s)){failed=1;break;}
++            FILE *input=fopen(request,"r");unsigned serial=0;char command[32]={0};
++            if(input){int fields=fscanf(input,"%u %31s",&serial,command);fclose(input);
++                if(fields==2 && serial>last) {
++                    if(control(&s,command,&paused)){failed=1;break;}
++                    FILE *output=fopen(reply,"w");if(!output){failed=1;break;}fprintf(output,"%u\n",serial);fclose(output);last=serial;++commands;
++                }
++            }
++            CFRunLoopRunInMode(kCFRunLoopDefaultMode,.002,true);
++        }
++        if(failed){kill(child,SIGKILL);waitpid(child,&status,0);}
++        int code=!failed && WIFEXITED(status)?WEXITSTATUS(status):1;
++        if(!code)printf("Independent AX whole-value writes, observer timing and eight stale transitions acknowledged by real models; commands=%u\n",commands);
++        [native orderOut:nil];if(cleanup(&s))code=1;unlink(request);unlink(reply);rmdir(directory);
++        if(code==78){puts("External AX skipped: hidden hierarchy unavailable; visible opt-in is for isolated test desktops.");return 77;}return code;
++    }
++}
 diff --git a/tests/test_macos_text_value.m b/tests/test_macos_text_value.m
 new file mode 100644
-index 0000000..dbf4bf7
+index 0000000..0d8b037
 --- /dev/null
 +++ b/tests/test_macos_text_value.m
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,194 @@
 +#include "macos_text_value_fixture.h"
 +
 +static int operations(void) {
@@ -597,8 +781,13 @@ index 0000000..dbf4bf7
 +            for(uint64_t i=0;i<64;++i)CHECK(admit(element(&s,1200+i),@"queued"));
 +            CHECK(!admit(element(&s,1264),@"excess"));
 +        }
-+        CHECK(advance(&s,64)==0);
-+        if(nested==2)CHECK(!s.core.hook && c.fired==1 && !c.error && c.accepted==63 && c.rejected==1);
++        if(nested==2) {
++            /* A route call visits only the queue present at entry. The 63 new
++               native requests stay charged until the next route, in this frame. */
++            size_t n=0;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && n==1);
++            CHECK(!s.core.hook && c.fired==1 && !c.error && c.accepted==63 && c.rejected==1);
++            CHECK(!admit(element(&s,1264),@"still full") && advance(&s,63)==0);
++        } else CHECK(advance(&s,64)==0);
 +        for(size_t i=0;i<65;++i)CHECK(text(s.fields[i],i==64?"seed":nested?(i?"nested":"outer"):"queued")==0);
 +        CHECK(admit(element(&s,1264),@"retry") && advance(&s,1)==0 && text(s.fields[64],"retry")==0);
 +        CHECK(cleanup(&s)==0);
