@@ -1,6 +1,6 @@
 {
   "base": "12ce9c5b549201773bb19f0ff6888437be6982fe",
-  "patch_sha256": "a5001eff9ef7915007ef03d56e7f2827eeee18b7b0a6a431caa152ea4fb1b32b",
+  "patch_sha256": "a00ec1534c9ea59e9a33a2ef68b9e1e2c02089a518b030b6175161cc9071230f",
   "sources": [
     {
       "path": "CMakeLists.txt",
@@ -8,7 +8,7 @@
     },
     {
       "path": "platform/macos/accessibility.m",
-      "git_lf_sha256": "4e4bcbbddada12848d5fc9420afb490a4ba0167c429fce4bcd9b87361c14ce9b"
+      "git_lf_sha256": "aa9bab30b2999c04eb40ce2f24807498427e5d676c4a09b27dd5ab133617b1e1"
     },
     {
       "path": "src/nexaui.c",
@@ -28,7 +28,7 @@
     },
     {
       "path": "tests/test_macos_text_value.m",
-      "git_lf_sha256": "ea5f41fb855616d5105e758b7afda35452fad6c58bc0a84547c531e68b24769f"
+      "git_lf_sha256": "8ef212b4fa04dfe4e6c93f4d80de8737d9e2deb3e06c23b65c9108255fa7cc81"
     },
     {
       "path": "tests/test_text_value.c",

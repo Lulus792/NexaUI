@@ -36,7 +36,7 @@ index 26db907..9d8a95f 100644
          target_include_directories(nexaui_macos_accessibility_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
          target_link_libraries(nexaui_macos_accessibility_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
 diff --git a/platform/macos/accessibility.m b/platform/macos/accessibility.m
-index 8bacf4a..a242648 100644
+index 8bacf4a..bfec5c8 100644
 --- a/platform/macos/accessibility.m
 +++ b/platform/macos/accessibility.m
 @@ -1,6 +1,7 @@
@@ -142,7 +142,24 @@ index 8bacf4a..a242648 100644
      if (selector==@selector(accessibilityPerformPress)) return enabled && press_action(n);
      if (selector==@selector(setAccessibilityFocused:))
          return enabled && ((n->actions&NX_ACTION_FOCUS) || ((n->state&NX_AX_SELECTION) && n->focus!=NX_AX_NONE));
-@@ -439,6 +484,64 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -436,9 +481,81 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     if ([name hasPrefix:@"setAccessibility"] || [name hasPrefix:@"accessibilityPerform"]) return NO;
+     return [super isAccessibilitySelectorAllowed:selector];
+ }
++- (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute {
++    if(!pthread_main_np())return NO;
++    /* AppKit's OS attribute query can infer writability from the class setter
++       even when the per-instance modern selector gate rejects it. Keep this
++       compatibility query on exactly the same live policy for every supported
++       attribute setter; all other attributes are informational. */
++    SEL selector=NULL;
++    if([attribute isEqualToString:NSAccessibilityValueAttribute])selector=@selector(setAccessibilityValue:);
++    else if([attribute isEqualToString:NSAccessibilityFocusedAttribute])selector=@selector(setAccessibilityFocused:);
++    else if([attribute isEqualToString:NSAccessibilitySelectedAttribute])selector=@selector(setAccessibilitySelected:);
++    else if([attribute isEqualToString:NSAccessibilitySelectedChildrenAttribute])selector=@selector(setAccessibilitySelectedChildren:);
++    else if([attribute isEqualToString:NSAccessibilitySelectedRowsAttribute])selector=@selector(setAccessibilitySelectedRows:);
++    return selector && [self isAccessibilitySelectorAllowed:selector];
++}
  @end
  
  @implementation NXMacAXBridge
@@ -207,7 +224,7 @@ index 8bacf4a..a242648 100644
  - (NSArray *)selected:(NXMacAXElement *)ownerElement rowsOnly:(BOOL)rows {
      nx_ax_node *owner=[ownerElement current];
      if(!owner || ownerElement->bridge!=self)return nil;
-@@ -675,6 +778,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -675,6 +792,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
          n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
          n->first=n->last=n->next=n->owner=n->selected=n->focus=n->selected_last=n->next_selected=NX_AX_NONE;
          n->target=nx_context_selection_target(context,n->id);
@@ -215,7 +232,7 @@ index 8bacf4a..a242648 100644
          n->membership=nx_context_selection_membership(context,n->id);
          n->parent=find(s,v.parent_id);
          if (n->parent!=NX_AX_NONE) {
-@@ -697,6 +801,11 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -697,6 +815,11 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
          }
          uint32_t old=context_identity==binding ? find(snapshot,n->id) : NX_AX_NONE;
          int same=old!=NX_AX_NONE && snapshot->nodes[old].role==n->role;
@@ -227,7 +244,7 @@ index 8bacf4a..a242648 100644
          if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
              (snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || snapshot->nodes[old].owner_multiple)) {
              nx_ax_node *prior=&snapshot->nodes[old];
-@@ -726,6 +835,15 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -726,6 +849,15 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
              owner_policy_equal(snapshot,&snapshot->nodes[old],s,n))n->policy_epoch=snapshot->nodes[old].policy_epoch;
          else {n->policy_epoch=nx_native_next_identity();if(!n->policy_epoch)return NX_ERROR_LIMIT;}
      }
@@ -243,7 +260,7 @@ index 8bacf4a..a242648 100644
      int structure=!snapshot || snapshot->count!=s->count;
      uint64_t focus=0;
      for (size_t i=0;i<s->count;++i) {
-@@ -762,8 +880,10 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -762,8 +894,10 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
      lease->context=binding;lease->snapshot=s;
      for (size_t i=0;i<request_count;) {
          nx_ax_multi_request *r=requests[i].multi;
@@ -255,7 +272,7 @@ index 8bacf4a..a242648 100644
              remove_request(self,i);
          } else ++i;
      }
-@@ -786,6 +906,26 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+@@ -786,6 +920,26 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
          size_t at=0; while (at<request_count && requests[at].forwarded) ++at;
          if (at==request_count) break;
          nx_ax_request r=requests[at]; uint32_t index=find(snapshot,r.id);
@@ -634,15 +651,20 @@ index 0000000..e7a1550
 +}
 diff --git a/tests/test_macos_text_value.m b/tests/test_macos_text_value.m
 new file mode 100644
-index 0000000..0d8b037
+index 0000000..8d967ac
 --- /dev/null
 +++ b/tests/test_macos_text_value.m
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,214 @@
 +#include "macos_text_value_fixture.h"
 +
 +static int operations(void) {
 +    scene s={0};CHECK(setup(&s)==0);id editor=[element(&s,1200) retain];
 +    CHECK(editor && [editor isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
++    CHECK([editor accessibilityIsAttributeSettable:NSAccessibilityValueAttribute] &&
++          ![element(&s,1201) accessibilityIsAttributeSettable:NSAccessibilityValueAttribute] &&
++          ![element(&s,1202) accessibilityIsAttributeSettable:NSAccessibilityValueAttribute] &&
++          ![element(&s,1203) accessibilityIsAttributeSettable:NSAccessibilityValueAttribute] &&
++          ![element(&s,1600) accessibilityIsAttributeSettable:NSAccessibilityValueAttribute]);
 +    CHECK(![element(&s,1201) isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)] &&
 +          ![element(&s,1202) isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)] &&
 +          ![element(&s,1203) isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)] &&
@@ -660,6 +682,20 @@ index 0000000..0d8b037
 +    [held release];[editor release];CHECK(cleanup(&s)==0);puts("AppKit owned editable Value Unicode/empty/multiline/numeric/model isolation passed");return 0;
 +}
 +
++static int history_command(scene *s,uint32_t command) {
++    nx_event e={0};e.type=NX_EVENT_TEXT_COMMAND;e.text_command=command;
++    CHECK(nx_context_queue_event(s->ctx,&e)==NX_OK && publish(s)==0);return 0;
++}
++static int history(void) {
++    scene s={0};CHECK(setup(&s)==0 && nx_focus_set(s.ctx,1200)==NX_OK);
++    CHECK(history_command(&s,NX_TEXT_COMMAND_DOCUMENT_END)==0 && history_command(&s,NX_TEXT_COMMAND_MOVE_BACKWARD|NX_TEXT_COMMAND_EXTEND_SELECTION)==0);
++    size_t a=0,c=0;CHECK(nx_text_field_selection(s.fields[0],&a,&c)==NX_OK && a==4 && c==3);
++    [element(&s,1200) setAccessibilityValue:@"world"];CHECK(advance(&s,1)==0 && text(s.fields[0],"world")==0 && nx_focus_id(s.ctx)==1200);
++    CHECK(history_command(&s,NX_TEXT_COMMAND_UNDO)==0 && text(s.fields[0],"seed")==0 && nx_text_field_selection(s.fields[0],&a,&c)==NX_OK && a==4 && c==3);
++    [element(&s,1200) setAccessibilityValue:@"seed"];CHECK(advance(&s,1)==0 && nx_text_field_selection(s.fields[0],&a,&c)==NX_OK && a==4 && c==3);
++    CHECK(history_command(&s,NX_TEXT_COMMAND_REDO)==0 && text(s.fields[0],"world")==0 && text(s.fields[5],"peer")==0 && nx_focus_id(s.ctx)==1200);
++    CHECK(cleanup(&s)==0);puts("AppKit native Value preserves focus/peer and reversed-selection undo/redo across equal replacement passed");return 0;
++}
 +static int boundaries(void) {
 +    scene s={0};CHECK(setup(&s)==0);id editor=[element(&s,1200) retain];
 +    unichar invalid=0xd800,nul[]={'a',0,'b'};
@@ -825,11 +861,12 @@ index 0000000..0d8b037
 +int main(int argc,char **argv) {@autoreleasepool{
 +    if(argc==2) {
 +        if(!strcmp(argv[1],"operations"))return operations();if(!strcmp(argv[1],"bounds"))return boundaries();
++        if(!strcmp(argv[1],"history"))return history();
 +        if(!strcmp(argv[1],"worker"))return worker_rejection();if(!strcmp(argv[1],"strings"))return string_callouts();
 +        if(!strcmp(argv[1],"stale"))return stale();if(!strcmp(argv[1],"slots"))return slots();
 +        if(!strcmp(argv[1],"core"))return core_callouts();return 2;
 +    }
-+    CHECK(operations()==0 && boundaries()==0 && worker_rejection()==0 && string_callouts()==0 && stale()==0 && slots()==0 && core_callouts()==0);
++    CHECK(operations()==0 && history()==0 && boundaries()==0 && worker_rejection()==0 && string_callouts()==0 && stale()==0 && slots()==0 && core_callouts()==0);
 +    puts("Hidden AppKit editable Value native checks passed");return 0;
 +}}
 diff --git a/tests/test_text_value.c b/tests/test_text_value.c
