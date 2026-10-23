@@ -34,15 +34,17 @@ def run(name,cmd,timeout=180,expected=0,extra=None):
 def configure(name,root,shared,san=False):
     b=work/name
     flags=['-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer','-DCMAKE_OBJC_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer'] if san else []
-    run(name+'-configure',['cmake','-S',root,'-B',b,'-G','Unix Makefiles','-DCMAKE_BUILD_TYPE='+('Debug' if san else 'Release'),'-DBUILD_SHARED_LIBS='+shared,'-DNEXAUI_BUILD_EXAMPLES=OFF','-DCMAKE_C_COMPILER='+clang,'-DCMAKE_OBJC_COMPILER='+clang,'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',*flags])
+    run(name+'-configure',['cmake','-S',root,'-B',b,'-G','Unix Makefiles','-DCMAKE_BUILD_TYPE='+('Debug' if san else 'Release'),'-DBUILD_SHARED_LIBS='+shared,'-DNEXAUI_BUILD_EXAMPLES=OFF','-DCMAKE_C_COMPILER='+clang,'-DCMAKE_OBJC_COMPILER='+clang,'-DCMAKE_OSX_SYSROOT='+sdk,'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',*flags])
     return b
 def binary_record(path):
     return {'path':str(path),'sha256':sha(path),'uuid':subprocess.check_output(['dwarfdump','--uuid',path],text=True),'linked':subprocess.check_output(['otool','-L',path],text=True)}
 try:
     clang=subprocess.check_output(['xcrun','--find','clang'],text=True).strip()
+    sdk=subprocess.check_output(['xcrun','--sdk','macosx','--show-sdk-path'],text=True).strip();assert Path(sdk).is_dir()
+    report['sdk']=sdk
     report['compiler']=subprocess.check_output([clang,'--version'],text=True);report['system']=subprocess.check_output(['sw_vers'],text=True)
     canary=work/'canary.c';canary.write_text('#include <stdlib.h>\nint main(int argc,char **argv){volatile char *p=malloc(1);p[argc]=1;free((void*)p);return 0;}\n')
-    run('canary-build',[clang,'-fsanitize=address,undefined','-fno-omit-frame-pointer','-g',canary,'-o',work/'canary'])
+    run('canary-build',[clang,'-isysroot',sdk,'-fsanitize=address,undefined','-fno-omit-frame-pointer','-g',canary,'-o',work/'canary'])
     diagnosis=run('canary-run',[work/'canary'],30,None)
     assert 'AddressSanitizer: heap-buffer-overflow' in diagnosis
     for name,shared,san in [('shared-release','ON',False),('static-asan','OFF',True)]:
