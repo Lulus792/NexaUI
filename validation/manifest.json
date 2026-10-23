@@ -1,91 +1,19 @@
 {
-  "date": "2026-10-23T20:00:14.074284+00:00",
-  "base": "58714d140657ef1e29c4b1fa5eddd5d9839fb6f8",
-  "branch": "codex/native-multiselection",
+  "base": "12ce9c5b549201773bb19f0ff6888437be6982fe",
+  "patch_sha256": "bb748552acd68367efed77a019c99ffd61be9dc3a90584cea448b11ad02cc6d2",
   "sources": [
     {
-      "path": ".github/workflows/ci.yml",
-      "sha256": "ef63df3e0af41f6034057e3e610d198e541194744e708e992422b9378ae876dd",
-      "git_lf_sha256": "70ac48af10aea0f341450c7e71763c98fc1466d727054534248b9f215b97ceec",
-      "bytes": 15211
-    },
-    {
       "path": "CMakeLists.txt",
-      "sha256": "29f8f6bf405e6c899045235e1d2c49b24af7d6e5cb9fb37fd9c433d73f0197ab",
-      "git_lf_sha256": "afca88a9ea07a30491ce828b3f7c417ac8f1f8bc79b769f9c92b0e9305448887",
-      "bytes": 90986
+      "git_lf_sha256": "248b793d51b4f74bf6046605aaef54e8a9175601b73a3c478714cdf5d673fc6f"
     },
     {
-      "path": "platform/macos/accessibility.m",
-      "sha256": "0afb8bf709175ae77ba8b559e6ec499dd6c979e8f4a48f0c304a5f3822674b92",
-      "git_lf_sha256": "3565bdff668011b102bf8b395cccb8dc52015d399261a37c9b6655d6fe00be95",
-      "bytes": 47458
+      "path": "tests/macos_text_value_fixture.h",
+      "git_lf_sha256": "cb29b081f474e260225c39ad125fe492f3b6fe5a4502d7999141dd601ce40ffa"
     },
     {
-      "path": "platform/macos/window.m",
-      "sha256": "ba6ff97a1bf57e5b7c57a7f0235a46dd672628977ac3385053b8b933b07de555",
-      "git_lf_sha256": "3a840142c84f54e4ee3c5abef54d947c19247565f613dfa1163decd2fbf53947",
-      "bytes": 49789
-    },
-    {
-      "path": "src/nexaui.c",
-      "sha256": "15d894ca9a63526db56b677952a69858d27f121c201e8a89eb4451d510acc92d",
-      "git_lf_sha256": "15d894ca9a63526db56b677952a69858d27f121c201e8a89eb4451d510acc92d",
-      "bytes": 398977
-    },
-    {
-      "path": "src/selection_model.c",
-      "sha256": "a1ca9eda3397a037e9f0dc1338e9026787e363f648a369183991a82e11b1e5c5",
-      "git_lf_sha256": "70c64e3da2f488a6ea51db38652c2a67c4255870f41bdfa9bda12968e4c3145e",
-      "bytes": 14136
-    },
-    {
-      "path": "src/selection_model.h",
-      "sha256": "4ad6e21111ee58ef32046da1595907374d7c60d9200a0185ddb0806bb040be15",
-      "git_lf_sha256": "90e59b19dfdaac950afd925e64cf455eee587f5ca882ca4822a4d198ee1024c0",
-      "bytes": 2816
-    },
-    {
-      "path": "tests/macos_multiselection_client.c",
-      "sha256": "48e0178793218211402ee4692a6648fd00dfca49f9d548519e5e3eeb302ef2bd",
-      "git_lf_sha256": "48e0178793218211402ee4692a6648fd00dfca49f9d548519e5e3eeb302ef2bd",
-      "bytes": 9266
-    },
-    {
-      "path": "tests/macos_multiselection_fixture.h",
-      "sha256": "efe0f2888ca23a1248b0e19e08a30b6c58fc88d543a5d38e429f8a633bbf394d",
-      "git_lf_sha256": "9bc8a48ec63a3b5b665380c3c0dc64f71950358daa1206af6e00f96ccdf8c108",
-      "bytes": 8085
-    },
-    {
-      "path": "tests/macos_multiselection_host.m",
-      "sha256": "82aabf44bef87c1f9520ab24d0635f2a2f2ecc77266092cde0d9fbf8dc816522",
-      "git_lf_sha256": "40e440d48ddcd3ab5de3b6721485b5063251b9b7f270269b7dd25e64b03887a4",
-      "bytes": 3516
-    },
-    {
-      "path": "tests/test_macos_multiselection.m",
-      "sha256": "661954dce80c6ccb9393006b18763317f778f0ddf7178c15730b8358f46c2faa",
-      "git_lf_sha256": "219e9dbca2b65810b48e8c35a5a3b4f846923497f7d5a0b4d60f44df0ea46acf",
-      "bytes": 17952
-    },
-    {
-      "path": "tests/test_selection_replace.c",
-      "sha256": "2adadf83ee543de62b182ec4630b4939bfc8805cfe4897b586ebd323626b5651",
-      "git_lf_sha256": "2adadf83ee543de62b182ec4630b4939bfc8805cfe4897b586ebd323626b5651",
-      "bytes": 7726
-    },
-    {
-      "path": "tests/test_selection_set.c",
-      "sha256": "dbbc938a0e72da483686d6ab1883874f6162c20831942828e7ce9ddd019f3c76",
-      "git_lf_sha256": "dbbc938a0e72da483686d6ab1883874f6162c20831942828e7ce9ddd019f3c76",
-      "bytes": 15766
+      "path": "tests/test_macos_text_value.m",
+      "git_lf_sha256": "5e7ee327406f95867ad2b801f8dbf389ee381b3642f334ab494a3f9067b6e453"
     }
   ],
-  "patch_sha256": "6a7f4d7eca562171786f71c5f4f84fdb8a53b125445fdf2e07702824ca864cff",
-  "previous_manifest_sha256": "e352839159333d27e9bd8a62e5ea8731593c0fa80696f22ef13946c08ec16002",
-  "previous_review_sha256": "9ecb9ac5cc30e73f7980da06d4b7bb2af74acdc962d87e1798f15c2472413e12",
-  "scope": "Reviewed v2 production bytes unchanged; shared fixture extraction and permanent independent external AX C17/host plus explicit visible-fixture opt-in on isolated macOS CI",
-  "runtime_status": "Diagnostic external65/ancestry/detach/context/demotion passed. Permanent CMake integration not yet built or run; no full SDK CI or final expanded review yet.",
-  "publication": "No feature commit/push or main change"
+  "scope": "Only new native regression and CMake registration; SDK production sources unchanged"
 }
