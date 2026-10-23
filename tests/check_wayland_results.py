@@ -11,6 +11,7 @@ REQUIRED = (
     'nexaui_wayland_management',
     'nexaui_wayland_management_native',
     'nexaui_x11_management', 'nexaui_x11_management_native',
+    'nexaui_atspi_multi_wayland_private',
 )
 
 

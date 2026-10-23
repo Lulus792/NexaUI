@@ -102,7 +102,7 @@ def run(args, work):
                         if time.monotonic() >= deadline:
                             raise RuntimeError('Weston startup timed out')
                         time.sleep(.02)
-                childenv = dict(env, WAYLAND_DISPLAY='nexaui-test')
+                childenv = dict(env, WAYLAND_DISPLAY='nexaui-test', NEXAUI_TEST_PRIVATE_WAYLAND='1')
                 child = subprocess.Popen(args.command, env=childenv, start_new_session=True)
                 report.update(status='running', child_pid=child.pid,
                               startup_seconds=time.monotonic()-started)

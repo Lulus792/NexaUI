@@ -18,6 +18,8 @@ int nx_linux_ax_pump(nx_linux_ax *bridge);
 int nx_linux_ax_fd(nx_linux_ax *bridge, int *writable);
 void nx_linux_window_ax_geometry(nx_window *window, nx_linux_ax_geometry *out);
 int nx_linux_window_ax_focus(nx_window *window);
+uint64_t nx_linux_window_ax_revision(nx_window *window);
+int nx_linux_window_ax_current(nx_window *window,uint64_t revision);
 #ifdef NEXAUI_X11_TEST_HOOKS
 nx_result nx_linux_ax_test_disconnect(nx_linux_ax *bridge);
 nx_result nx_window_linux_ax_test_disconnect(nx_window *window);

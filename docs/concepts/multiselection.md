@@ -1,12 +1,14 @@
 # Multi-selection contract and implementation plan
 
-Status: implementation in progress, based on `5ede5706f71278d8279c9dd0a620a965635dd283`.
+Status: portable, Windows and AppKit implementation published through
+`12ce9c5b549201773bb19f0ff6888437be6982fe`; the AT-SPI addition is locally under validation.
 This document defines the requested complete contract; a model-only test is not
 acceptance of native multi-selection. Existing single-selection APIs keep their
 signatures, public layouts and behavior.
-The portable/context implementation and Windows COM provider now have local
-runtime evidence. Independent complete-candidate review and full exact-head CI
-are still pending. This is not a physical/assistive or AppKit/AT-SPI acceptance.
+The published portable/Windows/AppKit scope passed independent review and exact
+full CI. The new Linux adapter has separate isolated native and component evidence
+in the [AT-SPI report](../quality/linux-multiselection-report.md); its independent
+review and exact full CI remain gates. Physical/assistive acceptance stays open.
 
 ## Requirements and observable acceptance
 
@@ -203,8 +205,9 @@ read2026-10-22; they do not themselves prove this SDK's runtime behavior.
    existing native regressions under ASan/Release, all on private desktops.
    Lifecycle changes are checked both before and after forwarding; allocator
    disable/detach call-outs revoke already forwarded work. Three negative DLL
-   controls use identical final host/client programs. AppKit/AT-SPI multi-selection
-   remains separate; no native Text/RangeValue or physical/assistive completion.
+   controls use identical final host/client programs. AppKit now has permanent
+   independent external AX regressions and reviewed full-CI delivery. AT-SPI
+   remains a separate candidate; no native Text/RangeValue or physical/assistive completion.
 4. Run necessary single-selection/EditValue/consumer/ABI regressions, freeze the
    complete candidate for independent review, publish the reviewed scope and
    attribute full CI to the exact commit. Application adoption is separate.

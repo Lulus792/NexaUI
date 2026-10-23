@@ -21,6 +21,9 @@ struct nx_window {
     nx_linux_backend backend;
     const void *renderer_owner;
     nx_linux_ax *accessibility;
+    size_t operations;
+    uint64_t ax_revision;
+    int retired, ax_publishing, ax_cancelled;
     union {
         nx_x11_window *x11;
         nx_wayland_window *wayland;
@@ -40,6 +43,18 @@ static void nx_linux_deallocate(void *user, void *pointer, size_t size) {
 
 static int nx_linux_on_owner_thread(const nx_window *window) {
     return pthread_equal(pthread_self(), window->owner_thread);
+}
+
+/* A native selection admission can call the application's allocator. Retire
+   immediately, but keep the wrapper and native backend alive until the outer
+   owner-thread operation has stopped using them. */
+static void nx_linux_window_release(nx_window *window) {
+    if (--window->operations) return;
+    if (window->backend == NX_LINUX_WAYLAND)
+        nx_wayland_window_destroy(window->native.wayland);
+    else nx_x11_window_destroy(window->native.x11);
+    nx_allocator allocator=window->allocator;
+    allocator.deallocate(allocator.user,window,sizeof(*window));
 }
 
 nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
@@ -79,6 +94,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     window->allocator = allocator;
     window->owner_thread = pthread_self();
     window->backend = backend;
+    window->operations=1;
     if (wayland) window->native.wayland = wayland;
     else window->native.x11 = x11;
     *out_window = window;
@@ -253,15 +269,17 @@ nx_result nx_window_route_events(nx_window *window, nx_context *context,
                                   size_t *out_count) {
     if (out_count) *out_count=0;
     if (!window || !context || !out_count) return NX_ERROR_ARGUMENT;
-    if (!nx_linux_on_owner_thread(window) ||
+    if (!nx_linux_on_owner_thread(window) || window->retired ||
         !nx_linux_ax_matches(window->accessibility,context)) return NX_ERROR_STATE;
+    ++window->operations;
     nx_result result=window->backend == NX_LINUX_WAYLAND ?
         nx_wayland_window_route_events(window->native.wayland,context,out_count) :
         nx_x11_window_route_events(window->native.x11,context,out_count);
-    if (result!=NX_OK) return result;
     size_t native_count=0;
-    result=nx_linux_ax_route(window->accessibility,context,&native_count);
+    if (result==NX_OK && !window->retired)
+        result=nx_linux_ax_route(window->accessibility,context,&native_count);
     *out_count+=native_count;
+    nx_linux_window_release(window);
     return result;
 }
 
@@ -306,13 +324,11 @@ nx_result nx_window_clipboard_get_text(nx_window *window,
 }
 
 void nx_window_destroy(nx_window *window) {
-    if (!window || !nx_linux_on_owner_thread(window)) return;
-    nx_linux_ax_destroy(window->accessibility);
-    if (window->backend == NX_LINUX_WAYLAND)
-        nx_wayland_window_destroy(window->native.wayland);
-    else nx_x11_window_destroy(window->native.x11);
-    nx_allocator allocator = window->allocator;
-    allocator.deallocate(allocator.user, window, sizeof(*window));
+    if (!window || !nx_linux_on_owner_thread(window) || window->retired) return;
+    window->retired=1;
+    nx_linux_ax *bridge=window->accessibility;window->accessibility=NULL;
+    nx_linux_ax_destroy(bridge);
+    nx_linux_window_release(window);
 }
 
 Display *nx_window_x11_display(nx_window *window) {
@@ -449,11 +465,23 @@ nx_result nx_window_wayland_test_ime_state(nx_window *window,
 
 nx_result nx_window_publish_semantics(nx_window *window, const nx_context *context) {
     if (!window) return NX_ERROR_ARGUMENT;
-    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
     if (!context) {
-        nx_linux_ax_destroy(window->accessibility); window->accessibility=NULL; return NX_OK;
+        ++window->operations;window->ax_cancelled=1;
+        nx_linux_ax *bridge=window->accessibility;window->accessibility=NULL;
+        nx_linux_ax_destroy(bridge);nx_linux_window_release(window);return NX_OK;
     }
-    return nx_linux_ax_publish(&window->accessibility,window,window->allocator,context);
+    if (window->ax_publishing) {window->ax_cancelled=1;return NX_ERROR_STATE;}
+    if (window->ax_revision==UINT64_MAX) return NX_ERROR_LIMIT;
+    ++window->operations;++window->ax_revision;
+    window->ax_publishing=1;window->ax_cancelled=0;
+    nx_result result=nx_linux_ax_publish(&window->accessibility,window,window->allocator,context);
+    window->ax_publishing=0;
+    nx_linux_window_release(window);return result;
+}
+uint64_t nx_linux_window_ax_revision(nx_window *window) {return window->ax_revision;}
+int nx_linux_window_ax_current(nx_window *window,uint64_t revision) {
+    return !window->retired && !window->ax_cancelled && window->ax_revision==revision;
 }
 void nx_linux_window_ax_geometry(nx_window *window,nx_linux_ax_geometry *out) {
     if (window->backend==NX_LINUX_WAYLAND)

@@ -56,7 +56,7 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 - **Native window controls.** Opt-in client chrome, move/resize requests, minimize/maximize/restore, observed state and explicit backend capabilities through the public C API. Native and physical acceptance differ by platform. [Window management](docs/concepts/window-management.md)
 - **Tooling and data views.** Virtual lists, time-series decimation, named multiple-series area plots with gradient fills and explicit gaps, telemetry and profiler panels, hierarchy and property inspectors, and application-rendered viewport images. [Plotting](docs/concepts/plotting.md) · [Inspectors](docs/concepts/inspector.md) · [Viewports](docs/concepts/viewport.md)
 - **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
-- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and initial Windows UI Automation, macOS AppKit AX and Linux AT-SPI bridges for native queries, focus, activation and explicit single-selection groups. Complete role/pattern/event coverage and screenreader acceptance remain open. [Accessibility](docs/concepts/accessibility.md)
+- **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and Windows UI Automation, macOS AppKit AX and Linux AT-SPI bridges for native queries, focus, activation and explicit single/multiple-selection groups. Complete role/pattern/event coverage and screenreader acceptance remain open. [Accessibility](docs/concepts/accessibility.md)
 
 ## Platform status
 

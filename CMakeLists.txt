@@ -533,12 +533,59 @@ if(NEXAUI_BUILD_TESTS)
             set_target_properties(nexaui_linux_atspi_client PROPERTIES
                 C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
             target_compile_options(nexaui_linux_atspi_client PRIVATE -Wall -Wextra -Wpedantic)
+            add_executable(nexaui_linux_multiselection_host tests/linux_multiselection_host.c)
+            target_include_directories(nexaui_linux_multiselection_host PRIVATE platform/linux)
+            target_compile_definitions(nexaui_linux_multiselection_host PRIVATE NEXAUI_X11_TEST_HOOKS)
+            target_link_libraries(nexaui_linux_multiselection_host PRIVATE NexaUI::NexaUI)
+            add_executable(nexaui_linux_multiselection_client tests/linux_multiselection_client.c)
+            target_link_libraries(nexaui_linux_multiselection_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            foreach(target nexaui_linux_multiselection_host nexaui_linux_multiselection_client)
+                set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+            endforeach()
+            add_test(NAME nexaui_atspi_multi_wayland_private
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_multiselection_client>
+                    $<TARGET_FILE:nexaui_linux_multiselection_host>)
+            set_tests_properties(nexaui_atspi_multi_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77)
+            if(NOT BUILD_SHARED_LIBS)
+                add_executable(nexaui_linux_multiselection_budget tests/test_linux_multiselection_budget.c)
+                target_include_directories(nexaui_linux_multiselection_budget PRIVATE ${NEXAUI_DBUS_INCLUDE_DIRS})
+                target_compile_definitions(nexaui_linux_multiselection_budget PRIVATE NEXAUI_HAVE_DBUS_SDK=1 NEXAUI_X11_TEST_HOOKS)
+                target_link_libraries(nexaui_linux_multiselection_budget PRIVATE NexaUI::NexaUI)
+                target_link_options(nexaui_linux_multiselection_budget PRIVATE "-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/linux-multiselection-budget.map")
+                target_compile_options(nexaui_linux_multiselection_budget PRIVATE -Wall -Wextra -Wpedantic)
+                set_target_properties(nexaui_linux_multiselection_budget PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            endif()
             add_library(nexaui_dbus_missing_abi SHARED tests/linux_dbus_missing.c)
             set_target_properties(nexaui_dbus_missing_abi PROPERTIES
                 OUTPUT_NAME dbus-1 SOVERSION 3 VERSION 3
                 C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/missing-dbus)
             if(NEXAUI_XVFB_EXECUTABLE AND NEXAUI_XAUTH_EXECUTABLE)
+                add_test(NAME nexaui_atspi_multi_x11_private
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                        ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_multiselection_client>
+                        $<TARGET_FILE:nexaui_linux_multiselection_host>)
+                set_tests_properties(nexaui_atspi_multi_x11_private PROPERTIES TIMEOUT 70
+                    ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                if(TARGET nexaui_linux_multiselection_budget)
+                    add_test(NAME nexaui_atspi_multi_payload_budget
+                        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                            $<TARGET_FILE:nexaui_linux_multiselection_budget>)
+                    set_tests_properties(nexaui_atspi_multi_payload_budget PROPERTIES TIMEOUT 60
+                        ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                endif()
+                if(NEXAUI_ATSPI_LAUNCHER)
+                    add_test(NAME nexaui_atspi_multi_session_discovery_private
+                        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                            ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                            ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_multiselection_client>
+                            $<TARGET_FILE:nexaui_linux_multiselection_host> ${NEXAUI_ATSPI_LAUNCHER})
+                    set_tests_properties(nexaui_atspi_multi_session_discovery_private PROPERTIES TIMEOUT 70
+                        ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+                endif()
                 add_test(NAME nexaui_atspi_x11_private
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
                         ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py

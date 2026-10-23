@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "accessibility.h"
 #include "../../src/context_identity.h"
+#include "../../src/selection_model.h"
+#include <stdatomic.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -42,6 +44,9 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR
 
 #define NX_AX_NONE UINT32_MAX
 #define NX_AX_LIMIT (32u * 1024u * 1024u)
+#define NX_AX_SELECTION (NX_SEM_SELECTION_SINGLE|NX_SEM_SELECTION_MULTIPLE)
+#define NX_AX_MULTI_BYTES (8u*1024u*1024u)
+#define NX_AX_NODES 65536u
 #define NX_AX_ROOT "/org/a11y/atspi/accessible/root"
 #define NX_AX_NULL "/org/a11y/atspi/null"
 #define NX_AX_CACHE "/org/a11y/atspi/cache"
@@ -59,6 +64,10 @@ typedef struct nx_ax_node {
     uint32_t parent, raw_parent, first, last, next, owner, selected, child_count, index;
     nx_semantic_role role;
     uint32_t state, actions;
+    uint32_t selected_last, next_selected, selected_count, member_count;
+    uint64_t membership, policy_epoch;
+    nx_selection_target target;
+    int owner_multiple;
     char *name, *description, *value;
 } nx_ax_node;
 typedef struct nx_ax_snapshot {
@@ -67,11 +76,32 @@ typedef struct nx_ax_snapshot {
     uint32_t *slots;
     nx_ax_node nodes[];
 } nx_ax_snapshot;
+typedef struct nx_ax_multi_lease {
+    atomic_uint references;
+    uint64_t generation, context;
+    pthread_t thread;
+    nx_ax_snapshot *snapshot;
+    int live;
+} nx_ax_multi_lease;
+typedef struct nx_ax_multi_item { uint64_t id, incarnation, membership; } nx_ax_multi_item;
+typedef struct nx_ax_multi_request {
+    atomic_uint references;
+    nx_ax_multi_lease *lease;
+    uint64_t generation, context, owner_id, owner_incarnation, policy_epoch;
+    uint64_t id, incarnation;
+    nx_selection_target target;
+    uint32_t action;
+    int whole;
+    size_t bytes, member_count, desired_count;
+    nx_ax_multi_item members[];
+} nx_ax_multi_request;
 typedef struct nx_ax_request {
-    uint64_t id, incarnation, owner, owner_incarnation, frame;
+    uint64_t id, incarnation, owner_id, owner_incarnation, frame;
     uint32_t action;
     int forwarded;
+    nx_ax_multi_request *multi;
 } nx_ax_request;
+typedef struct nx_ax_inflight {nx_ax_request request;struct nx_ax_inflight *previous;} nx_ax_inflight;
 typedef struct nx_ax_hub nx_ax_hub;
 struct nx_linux_ax {
     nx_allocator allocator;
@@ -82,7 +112,11 @@ struct nx_linux_ax {
     uint64_t epoch, binding, frame, incarnation;
     nx_ax_snapshot *snapshot, *spare;
     nx_ax_request requests[64];
-    size_t request_count;
+    size_t request_count, request_bytes, admission_count, admission_bytes;
+    nx_ax_inflight *inflight;
+    nx_ax_multi_lease *lease;
+    size_t references;
+    int retired;
     nx_linux_ax_geometry geometry;
 };
 struct nx_ax_hub {
@@ -137,12 +171,108 @@ static uint32_t nx_ax_find(const nx_ax_snapshot *s,uint64_t id) {
     return NX_AX_NONE;
 }
 static int nx_ax_member(const nx_ax_node *n) {
-    return n && n->owner!=NX_AX_NONE && (n->actions&NX_ACTION_SELECT);
+    return n && n->owner!=NX_AX_NONE && (n->actions&NX_ACTION_SELECT) &&
+        (!n->owner_multiple || (n->membership && n->target.identity));
 }
 static int nx_ax_selected(const nx_ax_node *n) {
     return n && (n->state&(n->role==NX_ROLE_RADIO?NX_SEM_CHECKED:NX_SEM_SELECTED));
 }
-static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context) {
+static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
+static void lease_retain(nx_ax_multi_lease *l) { atomic_fetch_add_explicit(&l->references,1,memory_order_relaxed); }
+static void lease_release(nx_ax_multi_lease *l) {
+    if (l && atomic_fetch_sub_explicit(&l->references,1,memory_order_acq_rel)==1) free(l);
+}
+static void multi_retain(void *user) {
+    nx_ax_multi_request *r=user; atomic_fetch_add_explicit(&r->references,1,memory_order_relaxed);
+}
+static void multi_release(void *user) {
+    nx_ax_multi_request *r=user;
+    if (r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
+        nx_ax_multi_lease *l=r->lease;free(r);lease_release(l);
+    }
+}
+static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
+static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
+    uint64_t owner_id,nx_selection_target target) {
+    nx_ax_multi_request *r=user;nx_ax_multi_lease *l=r->lease;
+    if (!pthread_equal(pthread_self(),l->thread)) return 0;
+    if (!l->live || !l->snapshot || l->generation!=r->generation || token!=r->generation ||
+        context!=r->context || l->context!=context || owner_id!=r->owner_id ||
+        id!=(r->whole?r->owner_id:r->id) || !target_equal(target,r->target)) return 0;
+    nx_ax_snapshot *s=l->snapshot;uint32_t group=nx_ax_find(s,owner_id);
+    if (group==NX_AX_NONE) return 0;
+    nx_ax_node *owner=&s->nodes[group];
+    if (!(owner->state&NX_SEM_SELECTION_MULTIPLE) || (owner->state&NX_SEM_DISABLED) ||
+        owner->incarnation!=r->owner_incarnation || owner->policy_epoch!=r->policy_epoch ||
+        !target_equal(owner->target,r->target) || (r->whole && owner->member_count!=r->member_count)) return 0;
+    for (size_t i=0;i<r->member_count;++i) {
+        uint32_t at=nx_ax_find(s,r->members[i].id);if(at==NX_AX_NONE)return 0;
+        nx_ax_node *n=&s->nodes[at];
+        if (!nx_ax_member(n) || n->owner!=group || n->incarnation!=r->members[i].incarnation ||
+            n->membership!=r->members[i].membership || !target_equal(n->target,r->target) ||
+            (!r->whole && (n->state&NX_SEM_DISABLED))) return 0;
+    }
+    return 1;
+}
+static void remove_request(nx_linux_ax *b,size_t at) {
+    nx_ax_multi_request *r=b->requests[at].multi;
+    if (r) b->request_bytes-=r->bytes;
+    --b->request_count;memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
+    if(r)multi_release(r);
+}
+static void clear_requests(nx_linux_ax *b) { while(b->request_count)remove_request(b,b->request_count-1); }
+static int queue_space(nx_linux_ax *b,size_t bytes,size_t own) {
+    size_t slots=b->request_count+b->admission_count;
+    size_t allocated=b->request_bytes+b->admission_bytes;
+    return slots>=own && slots-own<64u && allocated<=NX_AX_MULTI_BYTES && bytes<=NX_AX_MULTI_BYTES-allocated;
+}
+
+static nx_ax_multi_request *make_multi(nx_linux_ax *b,nx_ax_node *owner,size_t members,int whole) {
+    if(members>NX_AX_NODES)return NULL;
+    size_t bytes=sizeof(nx_ax_multi_request)+members*(sizeof(nx_ax_multi_item)+(whole?sizeof(uint64_t):0u));
+    if (bytes>NX_AX_MULTI_BYTES) return NULL;
+    nx_ax_multi_request *r=calloc(1,bytes);if(!r)return NULL;
+    atomic_init(&r->references,1);r->lease=b->lease;lease_retain(r->lease);
+    r->generation=b->lease->generation;r->context=b->binding;r->owner_id=owner->id;
+    r->owner_incarnation=owner->incarnation;r->policy_epoch=owner->policy_epoch;r->target=owner->target;
+    r->bytes=bytes;r->member_count=members;r->whole=whole;return r;
+}
+static int same_ancestry(nx_ax_snapshot *a,uint32_t ai,nx_ax_snapshot *b,uint32_t bi) {
+    while(ai!=NX_AX_NONE && bi!=NX_AX_NONE) {
+        nx_ax_node *x=&a->nodes[ai],*y=&b->nodes[bi];
+        if(x->id!=y->id || x->role!=y->role || x->incarnation!=y->incarnation)return 0;
+        ai=x->raw_parent;bi=y->raw_parent;
+    }
+    return ai==bi;
+}
+static int row_role(nx_semantic_role role) {return role==NX_ROLE_ROW || role==NX_ROLE_LIST_ITEM || role==NX_ROLE_TREE_ITEM;}
+static int selected_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,nx_ax_node *y,int rows) {
+    size_t before=0,after=0;
+    for(uint32_t i=x->selected;i!=NX_AX_NONE;i=a->nodes[i].next_selected)
+        if(!rows || row_role(a->nodes[i].role))++before;
+    for(uint32_t i=y->selected;i!=NX_AX_NONE;i=b->nodes[i].next_selected) {
+        nx_ax_node *n=&b->nodes[i];if(rows && !row_role(n->role))continue;
+        ++after;uint32_t old=nx_ax_find(a,n->id);
+        if(old==NX_AX_NONE || a->nodes[old].incarnation!=n->incarnation || !nx_ax_selected(&a->nodes[old]) ||
+            a->nodes[old].owner!=(uint32_t)(x-a->nodes))return 0;
+    }
+    return before==after;
+}
+static int owner_policy_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,nx_ax_node *y) {
+    if(!target_equal(x->target,y->target) || x->member_count!=y->member_count ||
+        ((x->state^y->state)&(NX_SEM_DISABLED|NX_SEM_SELECTION_REQUIRED)))return 0;
+    uint32_t group=(uint32_t)(y-b->nodes);
+    for(size_t i=0;i<b->count;++i) {
+        nx_ax_node *n=&b->nodes[i];if(n->owner!=group || !nx_ax_member(n))continue;
+        uint32_t old=nx_ax_find(a,n->id);if(old==NX_AX_NONE)return 0;
+        nx_ax_node *p=&a->nodes[old];
+        if(!nx_ax_member(p) || p->owner!=(uint32_t)(x-a->nodes) || p->incarnation!=n->incarnation ||
+            ((p->state^n->state)&NX_SEM_DISABLED))return 0;
+    }
+    return 1;
+}
+
+static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t revision) {
     size_t count=0;
     nx_result result=nx_semantics_count(context,&count);
     if (result!=NX_OK) return result;
@@ -159,13 +289,12 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context) {
         }
     }
     nx_ax_snapshot *s=b->spare;
+    int staged=!s || s->capacity<bytes;
     if (!s || s->capacity<bytes) {
         size_t capacity=4096; while (capacity<bytes) capacity*=2u;
-        s=b->allocator.allocate(b->allocator.user,capacity);
+        s=malloc(capacity);
         if (!s) return NX_ERROR_MEMORY;
         s->capacity=capacity;
-        if (b->spare) b->allocator.deallocate(b->allocator.user,b->spare,b->spare->capacity);
-        b->spare=s;
     }
     s->count=count; s->slots_count=slots; s->first=NX_AX_NONE; s->root_count=0;
     s->slots=(uint32_t *)(s->nodes+count); memset(s->slots,0,slots*sizeof(uint32_t));
@@ -173,28 +302,42 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context) {
     uint64_t binding=nx_context_identity(context), incarnation=b->incarnation;
     for (size_t i=0;i<count;++i) {
         nx_semantic_view v;
-        if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK) return NX_ERROR_STATE;
+        if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK){if(staged)free(s);return NX_ERROR_STATE;}
         nx_ax_node *n=&s->nodes[i]; *n=(nx_ax_node){0};
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
         n->raw_parent=n->parent=nx_ax_find(s,v.parent_id);
-        n->first=n->last=n->next=n->owner=n->selected=NX_AX_NONE;
+        n->first=n->last=n->next=n->owner=n->selected=n->selected_last=n->next_selected=NX_AX_NONE;
+        n->target=nx_context_selection_target(context,n->id);
+        n->membership=nx_context_selection_membership(context,n->id);
         if (n->raw_parent!=NX_AX_NONE) {
             nx_ax_node *p=&s->nodes[n->raw_parent];
             n->state|=p->state&NX_SEM_DISABLED;
-            n->owner=(p->state&NX_SEM_SELECTION_SINGLE) ? n->raw_parent : p->owner;
+            n->owner=(p->state&NX_AX_SELECTION) ? n->raw_parent : p->owner;
+            if(n->owner!=NX_AX_NONE)n->owner_multiple=!!(s->nodes[n->owner].state&NX_SEM_SELECTION_MULTIPLE);
         }
         /* AT-SPI Selection indices address direct native children. Explicit
            selection members bypass intervening layout panels in this projection;
            raw_parent still controls disabled inheritance and scroll clipping. */
         if (nx_ax_member(n)) {
             n->parent=n->owner;
-            if (nx_ax_selected(n)) s->nodes[n->owner].selected=(uint32_t)i;
+            nx_ax_node *owner=&s->nodes[n->owner];++owner->member_count;
+            if(nx_ax_selected(n)) {
+                if(owner->selected_last!=NX_AX_NONE)s->nodes[owner->selected_last].next_selected=(uint32_t)i;
+                else owner->selected=(uint32_t)i;
+                owner->selected_last=(uint32_t)i;++owner->selected_count;
+            }
         }
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
-        if (old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
-            !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED))
-            n->incarnation=b->snapshot->nodes[old].incarnation;
-        else { if (incarnation==UINT64_MAX) return NX_ERROR_LIMIT; n->incarnation=++incarnation; }
+        int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
+            !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED);
+        if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
+            (b->snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || b->snapshot->nodes[old].owner_multiple)) {
+            nx_ax_node *prior=&b->snapshot->nodes[old];
+            same=n->target.identity==prior->target.identity && n->membership==prior->membership &&
+                n->owner_multiple==prior->owner_multiple && same_ancestry(s,n->raw_parent,b->snapshot,prior->raw_parent);
+        }
+        if(same)n->incarnation=b->snapshot->nodes[old].incarnation;
+        else {if(incarnation==UINT64_MAX){if(staged)free(s);return NX_ERROR_LIMIT;}n->incarnation=++incarnation;}
         nx_utf8_span spans[]={v.name,v.description,(v.state&NX_SEM_PROTECTED)?(nx_utf8_span){0}:v.value};
         char **destinations[]={&n->name,&n->description,&n->value};
         for (unsigned j=0;j<3;++j) {
@@ -204,6 +347,13 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context) {
         }
         size_t at=nx_ax_slot(n->id,slots); while (s->slots[at]) at=(at+1u)&(slots-1u);
         s->slots[at]=(uint32_t)i+1u;
+    }
+    for(size_t i=0;i<count;++i) {
+        nx_ax_node *n=&s->nodes[i];if(!(n->state&NX_SEM_SELECTION_MULTIPLE))continue;
+        uint32_t old=binding==b->binding?nx_ax_find(b->snapshot,n->id):NX_AX_NONE;
+        if(old!=NX_AX_NONE && b->snapshot->nodes[old].incarnation==n->incarnation &&
+            owner_policy_equal(b->snapshot,&b->snapshot->nodes[old],s,n))n->policy_epoch=b->snapshot->nodes[old].policy_epoch;
+        else {n->policy_epoch=nx_native_next_identity();if(!n->policy_epoch){if(staged)free(s);return NX_ERROR_LIMIT;}}
     }
     uint32_t last=NX_AX_NONE;
     for (size_t i=0;i<count;++i) {
@@ -215,10 +365,28 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context) {
         else *first=(uint32_t)i;
         *tail=(uint32_t)i;
     }
+    if(staged) {
+        /* Every context read and all ancestry/member copying precede the
+           application allocator. A callback can retire the window/context. */
+        nx_ax_snapshot *native=b->allocator.allocate(b->allocator.user,s->capacity);
+        if(!native){free(s);return b->retired || !nx_linux_window_ax_current(b->window,revision)?NX_ERROR_STATE:NX_ERROR_MEMORY;}
+        if(b->retired || !nx_linux_window_ax_current(b->window,revision)) {
+            size_t capacity=s->capacity;free(s);b->allocator.deallocate(b->allocator.user,native,capacity);return NX_ERROR_STATE;
+        }
+        memcpy(native,s,bytes);
+        native->slots=(uint32_t *)((char *)native+((char *)s->slots-(char *)s));
+        for(size_t i=0;i<count;++i) {
+            native->nodes[i].name=(char *)native+(s->nodes[i].name-(char *)s);
+            native->nodes[i].description=(char *)native+(s->nodes[i].description-(char *)s);
+            native->nodes[i].value=(char *)native+(s->nodes[i].value-(char *)s);
+        }
+        free(s);nx_ax_snapshot *previous=b->spare;b->spare=native;
+        if(previous)b->allocator.deallocate(b->allocator.user,previous,previous->capacity);
+        if(b->retired || !nx_linux_window_ax_current(b->window,revision))return NX_ERROR_STATE;
+    }
     return NX_OK;
 }
 
-/* A reference is application root, native window, or a semantic node. */
 typedef struct nx_ax_ref { nx_ax_hub *hub; nx_linux_ax *window; uint32_t index; } nx_ax_ref;
 static nx_ax_ref nx_ax_app(nx_ax_hub *h) { return (nx_ax_ref){h,NULL,NX_AX_NONE}; }
 static nx_ax_ref nx_ax_window(nx_linux_ax *b) { return (nx_ax_ref){b->hub,b,NX_AX_NONE}; }
@@ -401,6 +569,7 @@ static uint64_t nx_ax_states(nx_ax_ref r) {
     STATE(10,s&NX_SEM_EXPANDED); STATE(5,(actions&(NX_ACTION_EXPAND|NX_ACTION_COLLAPSE)) && !(s&NX_SEM_EXPANDED));
     STATE(11,actions&NX_ACTION_FOCUS); STATE(22,actions&NX_ACTION_SELECT);
     STATE(23,(s&NX_SEM_SELECTED) || (n && nx_ax_member(n) && nx_ax_selected(n)));
+    STATE(18,s&NX_SEM_SELECTION_MULTIPLE);
     STATE(32,s&NX_SEM_MIXED); STATE(33,s&(NX_SEM_REQUIRED|NX_SEM_SELECTION_REQUIRED)); STATE(36,s&NX_SEM_INVALID);
     STATE(41,n && (n->role==NX_ROLE_CHECKBOX || n->role==NX_ROLE_RADIO || n->role==NX_ROLE_SWITCH));
     STATE(43,s&NX_SEM_READONLY);
@@ -429,35 +598,95 @@ static int nx_ax_action_at(nx_ax_ref r,int index) {
         if ((n->actions&nx_ax_actions[i].action) && !index--) return (int)i;
     return -1;
 }
+static int nx_ax_choosing(uint32_t action) {
+    return action==NX_ACTION_SELECT || action==NX_ACTION_ADD_SELECTION || action==NX_ACTION_DESELECT;
+}
+static int nx_ax_owner_busy(nx_linux_ax *b,const nx_ax_node *owner,
+    uint64_t id,uint64_t incarnation,uint32_t action,const nx_ax_multi_request *whole) {
+    for(size_t pass=0;pass<2;++pass) {
+        nx_ax_inflight *flight=b->inflight;
+        size_t count=pass?b->admission_count:b->request_count;
+        for(size_t i=0;i<count;++i) {
+            const nx_ax_request *q;
+            if(pass){if(!flight)break;q=&flight->request;flight=flight->previous;}
+            else q=&b->requests[i];
+            if(q->owner_id!=owner->id || q->owner_incarnation!=owner->incarnation)continue;
+            if(whole) {
+                nx_ax_multi_request *prior=q->multi;
+                return prior && prior->whole && prior->desired_count==whole->desired_count &&
+                    target_equal(prior->target,whole->target) && prior->policy_epoch==whole->policy_epoch &&
+                    !memcmp(multi_ids(prior),multi_ids((nx_ax_multi_request *)whole),whole->desired_count*sizeof(uint64_t))?1:-1;
+            }
+            return q->id==id && q->incarnation==incarnation && q->action==action?1:-1;
+        }
+    }
+    return 0;
+}
 static int nx_ax_queue(nx_ax_ref r,uint32_t action) {
-    nx_ax_node *n=nx_ax_node_at(r); nx_linux_ax *b=r.window;
-    if (!n || !(n->actions&action) || (n->state&NX_SEM_DISABLED)) return 0;
-    int selection=nx_ax_member(n) && (action&(NX_ACTION_SELECT|NX_ACTION_ADD_SELECTION|NX_ACTION_DESELECT));
-    if (selection) {
-        for (size_t i=0;i<b->request_count;++i) {
-            nx_ax_request *q=&b->requests[i];
-            if (q->owner==b->snapshot->nodes[n->owner].id)
-                return q->id==n->id && q->action==action;
+    nx_ax_node *n=nx_ax_node_at(r);nx_linux_ax *b=r.window;
+    if(!n || b->retired || (n->state&NX_SEM_DISABLED))return 0;
+    int selection=nx_ax_member(n) && nx_ax_choosing(action);
+    if(!selection && !(n->actions&action))return 0;
+    nx_ax_node *owner=selection?&b->snapshot->nodes[n->owner]:NULL;
+    if(owner) {
+        if(owner->state&NX_SEM_DISABLED)return 0;
+        int busy=nx_ax_owner_busy(b,owner,n->id,n->incarnation,action,NULL);if(busy)return busy>0;
+        if(n->owner_multiple) {
+            if((action==NX_ACTION_DESELECT && !nx_ax_selected(n)) ||
+                (action==NX_ACTION_ADD_SELECTION && nx_ax_selected(n)) ||
+                (action==NX_ACTION_SELECT && nx_ax_selected(n) && owner->selected_count==1))return 1;
+            if(action==NX_ACTION_DESELECT && owner->selected_count==1 && (owner->state&NX_SEM_SELECTION_REQUIRED))return 0;
+        } else {
+            if((action==NX_ACTION_DESELECT && !nx_ax_selected(n)) || (action!=NX_ACTION_DESELECT && nx_ax_selected(n)))return 1;
+            if((action==NX_ACTION_DESELECT && (owner->state&NX_SEM_SELECTION_REQUIRED)) ||
+                (action==NX_ACTION_ADD_SELECTION && owner->selected!=NX_AX_NONE))return 0;
         }
-        if (action==NX_ACTION_ADD_SELECTION && b->snapshot->nodes[n->owner].selected!=NX_AX_NONE && !nx_ax_selected(n)) return 0;
-        if (action==NX_ACTION_DESELECT) {
-            if ((b->snapshot->nodes[n->owner].state&NX_SEM_SELECTION_REQUIRED) && nx_ax_selected(n)) return 0;
-            if (!nx_ax_selected(n)) return 1;
-        } else if (nx_ax_selected(n)) return 1;
     }
-    if (action==NX_ACTION_FOCUS) {
-        /* Wayland can focus a control only in an already keyboard-focused
-           surface. X11 performs native activation at routing time. */
+    if(action==NX_ACTION_FOCUS) {
         nx_linux_ax_geometry g=b->geometry;
-        if (!g.visible || (!g.screen_position && !g.focused)) return 0;
-        for (size_t i=0;i<b->request_count;++i) if (b->requests[i].action==action) {
-            b->requests[i]=(nx_ax_request){n->id,n->incarnation,0,0,0,action,0}; return 1;
+        if(!g.visible || (!g.screen_position && !g.focused))return 0;
+        for(size_t i=0;i<b->request_count;) {
+            if(b->requests[i].action==action)remove_request(b,i);else ++i;
         }
     }
-    if (b->request_count==64u) return 0;
-    nx_ax_request q={n->id,n->incarnation,0,0,0,action,0};
-    if (selection) { q.owner=b->snapshot->nodes[n->owner].id; q.owner_incarnation=b->snapshot->nodes[n->owner].incarnation; }
-    b->requests[b->request_count++]=q; return 1;
+    size_t bytes=owner && n->owner_multiple?sizeof(nx_ax_multi_request)+sizeof(nx_ax_multi_item):0;
+    if(!queue_space(b,bytes,0))return 0;
+    nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.action=action;
+    if(owner){q.owner_id=owner->id;q.owner_incarnation=owner->incarnation;}
+    if(bytes) {
+        if(!b->lease->live || !owner->target.identity)return 0;
+        q.multi=make_multi(b,owner,1,0);if(!q.multi)return 0;
+        q.multi->id=n->id;q.multi->incarnation=n->incarnation;q.multi->action=action;
+        q.multi->members[0]=(nx_ax_multi_item){n->id,n->incarnation,n->membership};
+        b->request_bytes+=q.multi->bytes;
+    }
+    b->requests[b->request_count++]=q;return 1;
+}
+static int nx_ax_compare_id(const void *a,const void *b) {
+    uint64_t x=*(const uint64_t *)a,y=*(const uint64_t *)b;return x<y?-1:x>y;
+}
+static int nx_ax_queue_bulk(nx_ax_ref ref,int all) {
+    nx_linux_ax *b=ref.window;nx_ax_node *owner=nx_ax_node_at(ref);
+    if(!owner || b->retired || !(owner->state&NX_SEM_SELECTION_MULTIPLE) ||
+        (owner->state&NX_SEM_DISABLED) || !owner->target.identity || !b->lease->live)return 0;
+    size_t bytes=sizeof(nx_ax_multi_request)+owner->member_count*(sizeof(nx_ax_multi_item)+sizeof(uint64_t));
+    if(!queue_space(b,bytes,0))return 0;
+    nx_ax_multi_request *m=make_multi(b,owner,owner->member_count,1);if(!m)return 0;
+    size_t members=0;int valid=1;
+    for(size_t i=0;i<b->snapshot->count;++i) {
+        nx_ax_node *n=&b->snapshot->nodes[i];if(n->owner!=ref.index || !nx_ax_member(n))continue;
+        m->members[members++]=(nx_ax_multi_item){n->id,n->incarnation,n->membership};
+        if((n->state&NX_SEM_DISABLED) && nx_ax_selected(n)!=!!all)valid=0;
+        if(all)multi_ids(m)[m->desired_count++]=n->id;
+    }
+    if(members!=m->member_count || ((owner->state&NX_SEM_SELECTION_REQUIRED) && !m->desired_count))valid=0;
+    if(valid)qsort(multi_ids(m),m->desired_count,sizeof(uint64_t),nx_ax_compare_id);
+    if(!valid || !multi_current(m,m->generation,m->context,m->owner_id,m->owner_id,m->target)){multi_release(m);return 0;}
+    int busy=nx_ax_owner_busy(b,owner,m->owner_id,m->owner_incarnation,0,m);
+    if(busy){multi_release(m);return busy>0;}
+    if(owner->selected_count==m->desired_count){multi_release(m);return 1;}
+    nx_ax_request q={0};q.id=q.owner_id=m->owner_id;q.incarnation=q.owner_incarnation=m->owner_incarnation;q.multi=m;
+    b->requests[b->request_count++]=q;b->request_bytes+=m->bytes;return 1;
 }
 static int nx_ax_put(DBusMessageIter *it,int type,const void *value) {
     return d.message_iter_append_basic(it,type,value);
@@ -489,7 +718,7 @@ static int nx_ax_interfaces(DBusMessageIter *it,nx_ax_ref r) {
     else ok=ok && nx_ax_string(&a,NX_AX_COMP);
     if (nx_ax_action_count(r)) ok=ok && nx_ax_string(&a,NX_AX_ACT);
     nx_ax_node *n=nx_ax_node_at(r);
-    if (n && (n->state&NX_SEM_SELECTION_SINGLE)) ok=ok && nx_ax_string(&a,NX_AX_SEL);
+    if (n && (n->state&NX_AX_SELECTION)) ok=ok && nx_ax_string(&a,NX_AX_SEL);
     return ok && d.message_iter_close_container(it,&a);
 }
 static int nx_ax_put_states(DBusMessageIter *it,nx_ax_ref r) {
@@ -512,7 +741,11 @@ static void nx_ax_disconnect(nx_ax_hub *h) {
     if (h->connection) { d.connection_close(h->connection); d.connection_unref(h->connection); h->connection=NULL; }
     h->desktop_bus[0]=h->desktop_path[0]=0; h->retry_after=nx_ax_now()+1000u;
     h->failed=0; /* Consume the failure once; publication must not restart the backoff every frame. */
-    for (nx_linux_ax *b=h->windows;b;b=b->next) b->request_count=0;
+    for (nx_linux_ax *b=h->windows;b;b=b->next) {
+        b->lease->snapshot=NULL;
+        if(b->lease->generation==UINT64_MAX)b->lease->live=0;else ++b->lease->generation;
+        clear_requests(b);
+    }
 }
 static int nx_ax_send(nx_ax_hub *h,DBusMessage *message,int built) {
     int ok=message && built && h->connection && !h->failed &&
@@ -567,7 +800,7 @@ static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_COMP)) return r.window!=NULL;
     if (!strcmp(interface,NX_AX_ACT)) return nx_ax_action_count(r)>0;
     nx_ax_node *n=nx_ax_node_at(r);
-    return !strcmp(interface,NX_AX_SEL) && n && (n->state&NX_SEM_SELECTION_SINGLE);
+    return !strcmp(interface,NX_AX_SEL) && n && (n->state&NX_AX_SELECTION);
 }
 static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_property *p) {
     nx_ax_node *n=nx_ax_node_at(r); const char *name=p->name;
@@ -577,7 +810,7 @@ static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_prop
     if (!strcmp(name,"Parent")) return nx_ax_put_parent(it,r);
     if (!strcmp(name,"ChildCount")) return nx_ax_int(it,nx_ax_children(r));
     if (!strcmp(name,"NActions")) return nx_ax_int(it,nx_ax_action_count(r));
-    if (!strcmp(name,"NSelectedChildren")) return nx_ax_int(it,n && n->selected!=NX_AX_NONE);
+    if (!strcmp(name,"NSelectedChildren")) return nx_ax_int(it,n?(int)n->selected_count:0);
     if (!strcmp(name,"Id")) return nx_ax_int(it,r.hub->application_id);
     if (!strcmp(name,"ToolkitName")) return nx_ax_string(it,"NexaUI");
     if (!strcmp(name,"Version") || !strcmp(name,"ToolkitVersion")) return nx_ax_string(it,"0.1.0");
@@ -695,31 +928,38 @@ static int nx_ax_action_call(nx_ax_ref r,DBusMessage *call,const char *member,DB
     if (!strcmp(member,"GetDescription") || !strcmp(member,"GetKeyBinding")) return nx_ax_string(it,"");
     return -2;
 }
+static uint32_t nx_ax_selected_at(nx_ax_snapshot *s,const nx_ax_node *owner,int index) {
+    if(index<0)return NX_AX_NONE;
+    uint32_t at=owner->selected;
+    while(at!=NX_AX_NONE && index--)at=s->nodes[at].next_selected;
+    return at;
+}
 static int nx_ax_selection_call(nx_ax_ref r,DBusMessage *call,const char *member,DBusMessageIter *it) {
     nx_ax_node *n=nx_ax_node_at(r);
-    if (!strcmp(member,"SelectAll") || !strcmp(member,"ClearSelection")) {
-        if (!d.message_has_signature(call,"")) return -1;
+    if(!strcmp(member,"SelectAll") || !strcmp(member,"ClearSelection")) {
+        if(!d.message_has_signature(call,""))return -1;
+        if(n->state&NX_SEM_SELECTION_MULTIPLE)return nx_ax_boolean(it,nx_ax_queue_bulk(r,!strcmp(member,"SelectAll")));
         int accepted=0;
-        if (!strcmp(member,"ClearSelection")) accepted=n->selected==NX_AX_NONE ? 1 :
+        if(!strcmp(member,"ClearSelection"))accepted=n->selected==NX_AX_NONE?1:
             nx_ax_queue((nx_ax_ref){r.hub,r.window,n->selected},NX_ACTION_DESELECT);
-        return nx_ax_boolean(it,accepted); /* single-selection cannot select all */
+        return nx_ax_boolean(it,accepted);
     }
     dbus_int32_t index;
-    if (!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID)) return -1;
-    if (!strcmp(member,"GetSelectedChild")) {
-        if (index!=0 || n->selected==NX_AX_NONE) return -1;
-        return nx_ax_put_ref(it,(nx_ax_ref){r.hub,r.window,n->selected});
+    if(!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID))return -1;
+    if(!strcmp(member,"GetSelectedChild")) {
+        uint32_t at=nx_ax_selected_at(r.window->snapshot,n,index);
+        if(at==NX_AX_NONE)return nx_ax_ref_pair(it,"",NX_AX_NULL);
+        return nx_ax_put_ref(it,(nx_ax_ref){r.hub,r.window,at});
     }
-    if (!strcmp(member,"DeselectSelectedChild")) {
-        return nx_ax_boolean(it,index==0 && n->selected!=NX_AX_NONE &&
-            nx_ax_queue((nx_ax_ref){r.hub,r.window,n->selected},NX_ACTION_DESELECT));
+    if(!strcmp(member,"DeselectSelectedChild")) {
+        uint32_t at=nx_ax_selected_at(r.window->snapshot,n,index);
+        return nx_ax_boolean(it,at!=NX_AX_NONE && nx_ax_queue((nx_ax_ref){r.hub,r.window,at},NX_ACTION_DESELECT));
     }
     nx_ax_ref child;
-    int member_child=nx_ax_child(r,index,&child) && nx_ax_member(nx_ax_node_at(child)) &&
-        nx_ax_node_at(child)->owner==r.index;
-    if (!strcmp(member,"IsChildSelected")) return nx_ax_boolean(it,member_child && nx_ax_selected(nx_ax_node_at(child)));
-    if (!strcmp(member,"SelectChild")) return nx_ax_boolean(it,member_child && nx_ax_queue(child,NX_ACTION_SELECT));
-    if (!strcmp(member,"DeselectChild")) return nx_ax_boolean(it,member_child && nx_ax_queue(child,NX_ACTION_DESELECT));
+    int selected_child=nx_ax_child(r,index,&child) && nx_ax_member(nx_ax_node_at(child)) && nx_ax_node_at(child)->owner==r.index;
+    if(!strcmp(member,"IsChildSelected"))return nx_ax_boolean(it,selected_child && nx_ax_selected(nx_ax_node_at(child)));
+    if(!strcmp(member,"SelectChild"))return nx_ax_boolean(it,selected_child && nx_ax_queue(child,(n->state&NX_SEM_SELECTION_MULTIPLE)?NX_ACTION_ADD_SELECTION:NX_ACTION_SELECT));
+    if(!strcmp(member,"DeselectChild"))return nx_ax_boolean(it,selected_child && nx_ax_queue(child,NX_ACTION_DESELECT));
     return -2;
 }
 static int nx_ax_extents(nx_ax_ref r,uint32_t coordinates,int32_t out[4]) {
@@ -965,7 +1205,10 @@ static int nx_ax_connect(nx_ax_hub *h) {
     /* Reconnection creates new paths; an old client reference cannot address a
        replacement window or a later instance of the same widget ID. */
     for (nx_linux_ax *b=h->windows;b;b=b->next) {
-        b->epoch=nx_native_next_identity(); b->request_count=0;
+        b->epoch=nx_native_next_identity();clear_requests(b);
+        if(b->lease->generation==UINT64_MAX){nx_ax_disconnect(h);return 0;}
+        ++b->lease->generation;b->lease->context=b->binding;
+        b->lease->snapshot=b->snapshot;b->lease->live=1;
         if (!b->epoch) { nx_ax_disconnect(h); return 0; }
     }
     DBusMessage *embed=d.message_new_method_call("org.a11y.atspi.Registry",NX_AX_ROOT,"org.a11y.atspi.Socket","Embed");
@@ -1028,34 +1271,62 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) {
     d.connection_close(b->hub->connection); return NX_OK;
 }
 #endif
-nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
-    *count=0; if (!b) return NX_OK;
-    if (!nx_linux_ax_matches(b,context)) return NX_ERROR_STATE;
-    if (b->frame!=nx_context_frame_serial(context)) return NX_OK;
-    size_t remaining=b->request_count;
-    for (size_t i=0;i<remaining;++i) {
-        size_t at=0; while (at<b->request_count && b->requests[at].forwarded) ++at;
-        if (at==b->request_count) break;
-        nx_ax_request q=b->requests[at]; uint32_t index=nx_ax_find(b->snapshot,q.id);
-        int valid=index!=NX_AX_NONE && b->snapshot->nodes[index].incarnation==q.incarnation;
-        if (valid && q.owner) {
-            nx_ax_node *n=&b->snapshot->nodes[index];
-            valid=nx_ax_member(n) && b->snapshot->nodes[n->owner].id==q.owner &&
-                b->snapshot->nodes[n->owner].incarnation==q.owner_incarnation;
-        }
-        nx_result result=valid?nx_semantics_request_action(context,q.id,q.action):NX_OK;
-        if (result==NX_ERROR_LIMIT) break;
-        if (result==NX_ERROR_STATE) {
-            size_t nodes; if (nx_semantics_count(context,&nodes)!=NX_OK) return result;
-        }
-        if (valid && result==NX_OK) {
-            ++*count;
-            if (q.action==NX_ACTION_FOCUS) nx_linux_window_ax_focus(b->window);
-        }
-        if (valid && result==NX_OK && q.owner) { b->requests[at].forwarded=1; b->requests[at].frame=b->frame; }
-        else { --b->request_count; memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests)); }
+static void nx_ax_bridge_release(nx_linux_ax *b) {
+    if(--b->references)return;
+    nx_ax_snapshot *active=b->snapshot,*spare=b->spare;b->snapshot=b->spare=NULL;
+    nx_allocator allocator=b->allocator;nx_ax_multi_lease *lease=b->lease;
+    if(active)allocator.deallocate(allocator.user,active,active->capacity);
+    if(spare)allocator.deallocate(allocator.user,spare,spare->capacity);
+    lease_release(lease);allocator.deallocate(allocator.user,b,sizeof(*b));
+}
+static int nx_ax_request_current(nx_linux_ax *b,const nx_ax_request *q) {
+    if(b->retired || !b->snapshot)return 0;
+    if(q->multi) {
+        nx_ax_multi_request *m=q->multi;
+        return multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
     }
-    return NX_OK;
+    uint32_t index=nx_ax_find(b->snapshot,q->id);
+    if(index==NX_AX_NONE || b->snapshot->nodes[index].incarnation!=q->incarnation)return 0;
+    nx_ax_node *n=&b->snapshot->nodes[index];
+    return !q->owner_id || (nx_ax_member(n) && b->snapshot->nodes[n->owner].id==q->owner_id && b->snapshot->nodes[n->owner].incarnation==q->owner_incarnation);
+}
+nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
+    *count=0;if(!b)return NX_OK;
+    if(!nx_linux_ax_matches(b,context) || b->retired)return NX_ERROR_STATE;
+    if(b->frame!=nx_context_frame_serial(context))return NX_OK;
+    ++b->references;size_t remaining=b->request_count;nx_result status=NX_OK;
+    for(size_t i=0;i<remaining && !b->retired;++i) {
+        size_t at=0;while(at<b->request_count && b->requests[at].forwarded)++at;
+        if(at==b->request_count)break;
+        nx_ax_request q=b->requests[at];
+        if(q.multi)multi_retain(q.multi);
+        nx_ax_inflight flight={q,b->inflight};b->inflight=&flight;
+        ++b->admission_count;size_t bytes=q.multi?q.multi->bytes:0;b->admission_bytes+=bytes;
+        remove_request(b,at);
+        int valid=nx_ax_request_current(b,&q);nx_result result=NX_OK;
+        if(valid && q.multi) {
+            nx_ax_multi_request *m=q.multi;nx_selection_guard guard={m,m->generation,multi_retain,multi_release,multi_current};
+            result=m->whole?nx_semantics_request_selection_set_guarded(context,m->owner_id,multi_ids(m),m->desired_count,&guard):
+                nx_semantics_request_selection_guarded(context,m->id,m->action,&guard);
+        } else if(valid)result=nx_semantics_request_action(context,q.id,q.action);
+        int live=nx_ax_request_current(b,&q);
+        if(valid && live && (result==NX_OK || result==NX_ERROR_LIMIT || result==NX_ERROR_MEMORY)) {
+            if(result==NX_OK) {
+                ++*count;
+                if(q.action==NX_ACTION_FOCUS && b->window)nx_linux_window_ax_focus(b->window);
+            }
+            if(q.owner_id || result!=NX_OK) {
+                q.forwarded=result==NX_OK;q.frame=b->frame;
+                if(q.multi)multi_retain(q.multi);
+                b->requests[b->request_count++]=q;b->request_bytes+=bytes;
+            }
+        }
+        b->inflight=flight.previous;--b->admission_count;b->admission_bytes-=bytes;
+        if(q.multi)multi_release(q.multi);
+        if(valid && live && result==NX_ERROR_MEMORY){status=result;break;}
+        if(valid && live && result==NX_ERROR_LIMIT)break;
+    }
+    nx_ax_bridge_release(b);return status;
 }
 
 static void nx_ax_update_geometry(nx_linux_ax *b) {
@@ -1151,12 +1422,7 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
             uint64_t bit=UINT64_C(1)<<states[j].bit;
             if ((before^after)&bit) nx_ax_event(r,"StateChanged",states[j].name,(after&bit)!=0,0,NULL,NULL);
         }
-        uint64_t selected_before=a->selected==NX_AX_NONE?0:old->nodes[a->selected].id;
-        uint64_t selected_after=n->selected==NX_AX_NONE?0:next->nodes[n->selected].id;
-        uint64_t selected_before_inc=a->selected==NX_AX_NONE?0:old->nodes[a->selected].incarnation;
-        uint64_t selected_after_inc=n->selected==NX_AX_NONE?0:next->nodes[n->selected].incarnation;
-        if ((n->state&NX_SEM_SELECTION_SINGLE) &&
-            (selected_before!=selected_after || selected_before_inc!=selected_after_inc))
+        if ((n->state&NX_AX_SELECTION) && !selected_equal(old,a,next,n,0))
             nx_ax_event(r,"SelectionChanged","",0,0,NULL,NULL);
     }
     b->spare=old;
@@ -1166,92 +1432,96 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         nx_ax_event(nx_ax_window(b),"PropertyChange","accessible-name",0,0,after,NULL);
     }
 }
+static void nx_ax_staging_cleanup(nx_linux_ax *b) {
+    nx_ax_snapshot *spare=b->spare;b->spare=NULL;
+    if(spare)b->allocator.deallocate(b->allocator.user,spare,spare->capacity);
+    lease_release(b->lease);b->lease=NULL;
+}
 nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocator allocator,const nx_context *context) {
-    nx_linux_ax *b=*address; int created=0;
-    if (!b) {
+    nx_linux_ax *b=*address,staging={0};int created=!b;
+    uint64_t revision=nx_linux_window_ax_revision(window);
+    uint64_t binding=nx_context_identity(context),frame=nx_context_frame_serial(context);
+    if(created) {
         const char *disabled=getenv("NO_AT_BRIDGE");
         const char *direct=getenv("AT_SPI_BUS_ADDRESS"),*session=getenv("DBUS_SESSION_BUS_ADDRESS");
-        if (disabled && !strcmp(disabled,"1")) return NX_ERROR_UNSUPPORTED;
-        if ((!nx_ax_thread_hub || !nx_ax_thread_hub->connection) &&
-            (!direct || !*direct) && (!session || !*session)) return NX_ERROR_UNSUPPORTED;
-        pthread_once(&nx_ax_loader_once,nx_ax_load);
-        if (!nx_ax_loaded) return NX_ERROR_UNSUPPORTED;
+        if(disabled && !strcmp(disabled,"1"))return NX_ERROR_UNSUPPORTED;
+        if((!nx_ax_thread_hub || !nx_ax_thread_hub->connection) &&
+            (!direct || !*direct) && (!session || !*session))return NX_ERROR_UNSUPPORTED;
+        pthread_once(&nx_ax_loader_once,nx_ax_load);if(!nx_ax_loaded)return NX_ERROR_UNSUPPORTED;
+        /* Stage all borrowed context data before the first application
+           allocation, including the bridge allocation itself. */
+        b=&staging;b->allocator=allocator;b->thread=pthread_self();b->window=window;b->references=1;
+        b->epoch=nx_native_next_identity();if(!b->epoch)return NX_ERROR_LIMIT;
+        b->lease=calloc(1,sizeof(*b->lease));if(!b->lease)return NX_ERROR_MEMORY;
+        atomic_init(&b->lease->references,1);b->lease->thread=pthread_self();b->lease->generation=1;b->lease->live=1;
+    } else {
+        if(!pthread_equal(pthread_self(),b->thread) || b->retired)return NX_ERROR_STATE;
+        if(b->lease->generation==UINT64_MAX)return NX_ERROR_LIMIT;
+        ++b->references;
     }
-    if (!b) {
-        b=allocator.allocate(allocator.user,sizeof(*b)); if (!b) return NX_ERROR_MEMORY;
-        *b=(nx_linux_ax){0}; b->allocator=allocator; b->thread=pthread_self(); b->window=window;
-        b->epoch=nx_native_next_identity();
-        if (!b->epoch) { allocator.deallocate(allocator.user,b,sizeof(*b)); return NX_ERROR_LIMIT; }
-        created=1;
-    } else if (!pthread_equal(pthread_self(),b->thread)) return NX_ERROR_STATE;
-    nx_result result=nx_ax_copy(b,context);
-    if (result!=NX_OK) {
-        if (created) {
-            if (b->spare) allocator.deallocate(allocator.user,b->spare,b->spare->capacity);
-            allocator.deallocate(allocator.user,b,sizeof(*b));
-        }
+    nx_result result=nx_ax_copy(b,context,revision);
+    if(result!=NX_OK) {
+        if(created)nx_ax_staging_cleanup(b);else nx_ax_bridge_release(b);
         return result;
     }
-    if (created) {
+    if(created) {
+        nx_linux_ax *allocated=allocator.allocate(allocator.user,sizeof(*allocated));
+        if(!allocated){nx_ax_staging_cleanup(b);return NX_ERROR_MEMORY;}
+        if(!nx_linux_window_ax_current(window,revision) || *address) {
+            allocator.deallocate(allocator.user,allocated,sizeof(*allocated));nx_ax_staging_cleanup(b);return NX_ERROR_STATE;
+        }
+        *allocated=staging;b=allocated;
         nx_ax_hub *h=nx_ax_thread_hub;
-        if (!h) {
-            h=&nx_ax_local_hub;
-            *h=(nx_ax_hub){0}; nx_ax_thread_hub=h;
-        }
-        if (!h->windows) {
+        if(!h){h=&nx_ax_local_hub;*h=(nx_ax_hub){0};nx_ax_thread_hub=h;}
+        if(!h->windows) {
             const char *name=b->spare->first==NX_AX_NONE?"NexaUI":b->spare->nodes[b->spare->first].name;
-            size_t length=strlen(name);
-            if (!length || length>=sizeof(h->application_name)) { name="NexaUI"; length=strlen(name); }
-            memcpy(h->application_name,name,length+1u);
+            size_t length=strlen(name);if(!length || length>=sizeof(h->application_name)){name="NexaUI";length=strlen(name);}
+            memcpy(h->application_name,name,length+1);
         }
-        b->hub=h; b->next=h->windows; h->windows=b; *address=b;
+        b->hub=h;b->next=h->windows;h->windows=b;*address=b;
     }
-    uint64_t binding=nx_context_identity(context);
-    if (b->binding!=binding) b->request_count=0;
-    b->binding=binding; b->frame=nx_context_frame_serial(context);
-    for (size_t i=0;i<b->spare->count;++i)
-        if (b->spare->nodes[i].incarnation>b->incarnation) b->incarnation=b->spare->nodes[i].incarnation;
-    nx_ax_update_geometry(b);
-    nx_ax_snapshot *next=b->spare;
-    if (b->hub->connection && !b->hub->failed) {
-        if (created) {
-            b->snapshot=next; b->spare=NULL;
-            nx_ax_cache_signal(nx_ax_window(b),1);
-            nx_ax_ref child=nx_ax_window(b);
+    if(b->binding!=binding){++b->lease->generation;clear_requests(b);}
+    b->binding=binding;b->frame=frame;
+    for(size_t i=0;i<b->spare->count;++i)
+        if(b->spare->nodes[i].incarnation>b->incarnation)b->incarnation=b->spare->nodes[i].incarnation;
+    nx_ax_update_geometry(b);nx_ax_snapshot *next=b->spare;
+    if(b->hub->connection && !b->hub->failed) {
+        if(created) {
+            b->snapshot=next;b->spare=NULL;
+            nx_ax_cache_signal(nx_ax_window(b),1);nx_ax_ref child=nx_ax_window(b);
             nx_ax_event(nx_ax_app(b->hub),"ChildrenChanged","add",nx_ax_index(child),0,NULL,&child);
-            b->snapshot=NULL; b->spare=next;
+            b->snapshot=NULL;b->spare=next;
         }
         nx_ax_publish_delta(b,next);
-    } else { nx_ax_snapshot *old=b->snapshot; b->snapshot=next; b->spare=old; }
-    for (size_t i=0;i<b->request_count;) {
-        if (b->requests[i].forwarded && b->requests[i].frame!=b->frame) {
-            --b->request_count; memmove(b->requests+i,b->requests+i+1,(b->request_count-i)*sizeof(*b->requests));
-        } else ++i;
+    } else {nx_ax_snapshot *old=b->snapshot;b->snapshot=next;b->spare=old;}
+    b->lease->context=binding;b->lease->snapshot=b->snapshot;b->lease->live=1;
+    for(size_t i=0;i<b->request_count;) {
+        if((b->requests[i].forwarded && b->requests[i].frame!=b->frame) || !nx_ax_request_current(b,&b->requests[i]))remove_request(b,i);
+        else ++i;
     }
-    if (b->hub->failed) nx_ax_disconnect(b->hub);
-    if (!nx_ax_connect(b->hub)) return NX_ERROR_UNSUPPORTED;
-    nx_linux_ax_pump(b);
-    return b->hub->connection?NX_OK:NX_ERROR_UNSUPPORTED;
+    if(b->hub->failed)nx_ax_disconnect(b->hub);
+    if(!nx_ax_connect(b->hub))result=NX_ERROR_UNSUPPORTED;
+    else {nx_linux_ax_pump(b);result=b->hub->connection?NX_OK:NX_ERROR_UNSUPPORTED;}
+    if(!created)nx_ax_bridge_release(b);
+    return result;
 }
 void nx_linux_ax_destroy(nx_linux_ax *b) {
-    if (!b || !pthread_equal(pthread_self(),b->thread)) return;
+    if(!b || !pthread_equal(pthread_self(),b->thread) || b->retired)return;
+    b->retired=1;b->lease->live=0;b->lease->snapshot=NULL;b->lease->context=0;
+    if(b->lease->generation!=UINT64_MAX)++b->lease->generation;
     nx_ax_hub *h=b->hub;
-    if (h->connection && b->snapshot) {
+    if(h->connection && b->snapshot) {
         nx_ax_ref child=nx_ax_window(b);
         nx_ax_event(nx_ax_app(h),"ChildrenChanged","remove",nx_ax_index(child),0,NULL,&child);
-        for (size_t i=b->snapshot->count;i>0;--i) nx_ax_cache_signal((nx_ax_ref){h,b,(uint32_t)i-1u},0);
-        nx_ax_cache_signal(child,0);
-        /* One nonblocking write pass before removing the endpoint. */
-        d.connection_read_write(h->connection,0);
+        for(size_t i=b->snapshot->count;i>0;--i)nx_ax_cache_signal((nx_ax_ref){h,b,(uint32_t)i-1},0);
+        nx_ax_cache_signal(child,0);d.connection_read_write(h->connection,0);
     }
-    nx_linux_ax **link=&h->windows; while (*link && *link!=b) link=&(*link)->next;
-    if (*link) *link=b->next;
-    if (b->snapshot) b->allocator.deallocate(b->allocator.user,b->snapshot,b->snapshot->capacity);
-    if (b->spare) b->allocator.deallocate(b->allocator.user,b->spare,b->spare->capacity);
-    nx_allocator allocator=b->allocator; allocator.deallocate(allocator.user,b,sizeof(*b));
-    if (!h->windows) {
-        nx_ax_disconnect(h); nx_ax_thread_hub=NULL;
-        *h=(nx_ax_hub){0};
-    }
+    nx_linux_ax **link=&h->windows;while(*link && *link!=b)link=&(*link)->next;
+    if(*link)*link=b->next;
+    b->hub=NULL;b->window=NULL;clear_requests(b);
+    /* Reset hub ownership before any application deallocator: a callback may
+       create a fresh window and connection in the same thread-local storage. */
+    if(!h->windows){nx_ax_disconnect(h);nx_ax_thread_hub=NULL;*h=(nx_ax_hub){0};}
+    nx_ax_bridge_release(b);
 }
 #endif
