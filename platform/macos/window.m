@@ -845,18 +845,20 @@ nx_result nx_window_publish_semantics(nx_window *window, const nx_context *conte
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_mac_owner(window)) return NX_ERROR_STATE;
     @autoreleasepool {
-        NXMacView *view=window->view;
+        NXMacView *view=[window->view retain];
+        nx_allocator allocator=window->allocator;
         if (!context) {
             NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil;
-            nx_mac_ax_destroy(bridge); return NX_OK;
+            nx_mac_ax_destroy(bridge);[view release];return NX_OK;
         }
         int created=!view->accessibility;
-        if (created) view->accessibility=nx_mac_ax_create(view,window->allocator);
-        if (!view->accessibility) return NX_ERROR_MEMORY;
-        nx_result result=nx_mac_ax_publish(view->accessibility,context);
-        if (created && result!=NX_OK) {
+        if (created) view->accessibility=nx_mac_ax_create(view,allocator);
+        if (!view->accessibility) {[view release];return NX_ERROR_MEMORY;}
+        NXMacAXBridge *published=view->accessibility;
+        nx_result result=nx_mac_ax_publish(published,context);
+        if (created && result!=NX_OK && view->accessibility==published) {
             NXMacAXBridge *bridge=view->accessibility; view->accessibility=nil; nx_mac_ax_destroy(bridge);
         }
-        return result;
+        [view release];return result;
     }
 }

@@ -126,6 +126,15 @@ typedef struct nx_selection_ancestor {
     nx_semantic_role role;
 } nx_selection_ancestor;
 
+typedef struct nx_multi_set_entry {
+    uint64_t id, parent_id, membership;
+    uint32_t role, flags;
+} nx_multi_set_entry;
+
+enum { NX_MULTI_SET_NEEDED=1u, NX_MULTI_SET_MEMBER=2u,
+       NX_MULTI_SET_WANTED=4u, NX_MULTI_SET_SELECTED=8u,
+       NX_MULTI_SET_DISABLED=16u };
+
 typedef struct nx_multi_selection_request {
     uint64_t id, parent_id, owner_id, owner_parent_id, source_frame;
     nx_selection_target target;
@@ -135,6 +144,8 @@ typedef struct nx_multi_selection_request {
     int required;
     nx_selection_guard guard;
     nx_selection_ancestor ancestors[NX_SEMANTIC_MAX_DEPTH];
+    void *payload;
+    size_t payload_bytes, set_capacity, set_entries, set_count;
 } nx_multi_selection_request;
 
 struct nx_context {
@@ -194,6 +205,9 @@ struct nx_context {
     size_t text_value_count;
     nx_multi_selection_request multi_requests[64];
     size_t multi_request_count;
+    size_t multi_payload_bytes;
+    size_t multi_admission_bytes, multi_admission_count;
+    int multi_cleanup;
     uint32_t multi_owners[64];
     size_t multi_owner_count;
     size_t semantic_initial_capacity, semantic_text_initial_capacity;
@@ -246,10 +260,19 @@ static void nx_region_buffer_clear(nx_region_buffer *buffer);
 static uint32_t nx_semantic_find_index(const nx_semantic_buffer *buffer, uint64_t id);
 
 static void nx_multi_requests_clear(nx_context *ctx) {
-    for (size_t i = 0; i < ctx->multi_request_count; ++i)
-        if (ctx->multi_requests[i].guard.release)
-            ctx->multi_requests[i].guard.release(ctx->multi_requests[i].guard.user);
+    nx_multi_selection_request old[64];
+    size_t count = ctx->multi_request_count;
+    if (count) memcpy(old, ctx->multi_requests, count * sizeof(*old));
     ctx->multi_request_count = 0;
+    ctx->multi_payload_bytes = 0;
+    int before = ctx->multi_cleanup;
+    ctx->multi_cleanup = 1;
+    for (size_t i = 0; i < count; ++i) {
+        if (old[i].payload)
+            ctx->allocator.deallocate(ctx->allocator.user, old[i].payload, old[i].payload_bytes);
+        if (old[i].guard.release) old[i].guard.release(old[i].guard.user);
+    }
+    ctx->multi_cleanup = before;
 }
 
 static void nx_text_value_dispose(nx_context *ctx, nx_text_value_request *r) {
@@ -372,6 +395,7 @@ uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->fram
 
 void nx_context_destroy(nx_context *ctx) {
     if (!ctx) return;
+    ctx->multi_cleanup = 1;
     nx_text_values_clear(ctx);
     nx_multi_requests_clear(ctx);
     if (ctx->ime_active_window)
@@ -1671,6 +1695,7 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
     if (action != NX_ACTION_SELECT && action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
         return NX_ERROR_UNSUPPORTED;
     if (ctx->state != 2u) return NX_ERROR_STATE;
+    if (ctx->multi_cleanup) return NX_ERROR_LIMIT;
     uint32_t at = nx_semantic_find_index(&ctx->semantics, id);
     if (at == UINT32_MAX) return NX_ERROR_STATE;
     const nx_semantic_record *n = &ctx->semantics.nodes[at];
@@ -1678,7 +1703,10 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
         !nx_multi_enabled(ctx, n)) return NX_ERROR_STATE;
     const nx_semantic_record *owner = &ctx->semantics.nodes[n->selection_owner];
     if (!(owner->state & NX_SEM_SELECTION_MULTIPLE)) return NX_ERROR_STATE;
-    if (ctx->multi_request_count == 64u) return NX_ERROR_LIMIT;
+    for (size_t i = 0; i < ctx->multi_request_count; ++i)
+        if (ctx->multi_requests[i].owner_id == owner->id && ctx->multi_requests[i].payload)
+            return NX_ERROR_LIMIT;
+    if (ctx->multi_request_count + ctx->multi_admission_count >= 64u) return NX_ERROR_LIMIT;
     nx_multi_selection_request r = {0};
     r.id = id; r.parent_id = n->parent_id; r.owner_id = owner->id;
     r.owner_parent_id = owner->parent_id; r.source_frame = ctx->frame_serial;
@@ -1691,6 +1719,157 @@ nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
     if (guard) { r.guard = *guard; r.guard.retain(r.guard.user); }
     ctx->multi_requests[ctx->multi_request_count++] = r;
     return NX_OK;
+}
+
+static int nx_multi_set_queue_available(const nx_context *ctx, uint64_t owner, size_t bytes, size_t own_reservation) {
+    size_t reservations = ctx->multi_request_count + ctx->multi_admission_count;
+    size_t allocated = ctx->multi_payload_bytes + ctx->multi_admission_bytes;
+    if (ctx->multi_cleanup || reservations < own_reservation || reservations - own_reservation >= 64u ||
+        allocated > NX_SELECTION_SET_MAX_QUEUED_BYTES ||
+        bytes > NX_SELECTION_SET_MAX_QUEUED_BYTES - allocated) return 0;
+    for (size_t i = 0; i < ctx->multi_request_count; ++i)
+        if (ctx->multi_requests[i].owner_id == owner) return 0;
+    return 1;
+}
+
+static void nx_multi_set_mark(const nx_context *ctx, unsigned char *marks, uint32_t at) {
+    while (at != UINT32_MAX && !(marks[at] & NX_MULTI_SET_NEEDED)) {
+        marks[at] |= NX_MULTI_SET_NEEDED;
+        at = nx_semantic_find_index(&ctx->semantics, ctx->semantics.nodes[at].parent_id);
+    }
+}
+
+static const uint64_t *nx_multi_set_ids(const nx_multi_selection_request *r) {
+    return (const uint64_t *)((const nx_multi_set_entry *)r->payload + r->set_capacity);
+}
+
+nx_result nx_semantics_request_selection_set_guarded(nx_context *ctx,
+    uint64_t owner_id, const uint64_t *ids, size_t count, const nx_selection_guard *guard) {
+    if (!ctx || !owner_id || (!ids && count) ||
+        (guard && (!guard->retain || !guard->release || !guard->current))) return NX_ERROR_ARGUMENT;
+    if (ctx->state != 2u) return NX_ERROR_STATE;
+    if (count > NX_SELECTION_MAX_ITEMS) return NX_ERROR_LIMIT;
+    uint32_t at = nx_semantic_find_index(&ctx->semantics, owner_id);
+    if (at == UINT32_MAX) return NX_ERROR_STATE;
+    const nx_semantic_record *owner = &ctx->semantics.nodes[at];
+    if (!(owner->state & NX_SEM_SELECTION_MULTIPLE) || !nx_multi_enabled(ctx, owner)) return NX_ERROR_STATE;
+    nx_multi_selection_request r = {0};
+    r.id = r.owner_id = owner_id; r.parent_id = r.owner_parent_id = owner->parent_id;
+    r.target = owner->selection_target; r.source_frame = ctx->frame_serial;
+    r.required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
+    if (r.required && !count) return NX_ERROR_STATE;
+    r.set_capacity = ctx->semantics.count; r.set_count = count;
+    size_t ids_bytes = count * sizeof(*ids);
+    if (r.set_capacity > (NX_SELECTION_SET_MAX_QUEUED_BYTES - ids_bytes) /
+        (sizeof(nx_multi_set_entry) + 1u)) return NX_ERROR_LIMIT;
+    r.payload_bytes = r.set_capacity * (sizeof(nx_multi_set_entry) + 1u) + ids_bytes;
+    if (!nx_multi_set_queue_available(ctx, owner_id, r.payload_bytes, 0)) return NX_ERROR_LIMIT;
+    /* Retain scalar native lifetime and reserve bounded admission capacity
+       before the allocator can detach/reenter. Never reserve a queue index or
+       retain a semantic pointer across the application call. Frame cleanup does
+       not erase an in-flight reservation; post-call validation can reject it. */
+    if (guard) { r.guard = *guard; r.guard.retain(r.guard.user); }
+    ++ctx->multi_admission_count;
+    ctx->multi_admission_bytes += r.payload_bytes;
+    r.payload = ctx->allocator.allocate(ctx->allocator.user, r.payload_bytes);
+    nx_result result = r.payload ? NX_OK : NX_ERROR_MEMORY;
+    if (result == NX_OK && (ctx->state != 2u || ctx->frame_serial != r.source_frame ||
+        ctx->semantics.count != r.set_capacity)) result = NX_ERROR_STATE;
+    if (result == NX_OK && !nx_multi_set_queue_available(ctx, owner_id, 0, 1)) result = NX_ERROR_LIMIT;
+    at = result == NX_OK ? nx_semantic_find_index(&ctx->semantics, owner_id) : UINT32_MAX;
+    if (result == NX_OK) {
+        owner = at == UINT32_MAX ? NULL : &ctx->semantics.nodes[at];
+        if (!owner || owner->parent_id != r.owner_parent_id ||
+            !(owner->state & NX_SEM_SELECTION_MULTIPLE) || !nx_multi_enabled(ctx, owner) ||
+            !nx_selection_target_equal(owner->selection_target, r.target) ||
+            ((owner->state & NX_SEM_SELECTION_REQUIRED) != 0) != r.required) result = NX_ERROR_STATE;
+    }
+    if (result == NX_OK) {
+        nx_multi_set_entry *entries = r.payload;
+        uint64_t *copy = (uint64_t *)(entries + r.set_capacity);
+        unsigned char *marks = (unsigned char *)(copy + count);
+        memset(marks, 0, r.set_capacity);
+        nx_multi_set_mark(ctx, marks, at);
+        for (size_t i = 0; i < r.set_capacity; ++i) {
+            const nx_semantic_record *n = &ctx->semantics.nodes[i];
+            if (!n->selection_bound || n->selection_owner != at || !n->selection_membership ||
+                !(n->actions & NX_ACTION_SELECT)) continue;
+            nx_multi_set_mark(ctx, marks, (uint32_t)i);
+            marks[i] |= NX_MULTI_SET_MEMBER;
+        }
+        for (size_t i = 0; i < count; ++i) {
+            if (!ids[i]) { result = NX_ERROR_ARGUMENT; break; }
+            uint32_t item = nx_semantic_find_index(&ctx->semantics, ids[i]);
+            if (item == UINT32_MAX || !(marks[item] & NX_MULTI_SET_MEMBER)) { result = NX_ERROR_STATE; break; }
+            if (marks[item] & NX_MULTI_SET_WANTED) { result = NX_ERROR_ARGUMENT; break; }
+            marks[item] |= NX_MULTI_SET_WANTED;
+            copy[i] = ids[i];
+        }
+        for (size_t i = 0; result == NX_OK && i < r.set_capacity; ++i) {
+            if (!(marks[i] & NX_MULTI_SET_NEEDED)) continue;
+            const nx_semantic_record *n = &ctx->semantics.nodes[i];
+            uint32_t flags = marks[i] & NX_MULTI_SET_MEMBER;
+            if (flags) {
+                int selected = (n->state & NX_SEM_SELECTED) != 0;
+                if (!nx_multi_enabled(ctx, n)) {
+                    flags |= NX_MULTI_SET_DISABLED;
+                    if (selected != ((marks[i] & NX_MULTI_SET_WANTED) != 0)) { result = NX_ERROR_STATE; break; }
+                }
+                if (selected) flags |= NX_MULTI_SET_SELECTED;
+            }
+            entries[r.set_entries++] = (nx_multi_set_entry){n->id, n->parent_id,
+                flags & NX_MULTI_SET_MEMBER ? n->selection_membership : 0, (uint32_t)n->role, flags};
+        }
+    }
+    if (result == NX_OK && r.guard.current) {
+        uint64_t identity = 0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+        identity = ctx->native_identity;
+#endif
+        if (!r.guard.current(r.guard.user, r.guard.token, identity, owner_id, owner_id, r.target))
+            result = NX_ERROR_STATE;
+    }
+    if (result != NX_OK) {
+        if (r.payload) ctx->allocator.deallocate(ctx->allocator.user, r.payload, r.payload_bytes);
+        --ctx->multi_admission_count;
+        ctx->multi_admission_bytes -= r.payload_bytes;
+        if (r.guard.release) r.guard.release(r.guard.user);
+        return result;
+    }
+    --ctx->multi_admission_count;
+    ctx->multi_admission_bytes -= r.payload_bytes;
+    ctx->multi_payload_bytes += r.payload_bytes;
+    ctx->multi_requests[ctx->multi_request_count++] = r;
+    return NX_OK;
+}
+
+static int nx_multi_set_live(const nx_context *ctx, const nx_multi_selection_request *r,
+    uint32_t group, nx_selection_model *model, nx_selection_target target) {
+    const nx_multi_set_entry *entries = r->payload;
+    for (size_t i = 0; i < r->set_entries; ++i) {
+        const nx_multi_set_entry *e = &entries[i];
+        uint32_t at = nx_semantic_find_index(&ctx->semantics, e->id);
+        if (at == UINT32_MAX) return 0;
+        const nx_semantic_record *n = &ctx->semantics.nodes[at];
+        if (n->parent_id != e->parent_id || (uint32_t)n->role != e->role) return 0;
+        if (e->flags & NX_MULTI_SET_MEMBER) {
+            int chosen = 0, disabled = 0;
+            if (!n->selection_bound || n->selection_owner != group || !(n->actions & NX_ACTION_SELECT) ||
+                e->membership != nx_selection_model_membership(model, n->id) ||
+                nx_selection_model_item(model, n->id, 0, &chosen, &disabled) != NX_OK ||
+                chosen != ((e->flags & NX_MULTI_SET_SELECTED) != 0) ||
+                (!nx_multi_enabled(ctx, n) || disabled) != ((e->flags & NX_MULTI_SET_DISABLED) != 0)) return 0;
+        }
+    }
+    if (!nx_multi_enabled(ctx, &ctx->semantics.nodes[group])) return 0;
+    if (r->guard.current) {
+        uint64_t identity = 0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+        identity = ctx->native_identity;
+#endif
+        if (!r->guard.current(r->guard.user, r->guard.token, identity, r->owner_id, r->owner_id, target)) return 0;
+    }
+    return 1;
 }
 
 /* No allocations or application call-outs. All models are prepared and their
@@ -1706,11 +1885,16 @@ static nx_result nx_multi_finish(nx_context *ctx) {
         nx_selection_target target = nx_selection_model_target(model);
         int required = (owner->state & NX_SEM_SELECTION_REQUIRED) != 0;
         nx_selection_change changes[64]; size_t count = 0;
+        const nx_multi_selection_request *set = NULL;
         for (size_t i = 0; i < ctx->multi_request_count; ++i) {
             const nx_multi_selection_request *r = &ctx->multi_requests[i];
             if (r->owner_id != owner->id || r->owner_parent_id != owner->parent_id ||
                 r->required != required || r->source_frame == UINT64_MAX ||
                 r->source_frame + 1u != ctx->frame_serial || !nx_selection_target_equal(r->target, target)) continue;
+            if (r->payload) {
+                if (nx_multi_set_live(ctx, r, index, model, target)) set = r;
+                continue;
+            }
             uint32_t at = nx_semantic_find_index(&ctx->semantics, r->id);
             if (at == UINT32_MAX) continue;
             const nx_semantic_record *n = &ctx->semantics.nodes[at];
@@ -1730,7 +1914,9 @@ static nx_result nx_multi_finish(nx_context *ctx) {
             changes[count++] = (nx_selection_change){r->id, r->action};
         }
         size_t selected_count = 0; int changed = 0;
-        result = nx_selection_model_prepare(model, changes, count, required, &changed, &selected_count);
+        result = set ? nx_selection_model_prepare_set(model, nx_multi_set_ids(set), set->set_count,
+            required, &changed, &selected_count) :
+            nx_selection_model_prepare(model, changes, count, required, &changed, &selected_count);
         /* An admitted batch may become invalid, e.g. removing the last required
            member. Drop that batch, preserve the current application selection. */
         if (result == NX_ERROR_STATE)

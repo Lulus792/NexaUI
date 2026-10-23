@@ -251,6 +251,36 @@ nx_result nx_selection_model_prepare(nx_selection_model *model,
     return NX_OK;
 }
 
+nx_result nx_selection_model_prepare_set(nx_selection_model *model,
+    const uint64_t *ids, size_t count, int required, int *changed,
+    size_t *out_count) {
+    if (out_count) *out_count = 0;
+    if (!changed) return NX_ERROR_ARGUMENT;
+    *changed = 0;
+    if (!model || (!ids && count) || (required != 0 && required != 1)) return NX_ERROR_ARGUMENT;
+    if (model->busy) return NX_ERROR_STATE;
+    nx_selection_storage *s = &model->storage;
+    if (count > s->count) return NX_ERROR_LIMIT;
+    if (s->count) memset(s->scratch, 0, s->count);
+    for (size_t i = 0; i < count; ++i) {
+        if (!ids[i]) return NX_ERROR_ARGUMENT;
+        size_t at = nx_selection_find(s, ids[i]);
+        if (at == SIZE_MAX) return NX_ERROR_STATE;
+        if (s->scratch[at]) return NX_ERROR_ARGUMENT;
+        s->scratch[at] = 1;
+    }
+    if (required && !count) return NX_ERROR_STATE;
+    for (size_t i = 0; i < s->count; ++i)
+        if ((s->items[i].flags & NX_SELECTION_ITEM_DISABLED) &&
+            s->scratch[i] != s->selected[i]) return NX_ERROR_STATE;
+    int different = s->count && memcmp(s->selected, s->scratch, s->count) != 0;
+    if (out_count) *out_count = count;
+    if (!different) return NX_OK;
+    if (model->target.revision == UINT64_MAX) return NX_ERROR_LIMIT;
+    *changed = 1;
+    return NX_OK;
+}
+
 void nx_selection_model_commit(nx_selection_model *model, int changed) {
     if (!changed) return;
     nx_selection_storage *s = &model->storage;

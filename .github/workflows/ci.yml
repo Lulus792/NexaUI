@@ -50,7 +50,7 @@ jobs:
       - name: Verify fuzz campaign runner
         run: python tests/test_fuzz_runner.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DNEXAUI_BUILD_BENCHMARKS=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DNEXAUI_BUILD_BENCHMARKS=ON ${{ runner.os == 'macOS' && '-DNEXAUI_TEST_MACOS_AX_VISIBLE=ON' || '' }}
       - name: Build
         run: cmake --build build --config Debug --parallel 4
       - name: Verify private Wayland fixture guards
