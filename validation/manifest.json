@@ -34,5 +34,54 @@
       "path": "tests/test_text_value.c",
       "git_lf_sha256": "9f50f7dab2fa3592b7a3a6824d2dc3a250ae2bf4bacdcf4a7327b6a055e6cf14"
     }
+  ],
+  "v7_source_manifest_sha256": "b4c392198252b9ea2d89e1b8fc4cd17ba832edfae096e6668f2273f9c61b0861",
+  "binaries": [
+    {
+      "kind": "program",
+      "name": "nexaui_macos_text_value_tests",
+      "payload": "nexaui_macos_text_value_tests",
+      "sha256": "30dea09ba2474786bf1becd7982bbd5de33d6663fda75bbaddf63a6f4a2916b6"
+    },
+    {
+      "kind": "program",
+      "name": "nexaui_macos_text_value_host",
+      "payload": "nexaui_macos_text_value_host",
+      "sha256": "afa7da4ee9cbffa68ed3a9f204e35be23f228c33e37e4d5611f5896e4a97ad8e"
+    },
+    {
+      "kind": "program",
+      "name": "nexaui_macos_text_value_client",
+      "payload": "nexaui_macos_text_value_client",
+      "sha256": "85baea20880b9af7e49dd5dd21fea2041eea3fdcc25dc401f416b93743d47a76"
+    },
+    {
+      "kind": "library",
+      "name": "fixed",
+      "payload": "fixed.dylib",
+      "sha256": "29e24f547a1f16215473ff2f5eae48a377b4cd0854f6e303e961b9da479f7679",
+      "original_zip_sha256": "a773de813e1f15da5c2cee2f0fb2115e680bd0df7395df8752063a743203fa53"
+    },
+    {
+      "kind": "library",
+      "name": "old-base",
+      "payload": "old-base.dylib",
+      "sha256": "f2f56e63152274251b15387155b95c125afd5115a3f0a24c2ce4bab76b809bf8",
+      "original_zip_sha256": "0a4f2540ab6c850ff3261f9a258c0e5127e4e514aca0106fc3a5ef7ca510a9ad"
+    },
+    {
+      "kind": "library",
+      "name": "old-core",
+      "payload": "old-core.dylib",
+      "sha256": "4cbb49d6300b4f6f39364f35bd2774f4386d8c87bd6efceacaab2f9dfa73c067",
+      "original_zip_sha256": "2aa1c27afbf6926607ce5d4c42260e2ae4901ce3968dd09e412e5b2405d777b5"
+    },
+    {
+      "kind": "library",
+      "name": "old-policy",
+      "payload": "old-policy.dylib",
+      "sha256": "86fff42c5bdc4020a391c6eeb2fb59bf000690af1e0459f93d8a3717cb3bbf8c",
+      "original_zip_sha256": "a5b5e9766406bc6da8874422eeee42c6a5a0d1ab60831a5eda470d66d461042e"
+    }
   ]
 }
