@@ -24,12 +24,21 @@ try:
     for mode,shared,san in [('shared-release','ON',False),('static-asan','OFF',True)]:
         b=w/mode;flags=['-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer','-DCMAKE_OBJC_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer'] if san else []
         run(mode+'-configure',['cmake','-S',source,'-B',b,'-G','Unix Makefiles','-DCMAKE_BUILD_TYPE='+('Debug' if san else 'Release'),'-DBUILD_SHARED_LIBS='+shared,'-DNEXAUI_BUILD_EXAMPLES=OFF','-DCMAKE_C_COMPILER='+clang,'-DCMAKE_OBJC_COMPILER='+clang,'-DCMAKE_OSX_SYSROOT='+sdk,'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',*flags])
-        run(mode+'-build',['cmake','--build',b,'--parallel','3','--target','nexaui_macos_text_value_tests','nexaui_macos_multiselection_tests','nexaui_macos_accessibility_tests','nexaui_text_value_tests','nexaui_text_field_tests','nexaui_numeric_field_tests'],timeout=360)
-        run(mode+'-test',['ctest','--test-dir',b,'-R','^nexaui_(macos_(text_value|multiselection|accessibility)|text_value|text_field|numeric_field)$','--no-tests=error','--verbose','--output-junit',b/'focused.xml'],timeout=300)
-        cases=list(ET.parse(b/'focused.xml').getroot().iter('testcase'));assert len(cases)==6 and not any(c.find(t) is not None for c in cases for t in ['failure','error','skipped'])
-        for p in ['nexaui_macos_text_value_tests','nexaui_macos_multiselection_tests','nexaui_macos_accessibility_tests','nexaui_text_value_tests','nexaui_text_field_tests','nexaui_numeric_field_tests','nexaui_macos_multiselection_client']:report.setdefault('programs',[]).append(binary(b/p))
+        programs=['nexaui_macos_text_value_tests']
+        if san:programs+=['nexaui_macos_multiselection_tests','nexaui_macos_accessibility_tests','nexaui_text_value_tests','nexaui_text_field_tests','nexaui_numeric_field_tests']
+        run(mode+'-build',['cmake','--build',b,'--parallel','3','--target',*programs],timeout=360)
+        for p in programs:report.setdefault('programs',[]).append(binary(b/p))
+        group_results=[]
+        for group in ['operations','bounds','worker','strings','stale','slots','core']:
+            code=run(mode+'-'+group,[b/'nexaui_macos_text_value_tests',group],expected=(0,1),timeout=180)
+            group_results.append({'group':group,'exit':code})
+        report.setdefault('groups',{})[mode]=group_results;save()
+        if san:
+            run(mode+'-regressions',['ctest','--test-dir',b,'-R','^nexaui_(macos_(multiselection|accessibility)|text_value|text_field|numeric_field)$','--no-tests=error','--verbose','--output-junit',b/'focused.xml'],timeout=300)
+            cases=list(ET.parse(b/'focused.xml').getroot().iter('testcase'));assert len(cases)==5 and not any(c.find(t) is not None for c in cases for t in ['failure','error','skipped'])
         if not san:
             report['libraries']=[binary(b/'libnexaui.0.dylib')]
+    assert all(g['exit']==0 for groups in report['groups'].values() for g in groups),'native subgroup failure; raw results preserved'
     report.update(terminal=True,success=True);save()
 except BaseException as error:
     report.update(terminal=True,success=False,error=str(error));save();raise

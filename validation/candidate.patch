@@ -265,10 +265,10 @@ index 8bacf4a..a242648 100644
              int valid=multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
 diff --git a/tests/macos_text_value_fixture.h b/tests/macos_text_value_fixture.h
 new file mode 100644
-index 0000000..c7bcbdc
+index 0000000..9b8a955
 --- /dev/null
 +++ b/tests/macos_text_value_fixture.h
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,111 @@
 +#ifndef NEXAUI_TEST_MACOS_TEXT_VALUE_FIXTURE_H
 +#define NEXAUI_TEST_MACOS_TEXT_VALUE_FIXTURE_H
 +#import <AppKit/AppKit.h>
@@ -279,26 +279,30 @@ index 0000000..c7bcbdc
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <string.h>
++#include <objc/runtime.h>
 +
 +#define CHECK(x) do {if(!(x)){fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x);return 1;}}while(0)
 +typedef struct allocation {void *p;size_t size;} allocation;
-+typedef struct heap {allocation live[4096];size_t count,calls;int fail,when;void (*hook)(void *);void *user;} heap;
-+static void call(heap *h,int when) {
-+    if(h->hook && h->when==when){void (*f)(void *)=h->hook;h->hook=NULL;f(h->user);}
++typedef struct heap {allocation live[4096];size_t count,calls,threshold,hook_bytes;int fail,when,free_after_allocate,free_ready;void (*hook)(void *);void *user;} heap;
++static void call(heap *h,int when,size_t bytes) {
++    if(h->hook && h->when==when && (when==2 && h->free_after_allocate?h->free_ready:bytes>=h->threshold)) {
++        void (*f)(void *)=h->hook;h->hook=NULL;h->hook_bytes=bytes;f(h->user);
++    }
 +}
 +static void *allocate(void *user,size_t bytes) {
-+    heap *h=user;++h->calls;call(h,1);if(h->fail){h->fail=0;return NULL;}
++    heap *h=user;++h->calls;if(h->free_after_allocate && bytes>=h->threshold)h->free_ready=1;
++    call(h,1,bytes);if(h->fail){h->fail=0;return NULL;}
 +    void *p=malloc(bytes);if(p){if(h->count==4096)abort();h->live[h->count++]=(allocation){p,bytes};}return p;
 +}
 +static void deallocate(void *user,void *p,size_t bytes) {
 +    heap *h=user;size_t at=0;while(at<h->count && h->live[at].p!=p)++at;
-+    if(at==h->count || h->live[at].size!=bytes)abort();h->live[at]=h->live[--h->count];call(h,2);free(p);
++    if(at==h->count || h->live[at].size!=bytes)abort();h->live[at]=h->live[--h->count];call(h,2,bytes);free(p);
 +}
 +typedef struct scene {
 +    nx_context *ctx;nx_window *window;nx_font *font;nx_font_collection *fonts;
 +    nx_text_field *fields[65];nx_numeric_field *number;
 +    unsigned char font_bytes[512];heap core,native;
-+    size_t field_count;int disabled,modal,kind,password,clicks,callback_fired;nx_result callback_result;
++    size_t field_count;int plain,disabled,modal,kind,password,clicks,callback_fired;nx_result callback_result;
 +} scene;
 +static nx_semantic_desc semantic(uint64_t id,uint64_t parent,nx_semantic_role role,const char *name) {
 +    nx_semantic_desc d={0};d.id=id;d.parent_id=parent;d.role=role;d.name=(nx_utf8_span){name,strlen(name)};d.bounds=(nx_rect){0,0,640,480};return d;
@@ -316,7 +320,7 @@ index 0000000..c7bcbdc
 +    for(size_t i=0;i<s->field_count;++i) {
 +        nx_text_field_desc d={0};d.id=1200+i;d.parent_id=30;d.bounds=(nx_rect){10,(float)i*24,220,22};
 +        d.name=(nx_utf8_span){"Editable",8};d.fonts=s->fonts;d.pixels_per_em=16;d.glyph_cache_bytes=65536;
-+        d.disabled=i==2 || (!i && s->disabled);d.password=i==3 || (!i && s->password);d.multiline=i==4;
++        d.disabled=(!s->plain && i==2) || (!i && s->disabled);d.password=(!s->plain && i==3) || (!i && s->password);d.multiline=!s->plain && i==4;
 +        nx_interaction_state state;int valid,submitted;
 +        CHECK(nx_text_field_widget(s->ctx,&d,s->fields[i],&state,&valid,&submitted)==NX_OK);
 +    }
@@ -350,10 +354,10 @@ index 0000000..c7bcbdc
 +    font_fixture(s->font_bytes);CHECK(nx_font_open(s->font_bytes,sizeof(s->font_bytes),NULL,&s->font)==NX_OK);
 +    CHECK(nx_font_collection_create(NULL,&s->fonts)==NX_OK && nx_font_collection_add(s->fonts,s->font)==NX_OK);
 +    for(size_t i=0;i<s->field_count;++i) {
-+        const char *initial=i==4?"one\ntwo":i==5?"peer":"seed";
-+        CHECK((i==3?nx_text_field_create_password(initial,strlen(initial),&s->fields[i]):nx_text_field_create(initial,strlen(initial),131072,&s->fields[i]))==NX_OK);
++        const char *initial=!s->plain && i==4?"one\ntwo":!s->plain && i==5?"peer":"seed";
++        CHECK((!s->plain && i==3?nx_text_field_create_password(initial,strlen(initial),&s->fields[i]):nx_text_field_create(initial,strlen(initial),131072,&s->fields[i]))==NX_OK);
 +    }
-+    CHECK(nx_text_field_set_read_only(s->fields[1],1)==NX_OK && nx_numeric_field_create(42,8192,&s->number)==NX_OK);
++    CHECK((s->plain || nx_text_field_set_read_only(s->fields[1],1)==NX_OK) && nx_numeric_field_create(42,8192,&s->number)==NX_OK);
 +    nx_context_desc cd={0};cd.allocator=(nx_allocator){&s->core,allocate,deallocate};CHECK(nx_context_create(&cd,&s->ctx)==NX_OK);
 +    nx_window_desc wd={"Hidden AX value contract",640,480,NX_WINDOW_HIDDEN,{&s->native,allocate,deallocate}};
 +    CHECK(nx_window_create(&wd,&s->window)==NX_OK && publish(s)==0 && ![nx_window_native_nswindow(s->window) isVisible]);
@@ -365,13 +369,23 @@ index 0000000..c7bcbdc
 +    nx_numeric_field_destroy(s->number);nx_font_collection_destroy(s->fonts);nx_font_close(s->font);
 +    CHECK(!s->core.count && !s->native.count);return 0;
 +}
++/* Precise admission assertions use the same private method as the public void
++   AXValue setter. Primary model tests and external clients use the setter. */
++@interface NSObject (NXTextAdmissionProbe)
++- (BOOL)requestText:(id)element value:(id)value;
++@end
++static id bridge_for(id editor) {id result=nil;object_getInstanceVariable(editor,"bridge",(void **)&result);return result;}
++static int admit(id editor,id value) {
++    [editor retain];id bridge=[bridge_for(editor) retain];BOOL result=[bridge requestText:editor value:value];
++    [bridge release];[editor release];return result;
++}
 +#endif
 diff --git a/tests/test_macos_text_value.m b/tests/test_macos_text_value.m
 new file mode 100644
-index 0000000..b5363be
+index 0000000..facc3c7
 --- /dev/null
 +++ b/tests/test_macos_text_value.m
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,171 @@
 +#include "macos_text_value_fixture.h"
 +
 +static int operations(void) {
@@ -389,7 +403,157 @@ index 0000000..b5363be
 +    [editor setAccessibilityValue:@""];CHECK(advance(&s,1)==0 && text(s.fields[0],"")==0);
 +    [element(&s,1204) setAccessibilityValue:@"new\nlines"];CHECK(advance(&s,1)==0 && text(s.fields[4],"new\nlines")==0);
 +    [element(&s,1500) setAccessibilityValue:@"73.5"];CHECK(advance(&s,1)==0);double number=0;
-+    CHECK(nx_numeric_field_value(s.number,&number)==NX_OK && number==73.5);
++    nx_utf8_span draft;CHECK(nx_numeric_field_text(s.number,&draft)==NX_OK && draft.length==4 && !memcmp(draft.data,"73.5",4));
++    CHECK(nx_numeric_field_value(s.number,&number)==NX_OK && number==42);
 +    [held release];[editor release];CHECK(cleanup(&s)==0);puts("AppKit owned editable Value Unicode/empty/multiline/numeric/model isolation passed");return 0;
 +}
-+int main(void) {@autoreleasepool{return operations();}}
++
++static int boundaries(void) {
++    scene s={0};CHECK(setup(&s)==0);id editor=[element(&s,1200) retain];
++    unichar invalid=0xd800,nul[]={'a',0,'b'};
++    NSString *surrogate=[[NSString alloc] initWithCharacters:&invalid length:1];
++    NSString *embedded=[[NSString alloc] initWithCharacters:nul length:3];
++    for(id value in @[@1,embedded,@"a\rb",@"a\nb",@"a\r\nb"])CHECK(!admit(editor,value));
++    CHECK(!admit(editor,nil) && !admit(editor,surrogate) && advance(&s,0)==0 && text(s.fields[0],"seed")==0);
++    char *bytes=malloc(65538);CHECK(bytes);memset(bytes,'x',65537);bytes[65537]=0;
++    NSString *tooLarge=[[NSString alloc] initWithBytes:bytes length:65537 encoding:NSUTF8StringEncoding];
++    CHECK(!admit(editor,tooLarge));NSString *maximum=[[NSString alloc] initWithBytes:bytes length:65536 encoding:NSUTF8StringEncoding];
++    CHECK(admit(editor,maximum) && advance(&s,1)==0);bytes[65536]=0;CHECK(text(s.fields[0],bytes)==0);
++    [editor setAccessibilityValue:@"retry"];CHECK(advance(&s,1)==0 && text(s.fields[0],"retry")==0);
++    for(NSString *draft in @[@"invalid",@"1000",@""]) {
++        [element(&s,1500) setAccessibilityValue:draft];CHECK(advance(&s,1)==0);
++        nx_utf8_span got;double number=0;CHECK(nx_numeric_field_text(s.number,&got)==NX_OK && got.length==[draft lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
++        CHECK(!got.length || !memcmp(got.data,[draft UTF8String],got.length));
++        CHECK(nx_numeric_field_value(s.number,&number)==NX_OK && number==42);
++    }
++    [maximum release];[tooLarge release];[embedded release];[surrogate release];free(bytes);[editor release];
++    CHECK(cleanup(&s)==0);puts("AppKit whole-value malformed/65536-byte bounds and numeric draft policy passed");return 0;
++}
++
++typedef struct worker {id editor;int allowed,element;id value;} worker;
++static void *work(void *p) {
++    @autoreleasepool {worker *w=p;w->allowed=[w->editor isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)];
++        w->element=[w->editor isAccessibilityElement];w->value=[[w->editor accessibilityValue] retain];
++        [w->editor setAccessibilityValue:@"worker"];return NULL;}
++}
++static int worker_rejection(void) {
++    scene s={0};CHECK(setup(&s)==0);worker w={[element(&s,1200) retain],1,1,nil};pthread_t t;
++    CHECK(pthread_create(&t,NULL,work,&w)==0 && pthread_join(t,NULL)==0 && !w.allowed && !w.element && !w.value);
++    CHECK(advance(&s,0)==0 && text(s.fields[0],"seed")==0);[w.editor release];CHECK(cleanup(&s)==0);
++    puts("AppKit worker setter/query rejection passed");return 0;
++}
++
++typedef struct callback {scene *s;int kind,fired,error,accepted,rejected;id held;} callback;
++static void change(void *user) {
++    callback *c=user;scene *s=c->s;++c->fired;
++    switch(c->kind) {
++    case 0:c->error=publish(s)||publish(s);break;
++    case 1:c->error=nx_window_publish_semantics(s->window,NULL)!=NX_OK;break;
++    case 2:{nx_window *w=s->window;s->window=NULL;nx_window_destroy(w);break;}
++    case 3:c->error=nx_text_field_set_text(s->fields[0],"seed",4)!=NX_OK || publish(s);break;
++    case 4:c->error=nx_text_field_set_read_only(s->fields[0],1)!=NX_OK || publish(s) ||
++        nx_text_field_set_read_only(s->fields[0],0)!=NX_OK || publish(s);break;
++    case 5:s->kind=2;c->error=publish(s);break;
++    case 6:
++        for(uint64_t i=1;i<65;++i) {if(admit(element(s,1200+i),@"nested"))++c->accepted;else ++c->rejected;}break;
++    case 7:s->disabled=1;c->error=publish(s);s->disabled=0;c->error|=publish(s);break;
++    case 8:s->password=1;c->error=publish(s);s->password=0;c->error|=publish(s);break;
++    case 9:{nx_text_field *replacement=NULL;c->error=nx_text_field_create("seed",4,131072,&replacement)!=NX_OK;
++        if(!c->error){nx_text_field_destroy(s->fields[0]);s->fields[0]=replacement;c->error=publish(s);}break;}
++    case 10:s->kind=1;c->error=publish(s);break;
++    }
++}
++@interface NXCallbackString : NSString {
++@public NSString *backing;void (*hook)(void *);void *user;int stage,lengths,fired;
++}
++@end
++@implementation NXCallbackString
++- (void)dealloc {[backing release];[super dealloc];}
++- (void)touch:(int)at {if(at==stage && hook){void (*f)(void *)=hook;hook=NULL;++fired;f(user);}}
++- (BOOL)isKindOfClass:(Class)type {[self touch:0];return [backing isKindOfClass:type];}
++- (NSUInteger)length {[self touch:++lengths==1?1:4];return [backing length];}
++- (unichar)characterAtIndex:(NSUInteger)at {return [backing characterAtIndex:at];}
++- (void)getCharacters:(unichar *)bytes range:(NSRange)range {[backing getCharacters:bytes range:range];}
++- (NSUInteger)lengthOfBytesUsingEncoding:(NSStringEncoding)encoding {[self touch:2];return [backing lengthOfBytesUsingEncoding:encoding];}
++- (BOOL)getBytes:(void *)bytes maxLength:(NSUInteger)maximum usedLength:(NSUInteger *)used encoding:(NSStringEncoding)encoding
++    options:(NSStringEncodingConversionOptions)options range:(NSRange)range remainingRange:(NSRange *)remaining {
++    [self touch:3];return [backing getBytes:bytes maxLength:maximum usedLength:used encoding:encoding options:options range:range remainingRange:remaining];
++}
++@end
++static NXCallbackString *callback_string(callback *c,int stage) {
++    NXCallbackString *s=[NXCallbackString new];s->backing=[@"outer" copy];s->hook=change;s->user=c;s->stage=stage;return s;
++}
++static int string_callouts(void) {
++    for(int stage=0;stage<5;++stage)for(int kind=0;kind<=10;++kind) {
++        if(kind==6)continue;
++        scene s={0};CHECK(setup(&s)==0);id held=[element(&s,1200) retain];callback c={&s,kind,0,0,0,0,held};
++        NXCallbackString *value=callback_string(&c,stage);
++        int accepted=admit(held,value);CHECK(value->fired==1 && c.fired==1 && !c.error && !accepted);
++        if(s.window){size_t n=99;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && !n);}
++        CHECK(frame(&s)==0 && text(s.fields[0],"seed")==0);
++        if(s.window) {
++            CHECK(nx_window_publish_semantics(s.window,s.ctx)==NX_OK);
++            id fresh=element(&s,1200);CHECK(admit(fresh,@"fresh") && advance(&s,1)==0 && text(s.fields[0],"fresh")==0);
++        }
++        [value release];[held release];CHECK(cleanup(&s)==0);
++    }
++    puts("AppKit all five NSString call-outs reject double publication/retirement/policy/identity/ancestry changes; fresh retry passed");return 0;
++}
++
++static int stale(void) {
++    for(int forwarded=0;forwarded<2;++forwarded)for(int kind=1;kind<=10;++kind) {
++        if(kind==6)continue;
++        scene s={0};CHECK(setup(&s)==0);id held=[element(&s,1200) retain];CHECK(admit(held,@"stale"));
++        if(forwarded){size_t n=0;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && n==1);}
++        callback c={&s,kind,0,0,0,0,held};change(&c);CHECK(c.fired==1 && !c.error);
++        if(s.window){size_t n=99;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && !n);}
++        CHECK(frame(&s)==0);nx_utf8_span actual;CHECK(nx_text_field_text(s.fields[0],&actual)==NX_OK);
++        fprintf(stderr,"text stale forwarded=%d kind=%d actual=%.*s\n",forwarded,kind,(int)actual.length,actual.data);
++        CHECK(text(s.fields[0],"seed")==0);[held release];CHECK(cleanup(&s)==0);
++    }
++    puts("AppKit pending/forwarded native text lease transitions passed");return 0;
++}
++
++static int slots(void) {
++    for(int nested=0;nested<2;++nested) {
++        scene s={0};s.plain=1;s.field_count=65;CHECK(setup(&s)==0);
++        if(nested) {
++            callback c={&s,6,0,0,0,0,nil};NXCallbackString *value=callback_string(&c,1);
++            CHECK(admit(element(&s,1200),value) && c.fired==1 && !c.error && c.accepted==63 && c.rejected==1);[value release];
++        } else {
++            for(uint64_t i=0;i<64;++i)CHECK(admit(element(&s,1200+i),@"queued"));
++            CHECK(!admit(element(&s,1264),@"excess"));
++        }
++        CHECK(advance(&s,64)==0);
++        for(size_t i=0;i<65;++i)CHECK(text(s.fields[i],i==64?"seed":nested?(i?"nested":"outer"):"queued")==0);
++        CHECK(admit(element(&s,1264),@"retry") && advance(&s,1)==0 && text(s.fields[64],"retry")==0);
++        CHECK(cleanup(&s)==0);
++    }
++    puts("AppKit pending and NSString in-flight64-slot boundary with actual64 model updates passed");return 0;
++}
++static int core_callouts(void) {
++    {
++        scene s={0};CHECK(setup(&s)==0 && admit(element(&s,1200),@"retry"));s.core.fail=1;
++        size_t n=99;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_ERROR_MEMORY && !n && !s.core.fail);
++        CHECK(text(s.fields[0],"seed")==0 && advance(&s,1)==0 && text(s.fields[0],"retry")==0 && advance(&s,0)==0);
++        CHECK(cleanup(&s)==0);
++    }
++    for(int kind=1;kind<=2;++kind) {
++        scene s={0};CHECK(setup(&s)==0);id held=[element(&s,1200) retain];CHECK(admit(held,@"stale"));
++        callback c={&s,kind,0,0,0,0,held};s.core.hook=change;s.core.user=&c;s.core.when=1;
++        size_t n=99;nx_window *w=s.window;CHECK(nx_window_route_events(w,s.ctx,&n)==NX_OK && !n && c.fired==1 && !c.error);
++        CHECK(![held isAccessibilityElement] && frame(&s)==0 && text(s.fields[0],"seed")==0);
++        [held release];CHECK(cleanup(&s)==0);
++    }
++    puts("AppKit core-copy OOM retry and allocator detach/destroy lifetime passed");return 0;
++}
++int main(int argc,char **argv) {@autoreleasepool{
++    if(argc==2) {
++        if(!strcmp(argv[1],"operations"))return operations();if(!strcmp(argv[1],"bounds"))return boundaries();
++        if(!strcmp(argv[1],"worker"))return worker_rejection();if(!strcmp(argv[1],"strings"))return string_callouts();
++        if(!strcmp(argv[1],"stale"))return stale();if(!strcmp(argv[1],"slots"))return slots();
++        if(!strcmp(argv[1],"core"))return core_callouts();return 2;
++    }
++    CHECK(operations()==0 && boundaries()==0 && worker_rejection()==0 && string_callouts()==0 && stale()==0 && slots()==0 && core_callouts()==0);
++    puts("Hidden AppKit editable Value native checks passed");return 0;
++}}
