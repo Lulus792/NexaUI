@@ -1,4 +1,4 @@
-name: AppKit frozen review validation
+name: AppKit independent external AX validation
 on:
   push:
     branches: [codex/appkit-review-validation]
@@ -19,19 +19,20 @@ jobs:
           ref: 58714d140657ef1e29c4b1fa5eddd5d9839fb6f8
           path: source
           persist-credentials: false
-      - name: Validate frozen source, native cases, and historical counterexamples
+      - name: Validate independent external AX client and observer
         run: python3 harness/validation/runner.py source evidence
       - name: Preserve diagnostics and native program identity
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: appkit-frozen-review-evidence
+          name: appkit-external-ax-evidence
           if-no-files-found: error
           path: |
             evidence/result.json
             evidence/*.stdout
             evidence/*.stderr
-            evidence/*/focused.xml
+            evidence/host
+            evidence/client
             evidence/*/compile_commands.json
             evidence/*/nexaui_macos_multiselection_tests
             evidence/*/libnexaui*.dylib
