@@ -1,6 +1,6 @@
 {
   "base": "12ce9c5b549201773bb19f0ff6888437be6982fe",
-  "patch_sha256": "c842f86264ffd75ddacec07bb555f98a7efd56c4e2cbe0df3d9d50db85b069db",
+  "patch_sha256": "c49274be190129cbc66c97271db1d27b037d7fd800a1d6f7681edc2a59bc16ff",
   "sources": [
     {
       "path": "CMakeLists.txt",
@@ -16,7 +16,7 @@
     },
     {
       "path": "tests/test_macos_text_value.m",
-      "git_lf_sha256": "d53bc0b84bccff6bdca39cd9233ff8afd632fcd12ec71a3ee10dcb08295e85bb"
+      "git_lf_sha256": "4d9649433fe20f834aa4d31ff13ef154db453ea10e910a7012d18ca9e603d33c"
     }
   ]
 }

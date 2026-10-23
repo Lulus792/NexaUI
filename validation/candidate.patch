@@ -382,10 +382,10 @@ index 0000000..9b8a955
 +#endif
 diff --git a/tests/test_macos_text_value.m b/tests/test_macos_text_value.m
 new file mode 100644
-index 0000000..facc3c7
+index 0000000..9c72f52
 --- /dev/null
 +++ b/tests/test_macos_text_value.m
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,176 @@
 +#include "macos_text_value_fixture.h"
 +
 +static int operations(void) {
@@ -457,7 +457,10 @@ index 0000000..facc3c7
 +    case 6:
 +        for(uint64_t i=1;i<65;++i) {if(admit(element(s,1200+i),@"nested"))++c->accepted;else ++c->rejected;}break;
 +    case 7:s->disabled=1;c->error=publish(s);s->disabled=0;c->error|=publish(s);break;
-+    case 8:s->password=1;c->error=publish(s);s->password=0;c->error|=publish(s);break;
++    case 8:{nx_text_field *normal=s->fields[0],*protected=NULL;
++        c->error=nx_text_field_create_password("seed",4,&protected)!=NX_OK;
++        if(!c->error){s->fields[0]=protected;s->password=1;c->error=publish(s);
++            s->fields[0]=normal;s->password=0;nx_text_field_destroy(protected);c->error|=publish(s);}break;}
 +    case 9:{nx_text_field *replacement=NULL;c->error=nx_text_field_create("seed",4,131072,&replacement)!=NX_OK;
 +        if(!c->error){nx_text_field_destroy(s->fields[0]);s->fields[0]=replacement;c->error=publish(s);}break;}
 +    case 10:s->kind=1;c->error=publish(s);break;
@@ -488,7 +491,9 @@ index 0000000..facc3c7
 +        if(kind==6)continue;
 +        scene s={0};CHECK(setup(&s)==0);id held=[element(&s,1200) retain];callback c={&s,kind,0,0,0,0,held};
 +        NXCallbackString *value=callback_string(&c,stage);
-+        int accepted=admit(held,value);CHECK(value->fired==1 && c.fired==1 && !c.error && !accepted);
++        int accepted=admit(held,value);
++        if(value->fired!=1 || c.fired!=1 || c.error || accepted)fprintf(stderr,"string stage=%d kind=%d fired=%d/%d error=%d accepted=%d\n",stage,kind,value->fired,c.fired,c.error,accepted);
++        CHECK(value->fired==1 && c.fired==1 && !c.error && !accepted);
 +        if(s.window){size_t n=99;CHECK(nx_window_route_events(s.window,s.ctx,&n)==NX_OK && !n);}
 +        CHECK(frame(&s)==0 && text(s.fields[0],"seed")==0);
 +        if(s.window) {
