@@ -16,6 +16,253 @@ index 26db907..1f82790 100644
          target_include_directories(nexaui_macos_multiselection_tests PRIVATE ${PROJECT_SOURCE_DIR}/platform/macos)
          target_link_libraries(nexaui_macos_multiselection_tests PRIVATE NexaUI::NexaUI "-framework AppKit" Threads::Threads)
          target_compile_options(nexaui_macos_multiselection_tests PRIVATE -fno-objc-arc -Wall -Wextra -Wpedantic)
+diff --git a/platform/macos/accessibility.m b/platform/macos/accessibility.m
+index 8bacf4a..a242648 100644
+--- a/platform/macos/accessibility.m
++++ b/platform/macos/accessibility.m
+@@ -1,6 +1,7 @@
+ #import "accessibility.h"
+ #include "../../src/context_identity.h"
+ #include "../../src/selection_model.h"
++#include "../../src/text_value.h"
+ #include <pthread.h>
+ #include <stdatomic.h>
+ #include <stdint.h>
+@@ -22,6 +23,7 @@ typedef struct nx_ax_node {
+     uint32_t selected_last, next_selected, selected_count, member_count;
+     uint64_t membership, policy_epoch;
+     nx_selection_target target;
++    nx_text_value_target text_value;
+     int owner_multiple;
+     const char *name, *help, *value;
+ } nx_ax_node;
+@@ -57,8 +59,18 @@ typedef struct nx_ax_request {
+     uint32_t action;
+     int forwarded;
+     nx_ax_multi_request *multi;
++    struct nx_ax_text_request *text;
+ } nx_ax_request;
+ 
++typedef struct nx_ax_text_request {
++    atomic_uint references;
++    nx_ax_multi_lease *lease;
++    uint64_t generation, context, id, incarnation, policy_epoch;
++    nx_text_value_target target;
++    size_t bytes, length;
++    char *value;
++} nx_ax_text_request;
++
+ @class NXMacAXElement;
+ @interface NXMacAXBridge : NSObject {
+ @public
+@@ -78,6 +90,7 @@ typedef struct nx_ax_request {
+ - (id)hit:(NSPoint)point;
+ - (id)focused;
+ - (BOOL)request:(NXMacAXElement *)element action:(uint32_t)action;
++- (BOOL)requestText:(NXMacAXElement *)element value:(id)value;
+ - (BOOL)requestSet:(NXMacAXElement *)owner children:(NSArray *)children rowsOnly:(BOOL)rows;
+ - (NSArray *)selected:(NXMacAXElement *)owner rowsOnly:(BOOL)rows;
+ - (nx_result)publish:(const nx_context *)context;
+@@ -139,6 +152,30 @@ static void multi_release(void *user) {
+     }
+ }
+ static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
++static int text_target_equal(nx_text_value_target a,nx_text_value_target b) {
++    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline;
++}
++static int editable(nx_ax_node *n) {
++    return n && n->role==NX_ROLE_TEXT_FIELD && n->text_value.identity &&
++        (n->actions&NX_ACTION_SET_VALUE) && !(n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED));
++}
++static void text_retain(void *user) {
++    nx_ax_text_request *r=user;atomic_fetch_add_explicit(&r->references,1,memory_order_relaxed);
++}
++static void text_release(void *user) {
++    nx_ax_text_request *r=user;
++    if(r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
++        nx_ax_multi_lease *l=r->lease;free(r->value);free(r);lease_release(l);
++    }
++}
++static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,nx_text_value_target target) {
++    if(!pthread_main_np())return 0;
++    nx_ax_text_request *r=user;nx_ax_multi_lease *l=r->lease;
++    if(!l->live || !l->snapshot || l->generation!=r->generation || token!=r->generation ||
++        l->context!=context || context!=r->context || id!=r->id || !text_target_equal(target,r->target))return 0;
++    uint32_t at=find(l->snapshot,id);if(at==NX_AX_NONE)return 0;nx_ax_node *n=&l->snapshot->nodes[at];
++    return editable(n) && n->incarnation==r->incarnation && n->policy_epoch==r->policy_epoch && text_target_equal(n->text_value,r->target);
++}
+ static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
+     uint64_t owner_id,nx_selection_target target) {
+     if (!pthread_main_np()) return 0;
+@@ -164,6 +201,8 @@ static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
+ static void remove_request(NXMacAXBridge *b,size_t at) {
+     nx_ax_multi_request *r=b->requests[at].multi;
+     if (r) { b->request_bytes-=r->bytes;multi_release(r); }
++    nx_ax_text_request *t=b->requests[at].text;
++    if(t){b->request_bytes-=t->bytes;text_release(t);}
+     --b->request_count;memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
+ }
+ static void clear_requests(NXMacAXBridge *b) { while(b->request_count)remove_request(b,b->request_count-1); }
+@@ -315,6 +354,11 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     if (has_state_value(n)) return @(state_value(n));
+     return string(value_string(n));
+ }
++- (void)setAccessibilityValue:(id)value {
++    if(!pthread_main_np())return;
++    [self retain];NXMacAXBridge *target=[bridge retain];
++    [target requestText:self value:value];[target release];[self release];
++}
+ - (NSString *)accessibilityValueDescription { nx_ax_node *n=[self current]; return n ? string(n->value) : nil; }
+ - (NSRect)accessibilityFrame { nx_ax_node *n=[self current]; return n ? screen(bridge,n) : NSZeroRect; }
+ - (id)accessibilityParent {
+@@ -424,6 +468,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector {
+     nx_ax_node *n=[self current]; if (!n) return NO;
+     int enabled=!(n->state&NX_SEM_DISABLED);
++    if(selector==@selector(setAccessibilityValue:))return editable(n);
+     if (selector==@selector(accessibilityPerformPress)) return enabled && press_action(n);
+     if (selector==@selector(setAccessibilityFocused:))
+         return enabled && ((n->actions&NX_ACTION_FOCUS) || ((n->state&NX_AX_SELECTION) && n->focus!=NX_AX_NONE));
+@@ -439,6 +484,64 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+ @end
+ 
+ @implementation NXMacAXBridge
++- (BOOL)requestText:(NXMacAXElement *)element value:(id)value {
++    if(!pthread_main_np())return NO;
++    nx_ax_node *n=[element current];if(element->bridge!=self || !editable(n))return NO;
++    for(size_t i=0;i<request_count;++i)if(requests[i].text && requests[i].id==n->id)return NO;
++    /* NSString methods can be overridden by application code. Charge one slot
++       and the maximum conversion footprint before the first such call-out. */
++    size_t reservation=sizeof(nx_ax_text_request)+NX_TEXT_VALUE_MAX_BYTES+1u;
++    if(!queue_space(self,reservation,0))return NO;
++    nx_ax_text_request *r=calloc(1,sizeof(*r));if(!r)return NO;
++    atomic_init(&r->references,1);r->lease=lease;lease_retain(lease);
++    r->generation=lease->generation;r->context=context_identity;r->id=n->id;
++    r->incarnation=n->incarnation;r->policy_epoch=n->policy_epoch;r->target=n->text_value;
++    uint64_t revision=publication;BOOL valid=YES,queued=NO;
++    ++admission_count;admission_bytes+=reservation;
++    valid=[value isKindOfClass:[NSString class]] && publication==revision &&
++        text_current(r,r->generation,r->context,r->id,r->target);
++    NSUInteger units=0,bytes=0;
++    if(valid) {
++        units=[value length];
++        valid=publication==revision && units<=NX_TEXT_VALUE_MAX_BYTES &&
++            text_current(r,r->generation,r->context,r->id,r->target);
++    }
++    if(valid) {
++        bytes=[value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
++        valid=publication==revision && bytes<=NX_TEXT_VALUE_MAX_BYTES && (!units || bytes) &&
++            text_current(r,r->generation,r->context,r->id,r->target);
++    }
++    if(valid) {
++        r->value=malloc((size_t)bytes+1u);valid=r->value!=NULL;
++        if(valid) {
++            NSUInteger used=0;NSRange remaining=NSMakeRange(0,units);
++            BOOL encoded=units?[value getBytes:r->value maxLength:bytes usedLength:&used
++                encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0,units) remainingRange:&remaining]:YES;
++            if(!units)remaining=NSMakeRange(0,0);
++            valid=publication==revision && encoded && used==bytes && !remaining.length &&
++                text_current(r,r->generation,r->context,r->id,r->target);
++            if(valid) {
++                NSUInteger final_units=[value length];
++                valid=publication==revision && final_units==units &&
++                    text_current(r,r->generation,r->context,r->id,r->target);
++            }
++            if(valid) {
++                r->value[bytes]=0;r->length=bytes;r->bytes=sizeof(*r)+(size_t)bytes+1u;
++                valid=!memchr(r->value,0,bytes) && nx_utf8_validate(r->value,bytes,NULL)==NX_OK &&
++                    (r->target.multiline || (!memchr(r->value,'\r',bytes) && !memchr(r->value,'\n',bytes)));
++            }
++        }
++    }
++    if(valid) {
++        for(size_t i=0;i<request_count;++i)if(requests[i].text && requests[i].id==r->id){valid=NO;break;}
++        if(valid && queue_space(self,0,1)) {
++            nx_ax_request q={0};q.id=r->id;q.incarnation=r->incarnation;q.action=NX_ACTION_SET_VALUE;q.text=r;
++            requests[request_count++]=q;request_bytes+=r->bytes;queued=YES;
++        }
++    }
++    --admission_count;admission_bytes-=reservation;
++    if(!queued)text_release(r);else wake_owner();return queued;
++}
+ - (NSArray *)selected:(NXMacAXElement *)ownerElement rowsOnly:(BOOL)rows {
+     nx_ax_node *owner=[ownerElement current];
+     if(!owner || ownerElement->bridge!=self)return nil;
+@@ -675,6 +778,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+         n->first=n->last=n->next=n->owner=n->selected=n->focus=n->selected_last=n->next_selected=NX_AX_NONE;
+         n->target=nx_context_selection_target(context,n->id);
++        n->text_value=nx_context_text_value_target(context,n->id);
+         n->membership=nx_context_selection_membership(context,n->id);
+         n->parent=find(s,v.parent_id);
+         if (n->parent!=NX_AX_NONE) {
+@@ -697,6 +801,11 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         }
+         uint32_t old=context_identity==binding ? find(snapshot,n->id) : NX_AX_NONE;
+         int same=old!=NX_AX_NONE && snapshot->nodes[old].role==n->role;
++        if(same && (n->text_value.identity || snapshot->nodes[old].text_value.identity)) {
++            nx_ax_node *prior=&snapshot->nodes[old];
++            same=n->text_value.identity==prior->text_value.identity &&
++                !((n->state^prior->state)&NX_SEM_PROTECTED) && same_ancestry(s,n->parent,snapshot,prior->parent);
++        }
+         if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
+             (snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || snapshot->nodes[old].owner_multiple)) {
+             nx_ax_node *prior=&snapshot->nodes[old];
+@@ -726,6 +835,15 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+             owner_policy_equal(snapshot,&snapshot->nodes[old],s,n))n->policy_epoch=snapshot->nodes[old].policy_epoch;
+         else {n->policy_epoch=nx_native_next_identity();if(!n->policy_epoch)return NX_ERROR_LIMIT;}
+     }
++    for(size_t i=0;i<s->count;++i) {
++        nx_ax_node *n=&s->nodes[i];if(!n->text_value.identity)continue;
++        uint32_t old=context_identity==binding?find(snapshot,n->id):NX_AX_NONE;
++        nx_ax_node *prior=old==NX_AX_NONE?NULL:&snapshot->nodes[old];
++        if(prior && prior->incarnation==n->incarnation && text_target_equal(prior->text_value,n->text_value) &&
++            !((prior->state^n->state)&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)) &&
++            !((prior->actions^n->actions)&NX_ACTION_SET_VALUE))n->policy_epoch=prior->policy_epoch;
++        else {n->policy_epoch=nx_native_next_identity();if(!n->policy_epoch)return NX_ERROR_LIMIT;}
++    }
+     int structure=!snapshot || snapshot->count!=s->count;
+     uint64_t focus=0;
+     for (size_t i=0;i<s->count;++i) {
+@@ -762,8 +880,10 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+     lease->context=binding;lease->snapshot=s;
+     for (size_t i=0;i<request_count;) {
+         nx_ax_multi_request *r=requests[i].multi;
++        nx_ax_text_request *t=requests[i].text;
+         if ((requests[i].forwarded && requests[i].frame!=frame) ||
+-            (r && !multi_current(r,r->generation,r->context,r->whole?r->owner_id:r->id,r->owner_id,r->target))) {
++            (r && !multi_current(r,r->generation,r->context,r->whole?r->owner_id:r->id,r->owner_id,r->target)) ||
++            (t && !text_current(t,t->generation,t->context,t->id,t->target))) {
+             remove_request(self,i);
+         } else ++i;
+     }
+@@ -786,6 +906,26 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
+         size_t at=0; while (at<request_count && requests[at].forwarded) ++at;
+         if (at==request_count) break;
+         nx_ax_request r=requests[at]; uint32_t index=find(snapshot,r.id);
++        if(r.text) {
++            nx_ax_text_request *t=r.text;text_retain(t);
++            int valid=text_current(t,t->generation,t->context,t->id,t->target);nx_result result=NX_OK;
++            if(valid) {
++                nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
++                result=nx_semantics_request_text_value_guarded(context,t->id,(nx_utf8_span){t->value,t->length},&guard);
++            }
++            /* The allocator can retire or republish the bridge and rearrange
++               this queue. Its own payload stays charged and retained throughout. */
++            at=0;while(at<request_count && requests[at].text!=t)++at;
++            int live=text_current(t,t->generation,t->context,t->id,t->target);
++            if(valid && live && at<request_count && (result==NX_ERROR_LIMIT || result==NX_ERROR_MEMORY)) {
++                text_release(t);return result==NX_ERROR_LIMIT?NX_OK:result;
++            }
++            if(at<request_count) {
++                if(valid && live && result==NX_OK){requests[at].forwarded=1;requests[at].frame=frame;++*count;}
++                else remove_request(self,at);
++            }
++            text_release(t);continue;
++        }
+         if(r.multi) {
+             nx_ax_multi_request *m=r.multi;multi_retain(m);
+             int valid=multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
 diff --git a/tests/macos_text_value_fixture.h b/tests/macos_text_value_fixture.h
 new file mode 100644
 index 0000000..c7bcbdc

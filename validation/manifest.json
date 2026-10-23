@@ -1,10 +1,14 @@
 {
   "base": "12ce9c5b549201773bb19f0ff6888437be6982fe",
-  "patch_sha256": "bb748552acd68367efed77a019c99ffd61be9dc3a90584cea448b11ad02cc6d2",
+  "patch_sha256": "2cc6cf0e01f670ab3df20513bc9813bb49416930b85ee9d9a580c043f5b41280",
   "sources": [
     {
       "path": "CMakeLists.txt",
       "git_lf_sha256": "248b793d51b4f74bf6046605aaef54e8a9175601b73a3c478714cdf5d673fc6f"
+    },
+    {
+      "path": "platform/macos/accessibility.m",
+      "git_lf_sha256": "4e4bcbbddada12848d5fc9420afb490a4ba0167c429fce4bcd9b87361c14ce9b"
     },
     {
       "path": "tests/macos_text_value_fixture.h",
@@ -14,6 +18,5 @@
       "path": "tests/test_macos_text_value.m",
       "git_lf_sha256": "5e7ee327406f95867ad2b801f8dbf389ee381b3642f334ab494a3f9067b6e453"
     }
-  ],
-  "scope": "Only new native regression and CMake registration; SDK production sources unchanged"
+  ]
 }

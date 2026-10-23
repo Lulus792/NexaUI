@@ -1,4 +1,4 @@
-name: AppKit editable Value missing-entry baseline
+name: AppKit editable Value native validation
 on:
   push:
     branches: [codex/appkit-review-validation]
@@ -19,21 +19,25 @@ jobs:
           ref: 12ce9c5b549201773bb19f0ff6888437be6982fe
           path: source
           persist-credentials: false
-      - name: Check new hidden native Value regression against unchanged SDK
+      - name: Validate editable Value and unchanged native regressions
         run: python3 harness/validation/runner.py source evidence
       - name: Preserve diagnostics and native program identity
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: appkit-text-value-baseline-evidence
+          name: appkit-text-value-native-evidence
           if-no-files-found: error
           path: |
             evidence/result.json
             evidence/*.stdout
             evidence/*.stderr
-            evidence/*/baseline.xml
+            evidence/*/focused.xml
             evidence/*/compile_commands.json
             evidence/*/nexaui_macos_text_value_tests
+            evidence/*/nexaui_macos_multiselection_tests
+            evidence/*/nexaui_macos_accessibility_tests
             evidence/*/libnexaui*.dylib
             evidence/*/CMakeFiles/nexaui.dir/link.txt
             evidence/*/CMakeFiles/nexaui_macos_text_value_tests.dir/link.txt
+            evidence/*/CMakeFiles/nexaui_macos_multiselection_tests.dir/link.txt
+            evidence/*/CMakeFiles/nexaui_macos_accessibility_tests.dir/link.txt
