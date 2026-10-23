@@ -1,14 +1,19 @@
 {
-  "date": "2026-10-23T18:02:16.658734+00:00",
+  "date": "2026-10-23T20:00:14.074284+00:00",
   "base": "58714d140657ef1e29c4b1fa5eddd5d9839fb6f8",
   "branch": "codex/native-multiselection",
-  "scope": "Static correction/review preparation only, not compiled/native acceptance",
   "sources": [
     {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ef63df3e0af41f6034057e3e610d198e541194744e708e992422b9378ae876dd",
+      "git_lf_sha256": "70ac48af10aea0f341450c7e71763c98fc1466d727054534248b9f215b97ceec",
+      "bytes": 15211
+    },
+    {
       "path": "CMakeLists.txt",
-      "sha256": "6af2e1b50b09c009e6cff531982087b4842e637d17246e1ada3b3c3095cf8a0e",
-      "git_lf_sha256": "f1d2ad4e802a8933534ec75fa186d8d5015ae75ab79f79e11f98d82e9efc09f4",
-      "bytes": 89244
+      "sha256": "29f8f6bf405e6c899045235e1d2c49b24af7d6e5cb9fb37fd9c433d73f0197ab",
+      "git_lf_sha256": "afca88a9ea07a30491ce828b3f7c417ac8f1f8bc79b769f9c92b0e9305448887",
+      "bytes": 90986
     },
     {
       "path": "platform/macos/accessibility.m",
@@ -41,10 +46,28 @@
       "bytes": 2816
     },
     {
+      "path": "tests/macos_multiselection_client.c",
+      "sha256": "48e0178793218211402ee4692a6648fd00dfca49f9d548519e5e3eeb302ef2bd",
+      "git_lf_sha256": "48e0178793218211402ee4692a6648fd00dfca49f9d548519e5e3eeb302ef2bd",
+      "bytes": 9266
+    },
+    {
+      "path": "tests/macos_multiselection_fixture.h",
+      "sha256": "efe0f2888ca23a1248b0e19e08a30b6c58fc88d543a5d38e429f8a633bbf394d",
+      "git_lf_sha256": "9bc8a48ec63a3b5b665380c3c0dc64f71950358daa1206af6e00f96ccdf8c108",
+      "bytes": 8085
+    },
+    {
+      "path": "tests/macos_multiselection_host.m",
+      "sha256": "82aabf44bef87c1f9520ab24d0635f2a2f2ecc77266092cde0d9fbf8dc816522",
+      "git_lf_sha256": "40e440d48ddcd3ab5de3b6721485b5063251b9b7f270269b7dd25e64b03887a4",
+      "bytes": 3516
+    },
+    {
       "path": "tests/test_macos_multiselection.m",
-      "sha256": "98ee81531424973e8ba25175cca074edeb174e6000372af79fce986703930c1e",
-      "git_lf_sha256": "98ee81531424973e8ba25175cca074edeb174e6000372af79fce986703930c1e",
-      "bytes": 25517
+      "sha256": "661954dce80c6ccb9393006b18763317f778f0ddf7178c15730b8358f46c2faa",
+      "git_lf_sha256": "219e9dbca2b65810b48e8c35a5a3b4f846923497f7d5a0b4d60f44df0ea46acf",
+      "bytes": 17952
     },
     {
       "path": "tests/test_selection_replace.c",
@@ -59,18 +82,10 @@
       "bytes": 15766
     }
   ],
-  "patch_sha256": "7aacad3759b23fe0401b573d809eb42efce6359949e91d29ac93dce24b98e77e",
-  "fixes_from_v1_sha256": "72fd9a19314060e4e4e8ec7d167512c1d1280f17ff6dcbd04965dcf98f3ce077",
-  "previous_manifest_sha256": "c8586e39e26776f82ed12cc76caef3d9f00800d029927760e9d0d0da94351dec",
-  "previous_evidence_manifest_sha256": "42d8e01eb8fa8637cbe1784289bcac2771d84d9985b46ae5c2b4c113427e234c",
-  "previous_1947_evidence_files_rehashed": true,
-  "changes": [
-    "Monotone publication revision checked before any snapshot dereference after NSArray.objectAtIndex; fixed original scratch bound and checked result index",
-    "Publication counter fails LIMIT at UINT64_MAX; owned selected-array getter also rejects publication ABA",
-    "Strict incarnation comparison when old OR new side is Multi; Single-to-Single remains unchanged",
-    "Actual two-buffer ABA fixture using runtime ivar addresses, prewarmed buffers, two real frame publications and shifted target index",
-    "Multi-to-Single retained owner/member retirement, forwarded request and re-promotion tests; legacy Single reparent retained"
-  ],
-  "runtime_status": "No new compilation or execution. User Mac switched off; no SSH since notification. Hosted validation still to arrange. Prior native results cover v1 only.",
-  "publication": "No feature commit/push/main update. V1 not approved; v2 full native regression/counterproof and exact-package re-review required."
+  "patch_sha256": "6a7f4d7eca562171786f71c5f4f84fdb8a53b125445fdf2e07702824ca864cff",
+  "previous_manifest_sha256": "e352839159333d27e9bd8a62e5ea8731593c0fa80696f22ef13946c08ec16002",
+  "previous_review_sha256": "9ecb9ac5cc30e73f7980da06d4b7bb2af74acdc962d87e1798f15c2472413e12",
+  "scope": "Reviewed v2 production bytes unchanged; shared fixture extraction and permanent independent external AX C17/host plus explicit visible-fixture opt-in on isolated macOS CI",
+  "runtime_status": "Diagnostic external65/ancestry/detach/context/demotion passed. Permanent CMake integration not yet built or run; no full SDK CI or final expanded review yet.",
+  "publication": "No feature commit/push or main change"
 }
