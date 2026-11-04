@@ -150,7 +150,7 @@ and current text. The preimplementation client failed at the expected missing
 events (`out/aetheri-atspi-events-before-v1.log`); the changed provider passed
 (`out/aetheri-atspi-events-v2.log`). A focused ASan/UBSan run with leak checking
 also passed (`out/aetheri-atspi-events-asan-v1.log`). These examples do not test
-native delivery at the 64 KiB chunk boundary, large-stream backpressure, concurrent client state,
+native delivery at the 64 KiB chunk boundary (covered by the later test below), large-stream backpressure, concurrent client state,
 event delivery across reconnect, actual IME, or a human screenreader.
 
 With these changes on base `07e3bdfa3134e30d35ef77c3289591ef1712e43f`, the
@@ -177,7 +177,7 @@ both long insertion and reverse-order deletion are exercised, as are unchanged
 text and callback failure. Disabling either UTF-8 boundary adjustment in
 separate negative controls made the test fail; the original code was restored.
 The independent native client additionally exercises ordinary Unicode deltas,
-but has not yet exercised 64 KiB messages over D-Bus or stalled-bus recovery.
+but did not itself exercise 64 KiB messages over D-Bus or stalled-bus recovery.
 The private-Weston AT-SPI subset passed 3/3 with GCC shared and 3/3 with Clang
 static ASan/UBSan and leak checking, with no skips and both fixture processes
 exiting 0. Logs: `out/aetheri-atspi-diff-native-shared.log` SHA-256
@@ -189,3 +189,31 @@ after one accepted chunk and was rerun separately in both profiles. A fresh
 Wayland-only build with AT-SPI and Vulkan explicitly disabled also built and
 passed that test. The earlier full-suite counts refer to the preceding source;
 only the focused tests named here were rerun for this extraction.
+
+## Native 64 KiB text-event boundary (2026-11-04)
+
+`nexaui_atspi_large_text_wayland_private` now runs a dedicated real NexaUI
+text-field host and an independent libatspi client on the private Weston and
+AT-SPI bus fixture. Starting from `AZ`, the host inserts 131,072 UTF-8 bytes
+between those two characters: 65,534 ASCII characters, a four-byte scalar,
+and another 65,534 ASCII characters. The scalar crosses the nominal 64 KiB
+split from both insertion and deletion directions. The client checks each of
+three insert and three delete messages for exact byte length, scalar position,
+scalar length, valid UTF-8 and payload, replays them into an independent model,
+then compares that model with a full native Text read. The host detaches and
+closes cleanly. This fixture exercises actual Wayland/AT-SPI transport but not
+window rendering, a physical display or an Aetheri compositor.
+
+On base `42d15e2626213de6e280b391bb4c0ded93a249a5`, the relevant AT-SPI group
+passed 4/4 in both GCC shared and Clang static ASan/UBSan builds with leak
+checking; no skips, fixture and child exits 0. Logs:
+`out/aetheri-atspi-large-final-shared.log` SHA-256
+`a77cf9f69c19b3726c5a0f23427b6a4681f4b92ed3a02e58b94e34f36318a5a4`, and
+`out/aetheri-atspi-large-final-asan.log` SHA-256
+`04846016e91731206e035d4dc7265096a91d1bb6f6983a1ed763bf57775cf2e2`.
+Separate insertion/deletion boundary mutants failed in the native workflow
+(`out/aetheri-atspi-large-negative-insert.log` and
+`out/aetheri-atspi-large-negative-delete.log`); the original source was
+restored and the shared group passed again. These results do not test the
+1 MiB text-reply limit, the 8 MiB outgoing budget, stalled readers or
+reconnection, all of which remain open.
