@@ -257,3 +257,24 @@ and `out/aetheri-text-ancestor-msvc-release-tests.log` SHA-256
 `1e044f68c386fd73a249cee6f87222b8e598082ebf48ebf6daee1ce64af4160b`.
 These checks do not implement or approve Linux native text writes; their
 connection lifetime, model acknowledgement and policy guards remain open.
+
+## Text-value completion prerequisite (2026-11-04)
+
+The private core bridge can now attach an owner-thread completion recorder to
+a guarded text-value request. Admission itself produces no success result;
+the recorder observes success only after the text buffer accepts the edit,
+including an equal-value no-op. Expiry, an invalidated guard, a changed policy
+or context destruction records cancellation. The guard retains the recorder
+through its single completion, and rejected admission does not call it. The
+recorder is explicitly prohibited from entering NexaUI or calling native or
+application code; frame publication is a separate event.
+
+The focused regression exercises delayed success before frame publication,
+equal values, guard revocation, omitted widgets, disabled fields, rejected
+admission and context destruction. On base
+`b0c6cb95ba60daa1e86c493fe07f079538ebf1f4`, the three text-value tests passed
+in the GCC shared Wayland-only and Clang ASan/UBSan static configurations; the
+existing two portable text-value tests also passed with Windows MSVC Debug.
+This is an internal prerequisite, not an AT-SPI EditableText implementation.
+Deferred D-Bus replies, deadlines, disconnect/rebind cancellation, payload
+budgets and independent client tests remain to be implemented and validated.

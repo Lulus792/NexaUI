@@ -37,4 +37,14 @@ nx_text_value_target nx_context_text_value_target(const nx_context *context,
                                                   uint64_t id);
 nx_result nx_semantics_request_text_value_guarded(nx_context *context,
     uint64_t id, nx_utf8_span value, const nx_text_value_guard *guard);
+
+/* Internal completion for native asynchronous bridges. The guard owns user
+   until completion has returned. complete must only record the result: it
+   must not call application code, native APIs, or reenter NexaUI. It is called
+   exactly once for an admitted request (including cancellation), never for a
+   rejected admission. applied means the model accepted the replacement, even
+   when the new value equals the old one; it does not imply frame publication. */
+nx_result nx_semantics_request_text_value_with_completion(nx_context *context,
+    uint64_t id, nx_utf8_span value, const nx_text_value_guard *guard,
+    void (*complete)(void *user, int applied));
 #endif
