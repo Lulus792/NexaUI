@@ -545,12 +545,14 @@ if(NEXAUI_BUILD_TESTS)
             target_include_directories(nexaui_wayland_async_clipboard_tests PRIVATE
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
             target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
-                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
             add_test(NAME nexaui_wayland_async_clipboard COMMAND nexaui_wayland_async_clipboard_tests)
             add_test(NAME nexaui_wayland_clipboard_focus_loss COMMAND nexaui_wayland_async_clipboard_tests --focus-loss)
             add_test(NAME nexaui_wayland_clipboard_keyboard_removed COMMAND nexaui_wayland_async_clipboard_tests --keyboard-removed)
             add_test(NAME nexaui_wayland_clipboard_seat_removed COMMAND nexaui_wayland_async_clipboard_tests --seat-removed)
-            set_tests_properties(nexaui_wayland_async_clipboard nexaui_wayland_clipboard_focus_loss nexaui_wayland_clipboard_keyboard_removed nexaui_wayland_clipboard_seat_removed PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_pointer_removed COMMAND nexaui_wayland_async_clipboard_tests --pointer-removed)
+            add_test(NAME nexaui_wayland_pointer_serial_removed COMMAND nexaui_wayland_async_clipboard_tests --pointer-serial)
+            set_tests_properties(nexaui_wayland_async_clipboard nexaui_wayland_clipboard_focus_loss nexaui_wayland_clipboard_keyboard_removed nexaui_wayland_clipboard_seat_removed nexaui_wayland_pointer_removed nexaui_wayland_pointer_serial_removed PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_drop_tests tests/test_wayland_async_drop.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)

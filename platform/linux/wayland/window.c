@@ -146,6 +146,7 @@ struct nx_wayland_window {
     unsigned write_count;
     unsigned transfer_read_depth;
     uint32_t selection_serial;
+    int selection_serial_from_pointer;
     nx_platform_event_queue event_queue;
     int width, height, scale;
     int background_width, background_height, cursor_width, cursor_height;
@@ -779,8 +780,10 @@ static void nx_wayland_pointer_button(void *data, struct wl_pointer *pointer,
     (void)pointer;
     (void)time;
     if (!window->pointer_inside) return;
-    if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
         window->selection_serial = serial;
+        window->selection_serial_from_pointer = 1;
+    }
     uint32_t logical = 0;
     switch (button) {
     case BTN_LEFT: logical = NX_BUTTON_LEFT; break;
@@ -1696,7 +1699,10 @@ static void nx_wayland_keyboard_key(void *data, struct wl_keyboard *keyboard,
     if (!window->keyboard_focused || !window->key_state ||
         key > UINT32_MAX - 8u) return;
     int down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
-    if (down) window->selection_serial = serial;
+    if (down) {
+        window->selection_serial = serial;
+        window->selection_serial_from_pointer = 0;
+    }
     int repeat = down && key < sizeof(window->keys_down) &&
                  window->keys_down[key];
     if (key < sizeof(window->keys_down)) window->keys_down[key] = down;
@@ -1773,7 +1779,7 @@ static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
         window->pointer = NULL;
         window->pointer_inside = 0;
         window->left_pressed = 0;
-        window->selection_serial = 0;
+        if (window->selection_serial_from_pointer) window->selection_serial = 0;
         window->pointer_serial = 0;
         window->axis_x = window->axis_y = 0.0f;
         window->axis_steps_x = window->axis_steps_y = 0;

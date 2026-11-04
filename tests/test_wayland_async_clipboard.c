@@ -1,6 +1,17 @@
 #include "wayland_v3_fixture.h"
 #include "text_value.h"
 #include <time.h>
+#include <xkbcommon/xkbcommon.h>
+
+static void send_keymap(struct wl_resource *keyboard) {
+    struct xkb_context *context=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(context);
+    struct xkb_keymap *keymap=xkb_keymap_new_from_names(context,NULL,XKB_KEYMAP_COMPILE_NO_FLAGS);CHECK(keymap);
+    char *text=xkb_keymap_get_as_string(keymap,XKB_KEYMAP_FORMAT_TEXT_V1);CHECK(text);
+    char path[]="/tmp/nexaui-keymap-XXXXXX";int fd=mkstemp(path);CHECK(fd>=0 && unlink(path)==0);
+    size_t length=strlen(text)+1;CHECK(write(fd,text,length)==(ssize_t)length);
+    wl_keyboard_send_keymap(keyboard,WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,fd,(uint32_t)length);
+    close(fd);free(text);xkb_keymap_unref(keymap);xkb_context_unref(context);
+}
 
 static double now_seconds(void) {
     struct timespec t; CHECK(clock_gettime(CLOCK_MONOTONIC, &t) == 0);
@@ -17,16 +28,21 @@ static void close_peer(test_server *server) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--pointer-removed") || !strcmp(argv[1],"--pointer-serial"))));
     int focus_loss=argc==2;
     int keyboard_removed=argc==2 && !strcmp(argv[1],"--keyboard-removed");
     int seat_removed=argc==2 && !strcmp(argv[1],"--seat-removed");
+    int pointer_serial=argc==2 && !strcmp(argv[1],"--pointer-serial");
+    int pointer_removed=argc==2 && (!strcmp(argv[1],"--pointer-removed") || pointer_serial);
     test_server server = {0}; char runtime[] = "/tmp/nexaui-async-XXXXXX";
     server.keyboard_enabled=focus_loss;
+    server.pointer_enabled=pointer_removed;
+    if(pointer_removed)server.keyboard_bound=send_keymap;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));
-    CHECK(wl_global_create(server.display, &wl_shm_interface, 1, &server, bind_shm));
+    if(pointer_removed) CHECK(wl_display_init_shm(server.display)==0);
+    else CHECK(wl_global_create(server.display, &wl_shm_interface, 1, &server, bind_shm));
     server.seat_global=wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat);
     CHECK(server.seat_global);
     CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, 3, &server, bind_data_manager));
@@ -56,6 +72,48 @@ int main(int argc, char **argv) {
         CHECK(atomic_load(&server.stalled_fd));
         nx_event event;int event_available=0;
         do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);} while(event_available);
+        if(pointer_removed) {
+            nx_context *context=NULL;CHECK(nx_context_create(NULL,&context)==NX_OK);
+            atomic_store(&server.pointer_press_requested,1);
+            wl_surface_commit(nx_window_wayland_surface(window));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            size_t count=0;CHECK(nx_window_route_events(window,context,&count)==NX_OK);
+            CHECK(nx_begin_frame(context,240,120,0)==NX_OK);
+            nx_input_snapshot input;CHECK(nx_frame_input(context,&input)==NX_OK);
+            CHECK((input.buttons_down & (NX_BUTTON_LEFT|NX_BUTTON_RIGHT))==(NX_BUTTON_LEFT|NX_BUTTON_RIGHT));
+            CHECK(nx_end_frame(context)==NX_OK);
+            if(!pointer_serial) {
+                atomic_store(&server.keyboard_press_requested,1);
+                wl_surface_commit(nx_window_wayland_surface(window));
+                CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            }
+            atomic_store(&server.pointer_remove_requested,1);
+            wl_surface_commit(nx_window_wayland_surface(window));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            CHECK(nx_window_poll(window,0)==NX_OK && nx_linux_window_clipboard_async_current(window,token));
+            CHECK(nx_window_route_events(window,context,&count)==NX_OK);
+            CHECK(nx_begin_frame(context,240,120,0)==NX_OK);
+            CHECK(nx_frame_input(context,&input)==NX_OK && input.buttons_down==0);
+            CHECK((input.buttons_released & (NX_BUTTON_LEFT|NX_BUTTON_RIGHT))==(NX_BUTTON_LEFT|NX_BUTTON_RIGHT));
+            const nx_event *events=NULL;size_t event_count=0;int cancelled=0;
+            CHECK(nx_frame_events(context,&events,&event_count)==NX_OK);
+            for(size_t i=0;i<event_count;++i)if(events[i].type==NX_EVENT_POINTER_CANCEL)cancelled=1;
+            CHECK(cancelled && nx_end_frame(context)==NX_OK);
+            close_peer(&server);
+            char *bytes=NULL;int ready=0;
+            for(unsigned i=0;i<20 && !ready;++i) {
+                CHECK(nx_window_poll(window,100)==NX_OK);
+                CHECK(nx_linux_window_clipboard_async_take(window,token,&bytes,&length,&ready)==NX_OK);
+            }
+            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));free(bytes);
+            CHECK(nx_window_clipboard_set_text(window,"Owned",5)==(pointer_serial?NX_ERROR_STATE:NX_OK));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            CHECK(atomic_load(&server.selection_serial_seen)==(pointer_serial?0:7));
+            nx_context_destroy(context);nx_window_destroy(window);CHECK(allocations.live==0);
+            wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(server.display);
+            CHECK(unlink(path)==0 || access(path,F_OK)!=0);CHECK(rmdir(runtime)==0);
+            puts("Pointer removal cancels buttons without cancelling clipboard");return 0;
+        }
         if(seat_removed)atomic_store(&server.seat_remove_requested,1);
         else if(keyboard_removed)atomic_store(&server.keyboard_remove_requested,1);
         else atomic_store(&server.keyboard_leave_requested,1);

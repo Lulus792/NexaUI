@@ -8,6 +8,7 @@
 #include "fixture_font.h"
 
 #include <pthread.h>
+#include <linux/input-event-codes.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,11 +25,14 @@
 typedef struct test_server {
     struct wl_display *display;
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
-    struct wl_resource *data_device, *keyboard, *seat;
+    struct wl_resource *data_device, *keyboard, *pointer, *seat;
     struct wl_global *seat_global;
-    int keyboard_enabled;
+    int keyboard_enabled, pointer_enabled;
     atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested, seat_remove_requested;
     atomic_int seat_remove_sent;
+    atomic_int pointer_press_requested, pointer_remove_requested;
+    atomic_int keyboard_press_requested, selection_serial_seen;
+    void (*keyboard_bound)(struct wl_resource *keyboard);
     atomic_int send_offer, send_drop;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
@@ -87,12 +91,23 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
 static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
+    if (resource != server->surface) return;
     if(atomic_exchange(&server->seat_remove_requested,0)) {
         CHECK(server->seat_global);wl_global_remove(server->seat_global);
         wl_display_flush_clients(server->display);atomic_store(&server->seat_remove_sent,1);
     }
     if(atomic_exchange(&server->keyboard_remove_requested,0)) {
         CHECK(server->seat);wl_seat_send_capabilities(server->seat,0);
+    }
+    if(atomic_exchange(&server->pointer_remove_requested,0)) {
+        CHECK(server->seat);wl_seat_send_capabilities(server->seat,WL_SEAT_CAPABILITY_KEYBOARD);
+    }
+    if(atomic_exchange(&server->pointer_press_requested,0)) {
+        CHECK(server->pointer && server->surface);
+        wl_pointer_send_enter(server->pointer,4,server->surface,wl_fixed_from_int(12),wl_fixed_from_int(15));
+        wl_pointer_send_button(server->pointer,5,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+        wl_pointer_send_button(server->pointer,6,0,BTN_RIGHT,WL_POINTER_BUTTON_STATE_PRESSED);
+        wl_pointer_send_frame(server->pointer);
     }
     if(atomic_exchange(&server->keyboard_leave_requested,0)) {
         CHECK(server->keyboard && server->surface);
@@ -103,6 +118,9 @@ static void surface_commit(struct wl_client *client,
         struct wl_array keys;wl_array_init(&keys);
         wl_keyboard_send_enter(server->keyboard,3,server->surface,&keys);
         wl_array_release(&keys);
+    }
+    if(atomic_exchange(&server->keyboard_press_requested,0)) {
+        CHECK(server->keyboard);wl_keyboard_send_key(server->keyboard,7,0,KEY_A,WL_KEYBOARD_KEY_STATE_PRESSED);
     }
     if (atomic_exchange(&server->send_offer, 0)) {
         struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, wl_resource_get_version(server->data_device), 0);
@@ -154,9 +172,14 @@ static void surface_damage(struct wl_client *client,struct wl_resource *resource
                            int32_t x,int32_t y,int32_t width,int32_t height) {
     (void)client;(void)resource;(void)x;(void)y;(void)width;(void)height;
 }
+static void surface_attach(struct wl_client *client,struct wl_resource *resource,
+                           struct wl_resource *buffer,int32_t x,int32_t y) {
+    (void)client;(void)resource;(void)buffer;(void)x;(void)y;
+}
 
 static const struct wl_surface_interface surface_implementation = {
     .destroy = resource_destroy,
+    .attach = surface_attach,
     .damage = surface_damage,
     .commit = surface_commit
 };
@@ -164,9 +187,10 @@ static const struct wl_surface_interface surface_implementation = {
 static void create_surface(struct wl_client *client,
                            struct wl_resource *resource, uint32_t id) {
     test_server *server = wl_resource_get_user_data(resource);
-    server->surface = wl_resource_create(client, &wl_surface_interface, 1, id);
-    CHECK(server->surface);
-    wl_resource_set_implementation(server->surface,
+    struct wl_resource *surface = wl_resource_create(client, &wl_surface_interface, 1, id);
+    CHECK(surface);
+    if (!server->surface) server->surface = surface;
+    wl_resource_set_implementation(surface,
                                    &surface_implementation, server, NULL);
 }
 
@@ -198,9 +222,21 @@ static void get_keyboard(struct wl_client *client,struct wl_resource *seat,uint3
     CHECK(server->keyboard);
     static const struct wl_keyboard_interface implementation={.release=resource_destroy};
     wl_resource_set_implementation(server->keyboard,&implementation,server,NULL);
+    if(server->keyboard_bound)server->keyboard_bound(server->keyboard);
+}
+static void pointer_set_cursor(struct wl_client *client,struct wl_resource *pointer,
+                               uint32_t serial,struct wl_resource *surface,int32_t x,int32_t y) {
+    (void)client;(void)pointer;(void)serial;(void)surface;(void)x;(void)y;
+}
+static void get_pointer(struct wl_client *client,struct wl_resource *seat,uint32_t id) {
+    test_server *server=wl_resource_get_user_data(seat);
+    server->pointer=wl_resource_create(client,&wl_pointer_interface,wl_resource_get_version(seat),id);
+    CHECK(server->pointer);
+    static const struct wl_pointer_interface implementation={.set_cursor=pointer_set_cursor,.release=resource_destroy};
+    wl_resource_set_implementation(server->pointer,&implementation,server,NULL);
 }
 static const struct wl_seat_interface seat_implementation = {
-    .get_keyboard = get_keyboard, .release = resource_destroy
+    .get_pointer = get_pointer, .get_keyboard = get_keyboard, .release = resource_destroy
 };
 
 static void bind_seat(struct wl_client *client, void *data,
@@ -211,7 +247,8 @@ static void bind_seat(struct wl_client *client, void *data,
     wl_resource_set_implementation(resource, &seat_implementation, data, NULL);
     test_server *server=data;
     server->seat=resource;
-    wl_seat_send_capabilities(resource, server->keyboard_enabled?WL_SEAT_CAPABILITY_KEYBOARD:0);
+    wl_seat_send_capabilities(resource, (server->keyboard_enabled?WL_SEAT_CAPABILITY_KEYBOARD:0) |
+        (server->pointer_enabled?WL_SEAT_CAPABILITY_POINTER:0));
 }
 
 static void toplevel_set_string(struct wl_client *client,
@@ -406,6 +443,19 @@ static void bind_manager(struct wl_client *client, void *data,
                                    data, NULL);
 }
 
+static void source_offer(struct wl_client *client,struct wl_resource *resource,const char *mime) {
+    (void)client;(void)resource;(void)mime;
+}
+static void create_data_source(struct wl_client *client,struct wl_resource *manager,uint32_t id) {
+    struct wl_resource *source=wl_resource_create(client,&wl_data_source_interface,wl_resource_get_version(manager),id);
+    CHECK(source);
+    static const struct wl_data_source_interface implementation={.offer=source_offer,.destroy=resource_destroy};
+    wl_resource_set_implementation(source,&implementation,wl_resource_get_user_data(manager),NULL);
+}
+static void set_selection(struct wl_client *client,struct wl_resource *device,struct wl_resource *source,uint32_t serial) {
+    (void)client;(void)source;test_server *server=wl_resource_get_user_data(device);
+    atomic_store(&server->selection_serial_seen,(int)serial);
+}
 static void get_data_device(struct wl_client *client, struct wl_resource *manager,
                              uint32_t id, struct wl_resource *seat) {
     (void)seat;
@@ -413,14 +463,14 @@ static void get_data_device(struct wl_client *client, struct wl_resource *manage
     int version=wl_resource_get_version(manager); atomic_store(&s->data_version,version);
     s->data_device = wl_resource_create(client, &wl_data_device_interface, version, id);
     CHECK(s->data_device);
-    static const struct wl_data_device_interface implementation = {.release = resource_destroy};
+    static const struct wl_data_device_interface implementation = {.set_selection=set_selection,.release = resource_destroy};
     wl_resource_set_implementation(s->data_device, &implementation, s, NULL);
 }
 static void bind_data_manager(struct wl_client *client, void *data,
                                uint32_t version, uint32_t id) {
     struct wl_resource *manager = wl_resource_create(client, &wl_data_device_manager_interface, version, id);
     CHECK(manager);
-    static const struct wl_data_device_manager_interface implementation = {.get_data_device = get_data_device};
+    static const struct wl_data_device_manager_interface implementation = {.create_data_source=create_data_source,.get_data_device = get_data_device};
     wl_resource_set_implementation(manager, &implementation, data, NULL);
 }
 typedef struct window_heap { size_t calls, live; } window_heap;

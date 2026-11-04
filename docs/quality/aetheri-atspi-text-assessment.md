@@ -811,3 +811,19 @@ Automatic replacement-seat binding, pointer-only capability removal acceptance,
 other compositor/device combinations and the remaining W06 reconnect behavior
 are still open. Destroy and recreate the affected window after the terminal
 error; this step does not claim automatic recovery.
+
+## Wayland pointer capability loss (2026-11-05)
+
+Candidate based on `639a94d7a0431533629f07ef1776a102e7817276`. A controlled
+server sends pointer enter and two pressed buttons, then removes only the
+pointer capability while retaining the keyboard and an in-flight clipboard
+read. The routed input snapshot clears both buttons and contains a pointer
+cancellation; the read completes. A keyboard key serial received before
+pointer removal remains usable to publish a selection. On the base revision
+this publication failed because all selection serials were cleared. A separate
+case verifies that a serial from the removed pointer is still discarded. Both
+cases passed with GCC shared and Clang ASan/UBSan static. These protocol tests
+do not replace acceptance with a physical device or another compositor;
+replacement-seat binding and the remaining W06 reconnect behavior stay open.
+The complete private-Weston suites passed 180/180 in GCC shared and 181/181
+in Clang ASan/UBSan static on this candidate.
