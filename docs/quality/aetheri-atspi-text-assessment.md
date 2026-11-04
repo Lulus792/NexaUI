@@ -729,3 +729,32 @@ and 170/170 in Clang ASan/UBSan static, including the independent clipboard
 peer and the previously intermittent one-shot test. The dual-backend X11
 window test passed. These results do not remove the earlier documented
 one-shot intermittency or prove an actual external file drag.
+
+## Independent Wayland drag source and close (2026-11-04)
+
+Candidate based on `e34f6551c78f5533606bb400f1375fb6b43566d6`. The new
+`nexaui_wayland_drop_peer` runs an independent Wayland drag-source executable
+that does not link NexaUI, a separate NexaUI target and private Weston 14 on
+Xvfb. A virtual pointer initiates a copy drag after the source confirms its
+start request; the test checks the source's selected action and `dnd_finished`
+and the target's decoded path and coordinates. This is an actual compositor
+and separate source process, but not a file-manager, physical input, another
+compositor, or Aetheri acceptance test.
+
+With the base implementation, the ASan run exposed a close race: the target
+received the path but closed before the completion request reached Weston,
+so the source did not receive `dnd_finished`. The adapter now flushes the
+request before making the drop available, and defers publication while a full
+socket is awaiting write readiness. The controlled-server backpressure test
+fills the actual Wayland socket, observes that the drop is withheld, resumes
+the compositor, and checks successful delivery and exactly one finish.
+Removing the availability guard makes that test fail. Independently removing
+the finish request makes the Weston test fail even though the target receives
+the path. The restored peer test passed three consecutive runs in each of the
+GCC and ASan/UBSan profiles; the source uses a private `wl_data_device` and
+releases its received offers so leak checking remains enabled.
+
+The full private-Weston candidate suites passed 171/171 with GCC shared and
+172/172 with Clang ASan/UBSan static, including the new peer and backpressure
+tests. The dual-backend X11 window test passed. These results do not close the
+previously documented intermittent one-shot clipboard issue.

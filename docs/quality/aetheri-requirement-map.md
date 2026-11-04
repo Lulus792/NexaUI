@@ -30,8 +30,9 @@ The test of a real one-shot owner is intermittent under private Weston and is
 not an acceptance pass for the current candidate.
 The subsequent Settings keyboard and AT-SPI paste paths are poll-driven on
 Wayland; custom callbacks and X11 paste still have synchronous paths. The
-subsequent Wayland file-drop reader is also poll-driven; its compositor acceptance
-and bounded-queue behavior need separate assessment.
+subsequent Wayland file-drop reader is also poll-driven, with a separate-source
+copy-drag test on private Weston. Actual file-manager and additional compositor
+acceptance, as well as the bounded-queue behavior, still need assessment.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |

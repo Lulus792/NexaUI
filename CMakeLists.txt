@@ -563,7 +563,15 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_async_drop_legacy2 COMMAND nexaui_wayland_async_drop_tests --legacy2)
             add_test(NAME nexaui_wayland_async_drop_reject COMMAND nexaui_wayland_async_drop_tests --reject)
             add_test(NAME nexaui_wayland_async_drop_invalid COMMAND nexaui_wayland_async_drop_tests --invalid)
-            set_tests_properties(nexaui_wayland_async_drop nexaui_wayland_async_drop_timeout nexaui_wayland_async_drop_destroy nexaui_wayland_async_drop_legacy nexaui_wayland_async_drop_legacy2 nexaui_wayland_async_drop_reject nexaui_wayland_async_drop_invalid PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_async_drop_backpressure COMMAND nexaui_wayland_async_drop_tests --backpressure)
+            set_tests_properties(nexaui_wayland_async_drop nexaui_wayland_async_drop_timeout nexaui_wayland_async_drop_destroy nexaui_wayland_async_drop_legacy nexaui_wayland_async_drop_legacy2 nexaui_wayland_async_drop_reject nexaui_wayland_async_drop_invalid nexaui_wayland_async_drop_backpressure PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_drop_source tests/wayland_drop_source.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c)
+            add_dependencies(nexaui_wayland_drop_source nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_drop_source PRIVATE ${NEXAUI_WAYLAND_PROTOCOL_DIR})
+            target_link_libraries(nexaui_wayland_drop_source PRIVATE PkgConfig::WAYLAND_CLIENT)
+            add_executable(nexaui_wayland_drop_target tests/wayland_drop_target.c)
+            target_link_libraries(nexaui_wayland_drop_target PRIVATE NexaUI::NexaUI)
             add_executable(nexaui_wayland_paste_focus_tests tests/test_wayland_paste_focus.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
@@ -589,6 +597,14 @@ if(NEXAUI_BUILD_TESTS)
             RESOURCE_LOCK native_display)
         endif()
         find_package(Python3 COMPONENTS Interpreter QUIET)
+        find_program(NEXAUI_DROP_XDOTOOL xdotool)
+        if(TARGET nexaui_wayland_drop_source AND Python3_Interpreter_FOUND AND NEXAUI_DROP_XDOTOOL)
+            add_test(NAME nexaui_wayland_drop_peer
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_drop_peer.py
+                    $<TARGET_FILE:nexaui_wayland_drop_source> $<TARGET_FILE:nexaui_wayland_drop_target> ${NEXAUI_DROP_XDOTOOL})
+            set_tests_properties(nexaui_wayland_drop_peer PROPERTIES TIMEOUT 75 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+        endif()
         find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
         find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
         add_executable(nexaui_linux_atspi_host tests/linux_atspi_host.c)

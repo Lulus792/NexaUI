@@ -27,6 +27,7 @@ typedef struct test_server {
     struct wl_resource *data_device;
     atomic_int send_offer, send_drop;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
+    atomic_int pause_server, server_paused, stop_server;
     atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
@@ -128,9 +129,14 @@ static void surface_commit(struct wl_client *client,
     if (server->text_input)
         zwp_text_input_v3_send_enter(server->text_input, server->surface);
 }
+static void surface_damage(struct wl_client *client,struct wl_resource *resource,
+                           int32_t x,int32_t y,int32_t width,int32_t height) {
+    (void)client;(void)resource;(void)x;(void)y;(void)width;(void)height;
+}
 
 static const struct wl_surface_interface surface_implementation = {
     .destroy = resource_destroy,
+    .damage = surface_damage,
     .commit = surface_commit
 };
 

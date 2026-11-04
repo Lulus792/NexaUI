@@ -138,7 +138,7 @@ struct nx_wayland_window {
     nx_wayland_read_transfer async_read;
     nx_wayland_read_transfer drop_read;
     nx_wayland_clipboard_offer *drop_read_offer;
-    int drop_read_active, drop_processing;
+    int drop_read_active, drop_processing, drop_finish_pending;
     nx_wayland_clipboard_offer *async_offer;
     uint64_t async_token, async_expiry;
     int async_active, async_notified;
@@ -201,6 +201,12 @@ static uint32_t nx_wayland_modifiers(nx_wayland_window *window);
 static nx_result nx_wayland_apply_cursor(nx_wayland_window *window);
 static nx_result nx_wayland_attach_background(nx_wayland_window *window);
 static nx_result nx_wayland_process_drop(nx_wayland_window *window);
+static void nx_wayland_drop_flushed(nx_wayland_window *window) {
+    if (!window->drop_finish_pending) return;
+    window->drop_finish_pending = 0;
+    nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
+    nx_platform_event_queue_push(&window->event_queue, wake);
+}
 static void nx_wayland_async_read_progress(nx_wayland_window *window);
 static void nx_wayland_async_read_clear(nx_wayland_window *window);
 static void nx_wayland_ime_activate(nx_wayland_window *window);
@@ -2165,13 +2171,16 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         if (wl_display_dispatch_pending(window->display) < 0)
             return NX_ERROR_PLATFORM;
     }
-    int needs_write = 0;
+    int needs_write = 0, notify_drop = 0;
     if (wl_display_flush(window->display) < 0) {
         if (errno != EAGAIN) {
             wl_display_cancel_read(window->display);
             return NX_ERROR_PLATFORM;
         }
         needs_write = 1;
+    } else if (window->drop_finish_pending) {
+        notify_drop = 1;
+        timeout_ms = 0;
     }
     struct pollfd fds[8] = {{wl_display_get_fd(window->display),
                         (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0}};
@@ -2209,10 +2218,13 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     timeout = nx_wayland_repeat_timeout(&window->repeat,
                                         nx_wayland_now_ns(), timeout);
     int ready = poll(fds, fd_count, timeout);
-    if (ready > 0 && (fds[0].revents & POLLOUT) &&
-        wl_display_flush(window->display) < 0 && errno != EAGAIN) {
-        wl_display_cancel_read(window->display);
-        return NX_ERROR_PLATFORM;
+    if (ready > 0 && (fds[0].revents & POLLOUT)) {
+        if (wl_display_flush(window->display) < 0) {
+            if (errno != EAGAIN) {
+                wl_display_cancel_read(window->display);
+                return NX_ERROR_PLATFORM;
+            }
+        } else if (window->drop_finish_pending) notify_drop = 1;
     }
     if (ready > 0 && (fds[0].revents & POLLIN)) {
         if (wl_display_read_events(window->display) < 0)
@@ -2223,6 +2235,7 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         if (ready > 0 && (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)))
             return NX_ERROR_PLATFORM;
     }
+    if (notify_drop) nx_wayland_drop_flushed(window);
     if (ready > 0) nx_wayland_progress_writes(window);
     if (wl_display_dispatch_pending(window->display) < 0)
         return NX_ERROR_PLATFORM;
@@ -2575,6 +2588,7 @@ nx_result nx_wayland_window_next_file_drop(nx_wayland_window *window,
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->drop_processing) return NX_ERROR_STATE;
+    if (window->drop_finish_pending) return NX_OK;
     return nx_platform_drop_queue_next(&window->drop_queue, path_utf8,
                                         capacity, out_length, out_info,
                                         available);
@@ -2831,7 +2845,8 @@ static nx_result nx_wayland_clipboard_read_fd(nx_wayland_window *window,
 }
 
 static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
-    if (nx_wayland_sync_read_depth || window->transfer_read_depth || window->drop_processing) return NX_OK;
+    if (nx_wayland_sync_read_depth || window->transfer_read_depth || window->drop_processing ||
+        window->drop_finish_pending) return NX_OK;
     if (window->drop_read_active) {
         nx_wayland_read_transfer *transfer = &window->drop_read;
         nx_wayland_read_transfer_step(transfer, nx_wayland_now_ns());
@@ -2853,13 +2868,20 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
         nx_wayland_clipboard_offer *finished = window->drop_read_offer;
         if (result == NX_OK && window->drop_queue.count > previous_count &&
             wl_data_offer_get_version(finished->native) >= 3 &&
-            finished->dnd_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY)
+            finished->dnd_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY) {
             wl_data_offer_finish(finished->native);
+            if (wl_display_flush(window->display) < 0) {
+                if (errno == EAGAIN) window->drop_finish_pending = 1;
+                else result = NX_ERROR_PLATFORM;
+            }
+        }
         window->drop_read_offer = NULL; window->drop_read_active = 0;
         --finished->in_use; nx_wayland_retire_offer(finished);
         if (result != NX_OK) { window->drop_processing = 0; return result; }
-        nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
-        nx_platform_event_queue_push(&window->event_queue, wake);
+        if (!window->drop_finish_pending) {
+            nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
+            nx_platform_event_queue_push(&window->event_queue, wake);
+        }
         window->drop_processing = 0;
     }
     nx_wayland_clipboard_offer *offer = window->drop_offer;

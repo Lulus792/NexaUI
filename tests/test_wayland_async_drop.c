@@ -1,10 +1,24 @@
 #include "wayland_v3_fixture.h"
 #include "text_value.h"
+#include <errno.h>
 #include <time.h>
 
 static double now_seconds(void) {
     struct timespec t; CHECK(clock_gettime(CLOCK_MONOTONIC, &t) == 0);
     return (double)t.tv_sec + (double)t.tv_nsec / 1e9;
+}
+static void *run_pausing_server(void *user) {
+    test_server *server=user;struct wl_event_loop *loop=wl_display_get_event_loop(server->display);
+    while(!atomic_load(&server->stop_server)) {
+        if(atomic_load(&server->pause_server)) {
+            atomic_store(&server->server_paused,1);
+            struct timespec wait={0,1000000};nanosleep(&wait,NULL);continue;
+        }
+        atomic_store(&server->server_paused,0);
+        if(wl_event_loop_dispatch(loop,10)<0)break;
+        wl_display_flush_clients(server->display);
+    }
+    return NULL;
 }
 typedef struct drop_heap { window_heap heap; nx_window *window; int armed, reentered; } drop_heap;
 static void *drop_allocate(void *user, size_t size) {
@@ -22,13 +36,14 @@ static void drop_free(void *user, void *pointer, size_t size) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy") || !strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--legacy2") || !strcmp(argv[1],"--reject") || !strcmp(argv[1],"--invalid"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy") || !strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--legacy2") || !strcmp(argv[1],"--reject") || !strcmp(argv[1],"--invalid") || !strcmp(argv[1],"--backpressure"))));
     int timeout=argc==2 && !strcmp(argv[1],"--timeout");
     int destroy=argc==2 && !strcmp(argv[1],"--destroy");
     int legacy=argc==2 && !strcmp(argv[1],"--legacy") ? 1 :
                argc==2 && !strcmp(argv[1],"--legacy2") ? 2 : 0;
     int reject=argc==2 && !strcmp(argv[1],"--reject");
     int invalid=argc==2 && !strcmp(argv[1],"--invalid");
+    int backpressure=argc==2 && !strcmp(argv[1],"--backpressure");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-drop-XXXXXX";
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
@@ -41,7 +56,7 @@ int main(int argc, char **argv) {
     const char *name = wl_display_add_socket_auto(server.display); CHECK(name);
     char path[256]; CHECK(snprintf(path, sizeof(path), "%s/%s", runtime, name) > 0);
     CHECK(setenv("WAYLAND_DISPLAY", name, 1) == 0); unsetenv("WAYLAND_SOCKET");
-    pthread_t thread; CHECK(pthread_create(&thread, NULL, run_server, &server) == 0);
+    pthread_t thread; CHECK(pthread_create(&thread, NULL, backpressure?run_pausing_server:run_server, &server) == 0);
     drop_heap allocations = {0};
     nx_window_desc desc = {"async drop", 240, 120, NX_WINDOW_HIDDEN,
                            {&allocations, drop_allocate, drop_free}};
@@ -72,7 +87,32 @@ int main(int argc, char **argv) {
     for (unsigned i=0; i<20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd) && now_seconds()-start < 1.5);
-    if (destroy) {
+    if (backpressure) {
+        atomic_store(&server.pause_server,1);
+        while(!atomic_load(&server.server_paused) && now_seconds()-start<2.0) {
+            struct timespec wait={0,1000000};nanosleep(&wait,NULL);
+        }
+        CHECK(atomic_load(&server.server_paused));
+        int blocked=0;
+        for(unsigned i=0;i<200000 && !blocked;++i) {
+            wl_surface_damage(nx_window_wayland_surface(window),0,0,1,1);
+            if(wl_display_flush(nx_window_wayland_display(window))<0) {
+                CHECK(errno==EAGAIN);blocked=1;
+            }
+        }
+        CHECK(blocked);
+        int fd=atomic_exchange(&server.stalled_fd,0);CHECK(fd>0 && close(fd-1)==0);
+        CHECK(nx_window_poll(window,0)==NX_OK);
+        char value[64];size_t length=0;int available=0;nx_file_drop_info info={0};
+        CHECK(nx_window_next_file_drop(window,value,sizeof(value),&length,&info,&available)==NX_OK && !available);
+        atomic_store(&server.pause_server,0);
+        for(unsigned i=0;i<100 && !available;++i) {
+            CHECK(nx_window_poll(window,100)==NX_OK);
+            CHECK(nx_window_next_file_drop(window,value,sizeof(value),&length,&info,&available)==NX_OK);
+        }
+        CHECK(available && !strcmp(value,"/tmp/one file"));
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0 && atomic_load(&server.drop_finishes)==1);
+    } else if (destroy) {
         nx_window_destroy(window); window=NULL; CHECK(allocations.heap.live==0);
     } else if (timeout) {
         nx_result result=NX_OK;
@@ -121,7 +161,8 @@ int main(int argc, char **argv) {
     if(timeout || destroy) CHECK(atomic_load(&server.drop_finishes)==0);
     CHECK(allocations.heap.live==0);
     int remaining=atomic_exchange(&server.stalled_fd,0); if(remaining)CHECK(close(remaining-1)==0);
-    wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
+    if(backpressure)atomic_store(&server.stop_server,1);else wl_display_terminate(server.display);
+    CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy(server.display); CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
     puts("Asynchronous Wayland drop remains responsive and completes"); return 0;
 }
