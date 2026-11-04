@@ -21,8 +21,10 @@ The client checks the nonstandard `nexaui-value` attribute and the supported
 read-only AT-SPI Text queries using a Unicode draft and selection. Text range,
 character, caret and selection reads and change notifications are available
 for valid, non-protected built-in text fields. The Text interface is partial:
-writing, caret/selection movement, text geometry and non-character granularity remain open;
-EditableText is not advertised. This is not accessible text-editing support.
+caret/selection movement, text geometry and non-character granularity remain open.
+EditableText currently supports replacing the full text; insert, delete and
+clipboard operations remain open. The independent test sets the name through
+AT-SPI and checks that Apply receives it.
 
 `nexaui_settings_ime_v3` connects the same scene and native window adapter to a
 private Wayland text-input-v3 protocol fixture. It checks preedit, a UTF-8

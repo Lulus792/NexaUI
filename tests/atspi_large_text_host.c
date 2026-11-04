@@ -11,16 +11,18 @@
 typedef struct fixture {
     nx_window *window; nx_context *context; nx_font *font;
     nx_font_collection *fonts; nx_text_field *field;
+    int disabled, omitted;
 } fixture;
 static int frame(fixture *f) {
     nx_semantic_desc root={0}; root.id=1; root.role=NX_ROLE_WINDOW;
     root.name=(nx_utf8_span){"Large text fixture",18}; root.bounds=(nx_rect){0,0,320,120};
     nx_text_field_desc d={0}; d.id=2; d.parent_id=1; d.name=(nx_utf8_span){"Large text field",16};
     d.bounds=(nx_rect){8,8,300,32}; d.fonts=f->fonts; d.pixels_per_em=16; d.glyph_cache_bytes=65536;
+    d.disabled=f->disabled;
     nx_interaction_state state; int valid,submitted;
     return nx_begin_frame(f->context,320,120,0)==NX_OK &&
         nx_semantics_add(f->context,&root,NULL)==NX_OK &&
-        nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)==NX_OK &&
+        (f->omitted || nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)==NX_OK) &&
         nx_end_frame(f->context)==NX_OK && nx_window_publish_semantics(f->window,f->context)==NX_OK;
 }
 int main(void) {
@@ -37,10 +39,11 @@ int main(void) {
         nx_text_field_create("AZ",2,0,&f.field)!=NX_OK || !frame(&f)) goto done;
     setvbuf(stdout,NULL,_IOLBF,0); puts("READY");
     if (fcntl(STDIN_FILENO,F_SETFL,fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK)<0) goto done;
-    char input[64]; size_t used=0;
+    char input[64]; size_t used=0; int paused=0;
     for (;;) {
         if (nx_window_poll(f.window,20)!=NX_OK) goto done;
-        size_t routed; if (nx_window_route_events(f.window,f.context,&routed)!=NX_OK) goto done;
+        size_t routed=0;
+        if (!paused && (nx_window_route_events(f.window,f.context,&routed)!=NX_OK || (routed && !frame(&f)))) goto done;
         ssize_t n=read(STDIN_FILENO,input+used,sizeof(input)-used-1u);
         if (!n) goto done;
         if (n<0 && errno!=EAGAIN && errno!=EINTR) goto done;
@@ -54,6 +57,29 @@ int main(void) {
         } else if (!strcmp(input,"short")) {
             if (nx_text_field_set_text(f.field,"AZ",2)!=NX_OK || !frame(&f)) goto done;
             puts("ACK short");
+        } else if (!strcmp(input,"pause")) {paused=1;puts("ACK pause");}
+        else if (!strcmp(input,"resume")) {paused=0;puts("ACK resume");}
+        else if (!strcmp(input,"disable")) {f.disabled=1;puts("ACK disable");}
+        else if (!strcmp(input,"enable")) {f.disabled=0;puts("ACK enable");}
+        else if (!strcmp(input,"omit")) {f.omitted=1;puts("ACK omit");}
+        else if (!strcmp(input,"show")) {f.omitted=0;puts("ACK show");}
+        else if (!strcmp(input,"readonly")) {
+            if(nx_text_field_set_read_only(f.field,1)!=NX_OK)goto done;
+            puts("ACK readonly");
+        } else if (!strcmp(input,"writable")) {
+            if(nx_text_field_set_read_only(f.field,0)!=NX_OK)goto done;
+            puts("ACK writable");
+        }
+        else if (!strcmp(input,"route")) {
+            if(nx_window_route_events(f.window,f.context,&routed)!=NX_OK)goto done;
+            puts("ACK route");
+        }
+        else if (!strcmp(input,"step")) {
+            if(nx_window_route_events(f.window,f.context,&routed)!=NX_OK || !frame(&f))goto done;
+            puts("ACK step");
+        } else if (!strcmp(input,"detach")) {
+            if(nx_window_publish_semantics(f.window,NULL)!=NX_OK)goto done;
+            puts("ACK detach");
         } else goto done;
         size_t consumed=(size_t)(end-input)+1u; used-=consumed; memmove(input,input+consumed,used);
     }

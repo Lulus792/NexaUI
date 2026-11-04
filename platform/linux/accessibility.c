@@ -36,6 +36,7 @@ nx_result nx_linux_ax_route(nx_linux_ax *b, nx_context *c, size_t *n) {
 }
 int nx_linux_ax_pump(nx_linux_ax *b) { (void)b; return 0; }
 int nx_linux_ax_fd(nx_linux_ax *b, int *w) { (void)b; *w=0; return -1; }
+uint32_t nx_linux_ax_timeout(nx_linux_ax *b,uint32_t timeout) { (void)b; return timeout; }
 #ifdef NEXAUI_X11_TEST_HOOKS
 nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR_UNSUPPORTED; }
 #endif
@@ -59,6 +60,7 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR
 #define NX_AX_ACT "org.a11y.atspi.Action"
 #define NX_AX_SEL "org.a11y.atspi.Selection"
 #define NX_AX_TEXT "org.a11y.atspi.Text"
+#define NX_AX_EDIT "org.a11y.atspi.EditableText"
 #define NX_AX_CACHE_IF "org.a11y.atspi.Cache"
 #define NX_AX_PROPS "org.freedesktop.DBus.Properties"
 
@@ -104,11 +106,22 @@ typedef struct nx_ax_multi_request {
     size_t bytes, member_count, desired_count;
     nx_ax_multi_item members[];
 } nx_ax_multi_request;
+typedef struct nx_ax_text_request {
+    atomic_uint references;
+    nx_ax_multi_lease *lease;
+    uint64_t generation, context, id, incarnation, deadline;
+    nx_text_value_target target;
+    DBusMessage *reply;
+    size_t bytes, length;
+    int result; /* 0 pending, 1 applied, 2 cancelled */
+    char value[];
+} nx_ax_text_request;
 typedef struct nx_ax_request {
     uint64_t id, incarnation, owner_id, owner_incarnation, frame;
     uint32_t action;
     int forwarded;
     nx_ax_multi_request *multi;
+    nx_ax_text_request *text;
 } nx_ax_request;
 typedef struct nx_ax_inflight {nx_ax_request request;struct nx_ax_inflight *previous;} nx_ax_inflight;
 typedef struct nx_ax_hub nx_ax_hub;
@@ -186,7 +199,14 @@ static int nx_ax_member(const nx_ax_node *n) {
 static int nx_ax_selected(const nx_ax_node *n) {
     return n && (n->state&(n->role==NX_ROLE_RADIO?NX_SEM_CHECKED:NX_SEM_SELECTED));
 }
+static int nx_ax_editable(const nx_ax_node *n) {
+    return n && n->text_ready && !(n->state&(NX_SEM_READONLY|NX_SEM_PROTECTED)) &&
+        (n->actions&NX_ACTION_SET_VALUE);
+}
 static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
+static int text_target_equal(nx_text_value_target a,nx_text_value_target b) {
+    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline;
+}
 static void lease_retain(nx_ax_multi_lease *l) { atomic_fetch_add_explicit(&l->references,1,memory_order_relaxed); }
 static void lease_release(nx_ax_multi_lease *l) {
     if (l && atomic_fetch_sub_explicit(&l->references,1,memory_order_acq_rel)==1) free(l);
@@ -199,6 +219,39 @@ static void multi_release(void *user) {
     if (r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
         nx_ax_multi_lease *l=r->lease;free(r);lease_release(l);
     }
+}
+static void text_retain(void *user) {
+    nx_ax_text_request *r=user;atomic_fetch_add_explicit(&r->references,1,memory_order_relaxed);
+}
+static void text_release(void *user) {
+    nx_ax_text_request *r=user;
+    if(r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
+        if(r->reply)d.message_unref(r->reply);
+        lease_release(r->lease);free(r);
+    }
+}
+static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,nx_text_value_target target) {
+    nx_ax_text_request *r=user;nx_ax_multi_lease *l=r->lease;
+    if(!pthread_equal(pthread_self(),l->thread) || r->result || !l->live || !l->snapshot ||
+       l->generation!=r->generation || token!=r->generation || context!=r->context ||
+       l->context!=context || id!=r->id || !text_target_equal(target,r->target))return 0;
+    uint64_t now=nx_ax_now();if(!now || now>=r->deadline)return 0;
+    uint32_t i=nx_ax_find(l->snapshot,id);if(i==NX_AX_NONE)return 0;
+    nx_ax_node *n=&l->snapshot->nodes[i];
+    return n->incarnation==r->incarnation && n->text_ready &&
+        !(n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED|NX_SEM_READONLY)) &&
+        (n->actions&NX_ACTION_SET_VALUE) && text_target_equal(n->text_target,r->target);
+}
+static void text_completed(void *user,int applied) {
+    nx_ax_text_request *r=user;if(!r->result)r->result=applied?1:2;
+}
+static int nx_ax_send(nx_ax_hub *h,DBusMessage *message,int built);
+static void text_reply(nx_ax_hub *h,nx_ax_text_request *r) {
+    if(!r || !r->reply)return;
+    DBusMessage *reply=r->reply;r->reply=NULL;
+    dbus_bool_t applied=r->result==1;
+    int built=d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&applied,DBUS_TYPE_INVALID);
+    if(h)nx_ax_send(h,reply,built);else d.message_unref(reply);
 }
 static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
 static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
@@ -223,12 +276,16 @@ static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
     }
     return 1;
 }
-static void remove_request(nx_linux_ax *b,size_t at) {
+static void remove_request_internal(nx_linux_ax *b,size_t at,int reply) {
     nx_ax_multi_request *r=b->requests[at].multi;
+    nx_ax_text_request *t=b->requests[at].text;
     if (r) b->request_bytes-=r->bytes;
+    if (t) b->request_bytes-=t->bytes;
     --b->request_count;memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
     if(r)multi_release(r);
+    if(t){if(reply){if(!t->result)t->result=2;text_reply(b->hub,t);}text_release(t);}
 }
+static void remove_request(nx_linux_ax *b,size_t at) {remove_request_internal(b,at,1);}
 static void clear_requests(nx_linux_ax *b) { while(b->request_count)remove_request(b,b->request_count-1); }
 static int queue_space(nx_linux_ax *b,size_t bytes,size_t own) {
     size_t slots=b->request_count+b->admission_count;
@@ -370,6 +427,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
             b->snapshot->nodes[old].text_ready==n->text_ready &&
+            nx_ax_editable(&b->snapshot->nodes[old])==nx_ax_editable(n) &&
             !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED);
         if (same && n->text_ready) {
             nx_ax_node *prior=&b->snapshot->nodes[old];
@@ -701,6 +759,30 @@ static int nx_ax_queue(nx_ax_ref r,uint32_t action) {
     }
     b->requests[b->request_count++]=q;return 1;
 }
+/* A queued write owns both the input and the unsent D-Bus reply. The owner
+   loop replies only after the model completion or an explicit cancellation. */
+static int nx_ax_queue_text(nx_ax_ref ref,const char *value,DBusMessage *reply) {
+    nx_linux_ax *b=ref.window;nx_ax_node *n=nx_ax_node_at(ref);
+    if(!b || !n || b->retired || !b->lease->live || !n->text_ready ||
+       (n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)) ||
+       !(n->actions&NX_ACTION_SET_VALUE))return 0;
+    size_t length=strlen(value);
+    if(length>NX_TEXT_VALUE_MAX_BYTES)return 0;
+    size_t bytes=sizeof(nx_ax_text_request)+length+1u;
+    if(!queue_space(b,bytes,0))return 0;
+    for(size_t i=0;i<b->request_count;++i)
+        if(b->requests[i].text && b->requests[i].id==n->id)return 0;
+    for(nx_ax_inflight *f=b->inflight;f;f=f->previous)
+        if(f->request.text && f->request.id==n->id)return 0;
+    uint64_t now=nx_ax_now();if(!now || now>UINT64_MAX-2000u)return 0;
+    nx_ax_text_request *t=calloc(1,bytes);if(!t)return 0;
+    atomic_init(&t->references,1);t->lease=b->lease;lease_retain(t->lease);
+    t->generation=b->lease->generation;t->context=b->binding;t->id=n->id;
+    t->incarnation=n->incarnation;t->target=n->text_target;t->deadline=now+2000u;
+    t->bytes=bytes;t->length=length;t->reply=reply;memcpy(t->value,value,length+1u);
+    nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.text=t;
+    b->requests[b->request_count++]=q;b->request_bytes+=bytes;return 1;
+}
 static int nx_ax_compare_id(const void *a,const void *b) {
     uint64_t x=*(const uint64_t *)a,y=*(const uint64_t *)b;return x<y?-1:x>y;
 }
@@ -759,6 +841,7 @@ static int nx_ax_interfaces(DBusMessageIter *it,nx_ax_ref r) {
     nx_ax_node *n=nx_ax_node_at(r);
     if (n && (n->state&NX_AX_SELECTION)) ok=ok && nx_ax_string(&a,NX_AX_SEL);
     if (n && n->text_ready) ok=ok && nx_ax_string(&a,NX_AX_TEXT);
+    if (nx_ax_editable(n)) ok=ok && nx_ax_string(&a,NX_AX_EDIT);
     return ok && d.message_iter_close_container(it,&a);
 }
 static int nx_ax_put_states(DBusMessageIter *it,nx_ax_ref r) {
@@ -833,7 +916,8 @@ static const nx_ax_property nx_ax_properties[]={
     {NX_AX_APP,"InterfaceVersion","u"}, {NX_AX_APP,"Id","i"},
     {NX_AX_COMP,"version","u"}, {NX_AX_ACT,"version","u"}, {NX_AX_ACT,"NActions","i"},
     {NX_AX_SEL,"version","u"}, {NX_AX_SEL,"NSelectedChildren","i"},
-    {NX_AX_TEXT,"version","u"}, {NX_AX_TEXT,"CharacterCount","i"}, {NX_AX_TEXT,"CaretOffset","i"}
+    {NX_AX_TEXT,"version","u"}, {NX_AX_TEXT,"CharacterCount","i"}, {NX_AX_TEXT,"CaretOffset","i"},
+    {NX_AX_EDIT,"version","u"}
 };
 static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_ACC)) return 1;
@@ -842,6 +926,7 @@ static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_ACT)) return nx_ax_action_count(r)>0;
     nx_ax_node *n=nx_ax_node_at(r);
     if (!strcmp(interface,NX_AX_TEXT)) return n && n->text_ready;
+    if (!strcmp(interface,NX_AX_EDIT)) return nx_ax_editable(n);
     return !strcmp(interface,NX_AX_SEL) && n && (n->state&NX_AX_SELECTION);
 }
 static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_property *p) {
@@ -1170,7 +1255,7 @@ static void nx_ax_bounds_event(nx_ax_ref r) {
 
 #include "atspi_xml.h"
 static int nx_ax_introspect(nx_ax_hub *h,nx_ax_ref r,int cache,DBusMessageIter *it) {
-    const char *pieces[10]={"<node>",NULL}; size_t count=1,bytes=0;
+    const char *pieces[11]={"<node>",NULL}; size_t count=1,bytes=0;
     if (cache) pieces[count++]=nx_ax_xml_cache;
     else {
         pieces[count++]=nx_ax_xml_accessible;
@@ -1179,6 +1264,7 @@ static int nx_ax_introspect(nx_ax_hub *h,nx_ax_ref r,int cache,DBusMessageIter *
         if (nx_ax_supports(r,NX_AX_ACT)) pieces[count++]=nx_ax_xml_action;
         if (nx_ax_supports(r,NX_AX_SEL)) pieces[count++]=nx_ax_xml_selection;
         if (nx_ax_supports(r,NX_AX_TEXT)) pieces[count++]=nx_ax_xml_text;
+        if (nx_ax_supports(r,NX_AX_EDIT)) pieces[count++]=nx_ax_xml_edit;
     }
     pieces[count++]="<interface name=\"org.freedesktop.DBus.Properties\">"
         "<method name=\"Get\"><arg direction=\"in\" type=\"s\"/><arg direction=\"in\" type=\"s\"/>"
@@ -1225,6 +1311,15 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
     }
     DBusMessage *reply=d.message_new_method_return(call);
     if (!reply) { h->failed=1; return DBUS_HANDLER_RESULT_HANDLED; }
+    if(!cache && !strcmp(interface,NX_AX_EDIT) && !strcmp(member,"SetTextContents") && nx_ax_supports(r,interface)) {
+        const char *value=NULL;
+        if(!d.message_get_args(call,NULL,DBUS_TYPE_STRING,&value,DBUS_TYPE_INVALID)) {
+            d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_INVALID_ARGS,"Expected one UTF-8 string");
+        } else if(!nx_ax_queue_text(r,value,reply)) {
+            dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));
+        }
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
     DBusMessageIter it; d.message_iter_init_append(reply,&it);
     int ok=-2;
     if (!strcmp(interface,"org.freedesktop.DBus.Introspectable") && !strcmp(member,"Introspect"))
@@ -1244,6 +1339,7 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
         else if (!strcmp(interface,NX_AX_ACT)) ok=nx_ax_action_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_SEL)) ok=nx_ax_selection_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_TEXT)) ok=nx_ax_text_call(r,call,member,&it);
+        else if (!strcmp(interface,NX_AX_EDIT)) ok=-5;
         else if (!strcmp(interface,NX_AX_COMP)) ok=nx_ax_component_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_APP)) {
             if (!strcmp(member,"GetApplicationBusAddress")) ok=d.message_has_signature(call,"")?nx_ax_string(&it,""):-1;
@@ -1356,9 +1452,27 @@ int nx_linux_ax_pump(nx_linux_ax *b) {
         if (d.connection_dispatch(h->connection)==DBUS_DISPATCH_NEED_MEMORY) h->failed=1;
     }
     nx_ax_embed_progress(h);
+    for(nx_linux_ax *w=h->windows;w;w=w->next) {
+        for(size_t i=0;i<w->request_count;) {
+            nx_ax_text_request *t=w->requests[i].text;
+            if(t && (t->result || !text_current(t,t->generation,t->context,t->id,t->target))) {
+                remove_request(w,i);work=1;
+            } else ++i;
+        }
+    }
     if (h->failed || !d.connection_get_is_connected(h->connection)) nx_ax_disconnect(h);
     for (size_t i=0;i<b->request_count;++i) if (!b->requests[i].forwarded) work=1;
     return work;
+}
+uint32_t nx_linux_ax_timeout(nx_linux_ax *b,uint32_t timeout) {
+    if(!b || !pthread_equal(pthread_self(),b->thread) || !b->hub || !b->hub->connection)return timeout;
+    uint64_t now=nx_ax_now();
+    for(nx_linux_ax *w=b->hub->windows;w;w=w->next)for(size_t i=0;i<w->request_count;++i) {
+        nx_ax_text_request *t=w->requests[i].text;if(!t)continue;
+        if(!now || t->deadline<=now)return 0;
+        uint64_t remaining=t->deadline-now;if(remaining<timeout)timeout=(uint32_t)remaining;
+    }
+    return timeout;
 }
 int nx_linux_ax_fd(nx_linux_ax *b,int *writable) {
     *writable=0;
@@ -1387,6 +1501,10 @@ static void nx_ax_bridge_release(nx_linux_ax *b) {
 }
 static int nx_ax_request_current(nx_linux_ax *b,const nx_ax_request *q) {
     if(b->retired || !b->snapshot)return 0;
+    if(q->text) {
+        nx_ax_text_request *t=q->text;
+        return text_current(t,t->generation,t->context,t->id,t->target);
+    }
     if(q->multi) {
         nx_ax_multi_request *m=q->multi;
         return multi_current(m,m->generation,m->context,m->whole?m->owner_id:m->id,m->owner_id,m->target);
@@ -1406,11 +1524,17 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         if(at==b->request_count)break;
         nx_ax_request q=b->requests[at];
         if(q.multi)multi_retain(q.multi);
+        if(q.text)text_retain(q.text);
         nx_ax_inflight flight={q,b->inflight};b->inflight=&flight;
-        ++b->admission_count;size_t bytes=q.multi?q.multi->bytes:0;b->admission_bytes+=bytes;
-        remove_request(b,at);
+        ++b->admission_count;size_t bytes=q.multi?q.multi->bytes:q.text?q.text->bytes:0;b->admission_bytes+=bytes;
+        remove_request_internal(b,at,0);
         int valid=nx_ax_request_current(b,&q);nx_result result=NX_OK;
-        if(valid && q.multi) {
+        if(valid && q.text) {
+            nx_ax_text_request *t=q.text;
+            nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
+            result=nx_semantics_request_text_value_with_completion(context,t->id,
+                (nx_utf8_span){t->value,t->length},&guard,text_completed);
+        } else if(valid && q.multi) {
             nx_ax_multi_request *m=q.multi;nx_selection_guard guard={m,m->generation,multi_retain,multi_release,multi_current};
             result=m->whole?nx_semantics_request_selection_set_guarded(context,m->owner_id,multi_ids(m),m->desired_count,&guard):
                 nx_semantics_request_selection_guarded(context,m->id,m->action,&guard);
@@ -1421,14 +1545,19 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
                 ++*count;
                 if(q.action==NX_ACTION_FOCUS && b->window)nx_linux_window_ax_focus(b->window);
             }
-            if(q.owner_id || result!=NX_OK) {
+            if(q.text || q.owner_id || result!=NX_OK) {
                 q.forwarded=result==NX_OK;q.frame=b->frame;
                 if(q.multi)multi_retain(q.multi);
+                if(q.text)text_retain(q.text);
                 b->requests[b->request_count++]=q;b->request_bytes+=bytes;
             }
+        } else if(q.text) {
+            if(!q.text->result)q.text->result=2;
+            text_reply(b->hub,q.text);
         }
         b->inflight=flight.previous;--b->admission_count;b->admission_bytes-=bytes;
         if(q.multi)multi_release(q.multi);
+        if(q.text)text_release(q.text);
         if(valid && live && result==NX_ERROR_MEMORY){status=result;break;}
         if(valid && live && result==NX_ERROR_LIMIT)break;
     }
@@ -1641,6 +1770,9 @@ void nx_linux_ax_destroy(nx_linux_ax *b) {
     b->retired=1;b->lease->live=0;b->lease->snapshot=NULL;b->lease->context=0;
     if(b->lease->generation!=UINT64_MAX)++b->lease->generation;
     nx_ax_hub *h=b->hub;
+    for(nx_ax_inflight *f=b->inflight;f;f=f->previous)if(f->request.text) {
+        nx_ax_text_request *t=f->request.text;if(!t->result)t->result=2;text_reply(h,t);
+    }
     if(h->connection && b->snapshot) {
         nx_ax_ref child=nx_ax_window(b);
         nx_ax_event(nx_ax_app(h),"ChildrenChanged","remove",nx_ax_index(child),0,NULL,&child);
@@ -1649,7 +1781,11 @@ void nx_linux_ax_destroy(nx_linux_ax *b) {
     }
     nx_linux_ax **link=&h->windows;while(*link && *link!=b)link=&(*link)->next;
     if(*link)*link=b->next;
-    b->hub=NULL;b->window=NULL;clear_requests(b);
+    clear_requests(b);
+    /* A detach may retire the last window on this connection. Give already
+       queued negative replies a nonblocking write before closing that bus. */
+    if(h->connection && !h->failed)d.connection_read_write(h->connection,0);
+    b->hub=NULL;b->window=NULL;
     /* Reset hub ownership before any application deallocator: a callback may
        create a fresh window and connection in the same thread-local storage. */
     if(!h->windows){nx_ax_disconnect(h);nx_ax_thread_hub=NULL;*h=(nx_ax_hub){0};}

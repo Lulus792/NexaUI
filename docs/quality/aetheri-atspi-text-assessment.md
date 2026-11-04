@@ -5,8 +5,9 @@ candidate has the separate Wayland-only and Settings changes documented in
 [aetheri-adoption-assessment.md](aetheri-adoption-assessment.md). This document
 is a source assessment, not a completed implementation or native acceptance.
 
-The independent Settings client now confirms a limited AT-SPI Text read path
-for its editable name; `EditableText` is still absent. The provider's snapshot in `platform/linux/accessibility.c`
+The independent Settings client confirms a limited AT-SPI Text read path and
+whole-value EditableText replacement for its editable name. Other EditableText
+operations remain unsupported. The provider's snapshot in `platform/linux/accessibility.c`
 contains copied semantic name, description, value, bounds, role and state. The
 current candidate also copies an internal completed-frame caret/selection snapshot
 for genuine non-protected text fields; positions are UTF-8 byte offsets, not
@@ -14,8 +15,8 @@ AT-SPI character offsets. The public `nx_text_field_selection` itself is an
 owner-thread model query and must not be called from a D-Bus query on a retained
 object. The core already offers `nx_semantics_request_text_value` for whole
 replacement with UTF-8 validation, owner-thread admission and deferred widget
-application. It is not yet an AT-SPI adapter and admission is not successful
-application. Reuse it rather than introducing a second editor.
+application. The AT-SPI adapter reuses it and distinguishes admission from
+successful application rather than introducing a second editor.
 
 A separate in-progress AppKit worktree has staged changes to the same portable
 `src/nexaui.c` and `tests/test_text_value.c` that capture and check the full
@@ -23,8 +24,9 @@ ordered ancestor ID/role chain for deferred text requests. Those staged changes
 remain separate and have not been copied or overwritten. This candidate now
 independently reuses the existing multi-selection ancestry machinery to check
 text requests; the overlapping AppKit change still requires reconciliation.
-Linux-native queued requests also need binding/incarnation,
-disabled/protected/modal and connection-lifetime guards.
+Linux-native requests now have binding/incarnation, disabled/protected and
+connection-lifetime guards; modal and reentrancy edge cases still need native
+end-to-end coverage.
 
 Required implementation and evidence remain:
 
@@ -99,7 +101,7 @@ creation; it exposes count, caret, selection, character and range reads and
 character-granularity `GetStringAtOffset`. Native text replies are limited to
 1 MiB and invalid ranges return an error. Unsupported methods, including
 editing, movement, geometry, attributes and other granularities, return
-`NotSupported`. No EditableText interface is implemented. Text capability, field identity and ancestor
+`NotSupported`. At this historical step no EditableText interface was implemented. Text capability, field identity and ancestor
 changes retire the old object path, but independent stale-path tests for this
 new behavior remain to be added.
 
@@ -275,6 +277,40 @@ admission and context destruction. On base
 `b0c6cb95ba60daa1e86c493fe07f079538ebf1f4`, the three text-value tests passed
 in the GCC shared Wayland-only and Clang ASan/UBSan static configurations; the
 existing two portable text-value tests also passed with Windows MSVC Debug.
-This is an internal prerequisite, not an AT-SPI EditableText implementation.
-Deferred D-Bus replies, deadlines, disconnect/rebind cancellation, payload
-budgets and independent client tests remain to be implemented and validated.
+That prerequisite alone did not implement AT-SPI EditableText. The following
+section records the later native work and its remaining validation gaps.
+
+## Whole-value AT-SPI editing (2026-11-04)
+
+The Linux provider advertises a partial EditableText interface on actual,
+non-protected writable text fields. `SetTextContents` copies at most 65,536
+UTF-8 bytes into the bounded native queue and defers its boolean reply until
+the owner thread's model replacement completes or the request is cancelled.
+It rechecks the context binding, connection generation, object incarnation,
+model identity and revision, edit policy and deadline; the core also checks
+ancestry, disabled/modal state and the actual widget. A two-second monotonic
+deadline clamps native poll waits, and expiration revokes even a request already
+forwarded to the core. One outstanding write per field is accepted. Other
+EditableText operations return `NotSupported`; Text movement, selection and
+geometry remain separate work. Read-only capability changes retire the old
+native path to prevent a cached editable interface from outliving the policy.
+
+The independent client verifies Unicode and equal-value replacement, rejects
+newline and oversized input, detects unsupported insertion, confirms there is
+no reply or model mutation before a frame, and tests duplicate, disabled,
+read-only, omitted, queued timeout, forwarded timeout and detach cases. It also
+checks that a timed-out write cannot apply in a subsequent frame. The actual
+Settings client replaces the name and checks the host's applied model and clean
+exit; secret/custom nodes remain excluded. A first detach test exposed a lost
+reply when the last window closed its bus; the corrected bridge writes pending
+replies before its nonblocking connection teardown.
+
+On base `3b7e7427ac4aa15d1ccb9277cca4091d8106dae5`, the four registered
+AT-SPI tests passed in private Weston/Xvfb with GCC shared and Clang static
+ASan/UBSan with leak detection; after adding the explicit unsupported-insert
+check, the large-text native test passed again in both configurations. This is
+a virtual compositor, not a real
+Aetheri session or human screenreader acceptance. Connection-loss/reconnect,
+backpressure, allocator reentrancy, modal changes and actual IME overlap need
+additional native write tests; the two-second bound assumes the application
+continues polling its window. Full EditableText support is not claimed.

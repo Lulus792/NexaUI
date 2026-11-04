@@ -95,7 +95,8 @@ int main(int argc,char **argv) {
     CHECK(attributes && !error && g_strcmp0(g_hash_table_lookup(attributes,"nexaui-value"),"A\xc3\xa9\xf0\x9f\x8c\x8d")==0);
     g_hash_table_unref(attributes);
     AtspiText *text=atspi_accessible_get_text_iface(name);
-    CHECK(text && !atspi_accessible_get_editable_text_iface(name));
+    AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(name);
+    CHECK(text && editable);
     CHECK(atspi_text_get_character_count(text,&error)==3 && !error);
     CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
     CHECK(atspi_text_get_n_selections(text,&error)==1 && !error);
@@ -139,6 +140,9 @@ int main(int argc,char **argv) {
     CHECK(atspi_text_get_caret_offset(text,&error)==3 && !error);
     CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
     g_object_unref(change); g_object_unref(listener);
+    CHECK(atspi_editable_text_set_text_contents(editable,"AT-SPI Tokyo",&error) && !error);
+    all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"AT-SPI Tokyo"));g_free(all);
+    g_object_unref(editable);
     g_object_unref(text);
     CHECK(atspi_accessible_get_role(motion,&error)==ATSPI_ROLE_CHECK_BOX && !error);
     /* Allow the host to become idle before sending a native action. */
@@ -154,5 +158,5 @@ int main(int argc,char **argv) {
     }
     CHECK(finished && WIFEXITED(status) && WEXITSTATUS(status)==0);
     g_object_unref(secret);g_object_unref(custom);g_object_unref(name);g_object_unref(motion);g_object_unref(apply);g_object_unref(app);g_object_unref(desktop);
-    atspi_exit(); puts("Independent AT-SPI checkbox and Apply updated the real model; host closed cleanly."); return 0;
+    atspi_exit(); puts("Independent AT-SPI text, checkbox and Apply updated the real model; host closed cleanly."); return 0;
 }

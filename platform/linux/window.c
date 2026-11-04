@@ -141,6 +141,7 @@ nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
     if (nx_linux_ax_pump(window->accessibility)) timeout_ms=0;
+    timeout_ms=nx_linux_ax_timeout(window->accessibility,timeout_ms);
     int writable=0, fd=nx_linux_ax_fd(window->accessibility,&writable);
     nx_result result=NX_LINUX_DISPATCH(nx_wayland_window_poll_with_fd(window->native.wayland,timeout_ms,fd,writable),
         nx_x11_window_poll_with_fd(window->native.x11,timeout_ms,fd,writable));

@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include <atspi/atspi.h>
+#include <dbus/dbus.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -26,6 +27,25 @@ static int response(const char *expected) {
 static int command(const char *s) {
     char expected[80]; snprintf(expected,sizeof(expected),"ACK %s\n",s);
     return fprintf(commands,"%s\n",s)>0 && fflush(commands)==0 && response(expected);
+}
+static DBusPendingCall *write_async(DBusConnection *bus,AtspiAccessible *field,const char *value) {
+    AtspiObject *object=ATSPI_OBJECT(field);
+    DBusMessage *call=dbus_message_new_method_call(object->app->bus_name,object->path,
+        "org.a11y.atspi.EditableText","SetTextContents");
+    DBusPendingCall *pending=NULL;
+    if(!call)return NULL;
+    if(!dbus_message_append_args(call,DBUS_TYPE_STRING,&value,DBUS_TYPE_INVALID) ||
+       !dbus_connection_send_with_reply(bus,call,&pending,4000))pending=NULL;
+    dbus_message_unref(call);dbus_connection_flush(bus);return pending;
+}
+static int pending_result(DBusConnection *bus,DBusPendingCall *pending,int expected,unsigned milliseconds) {
+    for(unsigned i=0;i<milliseconds && !dbus_pending_call_get_completed(pending);++i)
+        dbus_connection_read_write_dispatch(bus,1);
+    if(!dbus_pending_call_get_completed(pending))return 0;
+    DBusMessage *reply=dbus_pending_call_steal_reply(pending);dbus_bool_t value=!expected;
+    int good=reply && dbus_message_get_args(reply,NULL,DBUS_TYPE_BOOLEAN,&value,DBUS_TYPE_INVALID) && value==(dbus_bool_t)expected;
+    if(reply)dbus_message_unref(reply);
+    dbus_pending_call_unref(pending);return good;
 }
 static AtspiAccessible *find(AtspiAccessible *root,const char *wanted,unsigned depth) {
     if (!root || depth>12) return NULL;
@@ -107,6 +127,67 @@ int main(int argc,char **argv) {
     for(unsigned i=0;i<300 && r.deletes<3 && !r.bad;++i) pump(10);
     CHECK(!r.bad && r.inserts==3 && r.deletes==3 && r.model->len==2 && !memcmp(r.model->str,"AZ",2));
     actual=atspi_text_get_text(text,0,-1,&error); CHECK(!error && actual && !strcmp(actual,"AZ")); g_free(actual);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-changed",&error) && !error);
+    AtspiEditableText *edit=atspi_accessible_get_editable_text_iface(field);CHECK(edit);
+    CHECK(atspi_editable_text_set_text_contents(edit,"hello ð",&error) && !error);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello ð"));g_free(actual);
+    CHECK(atspi_editable_text_set_text_contents(edit,"hello ð",&error) && !error);
+    CHECK(!atspi_editable_text_set_text_contents(edit,"bad\nline",&error) && !error);
+    char *oversized=malloc(65538u);CHECK(oversized);memset(oversized,'x',65537u);oversized[65537]=0;
+    CHECK(!atspi_editable_text_set_text_contents(edit,oversized,&error) && !error);free(oversized);
+    CHECK(!atspi_editable_text_insert_text(edit,0,"x",1,&error) && error);g_clear_error(&error);
+    DBusError de;dbus_error_init(&de);const char *address=getenv("NEXAUI_TEST_ATSPI_ADDRESS");
+    if(!address)address=getenv("AT_SPI_BUS_ADDRESS");
+    DBusConnection *bus=dbus_connection_open_private(address,&de);CHECK(bus && !de.name);
+    dbus_connection_set_exit_on_disconnect(bus,0);CHECK(dbus_bus_register(bus,&de));
+    CHECK(command("pause"));
+    DBusPendingCall *pending=write_async(bus,field,"deferred");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending));
+    DBusPendingCall *duplicate=write_async(bus,field,"duplicate");CHECK(duplicate && pending_result(bus,duplicate,0,1000));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello ð"));g_free(actual);
+    CHECK(command("step") && pending_result(bus,pending,1,1000));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    pending=write_async(bus,field,"disabled");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending) && command("disable") && command("step"));
+    CHECK(pending_result(bus,pending,0,1000));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    CHECK(command("enable") && command("step"));
+    pending=write_async(bus,field,"expired");CHECK(pending);
+    CHECK(pending_result(bus,pending,0,3500));
+    CHECK(command("step"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    pending=write_async(bus,field,"forwarded timeout");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending) && command("route"));
+    CHECK(pending_result(bus,pending,0,3500) && command("step"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    pending=write_async(bus,field,"omitted");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending) && command("omit") && command("step"));
+    CHECK(pending_result(bus,pending,0,1000));
+    CHECK(command("show") && command("step"));
+    g_object_unref(edit);g_object_unref(text);g_object_unref(field);
+    field=find(app,"Large text field",0);CHECK(field);
+    text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text && edit);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    pending=write_async(bus,field,"readonly");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending) && command("readonly") && command("step"));
+    CHECK(pending_result(bus,pending,0,1000));
+    g_object_unref(edit);g_object_unref(text);g_object_unref(field);
+    field=find(app,"Large text field",0);CHECK(field);
+    text=atspi_accessible_get_text_iface(field);CHECK(text && !atspi_accessible_get_editable_text_iface(field));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+    CHECK(command("writable") && command("step"));
+    g_object_unref(text);g_object_unref(field);
+    field=find(app,"Large text field",0);CHECK(field);
+    text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text && edit);
+    pending=write_async(bus,field,"detached");CHECK(pending);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(pending) && command("detach") && pending_result(bus,pending,0,1000));
+    dbus_connection_close(bus);dbus_connection_unref(bus);dbus_error_free(&de);g_object_unref(edit);
     CHECK(fprintf(commands,"quit\n")>0 && fflush(commands)==0);
     int status=0; CHECK(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0); child=-1;
     g_string_free(r.model,TRUE); g_object_unref(listener);g_object_unref(text);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);

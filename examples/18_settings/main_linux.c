@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            const char *expected=verify_ax?"A\xc3\xb6Z":
+            const char *expected=verify_ax?"AT-SPI Tokyo":
                 (verify_keyboard_text || verify_keyboard_small)?"Ada":"Aetheri";
             size_t expected_length=strlen(expected);
             if (motion && applied.length==expected_length && !memcmp(applied.data,expected,expected_length)) {

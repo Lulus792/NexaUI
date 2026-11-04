@@ -16,6 +16,7 @@ int nx_linux_ax_matches(nx_linux_ax *bridge, const nx_context *context);
 nx_result nx_linux_ax_route(nx_linux_ax *bridge, nx_context *context, size_t *count);
 int nx_linux_ax_pump(nx_linux_ax *bridge);
 int nx_linux_ax_fd(nx_linux_ax *bridge, int *writable);
+uint32_t nx_linux_ax_timeout(nx_linux_ax *bridge, uint32_t timeout);
 void nx_linux_window_ax_geometry(nx_window *window, nx_linux_ax_geometry *out);
 int nx_linux_window_ax_focus(nx_window *window);
 uint64_t nx_linux_window_ax_revision(nx_window *window);
