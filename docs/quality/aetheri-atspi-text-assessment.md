@@ -564,3 +564,31 @@ The separate X11-plus-Wayland library build also succeeded. This is an internal
 foundation, not completion of I05 or W10: integrating the descriptor and its
 deadline into the native poll loop, safely retaining and cancelling the target
 across frames, and delivering keyboard and AT-SPI completion remain necessary.
+
+## Poll-driven Wayland clipboard request (2026-11-04)
+
+On base `e2df39b702274fc0071435305a676f2d63a863c3`, Linux now has a private,
+owner-thread clipboard request driven by the existing `nx_window_poll` file
+descriptor wait. One transfer per window reads at most 8 KiB per poll; the
+requested size and deadline are bounded. A generation token rejects stale
+take/cancel operations. Changing the selected offer retains the old one until
+its in-flight transfer is retired. Timeout, cancellation and window teardown
+close the pipe; sensitive temporary buffers are cleared before reallocation or
+disposal. The successful result is caller-owned. Existing synchronous public
+clipboard functions and custom callbacks remain unchanged.
+
+The independent Wayland protocol fixture starts a stalled offer, verifies that
+the window still processes IME preedit, replaces the offer during the read,
+and checks completion, timeout, stale tokens, size limits, invalid UTF-8,
+cancellation and destruction with no window allocator leaks. The fixture ran
+five times each in GCC shared and Clang ASan/UBSan static profiles; the
+incremental reader test also checks wiping on growth and disposal. The regular
+private-Weston clipboard selection passed 8/8 in both profiles with the known
+flaky external `--paste-once` test explicitly excluded.
+
+This is still a private backend operation: no text field, accessibility
+request or application receives its completion yet. Wiring a pending request
+to an exact live model/selection, waking a frame, revoking on focus or model
+replacement and reporting AT-SPI completion remain necessary. In particular,
+ordinary Settings paste still uses the synchronous path; neither I05 nor W10
+is complete, and this result alone does not establish Aetheri adoption.

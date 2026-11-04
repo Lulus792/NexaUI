@@ -7,6 +7,7 @@
 #include "wayland/window_internal.h"
 #include "window_internal.h"
 #include "accessibility.h"
+#include "../../src/secure_zero.h"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -376,6 +377,49 @@ nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_byt
     }
     nx_linux_window_release(window);
     return result;
+}
+
+nx_result nx_linux_window_clipboard_async_start(nx_window *window, size_t limit,
+    uint32_t timeout_ms, int sensitive, uint64_t *token) {
+    if (token) *token = 0;
+    if (!window || !token) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    if (window->backend != NX_LINUX_WAYLAND) return NX_ERROR_UNSUPPORTED;
+#endif
+    ++window->operations;
+    nx_result result = nx_wayland_window_clipboard_async_start(window->native.wayland, limit, timeout_ms, sensitive, token);
+    if (window->retired) { *token = 0; result = NX_ERROR_STATE; }
+    nx_linux_window_release(window); return result;
+}
+
+nx_result nx_linux_window_clipboard_async_take(nx_window *window, uint64_t token,
+    char **bytes, size_t *length, int *ready) {
+    if (!window || !bytes || !length || !ready) return NX_ERROR_ARGUMENT;
+    *bytes = NULL; *length = 0; *ready = 0;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    if (window->backend != NX_LINUX_WAYLAND) return NX_ERROR_UNSUPPORTED;
+#endif
+    ++window->operations;
+    nx_result result = nx_wayland_window_clipboard_async_take(window->native.wayland, token, bytes, length, ready);
+    if (window->retired) {
+        if (*bytes) { nx_private_secure_zero(*bytes, *length); free(*bytes); }
+        *bytes = NULL; *length = 0; *ready = 0; result = NX_ERROR_STATE;
+    }
+    nx_linux_window_release(window); return result;
+}
+
+nx_result nx_linux_window_clipboard_async_cancel(nx_window *window, uint64_t token) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    if (window->backend != NX_LINUX_WAYLAND) return NX_ERROR_UNSUPPORTED;
+#endif
+    ++window->operations;
+    nx_result result = nx_wayland_window_clipboard_async_cancel(window->native.wayland, token);
+    if (window->retired) result = NX_ERROR_STATE;
+    nx_linux_window_release(window); return result;
 }
 
 void nx_window_destroy(nx_window *window) {

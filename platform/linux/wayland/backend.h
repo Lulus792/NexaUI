@@ -57,6 +57,17 @@ nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
                                                size_t *out_length);
 nx_result nx_wayland_window_clipboard_fetch_text(nx_wayland_window *window,
                                                  char **out_bytes, size_t *out_length);
+/* Private owner-thread, single-flight transfer. Inspect after window_poll;
+   successful bytes are malloc-owned, not NUL-terminated and may be NULL for
+   an empty result. The caller clears sensitive returned bytes before free.
+   Until taken, a completed request makes poll return immediately. A token
+   prevents stale owners from taking or cancelling a later request. */
+nx_result nx_wayland_window_clipboard_async_start(nx_wayland_window *window,
+    size_t limit, uint32_t timeout_ms, int sensitive, uint64_t *token);
+nx_result nx_wayland_window_clipboard_async_take(nx_wayland_window *window,
+    uint64_t token, char **bytes, size_t *length, int *ready);
+nx_result nx_wayland_window_clipboard_async_cancel(nx_wayland_window *window,
+    uint64_t token);
 void nx_wayland_window_destroy(nx_wayland_window *window);
 struct wl_display *nx_wayland_window_display(nx_wayland_window *window);
 struct wl_surface *nx_wayland_window_surface(nx_wayland_window *window);

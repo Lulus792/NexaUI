@@ -537,6 +537,17 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_text_input_v3
                 COMMAND nexaui_wayland_text_input_v3_tests)
             set_tests_properties(nexaui_wayland_text_input_v3 PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_async_clipboard_tests
+                tests/test_wayland_async_clipboard.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_async_clipboard_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_async_clipboard_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_async_clipboard COMMAND nexaui_wayland_async_clipboard_tests)
+            set_tests_properties(nexaui_wayland_async_clipboard PROPERTIES TIMEOUT 15)
         endif()
         if(NEXAUI_ENABLE_X11)
         add_executable(nexaui_x11_window_tests tests/test_x11_window.c)

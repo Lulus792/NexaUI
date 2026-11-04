@@ -1,4 +1,5 @@
 #include "transfer.h"
+#include "../../../src/secure_zero.h"
 
 #include <errno.h>
 #include <string.h>
@@ -40,7 +41,10 @@ void nx_wayland_read_transfer_step(nx_wayland_read_transfer *t, uint64_t now) {
         char *replacement = t->allocator.allocate(t->allocator.user, grown);
         if (!replacement) { finish(t, NX_ERROR_MEMORY); return; }
         if (t->length) memcpy(replacement, t->bytes, t->length);
-        if (t->bytes) t->allocator.deallocate(t->allocator.user, t->bytes, t->capacity);
+        if (t->bytes) {
+            if (t->sensitive) nx_private_secure_zero(t->bytes, t->capacity);
+            t->allocator.deallocate(t->allocator.user, t->bytes, t->capacity);
+        }
         t->bytes = replacement; t->capacity = grown;
     }
     memcpy(t->bytes + t->length, chunk, (size_t)count);
@@ -58,7 +62,10 @@ nx_result nx_wayland_read_transfer_take(nx_wayland_read_transfer *t,
 
 void nx_wayland_read_transfer_dispose(nx_wayland_read_transfer *t) {
     if (t->fd >= 0) close(t->fd);
-    if (t->bytes) t->allocator.deallocate(t->allocator.user, t->bytes, t->capacity);
+    if (t->bytes) {
+        if (t->sensitive) nx_private_secure_zero(t->bytes, t->capacity);
+        t->allocator.deallocate(t->allocator.user, t->bytes, t->capacity);
+    }
     t->fd = -1; t->bytes = NULL; t->length = t->capacity = 0;
     t->finished = 1;
 }

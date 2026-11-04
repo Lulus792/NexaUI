@@ -11,7 +11,7 @@ typedef struct nx_wayland_read_transfer {
     char *bytes;
     size_t length, capacity, limit;
     uint64_t deadline;
-    int fd, finished, waiting;
+    int fd, finished, waiting, sensitive;
     nx_result result;
 } nx_wayland_read_transfer;
 

@@ -26,7 +26,7 @@ typedef struct test_server {
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
     struct wl_resource *data_device;
     atomic_int send_offer;
-    atomic_int offer_reads, offer_once, offer_stall, stalled_fd;
+    atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
     char surrounding[4001];
@@ -47,8 +47,9 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
     (void)client;(void)mime;test_server *server=wl_resource_get_user_data(resource);
     int previous=atomic_fetch_add(&server->offer_reads,1);
     if(!atomic_load(&server->offer_once) || previous==0) {
-        const char payload[]="Once";
-        if(write(fd,payload,sizeof(payload)-1u)!=(ssize_t)(sizeof(payload)-1u))abort();
+        const char *payload=atomic_load(&server->offer_invalid)?"\xc0":"Once";
+        size_t length=atomic_load(&server->offer_invalid)?1u:4u;
+        if(write(fd,payload,length)!=(ssize_t)length)abort();
     }
     if (atomic_load(&server->offer_stall)) {
         atomic_store(&server->stalled_fd, fd + 1);

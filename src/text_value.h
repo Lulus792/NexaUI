@@ -6,6 +6,11 @@
 /* Private single-transfer clipboard read. The caller frees *out_bytes. */
 nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_bytes,
                                                 size_t *out_length);
+nx_result nx_linux_window_clipboard_async_start(nx_window *window, size_t limit,
+    uint32_t timeout_ms, int sensitive, uint64_t *token);
+nx_result nx_linux_window_clipboard_async_take(nx_window *window, uint64_t token,
+    char **bytes, size_t *length, int *ready);
+nx_result nx_linux_window_clipboard_async_cancel(nx_window *window, uint64_t token);
 #endif
 
 /* Owner-thread model identities, never model addresses. Native snapshots may
