@@ -2870,7 +2870,9 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
         for (nx_wayland_window *candidate = nx_wayland_thread_windows;
              candidate; candidate = candidate->thread_next) {
             nx_result pumped = nx_wayland_window_poll(candidate, 0);
-            if (pumped != NX_OK) { result = pumped; goto done; }
+            /* Each window owns its Wayland connection. An unrelated window's
+               terminal error must not fail this window's clipboard transfer. */
+            if (pumped != NX_OK && candidate == window) { result = pumped; goto done; }
         }
         now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;

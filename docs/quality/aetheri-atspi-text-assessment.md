@@ -851,3 +851,18 @@ On the final candidate, the four controlled connection-loss tests passed in
 both profiles. The geometry assertion fails without the change and verifies
 that the native accessibility bridge reports the disconnected window as
 neither visible nor focused; it is not an independent screenreader test.
+
+## Independent windows during synchronous clipboard reads (2026-11-05)
+
+Candidate based on `e5c125c882c65098fef00c89f020be58ed4000bd`. Two separate
+controlled Wayland servers provide one window each on the same UI thread. The
+second server disconnects; on the base revision a synchronous clipboard read
+on the first window then failed because it propagated the other window's poll
+error. The read now completes while the disconnected window keeps reporting
+its own error. A counterexample disconnects the reading window during its
+transfer and verifies that its read still fails. The controlled test and all
+14 asynchronous clipboard/drop tests passed in each of the GCC shared and
+Clang ASan/UBSan static profiles. This establishes the tested failure path,
+not all possible interactions between multiple windows or compositors.
+The private-Weston clipboard selection also passed 23/23 in each profile,
+including the separate-process and one-shot Settings cases.

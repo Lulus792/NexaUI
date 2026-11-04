@@ -38,6 +38,7 @@ typedef struct test_server {
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
     atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
+    atomic_int disconnect_on_receive;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
     char surrounding[4001];
@@ -81,6 +82,11 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
             atomic_load(&server->offer_invalid)?"\xc0":"Once";
         size_t length=strlen(payload);
         if(write(fd,payload,length)!=(ssize_t)length)abort();
+    }
+    if (atomic_exchange(&server->disconnect_on_receive,0)) {
+        atomic_store(&server->stalled_fd,fd+1);
+        wl_client_destroy(client);
+        return;
     }
     if (atomic_load(&server->offer_stall)) {
         atomic_store(&server->stalled_fd, fd + 1);

@@ -554,6 +554,16 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_pointer_serial_removed COMMAND nexaui_wayland_async_clipboard_tests --pointer-serial)
             add_test(NAME nexaui_wayland_disconnect COMMAND nexaui_wayland_async_clipboard_tests --disconnect)
             set_tests_properties(nexaui_wayland_async_clipboard nexaui_wayland_clipboard_focus_loss nexaui_wayland_clipboard_keyboard_removed nexaui_wayland_clipboard_seat_removed nexaui_wayland_pointer_removed nexaui_wayland_pointer_serial_removed nexaui_wayland_disconnect PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_multi_failure_tests tests/test_wayland_multi_failure.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_multi_failure_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_multi_failure_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            target_link_libraries(nexaui_wayland_multi_failure_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_multi_failure COMMAND nexaui_wayland_multi_failure_tests)
+            set_tests_properties(nexaui_wayland_multi_failure PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_drop_tests tests/test_wayland_async_drop.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
