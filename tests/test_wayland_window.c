@@ -1,7 +1,9 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
 #include "wayland/window_internal.h"
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/window_internal.h"
+#endif
 
 #include <pthread.h>
 #include <limits.h>
@@ -263,8 +265,10 @@ int main(void) {
     struct wl_display *second = nx_window_wayland_display(visible);
     CHECK(first && second && first != second &&
           nx_window_wayland_surface(hidden) &&
-          nx_window_wayland_surface(visible) &&
-          !nx_window_x11_display(hidden));
+          nx_window_wayland_surface(visible));
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    CHECK(!nx_window_x11_display(hidden));
+#endif
     CHECK(wl_display_roundtrip(first) >= 0 &&
           wl_display_roundtrip(second) >= 0 &&
           wl_display_get_error(first) == 0 &&
@@ -464,10 +468,17 @@ int main(void) {
         CHECK(nx_window_wayland_test_key(hidden, 'b', 1) == NX_OK);
         CHECK(next(hidden, NX_EVENT_KEY_DOWN, &event) == 0 &&
               event.key == NX_KEY_B);
+        /* A wl_keyboard event delivered to the client is a key not consumed
+           by the input method, even when a text-input object is entered. */
+        CHECK(next(hidden, NX_EVENT_TEXT, &event) == 0 && event.scalar == 'b');
         CHECK(nx_window_next_event(hidden, &event, &available) == NX_OK &&
               !available);
         CHECK(nx_window_wayland_test_key(hidden, 'b', 0) == NX_OK);
         CHECK(next(hidden, NX_EVENT_KEY_UP, &event) == 0);
+        /* An independent composition commit is still delivered once. */
+        CHECK(nx_window_wayland_test_ime_commit(hidden, "\xc3\xa9", 0) == NX_OK);
+        CHECK(next(hidden, NX_EVENT_TEXT, &event) == 0 && event.scalar == 0xe9);
+        CHECK(nx_window_next_event(hidden, &event, &available) == NX_OK && !available);
         CHECK(nx_window_set_ime_enabled(hidden, 0) == NX_OK);
         CHECK(nx_window_wayland_test_key(hidden, 'b', 1) == NX_OK);
         CHECK(next(hidden, NX_EVENT_KEY_DOWN, &event) == 0);
@@ -536,6 +547,7 @@ int main(void) {
     CHECK(setenv("WAYLAND_DISPLAY", "nexaui-no-such-display", 1) == 0);
     CHECK(nx_window_create(&desc, &failed) == NX_ERROR_PLATFORM && !failed);
     CHECK(unsetenv("NEXAUI_PLATFORM") == 0);
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
     if (getenv("DISPLAY") && *getenv("DISPLAY")) {
         CHECK(nx_window_create(&desc, &failed) == NX_OK && failed);
         CHECK(nx_window_x11_display(failed) &&
@@ -543,5 +555,11 @@ int main(void) {
         nx_window_destroy(failed);
     }
     puts("Wayland lifecycle, scale, cursor, key repeat and X11 fallback verified");
+#else
+    CHECK(nx_window_create(&desc, &failed) == NX_ERROR_PLATFORM && !failed);
+    CHECK(setenv("NEXAUI_PLATFORM", "x11", 1) == 0);
+    CHECK(nx_window_create(&desc, &failed) == NX_ERROR_UNSUPPORTED && !failed);
+    puts("Wayland lifecycle, scale, cursor, key repeat and X11 rejection verified");
+#endif
     return 0;
 }

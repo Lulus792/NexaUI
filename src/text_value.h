@@ -10,6 +10,16 @@ typedef struct nx_text_value_target {
     int multiline;
 } nx_text_value_target;
 
+/* Owner-thread, completed-frame snapshot. Offsets are UTF-8 bytes in the
+   semantic value for that same frame, not native character offsets. Real
+   non-protected text fields only; never contains a field/model pointer. */
+typedef struct nx_text_selection_snapshot {
+    size_t anchor, cursor;
+    int present;
+} nx_text_selection_snapshot;
+nx_text_selection_snapshot nx_context_text_selection_snapshot(const nx_context *context,
+                                                               uint64_t id);
+
 /* Optional native lifetime lease. retain/release cannot call out; current runs
    only when the owner submits the actual widget, outside native snapshot locks.
    A detached/rebound/disabled window can revoke already forwarded requests

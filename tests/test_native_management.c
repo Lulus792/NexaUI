@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "../platform/linux/x11/window_internal.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +11,7 @@ static nx_window *owned_window;
 static nx_context *owned_context;
 static int failure(const char *file,int line,const char *expression) {
     fprintf(stderr,"%s:%d: %s\n",file,line,expression);
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
     if(owned_window && getenv("NEXAUI_PLATFORM") && !strcmp(getenv("NEXAUI_PLATFORM"),"x11")) {
         Display *display=nx_window_x11_display(owned_window); Window xid=nx_window_x11_id(owned_window);
         XWindowAttributes a; Window root,parent,*children=NULL; unsigned count=0;
@@ -16,6 +19,7 @@ static int failure(const char *file,int line,const char *expression) {
             fprintf(stderr,"Owned X11 diagnostic xid=%lu root=%lu parent=%lu map_state=%d override_redirect=%d\n",xid,root,parent,a.map_state,a.override_redirect);
         if(children) XFree(children);
     }
+#endif
     nx_context_destroy(owned_context); owned_context=NULL;
     nx_window_destroy(owned_window); owned_window=NULL;
     return 1;

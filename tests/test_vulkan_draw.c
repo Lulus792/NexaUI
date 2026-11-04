@@ -1,10 +1,12 @@
 #include "renderer.h"
 #include "wayland/window_internal.h"
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/window_internal.h"
+#include <X11/Xutil.h>
+#endif
 #include "paint_scene.h"
 #include "search_font_fixture.h"
 #include "text_density_scene.h"
-#include <X11/Xutil.h>
 
 #include <float.h>
 #include <math.h>
@@ -147,7 +149,11 @@ static int test_draws(nx_window *window) {
     }
     CHECK(nx_vulkan_renderer_get_info(renderer, &info) == NX_OK);
     uint64_t allocations = info.vertex_buffer_allocations, capacity = info.vertex_capacity_bytes;
+#ifdef NEXAUI_LINUX_WAYLAND_ONLY
+    int cached = 0;
+#else
     int cached = nx_window_x11_display(window) != NULL;
+#endif
     CHECK(allocations == 1 && capacity && info.last_frame.reused_canvas == cached &&
           info.last_submitted_vertices == (cached ? 0u : 6u));
     nx_command many[256];
@@ -198,6 +204,7 @@ static nx_command clip(float x, float y, float width, float height) {
     c.type = NX_COMMAND_PUSH_CLIP; return c;
 }
 
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 static unsigned channel(unsigned long pixel, unsigned long mask) {
     unsigned shift = 0;
     while (!(mask & 1u)) { mask >>= 1u; ++shift; }
@@ -235,6 +242,7 @@ static int displayed_pixels(nx_window *window, nx_vulkan_renderer *renderer,
     CHECK(matches); /* Includes the final canvas-to-swapchain copy and presentation. */
     return 0;
 }
+#endif
 
 static int test_clips_and_alpha(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
@@ -279,7 +287,9 @@ static int test_clips_and_alpha(nx_window *window) {
     }
     for (unsigned i = 0; i < 3; ++i) CHECK(compare(window, renderer, many, 96, scales[i], backgrounds[i]) == 0);
     CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[2]) == 0);
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
     CHECK(displayed_pixels(window, renderer, commands, sizeof(commands)/sizeof(*commands), backgrounds[2]) == 0);
+#endif
     CHECK(nx_vulkan_test_invalidate(renderer, 0) == NX_OK);
     CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, backgrounds[1]) == 0);
     CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
@@ -493,7 +503,9 @@ static int test_bitmaps(nx_window *window) {
     for (unsigned i = 0; i < 3; ++i) for (unsigned j = 0; j < 3; ++j)
         CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), scales[i], clears[j]) == 0);
     CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[2]) == 0);
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
     CHECK(displayed_pixels(window, renderer, commands, sizeof(commands)/sizeof(*commands), clears[2]) == 0);
+#endif
     rgba[3] = 0; mask[1] = 255;
     CHECK(compare(window, renderer, commands, sizeof(commands)/sizeof(*commands), 1, clears[1]) == 0);
     CHECK(compare(window, renderer, NULL, 0, 1, clears[0]) == 0);
@@ -701,7 +713,11 @@ static int test_independent_windows(nx_window *first) {
 static int test_canvas_cache(nx_window *window) {
     nx_vulkan_renderer *renderer=NULL;
     CHECK(create_serial(window,NULL,&renderer)==NX_OK);
+#ifdef NEXAUI_LINUX_WAYLAND_ONLY
+    int cached=0;
+#else
     int cached=nx_window_x11_display(window)!=NULL;
+#endif
     CHECK(nx_vulkan_test_set_canvas_cache(renderer,2)==NX_ERROR_ARGUMENT);
     uint8_t *rgba=malloc(32),*replacement=malloc(32);
     CHECK(rgba&&replacement);

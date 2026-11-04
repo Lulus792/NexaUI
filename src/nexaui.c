@@ -68,6 +68,7 @@ typedef struct nx_semantic_record {
     size_t value_offset, value_length;
     uint32_t state, actions;
     nx_text_value_target text_value;
+    nx_text_selection_snapshot text_selection;
     nx_selection_target selection_target;
     uint64_t selection_membership;
     nx_selection_model *selection_model; /* Building frame only. */
@@ -2105,6 +2106,13 @@ nx_text_value_target nx_context_text_value_target(const nx_context *ctx,
     if (!ctx || ctx->state != 2u) return (nx_text_value_target){0};
     uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
     return i == UINT32_MAX ? (nx_text_value_target){0} : ctx->semantics.nodes[i].text_value;
+}
+
+nx_text_selection_snapshot nx_context_text_selection_snapshot(const nx_context *ctx,
+                                                               uint64_t id) {
+    if (!ctx || ctx->state != 2u) return (nx_text_selection_snapshot){0};
+    uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
+    return i == UINT32_MAX ? (nx_text_selection_snapshot){0} : ctx->semantics.nodes[i].text_selection;
 }
 
 static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_record *node) {
@@ -6706,6 +6714,12 @@ nx_result nx_text_field_widget(nx_context *ctx,
     node->value_length = desc->password ? 0u : draft.length;
     if (valid) node->state &= ~NX_SEM_INVALID;
     else node->state |= NX_SEM_INVALID;
+    if (!desc->password) {
+        size_t anchor = 0, cursor = 0;
+        result = nx_text_buffer_selection(field->buffer, &anchor, &cursor);
+        if (result != NX_OK) goto rollback;
+        node->text_selection = (nx_text_selection_snapshot){anchor, cursor, 1};
+    }
     nx_utf8_span ime_preedit = {0};
     int32_t ime_begin = 0, ime_end = 0;
     if (state.focused && !desc->disabled && !field->read_only && desc->ime_window &&

@@ -47,13 +47,25 @@ Accessible, Application, Component, Action, explicit single/multiple Selection
 and bulk Cache interfaces are implemented. Queries expose hierarchy, names,
 descriptions, roles, states, enabled/focus/selection state, bounds and hit testing.
 Protected values are empty. Ordinary scalar semantic values are available as the
-`nexaui-value` attribute; this is not a Text, EditableText or numeric Value
-implementation. Unsupported interfaces are absent from `GetInterfaces`.
+`nexaui-value` attribute; that attribute is not a Text or numeric Value API.
+Genuine, non-protected built-in text fields additionally expose a **partial**
+read-only Text interface: character count, caret, current selection, character
+and range reads, and character-granularity `GetStringAtOffset`. Offsets count
+Unicode scalar values rather than UTF-8 bytes. A single text reply is limited to
+1 MiB; invalid ranges and oversized replies return errors. Unsupported text
+operations return `NotSupported`, including edits, caret/selection movement,
+geometry, attributes and non-character granularities. Text-change/caret/selection
+notifications are not yet implemented, so this is not complete screenreader or
+editable-text support. `EditableText` and numeric `Value` are not advertised.
+Custom semantic nodes and protected fields do not gain Text merely from a value.
 
 Object paths contain window and node incarnations. Consecutive unchanged
 context/ID/role nodes retain their identities; removal, retyping, protection-type
 changes and context replacement retire them. Reconnection uses a new unique bus
-name and new window paths. Requests to retired paths return a native Defunct error.
+name and new window paths. A text node is also retired when its Text capability,
+underlying built-in field identity or raw ancestor chain changes. These identity
+rules do not make pending text edits safe: native edits are not implemented.
+Requests to retired paths return a native Defunct error.
 Malformed arguments and unavailable interfaces have explicit D-Bus errors.
 `GetSelectedChild` returns the AT-SPI null accessible reference for an absent
 selected ordinal, including negative ordinals; selection mutators return false

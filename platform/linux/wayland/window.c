@@ -1588,7 +1588,10 @@ static void nx_wayland_emit_key(nx_wayland_window *window, uint32_t key,
         event.modifiers = modifiers;
         nx_platform_event_queue_push(&window->event_queue, event);
     }
-    if (down && !window->ime_entered &&
+    /* wl_keyboard carries keys delivered to the client, including keys an
+       input method forwarded without consuming. IME composition arrives on
+       text-input separately; an entered text-input is not a keyboard grab. */
+    if (down &&
         !(modifiers & (NX_MOD_CONTROL | NX_MOD_ALT | NX_MOD_SUPER))) {
         uint32_t scalar = xkb_state_key_get_utf32(window->key_state, code);
         if (scalar >= 0x20u && scalar != 0x7fu &&

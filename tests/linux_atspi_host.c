@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/window_internal.h"
+#endif
 #include "accessibility.h"
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"host:%d: %s\n",__LINE__,#x); return 0; } } while (0)
@@ -153,9 +155,13 @@ int main(int argc,char **argv) {
                 if (peer_memory.count) return 1;
             }
             else if (!strcmp(command,"move")) {
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
                 Display *display=nx_window_x11_display(window);
                 if (!display) return 1;
                 XMoveWindow(display,nx_window_x11_id(window),80,90); XSync(display,False);
+#else
+                return 1;
+#endif
             } else if (!strcmp(command,"failure")) {
                 paused=1; app.long_name=1;
                 if (!frame(&app)) return 1;

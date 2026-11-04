@@ -2,6 +2,7 @@
 #include "accessibility.h"
 #include "../../src/context_identity.h"
 #include "../../src/selection_model.h"
+#include "../../src/text_value.h"
 #include <stdatomic.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -46,6 +47,7 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR
 #define NX_AX_LIMIT (32u * 1024u * 1024u)
 #define NX_AX_SELECTION (NX_SEM_SELECTION_SINGLE|NX_SEM_SELECTION_MULTIPLE)
 #define NX_AX_MULTI_BYTES (8u*1024u*1024u)
+#define NX_AX_TEXT_REPLY_BYTES (1024u*1024u)
 #define NX_AX_NODES 65536u
 #define NX_AX_ROOT "/org/a11y/atspi/accessible/root"
 #define NX_AX_NULL "/org/a11y/atspi/null"
@@ -55,6 +57,7 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR
 #define NX_AX_COMP "org.a11y.atspi.Component"
 #define NX_AX_ACT "org.a11y.atspi.Action"
 #define NX_AX_SEL "org.a11y.atspi.Selection"
+#define NX_AX_TEXT "org.a11y.atspi.Text"
 #define NX_AX_CACHE_IF "org.a11y.atspi.Cache"
 #define NX_AX_PROPS "org.freedesktop.DBus.Properties"
 
@@ -67,6 +70,11 @@ typedef struct nx_ax_node {
     uint32_t selected_last, next_selected, selected_count, member_count;
     uint64_t membership, policy_epoch;
     nx_selection_target target;
+    nx_text_value_target text_target;
+    nx_text_selection_snapshot text_selection;
+    size_t text_bytes;
+    int32_t text_count, text_anchor, text_cursor;
+    int text_ready;
     int owner_multiple;
     char *name, *description, *value;
 } nx_ax_node;
@@ -272,6 +280,27 @@ static int owner_policy_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,
     return 1;
 }
 
+/* Convert positions once while the owned UTF-8 snapshot is being built. A
+   D-Bus string cannot carry embedded NUL; never expose a truncated value. */
+static void nx_ax_prepare_text(nx_ax_node *n,size_t length) {
+    if (!n->text_selection.present || !n->text_target.identity || (n->state&NX_SEM_PROTECTED) ||
+        memchr(n->value,0,length) || n->text_selection.anchor>length ||
+        n->text_selection.cursor>length) return;
+    size_t offset=0; int32_t count=0,anchor=-1,cursor=-1;
+    while (offset<length) {
+        if (offset==n->text_selection.anchor) anchor=count;
+        if (offset==n->text_selection.cursor) cursor=count;
+        uint32_t scalar;
+        if (count==INT32_MAX || nx_utf8_decode(n->value,length,&offset,&scalar)!=NX_OK) return;
+        ++count;
+    }
+    if (offset==n->text_selection.anchor) anchor=count;
+    if (offset==n->text_selection.cursor) cursor=count;
+    if (anchor<0 || cursor<0) return;
+    n->text_bytes=length; n->text_count=count;
+    n->text_anchor=anchor; n->text_cursor=cursor; n->text_ready=1;
+}
+
 static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t revision) {
     size_t count=0;
     nx_result result=nx_semantics_count(context,&count);
@@ -305,6 +334,8 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK){if(staged)free(s);return NX_ERROR_STATE;}
         nx_ax_node *n=&s->nodes[i]; *n=(nx_ax_node){0};
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+        n->text_selection=nx_context_text_selection_snapshot(context,v.id);
+        n->text_target=nx_context_text_value_target(context,v.id);
         n->raw_parent=n->parent=nx_ax_find(s,v.parent_id);
         n->first=n->last=n->next=n->owner=n->selected=n->selected_last=n->next_selected=NX_AX_NONE;
         n->target=nx_context_selection_target(context,n->id);
@@ -327,9 +358,23 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
                 owner->selected_last=(uint32_t)i;++owner->selected_count;
             }
         }
+        nx_utf8_span spans[]={v.name,v.description,(v.state&NX_SEM_PROTECTED)?(nx_utf8_span){0}:v.value};
+        char **destinations[]={&n->name,&n->description,&n->value};
+        for (unsigned j=0;j<3;++j) {
+            *destinations[j]=text;
+            if (spans[j].length) memcpy(text,spans[j].data,spans[j].length);
+            text[spans[j].length]=0; text+=spans[j].length+1u;
+        }
+        nx_ax_prepare_text(n,spans[2].length);
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
+            b->snapshot->nodes[old].text_ready==n->text_ready &&
             !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED);
+        if (same && n->text_ready) {
+            nx_ax_node *prior=&b->snapshot->nodes[old];
+            same=n->text_target.identity && n->text_target.identity==prior->text_target.identity &&
+                same_ancestry(s,n->raw_parent,b->snapshot,prior->raw_parent);
+        }
         if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
             (b->snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || b->snapshot->nodes[old].owner_multiple)) {
             nx_ax_node *prior=&b->snapshot->nodes[old];
@@ -338,13 +383,6 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         }
         if(same)n->incarnation=b->snapshot->nodes[old].incarnation;
         else {if(incarnation==UINT64_MAX){if(staged)free(s);return NX_ERROR_LIMIT;}n->incarnation=++incarnation;}
-        nx_utf8_span spans[]={v.name,v.description,(v.state&NX_SEM_PROTECTED)?(nx_utf8_span){0}:v.value};
-        char **destinations[]={&n->name,&n->description,&n->value};
-        for (unsigned j=0;j<3;++j) {
-            *destinations[j]=text;
-            if (spans[j].length) memcpy(text,spans[j].data,spans[j].length);
-            text[spans[j].length]=0; text+=spans[j].length+1u;
-        }
         size_t at=nx_ax_slot(n->id,slots); while (s->slots[at]) at=(at+1u)&(slots-1u);
         s->slots[at]=(uint32_t)i+1u;
     }
@@ -719,6 +757,7 @@ static int nx_ax_interfaces(DBusMessageIter *it,nx_ax_ref r) {
     if (nx_ax_action_count(r)) ok=ok && nx_ax_string(&a,NX_AX_ACT);
     nx_ax_node *n=nx_ax_node_at(r);
     if (n && (n->state&NX_AX_SELECTION)) ok=ok && nx_ax_string(&a,NX_AX_SEL);
+    if (n && n->text_ready) ok=ok && nx_ax_string(&a,NX_AX_TEXT);
     return ok && d.message_iter_close_container(it,&a);
 }
 static int nx_ax_put_states(DBusMessageIter *it,nx_ax_ref r) {
@@ -792,7 +831,8 @@ static const nx_ax_property nx_ax_properties[]={
     {NX_AX_APP,"ToolkitVersion","s"}, {NX_AX_APP,"AtspiVersion","s"},
     {NX_AX_APP,"InterfaceVersion","u"}, {NX_AX_APP,"Id","i"},
     {NX_AX_COMP,"version","u"}, {NX_AX_ACT,"version","u"}, {NX_AX_ACT,"NActions","i"},
-    {NX_AX_SEL,"version","u"}, {NX_AX_SEL,"NSelectedChildren","i"}
+    {NX_AX_SEL,"version","u"}, {NX_AX_SEL,"NSelectedChildren","i"},
+    {NX_AX_TEXT,"version","u"}, {NX_AX_TEXT,"CharacterCount","i"}, {NX_AX_TEXT,"CaretOffset","i"}
 };
 static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_ACC)) return 1;
@@ -800,6 +840,7 @@ static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_COMP)) return r.window!=NULL;
     if (!strcmp(interface,NX_AX_ACT)) return nx_ax_action_count(r)>0;
     nx_ax_node *n=nx_ax_node_at(r);
+    if (!strcmp(interface,NX_AX_TEXT)) return n && n->text_ready;
     return !strcmp(interface,NX_AX_SEL) && n && (n->state&NX_AX_SELECTION);
 }
 static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_property *p) {
@@ -811,6 +852,8 @@ static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_prop
     if (!strcmp(name,"ChildCount")) return nx_ax_int(it,nx_ax_children(r));
     if (!strcmp(name,"NActions")) return nx_ax_int(it,nx_ax_action_count(r));
     if (!strcmp(name,"NSelectedChildren")) return nx_ax_int(it,n?(int)n->selected_count:0);
+    if (!strcmp(name,"CharacterCount")) return nx_ax_int(it,n?n->text_count:0);
+    if (!strcmp(name,"CaretOffset")) return nx_ax_int(it,n?n->text_cursor:0);
     if (!strcmp(name,"Id")) return nx_ax_int(it,r.hub->application_id);
     if (!strcmp(name,"ToolkitName")) return nx_ax_string(it,"NexaUI");
     if (!strcmp(name,"Version") || !strcmp(name,"ToolkitVersion")) return nx_ax_string(it,"0.1.0");
@@ -906,6 +949,66 @@ static int nx_ax_accessible_call(nx_ax_ref r,DBusMessage *call,const char *membe
         return ok && d.message_iter_close_container(it,&a);
     }
     return -2;
+}
+
+static int nx_ax_text_byte(const nx_ax_node *n,int32_t character,size_t *byte) {
+    if (character<0 || character>n->text_count) return 0;
+    size_t offset=0;
+    for (int32_t i=0;i<character;++i) {
+        uint32_t scalar;
+        if (nx_utf8_decode(n->value,n->text_bytes,&offset,&scalar)!=NX_OK) return 0;
+    }
+    *byte=offset; return 1;
+}
+static int nx_ax_text_range(DBusMessageIter *it,const nx_ax_node *n,int32_t start,int32_t end) {
+    if (end==-1) end=n->text_count;
+    size_t first,last;
+    if (start<0 || end<start || !nx_ax_text_byte(n,start,&first) || !nx_ax_text_byte(n,end,&last)) return -1;
+    size_t bytes=last-first;
+    if (bytes>NX_AX_TEXT_REPLY_BYTES) return -6;
+    char *copy=malloc(bytes+1u); if (!copy) return 0;
+    memcpy(copy,n->value+first,bytes); copy[bytes]=0;
+    int ok=nx_ax_string(it,copy); free(copy); return ok;
+}
+static int nx_ax_text_call(nx_ax_ref r,DBusMessage *call,const char *member,DBusMessageIter *it) {
+    nx_ax_node *n=nx_ax_node_at(r);
+    if (!n || !n->text_ready) return -2;
+    if (!strcmp(member,"GetText")) {
+        dbus_int32_t first,last;
+        if (!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&first,DBUS_TYPE_INT32,&last,DBUS_TYPE_INVALID)) return -1;
+        return nx_ax_text_range(it,n,first,last);
+    }
+    if (!strcmp(member,"GetCharacterAtOffset")) {
+        dbus_int32_t index; size_t offset; uint32_t scalar;
+        if (!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID) ||
+            index<0 || index>=n->text_count || !nx_ax_text_byte(n,index,&offset) ||
+            nx_utf8_decode(n->value,n->text_bytes,&offset,&scalar)!=NX_OK) return -1;
+        return nx_ax_int(it,(int32_t)scalar);
+    }
+    if (!strcmp(member,"GetStringAtOffset")) {
+        dbus_int32_t index; dbus_uint32_t granularity;
+        if (!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_UINT32,&granularity,DBUS_TYPE_INVALID)) return -1;
+        if (granularity!=0) return -5;
+        if (index<0 || index>n->text_count) return -1;
+        int32_t end=index<n->text_count?index+1:index;
+        int result=nx_ax_text_range(it,n,index,end);
+        return result<=0?result: nx_ax_int(it,index) && nx_ax_int(it,end);
+    }
+    if (!strcmp(member,"GetNSelections")) {
+        if (!d.message_has_signature(call,"")) return -1;
+        return nx_ax_int(it,n->text_anchor!=n->text_cursor);
+    }
+    if (!strcmp(member,"GetSelection")) {
+        dbus_int32_t index;
+        if (!d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID) ||
+            index!=0 || n->text_anchor==n->text_cursor) return -1;
+        int32_t first=n->text_anchor<n->text_cursor?n->text_anchor:n->text_cursor;
+        int32_t last=n->text_anchor<n->text_cursor?n->text_cursor:n->text_anchor;
+        return nx_ax_int(it,first) && nx_ax_int(it,last);
+    }
+    /* Unimplemented movement, edit, geometry, non-character granularity and attribute
+       operations are explicit failures; no fabricated success or coordinates. */
+    return -5;
 }
 static int nx_ax_action_call(nx_ax_ref r,DBusMessage *call,const char *member,DBusMessageIter *it) {
     if (!strcmp(member,"GetActions")) {
@@ -1074,6 +1177,7 @@ static int nx_ax_introspect(nx_ax_hub *h,nx_ax_ref r,int cache,DBusMessageIter *
         if (r.window) pieces[count++]=nx_ax_xml_component;
         if (nx_ax_supports(r,NX_AX_ACT)) pieces[count++]=nx_ax_xml_action;
         if (nx_ax_supports(r,NX_AX_SEL)) pieces[count++]=nx_ax_xml_selection;
+        if (nx_ax_supports(r,NX_AX_TEXT)) pieces[count++]=nx_ax_xml_text;
     }
     pieces[count++]="<interface name=\"org.freedesktop.DBus.Properties\">"
         "<method name=\"Get\"><arg direction=\"in\" type=\"s\"/><arg direction=\"in\" type=\"s\"/>"
@@ -1138,6 +1242,7 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
         if (!strcmp(interface,NX_AX_ACC)) ok=nx_ax_accessible_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_ACT)) ok=nx_ax_action_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_SEL)) ok=nx_ax_selection_call(r,call,member,&it);
+        else if (!strcmp(interface,NX_AX_TEXT)) ok=nx_ax_text_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_COMP)) ok=nx_ax_component_call(r,call,member,&it);
         else if (!strcmp(interface,NX_AX_APP)) {
             if (!strcmp(member,"GetApplicationBusAddress")) ok=d.message_has_signature(call,"")?nx_ax_string(&it,""):-1;
@@ -1154,7 +1259,7 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
             ok==-4?DBUS_ERROR_PROPERTY_READ_ONLY:ok==-5?DBUS_ERROR_NOT_SUPPORTED:
             ok==-6?DBUS_ERROR_LIMITS_EXCEEDED:DBUS_ERROR_UNKNOWN_METHOD;
         nx_ax_error(h,call,error,ok==-5?"This operation or coordinate system is unavailable":
-            ok==-6?"The bulk cache exceeds the reply budget":"Invalid or unsupported accessible request");
+            ok==-6?"The requested reply exceeds the budget":"Invalid or unsupported accessible request");
     }
     return DBUS_HANDLER_RESULT_HANDLED;
 }

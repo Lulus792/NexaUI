@@ -1,0 +1,123 @@
+#define _POSIX_C_SOURCE 200809L
+/* Independent OS client: no NexaUI headers or linkage. */
+#include <atspi/atspi.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+static pid_t host=-1;
+static void cleanup(void) { if(host>0) { kill(host,SIGTERM); waitpid(host,NULL,0); host=-1; } }
+#define CHECK(x) do { if (!(x)) { fprintf(stderr,"settings-atspi:%d: %s\n",__LINE__,#x); cleanup(); return 1; } } while(0)
+static void pump(unsigned ms) { for(unsigned i=0;i<ms;++i) { while(g_main_context_iteration(NULL,FALSE)) {} struct timespec t={0,1000000}; nanosleep(&t,NULL); } }
+static AtspiAccessible *find(AtspiAccessible *node,const char *wanted,unsigned depth) {
+    if (!node || depth>16) return NULL;
+    GError *error=NULL; char *name=atspi_accessible_get_name(node,&error);
+    int match=!error && name && !strcmp(name,wanted);
+    if(error) g_error_free(error); g_free(name);
+    if(match) return g_object_ref(node);
+    error=NULL; int count=atspi_accessible_get_child_count(node,&error);
+    if(error) { g_error_free(error); return NULL; }
+    for(int i=0;i<count;++i) {
+        error=NULL; AtspiAccessible *child=atspi_accessible_get_child_at_index(node,i,&error);
+        if(error) {g_error_free(error); continue;}
+        AtspiAccessible *found=find(child,wanted,depth+1);
+        if(child) g_object_unref(child); if(found) return found;
+    }
+    return NULL;
+}
+static AtspiAccessible *app_for_pid(AtspiAccessible *desktop) {
+    for(unsigned n=0;n<300;++n) {
+        pump(10); atspi_accessible_clear_cache(desktop); GError *error=NULL;
+        int count=atspi_accessible_get_child_count(desktop,&error);
+        if(error) {g_error_free(error); continue;}
+        for(int i=0;i<count;++i) {
+            error=NULL; AtspiAccessible *app=atspi_accessible_get_child_at_index(desktop,i,&error);
+            if(error) {g_error_free(error); continue;} if(!app) continue;
+            atspi_accessible_clear_cache(app); guint pid=atspi_accessible_get_process_id(app,&error);
+            if(!error && pid==(guint)host && atspi_accessible_get_child_count(app,&error)>0 && !error) return app;
+            if(error)g_error_free(error); g_object_unref(app);
+        }
+    }
+    return NULL;
+}
+static int checked(AtspiAccessible *a) {
+    AtspiStateSet *s=atspi_accessible_get_state_set(a);
+    int yes=s && atspi_state_set_contains(s,ATSPI_STATE_CHECKED);
+    if(s)g_object_unref(s); return yes;
+}
+static int activate(AtspiAccessible *a) {
+    AtspiAction *action=atspi_accessible_get_action_iface(a); if(!action)return 0;
+    GError *error=NULL; int okay=atspi_action_do_action(action,0,&error) && !error;
+    if(error){fprintf(stderr,"action: %s\n",error->message);g_error_free(error);}
+    g_object_unref(action); return okay;
+}
+int main(int argc,char **argv) {
+    const char *font=getenv("NEXAUI_SETTINGS_FONT"); CHECK(argc==2 && font && *font);
+    host=fork(); CHECK(host>=0);
+    if(!host) {execl(argv[1],argv[1],font,"--verify-accessibility",(char *)NULL);_exit(127);}
+    CHECK(atspi_init()==0); atspi_set_timeout(1000,1000);
+    AtspiAccessible *desktop=atspi_get_desktop(0); CHECK(desktop);
+    AtspiAccessible *app=app_for_pid(desktop); CHECK(app);
+    AtspiAccessible *name=find(app,"Display name",0), *motion=find(app,"Reduce motion",0), *apply=find(app,"Apply settings",0);
+    CHECK(name && motion && apply);
+    AtspiAccessible *secret=find(app,"Secret probe",0), *custom=find(app,"Custom text probe",0);
+    CHECK(secret && custom);
+    GError *error=NULL;
+    CHECK(atspi_accessible_get_role(secret,&error)==ATSPI_ROLE_PASSWORD_TEXT && !error);
+    CHECK(!atspi_accessible_get_text_iface(secret) && !atspi_accessible_get_editable_text_iface(secret));
+    CHECK(!atspi_accessible_get_text_iface(custom) && !atspi_accessible_get_editable_text_iface(custom));
+    GHashTable *secret_attrs=atspi_accessible_get_attributes(secret,&error);
+    CHECK(secret_attrs && !error && !g_hash_table_lookup(secret_attrs,"nexaui-value"));
+    g_hash_table_unref(secret_attrs);
+    GHashTable *attributes=atspi_accessible_get_attributes(name,&error);
+    CHECK(attributes && !error && g_strcmp0(g_hash_table_lookup(attributes,"nexaui-value"),"A\xc3\xa9\xf0\x9f\x8c\x8d")==0);
+    g_hash_table_unref(attributes);
+    AtspiText *text=atspi_accessible_get_text_iface(name);
+    CHECK(text && !atspi_accessible_get_editable_text_iface(name));
+    CHECK(atspi_text_get_character_count(text,&error)==3 && !error);
+    CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
+    CHECK(atspi_text_get_n_selections(text,&error)==1 && !error);
+    AtspiRange *selection=atspi_text_get_selection(text,0,&error);
+    CHECK(!error && selection && selection->start_offset==1 && selection->end_offset==3);
+    g_boxed_free(ATSPI_TYPE_RANGE,selection);
+    char *all=atspi_text_get_text(text,0,-1,&error);
+    CHECK(!error && all && !strcmp(all,"A\xc3\xa9\xf0\x9f\x8c\x8d")); g_free(all);
+    char *part=atspi_text_get_text(text,1,3,&error);
+    CHECK(!error && part && !strcmp(part,"\xc3\xa9\xf0\x9f\x8c\x8d")); g_free(part);
+    char *empty=atspi_text_get_text(text,1,1,&error);
+    CHECK(!error && empty && !*empty); g_free(empty);
+    CHECK(atspi_text_get_character_at_offset(text,2,&error)==0x1f30d && !error);
+    AtspiTextRange *character=atspi_text_get_string_at_offset(text,1,ATSPI_TEXT_GRANULARITY_CHAR,&error);
+    CHECK(!error && character && character->start_offset==1 && character->end_offset==2 &&
+          character->content && !strcmp(character->content,"\xc3\xa9"));
+    g_boxed_free(ATSPI_TYPE_TEXT_RANGE,character);
+    AtspiTextRange *unsupported=atspi_text_get_string_at_offset(text,1,ATSPI_TEXT_GRANULARITY_WORD,&error);
+    CHECK(error); if (unsupported) g_boxed_free(ATSPI_TYPE_TEXT_RANGE,unsupported); g_clear_error(&error);
+    char *invalid=atspi_text_get_text(text,0,4,&error);
+    CHECK(error); g_free(invalid); g_clear_error(&error);
+    invalid=atspi_text_get_text(text,2,1,&error);
+    CHECK(error); g_free(invalid); g_clear_error(&error);
+    AtspiRange *missing=atspi_text_get_selection(text,1,&error);
+    CHECK(error); if (missing) g_boxed_free(ATSPI_TYPE_RANGE,missing); g_clear_error(&error);
+    CHECK(!atspi_text_set_caret_offset(text,0,&error) && error); g_clear_error(&error);
+    CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
+    g_object_unref(text);
+    CHECK(atspi_accessible_get_role(motion,&error)==ATSPI_ROLE_CHECK_BOX && !error);
+    /* Allow the host to become idle before sending a native action. */
+    pump(1200);
+    CHECK(!checked(motion) && activate(motion));
+    int changed=0;
+    for(unsigned i=0;i<200 && !changed;++i) {pump(10);atspi_accessible_clear_cache(motion);changed=checked(motion);}
+    CHECK(changed && activate(apply));
+    int status=0,finished=0;
+    for(unsigned i=0;i<300 && !finished;++i) {
+        pump(10); pid_t p=waitpid(host,&status,WNOHANG);
+        if(p==host) { finished=1; host=-1; } else if(p<0) break;
+    }
+    CHECK(finished && WIFEXITED(status) && WEXITSTATUS(status)==0);
+    g_object_unref(secret);g_object_unref(custom);g_object_unref(name);g_object_unref(motion);g_object_unref(apply);g_object_unref(app);g_object_unref(desktop);
+    atspi_exit(); puts("Independent AT-SPI checkbox and Apply updated the real model; host closed cleanly."); return 0;
+}

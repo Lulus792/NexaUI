@@ -1,10 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 #include "renderer.h"
 #include "window_internal.h"
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/window_internal.h"
+#include <X11/Xutil.h>
+#endif
 #include "wayland/window_internal.h"
 
-#include <X11/Xutil.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -80,6 +82,7 @@ static int read_pixels(nx_window *window, nx_vulkan_renderer *renderer) {
     return 0;
 }
 
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
 static unsigned channel(unsigned long pixel, unsigned long mask) {
     if (!mask) return 0;
     while (!(mask & 1u)) { mask >>= 1u; pixel >>= 1u; }
@@ -105,6 +108,7 @@ static int inspect_x11_window(nx_window *window) {
     fprintf(stderr, "Presented X11 window pixels did not match the clear\n");
     return 1;
 }
+#endif
 
 typedef struct thread_state { nx_window *window; nx_vulkan_renderer *renderer; int passed; } thread_state;
 
@@ -197,7 +201,9 @@ static int test_renderer(nx_window *window) {
         CHECK(show_frame(window, renderer, (nx_color){0.2f, 0.3f, 0.7f, 1}) == 0);
     CHECK(track.calls == allocation_calls); /* Reuse NexaUI frame bookkeeping. */
     CHECK(read_pixels(window, renderer) == 0);
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
     CHECK(inspect_x11_window(window) == 0);
+#endif
     if (nx_window_wayland_display(window)) {
         int bg_width, bg_height, cursor_width, cursor_height;
         CHECK(nx_window_wayland_test_extents(window, &bg_width, &bg_height,
@@ -214,7 +220,9 @@ static int test_renderer(nx_window *window) {
         CHECK(info.pixel_width == (uint32_t)ceil(native.width * 2));
         CHECK(read_pixels(window, renderer) == 0);
         CHECK(nx_window_wayland_test_output(window, 1, 0) == NX_OK);
-    } else {
+    }
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    else {
         Display *display = nx_window_x11_display(window);
         XResizeWindow(display, nx_window_x11_id(window), 320, 200);
         XSync(display, False);
@@ -231,6 +239,7 @@ static int test_renderer(nx_window *window) {
         CHECK(read_pixels(window, renderer) == 0);
         CHECK(inspect_x11_window(window) == 0);
     }
+#endif
     CHECK(nx_vulkan_renderer_recover(renderer) == NX_OK);
     CHECK(show_frame(window, renderer, (nx_color){1, 0, 0, 1}) == 0);
     CHECK(read_pixels(window, renderer) == 0);

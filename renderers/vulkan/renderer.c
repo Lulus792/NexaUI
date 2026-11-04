@@ -1,4 +1,6 @@
+#ifndef NEXAUI_VULKAN_WAYLAND_ONLY
 #define VK_USE_PLATFORM_XLIB_KHR
+#endif
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #define _POSIX_C_SOURCE 200809L
 #include "device_internal.h"
@@ -8,7 +10,9 @@
 #include "canvas_cache.h"
 #include "internal.h"
 #include "window_internal.h"
+#ifndef NEXAUI_VULKAN_WAYLAND_ONLY
 #include "x11/window_internal.h"
+#endif
 #include "wayland/window_internal.h"
 
 #include <pthread.h>
@@ -268,6 +272,7 @@ static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
         info.surface = nx_window_wayland_surface(window);
         return create(instance, &info, NULL, surface);
     }
+#ifndef NEXAUI_VULKAN_WAYLAND_ONLY
     PFN_vkCreateXlibSurfaceKHR create = (PFN_vkCreateXlibSurfaceKHR)
         vkGetInstanceProcAddr(instance, "vkCreateXlibSurfaceKHR");
     if (!create) return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -277,6 +282,9 @@ static VkResult nx_vk_create_window_surface(void *user, VkInstance instance,
     info.window = nx_window_x11_id(window);
     if (!info.dpy || !info.window) return VK_ERROR_INITIALIZATION_FAILED;
     return create(instance, &info, NULL, surface);
+#else
+    return VK_ERROR_INITIALIZATION_FAILED;
+#endif
 }
 
 static void nx_vk_drop_swapchain(nx_vulkan_renderer *renderer) {
@@ -359,8 +367,13 @@ static nx_result nx_vk_drop_native(nx_vulkan_renderer *renderer) {
 }
 
 static nx_result nx_vk_open_native(nx_vulkan_renderer *renderer) {
+#ifdef NEXAUI_VULKAN_WAYLAND_ONLY
+    if (!nx_window_wayland_display(renderer->window)) return NX_ERROR_UNSUPPORTED;
+    const char *extension = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+#else
     const char *extension = nx_window_wayland_display(renderer->window)
         ? VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME : VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
+#endif
     nx_vk_device_desc desc = {0};
     desc.allocator = renderer->allocator;
     desc.instance_extensions = &extension;
@@ -706,7 +719,11 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
 #endif
     /* Keep Wayland's established redraw path until unchanged-frame FIFO
        callback liveness is accepted on native compositors (including WSLg). */
+#ifdef NEXAUI_VULKAN_WAYLAND_ONLY
+    int cache_supported = 0;
+#else
     int cache_supported = nx_window_x11_display(renderer->window) != NULL;
+#endif
     int reuse = cache_supported && renderer->painter.canvas != VK_NULL_HANDLE &&
         nx_vk_canvas_cache_match(&renderer->canvas_cache, draw_commands, draw_count,
                                  scale, clear, profile.batched);

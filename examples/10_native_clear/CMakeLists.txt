@@ -26,7 +26,7 @@ elseif(TARGET nexaui_renderer_vulkan)
     target_compile_features(nexaui_native_clear PRIVATE c_std_17)
     target_compile_options(nexaui_native_clear PRIVATE -Wall -Wextra -Wpedantic)
     if(NEXAUI_BUILD_TESTS)
-        foreach(_platform x11 wayland)
+        foreach(_platform IN LISTS _nexaui_test_platforms)
             add_test(NAME nexaui_vulkan_${_platform}_example COMMAND nexaui_native_clear --smoke)
             set_tests_properties(nexaui_vulkan_${_platform}_example PROPERTIES
                 TIMEOUT 30 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display

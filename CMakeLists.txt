@@ -26,7 +26,17 @@ elseif(APPLE)
     set_target_properties(nexaui PROPERTIES OBJC_STANDARD 17 OBJC_STANDARD_REQUIRED YES OBJC_EXTENSIONS NO)
     target_link_libraries(nexaui PRIVATE "-framework AppKit" objc Threads::Threads)
 elseif(UNIX AND NOT APPLE)
-    find_package(X11 REQUIRED)
+    option(NEXAUI_ENABLE_X11 "Build the Linux X11 window backend" ON)
+    set(_nexaui_test_platforms wayland)
+    if(NEXAUI_ENABLE_X11)
+        list(PREPEND _nexaui_test_platforms x11)
+        find_package(X11 REQUIRED)
+        target_sources(nexaui PRIVATE platform/linux/x11/window.c)
+        target_include_directories(nexaui PRIVATE platform/linux/x11)
+        target_link_libraries(nexaui PRIVATE X11::X11)
+    else()
+        target_compile_definitions(nexaui PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+    endif()
     find_package(Threads REQUIRED)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
@@ -99,16 +109,15 @@ elseif(UNIX AND NOT APPLE)
         DEPENDS ${NEXAUI_TEXT_INPUT_V3_XML}
         VERBATIM)
     target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c
-        platform/linux/x11/window.c platform/linux/wayland/window.c
+        platform/linux/wayland/window.c
         platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
         platform/posix/snapshot_lock.c)
-    target_include_directories(nexaui PRIVATE platform/linux/x11
-        ${NEXAUI_WAYLAND_PROTOCOL_DIR})
-    target_link_libraries(nexaui PRIVATE X11::X11 Threads::Threads
+    target_include_directories(nexaui PRIVATE ${NEXAUI_WAYLAND_PROTOCOL_DIR})
+    target_link_libraries(nexaui PRIVATE Threads::Threads
         PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
 else()
     target_sources(nexaui PRIVATE platform/unsupported/window.c platform/posix/snapshot_lock.c)
@@ -224,8 +233,13 @@ if(UNIX AND NOT APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
         target_link_libraries(nexaui_renderer_vulkan PRIVATE
-            NexaUI::NexaUI Vulkan::Vulkan Threads::Threads X11::X11
+            NexaUI::NexaUI Vulkan::Vulkan Threads::Threads
             PkgConfig::WAYLAND_CLIENT m)
+        if(NEXAUI_ENABLE_X11)
+            target_link_libraries(nexaui_renderer_vulkan PRIVATE X11::X11)
+        else()
+            target_compile_definitions(nexaui_renderer_vulkan PRIVATE NEXAUI_VULKAN_WAYLAND_ONLY)
+        endif()
         set_target_properties(nexaui_renderer_vulkan PROPERTIES
             C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
         target_compile_options(nexaui_renderer_vulkan PRIVATE
@@ -282,9 +296,14 @@ if(NEXAUI_BUILD_TESTS)
         target_compile_options(nexaui_vulkan_present_tests PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_features(nexaui_vulkan_present_tests PRIVATE c_std_17)
         target_link_libraries(nexaui_vulkan_present_tests PRIVATE
-            nexaui_renderer_vulkan NexaUI::NexaUI X11::X11 Threads::Threads
+            nexaui_renderer_vulkan NexaUI::NexaUI Threads::Threads
             PkgConfig::WAYLAND_CLIENT)
-        foreach(_vk_platform x11 wayland)
+        if(NEXAUI_ENABLE_X11)
+            target_link_libraries(nexaui_vulkan_present_tests PRIVATE X11::X11)
+        else()
+            target_compile_definitions(nexaui_vulkan_present_tests PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+        endif()
+        foreach(_vk_platform IN LISTS _nexaui_test_platforms)
             add_test(NAME nexaui_vulkan_${_vk_platform}_present COMMAND nexaui_vulkan_present_tests)
             set_tests_properties(nexaui_vulkan_${_vk_platform}_present PROPERTIES
                 TIMEOUT 90 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
@@ -298,11 +317,14 @@ if(NEXAUI_BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
         target_compile_definitions(nexaui_vulkan_draw_tests PRIVATE
             NEXAUI_VULKAN_TEST_HOOKS NEXAUI_WAYLAND_TEST_HOOKS)
+        if(NOT NEXAUI_ENABLE_X11)
+            target_compile_definitions(nexaui_vulkan_draw_tests PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+        endif()
         target_compile_options(nexaui_vulkan_draw_tests PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_features(nexaui_vulkan_draw_tests PRIVATE c_std_17)
         target_link_libraries(nexaui_vulkan_draw_tests PRIVATE
             nexaui_renderer_vulkan NexaUI::NexaUI PkgConfig::WAYLAND_CLIENT)
-        foreach(_vk_platform x11 wayland)
+        foreach(_vk_platform IN LISTS _nexaui_test_platforms)
             add_test(NAME nexaui_vulkan_${_vk_platform}_draw COMMAND nexaui_vulkan_draw_tests)
             set_tests_properties(nexaui_vulkan_${_vk_platform}_draw PROPERTIES
                 TIMEOUT 90 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
@@ -317,7 +339,7 @@ if(NEXAUI_BUILD_TESTS)
         target_compile_features(nexaui_vulkan_timing_tests PRIVATE c_std_17)
         target_compile_options(nexaui_vulkan_timing_tests PRIVATE -Wall -Wextra -Wpedantic)
         target_link_libraries(nexaui_vulkan_timing_tests PRIVATE nexaui_renderer_vulkan NexaUI::NexaUI)
-        foreach(_vk_platform x11 wayland)
+        foreach(_vk_platform IN LISTS _nexaui_test_platforms)
             add_test(NAME nexaui_vulkan_${_vk_platform}_timing COMMAND nexaui_vulkan_timing_tests)
             set_tests_properties(nexaui_vulkan_${_vk_platform}_timing PROPERTIES
                 TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
@@ -331,7 +353,7 @@ if(NEXAUI_BUILD_TESTS)
         target_compile_options(nexaui_vulkan_ring_tests PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_features(nexaui_vulkan_ring_tests PRIVATE c_std_17)
         target_link_libraries(nexaui_vulkan_ring_tests PRIVATE nexaui_renderer_vulkan NexaUI::NexaUI)
-        foreach(_vk_platform x11 wayland)
+        foreach(_vk_platform IN LISTS _nexaui_test_platforms)
             add_test(NAME nexaui_vulkan_${_vk_platform}_ring COMMAND nexaui_vulkan_ring_tests)
             set_tests_properties(nexaui_vulkan_${_vk_platform}_ring PROPERTIES
                 TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display
@@ -399,6 +421,12 @@ if(NEXAUI_BUILD_TESTS)
     if(UNIX AND NOT APPLE)
         target_compile_definitions(nexaui PRIVATE
             NEXAUI_WAYLAND_TEST_HOOKS NEXAUI_X11_TEST_HOOKS)
+        if(NOT NEXAUI_ENABLE_X11)
+            add_executable(nexaui_wayland_only_selection_tests tests/test_wayland_only_selection.c)
+            target_link_libraries(nexaui_wayland_only_selection_tests PRIVATE NexaUI::NexaUI)
+            add_test(NAME nexaui_wayland_only_selection COMMAND nexaui_wayland_only_selection_tests)
+            set_tests_properties(nexaui_wayland_only_selection PROPERTIES TIMEOUT 15)
+        endif()
         add_executable(nexaui_wayland_cursor_tests
             tests/test_wayland_cursor.c platform/linux/wayland/cursor.c)
         target_include_directories(nexaui_wayland_cursor_tests PRIVATE
@@ -421,14 +449,22 @@ if(NEXAUI_BUILD_TESTS)
         target_compile_definitions(nexaui_wayland_window_tests PRIVATE
             NEXAUI_WAYLAND_TEST_HOOKS)
         target_link_libraries(nexaui_wayland_window_tests PRIVATE
-            NexaUI::NexaUI X11::X11 Threads::Threads
+            NexaUI::NexaUI Threads::Threads
             PkgConfig::WAYLAND_CLIENT)
+        if(NOT NEXAUI_ENABLE_X11)
+            target_compile_definitions(nexaui_wayland_window_tests PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+        endif()
         add_test(NAME nexaui_wayland_window
             COMMAND nexaui_wayland_window_tests)
         set_tests_properties(nexaui_wayland_window PROPERTIES TIMEOUT 15
             SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
         add_executable(nexaui_native_management_tests tests/test_native_management.c)
-        target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI X11::X11)
+        target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI)
+        if(NEXAUI_ENABLE_X11)
+            target_link_libraries(nexaui_native_management_tests PRIVATE X11::X11)
+        else()
+            target_compile_definitions(nexaui_native_management_tests PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+        endif()
         add_test(NAME nexaui_wayland_management_native COMMAND nexaui_native_management_tests)
         set_tests_properties(nexaui_wayland_management_native PROPERTIES TIMEOUT 20
             SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
@@ -496,6 +532,7 @@ if(NEXAUI_BUILD_TESTS)
                 COMMAND nexaui_wayland_text_input_v3_tests)
             set_tests_properties(nexaui_wayland_text_input_v3 PROPERTIES TIMEOUT 15)
         endif()
+        if(NEXAUI_ENABLE_X11)
         add_executable(nexaui_x11_window_tests tests/test_x11_window.c)
         target_include_directories(nexaui_x11_window_tests PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/x11)
@@ -507,12 +544,18 @@ if(NEXAUI_BUILD_TESTS)
         set_tests_properties(nexaui_x11_window PROPERTIES TIMEOUT 15
             SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=x11"
             RESOURCE_LOCK native_display)
+        endif()
         find_package(Python3 COMPONENTS Interpreter QUIET)
         find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
         find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
         add_executable(nexaui_linux_atspi_host tests/linux_atspi_host.c)
         target_include_directories(nexaui_linux_atspi_host PRIVATE platform/linux)
-        target_link_libraries(nexaui_linux_atspi_host PRIVATE NexaUI::NexaUI X11::X11)
+        target_link_libraries(nexaui_linux_atspi_host PRIVATE NexaUI::NexaUI)
+        if(NEXAUI_ENABLE_X11)
+            target_link_libraries(nexaui_linux_atspi_host PRIVATE X11::X11)
+        else()
+            target_compile_definitions(nexaui_linux_atspi_host PRIVATE NEXAUI_LINUX_WAYLAND_ONLY)
+        endif()
         target_compile_features(nexaui_linux_atspi_host PRIVATE c_std_17)
         set_target_properties(nexaui_linux_atspi_host PROPERTIES
             C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
@@ -562,7 +605,7 @@ if(NEXAUI_BUILD_TESTS)
                 OUTPUT_NAME dbus-1 SOVERSION 3 VERSION 3
                 C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/missing-dbus)
-            if(NEXAUI_XVFB_EXECUTABLE AND NEXAUI_XAUTH_EXECUTABLE)
+            if(NEXAUI_ENABLE_X11 AND NEXAUI_XVFB_EXECUTABLE AND NEXAUI_XAUTH_EXECUTABLE)
                 add_test(NAME nexaui_atspi_multi_x11_private
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
                         ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
@@ -625,7 +668,7 @@ if(NEXAUI_BUILD_TESTS)
                     ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
             endif()
         endif()
-        if(Python3_Interpreter_FOUND AND NEXAUI_XVFB_EXECUTABLE
+        if(NEXAUI_ENABLE_X11 AND Python3_Interpreter_FOUND AND NEXAUI_XVFB_EXECUTABLE
                 AND NEXAUI_XAUTH_EXECUTABLE)
             add_executable(nexaui_x11_management_tests tests/test_x11_management.c)
             target_include_directories(nexaui_x11_management_tests PRIVATE platform/linux/x11)
@@ -887,6 +930,12 @@ if(NEXAUI_BUILD_TESTS)
     add_executable(nexaui_text_value_tests tests/test_text_value.c)
     target_link_libraries(nexaui_text_value_tests PRIVATE NexaUI::NexaUI)
     add_test(NAME nexaui_text_value COMMAND nexaui_text_value_tests)
+    if(UNIX AND NOT APPLE)
+        add_executable(nexaui_semantic_text_snapshot_tests tests/test_semantic_text_snapshot.c)
+        target_include_directories(nexaui_semantic_text_snapshot_tests PRIVATE src)
+        target_link_libraries(nexaui_semantic_text_snapshot_tests PRIVATE NexaUI::NexaUI)
+        add_test(NAME nexaui_semantic_text_snapshot COMMAND nexaui_semantic_text_snapshot_tests)
+    endif()
     set_tests_properties(nexaui_text_value PROPERTIES TIMEOUT 15)
     add_executable(nexaui_text_pointer_tests tests/test_text_pointer.c)
     target_link_libraries(nexaui_text_pointer_tests PRIVATE NexaUI::NexaUI)
@@ -1282,6 +1331,7 @@ if(NEXAUI_BUILD_EXAMPLES)
     add_subdirectory(examples/15_3d_viewport_shell)
     add_subdirectory(examples/16_text_density)
     add_subdirectory(examples/17_widget_text_density)
+    add_subdirectory(examples/18_settings)
     add_subdirectory(examples/nexacloud)
     if(WIN32 OR UNIX)
         add_subdirectory(examples/00_hello_window)

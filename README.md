@@ -66,7 +66,13 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 | Linux | X11 and Wayland backends, clipboard, file drops and initial IME integration | Software renderer and Vulkan shapes, RGBA8 images and A8 masks with nested clips and straight alpha |
 | macOS | AppKit lifecycle and independent OS AX client CI checks pass; physical input and VoiceOver acceptance pending | Metal shapes, clips, alpha, RGBA8/A8 uploads and native NexaCloud GPU/reference checks pass in static/shared CI |
 
-On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. Native tests require the corresponding display; headless core tests can run without one. The optional [AT-SPI adapter](docs/concepts/atspi.md) uses the system D-Bus SDK when installed and continues without accessibility if its bus/runtime is unavailable.
+On Linux, the default build tries Wayland when available and falls back to X11. Set `NEXAUI_PLATFORM=wayland` or `NEXAUI_PLATFORM=x11` to select a backend explicitly. With `-DNEXAUI_ENABLE_X11=OFF`, only Wayland is built: X11 headers and libraries are not SDK dependencies, an explicit `NEXAUI_PLATFORM=x11` returns `NX_ERROR_UNSUPPORTED`, and a failed Wayland connection has no X11 fallback. Native tests require the corresponding display; headless core tests can run without one. The optional [AT-SPI adapter](docs/concepts/atspi.md) uses the system D-Bus SDK when installed and continues without accessibility if its bus/runtime is unavailable.
+
+The independent AT-SPI test clients use the system `libatspi`, whose own
+dependencies depend on the distribution and can include X11 even for a
+Wayland-only SDK build. Test-host and compositor dependencies are separate from
+the installed SDK's dependencies; retain a compatible client environment to run
+the native accessibility checks.
 
 ### Known limitations
 
@@ -86,7 +92,7 @@ On Linux, NexaUI tries Wayland when available and falls back to X11. Set `NEXAUI
 
 - A C17 compiler and **CMake 3.21 or newer**.
 - The platform SDK and a CMake build tool, such as Visual Studio/MSBuild, Ninja or Make.
-- On Linux: X11, Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner`, `pkg-config`, and Vulkan headers 1.3.250 or newer plus the loader for the private backend (disable with `-DNEXAUI_BUILD_VULKAN=OFF`). The native Vulkan example requires KHR or EXT swapchain-maintenance present fences by default; [explicit compatibility modes](docs/concepts/vulkan.md#presentation-retirement-and-close) support older drivers with a weaker retirement guarantee.
+- On Linux: Wayland and xkbcommon development files, `wayland-protocols`, `wayland-scanner`, `pkg-config`, and X11 development files unless `NEXAUI_ENABLE_X11=OFF`. The private Vulkan backend additionally needs Vulkan headers 1.3.250 or newer and the loader (disable with `-DNEXAUI_BUILD_VULKAN=OFF`). The native Vulkan example requires KHR or EXT swapchain-maintenance present fences by default; [explicit compatibility modes](docs/concepts/vulkan.md#presentation-retirement-and-close) support older drivers with a weaker retirement guarantee.
 - Python 3 for Unicode table verification and Python-based development checks. The generated tables and their source data are already included.
 
 For Debian/Ubuntu, install the native build dependencies with:
@@ -230,6 +236,7 @@ Configure the consumer with `-DCMAKE_PREFIX_PATH=/absolute/path/to/NexaUI/stage`
 | `NEXAUI_BUILD_BENCHMARKS` | `OFF` | Build benchmarks |
 | `NEXAUI_BUILD_FUZZERS` | `OFF` | Build Clang/libFuzzer targets |
 | `NEXAUI_BUILD_VULKAN` (Linux) | `ON` | Build the private Vulkan device and presentation backend |
+| `NEXAUI_ENABLE_X11` (Linux) | `ON` | Build the X11 backend alongside Wayland; `OFF` selects Wayland only |
 
 ## Documentation
 

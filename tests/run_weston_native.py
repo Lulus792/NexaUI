@@ -70,11 +70,14 @@ def run(args, work):
         libexec = env.get('NEXAUI_WESTON_LIBEXEC')
         if libexec:
             directory = Path(libexec).resolve()
-            for name in ('weston-desktop-shell', 'weston-keyboard'):
+            input_method = env.get('NEXAUI_WESTON_INPUT_METHOD', 'weston-keyboard')
+            if input_method not in ('weston-keyboard', 'weston-simple-im'):
+                raise RuntimeError('Unknown private Weston input method: '+input_method)
+            for name in ('weston-desktop-shell', input_method):
                 if not (directory/name).is_file():
                     raise RuntimeError('Missing private Weston helper: '+str(directory/name))
             text += 'client='+str(directory/'weston-desktop-shell')+'\n'
-            text += '[input-method]\npath='+str(directory/'weston-keyboard')+'\n'
+            text += '[input-method]\npath='+str(directory/input_method)+'\n'
         config.write_text(text, encoding='utf-8')
         command = [args.weston, '--backend=x11-backend.so', '--use-pixman',
                    '--shell='+env.get('NEXAUI_WESTON_SHELL', 'desktop-shell.so'),
@@ -102,7 +105,8 @@ def run(args, work):
                         if time.monotonic() >= deadline:
                             raise RuntimeError('Weston startup timed out')
                         time.sleep(.02)
-                childenv = dict(env, WAYLAND_DISPLAY='nexaui-test', NEXAUI_TEST_PRIVATE_WAYLAND='1')
+                childenv = dict(env, WAYLAND_DISPLAY='nexaui-test', NEXAUI_TEST_PRIVATE_WAYLAND='1',
+                                NEXAUI_TEST_WESTON_LOG=str(work/'weston.stderr'))
                 child = subprocess.Popen(args.command, env=childenv, start_new_session=True)
                 report.update(status='running', child_pid=child.pid,
                               startup_seconds=time.monotonic()-started)
