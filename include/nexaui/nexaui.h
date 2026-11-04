@@ -280,7 +280,8 @@ typedef enum nx_event_type {
     /* Physical state only: the native text system owns the corresponding
        edit/action. Widgets must not repeat it from this key event. */
     NX_EVENT_KEY_DOWN_CONSUMED,
-    NX_EVENT_WINDOW_STATE /* Opt-in native state change; window_state below. */
+    NX_EVENT_WINDOW_STATE, /* Opt-in native state change; window_state below. */
+    NX_EVENT_WAKE /* Native asynchronous work needs a frame; no input action. */
 } nx_event_type;
 
 /* Every field is backend-neutral. Unused fields are zero. Mouse and touch

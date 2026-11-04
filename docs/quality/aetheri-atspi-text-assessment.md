@@ -592,3 +592,53 @@ to an exact live model/selection, waking a frame, revoking on focus or model
 replacement and reporting AT-SPI completion remain necessary. In particular,
 ordinary Settings paste still uses the synchronous path; neither I05 nor W10
 is complete, and this result alone does not establish Aetheri adoption.
+
+## Asynchronous keyboard paste in Settings (2026-11-04)
+
+On base `a694254e52b849c5f7c81faa961326af8afcc0ee`, the general text field
+uses the private poll-driven request for native Wayland keyboard paste. The
+window posts the new `NX_EVENT_WAKE` when the transfer completes; routing that
+event requests the frame in which the field applies or rejects the result.
+The field retains only scalar identities and counters, never a borrowed window
+or context pointer. Focus changes, window focus loss, changed edit policy,
+model replacement and any text or selection change invalidate the pending
+operation, including edits later undone to the original text. A later paste
+in a newly focused field supersedes the previous field's request. Same-field
+paste commands are queued up to 64; failure or invalidation drops the rest.
+Forgotten results expire after five seconds without causing a busy poll loop.
+Successful paste resets an active IME composition through the existing window
+contract. Custom callbacks, X11 and the public synchronous clipboard getter
+retain their previous behavior.
+
+The deterministic Settings fixture exercises stalled-owner responsiveness,
+single-read and repeated pastes, native text-command paste, focus and window
+focus loss, model and selection changes, timeout, IME preedit, destruction
+while pending, and an edit followed by its reversal. As a negative control,
+removing the text-change counter check made the reversal case fail; the check
+was restored and rebuilt. A separate two-field fixture verifies that a new
+focus can paste even when it is submitted before the old field. The real
+Settings process also copied, cleared and pasted its owned Wayland selection
+with a virtual keyboard on private Weston in both GCC and Clang ASan/UBSan
+profiles. MSVC Debug input and text-field neighbor tests passed; the Linux
+X11-plus-Wayland build and Xvfb native-window, input and text-field tests also
+passed. Offer retirement is deferred to a
+guarded poll so a user allocator's deallocation callback cannot close the
+borrowed window in the middle of text-field submission. A separate allocator
+test closes the window reentrantly during that poll and confirms cleanup.
+
+The complete private-Weston GCC shared suite passed 152/152 on the candidate;
+the complete Clang static ASan/UBSan suite passed 152/153. Its sole failure was
+the previously documented intermittent `nexaui_settings_wayland_atspi_clipboard_once`;
+the client observed the old `AöZ` value and reported no sanitizer finding. The
+earlier GCC full run also showed that failure (147/148); the later pass does
+not erase the intermittent result. JUnit results are in
+`/tmp/nexaui-async-keyboard-candidate-shared.xml` and
+`/tmp/nexaui-async-keyboard-candidate-asan.xml` in local Alpine-Dev. No skip is
+counted as a pass.
+
+This covers keyboard paste, not asynchronous AT-SPI paste. Keyboard paste from
+an actual external clipboard owner, installed IMEs, screenreader use and the selected Aetheri
+compositor still need independent acceptance. The previously documented
+intermittent Weston `wl-copy --paste-once` AT-SPI case remains open; it is not
+silenced or counted as a pass. A synchronous custom callback can still block,
+and synchronous Wayland file-drop processing remains a separate concern.

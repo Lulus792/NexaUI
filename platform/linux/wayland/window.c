@@ -7,6 +7,7 @@
 #include "transfer.h"
 #include "uri_list.h"
 #include "../../../src/secure_zero.h"
+#include "../../../src/context_identity.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-decoration-client-protocol.h"
 #include "window_management.h"
@@ -135,8 +136,8 @@ struct nx_wayland_window {
     nx_wayland_clipboard_write *writes;
     nx_wayland_read_transfer async_read;
     nx_wayland_clipboard_offer *async_offer;
-    uint64_t async_sequence, async_token;
-    int async_active;
+    uint64_t async_token, async_expiry;
+    int async_active, async_notified;
     unsigned write_count;
     unsigned transfer_read_depth;
     uint32_t selection_serial;
@@ -165,6 +166,7 @@ struct nx_wayland_window {
 };
 
 static _Thread_local nx_wayland_window *nx_wayland_thread_windows;
+static _Thread_local unsigned nx_wayland_sync_read_depth;
 
 enum {
     NX_WAYLAND_MIME_UTF8 = 1u,
@@ -196,6 +198,7 @@ static nx_result nx_wayland_apply_cursor(nx_wayland_window *window);
 static nx_result nx_wayland_attach_background(nx_wayland_window *window);
 static nx_result nx_wayland_process_drop(nx_wayland_window *window);
 static void nx_wayland_async_read_progress(nx_wayland_window *window);
+static void nx_wayland_async_read_clear(nx_wayland_window *window);
 static void nx_wayland_ime_activate(nx_wayland_window *window);
 static void nx_wayland_ime_deactivate(nx_wayland_window *window);
 
@@ -432,6 +435,15 @@ static void nx_wayland_retire_offer(nx_wayland_clipboard_offer *offer) {
     wl_data_offer_destroy(offer->native);
     window->allocator.deallocate(window->allocator.user, offer,
                                  sizeof(*offer));
+}
+
+/* Async take/cancel can run during widget submission. Defer the application's
+   offer deallocator until a guarded window poll, where reentrant window close
+   cannot invalidate the widget's borrowed window mid-frame. */
+static void nx_wayland_reap_one_offer(nx_wayland_window *window) {
+    for (nx_wayland_clipboard_offer *offer = window->offers; offer; offer = offer->next) {
+        if (offer->obsolete && !offer->in_use) { nx_wayland_retire_offer(offer); return; }
+    }
 }
 
 static nx_wayland_clipboard_offer *nx_wayland_find_offer(
@@ -2147,9 +2159,11 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     int timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
     if (window->async_active) {
         uint64_t now = nx_wayland_now_ns();
-        if (window->async_read.finished || !now || now >= window->async_read.deadline) timeout = 0;
+        uint64_t deadline = window->async_read.finished && window->async_notified ?
+            window->async_expiry : window->async_read.deadline;
+        if ((window->async_read.finished && !window->async_notified) || !now || now >= deadline) timeout = 0;
         else {
-            uint64_t remaining = window->async_read.deadline - now;
+            uint64_t remaining = deadline - now;
             uint64_t millis = (remaining + 999999u) / 1000000u;
             if (millis < (uint64_t)timeout) timeout = (int)millis;
         }
@@ -2175,7 +2189,10 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     if (wl_display_dispatch_pending(window->display) < 0)
         return NX_ERROR_PLATFORM;
     nx_wayland_progress_writes(window);
-    nx_wayland_async_read_progress(window);
+    if (!nx_wayland_sync_read_depth) {
+        nx_wayland_async_read_progress(window);
+        nx_wayland_reap_one_offer(window);
+    }
     if (window->error != NX_OK) return window->error;
     drop_result = nx_wayland_process_drop(window);
     if (drop_result != NX_OK) return window->error = drop_result;
@@ -2591,8 +2608,16 @@ static nx_result nx_wayland_clipboard_copy(const char *text, size_t length,
 }
 
 static void nx_wayland_async_read_progress(nx_wayland_window *window) {
-    if (!window->async_active || window->async_read.finished) return;
-    nx_wayland_read_transfer_step(&window->async_read, nx_wayland_now_ns());
+    if (!window->async_active) return;
+    uint64_t now = nx_wayland_now_ns();
+    if (!window->async_read.finished) nx_wayland_read_transfer_step(&window->async_read, now);
+    if (!window->async_read.finished) return;
+    if (!window->async_notified) {
+        nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
+        nx_platform_event_queue_push(&window->event_queue, wake);
+        window->async_notified = 1;
+        window->async_expiry = now && UINT64_MAX - now >= 5000000000ull ? now + 5000000000ull : now;
+    } else if (!now || now >= window->async_expiry) nx_wayland_async_read_clear(window);
 }
 
 static void nx_wayland_async_read_clear(nx_wayland_window *window) {
@@ -2600,11 +2625,11 @@ static void nx_wayland_async_read_clear(nx_wayland_window *window) {
     nx_wayland_clipboard_offer *offer = window->async_offer;
     window->async_offer = NULL;
     window->async_active = 0;
+    window->async_notified = 0;
     window->async_token = 0;
     nx_wayland_read_transfer_dispose(&window->async_read);
     if (offer) {
         --offer->in_use;
-        if (offer->obsolete && !window->destroying) nx_wayland_retire_offer(offer);
     }
 }
 
@@ -2614,11 +2639,13 @@ nx_result nx_wayland_window_clipboard_async_start(nx_wayland_window *window,
         return NX_ERROR_ARGUMENT;
     *token = 0;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
-    if (window->async_active || window->async_sequence == UINT64_MAX) return NX_ERROR_LIMIT;
+    if (window->async_active) return NX_ERROR_LIMIT;
     if (!window->data_device) return NX_ERROR_UNSUPPORTED;
     uint64_t now = nx_wayland_now_ns();
     if (!now || UINT64_MAX - now < (uint64_t)timeout_ms * 1000000u)
         return NX_ERROR_PLATFORM;
+    uint64_t identity = nx_native_next_identity();
+    if (!identity) return NX_ERROR_LIMIT;
     nx_allocator allocator = {NULL, nx_wayland_allocate, nx_wayland_deallocate};
     nx_wayland_read_transfer transfer;
     nx_wayland_clipboard_offer *offer = NULL;
@@ -2656,7 +2683,7 @@ nx_result nx_wayland_window_clipboard_async_start(nx_wayland_window *window,
     transfer.sensitive = !!sensitive;
     window->async_read = transfer; window->async_offer = offer;
     window->async_active = 1;
-    window->async_token = ++window->async_sequence; *token = window->async_token;
+    window->async_token = identity; *token = identity;
     return NX_OK;
 }
 
@@ -2689,6 +2716,17 @@ nx_result nx_wayland_window_clipboard_async_cancel(nx_wayland_window *window, ui
     nx_wayland_async_read_clear(window); return NX_OK;
 }
 
+int nx_wayland_window_clipboard_async_current(nx_wayland_window *window, uint64_t token) {
+    return window && nx_wayland_on_owner_thread(window) && window->async_active &&
+           window->async_token == token;
+}
+
+nx_result nx_wayland_window_clipboard_async_cancel_active(nx_wayland_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window) || !window->async_active) return NX_ERROR_STATE;
+    nx_wayland_async_read_clear(window); return NX_OK;
+}
+
 static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
                                     char **out_bytes, size_t *out_length,
                                     size_t *out_capacity) {
@@ -2701,6 +2739,7 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
     nx_wayland_read_transfer_init(&transfer, read_fd, window->allocator,
                                    NX_WAYLAND_CLIPBOARD_LIMIT, deadline);
     ++window->transfer_read_depth;
+    ++nx_wayland_sync_read_depth;
     if (started) for (;;) {
         uint64_t now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;
@@ -2719,6 +2758,7 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
         }
     }
 done:
+    --nx_wayland_sync_read_depth;
     --window->transfer_read_depth;
     if (result == NX_OK)
         result = nx_wayland_read_transfer_take(&transfer, out_bytes, out_length, out_capacity);

@@ -24,9 +24,14 @@ struct nx_text_buffer {
     uint8_t *grapheme, *word;
     size_t length, anchor, cursor;
     size_t history_limit, history_used;
+    uint64_t change_serial;
     nx_text_record *undo, *redo;
     int sensitive;
 };
+
+uint64_t nx_text_buffer_change_serial(const nx_text_buffer *buffer) {
+    return buffer ? buffer->change_serial : UINT64_MAX;
+}
 
 typedef struct nx_text_state {
     char *bytes;
@@ -93,6 +98,7 @@ static void nx_tb_commit(nx_text_buffer *buffer, nx_text_state *next,
     buffer->length = next->length;
     buffer->anchor = anchor;
     buffer->cursor = cursor;
+    if (buffer->change_serial != UINT64_MAX) ++buffer->change_serial;
     *next = (nx_text_state){0};
     nx_tb_free_state(&old, buffer->sensitive);
 }
@@ -205,6 +211,8 @@ nx_result nx_text_buffer_set_selection(nx_text_buffer *buffer,
     if (!buffer || anchor > buffer->length || cursor > buffer->length ||
         !buffer->grapheme[anchor] || !buffer->grapheme[cursor])
         return NX_ERROR_ARGUMENT;
+    if ((buffer->anchor != anchor || buffer->cursor != cursor) && buffer->change_serial != UINT64_MAX)
+        ++buffer->change_serial;
     buffer->anchor = anchor;
     buffer->cursor = cursor;
     return NX_OK;
@@ -435,6 +443,8 @@ nx_result nx_text_buffer_move_cursor(nx_text_buffer *buffer,
     case NX_TEXT_MOVE_DOCUMENT_END: cursor = buffer->length; break;
     default: return NX_ERROR_ARGUMENT;
     }
+    if ((buffer->cursor != cursor || (!extend_selection && buffer->anchor != cursor)) && buffer->change_serial != UINT64_MAX)
+        ++buffer->change_serial;
     if (!extend_selection) buffer->anchor = cursor;
     buffer->cursor = cursor;
     return NX_OK;

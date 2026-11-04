@@ -11,6 +11,8 @@ nx_result nx_linux_window_clipboard_async_start(nx_window *window, size_t limit,
 nx_result nx_linux_window_clipboard_async_take(nx_window *window, uint64_t token,
     char **bytes, size_t *length, int *ready);
 nx_result nx_linux_window_clipboard_async_cancel(nx_window *window, uint64_t token);
+int nx_linux_window_clipboard_async_current(nx_window *window, uint64_t token);
+nx_result nx_linux_window_clipboard_async_cancel_active(nx_window *window);
 #endif
 
 /* Owner-thread model identities, never model addresses. Native snapshots may
@@ -20,6 +22,9 @@ typedef struct nx_text_value_target {
     uint64_t identity, revision;
     int multiline;
 } nx_text_value_target;
+
+/* Saturating counter for changes to text or selection. */
+uint64_t nx_text_buffer_change_serial(const nx_text_buffer *buffer);
 
 /* Owner-thread, completed-frame snapshot. Offsets are UTF-8 bytes in the
    semantic value for that same frame, not native character offsets. Real

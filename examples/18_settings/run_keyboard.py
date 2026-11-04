@@ -17,7 +17,8 @@ def main():
     app, font, xdotool = sys.argv[1:4]
     controls = len(sys.argv) == 5 and sys.argv[4] == '--controls'
     small = len(sys.argv) == 5 and sys.argv[4] == '--small'
-    if len(sys.argv) == 5 and not (controls or small):
+    clipboard = len(sys.argv) == 5 and sys.argv[4] == '--clipboard'
+    if len(sys.argv) == 5 and not (controls or small or clipboard):
         return 2
     env = dict(os.environ, NEXAUI_PLATFORM='wayland')
     if os.environ.get('NEXAUI_TEST_WAYLAND_TRACE') == '1':
@@ -47,6 +48,18 @@ def main():
                     return
             except queue.Empty:
                 raise RuntimeError(f'Settings did not report {expected}') from None
+    def await_draft(length, timeout=5):
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError(f'Settings did not report draft length {length}')
+            try:
+                line = output_queue.get(timeout=remaining)
+            except queue.Empty:
+                raise RuntimeError(f'Settings did not report draft length {length}') from None
+            if re.search(rf'^KEYBOARD_TRACE .*focus=3 draft_bytes={length}(?:\s|$)', line):
+                return
     try:
         await_line('SETTINGS_KEYBOARD_READY', 15)
         log = os.environ.get('NEXAUI_TEST_WESTON_LOG')
@@ -64,6 +77,16 @@ def main():
         steps = ([['key', 'Tab'], ['key', 'Tab'], ['key', 'space'], ['key', 'Tab'], ['key', 'space']]
                  if controls else [['key', 'Tab'], ['key', 'ctrl+a'], ['type', '--delay', '40', 'Ada'],
                                    ['key', 'Tab'], ['key', 'space'], ['key', 'Tab'], ['key', 'space']])
+        if clipboard:
+            for args in [['key', 'Tab'], ['key', 'ctrl+a'], ['type', '--delay', '40', 'Ada']]:
+                subprocess.run([xdotool, *args], env=env, check=True)
+            await_draft(3)
+            for args in [['key', 'ctrl+a'], ['key', 'ctrl+c'], ['key', 'BackSpace']]:
+                subprocess.run([xdotool, *args], env=env, check=True)
+            await_draft(0)
+            subprocess.run([xdotool, 'key', 'ctrl+v'], env=env, check=True)
+            await_draft(3)
+            steps = [['key', 'Tab'], ['key', 'space'], ['key', 'Tab'], ['key', 'space']]
         focus_ids = iter((3, 4, 5))
         for args in steps:
             if small and args == ['key', 'Tab']:

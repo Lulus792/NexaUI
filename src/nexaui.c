@@ -16,7 +16,7 @@
 #define NX_TOUCH_DRAG_THRESHOLD 8.0
 
 typedef struct nx_event_route {
-    uint64_t pointer_id, focus_id;
+    uint64_t pointer_id, focus_id, focus_serial;
 } nx_event_route;
 /* Routing metadata shares the event allocation, but never changes public
    events. sizeof(nx_event) preserves the uint64_t alignment of the tail. */
@@ -187,7 +187,7 @@ struct nx_context {
     unsigned char action_keys_pressed[NX_KEY_COUNT];
     unsigned char keys_released[NX_KEY_COUNT];
     nx_region_buffer previous_regions, current_regions;
-    uint64_t focused_id, hovered_id, pointer_active_id, key_active_id;
+    uint64_t focused_id, focus_serial, hovered_id, pointer_active_id, key_active_id;
     nx_window *ime_active_window, *ime_candidate_window;
     uint64_t ime_active_id, ime_candidate_id, ime_candidate_revision;
     int ime_active_password, ime_candidate_password;
@@ -254,7 +254,20 @@ struct nx_text_field {
     int command_caret_valid;
     int suppress_caret_reveal;
     nx_field_pointer pointer;
+#if defined(__linux__)
+    uint64_t paste_token, paste_context, paste_id, paste_focus_serial;
+    uint64_t paste_model_revision, paste_buffer_serial;
+    int paste_multiline;
+    unsigned paste_queued;
+#endif
 };
+
+static void nx_context_change_focus(nx_context *ctx, uint64_t id) {
+    if (ctx->focused_id != id) {
+        if (ctx->focus_serial != UINT64_MAX) ++ctx->focus_serial;
+        ctx->focused_id = id;
+    }
+}
 
 static nx_region *nx_region_find(const nx_region_buffer *buffer, uint64_t id);
 static nx_region *nx_hit_test(nx_region_buffer *buffer, float x, float y,
@@ -649,7 +662,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         region->touch_delta_x = region->touch_delta_y = 0.0;
     }
     if (ctx->focused_id && !nx_region_find(&ctx->previous_regions, ctx->focused_id))
-        ctx->focused_id = 0;
+        nx_context_change_focus(ctx, 0);
     if (ctx->pointer_active_id &&
         !nx_region_find(&ctx->previous_regions, ctx->pointer_active_id))
         ctx->pointer_active_id = 0;
@@ -717,6 +730,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         case NX_EVENT_FOCUS:
             ctx->input.focused = event->focused;
             if (!event->focused) {
+                if (ctx->focus_serial != UINT64_MAX) ++ctx->focus_serial;
                 ctx->input.buttons_released |= ctx->input.buttons_down;
                 ctx->input.buttons_down = 0;
                 for (int key = 0; key < NX_KEY_COUNT; ++key) {
@@ -729,6 +743,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         case NX_EVENT_TEXT:
         case NX_EVENT_TEXT_COMMAND:
         case NX_EVENT_IME_PREEDIT_CHANGED:
+        case NX_EVENT_WAKE:
         case NX_EVENT_IME_DELETE_SURROUNDING:
         case NX_EVENT_IME_DELETE_RANGE:
         case NX_EVENT_RESIZE:
@@ -744,6 +759,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         if (event->type != NX_EVENT_KEY_DOWN_CONSUMED)
             nx_process_interaction(ctx, event, route);
         route->focus_id = ctx->focused_id;
+        route->focus_serial = ctx->focus_serial;
     }
     ctx->selection_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
@@ -758,7 +774,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             ctx->selection_requests[slot].owner_id = ctx->accessible_requests[i].owner_id;
             ctx->selection_requests[slot].action = action;
         } else if (action == NX_ACTION_FOCUS) {
-            if (region->flags & NX_REGION_FOCUSABLE) { ctx->focused_id = id; ctx->key_active_id = 0; }
+            if (region->flags & NX_REGION_FOCUSABLE) { nx_context_change_focus(ctx, id); ctx->key_active_id = 0; }
         } else if (region->clicks != UINT_MAX) ++region->clicks;
     }
     ctx->accessible_request_count = 0;
@@ -802,6 +818,7 @@ static int nx_valid_event(const nx_event *event) {
                ((event->ime_target == 0) == (event->ime_revision == 0)) &&
                (event->repeat == 0 || event->repeat == 1);
     case NX_EVENT_IME_PREEDIT_CHANGED:
+    case NX_EVENT_WAKE:
         return 1;
     case NX_EVENT_IME_DELETE_SURROUNDING:
         return event->ime_target != 0 && event->ime_revision != 0 &&
@@ -992,7 +1009,7 @@ static void nx_focus_advance(nx_context *ctx, int backwards) {
     nx_region_buffer *regions = &ctx->previous_regions;
     size_t count = regions->count;
     if (!count) {
-        ctx->focused_id = 0;
+        nx_context_change_focus(ctx, 0);
         return;
     }
     size_t start = count;
@@ -1025,12 +1042,12 @@ static void nx_focus_advance(nx_context *ctx, int backwards) {
             (!ctx->previous_overlay_id ||
              region->overlay_id == ctx->previous_overlay_id) &&
             !(region->flags & NX_REGION_DISABLED)) {
-            ctx->focused_id = region->id;
+            nx_context_change_focus(ctx, region->id);
             ctx->key_active_id = 0;
             return;
         }
     }
-    ctx->focused_id = 0;
+    nx_context_change_focus(ctx, 0);
     ctx->key_active_id = 0;
 }
 
@@ -1067,7 +1084,7 @@ static void nx_menu_focus_advance(nx_context *ctx, nx_key key) {
             (ctx->previous_overlay_id &&
              candidate->overlay_id != ctx->previous_overlay_id))
             continue;
-        ctx->focused_id = candidate->id;
+        nx_context_change_focus(ctx, candidate->id);
         ctx->key_active_id = 0;
         return;
     }
@@ -1144,8 +1161,8 @@ static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_ev
                     target->pointer_x = event->x;
                     target->pointer_y = event->y;
                     nx_mark_click(target);
-                    ctx->focused_id = (target->flags & NX_REGION_FOCUSABLE) ?
-                                      target->id : 0;
+                    nx_context_change_focus(ctx, (target->flags & NX_REGION_FOCUSABLE) ?
+                                      target->id : 0);
                     ctx->key_active_id = 0;
                 }
                 ctx->touch_active = 0;
@@ -1192,8 +1209,8 @@ static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_ev
                 captured->pointer_x = event->x;
                 captured->pointer_y = event->y;
             }
-            ctx->focused_id = hit && (hit->flags & NX_REGION_FOCUSABLE) &&
-                              !(hit->flags & NX_REGION_DISABLED) ? hit->id : 0;
+            nx_context_change_focus(ctx, hit && (hit->flags & NX_REGION_FOCUSABLE) &&
+                              !(hit->flags & NX_REGION_DISABLED) ? hit->id : 0);
             ctx->key_active_id = 0;
         } else if (event->type == NX_EVENT_POINTER_UP &&
                    event->button == NX_BUTTON_LEFT) {
@@ -1315,7 +1332,7 @@ nx_result nx_interact_region(nx_context *ctx, uint64_t id, nx_rect hit_rect,
 nx_result nx_focus_set(nx_context *ctx, uint64_t id) {
     if (!ctx) return NX_ERROR_ARGUMENT;
     if (!id) {
-        ctx->focused_id = 0;
+        nx_context_change_focus(ctx, 0);
         ctx->key_active_id = 0;
         return NX_OK;
     }
@@ -1328,7 +1345,7 @@ nx_result nx_focus_set(nx_context *ctx, uint64_t id) {
         ctx->building_overlay_id : ctx->previous_overlay_id;
     if (active_overlay && region->overlay_id != active_overlay)
         return NX_ERROR_ARGUMENT;
-    ctx->focused_id = id;
+    nx_context_change_focus(ctx, id);
     ctx->key_active_id = 0;
     return NX_OK;
 }
@@ -2438,20 +2455,20 @@ nx_result nx_end_frame(nx_context *ctx) {
             focused_overlay->overlay_id != ctx->current_overlay_id ||
             !(focused_overlay->flags & NX_REGION_FOCUSABLE) ||
             (focused_overlay->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE))) {
-            ctx->focused_id = ctx->current_overlay_id;
+            nx_context_change_focus(ctx, ctx->current_overlay_id);
             for (size_t i = 0; i < ctx->current_regions.count; ++i) {
                 nx_region *candidate = &ctx->current_regions.data[i];
                 if (candidate->overlay_id == ctx->current_overlay_id &&
                     candidate->id != ctx->current_overlay_id &&
                     (candidate->flags & NX_REGION_FOCUSABLE) &&
                     !(candidate->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE))) {
-                    ctx->focused_id = candidate->id;
+                    nx_context_change_focus(ctx, candidate->id);
                     break;
                 }
             }
         }
     } else if (ctx->previous_overlay_id || ctx->overlay_built_this_frame) {
-        ctx->focused_id = ctx->overlay_return_focus_id;
+        nx_context_change_focus(ctx, ctx->overlay_return_focus_id);
         ctx->overlay_return_focus_id = 0;
         if (ctx->overlay_built_this_frame)
             for (size_t i = 0; i < ctx->current_regions.count; ++i)
@@ -2461,7 +2478,7 @@ nx_result nx_end_frame(nx_context *ctx) {
     nx_region *focused = nx_region_find(&ctx->current_regions, ctx->focused_id);
     if (!focused || !(focused->flags & NX_REGION_FOCUSABLE) ||
         (focused->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)))
-        ctx->focused_id = 0;
+        nx_context_change_focus(ctx, 0);
     nx_region *pointer = nx_region_find(&ctx->current_regions, ctx->pointer_active_id);
     if (!pointer || (pointer->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id &&
@@ -4295,11 +4312,11 @@ nx_result nx_overlay_close(nx_context *ctx) {
     nx_region *key = nx_region_find(&ctx->current_regions, ctx->key_active_id);
     if (key && key->overlay_id == closing_id)
         ctx->key_active_id = 0;
-    ctx->focused_id = ctx->overlay_return_focus_id;
+    nx_context_change_focus(ctx, ctx->overlay_return_focus_id);
     nx_region *focused = nx_region_find(&ctx->current_regions, ctx->focused_id);
     if (!focused || !(focused->flags & NX_REGION_FOCUSABLE) ||
         (focused->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)))
-        ctx->focused_id = 0;
+        nx_context_change_focus(ctx, 0);
     ctx->overlay_return_focus_id = 0;
     ctx->previous_overlay_id = 0;
     return NX_OK;
@@ -5563,7 +5580,7 @@ nx_result nx_theme_selector(nx_context *ctx,
     if (*out_changed) *selected = (nx_theme_kind)(next + 1u);
     return NX_OK;
 theme_selector_rollback:
-    ctx->focused_id = old_focus;
+    nx_context_change_focus(ctx, old_focus);
     ctx->command_count = old_commands;
     nx_free_owned_bitmaps(ctx, old_bitmaps);
     while (ctx->current_regions.count > old_regions)
@@ -6609,6 +6626,103 @@ static uint64_t nx_field_ime_revision(const nx_text_field *field) {
     return hash ? hash : 1u;
 }
 
+#if defined(__linux__)
+static int nx_field_paste_current(nx_context *ctx, const nx_text_field_desc *desc,
+                                   nx_text_field *field) {
+    return field->paste_token && field->paste_context == ctx->native_identity &&
+        field->paste_id == desc->id && field->paste_focus_serial == ctx->focus_serial &&
+        ctx->focus_serial != UINT64_MAX && ctx->focused_id == desc->id &&
+        !desc->disabled && !field->read_only && field->paste_multiline == !!desc->multiline &&
+        field->paste_model_revision == field->text_value.revision &&
+        field->paste_buffer_serial == nx_text_buffer_change_serial(field->buffer) &&
+        field->paste_buffer_serial != UINT64_MAX &&
+        desc->clipboard.read == nx_window_clipboard_read_adapter && desc->clipboard.user &&
+        nx_linux_window_clipboard_async_current((nx_window *)desc->clipboard.user, field->paste_token);
+}
+
+static void nx_field_paste_cancel(const nx_text_field_desc *desc, nx_text_field *field) {
+    uint64_t token = field->paste_token; field->paste_token = 0; field->paste_queued = 0;
+    if (token && desc->clipboard.read == nx_window_clipboard_read_adapter && desc->clipboard.user)
+        (void)nx_linux_window_clipboard_async_cancel((nx_window *)desc->clipboard.user, token);
+}
+
+static nx_result nx_field_paste_start(nx_context *ctx, const nx_text_field_desc *desc,
+    nx_text_field *field, uint64_t event_focus_serial, int *handled) {
+    *handled = 0;
+    if (desc->clipboard.read != nx_window_clipboard_read_adapter || !desc->clipboard.user)
+        return NX_OK;
+    if (field->paste_token && nx_field_paste_current(ctx, desc, field) &&
+        event_focus_serial == ctx->focus_serial) {
+        *handled = 1;
+        if (field->paste_queued < 63u) ++field->paste_queued;
+        return NX_OK;
+    }
+    if (field->paste_token) nx_field_paste_cancel(desc, field);
+    if (ctx->focused_id != desc->id || event_focus_serial != ctx->focus_serial ||
+        ctx->focus_serial == UINT64_MAX || nx_text_buffer_change_serial(field->buffer) == UINT64_MAX) {
+        *handled = 1; return NX_OK;
+    }
+    uint64_t token = 0;
+    nx_result result = nx_linux_window_clipboard_async_start((nx_window *)desc->clipboard.user,
+        32u * 1024u * 1024u, 5000u, field->sensitive, &token);
+    if (result == NX_ERROR_LIMIT &&
+        nx_linux_window_clipboard_async_cancel_active((nx_window *)desc->clipboard.user) == NX_OK)
+        result = nx_linux_window_clipboard_async_start((nx_window *)desc->clipboard.user,
+            32u * 1024u * 1024u, 5000u, field->sensitive, &token);
+    if (result == NX_ERROR_UNSUPPORTED) return NX_OK;
+    *handled = 1;
+    if (result != NX_OK) return result == NX_ERROR_MEMORY ? result : NX_OK;
+    field->paste_token = token; field->paste_context = ctx->native_identity;
+    field->paste_id = desc->id; field->paste_focus_serial = ctx->focus_serial;
+    field->paste_model_revision = field->text_value.revision;
+    field->paste_buffer_serial = nx_text_buffer_change_serial(field->buffer);
+    field->paste_multiline = !!desc->multiline;
+    return NX_OK;
+}
+
+static nx_result nx_field_paste_finish(nx_context *ctx, const nx_text_field_desc *desc,
+                                        nx_text_field *field) {
+    if (!field->paste_token) return NX_OK;
+    if (!nx_field_paste_current(ctx, desc, field) ||
+        desc->clipboard.read != nx_window_clipboard_read_adapter || !desc->clipboard.user) {
+        nx_field_paste_cancel(desc, field); return NX_OK;
+    }
+    char *bytes = NULL; size_t length = 0; int ready = 0;
+    nx_result result = nx_linux_window_clipboard_async_take((nx_window *)desc->clipboard.user,
+        field->paste_token, &bytes, &length, &ready);
+    unsigned queued = field->paste_queued;
+    if (result != NX_OK || ready) { field->paste_token = 0; field->paste_queued = 0; }
+    if (result != NX_OK) return result == NX_ERROR_MEMORY ? result : NX_OK;
+    if (!ready) return NX_OK;
+    size_t actual = length;
+    if (!desc->multiline) {
+        size_t written = 0;
+        for (size_t i = 0; i < actual; ++i) {
+            if (bytes[i] == '\r') { if (i + 1u < actual && bytes[i + 1u] == '\n') ++i; bytes[written++] = ' '; }
+            else if (bytes[i] == '\n') bytes[written++] = ' ';
+            else bytes[written++] = bytes[i];
+        }
+        actual = written;
+    }
+    result = nx_text_buffer_replace(field->buffer, bytes, actual);
+    if (field->sensitive && bytes) nx_private_secure_zero(bytes, length);
+    free(bytes);
+    if (result == NX_OK) {
+        field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
+        if (desc->ime_window && ctx->ime_active_window == desc->ime_window &&
+            ctx->ime_active_id == desc->id && nx_window_set_ime_enabled(desc->ime_window, 0) == NX_OK) {
+            ctx->ime_active_window = NULL; ctx->ime_active_id = 0; ctx->ime_active_password = 0;
+        }
+    }
+    if (result == NX_OK && queued) {
+        int handled = 0;
+        result = nx_field_paste_start(ctx, desc, field, ctx->focus_serial, &handled);
+        if (result == NX_OK && field->paste_token) field->paste_queued = queued - 1u;
+    }
+    return result;
+}
+#endif
+
 static int nx_field_ime_surrounding(nx_utf8_span text,
     size_t anchor, size_t cursor, size_t *out_start, size_t *out_length) {
     if (memchr(text.data, '\0', text.length)) return 0;
@@ -6734,6 +6848,11 @@ nx_result nx_text_field_widget(nx_context *ctx,
         field->submitted = 0;
     }
     if (field->pointer.id!=desc->id || desc->disabled) field->pointer.active=0;
+#if defined(__linux__)
+    if (field->paste_token && (!nx_field_paste_current(ctx, desc, field) ||
+        desc->clipboard.read != nx_window_clipboard_read_adapter || !desc->clipboard.user))
+        nx_field_paste_cancel(desc, field);
+#endif
     if (!desc->disabled) {
         uint64_t ime_batch_target = 0, ime_batch_revision = 0;
         int ime_batch_accepted = 0;
@@ -6742,6 +6861,13 @@ nx_result nx_text_field_widget(nx_context *ctx,
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
             if (event->type==NX_EVENT_POINTER_CANCEL ||
                 (event->type==NX_EVENT_FOCUS && !event->focused)) field->pointer.active=0;
+#if defined(__linux__)
+            if (event->type==NX_EVENT_WAKE && field->paste_token) {
+                result=nx_field_paste_finish(ctx,desc,field);
+                if (result!=NX_OK) goto rollback;
+                ++field->next_event_index; continue;
+            }
+#endif
             if (route->pointer_id==desc->id && nx_field_pointer_event(event)) {
                 int press=event->type==NX_EVENT_POINTER_DOWN || event->type==NX_EVENT_TOUCH_UP;
                 if (press || (field->pointer.active && field->pointer.id==desc->id)) {
@@ -6787,7 +6913,14 @@ nx_result nx_text_field_widget(nx_context *ctx,
                     ime_batch_target=event->ime_target; ime_batch_revision=event->ime_revision;
                     if (!ime_batch_accepted) { ++field->next_event_index; continue; }
                 }
-                result=nx_field_text_command(desc,field,event);
+                int paste_handled=0;
+#if defined(__linux__)
+                if (!event->ime_target && nx_text_command_base(event->text_command)==NX_TEXT_COMMAND_PASTE) {
+                    result=nx_field_paste_start(ctx,desc,field,route->focus_serial,&paste_handled);
+                    if (result!=NX_OK) goto rollback;
+                }
+#endif
+                result=paste_handled ? NX_OK : nx_field_text_command(desc,field,event);
                 if (result!=NX_OK) goto rollback;
             } else if (!desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
                 event->key == NX_KEY_ENTER &&
@@ -6799,10 +6932,16 @@ nx_result nx_text_field_widget(nx_context *ctx,
                        nx_edit_primary(event->modifiers) &&
                        (event->key == NX_KEY_C || event->key == NX_KEY_X ||
                         event->key == NX_KEY_V)) {
-                result = desc->password && event->key != NX_KEY_V ? NX_OK :
-                    nx_field_clipboard_event(field->buffer,
-                        &desc->clipboard, event->key, desc->multiline,
-                        field->sensitive);
+                int paste_handled=0;
+#if defined(__linux__)
+                if (event->key==NX_KEY_V) {
+                    result=nx_field_paste_start(ctx,desc,field,route->focus_serial,&paste_handled);
+                    if (result!=NX_OK) goto rollback;
+                }
+#endif
+                result = paste_handled || (desc->password && event->key != NX_KEY_V) ? NX_OK :
+                    nx_field_clipboard_event(field->buffer, &desc->clipboard, event->key,
+                                              desc->multiline, field->sensitive);
                 if (result != NX_OK) goto rollback;
                 if (event->key!=NX_KEY_C) {
                     field->vertical_x_valid = 0;
@@ -6864,6 +7003,10 @@ nx_result nx_text_field_widget(nx_context *ctx,
             ++field->next_event_index;
         }
     } else field->next_event_index = ctx->frame_events.count;
+#if defined(__linux__)
+    if (field->paste_token && !nx_field_paste_current(ctx, desc, field))
+        nx_field_paste_cancel(desc, field);
+#endif
     if (field->pointer.active) {
         if (!state.focused || desc->disabled || ctx->pointer_active_id!=desc->id)
             field->pointer.active=0;
@@ -7307,7 +7450,7 @@ search_rollback:
     ctx->building_overlay_id = old_building_overlay;
     ctx->current_overlay_id = old_current_overlay;
     ctx->overlay_return_focus_id = old_return_focus;
-    ctx->focused_id = old_focus;
+    nx_context_change_focus(ctx, old_focus);
     ctx->overlay_built_this_frame = old_overlay_built;
 search_finish:
     if (ids) ctx->allocator.deallocate(ctx->allocator.user, ids,

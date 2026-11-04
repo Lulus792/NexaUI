@@ -40,13 +40,28 @@ int main(int argc,char **argv) {
     CHECK(argc==2 || (argc==3 && (!strcmp(argv[2],"--external") || !strcmp(argv[2],"--same") ||
           !strcmp(argv[2],"--clipboard-once") || !strcmp(argv[2],"--keyboard-clipboard-once") ||
           !strcmp(argv[2],"--clipboard-stall") || !strcmp(argv[2],"--keyboard-clipboard-stall") ||
-          !strcmp(argv[2],"--clipboard-slow-allocator"))));
+          !strcmp(argv[2],"--clipboard-slow-allocator") || !strcmp(argv[2],"--keyboard-clipboard-focus") ||
+          !strcmp(argv[2],"--keyboard-clipboard-model") || !strcmp(argv[2],"--keyboard-clipboard-selection") ||
+          !strcmp(argv[2],"--keyboard-clipboard-timeout") || !strcmp(argv[2],"--keyboard-clipboard-command") ||
+          !strcmp(argv[2],"--keyboard-clipboard-abandoned") || !strcmp(argv[2],"--keyboard-clipboard-ime") ||
+          !strcmp(argv[2],"--keyboard-clipboard-revert") || !strcmp(argv[2],"--keyboard-clipboard-repeat") ||
+          !strcmp(argv[2],"--keyboard-clipboard-window-focus"))));
     int external=argc==3 && !strcmp(argv[2],"--external");
     int same=argc==3 && !strcmp(argv[2],"--same");
     int once=argc==3 && !strcmp(argv[2],"--clipboard-once");
     int keyboard_once=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-once");
     int stall=argc==3 && !strcmp(argv[2],"--clipboard-stall");
     int keyboard_stall=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-stall");
+    int keyboard_focus=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-focus");
+    int keyboard_model=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-model");
+    int keyboard_selection=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-selection");
+    int keyboard_timeout=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-timeout");
+    int keyboard_command=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-command");
+    int keyboard_abandoned=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-abandoned");
+    int keyboard_ime=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-ime");
+    int keyboard_revert=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-revert");
+    int keyboard_repeat=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-repeat");
+    int keyboard_window_focus=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-window-focus");
     int slow_allocator=argc==3 && !strcmp(argv[2],"--clipboard-slow-allocator");
     size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
     test_server server={0}; server.width=640; server.height=360;
@@ -102,24 +117,98 @@ int main(int argc,char **argv) {
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
           preedit_length==0 && value_is(ctx,expected));
-    if(once || keyboard_once || stall || keyboard_stall || slow_allocator) {
+    if(once || keyboard_once || stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_command || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_repeat || keyboard_window_focus || slow_allocator) {
         CHECK(nx_focus_set(ctx,3)==NX_OK && settings_frame(scene,640,360));
-        atomic_store(&server.offer_once,1);atomic_store(&server.offer_stall,stall || keyboard_stall);
+        atomic_store(&server.offer_once,!keyboard_repeat);atomic_store(&server.offer_stall,stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus);
         atomic_store(&server.send_offer,1);
         wl_surface_commit(nx_window_wayland_surface(window));
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
         paste_ticket ticket={0};nx_text_value_guard guard={&ticket,1,paste_retain,paste_release,paste_current};
         if(once || stall || slow_allocator)CHECK(nx_semantics_request_text_paste_with_completion(ctx,3,0,&guard,paste_complete)==NX_OK);
-        else {nx_event event={0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_V;event.modifiers=NX_MOD_CONTROL;
-              CHECK(nx_context_queue_event(ctx,&event)==NX_OK);}
+        else {nx_event event={0};event.type=keyboard_command?NX_EVENT_TEXT_COMMAND:NX_EVENT_KEY_DOWN;
+              if(keyboard_command)event.text_command=NX_TEXT_COMMAND_PASTE;
+              else {event.key=NX_KEY_V;event.modifiers=NX_MOD_CONTROL;}
+              CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+              if(keyboard_repeat)CHECK(nx_context_queue_event(ctx,&event)==NX_OK);}
         struct timespec start,finish; CHECK(clock_gettime(CLOCK_MONOTONIC,&start)==0);
         allocation.armed=slow_allocator;
         CHECK(settings_frame(scene,640,360));
         CHECK(clock_gettime(CLOCK_MONOTONIC,&finish)==0);
-        if(stall || keyboard_stall || slow_allocator) {
+        if(keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus) {
+            double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
+            CHECK(elapsed<1.0 && value_is(ctx,"Aethericaf\xc3\xa9"));
+            for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)
+                CHECK(nx_window_poll(window,100)==NX_OK);
+            CHECK(atomic_load(&server.stalled_fd) && atomic_load(&server.offer_reads)==1);
+            if(keyboard_abandoned) {
+                settings_destroy(scene); scene=NULL;
+                int fd=atomic_exchange(&server.stalled_fd,0); CHECK(fd>0 && close(fd-1)==0);
+                int woke=0;
+                for(unsigned i=0;i<30 && !woke;++i) {
+                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    nx_event event; int available=0;
+                    do { CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+                         if(available && event.type==NX_EVENT_WAKE) woke=1; } while(available);
+                }
+                CHECK(woke);
+                struct timespec before,after; CHECK(clock_gettime(CLOCK_MONOTONIC,&before)==0);
+                CHECK(nx_window_poll(window,100)==NX_OK && clock_gettime(CLOCK_MONOTONIC,&after)==0);
+                CHECK((double)(after.tv_sec-before.tv_sec)+(after.tv_nsec-before.tv_nsec)/1e9 >= 0.05);
+                uint64_t new_token=0; nx_result availability=NX_ERROR_LIMIT;
+                for(unsigned i=0;i<60 && availability==NX_ERROR_LIMIT;++i) {
+                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    availability=nx_linux_window_clipboard_async_start(window,1024,1000,0,&new_token);
+                }
+                CHECK(availability==NX_OK && new_token && nx_linux_window_clipboard_async_cancel(window,new_token)==NX_OK);
+                goto cleanup;
+            }
+            if(keyboard_timeout) {
+                int woke=0;
+                for(unsigned i=0;i<80 && !woke;++i) {
+                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    nx_event event; int available=0; size_t count=0;
+                    do {
+                        CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+                        if(available) { if(event.type==NX_EVENT_WAKE) woke=1; CHECK(nx_context_queue_event(ctx,&event)==NX_OK); ++count; }
+                    } while(available);
+                    if(count) CHECK(settings_frame(scene,640,360));
+                }
+                CHECK(woke && value_is(ctx,"Aethericaf\xc3\xa9"));
+            } else if(keyboard_focus) {
+                CHECK(nx_focus_set(ctx,4)==NX_OK && nx_focus_set(ctx,3)==NX_OK && settings_frame(scene,640,360));
+            } else if(keyboard_window_focus) {
+                nx_event event={0};event.type=NX_EVENT_FOCUS;event.focused=0;
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK); event.focused=1;
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+            } else if(keyboard_model) {
+                CHECK(settings_set_draft_name(scene,"Changed",7) && settings_frame(scene,640,360));
+            } else if(keyboard_ime) {
+                nx_event event={0};event.type=NX_EVENT_IME_PREEDIT_CHANGED;
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+            } else if(keyboard_selection) {
+                nx_event event={0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_LEFT;
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+            } else if(keyboard_revert) {
+                nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='X';
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+                event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+            } else {
+                nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='X';
+                CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+            }
+            int fd=atomic_exchange(&server.stalled_fd,0);CHECK(fd>0);CHECK(close(fd-1)==0);
+            for(unsigned i=0;i<20;++i) {
+                CHECK(nx_window_poll(window,20)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                if(routed)CHECK(settings_frame(scene,640,360));
+                if(!keyboard_ime || value_is(ctx,"Aethericaf\xc3\xa9Once"))break;
+            }
+            CHECK(settings_frame(scene,640,360));
+            CHECK(value_is(ctx,keyboard_ime?"Aethericaf\xc3\xa9Once":(keyboard_focus || keyboard_window_focus || keyboard_selection || keyboard_timeout || keyboard_revert)?"Aethericaf\xc3\xa9":keyboard_model?"Changed":"Aethericaf\xc3\xa9X"));
+        } else if(stall || slow_allocator) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed>=4.0 && elapsed<9.0 && atomic_load(&server.offer_reads)==1);
-            if(stall || slow_allocator) CHECK(ticket.calls==1 && !ticket.applied && ticket.refs==0);
+            CHECK(ticket.calls==1 && !ticket.applied && ticket.refs==0);
             CHECK(value_is(ctx,"Aethericaf\xc3\xa9"));
             if(slow_allocator) CHECK(allocation.delayed);
             else {int fd=atomic_exchange(&server.stalled_fd,0);CHECK(fd>0);CHECK(close(fd-1)==0);}
@@ -127,12 +216,19 @@ int main(int argc,char **argv) {
             CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
             CHECK(value_is(ctx,"Aethericaf\xc3\xa9X"));
         } else {
+        if(keyboard_once || keyboard_command || keyboard_repeat) {
+            for(unsigned i=0;i<40 && !value_is(ctx,keyboard_repeat?"Aethericaf\xc3\xa9OnceOnce":"Aethericaf\xc3\xa9Once");++i) {
+                CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                if(routed) CHECK(settings_frame(scene,640,360));
+            }
+        }
         if(once)CHECK(ticket.calls==1 && ticket.applied==1 && ticket.refs==0);
         fprintf(stderr,"one-shot clipboard: reads=%d expected-value=%d\n",
             atomic_load(&server.offer_reads),value_is(ctx,once?"OnceAethericaf\xc3\xa9":"Aethericaf\xc3\xa9Once"));
-        CHECK(value_is(ctx,once?"OnceAethericaf\xc3\xa9":"Aethericaf\xc3\xa9Once") && atomic_load(&server.offer_reads)==1);
+        CHECK(value_is(ctx,once?"OnceAethericaf\xc3\xa9":keyboard_repeat?"Aethericaf\xc3\xa9OnceOnce":"Aethericaf\xc3\xa9Once") && atomic_load(&server.offer_reads)==(keyboard_repeat?2:1));
         }
     }
+cleanup:
     settings_destroy(scene); nx_window_destroy(window); free(font);
     wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy(server.display);
