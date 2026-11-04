@@ -47,4 +47,13 @@ nx_result nx_semantics_request_text_value_guarded(nx_context *context,
 nx_result nx_semantics_request_text_value_with_completion(nx_context *context,
     uint64_t id, nx_utf8_span value, const nx_text_value_guard *guard,
     void (*complete)(void *user, int applied));
+
+/* Byte offsets refer to the admitted completed-frame value and must be UTF-8
+   scalar boundaries. The core revalidates the target and edits its real
+   buffer atomically, retaining its previous selection for undo. */
+nx_result nx_semantics_request_text_range_with_completion(nx_context *context,
+    uint64_t id, size_t start, size_t end, nx_utf8_span value,
+    const nx_text_value_guard *guard, void (*complete)(void *user, int applied));
+nx_result nx_text_buffer_replace_range_private(nx_text_buffer *buffer,
+    size_t start, size_t end, const char *bytes, size_t length);
 #endif

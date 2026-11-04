@@ -38,6 +38,15 @@ static DBusPendingCall *write_async(DBusConnection *bus,AtspiAccessible *field,c
        !dbus_connection_send_with_reply(bus,call,&pending,4000))pending=NULL;
     dbus_message_unref(call);dbus_connection_flush(bus);return pending;
 }
+static DBusPendingCall *insert_async(DBusConnection *bus,AtspiAccessible *field,int position,const char *value,int length) {
+    AtspiObject *object=ATSPI_OBJECT(field);dbus_int32_t pos=position,bytes=length;
+    DBusMessage *call=dbus_message_new_method_call(object->app->bus_name,object->path,
+        "org.a11y.atspi.EditableText","InsertText");DBusPendingCall *pending=NULL;
+    if(!call)return NULL;
+    if(!dbus_message_append_args(call,DBUS_TYPE_INT32,&pos,DBUS_TYPE_STRING,&value,DBUS_TYPE_INT32,&bytes,DBUS_TYPE_INVALID) ||
+       !dbus_connection_send_with_reply(bus,call,&pending,4000))pending=NULL;
+    dbus_message_unref(call);dbus_connection_flush(bus);return pending;
+}
 static int pending_result(DBusConnection *bus,DBusPendingCall *pending,int expected,unsigned milliseconds) {
     for(unsigned i=0;i<milliseconds && !dbus_pending_call_get_completed(pending);++i)
         dbus_connection_read_write_dispatch(bus,1);
@@ -154,23 +163,55 @@ int main(int argc,char **argv) {
     actual=atspi_text_get_text(text,0,-1,&error); CHECK(!error && actual && !strcmp(actual,"AZ")); g_free(actual);
     CHECK(atspi_event_listener_deregister(listener,"object:text-changed",&error) && !error);
     AtspiEditableText *edit=atspi_accessible_get_editable_text_iface(field);CHECK(edit);
-    CHECK(atspi_editable_text_set_text_contents(edit,"hello ð",&error) && !error);
-    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello ð"));g_free(actual);
-    CHECK(atspi_editable_text_set_text_contents(edit,"hello ð",&error) && !error);
+    CHECK(atspi_editable_text_set_text_contents(edit,"hello",&error) && !error);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello"));g_free(actual);
+    CHECK(atspi_editable_text_set_text_contents(edit,"hello",&error) && !error);
     CHECK(!atspi_editable_text_set_text_contents(edit,"bad\nline",&error) && !error);
     char *oversized=malloc(65538u);CHECK(oversized);memset(oversized,'x',65537u);oversized[65537]=0;
     CHECK(!atspi_editable_text_set_text_contents(edit,oversized,&error) && !error);free(oversized);
-    CHECK(!atspi_editable_text_insert_text(edit,0,"x",1,&error) && error);g_clear_error(&error);
+    CHECK(atspi_editable_text_set_text_contents(edit,"A\xc3\xa9\xf0\x9f\x8c\x8dZ",&error) && !error);
+    CHECK(atspi_editable_text_insert_text(edit,2,"XY",1,&error) && !error);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"A\xc3\xa9X\xf0\x9f\x8c\x8dZ"));g_free(actual);
+    CHECK(atspi_text_get_caret_offset(text,&error)==3 && !error);
+    CHECK(atspi_editable_text_delete_text(edit,1,3,&error) && !error);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"A\xf0\x9f\x8c\x8dZ"));g_free(actual);
+    CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
+    CHECK(command("undo"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"A\xc3\xa9X\xf0\x9f\x8c\x8dZ"));g_free(actual);
+    CHECK(command("undo"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"A\xc3\xa9\xf0\x9f\x8c\x8dZ"));g_free(actual);
+    CHECK(!atspi_editable_text_insert_text(edit,1,"\xf0\x9f\x8c\x8d",1,&error) && !error);
+    CHECK(!atspi_editable_text_insert_text(edit,99,"x",1,&error) && !error);
+    CHECK(!atspi_editable_text_delete_text(edit,3,2,&error) && !error);
+    CHECK(atspi_editable_text_set_text_contents(edit,"Ae\xcc\x81Z",&error) && !error);
+    CHECK(atspi_editable_text_delete_text(edit,2,3,&error) && !error);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"AeZ"));g_free(actual);
+    CHECK(command("undo"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"Ae\xcc\x81Z"));g_free(actual);
+    CHECK(atspi_editable_text_set_text_contents(edit,"hello",&error) && !error);
     DBusError de;dbus_error_init(&de);const char *address=getenv("NEXAUI_TEST_ATSPI_ADDRESS");
     if(!address)address=getenv("AT_SPI_BUS_ADDRESS");
     DBusConnection *bus=dbus_connection_open_private(address,&de);CHECK(bus && !de.name);
     dbus_connection_set_exit_on_disconnect(bus,0);CHECK(dbus_bus_register(bus,&de));
     CHECK(command("pause"));
+    DBusPendingCall *aborted=insert_async(bus,field,1,"X",1);CHECK(aborted);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(aborted) && command("route") && command("disable") && command("step"));
+    CHECK(pending_result(bus,aborted,0,1000));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello"));g_free(actual);
+    CHECK(command("enable") && command("step"));
+    aborted=insert_async(bus,field,1,"X",1);CHECK(aborted);
+    for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+    CHECK(!dbus_pending_call_get_completed(aborted) && command("local") && pending_result(bus,aborted,0,1000));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"helloQ"));g_free(actual);
+    CHECK(command("step"));
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"helloQ"));g_free(actual);
+    CHECK(command("resume") && atspi_editable_text_set_text_contents(edit,"hello",&error) && !error && command("pause"));
     DBusPendingCall *pending=write_async(bus,field,"deferred");CHECK(pending);
     for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
     CHECK(!dbus_pending_call_get_completed(pending));
     DBusPendingCall *duplicate=write_async(bus,field,"duplicate");CHECK(duplicate && pending_result(bus,duplicate,0,1000));
-    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello ð"));g_free(actual);
+    actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"hello"));g_free(actual);
     CHECK(command("step") && pending_result(bus,pending,1,1000));
     actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
     pending=write_async(bus,field,"disabled");CHECK(pending);

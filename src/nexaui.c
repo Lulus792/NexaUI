@@ -124,6 +124,8 @@ typedef struct nx_text_value_request {
     nx_text_value_target target;
     char *bytes;
     size_t length;
+    size_t start, end;
+    int ranged;
     nx_text_value_guard guard;
     void (*complete)(void *user, int applied);
     uint32_t ancestor_count;
@@ -2146,7 +2148,7 @@ static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_recor
 
 static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
     nx_utf8_span value, const nx_text_value_guard *guard,
-    void (*complete)(void *, int)) {
+    void (*complete)(void *, int), int ranged, size_t start, size_t end) {
     if (!ctx || !id || (!value.data && value.length) ||
         (guard && (!guard->retain || !guard->release || !guard->current)))
         return NX_ERROR_ARGUMENT;
@@ -2167,12 +2169,19 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
     if (!node->text_value.multiline && value.length &&
         (memchr(value.data, '\r', value.length) || memchr(value.data, '\n', value.length)))
         return NX_ERROR_ARGUMENT;
+    if(ranged) {
+        const char *old=node->value_length?ctx->semantics.text+node->value_offset:NULL;
+        if(start>end || end>node->value_length ||
+           (start<node->value_length && ((unsigned char)old[start]&0xc0u)==0x80u) ||
+           (end<node->value_length && ((unsigned char)old[end]&0xc0u)==0x80u))return NX_ERROR_ARGUMENT;
+    }
     for (size_t n = 0; n < ctx->text_value_count; ++n)
         if (ctx->text_values[n].id == id) return NX_ERROR_LIMIT;
     if (ctx->text_value_count == 64u) return NX_ERROR_LIMIT;
     nx_text_value_request request = {0};
     request.id = id; request.parent_id = node->parent_id;
     request.source_frame = ctx->frame_serial; request.target = node->text_value;
+    request.ranged=ranged;request.start=start;request.end=end;
     nx_result ancestry=nx_capture_ancestry(ctx,node,request.ancestors,&request.ancestor_count);
     if (ancestry!=NX_OK) return ancestry;
     char *copy = ctx->allocator.allocate(ctx->allocator.user, value.length + 1u);
@@ -2199,13 +2208,19 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
 
 nx_result nx_semantics_request_text_value_guarded(nx_context *ctx, uint64_t id,
     nx_utf8_span value, const nx_text_value_guard *guard) {
-    return nx_text_value_admit(ctx, id, value, guard, NULL);
+    return nx_text_value_admit(ctx, id, value, guard, NULL, 0, 0, 0);
 }
 
 nx_result nx_semantics_request_text_value_with_completion(nx_context *ctx, uint64_t id,
     nx_utf8_span value, const nx_text_value_guard *guard, void (*complete)(void *, int)) {
     if (!guard || !complete) return NX_ERROR_ARGUMENT;
-    return nx_text_value_admit(ctx, id, value, guard, complete);
+    return nx_text_value_admit(ctx, id, value, guard, complete, 0, 0, 0);
+}
+
+nx_result nx_semantics_request_text_range_with_completion(nx_context *ctx, uint64_t id,
+    size_t start,size_t end,nx_utf8_span value,const nx_text_value_guard *guard,void (*complete)(void *, int)) {
+    if(!guard || !complete)return NX_ERROR_ARGUMENT;
+    return nx_text_value_admit(ctx,id,value,guard,complete,1,start,end);
 }
 
 nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
@@ -2240,7 +2255,15 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
         if (!valid) { nx_text_value_dispose(ctx, r, 0); return NX_OK; }
         /* Reserve semantic storage before editing the model. A later paint
            failure follows the existing retry-without-replaying-events contract. */
-        nx_result result = nx_semantic_reserve_text(ctx, r->length ? r->length + 1u : 0);
+        size_t new_length=r->length;
+        if(r->ranged) {
+            if(r->start>r->end || r->end>node->value_length ||
+               r->length>SIZE_MAX-(node->value_length-(r->end-r->start))-1u) {
+                nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            new_length=node->value_length-(r->end-r->start)+r->length;
+        }
+        nx_result result = nx_semantic_reserve_text(ctx, new_length ? new_length + 1u : 0);
         if (result != NX_OK) return result;
         /* Both reserve allocation and release are user call-outs. Native
            disable/re-enable or detach there revokes a previously valid lease. */
@@ -2256,9 +2279,17 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
         const char *before = NULL; size_t before_length = 0;
         result = nx_text_buffer_text(buffer, &before, &before_length);
         if (result != NX_OK) return result;
-        int different = before_length != r->length ||
-            (before_length && memcmp(before, r->bytes, before_length) != 0);
-        result = nx_text_buffer_replace_all(buffer, r->bytes, r->length);
+        int different;
+        if(r->ranged) {
+            if(r->end>before_length) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            different=r->end-r->start!=r->length ||
+                (r->length && memcmp(before+r->start,r->bytes,r->length)!=0);
+            result=nx_text_buffer_replace_range_private(buffer,r->start,r->end,r->bytes,r->length);
+            if(result==NX_ERROR_ARGUMENT) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+        } else {
+            different=before_length!=r->length || (before_length && memcmp(before,r->bytes,before_length)!=0);
+            result=nx_text_buffer_replace_all(buffer,r->bytes,r->length);
+        }
         if (result != NX_OK) return result;
         nx_text_value_dispose(ctx, r, 1);
         *changed = different;

@@ -38,7 +38,7 @@ int main(void) {
     if (nx_window_create(&desc,&f.window)!=NX_OK || nx_context_create(NULL,&f.context)!=NX_OK ||
         nx_font_open(font_bytes,sizeof(font_bytes),NULL,&f.font)!=NX_OK ||
         nx_font_collection_create(NULL,&f.fonts)!=NX_OK || nx_font_collection_add(f.fonts,f.font)!=NX_OK ||
-        nx_text_field_create("AZ",2,0,&f.field)!=NX_OK || !frame(&f)) goto done;
+        nx_text_field_create("AZ",2,65536,&f.field)!=NX_OK || !frame(&f)) goto done;
     setvbuf(stdout,NULL,_IOLBF,0); puts("READY");
     if (fcntl(STDIN_FILENO,F_SETFL,fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK)<0) goto done;
     char input[64]; size_t used=0; int paused=0;
@@ -59,6 +59,14 @@ int main(void) {
         } else if (!strcmp(input,"short")) {
             if (nx_text_field_set_text(f.field,"AZ",2)!=NX_OK || !frame(&f)) goto done;
             puts("ACK short");
+        } else if (!strcmp(input,"undo")) {
+            nx_event event={0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_UNDO;
+            if(nx_focus_set(f.context,2)!=NX_OK || nx_context_queue_event(f.context,&event)!=NX_OK || !frame(&f))goto done;
+            puts("ACK undo");
+        } else if (!strcmp(input,"local")) {
+            nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='Q';
+            if(nx_focus_set(f.context,2)!=NX_OK || nx_context_queue_event(f.context,&event)!=NX_OK || !frame(&f))goto done;
+            puts("ACK local");
         } else if (!strcmp(input,"pause")) {paused=1;puts("ACK pause");}
         else if (!strcmp(input,"resume")) {paused=0;puts("ACK resume");}
         else if (!strcmp(input,"disable")) {f.disabled=1;puts("ACK disable");}

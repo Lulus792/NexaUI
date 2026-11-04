@@ -140,7 +140,10 @@ int main(int argc,char **argv) {
     CHECK(atspi_text_get_caret_offset(text,&error)==3 && !error);
     CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
     g_object_unref(change); g_object_unref(listener);
-    CHECK(atspi_editable_text_set_text_contents(editable,"AT-SPI Tokyo",&error) && !error);
+    CHECK(atspi_editable_text_set_text_contents(editable,"AT-SPI Toky",&error) && !error);
+    CHECK(atspi_editable_text_insert_text(editable,11,"o",1,&error) && !error);
+    CHECK(atspi_editable_text_delete_text(editable,11,12,&error) && !error);
+    CHECK(atspi_editable_text_insert_text(editable,11,"o",1,&error) && !error);
     all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"AT-SPI Tokyo"));g_free(all);
     g_object_unref(editable);
     g_object_unref(text);

@@ -59,8 +59,11 @@ snapshots, TextChanged delete/insert events use scalar offsets and the old/new
 text segments; caret and text-selection changes also emit events. Events are
 chunked at UTF-8 boundaries and the existing outgoing-queue budget can force
 disconnect/re-registration under a stalled or oversized event stream. This is
-not complete screenreader or editable-text support. `EditableText` and numeric
-`Value` are not advertised.
+not complete screenreader or editable-text support. Writable built-in text
+fields additionally advertise a partial `EditableText` interface supporting
+whole replacement, insertion and deletion; clipboard operations remain
+unsupported. Insert/delete offsets count Unicode scalars and insertion length
+counts UTF-8 bytes. Numeric `Value` is not advertised.
 Custom semantic nodes and protected fields do not gain Text merely from a value.
 
 Object paths contain window and node incarnations. Consecutive unchanged
@@ -68,7 +71,8 @@ context/ID/role nodes retain their identities; removal, retyping, protection-typ
 changes and context replacement retire them. Reconnection uses a new unique bus
 name and new window paths. A text node is also retired when its Text capability,
 underlying built-in field identity or raw ancestor chain changes. These identity
-rules do not make pending text edits safe: native edits are not implemented.
+rules are supplemented by bounded deferred edit guards. A range request is
+cancelled if its source frame changes before it reaches the actual field.
 Requests to retired paths return a native Defunct error.
 Malformed arguments and unavailable interfaces have explicit D-Bus errors.
 `GetSelectedChild` returns the AT-SPI null accessible reference for an absent

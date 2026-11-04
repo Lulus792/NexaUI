@@ -6,8 +6,8 @@ candidate has the separate Wayland-only and Settings changes documented in
 is a source assessment, not a completed implementation or native acceptance.
 
 The independent Settings client confirms a limited AT-SPI Text read path and
-whole-value EditableText replacement for its editable name. Other EditableText
-operations remain unsupported. The provider's snapshot in `platform/linux/accessibility.c`
+whole-value, insert and delete EditableText operations for its editable name.
+Clipboard operations remain unsupported. The provider's snapshot in `platform/linux/accessibility.c`
 contains copied semantic name, description, value, bounds, role and state. The
 current candidate also copies an internal completed-frame caret/selection snapshot
 for genuine non-protected text fields; positions are UTF-8 byte offsets, not
@@ -291,7 +291,7 @@ model identity and revision, edit policy and deadline; the core also checks
 ancestry, disabled/modal state and the actual widget. A two-second monotonic
 deadline clamps native poll waits, and expiration revokes even a request already
 forwarded to the core. One outstanding write per field is accepted. Other
-EditableText operations return `NotSupported`; Text movement, selection and
+At that step other EditableText operations returned `NotSupported`; Text movement, selection and
 geometry remain separate work. Read-only capability changes retire the old
 native path to prevent a cached editable interface from outliving the policy.
 
@@ -365,3 +365,35 @@ the source was restored and the normal shared test passed again. Logs:
 `fb32d79dd7b084514e0b5491c335eb7a9740830388cbcf1439d1bbfcd4b34cb2`.
 These controlled connection closures do not cover a killed bus daemon,
 network-like backpressure, or simultaneous application allocator reentrancy.
+
+## AT-SPI insert and delete (2026-11-04)
+
+Writable built-in fields now accept `InsertText` and `DeleteText` through the
+same bounded, deferred completion and lifetime guard as whole replacement.
+Positions are Unicode scalar offsets in the published snapshot; insertion's
+length is a byte count and a prefix ending inside a UTF-8 sequence is rejected.
+The private core range operation validates byte boundaries and changes the
+real text buffer, retaining its pre-edit selection in the undo record. A
+changed range also resets an active IME composition. Each range is tied to the
+source frame: a new published frame before routing cancels it instead of
+applying old offsets to different text. This conservatively cancels on even an
+unchanged new frame. Clipboard operations and text caret/selection setters
+remain unsupported.
+
+The independent client tests mixed-width insertion, byte-limited prefixes,
+deletion including a combining mark, resulting caret positions, two undo
+steps, invalid offsets, split UTF-8 prefixes, disabled targets and a queued
+range invalidated by a local text event. A separate independent client inserts
+and deletes in the real Settings field and verifies the applied value. It also reruns the earlier deadline,
+disconnect, context-rebind and teardown cases. On base
+`9feb6aee7d6b0ab753ff05c185ec30069f90902f`, the private Weston native test
+passed in GCC shared and Clang static ASan/UBSan configurations. Deliberately
+removing only the source-frame check caused the local-edit cancellation
+assertion to fail (CTest exit 8; `out/aetheri-atspi-range-negative.log`,
+SHA-256 `8745a2b9d2264d41093e48712d3fcafdb10ea3aa8c2f5bb8688a89033e8c7cdd`);
+the production source was restored and rebuilt. The core text-value and
+Settings IME suites also passed in both Linux profiles, and the existing
+Windows text-value tests passed in MSVC Debug. A deterministic allocation
+failure test also checks that range edits preserve text, selection, history
+and allocations on OOM in both Linux builds. Native tests use a virtual
+compositor and do not prove real IME, screenreader or Aetheri acceptance.

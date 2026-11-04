@@ -96,14 +96,15 @@ static void failures(int operation, int sensitive) {
             if (operation != 1) CHECK(nx_text_buffer_undo(b) == NX_OK);
         }
         if (operation == 0) CHECK(nx_text_buffer_set_selection(b, 0, b->length) == NX_OK);
-        if (operation == 3) CHECK(nx_text_buffer_set_selection(b, b->length, 1) == NX_OK);
+        if (operation == 3 || operation == 4) CHECK(nx_text_buffer_set_selection(b, b->length, 1) == NX_OK);
         saved_state before = save(b);
         size_t before_live = live;
         attempts = 0; fail_at = failure;
         r = operation == 0 ? nx_text_buffer_replace(b, "ne\xcc\x81w", 5) :
             operation == 1 ? nx_text_buffer_undo(b) :
             operation == 2 ? nx_text_buffer_redo(b) :
-            nx_text_buffer_replace_all(b, "ne\xcc\x81w", 5);
+            operation == 3 ? nx_text_buffer_replace_all(b, "ne\xcc\x81w", 5) :
+            nx_text_buffer_replace_range_private(b, 1, 2, "\xf0\x9f\x8c\x8d", 4);
         fail_at = 0;
         if (r == NX_ERROR_MEMORY) {
             unchanged(b, &before);
@@ -113,7 +114,7 @@ static void failures(int operation, int sensitive) {
                 CHECK(nx_text_buffer_undo(b) == NX_OK);
                 CHECK(nx_text_buffer_redo(b) == NX_OK);
                 unchanged(b, &before);
-            } else if (!sensitive && operation != 1 && operation != 3) {
+            } else if (!sensitive && operation != 1 && operation != 3 && operation != 4) {
                 CHECK(nx_text_buffer_redo(b) == NX_OK);
                 CHECK(nx_text_buffer_undo(b) == NX_OK);
                 unchanged(b, &before);
@@ -132,6 +133,7 @@ static void failures(int operation, int sensitive) {
 int main(void) {
     failures(0, 0); failures(1, 0); failures(2, 0); failures(0, 1);
     failures(3, 0); failures(3, 1);
+    failures(4, 0); failures(4, 1);
     puts("text-buffer edit/undo/redo OOM atomicity, boundary/history preservation and sensitive scrubbing passed");
     return 0;
 }

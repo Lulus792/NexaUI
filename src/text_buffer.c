@@ -3,6 +3,7 @@
 #include "unicode_data.h"
 #include "edit_shortcuts.h"
 #include "text_command.h"
+#include "text_value.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -306,6 +307,16 @@ nx_result nx_text_buffer_replace_all(nx_text_buffer *buffer,
     if (length == buffer->length &&
         (!length || memcmp(bytes, buffer->bytes, length) == 0)) return NX_OK;
     return nx_tb_edit(buffer, 0, buffer->length, bytes, length);
+}
+
+nx_result nx_text_buffer_replace_range_private(nx_text_buffer *buffer,
+    size_t start, size_t end, const char *bytes, size_t length) {
+    if (!buffer || (!bytes && length) || start>end || end>buffer->length ||
+        (start<buffer->length && ((unsigned char)buffer->bytes[start]&0xc0u)==0x80u) ||
+        (end<buffer->length && ((unsigned char)buffer->bytes[end]&0xc0u)==0x80u) ||
+        nx_utf8_validate(bytes,length,NULL)!=NX_OK) return NX_ERROR_ARGUMENT;
+    if (end-start==length && (!length || !memcmp(buffer->bytes+start,bytes,length))) return NX_OK;
+    return nx_tb_edit(buffer,start,end-start,bytes,length);
 }
 
 nx_result nx_text_buffer_delete_surrounding(nx_text_buffer *buffer,
