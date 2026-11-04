@@ -4,6 +4,7 @@
 #include "drop_queue.h"
 #include "event_queue.h"
 #include "repeat.h"
+#include "transfer.h"
 #include "uri_list.h"
 #include "../../../src/secure_zero.h"
 #include "xdg-shell-client-protocol.h"
@@ -2576,11 +2577,12 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
                                     size_t *out_capacity) {
     *out_bytes = NULL;
     *out_length = *out_capacity = 0;
-    char *collected = NULL;
-    size_t used = 0, allocated = 0;
     nx_result result = NX_ERROR_PLATFORM;
     uint64_t started = nx_wayland_now_ns();
     uint64_t deadline = started + 5000000000ull;
+    nx_wayland_read_transfer transfer;
+    nx_wayland_read_transfer_init(&transfer, read_fd, window->allocator,
+                                   NX_WAYLAND_CLIPBOARD_LIMIT, deadline);
     ++window->transfer_read_depth;
     if (started) for (;;) {
         uint64_t now = nx_wayland_now_ns();
@@ -2592,53 +2594,18 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
         }
         now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;
-        char chunk[8192];
-        ssize_t count = read(read_fd, chunk, sizeof(chunk));
-        if (count == 0) {
-            result = NX_OK;
-            break;
+        nx_wayland_read_transfer_step(&transfer, now);
+        if (transfer.finished) { result = transfer.result; break; }
+        if (transfer.waiting) {
+            struct pollfd pipe_fd = {transfer.fd, POLLIN, 0};
+            (void)poll(&pipe_fd, 1, 10);
         }
-        if (count > 0) {
-            size_t needed = used + (size_t)count;
-            if (needed > NX_WAYLAND_CLIPBOARD_LIMIT) {
-                result = NX_ERROR_LIMIT;
-                break;
-            }
-            if (needed > allocated) {
-                size_t grown = allocated ? allocated * 2u : 8192u;
-                if (grown < needed) grown = needed;
-                if (grown > NX_WAYLAND_CLIPBOARD_LIMIT)
-                    grown = NX_WAYLAND_CLIPBOARD_LIMIT;
-                char *replacement = window->allocator.allocate(
-                    window->allocator.user, grown);
-                if (!replacement) { result = NX_ERROR_MEMORY; break; }
-                if (used) memcpy(replacement, collected, used);
-                if (collected) window->allocator.deallocate(
-                    window->allocator.user, collected, allocated);
-                collected = replacement;
-                allocated = grown;
-            }
-            memcpy(collected + used, chunk, (size_t)count);
-            used = needed;
-            continue;
-        }
-        if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR)
-            break;
-        now = nx_wayland_now_ns();
-        if (!now || now >= deadline) break;
-        struct pollfd pipe_fd = {read_fd, POLLIN, 0};
-        (void)poll(&pipe_fd, 1, 10);
     }
 done:
     --window->transfer_read_depth;
-    close(read_fd);
-    if (result == NX_OK) {
-        *out_bytes = collected;
-        *out_length = used;
-        *out_capacity = allocated;
-    } else if (collected)
-        window->allocator.deallocate(window->allocator.user,
-                                     collected, allocated);
+    if (result == NX_OK)
+        result = nx_wayland_read_transfer_take(&transfer, out_bytes, out_length, out_capacity);
+    nx_wayland_read_transfer_dispose(&transfer);
     return result;
 }
 

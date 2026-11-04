@@ -539,3 +539,28 @@ focused group passed, including regular separate-process clipboard exchange;
 the deterministic one-receive fixture continues to test the one-shot path.
 The independent client's diagnostic now prints the actual test value and frees
 it before reporting failure, so the failure path does not leak that value.
+
+## Incremental Wayland read primitive (2026-11-04)
+
+On base `5824158016dbb87f6298dc1ca6e30e464f5d3f14`, the existing Wayland
+clipboard and drop reader was refactored to use a private owner-thread transfer
+state. Each step reads at most 8 KiB from an already nonblocking descriptor;
+it does not wait for more input. Completion, the 32 MiB bound, the existing
+monotonic deadline, allocation failure and explicit disposal close the owned
+descriptor and preserve allocator ownership. Taking a successful buffer
+transfers ownership exactly once. The existing synchronous wrapper still pumps
+the native windows and waits as before, so application responsiveness and
+the public callback contract have not yet changed.
+
+The new deterministic pipe test checks pending input, incremental delivery,
+EOF, one-time buffer ownership, timeout after a partial result, size limit,
+allocation failure and cancellation. It passed in GCC shared and Clang static
+ASan/UBSan profiles, along with the existing Settings stall and delayed
+allocator regressions. In private Weston, the native Wayland window test and
+seven clipboard tests in each of the GCC and sanitizer profiles passed;
+the previously intermittent external
+`--paste-once` case was explicitly excluded from that focused selection.
+The separate X11-plus-Wayland library build also succeeded. This is an internal
+foundation, not completion of I05 or W10: integrating the descriptor and its
+deadline into the native poll loop, safely retaining and cancelling the target
+across frames, and delivering keyboard and AT-SPI completion remain necessary.
