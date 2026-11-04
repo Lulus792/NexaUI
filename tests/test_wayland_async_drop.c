@@ -22,16 +22,20 @@ static void drop_free(void *user, void *pointer, size_t size) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy") || !strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--legacy2") || !strcmp(argv[1],"--reject") || !strcmp(argv[1],"--invalid"))));
     int timeout=argc==2 && !strcmp(argv[1],"--timeout");
     int destroy=argc==2 && !strcmp(argv[1],"--destroy");
+    int legacy=argc==2 && !strcmp(argv[1],"--legacy") ? 1 :
+               argc==2 && !strcmp(argv[1],"--legacy2") ? 2 : 0;
+    int reject=argc==2 && !strcmp(argv[1],"--reject");
+    int invalid=argc==2 && !strcmp(argv[1],"--invalid");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-drop-XXXXXX";
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));
     CHECK(wl_global_create(server.display, &wl_shm_interface, 1, &server, bind_shm));
     CHECK(wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat));
-    CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, 3, &server, bind_data_manager));
+    CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, legacy?legacy:3, &server, bind_data_manager));
     CHECK(wl_global_create(server.display, &xdg_wm_base_interface, 1, &server, bind_wm));
     CHECK(wl_global_create(server.display, &zwp_text_input_manager_v3_interface, 1, &server, bind_manager));
     const char *name = wl_display_add_socket_auto(server.display); CHECK(name);
@@ -42,11 +46,29 @@ int main(int argc, char **argv) {
     nx_window_desc desc = {"async drop", 240, 120, NX_WINDOW_HIDDEN,
                            {&allocations, drop_allocate, drop_free}};
     nx_window *window = NULL; CHECK(nx_window_create(&desc, &window) == NX_OK);
+    CHECK(atomic_load(&server.data_version)==(legacy?legacy:3));
     allocations.window=window;
-    atomic_store(&server.offer_stall, 1); atomic_store(&server.send_drop, 1);
+    atomic_store(&server.offer_stall, !reject && !invalid);
+    atomic_store(&server.drop_reject,reject); atomic_store(&server.drop_invalid,invalid);
+    atomic_store(&server.send_drop, 1);
     wl_surface_commit(nx_window_wayland_surface(window));
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
     double start = now_seconds();
+    if(reject || invalid) {
+        for(unsigned i=0;i<20 && (!atomic_load(&server.drop_actions) ||
+            (invalid && !atomic_load(&server.offer_reads)));++i)
+            CHECK(nx_window_poll(window,100)==NX_OK);
+        for(unsigned i=0;i<5;++i)CHECK(nx_window_poll(window,10)==NX_OK);
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        size_t length=0; nx_file_drop_info info={0}; int available=0;
+        CHECK(nx_window_next_file_drop(window,NULL,0,&length,&info,&available)==NX_OK && !available);
+        CHECK(atomic_load(&server.drop_actions)==1 && atomic_load(&server.drop_finishes)==0);
+        CHECK(atomic_load(&server.offer_reads)==(invalid?1:0));
+        nx_window_destroy(window); CHECK(allocations.heap.live==0);
+        wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
+        wl_display_destroy(server.display); CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
+        return 0;
+    }
     for (unsigned i=0; i<20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd) && now_seconds()-start < 1.5);
@@ -88,11 +110,15 @@ int main(int argc, char **argv) {
         CHECK(nx_window_next_file_drop(window,value,sizeof(value),&length,&info,&available)==NX_OK);
     }
     CHECK(available && !strcmp(value,"/tmp/one file") && info.x==50.5f && info.y==30.25f);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server.drop_actions)==(legacy?0:2));
+    CHECK(atomic_load(&server.drop_finishes)==(legacy?0:2));
     int woke=0;
     do {CHECK(nx_window_next_event(window,&event,&has_event)==NX_OK);if(has_event && event.type==NX_EVENT_WAKE)woke=1;} while(has_event);
     CHECK(woke);
     }
     if(window) nx_window_destroy(window);
+    if(timeout || destroy) CHECK(atomic_load(&server.drop_finishes)==0);
     CHECK(allocations.heap.live==0);
     int remaining=atomic_exchange(&server.stalled_fd,0); if(remaining)CHECK(close(remaining-1)==0);
     wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);

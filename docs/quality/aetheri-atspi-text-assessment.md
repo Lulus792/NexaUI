@@ -703,3 +703,29 @@ the guard, all three controlled drop tests passed again in both profiles,
 including reentrant polling and rejection of a simultaneous queue read. The
 dual-backend X11 window test also passed. Full-suite results therefore describe
 the immediately preceding candidate, not a complete rerun of the final guard.
+
+## Wayland drop action negotiation (2026-11-04)
+
+Candidate based on `62a5c0496dbc825c7956bd1f41cda0360f925fe5`. The adapter
+previously bound `wl_data_device_manager` version 1 even when version 3 was
+available. Version 1 remains a valid legacy protocol path; the previous tests
+did not exercise version 3 action negotiation. The adapter now binds up to
+version 3 and advertises only copy for supported URI offers, observes the
+compositor-selected action, and finishes a version 3 drop only after successful
+transfer and acceptance of at least one local file. It does not finish cancelled,
+timed-out, unsupported or invalid drops. Versions 1 and 2 keep legacy behavior.
+The version and finish requirements are defined in the [Wayland protocol
+specification](https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_data_offer).
+
+The controlled compositor tests reject the base revision's version-1-only
+binding when version 3 is advertised. A separate negative control removing
+the `finish` request fails the completed-drop check. The tests cover two
+successful version 3 drops, versions 1 and 2, rejected action, non-local URI,
+timeout, close, concurrent clipboard and allocator reentry. A real compositor
+and independent file-manager drag are still required for acceptance.
+
+The private-Weston full suites on this candidate passed 169/169 in GCC shared
+and 170/170 in Clang ASan/UBSan static, including the independent clipboard
+peer and the previously intermittent one-shot test. The dual-backend X11
+window test passed. These results do not remove the earlier documented
+one-shot intermittency or prove an actual external file drag.

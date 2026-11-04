@@ -559,7 +559,11 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_async_drop COMMAND nexaui_wayland_async_drop_tests)
             add_test(NAME nexaui_wayland_async_drop_timeout COMMAND nexaui_wayland_async_drop_tests --timeout)
             add_test(NAME nexaui_wayland_async_drop_destroy COMMAND nexaui_wayland_async_drop_tests --destroy)
-            set_tests_properties(nexaui_wayland_async_drop nexaui_wayland_async_drop_timeout nexaui_wayland_async_drop_destroy PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_async_drop_legacy COMMAND nexaui_wayland_async_drop_tests --legacy)
+            add_test(NAME nexaui_wayland_async_drop_legacy2 COMMAND nexaui_wayland_async_drop_tests --legacy2)
+            add_test(NAME nexaui_wayland_async_drop_reject COMMAND nexaui_wayland_async_drop_tests --reject)
+            add_test(NAME nexaui_wayland_async_drop_invalid COMMAND nexaui_wayland_async_drop_tests --invalid)
+            set_tests_properties(nexaui_wayland_async_drop nexaui_wayland_async_drop_timeout nexaui_wayland_async_drop_destroy nexaui_wayland_async_drop_legacy nexaui_wayland_async_drop_legacy2 nexaui_wayland_async_drop_reject nexaui_wayland_async_drop_invalid PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_paste_focus_tests tests/test_wayland_paste_focus.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)

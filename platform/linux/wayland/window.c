@@ -63,6 +63,7 @@ typedef struct nx_wayland_clipboard_offer {
     struct nx_wayland_window *window;
     struct wl_data_offer *native;
     unsigned mime_types, in_use;
+    uint32_t dnd_action;
     int obsolete;
 } nx_wayland_clipboard_offer;
 
@@ -472,8 +473,21 @@ static void nx_wayland_offer_mime(void *data,
         offer->mime_types |= NX_WAYLAND_MIME_URI_LIST;
 }
 
+static void nx_wayland_offer_source_actions(void *data,
+    struct wl_data_offer *native, uint32_t actions) {
+    (void)data; (void)native; (void)actions;
+}
+
+static void nx_wayland_offer_action(void *data,
+    struct wl_data_offer *native, uint32_t action) {
+    nx_wayland_clipboard_offer *offer = data;
+    (void)native; offer->dnd_action = action;
+}
+
 static const struct wl_data_offer_listener nx_wayland_offer_listener = {
-    .offer = nx_wayland_offer_mime
+    .offer = nx_wayland_offer_mime,
+    .source_actions = nx_wayland_offer_source_actions,
+    .action = nx_wayland_offer_action
 };
 
 static void nx_wayland_device_offer(void *data,
@@ -526,6 +540,11 @@ static void nx_wayland_device_enter(void *data,
         wl_data_offer_accept(window->drag_offer->native, serial,
             window->drag_offer->mime_types & NX_WAYLAND_MIME_URI_LIST ?
                 "text/uri-list" : NULL);
+        if ((window->drag_offer->mime_types & NX_WAYLAND_MIME_URI_LIST) &&
+            wl_data_offer_get_version(window->drag_offer->native) >= 3)
+            wl_data_offer_set_actions(window->drag_offer->native,
+                WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY,
+                WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
     }
 }
 
@@ -553,6 +572,11 @@ static void nx_wayland_device_drop(void *data,
                                    struct wl_data_device *device) {
     nx_wayland_window *window = data;
     (void)device;
+    if (window->drag_offer && wl_data_offer_get_version(window->drag_offer->native) >= 3 &&
+        window->drag_offer->dnd_action != WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY) {
+        nx_wayland_retire_offer(window->drag_offer); window->drag_offer = NULL;
+        return;
+    }
     if (window->drop_offer) nx_wayland_retire_offer(window->drop_offer);
     window->drop_offer = window->drag_offer;
     window->drop_x = window->drag_x; window->drop_y = window->drag_y;
@@ -619,7 +643,7 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
     else if (!strcmp(interface, wl_data_device_manager_interface.name) &&
              !window->data_manager)
         window->data_manager = wl_registry_bind(registry, name,
-            &wl_data_device_manager_interface, 1);
+            &wl_data_device_manager_interface, version < 3 ? version : 3);
     else if (!strcmp(interface, wl_output_interface.name) && version >= 2) {
         nx_wayland_output *output = window->allocator.allocate(
             window->allocator.user, sizeof(*output));
@@ -2816,6 +2840,7 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
            reenter the native poll. Never process this completion twice. */
         window->drop_processing = 1;
         nx_result result = transfer->result;
+        size_t previous_count = window->drop_queue.count;
         if (result == NX_OK) {
             char local_host[256] = {0};
             if (gethostname(local_host, sizeof(local_host)) != 0) local_host[0] = '\0';
@@ -2826,6 +2851,10 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
         }
         nx_wayland_read_transfer_dispose(transfer);
         nx_wayland_clipboard_offer *finished = window->drop_read_offer;
+        if (result == NX_OK && window->drop_queue.count > previous_count &&
+            wl_data_offer_get_version(finished->native) >= 3 &&
+            finished->dnd_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY)
+            wl_data_offer_finish(finished->native);
         window->drop_read_offer = NULL; window->drop_read_active = 0;
         --finished->in_use; nx_wayland_retire_offer(finished);
         if (result != NX_OK) { window->drop_processing = 0; return result; }
