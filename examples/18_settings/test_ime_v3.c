@@ -16,7 +16,10 @@ static int value_is(nx_context *ctx,const char *expected) {
         view.value.length==strlen(expected) && !memcmp(view.value.data,expected,view.value.length);
 }
 int main(int argc,char **argv) {
-    CHECK(argc==2); size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
+    CHECK(argc==2 || (argc==3 && (!strcmp(argv[2],"--external") || !strcmp(argv[2],"--same"))));
+    int external=argc==3 && !strcmp(argv[2],"--external");
+    int same=argc==3 && !strcmp(argv[2],"--same");
+    size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
     test_server server={0}; server.width=640; server.height=360;
     char runtime[]="/tmp/nexaui-settings-ime-XXXXXX";
     CHECK(mkdtemp(runtime)); CHECK(setenv("XDG_RUNTIME_DIR",runtime,1)==0);
@@ -45,17 +48,29 @@ int main(int argc,char **argv) {
     char preedit[8]={0}; size_t preedit_length=0; int32_t begin=0,end=0;
     CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
           preedit_length==4 && !memcmp(preedit,"na\xc3\xaf",4) && begin==2 && end==2);
+    int enabled_before=atomic_load(&server.enable_commits);
+    if(external) CHECK(nx_semantics_request_text_value(ctx,3,(nx_utf8_span){"External",8})==NX_OK);
+    if(same) CHECK(nx_semantics_request_text_value(ctx,3,(nx_utf8_span){"Aetheri",7})==NX_OK);
     size_t routed=0; CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK && routed>0);
     CHECK(settings_frame(scene,640,360));
-    CHECK(value_is(ctx,"Aethericaf\xc3\xa9"));
-    CHECK(settings_frame(scene,640,360) && value_is(ctx,"Aethericaf\xc3\xa9"));
+    const char *expected=external?"External":"Aethericaf\xc3\xa9";
+    CHECK(value_is(ctx,expected));
+    if(external) CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
+                       preedit_length==0);
+    if(same) CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
+                   preedit_length==4 && !memcmp(preedit,"na\xc3\xaf",4));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    if(external) CHECK(atomic_load(&server.disable_commits)>0 &&
+                       atomic_load(&server.enable_commits)>enabled_before);
+    if(same) CHECK(atomic_load(&server.disable_commits)==0);
+    CHECK(settings_frame(scene,640,360) && value_is(ctx,expected));
     nx_utf8_span applied; int reduced_motion;
     CHECK(settings_applied(scene,&applied,&reduced_motion) && applied.length==7 &&
           !memcmp(applied.data,"Aetheri",7) && !reduced_motion);
     CHECK(nx_focus_set(ctx,4)==NX_OK && settings_frame(scene,640,360));
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
-          preedit_length==0 && value_is(ctx,"Aethericaf\xc3\xa9"));
+          preedit_length==0 && value_is(ctx,expected));
     settings_destroy(scene); nx_window_destroy(window); free(font);
     wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy(server.display);

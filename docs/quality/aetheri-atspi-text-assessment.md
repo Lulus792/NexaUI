@@ -314,3 +314,26 @@ Aetheri session or human screenreader acceptance. Connection-loss/reconnect,
 backpressure, allocator reentrancy, modal changes and actual IME overlap need
 additional native write tests; the two-second bound assumes the application
 continues polling its window. Full EditableText support is not claimed.
+
+## External replacement during IME composition (2026-11-04)
+
+The Settings text-input-v3 fixture exposed stale preedit after a changed
+external semantic replacement. The previously queued IME commit was already
+rejected by its text/selection revision, but the preedit was still displayed
+over the new value. After an actual replacement, the field now disables its
+active IME before painting; frame completion reactivates the focused field
+with its updated surrounding text. An equal-value request preserves composition.
+
+The controlled v3 fixture checks the unchanged input path, replacement with a
+queued UTF-8 commit and nonempty preedit, the resulting value and cleared
+preedit, disable/re-enable, and the equal-value case. Before the fix, the new
+replacement test failed specifically because the preedit remained nonempty;
+the other original test passed. On base
+`33e0a711a8254b40189814b6c9ec3fd403415bdd`, all three Settings v3 tests,
+three core text-value tests, both Wayland v1/v3 protocol tests and the native
+Settings AT-SPI test passed in the GCC shared and Clang ASan/UBSan static
+profiles; the two existing text-value tests also passed on MSVC Debug. The
+v3 fixture calls the same semantic admission path directly, while the separate
+private-Weston test exercises D-Bus and model application. Their combination
+is not an end-to-end AT-SPI plus real IME test; that, physical input and human
+screenreader acceptance remain open.

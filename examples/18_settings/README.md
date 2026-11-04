@@ -29,7 +29,12 @@ AT-SPI and checks that Apply receives it.
 `nexaui_settings_ime_v3` connects the same scene and native window adapter to a
 private Wayland text-input-v3 protocol fixture. It checks preedit, a UTF-8
 commit, no duplicate commit, separation from the applied model, and clearing
-preedit after focus moves. It does not exercise an installed input method.
+preedit after focus moves. It also exercises a queued external text replacement
+against an already queued IME commit: the stale commit is rejected, the old
+preedit is cleared and the focused input is reactivated. An equal-value request
+does not interrupt composition. The fixture invokes the shared semantic request
+directly; the separate native AT-SPI test verifies transport. It does not
+exercise an installed input method or both transports in the same process.
 
 This is not yet the complete first-view acceptance. Native IME/clipboard input,
 accessible text editing, human screenreader and keyboard checks, visual/contrast

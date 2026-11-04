@@ -6567,6 +6567,16 @@ nx_result nx_text_field_widget(nx_context *ctx,
     if (value_changed) {
         field->pointer.active = 0;
         field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
+        /* An external replacement invalidates the composition's underlying
+           text and selection. Clear the old preedit before painting; end_frame
+           reactivates the still-focused field with its new surrounding text. */
+        if (desc->ime_window && ctx->ime_active_window == desc->ime_window &&
+            ctx->ime_active_id == desc->id &&
+            nx_window_set_ime_enabled(desc->ime_window, 0) == NX_OK) {
+            ctx->ime_active_window = NULL;
+            ctx->ime_active_id = 0;
+            ctx->ime_active_password = 0;
+        }
     }
     if (field->last_context != ctx ||
         field->last_frame_serial != ctx->frame_serial) {
