@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
 #include "fixture_font.h"
+#include "accessibility.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -13,7 +14,7 @@ typedef struct fixture {
     nx_font_collection *fonts; nx_text_field *field;
     int disabled, omitted;
 } fixture;
-static int frame(fixture *f) {
+static int draw(fixture *f) {
     nx_semantic_desc root={0}; root.id=1; root.role=NX_ROLE_WINDOW;
     root.name=(nx_utf8_span){"Large text fixture",18}; root.bounds=(nx_rect){0,0,320,120};
     nx_text_field_desc d={0}; d.id=2; d.parent_id=1; d.name=(nx_utf8_span){"Large text field",16};
@@ -23,8 +24,9 @@ static int frame(fixture *f) {
     return nx_begin_frame(f->context,320,120,0)==NX_OK &&
         nx_semantics_add(f->context,&root,NULL)==NX_OK &&
         (f->omitted || nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)==NX_OK) &&
-        nx_end_frame(f->context)==NX_OK && nx_window_publish_semantics(f->window,f->context)==NX_OK;
+        nx_end_frame(f->context)==NX_OK;
 }
+static int frame(fixture *f) {return draw(f) && nx_window_publish_semantics(f->window,f->context)==NX_OK;}
 int main(void) {
     fixture f={0}; uint8_t font_bytes[512]; font_fixture(font_bytes);
     nx_window_desc desc={"Large text fixture",320,120,0,{0}};
@@ -73,6 +75,31 @@ int main(void) {
         else if (!strcmp(input,"route")) {
             if(nx_window_route_events(f.window,f.context,&routed)!=NX_OK)goto done;
             puts("ACK route");
+        }
+        else if (!strcmp(input,"disconnect")) {
+            if(nx_window_linux_ax_test_disconnect(f.window)!=NX_OK || nx_window_poll(f.window,0)!=NX_OK)goto done;
+            puts("ACK disconnect");
+        } else if (!strcmp(input,"offline-step")) {
+            if(!draw(&f))goto done;
+            puts("ACK offline-step");
+        } else if (!strcmp(input,"rebind")) {
+            nx_context *old=f.context,*fresh=NULL;
+            if(nx_context_create(NULL,&fresh)!=NX_OK)goto done;
+            f.context=fresh;
+            if(!frame(&f))goto done;
+            f.context=old;
+            if(!draw(&f))goto done;
+            f.context=fresh;nx_context_destroy(old);
+            if(!frame(&f))goto done;
+            puts("ACK rebind");
+        } else if (!strcmp(input,"reconnect")) {
+            nx_result result=NX_ERROR_UNSUPPORTED;
+            for(unsigned i=0;i<200 && result==NX_ERROR_UNSUPPORTED;++i) {
+                if(nx_window_poll(f.window,20)!=NX_OK)goto done;
+                result=nx_window_publish_semantics(f.window,f.context);
+            }
+            if(result!=NX_OK)goto done;
+            puts("ACK reconnect");
         }
         else if (!strcmp(input,"step")) {
             if(nx_window_route_events(f.window,f.context,&routed)!=NX_OK || !frame(&f))goto done;

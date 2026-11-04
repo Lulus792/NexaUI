@@ -47,6 +47,31 @@ static int pending_result(DBusConnection *bus,DBusPendingCall *pending,int expec
     if(reply)dbus_message_unref(reply);
     dbus_pending_call_unref(pending);return good;
 }
+static int pending_error(DBusConnection *bus,DBusPendingCall *pending,unsigned milliseconds) {
+    for(unsigned i=0;i<milliseconds && !dbus_pending_call_get_completed(pending);++i)
+        dbus_connection_read_write_dispatch(bus,1);
+    if(!dbus_pending_call_get_completed(pending))return 0;
+    DBusMessage *reply=dbus_pending_call_steal_reply(pending);
+    int good=reply && dbus_message_get_type(reply)==DBUS_MESSAGE_TYPE_ERROR;
+    if(reply)dbus_message_unref(reply);
+    dbus_pending_call_unref(pending);return good;
+}
+static AtspiAccessible *replacement_app(AtspiAccessible *desktop,const char *old_bus) {
+    for(unsigned tries=0;tries<300;++tries) {
+        pump(10);atspi_accessible_clear_cache(desktop);GError *e=NULL;
+        int count=atspi_accessible_get_child_count(desktop,&e);
+        if(e){g_clear_error(&e);continue;}
+        for(int i=0;i<count;++i) {
+            AtspiAccessible *candidate=atspi_accessible_get_child_at_index(desktop,i,&e);
+            if(e){g_clear_error(&e);continue;}if(!candidate)continue;
+            guint pid=atspi_accessible_get_process_id(candidate,&e);
+            AtspiObject *identity=ATSPI_OBJECT(candidate);
+            if(!e && pid==(guint)child && identity->app && strcmp(identity->app->bus_name,old_bus))return candidate;
+            g_clear_error(&e);g_object_unref(candidate);
+        }
+    }
+    return NULL;
+}
 static AtspiAccessible *find(AtspiAccessible *root,const char *wanted,unsigned depth) {
     if (!root || depth>12) return NULL;
     GError *error=NULL; char *name=atspi_accessible_get_name(root,&error);
@@ -184,6 +209,44 @@ int main(int argc,char **argv) {
     g_object_unref(text);g_object_unref(field);
     field=find(app,"Large text field",0);CHECK(field);
     text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text && edit);
+    for(unsigned forwarded=0;forwarded<2;++forwarded) {
+        char *old_bus=g_strdup(ATSPI_OBJECT(field)->app->bus_name);CHECK(old_bus);
+        pending=write_async(bus,field,forwarded?"forwarded disconnect":"queued disconnect");CHECK(pending);
+        for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+        CHECK(!dbus_pending_call_get_completed(pending));
+        if(forwarded)CHECK(command("route"));
+        CHECK(command("disconnect"));
+        CHECK(pending_error(bus,pending,1500));
+        CHECK(command("offline-step") && command("reconnect"));
+        AtspiAccessible *fresh=replacement_app(desktop,old_bus);CHECK(fresh);g_free(old_bus);
+        g_object_unref(edit);g_object_unref(text);g_object_unref(field);g_object_unref(app);app=fresh;
+        field=find(app,"Large text field",0);CHECK(field);
+        text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text && edit);
+        actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+        CHECK(command("resume"));
+        CHECK(atspi_editable_text_set_text_contents(edit,"fresh write",&error) && !error);
+        actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"fresh write"));g_free(actual);
+        CHECK(atspi_editable_text_set_text_contents(edit,"deferred",&error) && !error);
+        CHECK(command("pause"));
+    }
+    for(unsigned forwarded=0;forwarded<2;++forwarded) {
+        char *old_path=g_strdup(ATSPI_OBJECT(field)->path);CHECK(old_path);
+        pending=write_async(bus,field,forwarded?"forwarded rebind":"queued rebind");CHECK(pending);
+        for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
+        CHECK(!dbus_pending_call_get_completed(pending));
+        if(forwarded)CHECK(command("route"));
+        CHECK(command("rebind") && pending_result(bus,pending,0,1000));
+        pump(100);atspi_accessible_clear_cache(app);
+        g_object_unref(edit);g_object_unref(text);g_object_unref(field);
+        field=find(app,"Large text field",0);CHECK(field && strcmp(old_path,ATSPI_OBJECT(field)->path));g_free(old_path);
+        text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text && edit);
+        actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"deferred"));g_free(actual);
+        CHECK(command("resume"));
+        CHECK(atspi_editable_text_set_text_contents(edit,"fresh write",&error) && !error);
+        actual=atspi_text_get_text(text,0,-1,&error);CHECK(!error && actual && !strcmp(actual,"fresh write"));g_free(actual);
+        CHECK(atspi_editable_text_set_text_contents(edit,"deferred",&error) && !error);
+        CHECK(command("pause"));
+    }
     pending=write_async(bus,field,"detached");CHECK(pending);
     for(unsigned i=0;i<100;++i)dbus_connection_read_write_dispatch(bus,1);
     CHECK(!dbus_pending_call_get_completed(pending) && command("detach") && pending_result(bus,pending,0,1000));

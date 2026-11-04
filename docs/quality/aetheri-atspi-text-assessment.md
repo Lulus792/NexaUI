@@ -312,7 +312,8 @@ check, the large-text native test passed again in both configurations. This is
 a virtual compositor, not a real
 Aetheri session or human screenreader acceptance. Connection-loss/reconnect,
 backpressure, allocator reentrancy, modal changes and actual IME overlap need
-additional native write tests; the two-second bound assumes the application
+additional native write tests (the connection and rebind cases are addressed
+below); the two-second bound assumes the application
 continues polling its window. Full EditableText support is not claimed.
 
 ## External replacement during IME composition (2026-11-04)
@@ -337,3 +338,30 @@ v3 fixture calls the same semantic admission path directly, while the separate
 private-Weston test exercises D-Bus and model application. Their combination
 is not an end-to-end AT-SPI plus real IME test; that, physical input and human
 screenreader acceptance remain open.
+
+## Pending writes across connection and context changes (2026-11-04)
+
+The independent libatspi/D-Bus fixture now tests both a queued request and a
+request already forwarded to the core in each of two cases: disconnection of
+the provider's private bus connection and binding the window to a new context.
+For disconnection the pending caller observes a D-Bus error, the old context
+submits a frame offline, and the client discovers the reconnected application
+on a new bus name. For rebinding the old context is deliberately kept alive
+and submits a frame after the new context has been published; the caller gets a
+negative reply and the replacement field has a new native object path. In all
+four cases the abandoned payload does not alter the model, and a fresh request
+actually changes the new field and can change it back. The test then exercises
+the existing detach case and clean shutdown.
+
+On base `3bcbb05cee748e283a63a4e69018fdb23f0d8e5b`, the independent native
+test passed under private Weston/Xvfb with GCC shared and Clang static with
+ASan/UBSan and leak detection. Two separate controlled mutants bypassed the
+forwarded-request guard only after disconnection or only after rebinding. Each
+caused the corresponding unchanged-model assertion to fail (CTest exit 8);
+the source was restored and the normal shared test passed again. Logs:
+`out/aetheri-atspi-reconnect-negative.log` SHA-256
+`cb906c5f854bd4618d837b02dfa88982afcda6ea75306aaeb3cd33028708d0ae` and
+`out/aetheri-atspi-rebind-negative.log` SHA-256
+`fb32d79dd7b084514e0b5491c335eb7a9740830388cbcf1439d1bbfcd4b34cb2`.
+These controlled connection closures do not cover a killed bus daemon,
+network-like backpressure, or simultaneous application allocator reentrancy.
