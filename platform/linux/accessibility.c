@@ -116,7 +116,7 @@ typedef struct nx_ax_text_request {
     size_t bytes, length;
     size_t start, end;
     int ranged, selection, clipboard;
-    int result; /* 0 pending, 1 applied, 2 cancelled */
+    int result, deferred_paste; /* result: 0 pending, 1 applied, 2 cancelled */
     char value[];
 } nx_ax_text_request;
 typedef struct nx_ax_request {
@@ -238,7 +238,7 @@ static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,n
     nx_ax_text_request *r=user;nx_ax_multi_lease *l=r->lease;
     if(!pthread_equal(pthread_self(),l->thread) || r->result || !l->live || !l->snapshot ||
        l->generation!=r->generation || token!=r->generation || context!=r->context ||
-       l->context!=context || (r->ranged && l->frame!=r->frame) ||
+       l->context!=context || (r->ranged && !r->deferred_paste && l->frame!=r->frame) ||
        id!=r->id || !text_target_equal(target,r->target))return 0;
     uint64_t now=nx_ax_now();if(!now || now>=r->deadline)return 0;
     uint32_t i=nx_ax_find(l->snapshot,id);if(i==NX_AX_NONE)return 0;
@@ -247,6 +247,14 @@ static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,n
         !(n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) &&
         (r->selection || (!(n->state&NX_SEM_READONLY) && (n->actions&NX_ACTION_SET_VALUE))) &&
         text_target_equal(n->text_target,r->target);
+}
+static int text_defer_paste(void *user,uint32_t *remaining_ms) {
+    nx_ax_text_request *r=user;
+    if(r->clipboard!=3 || !text_current(r,r->generation,r->context,r->id,r->target)) return 0;
+    uint64_t now=nx_ax_now();if(!now || now>=r->deadline)return 0;
+    uint64_t remaining=r->deadline-now;
+    *remaining_ms=remaining>UINT32_MAX?UINT32_MAX:(uint32_t)remaining;
+    r->deferred_paste=1; return 1;
 }
 static void text_completed(void *user,int applied) {
     nx_ax_text_request *r=user;if(!r->result)r->result=applied?1:2;
@@ -1596,7 +1604,7 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         int valid=nx_ax_request_current(b,&q);nx_result result=NX_OK;
         if(valid && q.text) {
             nx_ax_text_request *t=q.text;
-            nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
+            nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current,text_defer_paste};
             result=t->clipboard==3?nx_semantics_request_text_paste_with_completion(context,t->id,t->start,&guard,text_completed):
                 t->clipboard?nx_semantics_request_text_clipboard_with_completion(context,t->id,t->start,t->end,t->clipboard==2,&guard,text_completed):
                 t->selection?nx_semantics_request_text_selection_with_completion(context,t->id,t->start,t->end,&guard,text_completed):
@@ -1826,7 +1834,9 @@ nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocat
     } else {nx_ax_snapshot *old=b->snapshot;b->snapshot=next;b->spare=old;}
     b->lease->context=binding;b->lease->frame=frame;b->lease->snapshot=b->snapshot;b->lease->live=1;
     for(size_t i=0;i<b->request_count;) {
-        if((b->requests[i].forwarded && b->requests[i].frame!=b->frame) || !nx_ax_request_current(b,&b->requests[i]))remove_request(b,i);
+        if((b->requests[i].forwarded && b->requests[i].frame!=b->frame &&
+            !(b->requests[i].text && b->requests[i].text->deferred_paste)) ||
+           !nx_ax_request_current(b,&b->requests[i]))remove_request(b,i);
         else ++i;
     }
     if(b->hub->failed)nx_ax_disconnect(b->hub);

@@ -130,6 +130,9 @@ typedef struct nx_text_value_request {
     void (*complete)(void *user, int applied);
     uint32_t ancestor_count;
     nx_selection_ancestor ancestors[NX_SEMANTIC_MAX_DEPTH];
+#if defined(__linux__)
+    uint64_t async_token, async_buffer_serial, async_seen_frame;
+#endif
 } nx_text_value_request;
 
 typedef struct nx_multi_set_entry {
@@ -209,6 +212,7 @@ struct nx_context {
     size_t accessible_request_count;
     nx_text_value_request text_values[64];
     size_t text_value_count;
+    int text_value_cleanup;
     nx_multi_selection_request multi_requests[64];
     size_t multi_request_count;
     size_t multi_payload_bytes;
@@ -297,15 +301,39 @@ static void nx_multi_requests_clear(nx_context *ctx) {
 static void nx_text_value_dispose(nx_context *ctx, nx_text_value_request *r, int applied) {
     nx_text_value_request old = *r;
     *r = (nx_text_value_request){0};
+#if defined(__linux__)
+    if(old.async_token) nx_linux_clipboard_cancel_token(old.async_token);
+#endif
     if (old.complete) old.complete(old.guard.user, applied);
     if (old.bytes) ctx->allocator.deallocate(ctx->allocator.user, old.bytes, old.length + 1u);
     if (old.guard.release) old.guard.release(old.guard.user);
 }
 
 static void nx_text_values_clear(nx_context *ctx) {
+    int before=ctx->text_value_cleanup;ctx->text_value_cleanup=1;
     for (size_t i = 0; i < ctx->text_value_count; ++i)
         nx_text_value_dispose(ctx, &ctx->text_values[i], 0);
     ctx->text_value_count = 0;
+    ctx->text_value_cleanup=before;
+}
+
+static void nx_text_values_finish(nx_context *ctx) {
+    int before=ctx->text_value_cleanup;ctx->text_value_cleanup=1;
+    size_t kept=0;
+    for(size_t i=0;i<ctx->text_value_count;++i) {
+        nx_text_value_request *r=&ctx->text_values[i];
+#if defined(__linux__)
+        if(r->id && r->async_token && r->async_seen_frame==ctx->frame_serial &&
+           (!r->guard.current || r->guard.current(r->guard.user,r->guard.token,
+                ctx->native_identity,r->id,r->target))) {
+            if(kept!=i) {ctx->text_values[kept]=*r;*r=(nx_text_value_request){0};}
+            ++kept;continue;
+        }
+#endif
+        nx_text_value_dispose(ctx,r,0);
+    }
+    ctx->text_value_count=kept;
+    ctx->text_value_cleanup=before;
 }
 
 static nx_result nx_text_model_create(nx_text_value_target *target) {
@@ -605,7 +633,11 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     /* Normally end_frame has expired unused requests. Keep this check explicit
        rather than allowing a source-frame counter wrap to revive old work. */
     for (size_t i = 0; i < ctx->text_value_count; ++i)
-        if (ctx->text_values[i].source_frame != ctx->frame_serial)
+        if (ctx->text_values[i].source_frame != ctx->frame_serial
+#if defined(__linux__)
+            && !ctx->text_values[i].async_token
+#endif
+            )
             nx_text_value_dispose(ctx, &ctx->text_values[i], 0);
     /* Multi-selection work is never carried past the immediately following
        completed frame. A failed end_frame retains it for the same-frame retry. */
@@ -2170,6 +2202,7 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
         (guard && (!guard->retain || !guard->release || !guard->current)))
         return NX_ERROR_ARGUMENT;
     if (ctx->state != 2u) return NX_ERROR_STATE;
+    if (ctx->text_value_cleanup) return NX_ERROR_LIMIT;
     if (value.length > NX_TEXT_VALUE_MAX_BYTES) return NX_ERROR_LIMIT;
     if (!nx_valid_span(value)) return NX_ERROR_ARGUMENT;
     uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
@@ -2208,6 +2241,7 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
        No queue slot or borrowed semantic node is reserved across that call. */
     nx_result admission = NX_OK;
     if (ctx->state != 2u || ctx->frame_serial != request.source_frame) admission = NX_ERROR_STATE;
+    else if (ctx->text_value_cleanup) admission = NX_ERROR_LIMIT;
     else if (ctx->text_value_count >= 64u) admission = NX_ERROR_LIMIT;
     else for (size_t n = 0; n < ctx->text_value_count; ++n)
         if (ctx->text_values[n].id == id) { admission = NX_ERROR_LIMIT; break; }
@@ -2275,14 +2309,18 @@ nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
 static nx_result nx_window_clipboard_read_adapter(void *user,char *bytes,size_t capacity,size_t *out_length);
 static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
     nx_text_buffer **buffer_address,nx_text_value_target *live_target,
-    const nx_text_clipboard *clipboard,int *changed) {
+    const nx_text_clipboard *clipboard,int *changed,int pending_phase) {
     nx_text_buffer *buffer=*buffer_address;
     *changed = 0;
     for (size_t i = 0; i < ctx->text_value_count; ++i) {
         nx_text_value_request *r = &ctx->text_values[i];
         if (r->id != node->id) continue;
         const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
-        int valid = r->source_frame != UINT64_MAX && r->source_frame + 1u == ctx->frame_serial &&
+        int valid = ((r->source_frame != UINT64_MAX && r->source_frame + 1u == ctx->frame_serial)
+#if defined(__linux__)
+            || r->async_token
+#endif
+            ) &&
             r->parent_id == node->parent_id &&
             nx_ancestry_live(ctx,node,r->ancestors,r->ancestor_count) &&
             r->target.identity == node->text_value.identity &&
@@ -2300,6 +2338,13 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             valid = r->guard.current(r->guard.user, r->guard.token, identity, node->id, node->text_value);
         }
         if (!valid) { nx_text_value_dispose(ctx, r, 0); return NX_OK; }
+#if defined(__linux__)
+        if(r->async_token) {
+            r->async_seen_frame=ctx->frame_serial;
+            if(!pending_phase)return NX_OK;
+        } else
+#endif
+        if(pending_phase)return NX_OK;
         if(r->ranged==2) {
             size_t anchor=0,cursor=0;
             nx_result selection=nx_text_buffer_selection(buffer,&anchor,&cursor);
@@ -2335,6 +2380,65 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             nx_text_clipboard cb=*clipboard;size_t length=NX_TEXT_VALUE_MAX_BYTES;
             int single_read=cb.read==nx_window_clipboard_read_adapter;
             nx_result read=NX_OK;
+#if defined(__linux__)
+            if(r->async_token && (!single_read || !cb.user || !r->guard.defer_paste)) {
+                nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            if(single_read && cb.user && r->guard.defer_paste &&
+               nx_linux_window_clipboard_async_supported((nx_window *)cb.user)) {
+                if(!r->async_token) {
+                    uint64_t serial=nx_text_buffer_change_serial(*buffer_address),token=0;uint32_t remaining=0;
+                    if(serial==UINT64_MAX) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                    if(!r->guard.defer_paste(r->guard.user,&remaining) || !remaining ||
+                       !nx_text_request_current(ctx,r,live_target)) {
+                        nx_text_value_dispose(ctx,r,0);return NX_OK;
+                    }
+                    read=nx_linux_window_clipboard_async_start((nx_window *)cb.user,
+                        NX_TEXT_VALUE_MAX_BYTES,remaining,0,&token);
+                    if(read!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                    if(!nx_text_request_current(ctx,r,live_target)) {
+                        (void)nx_linux_window_clipboard_async_cancel((nx_window *)cb.user,token);
+                        nx_text_value_dispose(ctx,r,0);return NX_OK;
+                    }
+                    r->async_token=token;r->async_buffer_serial=serial;r->async_seen_frame=ctx->frame_serial;
+                    return NX_OK;
+                }
+                if(r->async_buffer_serial!=nx_text_buffer_change_serial(*buffer_address) ||
+                   !nx_linux_window_clipboard_async_current((nx_window *)cb.user,r->async_token)) {
+                    (void)nx_linux_window_clipboard_async_cancel((nx_window *)cb.user,r->async_token);
+                    nx_text_value_dispose(ctx,r,0);return NX_OK;
+                }
+                char *copy=NULL;size_t actual=0;int ready=0;
+                read=nx_linux_window_clipboard_async_take((nx_window *)cb.user,r->async_token,&copy,&actual,&ready);
+                if(read!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                if(!ready)return NX_OK;
+                r->async_token=0;
+                if(!nx_text_request_current(ctx,r,live_target)) {free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                if(!r->target.multiline) {
+                    size_t written=0;
+                    for(size_t j=0;j<actual;++j) {
+                        if(copy[j]=='\r') {if(j+1u<actual && copy[j+1u]=='\n')++j;copy[written++]=' ';}
+                        else if(copy[j]=='\n')copy[written++]=' ';else copy[written++]=copy[j];
+                    }
+                    actual=written;
+                }
+                const char *old=NULL;size_t old_length=0;
+                read=nx_text_buffer_text(*buffer_address,&old,&old_length);
+                if(read!=NX_OK || r->start>old_length || actual>SIZE_MAX-old_length-1u) {
+                    free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+                }
+                size_t total=old_length+actual;
+                read=nx_semantic_reserve_text(ctx,total?total+1u:0);
+                if(read!=NX_OK || !nx_text_request_current(ctx,r,live_target) ||
+                   r->async_buffer_serial!=nx_text_buffer_change_serial(*buffer_address)) {
+                    free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+                }
+                read=nx_text_buffer_replace_range_private(*buffer_address,r->start,r->start,copy,actual);
+                free(copy);
+                if(read!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                *changed=actual!=0;nx_text_value_dispose(ctx,r,1);return NX_OK;
+            }
+#endif
             /* Native clipboard ownership can disappear after a single read.
                Fetch once into the bounded buffer instead of consuming an offer
                in a separate size query. Custom callbacks retain their public
@@ -2534,7 +2638,7 @@ nx_result nx_end_frame(nx_context *ctx) {
     nx_result selection_result = nx_multi_finish(ctx);
     if (selection_result != NX_OK) return selection_result;
     ctx->state = 2u;
-    nx_text_values_clear(ctx);
+    nx_text_values_finish(ctx);
     nx_multi_requests_clear(ctx);
     return NX_OK;
 }
@@ -6145,7 +6249,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  &field->buffer,&field->text_value,NULL,&value_changed);
+                                  &field->buffer,&field->text_value,NULL,&value_changed,0);
     if (result != NX_OK) goto rollback;
     if (value_changed) { field->pointer.active = 0; field->suppress_caret_reveal = 0; }
     if (field->last_context != ctx ||
@@ -6820,7 +6924,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  &field->buffer,&field->text_value,&desc->clipboard,&value_changed);
+                                  &field->buffer,&field->text_value,&desc->clipboard,&value_changed,0);
     if (result != NX_OK) goto rollback;
     /* A clipboard callback can replace the application's field model. */
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value=field->text_value;
@@ -7006,6 +7110,18 @@ nx_result nx_text_field_widget(nx_context *ctx,
 #if defined(__linux__)
     if (field->paste_token && !nx_field_paste_current(ctx, desc, field))
         nx_field_paste_cancel(desc, field);
+    int deferred_changed=0;
+    result=nx_text_value_apply(ctx,&ctx->semantics.nodes[ctx->semantics.count-1u],
+                               &field->buffer,&field->text_value,&desc->clipboard,&deferred_changed,1);
+    if(result!=NX_OK) goto rollback;
+    if(deferred_changed) {
+        field->pointer.active=0;
+        field->suppress_caret_reveal=field->command_caret_valid=field->vertical_x_valid=0;
+        if(desc->ime_window && ctx->ime_active_window==desc->ime_window && ctx->ime_active_id==desc->id &&
+           nx_window_set_ime_enabled(desc->ime_window,0)==NX_OK) {
+            ctx->ime_active_window=NULL;ctx->ime_active_id=0;ctx->ime_active_password=0;
+        }
+    }
 #endif
     if (field->pointer.active) {
         if (!state.focused || desc->disabled || ctx->pointer_active_id!=desc->id)

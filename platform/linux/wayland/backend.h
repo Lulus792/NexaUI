@@ -70,6 +70,7 @@ nx_result nx_wayland_window_clipboard_async_cancel(nx_wayland_window *window,
     uint64_t token);
 int nx_wayland_window_clipboard_async_current(nx_wayland_window *window, uint64_t token);
 nx_result nx_wayland_window_clipboard_async_cancel_active(nx_wayland_window *window);
+void nx_wayland_clipboard_cancel_token(uint64_t token);
 void nx_wayland_window_destroy(nx_wayland_window *window);
 struct wl_display *nx_wayland_window_display(nx_wayland_window *window);
 struct wl_surface *nx_wayland_window_surface(nx_wayland_window *window);

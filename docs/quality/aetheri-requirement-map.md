@@ -28,8 +28,8 @@ Later I05/T06/W10 evidence and the still-open synchronous clipboard wait are
 recorded in the [AT-SPI text assessment](aetheri-atspi-text-assessment.md).
 The test of a real one-shot owner is intermittent under private Weston and is
 not an acceptance pass for the current candidate.
-The subsequent Settings keyboard-paste path is poll-driven on Wayland; AT-SPI
-paste, custom callbacks and file-drop reads still have synchronous paths.
+The subsequent Settings keyboard and AT-SPI paste paths are poll-driven on
+Wayland; custom callbacks, X11 paste and file-drop reads still have synchronous paths.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |

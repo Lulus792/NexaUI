@@ -445,6 +445,16 @@ nx_result nx_linux_window_clipboard_async_cancel_active(nx_window *window) {
     nx_linux_window_release(window); return result;
 }
 
+void nx_linux_clipboard_cancel_token(uint64_t token) { nx_wayland_clipboard_cancel_token(token); }
+
+int nx_linux_window_clipboard_async_supported(nx_window *window) {
+    if (!window || !nx_linux_on_owner_thread(window) || window->retired) return 0;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    if (window->backend != NX_LINUX_WAYLAND) return 0;
+#endif
+    return 1;
+}
+
 void nx_window_destroy(nx_window *window) {
     if (!window || !nx_linux_on_owner_thread(window) || window->retired) return;
     window->retired=1;

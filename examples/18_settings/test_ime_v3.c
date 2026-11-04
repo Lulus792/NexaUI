@@ -3,7 +3,7 @@
 #include "text_value.h"
 #include <time.h>
 
-typedef struct paste_ticket { int refs,calls,applied; } paste_ticket;
+typedef struct paste_ticket { int refs,calls,applied,deferred,revoked; uint32_t timeout; } paste_ticket;
 typedef struct delayed_allocator { int armed,delayed; } delayed_allocator;
 static void *delayed_allocate(void *p,size_t size) {
     delayed_allocator *a=p;
@@ -18,9 +18,10 @@ static void delayed_deallocate(void *p,void *memory,size_t size) {(void)p;(void)
 static void paste_retain(void *p){++((paste_ticket *)p)->refs;}
 static void paste_release(void *p){--((paste_ticket *)p)->refs;}
 static int paste_current(void *p,uint64_t token,uint64_t context,uint64_t id,nx_text_value_target target) {
-    (void)p;(void)token;(void)context;(void)id;(void)target;return 1;
+    (void)token;(void)context;(void)id;(void)target;return !((paste_ticket *)p)->revoked;
 }
 static void paste_complete(void *p,int applied){paste_ticket *t=p;++t->calls;t->applied=applied;}
+static int paste_defer(void *p,uint32_t *remaining_ms){paste_ticket *t=p;if(t->revoked)return 0;*remaining_ms=t->timeout?t->timeout:2000;t->deferred=1;return 1;}
 
 static unsigned char *read_font(const char *path,size_t *size) {
     FILE *f=fopen(path,"rb"); if(!f)return NULL;
@@ -45,7 +46,10 @@ int main(int argc,char **argv) {
           !strcmp(argv[2],"--keyboard-clipboard-timeout") || !strcmp(argv[2],"--keyboard-clipboard-command") ||
           !strcmp(argv[2],"--keyboard-clipboard-abandoned") || !strcmp(argv[2],"--keyboard-clipboard-ime") ||
           !strcmp(argv[2],"--keyboard-clipboard-revert") || !strcmp(argv[2],"--keyboard-clipboard-repeat") ||
-          !strcmp(argv[2],"--keyboard-clipboard-window-focus"))));
+          !strcmp(argv[2],"--keyboard-clipboard-window-focus") || !strcmp(argv[2],"--ax-async-once") ||
+          !strcmp(argv[2],"--ax-async-stall") || !strcmp(argv[2],"--ax-async-short") || !strcmp(argv[2],"--ax-async-input") ||
+          !strcmp(argv[2],"--ax-async-model") || !strcmp(argv[2],"--ax-async-detach") ||
+          !strcmp(argv[2],"--ax-async-omit"))));
     int external=argc==3 && !strcmp(argv[2],"--external");
     int same=argc==3 && !strcmp(argv[2],"--same");
     int once=argc==3 && !strcmp(argv[2],"--clipboard-once");
@@ -62,6 +66,14 @@ int main(int argc,char **argv) {
     int keyboard_revert=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-revert");
     int keyboard_repeat=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-repeat");
     int keyboard_window_focus=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-window-focus");
+    int ax_once=argc==3 && !strcmp(argv[2],"--ax-async-once");
+    int ax_stall=argc==3 && !strcmp(argv[2],"--ax-async-stall");
+    int ax_short=argc==3 && !strcmp(argv[2],"--ax-async-short");
+    int ax_input=argc==3 && !strcmp(argv[2],"--ax-async-input");
+    int ax_model=argc==3 && !strcmp(argv[2],"--ax-async-model");
+    int ax_detach=argc==3 && !strcmp(argv[2],"--ax-async-detach");
+    int ax_omit=argc==3 && !strcmp(argv[2],"--ax-async-omit");
+    int ax_async=ax_once || ax_stall || ax_short || ax_input || ax_model || ax_detach || ax_omit;
     int slow_allocator=argc==3 && !strcmp(argv[2],"--clipboard-slow-allocator");
     size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
     test_server server={0}; server.width=640; server.height=360;
@@ -117,14 +129,16 @@ int main(int argc,char **argv) {
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
           preedit_length==0 && value_is(ctx,expected));
-    if(once || keyboard_once || stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_command || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_repeat || keyboard_window_focus || slow_allocator) {
+    if(once || keyboard_once || stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_command || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_repeat || keyboard_window_focus || ax_async || slow_allocator) {
         CHECK(nx_focus_set(ctx,3)==NX_OK && settings_frame(scene,640,360));
-        atomic_store(&server.offer_once,!keyboard_repeat);atomic_store(&server.offer_stall,stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus);
+        atomic_store(&server.offer_once,!keyboard_repeat);atomic_store(&server.offer_stall,stall || keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus || (ax_async && !ax_once));
         atomic_store(&server.send_offer,1);
         wl_surface_commit(nx_window_wayland_surface(window));
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
-        paste_ticket ticket={0};nx_text_value_guard guard={&ticket,1,paste_retain,paste_release,paste_current};
-        if(once || stall || slow_allocator)CHECK(nx_semantics_request_text_paste_with_completion(ctx,3,0,&guard,paste_complete)==NX_OK);
+        paste_ticket ticket={0};if(ax_short)ticket.timeout=100;
+        nx_text_value_guard guard={&ticket,1,paste_retain,paste_release,paste_current,0};
+        if(ax_async)guard.defer_paste=paste_defer;
+        if(once || stall || slow_allocator || ax_async)CHECK(nx_semantics_request_text_paste_with_completion(ctx,3,0,&guard,paste_complete)==NX_OK);
         else {nx_event event={0};event.type=keyboard_command?NX_EVENT_TEXT_COMMAND:NX_EVENT_KEY_DOWN;
               if(keyboard_command)event.text_command=NX_TEXT_COMMAND_PASTE;
               else {event.key=NX_KEY_V;event.modifiers=NX_MOD_CONTROL;}
@@ -134,7 +148,42 @@ int main(int argc,char **argv) {
         allocation.armed=slow_allocator;
         CHECK(settings_frame(scene,640,360));
         CHECK(clock_gettime(CLOCK_MONOTONIC,&finish)==0);
-        if(keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus) {
+        if(ax_async) {
+            double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
+            CHECK(elapsed<1.0 && ticket.deferred && ticket.refs==1 && !ticket.calls);
+            if(!ax_once) {
+                for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(nx_window_poll(window,100)==NX_OK);
+                CHECK(atomic_load(&server.stalled_fd) && value_is(ctx,"Aethericaf\xc3\xa9"));
+                if(ax_input) {
+                    nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='X';
+                    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && settings_frame(scene,640,360));
+                } else if(ax_model) {
+                    CHECK(settings_set_draft_name(scene,"Changed",7) && settings_frame(scene,640,360));
+                } else if(ax_detach) { ticket.revoked=1;CHECK(settings_frame(scene,640,360)); }
+                else if(ax_omit) {
+                    CHECK(nx_begin_frame(ctx,640,360,0)==NX_OK && nx_end_frame(ctx)==NX_OK);
+                    CHECK(ticket.calls==1 && !ticket.applied && ticket.refs==0);
+                    CHECK(nx_linux_window_clipboard_async_cancel_active(window)==NX_ERROR_STATE);
+                    CHECK(settings_frame(scene,640,360));
+                }
+                else {
+                    CHECK(nx_focus_set(ctx,4)==NX_OK && settings_frame(scene,640,360));
+                    CHECK(!ticket.calls && ticket.refs==1);
+                }
+            }
+            for(unsigned i=0;i<40 && !ticket.calls;++i) {
+                CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                if(routed)CHECK(settings_frame(scene,640,360));
+            }
+            CHECK(ticket.calls==1 && ticket.refs==0 && ticket.applied==ax_once);
+            if(ax_short) {
+                CHECK(clock_gettime(CLOCK_MONOTONIC,&finish)==0);
+                CHECK((double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9<1.5);
+                CHECK(nx_linux_window_clipboard_async_cancel_active(window)==NX_ERROR_STATE);
+            }
+            CHECK(value_is(ctx,ax_once?"OnceAethericaf\xc3\xa9":ax_input?"Aethericaf\xc3\xa9X":ax_model?"Changed":"Aethericaf\xc3\xa9"));
+            if(!ax_once) {int fd=atomic_exchange(&server.stalled_fd,0);CHECK(fd>0 && close(fd-1)==0);}
+        } else if(keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed<1.0 && value_is(ctx,"Aethericaf\xc3\xa9"));
             for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)

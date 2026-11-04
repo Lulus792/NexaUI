@@ -2727,6 +2727,15 @@ nx_result nx_wayland_window_clipboard_async_cancel_active(nx_wayland_window *win
     nx_wayland_async_read_clear(window); return NX_OK;
 }
 
+void nx_wayland_clipboard_cancel_token(uint64_t token) {
+    if (!token) return;
+    for (nx_wayland_window *window=nx_wayland_thread_windows; window; window=window->thread_next) {
+        if (window->async_active && window->async_token==token) {
+            nx_wayland_async_read_clear(window); return;
+        }
+    }
+}
+
 static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
                                     char **out_bytes, size_t *out_length,
                                     size_t *out_capacity) {

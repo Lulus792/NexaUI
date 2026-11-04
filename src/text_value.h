@@ -13,6 +13,8 @@ nx_result nx_linux_window_clipboard_async_take(nx_window *window, uint64_t token
 nx_result nx_linux_window_clipboard_async_cancel(nx_window *window, uint64_t token);
 int nx_linux_window_clipboard_async_current(nx_window *window, uint64_t token);
 nx_result nx_linux_window_clipboard_async_cancel_active(nx_window *window);
+void nx_linux_clipboard_cancel_token(uint64_t token);
+int nx_linux_window_clipboard_async_supported(nx_window *window);
 #endif
 
 /* Owner-thread model identities, never model addresses. Native snapshots may
@@ -47,6 +49,11 @@ typedef struct nx_text_value_guard {
     void (*release)(void *user);
     int (*current)(void *user, uint64_t token, uint64_t context_identity, uint64_t id,
                    nx_text_value_target target);
+#if defined(__linux__)
+    /* Optional owner-thread lease transition for a pending Wayland paste.
+       Must only update native request state and must not call application code. */
+    int (*defer_paste)(void *user, uint32_t *remaining_ms);
+#endif
 } nx_text_value_guard;
 
 nx_text_value_target nx_context_text_value_target(const nx_context *context,

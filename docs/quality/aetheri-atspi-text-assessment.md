@@ -642,3 +642,36 @@ compositor still need independent acceptance. The previously documented
 intermittent Weston `wl-copy --paste-once` AT-SPI case remains open; it is not
 silenced or counted as a pass. A synchronous custom callback can still block,
 and synchronous Wayland file-drop processing remains a separate concern.
+
+## Poll-driven AT-SPI paste (2026-11-04)
+
+Candidate based on `5bfa01520db40b6582e7ca3aa6575fb6917dede7`. For a
+Wayland text field using the native window clipboard, AT-SPI paste now starts
+an owner-thread, poll-driven read. Its native lease may survive unchanged
+frames, but retains the original request deadline; the transfer receives only
+the remaining time. The current target, ancestry, edit policy and text-buffer
+revision are checked again before insertion. An omitted field, detached lease,
+changed model or user edit cancels the pending operation. A busy native transfer
+is rejected rather than cancelling the other operation. Context teardown also
+cancels its transfer without retaining a window pointer.
+
+Seven deterministic Wayland-server cases passed in both GCC and ASan/UBSan
+profiles, covering completion, stalled and shortened deadlines, user input,
+model replacement, lease revocation and a missing field. An independent
+libatspi client talks to the real D-Bus provider and a Settings scene backed
+by a controlled Wayland server. It checks a delayed successful transfer
+across multiple frames, user input during a stalled transfer, and a stalled
+transfer reaching the provider's two-second deadline while the scene continues
+to progress. As negative controls, disabling the async transition made the
+input case exceed its responsiveness bound, and restoring the old single-frame
+lease made the delayed-success case fail.
+
+The full private-Weston ASan/UBSan suite passed 162/162; the shortened-deadline
+case added during that run also passed separately. The X11 window and text-value
+completion tests and the MSVC Debug input and text-value ancestry tests passed.
+
+These tests do not establish acceptance with an installed screenreader, an
+installed input method or Aetheri. Custom clipboard callbacks, X11 paste and
+Wayland file-drop reads remain synchronous; the one-shot external-owner Weston
+case documented above remains intermittent. I05, A07, W10 and the broader
+consumer acceptance remain open.
