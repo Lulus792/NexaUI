@@ -21,7 +21,8 @@ The client checks the nonstandard `nexaui-value` attribute and the supported
 read-only AT-SPI Text queries using a Unicode draft and selection. Text range,
 character, caret and selection reads and change notifications are available
 for valid, non-protected built-in text fields. The Text interface is partial:
-caret/selection movement, text geometry and non-character granularity remain open.
+text geometry and non-character granularity remain open. A single selection and
+caret can be changed at grapheme boundaries through AT-SPI, with notifications.
 EditableText supports replacing the full text and bounded insert/delete
 operations; clipboard operations remain open. The independent test sets the name through
 AT-SPI and checks that Apply receives it.

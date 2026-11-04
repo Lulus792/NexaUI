@@ -54,6 +54,9 @@ nx_result nx_semantics_request_text_value_with_completion(nx_context *context,
 nx_result nx_semantics_request_text_range_with_completion(nx_context *context,
     uint64_t id, size_t start, size_t end, nx_utf8_span value,
     const nx_text_value_guard *guard, void (*complete)(void *user, int applied));
+nx_result nx_semantics_request_text_selection_with_completion(nx_context *context,
+    uint64_t id, size_t anchor, size_t cursor,
+    const nx_text_value_guard *guard, void (*complete)(void *user, int applied));
 nx_result nx_text_buffer_replace_range_private(nx_text_buffer *buffer,
     size_t start, size_t end, const char *bytes, size_t length);
 #endif

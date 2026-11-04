@@ -19,7 +19,11 @@ static const char nx_ax_xml_text[] =
 "<method name=\"GetCharacterAtOffset\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"i\"/></method>"
 "<method name=\"GetStringAtOffset\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"u\"/><arg direction=\"out\" type=\"s\"/><arg direction=\"out\" type=\"i\"/><arg direction=\"out\" type=\"i\"/></method>"
 "<method name=\"GetNSelections\"><arg direction=\"out\" type=\"i\"/></method>"
-"<method name=\"GetSelection\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"i\"/><arg direction=\"out\" type=\"i\"/></method></interface>";
+"<method name=\"GetSelection\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"i\"/><arg direction=\"out\" type=\"i\"/></method>"
+"<method name=\"SetCaretOffset\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
+"<method name=\"AddSelection\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
+"<method name=\"SetSelection\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
+"<method name=\"RemoveSelection\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method></interface>";
 static const char nx_ax_xml_edit[] =
 "<interface name=\"org.a11y.atspi.EditableText\">"
 "<property name=\"version\" type=\"u\" access=\"read\"/>"

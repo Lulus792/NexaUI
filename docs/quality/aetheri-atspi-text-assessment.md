@@ -6,7 +6,8 @@ candidate has the separate Wayland-only and Settings changes documented in
 is a source assessment, not a completed implementation or native acceptance.
 
 The independent Settings client confirms a limited AT-SPI Text read path and
-whole-value, insert and delete EditableText operations for its editable name.
+whole-value, insert and delete EditableText operations, plus caret and selection
+movement, for its editable name.
 Clipboard operations remain unsupported. The provider's snapshot in `platform/linux/accessibility.c`
 contains copied semantic name, description, value, bounds, role and state. The
 current candidate also copies an internal completed-frame caret/selection snapshot
@@ -377,8 +378,8 @@ real text buffer, retaining its pre-edit selection in the undo record. A
 changed range also resets an active IME composition. Each range is tied to the
 source frame: a new published frame before routing cancels it instead of
 applying old offsets to different text. This conservatively cancels on even an
-unchanged new frame. Clipboard operations and text caret/selection setters
-remain unsupported.
+unchanged new frame. At this stage clipboard operations and text
+caret/selection setters remained unsupported.
 
 The independent client tests mixed-width insertion, byte-limited prefixes,
 deletion including a combining mark, resulting caret positions, two undo
@@ -397,3 +398,28 @@ Windows text-value tests passed in MSVC Debug. A deterministic allocation
 failure test also checks that range edits preserve text, selection, history
 and allocations on OOM in both Linux builds. Native tests use a virtual
 compositor and do not prove real IME, screenreader or Aetheri acceptance.
+
+## AT-SPI caret and text selection (2026-11-04)
+
+The partial Text interface now implements SetCaretOffset, AddSelection,
+SetSelection and RemoveSelection. The existing bounded owner-thread queue and
+completion guards apply to selection requests, including snapshot-frame,
+context, window, disabled and protected checks. Read-only built-in text can
+still be selected. The existing text buffer accepts only extended-grapheme
+boundaries; a legal scalar offset inside a grapheme therefore returns false
+rather than silently moving it. One active selection is supported. A changed
+selection also resets an active IME composition before the focused field is
+reactivated; an unchanged selection does not.
+
+The independent client moves the caret, adds/changes/removes the selection in
+the real Settings field, checks the reported offsets and the exact ordered
+caret/selection notifications, and rejects a second selection and invalid
+index. The separate native client checks read-only selection, a rejected
+inside-grapheme caret position, deferred completion and cancellation after the
+field becomes disabled. On base `1bfdf4ebf12d044eedf7d51a7d70acce0ed276f9`,
+the private-Weston AT-SPI group passed 4/4 in both GCC shared and Clang static
+ASan/UBSan configurations; the strengthened focused native and Settings tests
+passed again, as did the core text-value and Settings v3 IME tests. Existing
+MSVC Debug text-value tests also passed. Native clipboard callbacks, complete
+scalar-position support within graphemes, real IME/screenreader and compositor
+acceptance remain open.

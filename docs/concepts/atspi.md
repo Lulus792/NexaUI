@@ -53,8 +53,11 @@ read-only Text interface: character count, caret, current selection, character
 and range reads, and character-granularity `GetStringAtOffset`. Offsets count
 Unicode scalar values rather than UTF-8 bytes. A single text reply is limited to
 1 MiB; invalid ranges and oversized replies return errors. Unsupported text
-operations return `NotSupported`, including edits, caret/selection movement,
-geometry, attributes and non-character granularities. On changed published
+operations return `NotSupported`, including text geometry, attributes and
+non-character granularities. Caret and a single text selection can be moved
+through deferred AT-SPI requests, including on read-only fields. Offsets must
+correspond to text-buffer grapheme boundaries; a position inside a grapheme is
+rejected. Disabled, protected and stale targets are rejected. On changed published
 snapshots, TextChanged delete/insert events use scalar offsets and the old/new
 text segments; caret and text-selection changes also emit events. Events are
 chunked at UTF-8 boundaries and the existing outgoing-queue budget can force

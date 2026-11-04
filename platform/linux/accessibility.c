@@ -114,7 +114,7 @@ typedef struct nx_ax_text_request {
     DBusMessage *reply;
     size_t bytes, length;
     size_t start, end;
-    int ranged;
+    int ranged, selection;
     int result; /* 0 pending, 1 applied, 2 cancelled */
     char value[];
 } nx_ax_text_request;
@@ -242,8 +242,9 @@ static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,n
     uint32_t i=nx_ax_find(l->snapshot,id);if(i==NX_AX_NONE)return 0;
     nx_ax_node *n=&l->snapshot->nodes[i];
     return n->incarnation==r->incarnation && n->text_ready &&
-        !(n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED|NX_SEM_READONLY)) &&
-        (n->actions&NX_ACTION_SET_VALUE) && text_target_equal(n->text_target,r->target);
+        !(n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) &&
+        (r->selection || (!(n->state&NX_SEM_READONLY) && (n->actions&NX_ACTION_SET_VALUE))) &&
+        text_target_equal(n->text_target,r->target);
 }
 static void text_completed(void *user,int applied) {
     nx_ax_text_request *r=user;if(!r->result)r->result=applied?1:2;
@@ -766,11 +767,11 @@ static int nx_ax_queue(nx_ax_ref r,uint32_t action) {
 /* A queued write owns both the input and the unsent D-Bus reply. The owner
    loop replies only after the model completion or an explicit cancellation. */
 static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ranged,
-                            size_t start,size_t end,DBusMessage *reply) {
+                            size_t start,size_t end,int selection,DBusMessage *reply) {
     nx_linux_ax *b=ref.window;nx_ax_node *n=nx_ax_node_at(ref);
     if(!b || !n || b->retired || !b->lease->live || !n->text_ready ||
-       (n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)) ||
-       !(n->actions&NX_ACTION_SET_VALUE))return 0;
+       (n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) ||
+       (!selection && ((n->state&NX_SEM_READONLY) || !(n->actions&NX_ACTION_SET_VALUE))))return 0;
     if(length>NX_TEXT_VALUE_MAX_BYTES || nx_utf8_validate(value,length,NULL)!=NX_OK)return 0;
     size_t bytes=sizeof(nx_ax_text_request)+length+1u;
     if(!queue_space(b,bytes,0))return 0;
@@ -784,7 +785,7 @@ static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ra
     t->generation=b->lease->generation;t->context=b->binding;t->id=n->id;
     t->incarnation=n->incarnation;t->target=n->text_target;t->deadline=now+2000u;
     t->frame=b->frame;
-    t->bytes=bytes;t->length=length;t->ranged=ranged;t->start=start;t->end=end;t->reply=reply;
+    t->bytes=bytes;t->length=length;t->ranged=ranged;t->start=start;t->end=end;t->selection=selection;t->reply=reply;
     if(length)memcpy(t->value,value,length);
     t->value[length]=0;
     nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.text=t;
@@ -1318,6 +1319,31 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
     }
     DBusMessage *reply=d.message_new_method_return(call);
     if (!reply) { h->failed=1; return DBUS_HANDLER_RESULT_HANDLED; }
+    if(!cache && !strcmp(interface,NX_AX_TEXT) && nx_ax_supports(r,interface) &&
+       (!strcmp(member,"SetCaretOffset") || !strcmp(member,"AddSelection") ||
+        !strcmp(member,"SetSelection") || !strcmp(member,"RemoveSelection"))) {
+        nx_ax_node *n=nx_ax_node_at(r);dbus_int32_t index=0,first=0,last=0;
+        size_t start=0,end=0;int signature=0,valid=0;
+        if(!strcmp(member,"SetCaretOffset")) {
+            signature=d.message_get_args(call,NULL,DBUS_TYPE_INT32,&first,DBUS_TYPE_INVALID);
+            if(signature && nx_ax_text_byte(n,first,&start)){end=start;valid=1;}
+        } else if(!strcmp(member,"RemoveSelection")) {
+            signature=d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID);
+            if(signature && index==0 && n->text_anchor!=n->text_cursor && nx_ax_text_byte(n,n->text_cursor,&start)) {end=start;valid=1;}
+        } else {
+            int is_set=!strcmp(member,"SetSelection");
+            signature=is_set?d.message_get_args(call,NULL,DBUS_TYPE_INT32,&index,DBUS_TYPE_INT32,&first,DBUS_TYPE_INT32,&last,DBUS_TYPE_INVALID):
+                d.message_get_args(call,NULL,DBUS_TYPE_INT32,&first,DBUS_TYPE_INT32,&last,DBUS_TYPE_INVALID);
+            int selected=n->text_anchor!=n->text_cursor;
+            if(signature && index==0 && (is_set?selected:!selected) && first>=0 && last>first &&
+               nx_ax_text_byte(n,first,&start) && nx_ax_text_byte(n,last,&end))valid=1;
+        }
+        if(!signature) {d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_INVALID_ARGS,"Invalid text selection arguments");}
+        else if(!valid || !nx_ax_queue_text(r,"",0,1,start,end,1,reply)) {
+            dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));
+        }
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
     if(!cache && !strcmp(interface,NX_AX_EDIT) && nx_ax_supports(r,interface) &&
        (!strcmp(member,"SetTextContents") || !strcmp(member,"InsertText") || !strcmp(member,"DeleteText"))) {
         const char *value="";dbus_int32_t first=0,last=0,requested=0;size_t start=0,end=0,length=0;
@@ -1336,7 +1362,7 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
             if(signature && first>=0 && last>=first && nx_ax_text_byte(n,first,&start) && nx_ax_text_byte(n,last,&end))valid=1;
         }
         if(!signature) {d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_INVALID_ARGS,"Invalid editable text arguments");}
-        else if(!valid || !nx_ax_queue_text(r,value,length,ranged,start,end,reply)) {
+        else if(!valid || !nx_ax_queue_text(r,value,length,ranged,start,end,0,reply)) {
             dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));
         }
         return DBUS_HANDLER_RESULT_HANDLED;
@@ -1553,7 +1579,8 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         if(valid && q.text) {
             nx_ax_text_request *t=q.text;
             nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
-            result=t->ranged?nx_semantics_request_text_range_with_completion(context,t->id,t->start,t->end,
+            result=t->selection?nx_semantics_request_text_selection_with_completion(context,t->id,t->start,t->end,&guard,text_completed):
+                t->ranged?nx_semantics_request_text_range_with_completion(context,t->id,t->start,t->end,
                 (nx_utf8_span){t->value,t->length},&guard,text_completed):
                 nx_semantics_request_text_value_with_completion(context,t->id,
                 (nx_utf8_span){t->value,t->length},&guard,text_completed);

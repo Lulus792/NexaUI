@@ -2159,10 +2159,11 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
     if (i == UINT32_MAX) return NX_ERROR_STATE;
     const nx_semantic_record *node = &ctx->semantics.nodes[i];
     const nx_region *region = nx_region_find(&ctx->current_regions, id);
-    if (nx_text_value_disabled(ctx, node) || (node->state & (NX_SEM_READONLY | NX_SEM_PROTECTED)))
+    if (nx_text_value_disabled(ctx, node) || (node->state & NX_SEM_PROTECTED) ||
+        (ranged!=2 && (node->state & NX_SEM_READONLY)))
         return NX_ERROR_STATE;
     if (node->role != NX_ROLE_TEXT_FIELD || !node->text_value.identity ||
-        !(node->actions & NX_ACTION_SET_VALUE)) return NX_ERROR_UNSUPPORTED;
+        (ranged!=2 && !(node->actions & NX_ACTION_SET_VALUE))) return NX_ERROR_UNSUPPORTED;
     if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))
         return NX_ERROR_STATE;
@@ -2222,6 +2223,11 @@ nx_result nx_semantics_request_text_range_with_completion(nx_context *ctx, uint6
     if(!guard || !complete)return NX_ERROR_ARGUMENT;
     return nx_text_value_admit(ctx,id,value,guard,complete,1,start,end);
 }
+nx_result nx_semantics_request_text_selection_with_completion(nx_context *ctx,uint64_t id,
+    size_t anchor,size_t cursor,const nx_text_value_guard *guard,void (*complete)(void *, int)) {
+    if(!guard || !complete)return NX_ERROR_ARGUMENT;
+    return nx_text_value_admit(ctx,id,(nx_utf8_span){"",0},guard,complete,2,anchor,cursor);
+}
 
 nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
                                           nx_utf8_span value) {
@@ -2241,8 +2247,8 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             r->target.identity == node->text_value.identity &&
             r->target.revision == node->text_value.revision &&
             r->target.multiline == node->text_value.multiline &&
-            !nx_text_value_disabled(ctx, node) && !(node->state & (NX_SEM_READONLY | NX_SEM_PROTECTED)) &&
-            (node->actions & NX_ACTION_SET_VALUE) && region &&
+            !nx_text_value_disabled(ctx, node) && !(node->state & NX_SEM_PROTECTED) &&
+            (r->ranged==2 || (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE))) && region &&
             !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
             (!ctx->current_overlay_id || region->overlay_id == ctx->current_overlay_id);
         if (valid && r->guard.current) {
@@ -2253,6 +2259,14 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             valid = r->guard.current(r->guard.user, r->guard.token, identity, node->id, node->text_value);
         }
         if (!valid) { nx_text_value_dispose(ctx, r, 0); return NX_OK; }
+        if(r->ranged==2) {
+            size_t anchor=0,cursor=0;
+            nx_result selection=nx_text_buffer_selection(buffer,&anchor,&cursor);
+            if(selection==NX_OK)selection=nx_text_buffer_set_selection(buffer,r->start,r->end);
+            if(selection!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            *changed=anchor!=r->start || cursor!=r->end;
+            nx_text_value_dispose(ctx,r,1);return NX_OK;
+        }
         /* Reserve semantic storage before editing the model. A later paint
            failure follows the existing retry-without-replaying-events contract. */
         size_t new_length=r->length;

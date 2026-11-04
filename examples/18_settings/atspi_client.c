@@ -28,6 +28,18 @@ static void text_event(AtspiEvent *event,void *user) {
     }
     g_boxed_free(ATSPI_TYPE_EVENT,event);
 }
+typedef struct movement_log { const char *path; unsigned carets,selections; int bad; } movement_log;
+static void movement_event(AtspiEvent *event,void *user) {
+    movement_log *log=user;
+    if(event->source && !strcmp(ATSPI_OBJECT(event->source)->path,log->path)) {
+        if(!strcmp(event->type,"object:text-caret-moved")) {
+            static const int expected[]={1,2,3};
+            if(log->carets>=3 || event->detail1!=expected[log->carets])log->bad=1;
+            ++log->carets;
+        } else if(!strcmp(event->type,"object:text-selection-changed"))++log->selections;
+    }
+    g_boxed_free(ATSPI_TYPE_EVENT,event);
+}
 static void cleanup(void) { if(host>0) { kill(host,SIGTERM); waitpid(host,NULL,0); host=-1; } }
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"settings-atspi:%d: %s\n",__LINE__,#x); cleanup(); return 1; } } while(0)
 static void pump(unsigned ms) { for(unsigned i=0;i<ms;++i) { while(g_main_context_iteration(NULL,FALSE)) {} struct timespec t={0,1000000}; nanosleep(&t,NULL); } }
@@ -122,7 +134,7 @@ int main(int argc,char **argv) {
     CHECK(error); g_free(invalid); g_clear_error(&error);
     AtspiRange *missing=atspi_text_get_selection(text,1,&error);
     CHECK(error); if (missing) g_boxed_free(ATSPI_TYPE_RANGE,missing); g_clear_error(&error);
-    CHECK(!atspi_text_set_caret_offset(text,0,&error) && error); g_clear_error(&error);
+    CHECK(!atspi_text_set_caret_offset(text,99,&error) && !error);
     CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
     event_log events={0}; events.path=ATSPI_OBJECT(name)->path; events.phase=1;
     AtspiEventListener *listener=atspi_event_listener_new(text_event,&events,NULL); CHECK(listener);
@@ -139,7 +151,30 @@ int main(int argc,char **argv) {
     all=atspi_text_get_text(text,0,-1,&error); CHECK(!error && all && !strcmp(all,"A\xc3\xb6Z")); g_free(all);
     CHECK(atspi_text_get_caret_offset(text,&error)==3 && !error);
     CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-changed",&error) && !error);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-caret-moved",&error) && !error);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-selection-changed",&error) && !error);
     g_object_unref(change); g_object_unref(listener);
+    movement_log movement={0};movement.path=ATSPI_OBJECT(name)->path;
+    listener=atspi_event_listener_new(movement_event,&movement,NULL);CHECK(listener);
+    CHECK(atspi_event_listener_register(listener,"object:text-caret-moved",&error) && !error);
+    CHECK(atspi_event_listener_register(listener,"object:text-selection-changed",&error) && !error);
+    CHECK(atspi_text_set_caret_offset(text,1,&error) && !error);
+    CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
+    CHECK(atspi_text_add_selection(text,0,2,&error) && !error);
+    CHECK(!atspi_text_add_selection(text,1,2,&error) && !error);
+    CHECK(!atspi_text_remove_selection(text,1,&error) && !error);
+    CHECK(atspi_text_set_selection(text,0,1,3,&error) && !error);
+    selection=atspi_text_get_selection(text,0,&error);
+    CHECK(!error && selection && selection->start_offset==1 && selection->end_offset==3);
+    g_boxed_free(ATSPI_TYPE_RANGE,selection);
+    CHECK(atspi_text_remove_selection(text,0,&error) && !error);
+    CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
+    for(unsigned i=0;i<200 && (movement.carets<3 || movement.selections<3);++i)pump(10);
+    CHECK(!movement.bad && movement.carets==3 && movement.selections==3);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-caret-moved",&error) && !error);
+    CHECK(atspi_event_listener_deregister(listener,"object:text-selection-changed",&error) && !error);
+    g_object_unref(listener);
     CHECK(atspi_editable_text_set_text_contents(editable,"AT-SPI Toky",&error) && !error);
     CHECK(atspi_editable_text_insert_text(editable,11,"o",1,&error) && !error);
     CHECK(atspi_editable_text_delete_text(editable,11,12,&error) && !error);
