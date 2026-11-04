@@ -150,7 +150,7 @@ and current text. The preimplementation client failed at the expected missing
 events (`out/aetheri-atspi-events-before-v1.log`); the changed provider passed
 (`out/aetheri-atspi-events-v2.log`). A focused ASan/UBSan run with leak checking
 also passed (`out/aetheri-atspi-events-asan-v1.log`). These examples do not test
-the 64 KiB chunk boundary, large-stream backpressure, concurrent client state,
+native delivery at the 64 KiB chunk boundary, large-stream backpressure, concurrent client state,
 event delivery across reconnect, actual IME, or a human screenreader.
 
 With these changes on base `07e3bdfa3134e30d35ef77c3289591ef1712e43f`, the
@@ -164,3 +164,28 @@ are `out/aetheri-atspi-events-full-shared.log` (SHA-256
 `01773f914c38993033f2af92aa6e591a239237307d62148c679272d9c133420e`).
 These runs do not close the untested large-event, reconnect or physical and
 human acceptance cases above.
+
+## Unicode chunk-boundary replay (2026-11-04)
+
+The production diff/chunk iterator is isolated in the private
+`platform/linux/atspi_text_diff.h` and shared with
+`tests/test_atspi_text_diff.c`. The test replays emitted insertions and
+deletions into a separate byte buffer, checks each scalar position, payload,
+UTF-8 boundary and 64 KiB limit, and compares the reconstructed result. Four
+layouts place a four-byte scalar around either side of the chunk boundary;
+both long insertion and reverse-order deletion are exercised, as are unchanged
+text and callback failure. Disabling either UTF-8 boundary adjustment in
+separate negative controls made the test fail; the original code was restored.
+The independent native client additionally exercises ordinary Unicode deltas,
+but has not yet exercised 64 KiB messages over D-Bus or stalled-bus recovery.
+The private-Weston AT-SPI subset passed 3/3 with GCC shared and 3/3 with Clang
+static ASan/UBSan and leak checking, with no skips and both fixture processes
+exiting 0. Logs: `out/aetheri-atspi-diff-native-shared.log` SHA-256
+`d190dda72f1a3811d4c60d82ae4299064b3e664c4ed1d2eee87755b36a0be16b` and
+`out/aetheri-atspi-diff-native-asan.log` SHA-256
+`14482bf9998c4d8f67c4fd409954f039c1988defd2fd98d6878cdea1583b4267`.
+The final strengthened replay test additionally checks a callback failure
+after one accepted chunk and was rerun separately in both profiles. A fresh
+Wayland-only build with AT-SPI and Vulkan explicitly disabled also built and
+passed that test. The earlier full-suite counts refer to the preceding source;
+only the focused tests named here were rerun for this extraction.
