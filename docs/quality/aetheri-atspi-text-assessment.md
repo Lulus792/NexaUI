@@ -675,3 +675,31 @@ installed input method or Aetheri. Custom clipboard callbacks, X11 paste and
 Wayland file-drop reads remain synchronous; the one-shot external-owner Weston
 case documented above remains intermittent. I05, A07, W10 and the broader
 consumer acceptance remain open.
+
+## Poll-driven Wayland file drops (2026-11-04)
+
+Candidate based on `23e9ea413b2ffc9f34189747962605a3098c2ebe`. The old
+file-drop reader blocked `nx_window_poll` for five seconds with a stalled
+source. The controlled Wayland-server regression reproduced this on the base:
+the first 100 ms poll failed after 5.01 seconds. The candidate uses a separate
+nonblocking transfer, so a clipboard read can proceed concurrently. It wakes
+the host on completion, retains the coordinates of each accepted drop, bounds
+the queued offers to one active and one pending (new pending offers replace
+older ones), and closes the transfer on destruction. The existing five-second
+timeout still reports a platform error through polling. An allocator that
+reenters polling during completion must not apply the same drop twice.
+
+Controlled-server completion/clipboard-concurrency/reentry, five-second timeout
+and destruction tests passed in both GCC shared and Clang ASan/UBSan static
+profiles. This does not establish drag negotiation or actual external file-manager
+acceptance on a real compositor, and it does not close W10, I05 or other application
+acceptance gates.
+
+Before the final queue-reentry guard, the private-Weston full suites produced
+165/165 passes with GCC and 165/166 with ASan/UBSan. The sanitizer failure was
+the previously documented intermittent external one-shot clipboard test; an
+isolated rerun passed, which does not erase the full-run failure. After adding
+the guard, all three controlled drop tests passed again in both profiles,
+including reentrant polling and rejection of a simultaneous queue read. The
+dual-backend X11 window test also passed. Full-suite results therefore describe
+the immediately preceding candidate, not a complete rerun of the final guard.

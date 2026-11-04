@@ -131,10 +131,13 @@ struct nx_wayland_window {
     nx_wayland_clipboard_source *sources, *owned_source;
     nx_wayland_clipboard_offer *offers, *selection_offer;
     nx_wayland_clipboard_offer *pending_offer, *drag_offer, *drop_offer;
-    float drop_x, drop_y;
+    float drag_x, drag_y, drop_x, drop_y, drop_read_x, drop_read_y;
     nx_platform_drop_queue drop_queue;
     nx_wayland_clipboard_write *writes;
     nx_wayland_read_transfer async_read;
+    nx_wayland_read_transfer drop_read;
+    nx_wayland_clipboard_offer *drop_read_offer;
+    int drop_read_active, drop_processing;
     nx_wayland_clipboard_offer *async_offer;
     uint64_t async_token, async_expiry;
     int async_active, async_notified;
@@ -518,8 +521,8 @@ static void nx_wayland_device_enter(void *data,
         nx_wayland_retire_offer(window->drag_offer);
         window->drag_offer = NULL;
     } else if (window->drag_offer) {
-        window->drop_x = (float)wl_fixed_to_double(x);
-        window->drop_y = (float)wl_fixed_to_double(y);
+        window->drag_x = (float)wl_fixed_to_double(x);
+        window->drag_y = (float)wl_fixed_to_double(y);
         wl_data_offer_accept(window->drag_offer->native, serial,
             window->drag_offer->mime_types & NX_WAYLAND_MIME_URI_LIST ?
                 "text/uri-list" : NULL);
@@ -541,8 +544,8 @@ static void nx_wayland_device_motion(void *data,
     nx_wayland_window *window = data;
     (void)device; (void)time;
     if (window->drag_offer) {
-        window->drop_x = (float)wl_fixed_to_double(x);
-        window->drop_y = (float)wl_fixed_to_double(y);
+        window->drag_x = (float)wl_fixed_to_double(x);
+        window->drag_y = (float)wl_fixed_to_double(y);
     }
 }
 
@@ -552,6 +555,7 @@ static void nx_wayland_device_drop(void *data,
     (void)device;
     if (window->drop_offer) nx_wayland_retire_offer(window->drop_offer);
     window->drop_offer = window->drag_offer;
+    window->drop_x = window->drag_x; window->drop_y = window->drag_y;
     window->drag_offer = NULL;
 }
 
@@ -2145,11 +2149,13 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         }
         needs_write = 1;
     }
-    struct pollfd fds[7] = {{wl_display_get_fd(window->display),
+    struct pollfd fds[8] = {{wl_display_get_fd(window->display),
                         (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0}};
     nfds_t fd_count = 1;
     if (window->async_active && !window->async_read.finished)
         fds[fd_count++] = (struct pollfd){window->async_read.fd, POLLIN, 0};
+    if (window->drop_read_active && !window->drop_read.finished)
+        fds[fd_count++] = (struct pollfd){window->drop_read.fd, POLLIN, 0};
     nfds_t write_limit = fd_count + 4u;
     for (nx_wayland_clipboard_write *transfer = window->writes;
          transfer && fd_count < write_limit; transfer = transfer->next)
@@ -2165,6 +2171,14 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         else {
             uint64_t remaining = deadline - now;
             uint64_t millis = (remaining + 999999u) / 1000000u;
+            if (millis < (uint64_t)timeout) timeout = (int)millis;
+        }
+    }
+    if (window->drop_read_active) {
+        uint64_t now = nx_wayland_now_ns(), deadline = window->drop_read.deadline;
+        if (!now || now >= deadline) timeout = 0;
+        else {
+            uint64_t millis = (deadline - now + 999999u) / 1000000u;
             if (millis < (uint64_t)timeout) timeout = (int)millis;
         }
     }
@@ -2536,6 +2550,7 @@ nx_result nx_wayland_window_next_file_drop(nx_wayland_window *window,
     *available = 0;
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (window->drop_processing) return NX_ERROR_STATE;
     return nx_platform_drop_queue_next(&window->drop_queue, path_utf8,
                                         capacity, out_length, out_info,
                                         available);
@@ -2792,7 +2807,32 @@ static nx_result nx_wayland_clipboard_read_fd(nx_wayland_window *window,
 }
 
 static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
-    if (window->transfer_read_depth) return NX_OK;
+    if (nx_wayland_sync_read_depth || window->transfer_read_depth || window->drop_processing) return NX_OK;
+    if (window->drop_read_active) {
+        nx_wayland_read_transfer *transfer = &window->drop_read;
+        nx_wayland_read_transfer_step(transfer, nx_wayland_now_ns());
+        if (!transfer->finished) return NX_OK;
+        /* URI parsing and offer retirement use application allocators, which may
+           reenter the native poll. Never process this completion twice. */
+        window->drop_processing = 1;
+        nx_result result = transfer->result;
+        if (result == NX_OK) {
+            char local_host[256] = {0};
+            if (gethostname(local_host, sizeof(local_host)) != 0) local_host[0] = '\0';
+            local_host[sizeof(local_host) - 1u] = '\0';
+            result = nx_platform_uri_list_append(&window->drop_queue, transfer->bytes,
+                transfer->length, window->drop_read_x, window->drop_read_y,
+                local_host[0] ? local_host : NULL);
+        }
+        nx_wayland_read_transfer_dispose(transfer);
+        nx_wayland_clipboard_offer *finished = window->drop_read_offer;
+        window->drop_read_offer = NULL; window->drop_read_active = 0;
+        --finished->in_use; nx_wayland_retire_offer(finished);
+        if (result != NX_OK) { window->drop_processing = 0; return result; }
+        nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
+        nx_platform_event_queue_push(&window->event_queue, wake);
+        window->drop_processing = 0;
+    }
     nx_wayland_clipboard_offer *offer = window->drop_offer;
     window->drop_offer = NULL;
     if (!offer) return NX_OK;
@@ -2813,27 +2853,20 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
         nx_wayland_retire_offer(offer);
         return NX_ERROR_PLATFORM;
     }
+    uint64_t now = nx_wayland_now_ns();
+    if (!now || UINT64_MAX - now < 5000000000ull) {
+        close(pipe_fds[0]); close(pipe_fds[1]); nx_wayland_retire_offer(offer);
+        return NX_ERROR_PLATFORM;
+    }
+    nx_allocator allocator = {NULL, nx_wayland_allocate, nx_wayland_deallocate};
+    nx_wayland_read_transfer_init(&window->drop_read, pipe_fds[0], allocator,
+        NX_WAYLAND_CLIPBOARD_LIMIT, now + 5000000000ull);
+    window->drop_read_active = 1; window->drop_read_offer = offer;
+    window->drop_read_x = window->drop_x; window->drop_read_y = window->drop_y;
     ++offer->in_use;
-    float drop_x = window->drop_x, drop_y = window->drop_y;
-    char local_host[256] = {0};
-    if (gethostname(local_host, sizeof(local_host)) != 0)
-        local_host[0] = '\0';
-    local_host[sizeof(local_host) - 1u] = '\0';
-    const char *host = local_host[0] ? local_host : NULL;
     wl_data_offer_receive(offer->native, "text/uri-list", pipe_fds[1]);
     close(pipe_fds[1]);
-    char *payload = NULL;
-    size_t length = 0, capacity = 0;
-    nx_result result = nx_wayland_read_fd(window, pipe_fds[0], &payload,
-                                           &length, &capacity);
-    if (result == NX_OK)
-        result = nx_platform_uri_list_append(&window->drop_queue, payload,
-            length, drop_x, drop_y, host);
-    if (payload) window->allocator.deallocate(window->allocator.user,
-                                               payload, capacity);
-    --offer->in_use;
-    nx_wayland_retire_offer(offer);
-    return result;
+    return NX_OK;
 }
 
 nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
@@ -2930,6 +2963,11 @@ void nx_wayland_window_destroy(nx_wayland_window *window) {
     if (!window || !nx_wayland_on_owner_thread(window) || window->destroying) return;
     window->destroying = 1;
     nx_wayland_async_read_clear(window);
+    if (window->drop_read_active) {
+        nx_wayland_read_transfer_dispose(&window->drop_read);
+        --window->drop_read_offer->in_use;
+        window->drop_read_active = 0; window->drop_read_offer = NULL;
+    }
     /* Another reader of this display can have decoded default-queue new-id
        events without invoking our listeners. Adopt those objects while their
        parents/listener data are alive, then destroy them below. This reads no

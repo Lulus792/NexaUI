@@ -29,7 +29,9 @@ recorded in the [AT-SPI text assessment](aetheri-atspi-text-assessment.md).
 The test of a real one-shot owner is intermittent under private Weston and is
 not an acceptance pass for the current candidate.
 The subsequent Settings keyboard and AT-SPI paste paths are poll-driven on
-Wayland; custom callbacks, X11 paste and file-drop reads still have synchronous paths.
+Wayland; custom callbacks and X11 paste still have synchronous paths. The
+subsequent Wayland file-drop reader is also poll-driven; its compositor acceptance
+and bounded-queue behavior need separate assessment.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |

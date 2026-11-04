@@ -25,7 +25,7 @@ typedef struct test_server {
     struct wl_display *display;
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
     struct wl_resource *data_device;
-    atomic_int send_offer;
+    atomic_int send_offer, send_drop;
     atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
@@ -42,13 +42,18 @@ static void resource_destroy(struct wl_client *client,
     (void)client;
     wl_resource_destroy(resource);
 }
+static void offer_accept(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t serial, const char *mime) {
+    (void)client; (void)resource; (void)serial; (void)mime;
+}
 static void offer_receive(struct wl_client *client,struct wl_resource *resource,
                           const char *mime,int32_t fd) {
-    (void)client;(void)mime;test_server *server=wl_resource_get_user_data(resource);
+    (void)client;test_server *server=wl_resource_get_user_data(resource);
     int previous=atomic_fetch_add(&server->offer_reads,1);
     if(!atomic_load(&server->offer_once) || previous==0) {
-        const char *payload=atomic_load(&server->offer_invalid)?"\xc0":"Once";
-        size_t length=atomic_load(&server->offer_invalid)?1u:4u;
+        const char *payload=!strcmp(mime,"text/uri-list")?"file:///tmp/one%20file\r\n":
+            atomic_load(&server->offer_invalid)?"\xc0":"Once";
+        size_t length=strlen(payload);
         if(write(fd,payload,length)!=(ssize_t)length)abort();
     }
     if (atomic_load(&server->offer_stall)) {
@@ -64,11 +69,24 @@ static void surface_commit(struct wl_client *client,
     if (atomic_exchange(&server->send_offer, 0)) {
         struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, 3, 0);
         CHECK(offer && server->data_device);
-        static const struct wl_data_offer_interface implementation = {.receive = offer_receive, .destroy = resource_destroy};
+        static const struct wl_data_offer_interface implementation = {.accept = offer_accept, .receive = offer_receive, .destroy = resource_destroy};
         wl_resource_set_implementation(offer, &implementation, server, NULL);
         wl_data_device_send_data_offer(server->data_device, offer);
         wl_data_offer_send_offer(offer, "text/plain;charset=utf-8");
         wl_data_device_send_selection(server->data_device, offer);
+    }
+    int drop = atomic_exchange(&server->send_drop, 0);
+    if (drop) {
+        struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, 3, 0);
+        CHECK(offer && server->data_device && server->surface);
+        static const struct wl_data_offer_interface implementation = {.accept = offer_accept, .receive = offer_receive, .destroy = resource_destroy};
+        wl_resource_set_implementation(offer, &implementation, server, NULL);
+        wl_data_device_send_data_offer(server->data_device, offer);
+        wl_data_offer_send_offer(offer, "text/uri-list");
+        wl_data_device_send_enter(server->data_device, 1, server->surface,
+                                  wl_fixed_from_double(drop==2?50.5:20.5), wl_fixed_from_double(30.25), offer);
+        wl_data_device_send_drop(server->data_device);
+        wl_data_device_send_leave(server->data_device);
     }
     if (server->configured) {
         if (server->pending_done) {

@@ -548,6 +548,18 @@ if(NEXAUI_BUILD_TESTS)
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_wayland_async_clipboard COMMAND nexaui_wayland_async_clipboard_tests)
             set_tests_properties(nexaui_wayland_async_clipboard PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_async_drop_tests tests/test_wayland_async_drop.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_async_drop_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_async_drop_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            target_link_libraries(nexaui_wayland_async_drop_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_async_drop COMMAND nexaui_wayland_async_drop_tests)
+            add_test(NAME nexaui_wayland_async_drop_timeout COMMAND nexaui_wayland_async_drop_tests --timeout)
+            add_test(NAME nexaui_wayland_async_drop_destroy COMMAND nexaui_wayland_async_drop_tests --destroy)
+            set_tests_properties(nexaui_wayland_async_drop nexaui_wayland_async_drop_timeout nexaui_wayland_async_drop_destroy PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_paste_focus_tests tests/test_wayland_paste_focus.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
