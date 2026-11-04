@@ -1,5 +1,6 @@
 #include "wayland_v3_fixture.h"
 #include "text_value.h"
+#include "accessibility.h"
 #include <time.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -28,12 +29,13 @@ static void close_peer(test_server *server) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--pointer-removed") || !strcmp(argv[1],"--pointer-serial"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--pointer-removed") || !strcmp(argv[1],"--pointer-serial") || !strcmp(argv[1],"--disconnect"))));
     int focus_loss=argc==2;
     int keyboard_removed=argc==2 && !strcmp(argv[1],"--keyboard-removed");
     int seat_removed=argc==2 && !strcmp(argv[1],"--seat-removed");
     int pointer_serial=argc==2 && !strcmp(argv[1],"--pointer-serial");
-    int pointer_removed=argc==2 && (!strcmp(argv[1],"--pointer-removed") || pointer_serial);
+    int disconnect=argc==2 && !strcmp(argv[1],"--disconnect");
+    int pointer_removed=argc==2 && (!strcmp(argv[1],"--pointer-removed") || pointer_serial || disconnect);
     test_server server = {0}; char runtime[] = "/tmp/nexaui-async-XXXXXX";
     server.keyboard_enabled=focus_loss;
     server.pointer_enabled=pointer_removed;
@@ -53,7 +55,7 @@ int main(int argc, char **argv) {
     CHECK(setenv("WAYLAND_DISPLAY", name, 1) == 0); unsetenv("WAYLAND_SOCKET");
     pthread_t thread; CHECK(pthread_create(&thread, NULL, run_server, &server) == 0);
     window_heap allocations = {0};
-    nx_window_desc desc = {"async clipboard", 240, 120, NX_WINDOW_HIDDEN,
+    nx_window_desc desc = {"async clipboard", 240, 120, disconnect?0:NX_WINDOW_HIDDEN,
                            {&allocations, window_allocate, window_free}};
     nx_window *window = NULL; CHECK(nx_window_create(&desc, &window) == NX_OK);
     if(focus_loss) {
@@ -86,6 +88,38 @@ int main(int argc, char **argv) {
                 atomic_store(&server.keyboard_press_requested,1);
                 wl_surface_commit(nx_window_wayland_surface(window));
                 CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            }
+            if(disconnect) {
+                nx_linux_ax_geometry geometry;
+                nx_linux_window_ax_geometry(window,&geometry);
+                CHECK(geometry.visible && geometry.focused);
+                atomic_store(&server.disconnect_requested,1);
+                wl_surface_commit(nx_window_wayland_surface(window));
+                CHECK(wl_display_flush(nx_window_wayland_display(window))>=0);
+                double start=now_seconds();
+                CHECK(nx_window_poll(window,1000)==NX_ERROR_PLATFORM && now_seconds()-start<1.5);
+                CHECK(!nx_linux_window_clipboard_async_current(window,token));
+                nx_window_status status;
+                CHECK(nx_window_get_status(window,&status)==NX_ERROR_PLATFORM);
+                nx_window_info info;
+                CHECK(nx_window_get_info(window,&info)==NX_ERROR_PLATFORM);
+                nx_linux_window_ax_geometry(window,&geometry);
+                CHECK(!geometry.visible && !geometry.focused);
+                CHECK(nx_window_route_events(window,context,&count)==NX_OK);
+                CHECK(nx_begin_frame(context,240,120,0)==NX_OK);
+                CHECK(nx_frame_input(context,&input)==NX_OK && input.buttons_down==0);
+                const nx_event *events=NULL;size_t event_count=0;int cancelled=0,focus_lost=0;
+                CHECK(nx_frame_events(context,&events,&event_count)==NX_OK);
+                for(size_t i=0;i<event_count;++i) {
+                    if(events[i].type==NX_EVENT_POINTER_CANCEL)cancelled=1;
+                    if(events[i].type==NX_EVENT_FOCUS && !events[i].focused)focus_lost=1;
+                }
+                CHECK(cancelled && focus_lost && nx_end_frame(context)==NX_OK);
+                CHECK(nx_window_poll(window,0)==NX_ERROR_PLATFORM);
+                close_peer(&server);nx_context_destroy(context);nx_window_destroy(window);CHECK(allocations.live==0);
+                wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(server.display);
+                CHECK(unlink(path)==0 || access(path,F_OK)!=0);CHECK(rmdir(runtime)==0);
+                puts("Disconnected Wayland window cancels input and reports a terminal error");return 0;
             }
             atomic_store(&server.pointer_remove_requested,1);
             wl_surface_commit(nx_window_wayland_surface(window));

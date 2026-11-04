@@ -31,6 +31,7 @@ typedef struct test_server {
     atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested, seat_remove_requested;
     atomic_int seat_remove_sent;
     atomic_int pointer_press_requested, pointer_remove_requested;
+    atomic_int disconnect_requested, disconnect_sent;
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
     atomic_int send_offer, send_drop;
@@ -92,6 +93,11 @@ static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
     if (resource != server->surface) return;
+    if (atomic_exchange(&server->disconnect_requested,0)) {
+        wl_client_destroy(client);
+        atomic_store(&server->disconnect_sent,1);
+        return;
+    }
     if(atomic_exchange(&server->seat_remove_requested,0)) {
         CHECK(server->seat_global);wl_global_remove(server->seat_global);
         wl_display_flush_clients(server->display);atomic_store(&server->seat_remove_sent,1);

@@ -827,3 +827,27 @@ do not replace acceptance with a physical device or another compositor;
 replacement-seat binding and the remaining W06 reconnect behavior stay open.
 The complete private-Weston suites passed 180/180 in GCC shared and 181/181
 in Clang ASan/UBSan static on this candidate.
+
+## Wayland connection loss (2026-11-05)
+
+Candidate based on `cc2cded56f936977136a761f465fdee3372430d9`. A controlled
+server destroys the client connection with keyboard focus, two pointer buttons
+and a stalled clipboard read. On the base, polling returned a platform error
+but left the read current. The adapter now retains a terminal platform error,
+cancels native input and pending reads, and makes window status and info report
+failure. Queued cancellation events remain routable and the window can be
+destroyed. Separate controlled tests disconnect during an active drop,
+reentrantly during allocation and while flushing the drop completion; none
+publishes a completed drop. All four connection-loss tests passed in GCC
+shared and Clang ASan/UBSan static. An intermediate candidate incorrectly
+made `nx_window_get_info` reject an unrelated scale-limit error; the existing
+window test caught this, and the final candidate restricts that change to
+connection failure.
+These tests do not prove automatic compositor recovery or physical device
+acceptance; the host must destroy the affected window and may create a new one.
+The complete private-Weston suites passed 184/184 (GCC shared) and 185/185
+(Clang ASan/UBSan static) before the final accessibility geometry change.
+On the final candidate, the four controlled connection-loss tests passed in
+both profiles. The geometry assertion fails without the change and verifies
+that the native accessibility bridge reports the disconnected window as
+neither visible nor focused; it is not an independent screenreader test.

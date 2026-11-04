@@ -153,6 +153,7 @@ struct nx_wayland_window {
     int pending_width, pending_height;
     int normal_width, normal_height;
     int configured, should_close, hidden, buffer_attached, destroying;
+    int connection_failed;
     int external_renderer;
     uint32_t flags, state, pending_state, reported_state, wm_caps;
     int wm_caps_known;
@@ -689,6 +690,25 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
     }
 }
 
+static void nx_wayland_cancel_seat_input(nx_wayland_window *window) {
+    if (window->seat)
+        nx_wayland_seat_capabilities(window, window->seat, 0);
+    nx_wayland_selection_focus_lost(window);
+    if (window->drop_read_active && !window->drop_processing) {
+        nx_wayland_read_transfer_dispose(&window->drop_read);
+        --window->drop_read_offer->in_use;
+        window->drop_read_offer->obsolete = 1;
+        window->drop_read_offer = NULL; window->drop_read_active = 0;
+    }
+}
+
+static nx_result nx_wayland_connection_failed(nx_wayland_window *window) {
+    window->connection_failed = 1;
+    window->error = NX_ERROR_PLATFORM;
+    nx_wayland_cancel_seat_input(window);
+    return window->error;
+}
+
 static void nx_wayland_registry_remove(void *data, struct wl_registry *registry,
                                        uint32_t name) {
     (void)registry;
@@ -697,14 +717,7 @@ static void nx_wayland_registry_remove(void *data, struct wl_registry *registry,
         /* No seat rebinding exists yet. Fail explicitly rather than leaving
            stale focus, serials or clipboard requests apparently usable. */
         window->error = NX_ERROR_PLATFORM;
-        nx_wayland_seat_capabilities(window, window->seat, 0);
-        nx_wayland_selection_focus_lost(window);
-        if (window->drop_read_active && !window->drop_processing) {
-            nx_wayland_read_transfer_dispose(&window->drop_read);
-            --window->drop_read_offer->in_use;
-            window->drop_read_offer->obsolete = 1;
-            window->drop_read_offer = NULL; window->drop_read_active = 0;
-        }
+        nx_wayland_cancel_seat_input(window);
         wl_seat_release(window->seat); window->seat = NULL; window->seat_global_name = 0;
         return;
     }
@@ -2208,20 +2221,21 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->error != NX_OK) return window->error;
     if (wl_display_dispatch_pending(window->display) < 0)
-        return NX_ERROR_PLATFORM;
+        return nx_wayland_connection_failed(window);
     if (window->error != NX_OK) return window->error;
     nx_result drop_result = nx_wayland_process_drop(window);
     if (drop_result != NX_OK) return window->error = drop_result;
     nx_wayland_progress_writes(window);
     while (wl_display_prepare_read(window->display) != 0) {
         if (wl_display_dispatch_pending(window->display) < 0)
-            return NX_ERROR_PLATFORM;
+            return nx_wayland_connection_failed(window);
+        if (window->error != NX_OK) return window->error;
     }
     int needs_write = 0, notify_drop = 0;
     if (wl_display_flush(window->display) < 0) {
         if (errno != EAGAIN) {
             wl_display_cancel_read(window->display);
-            return NX_ERROR_PLATFORM;
+            return nx_wayland_connection_failed(window);
         }
         needs_write = 1;
     } else if (window->drop_finish_pending) {
@@ -2268,23 +2282,23 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         if (wl_display_flush(window->display) < 0) {
             if (errno != EAGAIN) {
                 wl_display_cancel_read(window->display);
-                return NX_ERROR_PLATFORM;
+                return nx_wayland_connection_failed(window);
             }
         } else if (window->drop_finish_pending) notify_drop = 1;
     }
     if (ready > 0 && (fds[0].revents & POLLIN)) {
         if (wl_display_read_events(window->display) < 0)
-            return NX_ERROR_PLATFORM;
+            return nx_wayland_connection_failed(window);
     } else {
         wl_display_cancel_read(window->display);
-        if (ready < 0 && errno != EINTR) return NX_ERROR_PLATFORM;
+        if (ready < 0 && errno != EINTR) return nx_wayland_connection_failed(window);
         if (ready > 0 && (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)))
-            return NX_ERROR_PLATFORM;
+            return nx_wayland_connection_failed(window);
     }
     if (notify_drop) nx_wayland_drop_flushed(window);
     if (ready > 0) nx_wayland_progress_writes(window);
     if (wl_display_dispatch_pending(window->display) < 0)
-        return NX_ERROR_PLATFORM;
+        return nx_wayland_connection_failed(window);
     nx_wayland_progress_writes(window);
     if (!nx_wayland_sync_read_depth) {
         nx_wayland_async_read_progress(window);
@@ -2301,6 +2315,7 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                       nx_window_info *out_info) {
     if (!window || !out_info) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (window->connection_failed) return NX_ERROR_PLATFORM;
     *out_info = (nx_window_info){(float)window->width,
                                  (float)window->height, (float)window->scale,
                                  window->should_close};
@@ -2920,7 +2935,7 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
             wl_data_offer_finish(finished->native);
             if (wl_display_flush(window->display) < 0) {
                 if (errno == EAGAIN) window->drop_finish_pending = 1;
-                else result = NX_ERROR_PLATFORM;
+                else result = nx_wayland_connection_failed(window);
             }
         }
         window->drop_read_offer = NULL; window->drop_read_active = 0;
@@ -3347,7 +3362,7 @@ void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geomet
     *out = (nx_linux_ax_geometry){0};
     if (!window || !nx_wayland_on_owner_thread(window)) return;
     out->width = window->width; out->height = window->height;
-    out->visible = window->configured && !window->hidden && !window->should_close;
+    out->visible = !window->connection_failed && window->configured && !window->hidden && !window->should_close;
     out->focused = window->keyboard_focused;
     /* Wayland deliberately does not expose a global surface position. */
 }
