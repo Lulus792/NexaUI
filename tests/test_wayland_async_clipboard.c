@@ -16,8 +16,12 @@ static void close_peer(test_server *server) {
     CHECK(fd > 0 && close(fd - 1) == 0);
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed"))));
+    int focus_loss=argc==2;
+    int keyboard_removed=argc==2 && !strcmp(argv[1],"--keyboard-removed");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-async-XXXXXX";
+    server.keyboard_enabled=focus_loss;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));
@@ -34,6 +38,49 @@ int main(void) {
     nx_window_desc desc = {"async clipboard", 240, 120, NX_WINDOW_HIDDEN,
                            {&allocations, window_allocate, window_free}};
     nx_window *window = NULL; CHECK(nx_window_create(&desc, &window) == NX_OK);
+    if(focus_loss) {
+        atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
+        atomic_store(&server.keyboard_leave_requested,1);
+        wl_surface_commit(nx_window_wayland_surface(window));
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        uint64_t token=0;size_t length=0;
+        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_ERROR_STATE);
+        CHECK(nx_window_clipboard_get_text(window,NULL,0,&length)==NX_ERROR_STATE);
+        CHECK(atomic_load(&server.offer_reads)==0);
+        atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
+        atomic_store(&server.offer_stall,1);
+        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_OK);
+        for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(atomic_load(&server.stalled_fd));
+        nx_event event;int event_available=0;
+        do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);} while(event_available);
+        if(keyboard_removed)atomic_store(&server.keyboard_remove_requested,1);
+        else atomic_store(&server.keyboard_leave_requested,1);
+        wl_surface_commit(nx_window_wayland_surface(window));
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        CHECK(!nx_linux_window_clipboard_async_current(window,token));
+        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_ERROR_STATE);
+        int saw_focus_loss=0;
+        do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);
+            if(event_available && event.type==NX_EVENT_FOCUS && !event.focused)saw_focus_loss=1;
+        } while(event_available);
+        CHECK(saw_focus_loss);
+        close_peer(&server);
+        if(!keyboard_removed) {
+            atomic_store(&server.offer_stall,0);atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
+            CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_OK);
+            char *bytes=NULL;int ready=0;
+            for(unsigned i=0;i<20 && !ready;++i) {
+                CHECK(nx_window_poll(window,100)==NX_OK);
+                CHECK(nx_linux_window_clipboard_async_take(window,token,&bytes,&length,&ready)==NX_OK);
+            }
+            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));free(bytes);
+        }
+        nx_window_destroy(window);CHECK(allocations.live==0);
+        wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(server.display);
+        CHECK(unlink(path)==0 || access(path,F_OK)!=0);CHECK(rmdir(runtime)==0);
+        puts("Wayland selection invalidated on focus loss and restored on reentry");return 0;
+    }
     atomic_store(&server.offer_stall, 1); publish_offer(&server, window);
     uint64_t first = 0, other = 0; char *bytes = NULL; size_t length = 0; int ready = 0;
     CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 0, &first) == NX_OK && first);

@@ -456,6 +456,15 @@ static void nx_wayland_reap_one_offer(nx_wayland_window *window) {
     }
 }
 
+static void nx_wayland_selection_focus_lost(nx_wayland_window *window) {
+    /* The selection offer is valid only while this client has keyboard focus.
+       Defer application allocator callbacks until the guarded poll/reap path. */
+    if (window->async_active) nx_wayland_async_read_clear(window);
+    if (window->selection_offer) window->selection_offer->obsolete = 1;
+    window->selection_offer = NULL;
+    window->owned_source = NULL;
+}
+
 static nx_wayland_clipboard_offer *nx_wayland_find_offer(
     nx_wayland_window *window, struct wl_data_offer *native) {
     for (nx_wayland_clipboard_offer *offer = window->offers; offer;
@@ -1616,6 +1625,7 @@ static void nx_wayland_keyboard_leave(void *data,
     (void)serial;
     if (surface != window->surface) return;
     window->keyboard_focused = 0;
+    nx_wayland_selection_focus_lost(window);
     nx_wayland_ime_deactivate(window);
     window->selection_serial = 0;
     memset(window->keys_down, 0, sizeof(window->keys_down));
@@ -1748,6 +1758,9 @@ static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
             window->error = NX_ERROR_PLATFORM;
     } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
                window->keyboard) {
+        if (window->keyboard_focused)
+            nx_wayland_keyboard_leave(window, window->keyboard, 0, window->surface);
+        else nx_wayland_selection_focus_lost(window);
         wl_keyboard_release(window->keyboard);
         window->keyboard = NULL;
         window->keyboard_focused = 0;

@@ -109,6 +109,24 @@ static int virtual_serial(void) {
     }
     return 1;
 }
+static int restore_text_focus(AtspiAccessible *text) {
+    if(!virtual_serial())return 0;
+    const char *tool=getenv("NEXAUI_SETTINGS_XDOTOOL");if(!tool)return 0;
+    for(unsigned attempt=0;attempt<4;++attempt) {
+        for(unsigned i=0;i<30;++i) {
+            atspi_accessible_clear_cache(text);
+            AtspiStateSet *states=atspi_accessible_get_state_set(text);
+            int focused=states && atspi_state_set_contains(states,ATSPI_STATE_FOCUSED);
+            if(states)g_object_unref(states);
+            if(focused)return 1;
+            pump(10);
+        }
+        pid_t child=fork();if(child<0)return 0;
+        if(!child){execl(tool,tool,"key","Alt+Tab",(char *)NULL);_exit(127);}
+        int status=0;if(waitpid(child,&status,0)!=child || !WIFEXITED(status) || WEXITSTATUS(status))return 0;
+    }
+    return 0;
+}
 static int peer_read(const char *expected) {
     const char *tool=getenv("NEXAUI_TEST_WL_PASTE");if(!tool)return 0;
     int pipes[2];if(pipe(pipes))return 0;
@@ -233,15 +251,15 @@ int main(int argc,char **argv) {
     CHECK(atspi_event_listener_deregister(listener,"object:text-selection-changed",&error) && !error);
     g_object_unref(listener);
     if(getenv("NEXAUI_SETTINGS_CLIPBOARD_SERIAL")) {
-        CHECK(virtual_serial());
+        CHECK(restore_text_focus(name));
         CHECK(atspi_editable_text_copy_text(editable,1,2,&error) && !error);
-        if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER"))CHECK(peer_await("\xc3\xb6") && virtual_serial());
+        if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER"))CHECK(peer_await("\xc3\xb6") && restore_text_focus(name));
         CHECK(atspi_editable_text_cut_text(editable,1,2,&error) && !error);
         all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"AZ"));g_free(all);
         CHECK(atspi_editable_text_paste_text(editable,1,&error) && !error);
         if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER")) {
             CHECK(peer_own("Peer \xf0\x9f\x8c\x8d",getenv("NEXAUI_SETTINGS_CLIPBOARD_ONCE")!=NULL));
-            CHECK(virtual_serial());
+            CHECK(restore_text_focus(name));
             CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
             all=atspi_text_get_text(text,0,-1,&error);
             if(error || !all || strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z"))

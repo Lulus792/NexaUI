@@ -758,3 +758,36 @@ The full private-Weston candidate suites passed 171/171 with GCC shared and
 172/172 with Clang ASan/UBSan static, including the new peer and backpressure
 tests. The dual-backend X11 window test passed. These results do not close the
 previously documented intermittent one-shot clipboard issue.
+
+## Wayland clipboard focus ownership (2026-11-05)
+
+Candidate based on `988ab09afae6f26dec836f6898bbf928591a0122`. A fresh
+private-Weston protocol trace showed that Settings kept its previous selection
+offer after `wl_keyboard.leave` and requested it before the later keyboard
+enter and new selection event. The external `wl-copy --paste-once` source had
+also already served Weston's clipboard manager. The trace establishes this
+ordering, not which receiver consumed every possible earlier run. The [Wayland
+selection contract](https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_data_device)
+ends an offer's validity on keyboard focus loss.
+
+The adapter now invalidates the selection and cancels an in-flight native
+clipboard read on focus loss or keyboard capability removal. Offer deallocation
+is deferred to guarded polling; a fresh selection can be used after reentry.
+The controlled Wayland-server regression failed on the base because the stale
+offer was still readable, then passed with the fix for ordinary focus loss,
+an in-flight transfer, reentry and keyboard removal. The independent Settings
+AT-SPI test now confirms that the text field actually regained native focus
+before requesting paste, instead of assuming an X11 window-focus command
+established Wayland focus. The previously failing one-shot case then passed
+three consecutive runs in each GCC and ASan/UBSan profile. This test may read
+Weston's cached selection after its manager consumes the original source; it
+does not prove that Settings itself consumed the original one-shot offer. The
+separate controlled-server single-read test remains the direct evidence for
+that property. Other compositors, physical focus changes, complete seat removal
+and screenreader/Aetheri acceptance remain open.
+
+The private-Weston full suites passed 175/175 with GCC shared and 176/176 with
+ASan/UBSan static. Those runs predate an additional test-only extension that
+also confirms focus before the earlier clipboard copy/cut steps. With that
+extension, each of the three native clipboard variants was run three times in
+each profile. The dual-backend X11 AT-SPI test also passed on this code.

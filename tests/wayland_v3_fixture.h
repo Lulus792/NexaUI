@@ -24,7 +24,9 @@
 typedef struct test_server {
     struct wl_display *display;
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
-    struct wl_resource *data_device;
+    struct wl_resource *data_device, *keyboard, *seat;
+    int keyboard_enabled;
+    atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested;
     atomic_int send_offer, send_drop;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
@@ -83,6 +85,19 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
 static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
+    if(atomic_exchange(&server->keyboard_remove_requested,0)) {
+        CHECK(server->seat);wl_seat_send_capabilities(server->seat,0);
+    }
+    if(atomic_exchange(&server->keyboard_leave_requested,0)) {
+        CHECK(server->keyboard && server->surface);
+        wl_keyboard_send_leave(server->keyboard,2,server->surface);
+    }
+    if(atomic_exchange(&server->keyboard_enter_requested,0)) {
+        CHECK(server->keyboard && server->surface);
+        struct wl_array keys;wl_array_init(&keys);
+        wl_keyboard_send_enter(server->keyboard,3,server->surface,&keys);
+        wl_array_release(&keys);
+    }
     if (atomic_exchange(&server->send_offer, 0)) {
         struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, wl_resource_get_version(server->data_device), 0);
         CHECK(offer && server->data_device);
@@ -171,8 +186,15 @@ static void bind_shm(struct wl_client *client, void *data,
     wl_shm_send_format(resource, WL_SHM_FORMAT_ARGB8888);
 }
 
+static void get_keyboard(struct wl_client *client,struct wl_resource *seat,uint32_t id) {
+    test_server *server=wl_resource_get_user_data(seat);
+    server->keyboard=wl_resource_create(client,&wl_keyboard_interface,wl_resource_get_version(seat),id);
+    CHECK(server->keyboard);
+    static const struct wl_keyboard_interface implementation={.release=resource_destroy};
+    wl_resource_set_implementation(server->keyboard,&implementation,server,NULL);
+}
 static const struct wl_seat_interface seat_implementation = {
-    .release = resource_destroy
+    .get_keyboard = get_keyboard, .release = resource_destroy
 };
 
 static void bind_seat(struct wl_client *client, void *data,
@@ -181,7 +203,9 @@ static void bind_seat(struct wl_client *client, void *data,
         client, &wl_seat_interface, version, id);
     CHECK(resource);
     wl_resource_set_implementation(resource, &seat_implementation, data, NULL);
-    wl_seat_send_capabilities(resource, 0);
+    test_server *server=data;
+    server->seat=resource;
+    wl_seat_send_capabilities(resource, server->keyboard_enabled?WL_SEAT_CAPABILITY_KEYBOARD:0);
 }
 
 static void toplevel_set_string(struct wl_client *client,
