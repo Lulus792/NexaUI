@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !idle_probe) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
-    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0;
+    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
     nx_window_info previous={0};
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     while (okay) {
         nx_window_info info; size_t routed;
         if (test_continuous) dirty=1;
-        uint32_t timeout=(dirty && drawable) || smoke ? 16u : 1000u;
+        uint32_t timeout=(dirty && drawable) || smoke ? 16u : ax_unavailable ? 1000u : UINT32_MAX;
         if (idle_probe) {
             double current=seconds(CLOCK_MONOTONIC);
             if(current<0) {okay=0;break;}
@@ -58,9 +58,17 @@ int main(int argc, char **argv) {
             if(remaining<=0) break;
             if(remaining*1000.0 < timeout) timeout=(uint32_t)ceil(remaining*1000.0);
         }
+        int long_wait=idle_probe && !dirty && !ax_unavailable && timeout>1500u;
+        double wait_started=long_wait?seconds(CLOCK_MONOTONIC):0;
+        if(long_wait && wait_started<0) {okay=0;break;}
         ++polls;
         if (nx_window_poll(window,timeout)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
             nx_window_route_events(window,settings_context(scene),&routed)!=NX_OK) { okay=0; break; }
+        if(long_wait) {
+            double waited=seconds(CLOCK_MONOTONIC);
+            if(waited<0) {okay=0;break;}
+            if(waited-wait_started>=1.0) ++idle_long_waits;
+        }
         if (info.should_close || (smoke && loops++>=20)) break;
         if (idle_probe) {
             double now=seconds(CLOCK_MONOTONIC),cpu=seconds(CLOCK_PROCESS_CPUTIME_ID);
@@ -172,7 +180,7 @@ cleanup:
         if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
-    if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u\n",elapsed,cpu_elapsed,polls,presented);
+    if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits);
     if (!okay) fputs("Settings example failed\n",stderr);
     return okay ? 0 : 1;
 }

@@ -269,7 +269,12 @@ int main(int argc,char **argv) {
     CHECK(command("resume")); CHECK(command("replace")); pump(100);
     CHECK(raw_error(raw,button_ref,"GetRole","org.a11y.atspi.Error.Defunct",-1));
     CHECK(state_events>0 && children_events>0);
+    /* A static view must recover its published accessibility snapshot without
+       asking the application to build or publish another frame. */
+    CHECK(command("pause"));
+    CHECK(command("wait")); /* Host polls with a two-second maximum wait. */
     CHECK(command("disconnect"));
+    struct timespec retry_start,retry_end; CHECK(clock_gettime(CLOCK_MONOTONIC,&retry_start)==0);
     AtspiAccessible *reconnected=NULL;
     for (unsigned attempt=0;attempt<300u && !reconnected;++attempt) {
         pump(10);
@@ -287,8 +292,12 @@ int main(int argc,char **argv) {
         }
     }
     CHECK(reconnected);
+    CHECK(clock_gettime(CLOCK_MONOTONIC,&retry_end)==0);
+    double retry_seconds=(double)(retry_end.tv_sec-retry_start.tv_sec)+(retry_end.tv_nsec-retry_start.tv_nsec)/1e9;
+    CHECK(retry_seconds<1.85); /* The one-second retry must shorten the host's wait. */
     AtspiAccessible *new_button=find(reconnected,long_name,0),*new_counter=find(reconnected,"Button count 65",0);
     CHECK(new_button && new_counter && strcmp(button_ref.path,ATSPI_OBJECT(new_button)->path));
+    CHECK(command("normal")); CHECK(command("resume"));
     AtspiAction *new_action=atspi_accessible_get_action_iface(new_button); CHECK(new_action);
     CHECK(atspi_action_do_action(new_action,0,&error) && !error); pump(100);
     CHECK(named(new_counter,"Button count 66") && strlen(long_name)==32767u && long_name[0]=='Z');

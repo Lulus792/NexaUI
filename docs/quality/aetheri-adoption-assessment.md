@@ -420,3 +420,36 @@ another frame, so this test does not prove the follow-up independently. The
 headless resize regression above does reject the original scene behavior.
 The full 122/123-test suite results earlier in this document precede this
 change; only the focused checks above were rerun on it.
+
+## Idle accessibility recovery and waiting (2026-11-04)
+
+Candidate based on `cebf6ce2201da564a75f1555149d7afc44bf037a`. A disconnected
+AT-SPI bridge previously reconnected only when the application published a new
+semantic frame. An independent libatspi client now pauses its host's frame
+production, disconnects the transport, and requires rediscovery of the same
+snapshot under a fresh bus identity before resuming. The base failed that
+rediscovery. The candidate retries during window polling and reduces the
+owner's two-second poll wait to the existing one-second retry deadline; removing
+that timeout reduction made the bounded recovery test fail. The independent
+client also verifies that the old reference is defunct and the fresh target
+works after the host resumes.
+
+The Settings host now requests a long event-driven wait when idle and AT-SPI is
+available. A three-second private-Weston test observes at least one actual
+one-second-or-longer wait; the previous fixed one-second poll failed this check
+with 6 polls, one presentation and 0.137 s process CPU in that run. The
+candidate produced 4 polls, one presentation and 0.163 s CPU in the GCC run,
+and 4 polls, one presentation and 0.208 s CPU under ASan/UBSan. These single
+samples demonstrate this fixture only. A disconnected or unavailable provider
+retains bounded retries; synchronous AT-SPI address discovery can still take
+up to 250 ms per attempt. General worker wakeup, animation scheduling,
+minimized-window measurements and actual screenreader acceptance remain open.
+
+The complete private-Weston suites on this candidate passed 172/173 with GCC
+and 173/174 with ASan/UBSan. Both failures were the previously documented
+intermittent `nexaui_settings_wayland_atspi_clipboard_once`; a GCC isolated
+rerun also failed. A comparison restoring only the former one-second Settings
+poll interval failed that same case in three more attempts. This comparison
+does not prove the ultimate cause or turn the failures into passes. The native
+X11 AT-SPI recovery and X11 window tests passed on a separate dual-backend
+build. The one-shot failure remains open.

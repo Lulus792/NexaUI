@@ -635,6 +635,12 @@ if(NEXAUI_BUILD_TESTS)
             set_target_properties(nexaui_linux_atspi_client PROPERTIES
                 C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
             target_compile_options(nexaui_linux_atspi_client PRIVATE -Wall -Wextra -Wpedantic)
+            add_test(NAME nexaui_atspi_idle_reconnect_wayland
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_atspi_client>
+                    $<TARGET_FILE:nexaui_linux_atspi_host>)
+            set_tests_properties(nexaui_atspi_idle_reconnect_wayland PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                RESOURCE_LOCK native_display)
             add_executable(nexaui_linux_multiselection_host tests/linux_multiselection_host.c)
             target_include_directories(nexaui_linux_multiselection_host PRIVATE platform/linux)
             target_compile_definitions(nexaui_linux_multiselection_host PRIVATE NEXAUI_X11_TEST_HOOKS)

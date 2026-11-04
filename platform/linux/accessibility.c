@@ -1515,7 +1515,10 @@ static void nx_ax_embed_progress(nx_ax_hub *h) {
 static void nx_ax_update_geometry(nx_linux_ax *b);
 int nx_linux_ax_pump(nx_linux_ax *b) {
     if (!b || !pthread_equal(pthread_self(),b->thread)) return 0;
-    nx_ax_hub *h=b->hub; if (!h->connection) return 0;
+    nx_ax_hub *h=b->hub;
+    /* A published snapshot remains valid across transport loss. Retry on the
+       owner thread even when the application has no reason to draw a frame. */
+    if (!h->connection && !nx_ax_connect(h)) return 0;
     for (nx_linux_ax *w=h->windows;w;w=w->next) nx_ax_update_geometry(w);
     int work=0;
     if (!d.connection_read_write(h->connection,0)) h->failed=1;
@@ -1538,8 +1541,14 @@ int nx_linux_ax_pump(nx_linux_ax *b) {
     return work;
 }
 uint32_t nx_linux_ax_timeout(nx_linux_ax *b,uint32_t timeout) {
-    if(!b || !pthread_equal(pthread_self(),b->thread) || !b->hub || !b->hub->connection)return timeout;
+    if(!b || !pthread_equal(pthread_self(),b->thread) || !b->hub)return timeout;
     uint64_t now=nx_ax_now();
+    if(!b->hub->connection) {
+        if(!now)return timeout<1000u?timeout:1000u;
+        if(b->hub->retry_after<=now)return 0;
+        uint64_t remaining=b->hub->retry_after-now;
+        return remaining<timeout?(uint32_t)remaining:timeout;
+    }
     for(nx_linux_ax *w=b->hub->windows;w;w=w->next)for(size_t i=0;i<w->request_count;++i) {
         nx_ax_text_request *t=w->requests[i].text;if(!t)continue;
         if(!now || t->deadline<=now)return 0;

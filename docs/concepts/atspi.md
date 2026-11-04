@@ -29,6 +29,11 @@ with a two-second timeout, allowing the registry to call application properties
 without deadlocking the UI thread. After connection, I/O is nonblocking and each
 pump dispatches at most 64 messages. X11 and Wayland poll the bus descriptor
 alongside their native display/transfer descriptors, including write readiness.
+After a published bridge loses its connection, polling retries using the last
+snapshot without requiring another application frame. The existing one-second
+retry deadline also shortens a longer native poll; a discovery attempt can
+still spend up to 250 ms in the synchronous session-bus address query described
+above. Detaching or destroying the bridge ends these retries.
 
 ## Ownership and protocol
 
