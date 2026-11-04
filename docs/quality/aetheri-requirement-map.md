@@ -24,6 +24,11 @@ The bold scope text below reproduces the original catalog, including its
 baseline-time descriptions; it is not a statement that source line numbers or
 restrictions remain unchanged in the current candidate.
 
+Later I05/T06/W10 evidence and the still-open synchronous clipboard wait are
+recorded in the [AT-SPI text assessment](aetheri-atspi-text-assessment.md).
+The test of a real one-shot owner is intermittent under private Weston and is
+not an acceptance pass for the current candidate.
+
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |
 | B01 | 0 | Candidate implemented; acceptance matrix incomplete | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Explicit Wayland-only Linux build; current CMakeLists.txt:29 requires X11:** Configure, build and installed C17 consumer work without X11 headers/libraries; default dual-backend build still passes |

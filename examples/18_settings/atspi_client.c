@@ -244,7 +244,10 @@ int main(int argc,char **argv) {
             CHECK(virtual_serial());
             CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
             all=atspi_text_get_text(text,0,-1,&error);
-            CHECK(!error && all && !strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z"));g_free(all);
+            if(error || !all || strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z"))
+                fprintf(stderr,"external paste result: %s; error: %s\n",all?all:"(null)",error?error->message:"none");
+            int peer_matches=!error && all && !strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z");
+            g_free(all);CHECK(peer_matches);
             if(getenv("NEXAUI_SETTINGS_CLIPBOARD_ONCE")) {
                 int status=0,exited=0;
                 for(unsigned i=0;i<60 && !exited;++i){pid_t p=waitpid(clipboard_peer,&status,WNOHANG);

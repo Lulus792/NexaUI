@@ -2583,11 +2583,15 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
     uint64_t deadline = started + 5000000000ull;
     ++window->transfer_read_depth;
     if (started) for (;;) {
+        uint64_t now = nx_wayland_now_ns();
+        if (!now || now >= deadline) break;
         for (nx_wayland_window *candidate = nx_wayland_thread_windows;
              candidate; candidate = candidate->thread_next) {
             nx_result pumped = nx_wayland_window_poll(candidate, 0);
             if (pumped != NX_OK) { result = pumped; goto done; }
         }
+        now = nx_wayland_now_ns();
+        if (!now || now >= deadline) break;
         char chunk[8192];
         ssize_t count = read(read_fd, chunk, sizeof(chunk));
         if (count == 0) {
@@ -2620,7 +2624,7 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
         }
         if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR)
             break;
-        uint64_t now = nx_wayland_now_ns();
+        now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;
         struct pollfd pipe_fd = {read_fd, POLLIN, 0};
         (void)poll(&pipe_fd, 1, 10);

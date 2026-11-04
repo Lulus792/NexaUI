@@ -500,3 +500,42 @@ not advertise an expected byte length: an owner closing after a valid UTF-8
 prefix cannot be distinguished from a complete short transfer. Large/slow
 transfers, IME overlap, installed screenreaders and actual Aetheri-compositor
 acceptance remain open.
+
+## Clipboard transfer deadline and stalled owner (2026-11-04)
+
+On base `37813559cee433f92fd7f4324aa24e226527b3ec`, a deterministic Wayland
+offer writes a valid prefix and keeps the pipe open. Both the Settings AT-SPI
+paste and Ctrl+V reject the incomplete transfer after the existing five-second
+deadline, leave the draft intact and accept a subsequent typed character.
+The test observes the actual receive and releases its held descriptor only
+after the request returns. This checks recovery after the timeout, not UI
+responsiveness during it: the current transfer runs synchronously on the owner
+thread and can block the view for five seconds. Async transfer remains needed
+for I05/W10 and for a two-second AT-SPI deadline that cannot be overrun by a
+synchronous callback.
+
+A second regression delays the window allocator during receipt. Before the
+fix, the five-second deadline was checked only after a read would block, so a
+completed read after the delay was incorrectly applied; the test failed with
+an applied paste. The reader now checks monotonic time between iterations and
+again after pumping windows, including when bytes or EOF are ready. It cannot
+preempt a blocking application allocator or other synchronous callback; it
+rejects the transfer when control returns. The delayed-allocator test passes
+with GCC shared and Clang ASan/UBSan. A Wayland owner closing a valid UTF-8
+prefix remains indistinguishable from a complete short transfer.
+
+The focused private-Weston clipboard group exposed an intermittent pre-existing
+failure in `nexaui_settings_wayland_atspi_clipboard_once`: it passed in the
+previous full suites and on repeated reruns, but failed in both current builds
+with the field still `AöZ` after a successful empty paste. In the failing
+Weston 14.0.2 trace, the compositor requests the new source immediately after
+selection, before Settings requests its offer; `wl-copy --paste-once` can
+therefore terminate before Settings reads it. Weston's clipboard manager may
+then publish a cached replacement, racing the existing offer. The client trace
+is `%TEMP%/nexaui-clipboard-once-trace2.txt`; the separate compositor trace
+was overwritten by a later local run and is not retained. This
+test has not been disabled or counted as a pass. The other seven tests in each
+focused group passed, including regular separate-process clipboard exchange;
+the deterministic one-receive fixture continues to test the one-shot path.
+The independent client's diagnostic now prints the actual test value and frees
+it before reporting failure, so the failure path does not leak that value.
