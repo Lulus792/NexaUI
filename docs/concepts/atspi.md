@@ -64,9 +64,11 @@ chunked at UTF-8 boundaries and the existing outgoing-queue budget can force
 disconnect/re-registration under a stalled or oversized event stream. This is
 not complete screenreader or editable-text support. Writable built-in text
 fields additionally advertise a partial `EditableText` interface supporting
-whole replacement, insertion and deletion; clipboard operations remain
-unsupported. Insert/delete offsets count Unicode scalars and insertion length
-counts UTF-8 bytes. Numeric `Value` is not advertised.
+whole replacement, insertion, deletion and clipboard copy/cut/paste through
+the field's supplied callbacks. Insert/delete offsets count Unicode scalars and
+insertion length counts UTF-8 bytes. Native clipboard failures are reported;
+cut deletes only after successful copy and target revalidation. Numeric `Value`
+is not advertised.
 Custom semantic nodes and protected fields do not gain Text merely from a value.
 
 Object paths contain window and node incarnations. Consecutive unchanged

@@ -7,6 +7,24 @@
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); return 1; } } while (0)
 
 typedef struct ticket { int refs, calls, applied, current; } ticket;
+typedef struct clipboard { ticket *ticket; nx_text_field *field; int mode, writes, reads; char data[64]; } clipboard;
+static nx_result write_clipboard(void *user,const char *bytes,size_t length) {
+    clipboard *c=user;if(length>=sizeof(c->data))return NX_ERROR_LIMIT;
+    memcpy(c->data,bytes,length);c->data[length]=0;++c->writes;
+    if(c->mode==1)c->ticket->current=0;
+    if(c->mode==2 && nx_text_field_set_text(c->field,"replaced",8)!=NX_OK)return NX_ERROR_STATE;
+    return c->mode==3?NX_ERROR_STATE:NX_OK;
+}
+static nx_result read_clipboard(void *user,char *bytes,size_t capacity,size_t *out) {
+    clipboard *c=user;++c->reads;size_t n=strlen(c->data);*out=n;
+    if(c->mode==7) {*out=NX_TEXT_VALUE_MAX_BYTES+1u;return NX_OK;}
+    if((c->mode==4 && !bytes) || (c->mode==5 && bytes))
+        if(nx_text_field_set_text(c->field,"replaced",8)!=NX_OK)return NX_ERROR_STATE;
+    if(c->mode==6 && bytes)c->ticket->current=0;
+    if(!bytes)return NX_OK;
+    if(capacity<=n)return NX_ERROR_LIMIT;
+    memcpy(bytes,c->data,n+1u);return NX_OK;
+}
 static void retain(void *p) { ++((ticket *)p)->refs; }
 static void release(void *p) { --((ticket *)p)->refs; }
 static int current(void *p, uint64_t token, uint64_t context, uint64_t id, nx_text_value_target target) {
@@ -71,6 +89,39 @@ int main(void) {
     CHECK(nx_semantics_request_text_value_with_completion(ctx,1,(nx_utf8_span){"rejected",8},&guard,complete)==NX_ERROR_STATE);
     CHECK(t.calls==0 && t.refs==0);
     d.disabled=0; CHECK(frame(ctx,field,&d,1)==0);
+    clipboard clip={0};clip.ticket=&t;clip.field=field;
+    d.clipboard=(nx_text_clipboard){&clip,read_clipboard,write_clipboard};
+    CHECK(nx_text_field_set_text(field,"A\xc3\xa9Z",4)==NX_OK && frame(ctx,field,&d,1)==0);
+    t.calls=0;CHECK(nx_semantics_request_text_clipboard_with_completion(ctx,1,1,3,0,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==1 && !strcmp(clip.data,"\xc3\xa9") && has_text(field,"A\xc3\xa9Z")==0);
+    t.calls=0;CHECK(nx_semantics_request_text_clipboard_with_completion(ctx,1,1,3,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==1 && has_text(field,"AZ")==0);
+    t.calls=0;clip.mode=3;CHECK(nx_semantics_request_text_clipboard_with_completion(ctx,1,0,1,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"AZ")==0);
+    t.calls=0;clip.mode=1;CHECK(nx_semantics_request_text_clipboard_with_completion(ctx,1,0,1,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"AZ")==0);
+    t.current=1;t.calls=0;clip.mode=2;
+    CHECK(nx_semantics_request_text_clipboard_with_completion(ctx,1,0,1,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"replaced")==0);
+    t.calls=0;clip.mode=0;strcpy(clip.data,"X\nY");
+    CHECK(nx_text_field_set_text(field,"abc",3)==NX_OK && frame(ctx,field,&d,1)==0);
+    CHECK(nx_semantics_request_text_paste_with_completion(ctx,1,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==1 && has_text(field,"aX Ybc")==0);
+    for(int mode=4;mode<=6;++mode) {
+        clip.mode=mode;t.current=1;t.calls=0;
+        CHECK(nx_text_field_set_text(field,"abc",3)==NX_OK && frame(ctx,field,&d,1)==0);
+        CHECK(nx_semantics_request_text_paste_with_completion(ctx,1,1,&guard,complete)==NX_OK);
+        CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 &&
+              has_text(field,mode==6?"abc":"replaced")==0);
+    }
+    for(int mode=7;mode<=8;++mode) {
+        clip.mode=mode;t.current=1;t.calls=0;
+        if(mode==8){clip.data[0]=(char)0xc0;clip.data[1]=0;}
+        CHECK(nx_text_field_set_text(field,"abc",3)==NX_OK && frame(ctx,field,&d,1)==0);
+        CHECK(nx_semantics_request_text_paste_with_completion(ctx,1,1,&guard,complete)==NX_OK);
+        CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"abc")==0);
+    }
+    t.current=1;t.calls=0;clip.mode=0;
     CHECK(nx_semantics_request_text_value_with_completion(ctx,1,(nx_utf8_span){"destroy",7},&guard,complete)==NX_OK);
     nx_context_destroy(ctx);
     CHECK(t.calls==1 && t.applied==0 && t.refs==0);

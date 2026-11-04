@@ -13,13 +13,31 @@ typedef struct fixture {
     nx_window *window; nx_context *context; nx_font *font;
     nx_font_collection *fonts; nx_text_field *field;
     int disabled, omitted;
+    int clipboard_mode;
+    char copied[64];
 } fixture;
+static nx_result clipboard_write(void *user,const char *bytes,size_t length) {
+    fixture *f=user;
+    if(length>=sizeof(f->copied) || f->clipboard_mode==1)return NX_ERROR_STATE;
+    memcpy(f->copied,bytes,length);f->copied[length]=0;
+    if(f->clipboard_mode==2 && nx_text_field_set_text(f->field,"replacement",11)!=NX_OK)return NX_ERROR_STATE;
+    if(f->clipboard_mode==3 && nx_window_publish_semantics(f->window,NULL)!=NX_OK)return NX_ERROR_STATE;
+    return NX_OK;
+}
+static nx_result clipboard_read(void *user,char *bytes,size_t capacity,size_t *out) {
+    fixture *f=user;size_t length=strlen(f->copied);*out=length;
+    if(f->clipboard_mode==1)return NX_ERROR_STATE;
+    if(!bytes)return NX_OK;
+    if(capacity<=length)return NX_ERROR_LIMIT;
+    memcpy(bytes,f->copied,length+1u);return NX_OK;
+}
 static int draw(fixture *f) {
     nx_semantic_desc root={0}; root.id=1; root.role=NX_ROLE_WINDOW;
     root.name=(nx_utf8_span){"Large text fixture",18}; root.bounds=(nx_rect){0,0,320,120};
     nx_text_field_desc d={0}; d.id=2; d.parent_id=1; d.name=(nx_utf8_span){"Large text field",16};
     d.bounds=(nx_rect){8,8,300,32}; d.fonts=f->fonts; d.pixels_per_em=16; d.glyph_cache_bytes=65536;
     d.disabled=f->disabled;
+    d.clipboard=(nx_text_clipboard){f,clipboard_read,clipboard_write};
     nx_interaction_state state; int valid,submitted;
     return nx_begin_frame(f->context,320,120,0)==NX_OK &&
         nx_semantics_add(f->context,&root,NULL)==NX_OK &&
@@ -67,7 +85,14 @@ int main(void) {
             nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='Q';
             if(nx_focus_set(f.context,2)!=NX_OK || nx_context_queue_event(f.context,&event)!=NX_OK || !frame(&f))goto done;
             puts("ACK local");
-        } else if (!strcmp(input,"pause")) {paused=1;puts("ACK pause");}
+        } else if (!strcmp(input,"clip-check")) {
+            if(strcmp(f.copied,"\xc3\xa9\xf0\x9f\x8c\x8d"))goto done;
+            puts("ACK clip-check");
+        } else if (!strcmp(input,"clipfail")) {f.clipboard_mode=1;puts("ACK clipfail");}
+        else if (!strcmp(input,"clipreplace")) {f.clipboard_mode=2;puts("ACK clipreplace");}
+        else if (!strcmp(input,"clipdetach")) {f.clipboard_mode=3;puts("ACK clipdetach");}
+        else if (!strcmp(input,"clipok")) {f.clipboard_mode=0;puts("ACK clipok");}
+        else if (!strcmp(input,"pause")) {paused=1;puts("ACK pause");}
         else if (!strcmp(input,"resume")) {paused=0;puts("ACK resume");}
         else if (!strcmp(input,"disable")) {f.disabled=1;puts("ACK disable");}
         else if (!strcmp(input,"enable")) {f.disabled=0;puts("ACK enable");}

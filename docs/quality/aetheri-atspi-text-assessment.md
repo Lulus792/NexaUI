@@ -8,7 +8,7 @@ is a source assessment, not a completed implementation or native acceptance.
 The independent Settings client confirms a limited AT-SPI Text read path and
 whole-value, insert and delete EditableText operations, plus caret and selection
 movement, for its editable name.
-Clipboard operations remain unsupported. The provider's snapshot in `platform/linux/accessibility.c`
+Clipboard operations use the submitted field's callbacks. The provider's snapshot in `platform/linux/accessibility.c`
 contains copied semantic name, description, value, bounds, role and state. The
 current candidate also copies an internal completed-frame caret/selection snapshot
 for genuine non-protected text fields; positions are UTF-8 byte offsets, not
@@ -423,3 +423,36 @@ passed again, as did the core text-value and Settings v3 IME tests. Existing
 MSVC Debug text-value tests also passed. Native clipboard callbacks, complete
 scalar-position support within graphemes, real IME/screenreader and compositor
 acceptance remain open.
+
+## AT-SPI clipboard operations (2026-11-04)
+
+CopyText, CutText and PasteText now use the same bounded deferred request and
+the callbacks supplied on the actual submitted text field. The provider does
+not retain a callback or an application context in its native snapshot.
+CopyText has no boolean wire result: failure returns a D-Bus error. In this
+libatspi version its C wrapper can return true while also setting `GError`, so
+clients must inspect the error. CutText and PasteText return a boolean. Cut
+copies first and checks the guard and field identity/revision again before it
+edits; failure to allocate the edit after a successful copy leaves the text
+unchanged, although the clipboard may already have changed. Paste rechecks
+after both clipboard callbacks and after semantic allocation, limits input to
+65,536 bytes, rejects invalid UTF-8 and NUL, and normalizes line breaks to
+spaces in single-line fields. Text edits use the existing undo and IME paths.
+
+The independent libatspi client covers Unicode copy/cut/paste, undo, clipboard
+errors, replacement of the model during a callback, and detachment of the
+native bridge during cut. Internal tests also revoke the guard and replace the
+model during both paste-read phases, and reject oversized or invalid input. A
+targeted mutant bypassing post-copy revalidation caused the cancellation test
+to fail (`out/aetheri-clipboard-negative.log`, SHA-256
+`63ef4e27292ce05ca95b20eed2fa687c1f6becaa9f2888be730f375799593769`;
+source restored and rebuilt).
+The Settings client verifies both refusal without a Wayland input serial and
+copy/cut/paste after virtual keyboard input on private Weston; its read uses
+the same window's owned source, not a second application. The focused native,
+Settings and core tests passed with GCC shared and Clang ASan/UBSan static on
+base `f59b64bd8e6b6db13cf4d6b06bc4f0e648796320`. MSVC Debug's existing
+text-value tests passed. An installed input method, an external clipboard
+owner/consumer, stalled clipboard callbacks and actual screenreader/Aetheri
+acceptance remain open. The two-second request deadline is checked before and
+after callbacks; synchronous callbacks can themselves block longer.

@@ -2160,10 +2160,10 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
     const nx_semantic_record *node = &ctx->semantics.nodes[i];
     const nx_region *region = nx_region_find(&ctx->current_regions, id);
     if (nx_text_value_disabled(ctx, node) || (node->state & NX_SEM_PROTECTED) ||
-        (ranged!=2 && (node->state & NX_SEM_READONLY)))
+        (ranged!=2 && ranged!=3 && (node->state & NX_SEM_READONLY)))
         return NX_ERROR_STATE;
     if (node->role != NX_ROLE_TEXT_FIELD || !node->text_value.identity ||
-        (ranged!=2 && !(node->actions & NX_ACTION_SET_VALUE))) return NX_ERROR_UNSUPPORTED;
+        (ranged!=2 && ranged!=3 && !(node->actions & NX_ACTION_SET_VALUE))) return NX_ERROR_UNSUPPORTED;
     if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))
         return NX_ERROR_STATE;
@@ -2228,6 +2228,27 @@ nx_result nx_semantics_request_text_selection_with_completion(nx_context *ctx,ui
     if(!guard || !complete)return NX_ERROR_ARGUMENT;
     return nx_text_value_admit(ctx,id,(nx_utf8_span){"",0},guard,complete,2,anchor,cursor);
 }
+nx_result nx_semantics_request_text_clipboard_with_completion(nx_context *ctx,uint64_t id,
+    size_t start,size_t end,int cut,const nx_text_value_guard *guard,void (*complete)(void *, int)) {
+    if(!guard || !complete || (cut!=0 && cut!=1) || end<start || end-start>NX_TEXT_VALUE_MAX_BYTES)
+        return NX_ERROR_ARGUMENT;
+    return nx_text_value_admit(ctx,id,(nx_utf8_span){"",0},guard,complete,cut?4:3,start,end);
+}
+nx_result nx_semantics_request_text_paste_with_completion(nx_context *ctx,uint64_t id,
+    size_t position,const nx_text_value_guard *guard,void (*complete)(void *, int)) {
+    if(!guard || !complete)return NX_ERROR_ARGUMENT;
+    return nx_text_value_admit(ctx,id,(nx_utf8_span){"",0},guard,complete,5,position,position);
+}
+
+static int nx_text_request_current(nx_context *ctx,nx_text_value_request *r,nx_text_value_target *target) {
+    uint64_t identity=0;
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    identity=ctx->native_identity;
+#endif
+    return target && target->identity==r->target.identity && target->revision==r->target.revision &&
+        target->multiline==r->target.multiline &&
+        (!r->guard.current || r->guard.current(r->guard.user,r->guard.token,identity,r->id,*target));
+}
 
 nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
                                           nx_utf8_span value) {
@@ -2235,7 +2256,9 @@ nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
 }
 
 static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
-                                      nx_text_buffer *buffer, int *changed) {
+    nx_text_buffer **buffer_address,nx_text_value_target *live_target,
+    const nx_text_clipboard *clipboard,int *changed) {
+    nx_text_buffer *buffer=*buffer_address;
     *changed = 0;
     for (size_t i = 0; i < ctx->text_value_count; ++i) {
         nx_text_value_request *r = &ctx->text_values[i];
@@ -2248,7 +2271,7 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             r->target.revision == node->text_value.revision &&
             r->target.multiline == node->text_value.multiline &&
             !nx_text_value_disabled(ctx, node) && !(node->state & NX_SEM_PROTECTED) &&
-            (r->ranged==2 || (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE))) && region &&
+            (r->ranged==2 || r->ranged==3 || (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE))) && region &&
             !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
             (!ctx->current_overlay_id || region->overlay_id == ctx->current_overlay_id);
         if (valid && r->guard.current) {
@@ -2266,6 +2289,64 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             if(selection!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
             *changed=anchor!=r->start || cursor!=r->end;
             nx_text_value_dispose(ctx,r,1);return NX_OK;
+        }
+        if(r->ranged==3 || r->ranged==4) {
+            if(!clipboard || !clipboard->write) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            const char *before=NULL;size_t length=0;
+            nx_result got=nx_text_buffer_text(buffer,&before,&length);
+            if(got!=NX_OK || r->end>length) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            size_t count=r->end-r->start;
+            char *copy=malloc(count+1u);if(!copy)return NX_ERROR_MEMORY;
+            if(count)memcpy(copy,before+r->start,count);
+            copy[count]=0;
+            nx_text_clipboard cb=*clipboard;
+            nx_result copied=cb.write(cb.user,copy,count);free(copy);
+            /* The clipboard callback may detach the bridge or replace the
+               application-owned model. Never use the old buffer afterward. */
+            int current=nx_text_request_current(ctx,r,live_target);
+            if(copied!=NX_OK || !current) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            if(r->ranged==4 && count) {
+                nx_result cut=nx_text_buffer_replace_range_private(*buffer_address,r->start,r->end,NULL,0);
+                if(cut!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+                *changed=1;
+            }
+            nx_text_value_dispose(ctx,r,1);return NX_OK;
+        }
+        if(r->ranged==5) {
+            if(!clipboard || !clipboard->read) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            nx_text_clipboard cb=*clipboard;size_t length=0;
+            nx_result read=cb.read(cb.user,NULL,0,&length);
+            if(read!=NX_OK || length>NX_TEXT_VALUE_MAX_BYTES || !nx_text_request_current(ctx,r,live_target)) {
+                nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            char *copy=malloc(length+1u);if(!copy)return NX_ERROR_MEMORY;
+            size_t actual=0;read=cb.read(cb.user,copy,length+1u,&actual);
+            if(read!=NX_OK || actual>length || !nx_text_request_current(ctx,r,live_target) ||
+               (actual && memchr(copy,0,actual)) || nx_utf8_validate(copy,actual,NULL)!=NX_OK) {
+                free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            if(!r->target.multiline) {
+                size_t written=0;
+                for(size_t j=0;j<actual;++j) {
+                    if(copy[j]=='\r') {if(j+1u<actual && copy[j+1u]=='\n')++j;copy[written++]=' ';}
+                    else if(copy[j]=='\n')copy[written++]=' ';else copy[written++]=copy[j];
+                }
+                actual=written;
+            }
+            const char *old=NULL;size_t old_length=0;
+            read=nx_text_buffer_text(*buffer_address,&old,&old_length);
+            if(read!=NX_OK || r->start>old_length || actual>SIZE_MAX-old_length-1u) {
+                free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            size_t total=old_length+actual;
+            read=nx_semantic_reserve_text(ctx,total?total+1u:0);
+            if(read!=NX_OK || !nx_text_request_current(ctx,r,live_target)) {
+                free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            read=nx_text_buffer_replace_range_private(*buffer_address,r->start,r->start,copy,actual);
+            free(copy);
+            if(read!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
+            *changed=actual!=0;nx_text_value_dispose(ctx,r,1);return NX_OK;
         }
         /* Reserve semantic storage before editing the model. A later paint
            failure follows the existing retry-without-replaying-events contract. */
@@ -6038,7 +6119,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  field->buffer, &value_changed);
+                                  &field->buffer,&field->text_value,NULL,&value_changed);
     if (result != NX_OK) goto rollback;
     if (value_changed) { field->pointer.active = 0; field->suppress_caret_reveal = 0; }
     if (field->last_context != ctx ||
@@ -6607,8 +6688,10 @@ nx_result nx_text_field_widget(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  field->buffer, &value_changed);
+                                  &field->buffer,&field->text_value,&desc->clipboard,&value_changed);
     if (result != NX_OK) goto rollback;
+    /* A clipboard callback can replace the application's field model. */
+    ctx->semantics.nodes[ctx->semantics.count - 1u].text_value=field->text_value;
     if (value_changed) {
         field->pointer.active = 0;
         field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;

@@ -85,6 +85,25 @@ static int activate(AtspiAccessible *a) {
     if(error){fprintf(stderr,"action: %s\n",error->message);g_error_free(error);}
     g_object_unref(action); return okay;
 }
+static int virtual_serial(void) {
+    const char *path=getenv("NEXAUI_TEST_WESTON_LOG"),*tool=getenv("NEXAUI_SETTINGS_XDOTOOL");
+    if(!path || !tool)return 0;
+    FILE *log=fopen(path,"r");if(!log)return 0;
+    char line[1024],id[32]={0};
+    while(fgets(line,sizeof(line),log)) {
+        char *match=strstr(line,"window id ");
+        if(match)snprintf(id,sizeof(id),"%lu",strtoul(match+10,NULL,10));
+    }
+    fclose(log);if(!id[0] || !strcmp(id,"0"))return 0;
+    const char *actions[][2]={{"windowfocus",id},{"key","Shift_L"}};
+    for(unsigned i=0;i<2;++i) {
+        pid_t p=fork();if(p<0)return 0;
+        if(!p){execl(tool,tool,actions[i][0],actions[i][1],(char *)NULL);_exit(127);}
+        int status=0;if(waitpid(p,&status,0)!=p || !WIFEXITED(status) || WEXITSTATUS(status))return 0;
+        pump(300);
+    }
+    return 1;
+}
 int main(int argc,char **argv) {
     const char *font=getenv("NEXAUI_SETTINGS_FONT"); CHECK(argc==2 && font && *font);
     host=fork(); CHECK(host>=0);
@@ -175,6 +194,19 @@ int main(int argc,char **argv) {
     CHECK(atspi_event_listener_deregister(listener,"object:text-caret-moved",&error) && !error);
     CHECK(atspi_event_listener_deregister(listener,"object:text-selection-changed",&error) && !error);
     g_object_unref(listener);
+    if(getenv("NEXAUI_SETTINGS_CLIPBOARD_SERIAL")) {
+        CHECK(virtual_serial());
+        CHECK(atspi_editable_text_copy_text(editable,0,1,&error) && !error);
+        CHECK(atspi_editable_text_cut_text(editable,0,1,&error) && !error);
+        all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"\xc3\xb6Z"));g_free(all);
+        CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
+    } else {
+        /* Without an input serial Wayland must not claim clipboard ownership. */
+        (void)atspi_editable_text_copy_text(editable,0,1,&error);
+        CHECK(error);g_clear_error(&error);
+        CHECK(!atspi_editable_text_cut_text(editable,0,1,&error) && !error);
+    }
+    all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"A\xc3\xb6Z"));g_free(all);
     CHECK(atspi_editable_text_set_text_contents(editable,"AT-SPI Toky",&error) && !error);
     CHECK(atspi_editable_text_insert_text(editable,11,"o",1,&error) && !error);
     CHECK(atspi_editable_text_delete_text(editable,11,12,&error) && !error);

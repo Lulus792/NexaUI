@@ -33,6 +33,7 @@
  X(DBusMessage *, message_new_method_return, (DBusMessage *)) \
  X(DBusMessage *, message_new_error, (DBusMessage *, const char *, const char *)) \
  X(DBusMessage *, message_new_signal, (const char *, const char *, const char *)) \
+ X(DBusMessage *, message_ref, (DBusMessage *)) \
  X(void, message_unref, (DBusMessage *)) \
  X(const char *, message_get_path, (DBusMessage *)) \
  X(const char *, message_get_interface, (DBusMessage *)) \

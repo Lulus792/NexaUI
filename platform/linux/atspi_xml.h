@@ -30,6 +30,9 @@ static const char nx_ax_xml_edit[] =
 "<method name=\"SetTextContents\"><arg direction=\"in\" type=\"s\"/><arg direction=\"out\" type=\"b\"/></method>"
 "<method name=\"InsertText\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"s\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
 "<method name=\"DeleteText\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
+"<method name=\"CopyText\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/></method>"
+"<method name=\"CutText\"><arg direction=\"in\" type=\"i\"/><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
+"<method name=\"PasteText\"><arg direction=\"in\" type=\"i\"/><arg direction=\"out\" type=\"b\"/></method>"
 "</interface>";
 static const char nx_ax_xml_cache[] =
 "<interface name=\"org.a11y.atspi.Cache\"><property name=\"version\" type=\"u\" access=\"read\" /><method name=\"GetItems\"><arg direction=\"out\" name=\"nodes\" type=\"a((so)(so)(so)iiassusau)\" /></method><signal name=\"AddAccessible\"><arg name=\"nodeAdded\" type=\"((so)(so)(so)iiassusau)\" /></signal><signal name=\"RemoveAccessible\"><arg name=\"nodeRemoved\" type=\"(so)\" /></signal><signal name=\"Ready\" /></interface>";

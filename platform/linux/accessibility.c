@@ -112,9 +112,10 @@ typedef struct nx_ax_text_request {
     uint64_t generation, context, id, incarnation, deadline, frame;
     nx_text_value_target target;
     DBusMessage *reply;
+    DBusMessage *copy_call;
     size_t bytes, length;
     size_t start, end;
-    int ranged, selection;
+    int ranged, selection, clipboard;
     int result; /* 0 pending, 1 applied, 2 cancelled */
     char value[];
 } nx_ax_text_request;
@@ -229,6 +230,7 @@ static void text_release(void *user) {
     nx_ax_text_request *r=user;
     if(r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
         if(r->reply)d.message_unref(r->reply);
+        if(r->copy_call)d.message_unref(r->copy_call);
         lease_release(r->lease);free(r);
     }
 }
@@ -253,6 +255,14 @@ static int nx_ax_send(nx_ax_hub *h,DBusMessage *message,int built);
 static void text_reply(nx_ax_hub *h,nx_ax_text_request *r) {
     if(!r || !r->reply)return;
     DBusMessage *reply=r->reply;r->reply=NULL;
+    if(r->clipboard==1) {
+        if(r->result!=1) {
+            d.message_unref(reply);
+            reply=d.message_new_error(r->copy_call,DBUS_ERROR_FAILED,"Clipboard operation was not completed");
+        }
+        if(h)nx_ax_send(h,reply,reply!=NULL);else if(reply)d.message_unref(reply);
+        return;
+    }
     dbus_bool_t applied=r->result==1;
     int built=d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&applied,DBUS_TYPE_INVALID);
     if(h)nx_ax_send(h,reply,built);else d.message_unref(reply);
@@ -767,7 +777,7 @@ static int nx_ax_queue(nx_ax_ref r,uint32_t action) {
 /* A queued write owns both the input and the unsent D-Bus reply. The owner
    loop replies only after the model completion or an explicit cancellation. */
 static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ranged,
-                            size_t start,size_t end,int selection,DBusMessage *reply) {
+                            size_t start,size_t end,int selection,int clipboard,DBusMessage *call,DBusMessage *reply) {
     nx_linux_ax *b=ref.window;nx_ax_node *n=nx_ax_node_at(ref);
     if(!b || !n || b->retired || !b->lease->live || !n->text_ready ||
        (n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) ||
@@ -785,7 +795,8 @@ static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ra
     t->generation=b->lease->generation;t->context=b->binding;t->id=n->id;
     t->incarnation=n->incarnation;t->target=n->text_target;t->deadline=now+2000u;
     t->frame=b->frame;
-    t->bytes=bytes;t->length=length;t->ranged=ranged;t->start=start;t->end=end;t->selection=selection;t->reply=reply;
+    t->bytes=bytes;t->length=length;t->ranged=ranged;t->start=start;t->end=end;t->selection=selection;t->clipboard=clipboard;t->reply=reply;
+    if(clipboard==1)t->copy_call=d.message_ref(call);
     if(length)memcpy(t->value,value,length);
     t->value[length]=0;
     nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.text=t;
@@ -1339,15 +1350,17 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
                nx_ax_text_byte(n,first,&start) && nx_ax_text_byte(n,last,&end))valid=1;
         }
         if(!signature) {d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_INVALID_ARGS,"Invalid text selection arguments");}
-        else if(!valid || !nx_ax_queue_text(r,"",0,1,start,end,1,reply)) {
+        else if(!valid || !nx_ax_queue_text(r,"",0,1,start,end,1,0,NULL,reply)) {
             dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));
         }
         return DBUS_HANDLER_RESULT_HANDLED;
     }
     if(!cache && !strcmp(interface,NX_AX_EDIT) && nx_ax_supports(r,interface) &&
-       (!strcmp(member,"SetTextContents") || !strcmp(member,"InsertText") || !strcmp(member,"DeleteText"))) {
+       (!strcmp(member,"SetTextContents") || !strcmp(member,"InsertText") || !strcmp(member,"DeleteText") ||
+        !strcmp(member,"CopyText") || !strcmp(member,"CutText") || !strcmp(member,"PasteText"))) {
         const char *value="";dbus_int32_t first=0,last=0,requested=0;size_t start=0,end=0,length=0;
         int ranged=strcmp(member,"SetTextContents")!=0,valid=0,signature=0;
+        int clipboard=!strcmp(member,"CopyText")?1:!strcmp(member,"CutText")?2:!strcmp(member,"PasteText")?3:0;
         nx_ax_node *n=nx_ax_node_at(r);
         if(!ranged) {
             signature=d.message_get_args(call,NULL,DBUS_TYPE_STRING,&value,DBUS_TYPE_INVALID);
@@ -1357,13 +1370,18 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
             if(signature && requested>=0 && nx_ax_text_byte(n,first,&start)) {
                 end=start;length=strlen(value);if((size_t)requested<length)length=(size_t)requested;valid=1;
             }
+        } else if(clipboard==3) {
+            signature=d.message_get_args(call,NULL,DBUS_TYPE_INT32,&first,DBUS_TYPE_INVALID);
+            if(signature && nx_ax_text_byte(n,first,&start)){end=start;valid=1;}
         } else {
             signature=d.message_get_args(call,NULL,DBUS_TYPE_INT32,&first,DBUS_TYPE_INT32,&last,DBUS_TYPE_INVALID);
             if(signature && first>=0 && last>=first && nx_ax_text_byte(n,first,&start) && nx_ax_text_byte(n,last,&end))valid=1;
         }
         if(!signature) {d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_INVALID_ARGS,"Invalid editable text arguments");}
-        else if(!valid || !nx_ax_queue_text(r,value,length,ranged,start,end,0,reply)) {
-            dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));
+        else if(!valid || (clipboard && end-start>NX_TEXT_VALUE_MAX_BYTES) ||
+                !nx_ax_queue_text(r,value,length,ranged,start,end,clipboard==1,clipboard,call,reply)) {
+            if(clipboard==1) {d.message_unref(reply);nx_ax_error(h,call,DBUS_ERROR_FAILED,"Clipboard operation was not accepted");}
+            else {dbus_bool_t no=0;nx_ax_send(h,reply,d.message_append_args(reply,DBUS_TYPE_BOOLEAN,&no,DBUS_TYPE_INVALID));}
         }
         return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -1579,7 +1597,9 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         if(valid && q.text) {
             nx_ax_text_request *t=q.text;
             nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
-            result=t->selection?nx_semantics_request_text_selection_with_completion(context,t->id,t->start,t->end,&guard,text_completed):
+            result=t->clipboard==3?nx_semantics_request_text_paste_with_completion(context,t->id,t->start,&guard,text_completed):
+                t->clipboard?nx_semantics_request_text_clipboard_with_completion(context,t->id,t->start,t->end,t->clipboard==2,&guard,text_completed):
+                t->selection?nx_semantics_request_text_selection_with_completion(context,t->id,t->start,t->end,&guard,text_completed):
                 t->ranged?nx_semantics_request_text_range_with_completion(context,t->id,t->start,t->end,
                 (nx_utf8_span){t->value,t->length},&guard,text_completed):
                 nx_semantics_request_text_value_with_completion(context,t->id,

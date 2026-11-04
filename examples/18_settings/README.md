@@ -23,9 +23,13 @@ character, caret and selection reads and change notifications are available
 for valid, non-protected built-in text fields. The Text interface is partial:
 text geometry and non-character granularity remain open. A single selection and
 caret can be changed at grapheme boundaries through AT-SPI, with notifications.
-EditableText supports replacing the full text and bounded insert/delete
-operations; clipboard operations remain open. The independent test sets the name through
+EditableText supports full replacement, bounded insert/delete and clipboard
+operations. The independent test sets the name through
 AT-SPI and checks that Apply receives it.
+
+The private-Weston AT-SPI tests verify that copy/cut fail without a Wayland
+input serial and that copy/cut/paste work after virtual keyboard input. This
+exercises the window's owned clipboard source, not transfer to another app.
 
 `nexaui_settings_ime_v3` connects the same scene and native window adapter to a
 private Wayland text-input-v3 protocol fixture. It checks preedit, a UTF-8
