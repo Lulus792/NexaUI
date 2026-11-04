@@ -14,4 +14,5 @@ int settings_applied(settings_scene *scene, nx_utf8_span *name, int *reduced_mot
 int settings_set_draft_name(settings_scene *scene, const char *name, size_t length);
 /* Test-only fixture controls for native accessibility capability checks. */
 int settings_enable_accessibility_probe(settings_scene *scene);
+int settings_take_accessibility_probe_redraw(settings_scene *scene);
 #endif

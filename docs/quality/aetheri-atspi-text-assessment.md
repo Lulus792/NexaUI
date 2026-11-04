@@ -31,7 +31,7 @@ Required implementation and evidence remain:
 1. The private copied snapshot contains byte-based cursor/selection for
    non-protected built-in text fields; native character counts and range reads
    now convert Unicode scalars. Expand native range/identity/size edge coverage
-   and implement text/caret/selection notifications. Preserve secret suppression,
+   and expand text/caret/selection notification coverage. Preserve secret suppression,
    stale identities, and snapshot/value coherence.
 2. Implement the applicable complete protocol methods and honest unsupported
    results. Avoid advertising Text/EditableText merely because a semantic node
@@ -99,8 +99,7 @@ creation; it exposes count, caret, selection, character and range reads and
 character-granularity `GetStringAtOffset`. Native text replies are limited to
 1 MiB and invalid ranges return an error. Unsupported methods, including
 editing, movement, geometry, attributes and other granularities, return
-`NotSupported`. No EditableText interface or text-change/caret/selection
-notifications are implemented. Text capability, field identity and ancestor
+`NotSupported`. No EditableText interface is implemented. Text capability, field identity and ancestor
 changes retire the old object path, but independent stale-path tests for this
 new behavior remain to be added.
 
@@ -130,3 +129,38 @@ sanitizer log contains no ASan, LeakSanitizer or UBSan error marker. Logs:
 `201ee25cb1aa7e8e992e8e149e4e3daaf0b7e4bce4b7c26a7d9716fd17325629`.
 The test for the 1 MiB reply limit and independent stale-object transitions,
 real IMEs, real Aetheri compositor and human screenreader use remain open.
+
+## Text and selection notifications (2026-11-04)
+
+On a stable text-node incarnation, the provider compares consecutive owned
+snapshots at Unicode scalar boundaries, preserves a common prefix/suffix, and
+sends deleted old text and inserted new text with scalar offsets. Each message
+is limited to 64 KiB of UTF-8 payload and split only at character boundaries;
+deletion chunks are ordered from the end and insertions from the beginning.
+Caret and normalized text-selection changes emit separate events. The existing
+8 MiB outgoing budget may disconnect a stalled/large event stream; it is not an
+unbounded queue or a guarantee of delivery across reconnection. New or retired
+identities do not receive fabricated text deltas.
+
+The independent Settings client registers a libatspi listener and invokes a
+test-only model change twice: `Aé🌍` to `Aö🌍`, then to `AöZ`. It verifies the
+old and new payloads, scalar offsets and lengths, one caret event, one
+selection event, absence of extra caret/selection events on the second change,
+and current text. The preimplementation client failed at the expected missing
+events (`out/aetheri-atspi-events-before-v1.log`); the changed provider passed
+(`out/aetheri-atspi-events-v2.log`). A focused ASan/UBSan run with leak checking
+also passed (`out/aetheri-atspi-events-asan-v1.log`). These examples do not test
+the 64 KiB chunk boundary, large-stream backpressure, concurrent client state,
+event delivery across reconnect, actual IME, or a human screenreader.
+
+With these changes on base `07e3bdfa3134e30d35ef77c3289591ef1712e43f`, the
+complete local Wayland-only private-Weston suites passed 124/124 shared and
+125/125 static with ASan, UBSan and leak checking. JUnit has no missing,
+duplicate, failed or skipped names; the child and compositor exited 0 in each
+fixture. No sanitizer error marker appeared. The shared and sanitizer raw logs
+are `out/aetheri-atspi-events-full-shared.log` (SHA-256
+`f5e6d1b3b6156df9aa0a7b1e0e85634f34d92576a1a47deb74c519af96127b3a`) and
+`out/aetheri-atspi-events-full-asan.log` (SHA-256
+`01773f914c38993033f2af92aa6e591a239237307d62148c679272d9c133420e`).
+These runs do not close the untested large-event, reconnect or physical and
+human acceptance cases above.

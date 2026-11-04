@@ -54,9 +54,13 @@ and range reads, and character-granularity `GetStringAtOffset`. Offsets count
 Unicode scalar values rather than UTF-8 bytes. A single text reply is limited to
 1 MiB; invalid ranges and oversized replies return errors. Unsupported text
 operations return `NotSupported`, including edits, caret/selection movement,
-geometry, attributes and non-character granularities. Text-change/caret/selection
-notifications are not yet implemented, so this is not complete screenreader or
-editable-text support. `EditableText` and numeric `Value` are not advertised.
+geometry, attributes and non-character granularities. On changed published
+snapshots, TextChanged delete/insert events use scalar offsets and the old/new
+text segments; caret and text-selection changes also emit events. Events are
+chunked at UTF-8 boundaries and the existing outgoing-queue budget can force
+disconnect/re-registration under a stalled or oversized event stream. This is
+not complete screenreader or editable-text support. `EditableText` and numeric
+`Value` are not advertised.
 Custom semantic nodes and protected fields do not gain Text merely from a value.
 
 Object paths contain window and node incarnations. Consecutive unchanged

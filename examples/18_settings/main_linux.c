@@ -122,7 +122,8 @@ int main(int argc, char **argv) {
         }
         /* The scene learns the new focus while building this frame. Give it
            one further frame to reveal the focused control before going idle. */
-        dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene));
+        int probe_redraw=settings_take_accessibility_probe_redraw(scene);
+        dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw;
         if (verify_ax || verify_keyboard) {
             nx_utf8_span applied; int motion=0;
             if (!settings_applied(scene,&applied,&motion)) { okay=0; break; }
@@ -148,7 +149,7 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            const char *expected=verify_ax?"A\xc3\xa9\xf0\x9f\x8c\x8d":
+            const char *expected=verify_ax?"A\xc3\xb6Z":
                 (verify_keyboard_text || verify_keyboard_small)?"Ada":"Aetheri";
             size_t expected_length=strlen(expected);
             if (motion && applied.length==expected_length && !memcmp(applied.data,expected,expected_length)) {

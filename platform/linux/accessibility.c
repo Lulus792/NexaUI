@@ -1470,6 +1470,69 @@ static int nx_ax_same_node(const nx_ax_snapshot *next,const nx_ax_node *n) {
     uint32_t at=nx_ax_find(next,n->id);
     return at!=NX_AX_NONE && next->nodes[at].incarnation==n->incarnation;
 }
+
+/* Send bounded UTF-8 chunks, deleting from the end and inserting from the
+   beginning so each event's scalar offset applies to the preceding event. */
+static int nx_ax_text_chunks(nx_ax_ref r,const nx_ax_node *n,size_t first,size_t last,
+                             int32_t position,int32_t characters,int deleting) {
+    const size_t limit=64u*1024u;
+    while (first<last) {
+        size_t begin=first,end=last;
+        if (deleting && end-begin>limit) {
+            begin=end-limit;
+            while (begin<end && (((unsigned char)n->value[begin]&0xc0u)==0x80u)) ++begin;
+        } else if (!deleting && end-begin>limit) {
+            end=begin+limit;
+            while (end>begin && (((unsigned char)n->value[end]&0xc0u)==0x80u)) --end;
+        }
+        size_t at=begin; int32_t count=0; uint32_t scalar;
+        while (at<end) {
+            if (nx_utf8_decode(n->value,end,&at,&scalar)!=NX_OK) { r.hub->failed=1; return 0; }
+            ++count;
+        }
+        size_t bytes=end-begin; char *copy=malloc(bytes+1u);
+        if (!copy) { r.hub->failed=1; return 0; }
+        memcpy(copy,n->value+begin,bytes); copy[bytes]=0;
+        int32_t where=deleting?position+characters-count:position;
+        int ok=nx_ax_event(r,"TextChanged",deleting?"delete":"insert",where,count,copy,NULL);
+        free(copy); if (!ok) return 0;
+        if (deleting) { last=begin; characters-=count; }
+        else { first=end; position+=count; }
+    }
+    return 1;
+}
+static void nx_ax_text_delta(nx_ax_ref r,const nx_ax_node *old,const nx_ax_node *next) {
+    if (!old->text_ready || !next->text_ready) return;
+    if (old->text_bytes!=next->text_bytes || memcmp(old->value,next->value,old->text_bytes)) {
+        size_t a=0,b=0; int32_t prefix=0,suffix=0;
+        while (a<old->text_bytes && b<next->text_bytes) {
+            size_t na=a,nb=b; uint32_t ca,cb;
+            if (nx_utf8_decode(old->value,old->text_bytes,&na,&ca)!=NX_OK ||
+                nx_utf8_decode(next->value,next->text_bytes,&nb,&cb)!=NX_OK) { r.hub->failed=1; return; }
+            if (ca!=cb) break;
+            a=na; b=nb; ++prefix;
+        }
+        size_t ae=old->text_bytes,be=next->text_bytes;
+        while (ae>a && be>b) {
+            size_t ap=ae-1u,bp=be-1u;
+            while (ap>a && (((unsigned char)old->value[ap]&0xc0u)==0x80u)) --ap;
+            while (bp>b && (((unsigned char)next->value[bp]&0xc0u)==0x80u)) --bp;
+            if (ae-ap!=be-bp || memcmp(old->value+ap,next->value+bp,ae-ap)) break;
+            ae=ap; be=bp; ++suffix;
+        }
+        if (!nx_ax_text_chunks(r,old,a,ae,prefix,old->text_count-prefix-suffix,1) ||
+            !nx_ax_text_chunks(r,next,b,be,prefix,next->text_count-prefix-suffix,0)) return;
+    }
+    if (old->text_cursor!=next->text_cursor)
+        nx_ax_event(r,"TextCaretMoved","",next->text_cursor,0,NULL,NULL);
+    int32_t old_first=old->text_anchor<old->text_cursor?old->text_anchor:old->text_cursor;
+    int32_t old_last=old->text_anchor<old->text_cursor?old->text_cursor:old->text_anchor;
+    int32_t new_first=next->text_anchor<next->text_cursor?next->text_anchor:next->text_cursor;
+    int32_t new_last=next->text_anchor<next->text_cursor?next->text_cursor:next->text_anchor;
+    if ((old_first!=old_last)!=(new_first!=new_last) ||
+        (old_first!=old_last && (old_first!=new_first || old_last!=new_last)))
+        nx_ax_event(r,"TextSelectionChanged","",0,0,NULL,NULL);
+}
 static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
     nx_ax_snapshot *old=b->snapshot;
     /* Removal messages own their old object paths before either buffer is
@@ -1513,6 +1576,7 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         }
         if (strcmp(a->name,n->name)) nx_ax_event(r,"PropertyChange","accessible-name",0,0,n->name,NULL);
         if (strcmp(a->description,n->description)) nx_ax_event(r,"PropertyChange","accessible-description",0,0,n->description,NULL);
+        nx_ax_text_delta(r,a,n);
         if (strcmp(a->value,n->value)) nx_ax_event(r,"AttributesChanged","nexaui-value",0,0,n->value,NULL);
         if (a->bounds.x!=n->bounds.x || a->bounds.y!=n->bounds.y ||
             a->bounds.width!=n->bounds.width || a->bounds.height!=n->bounds.height) nx_ax_bounds_event(r);

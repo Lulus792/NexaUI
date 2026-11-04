@@ -9,6 +9,25 @@
 #include <time.h>
 #include <unistd.h>
 static pid_t host=-1;
+typedef struct event_log { const char *path; unsigned deletions,insertions,caret,selection,phase; int bad; } event_log;
+static void text_event(AtspiEvent *event,void *user) {
+    event_log *log=user;
+    if (event->source && !strcmp(ATSPI_OBJECT(event->source)->path,log->path)) {
+        const char *value=G_VALUE_HOLDS_STRING(&event->any_data)?g_value_get_string(&event->any_data):NULL;
+        if (!strcmp(event->type,"object:text-changed:delete")) {
+            ++log->deletions;
+            const char *expected=log->phase==1?"\xc3\xa9":"\xf0\x9f\x8c\x8d";
+            if (event->detail1!=(log->phase==1?1:2) || event->detail2!=1 || !value || strcmp(value,expected)) log->bad=1;
+        } else if (!strcmp(event->type,"object:text-changed:insert")) {
+            ++log->insertions;
+            const char *expected=log->phase==1?"\xc3\xb6":"Z";
+            if (event->detail1!=(log->phase==1?1:2) || event->detail2!=1 || !value || strcmp(value,expected)) log->bad=1;
+        } else if (!strcmp(event->type,"object:text-caret-moved")) {
+            ++log->caret; if (event->detail1!=3) log->bad=1;
+        } else if (!strcmp(event->type,"object:text-selection-changed")) ++log->selection;
+    }
+    g_boxed_free(ATSPI_TYPE_EVENT,event);
+}
 static void cleanup(void) { if(host>0) { kill(host,SIGTERM); waitpid(host,NULL,0); host=-1; } }
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"settings-atspi:%d: %s\n",__LINE__,#x); cleanup(); return 1; } } while(0)
 static void pump(unsigned ms) { for(unsigned i=0;i<ms;++i) { while(g_main_context_iteration(NULL,FALSE)) {} struct timespec t={0,1000000}; nanosleep(&t,NULL); } }
@@ -104,6 +123,22 @@ int main(int argc,char **argv) {
     CHECK(error); if (missing) g_boxed_free(ATSPI_TYPE_RANGE,missing); g_clear_error(&error);
     CHECK(!atspi_text_set_caret_offset(text,0,&error) && error); g_clear_error(&error);
     CHECK(atspi_text_get_caret_offset(text,&error)==1 && !error);
+    event_log events={0}; events.path=ATSPI_OBJECT(name)->path; events.phase=1;
+    AtspiEventListener *listener=atspi_event_listener_new(text_event,&events,NULL); CHECK(listener);
+    CHECK(atspi_event_listener_register(listener,"object:text-changed",&error) && !error);
+    CHECK(atspi_event_listener_register(listener,"object:text-caret-moved",&error) && !error);
+    CHECK(atspi_event_listener_register(listener,"object:text-selection-changed",&error) && !error);
+    AtspiAccessible *change=find(app,"Change text probe",0); CHECK(change && activate(change));
+    for(unsigned i=0;i<200 && (!events.deletions || !events.insertions || !events.caret || !events.selection);++i) pump(10);
+    CHECK(events.deletions==1 && events.insertions==1 && events.caret==1 && events.selection==1 && !events.bad);
+    all=atspi_text_get_text(text,0,-1,&error); CHECK(!error && all && !strcmp(all,"A\xc3\xb6\xf0\x9f\x8c\x8d")); g_free(all);
+    events.phase=2; CHECK(activate(change));
+    for(unsigned i=0;i<200 && (events.deletions<2 || events.insertions<2);++i) pump(10);
+    CHECK(events.deletions==2 && events.insertions==2 && events.caret==1 && events.selection==1 && !events.bad);
+    all=atspi_text_get_text(text,0,-1,&error); CHECK(!error && all && !strcmp(all,"A\xc3\xb6Z")); g_free(all);
+    CHECK(atspi_text_get_caret_offset(text,&error)==3 && !error);
+    CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
+    g_object_unref(change); g_object_unref(listener);
     g_object_unref(text);
     CHECK(atspi_accessible_get_role(motion,&error)==ATSPI_ROLE_CHECK_BOX && !error);
     /* Allow the host to become idle before sending a native action. */

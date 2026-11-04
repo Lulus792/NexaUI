@@ -19,9 +19,9 @@ model and exit through normal cleanup. It runs only in the private Weston and
 accessibility-bus test fixture.
 The client checks the nonstandard `nexaui-value` attribute and the supported
 read-only AT-SPI Text queries using a Unicode draft and selection. Text range,
-character, caret and selection reads are available for valid, non-protected
-built-in text fields. The Text interface is partial: writing, caret/selection
-movement, text geometry, granularity and text-change notifications remain open;
+character, caret and selection reads and change notifications are available
+for valid, non-protected built-in text fields. The Text interface is partial:
+writing, caret/selection movement, text geometry and non-character granularity remain open;
 EditableText is not advertised. This is not accessible text-editing support.
 
 `nexaui_settings_ime_v3` connects the same scene and native window adapter to a

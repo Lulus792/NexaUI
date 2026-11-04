@@ -17,6 +17,7 @@ struct settings_scene {
     char applied_name[NAME_CAP];
     size_t applied_length;
     int motion, applied_motion, applied;
+    int probe_redraw, probe_step;
     float scroll_x, scroll_y;
     uint64_t revealed_focus;
     float revealed_viewport_height;
@@ -73,6 +74,10 @@ int settings_set_draft_name(settings_scene *s, const char *name, size_t length) 
 }
 int settings_enable_accessibility_probe(settings_scene *s) {
     return s && !s->probe_secret && nx_text_field_create_password("private",7,&s->probe_secret)==NX_OK;
+}
+int settings_take_accessibility_probe_redraw(settings_scene *s) {
+    if (!s) return 0;
+    int dirty=s->probe_redraw; s->probe_redraw=0; return dirty;
 }
 int settings_applied(settings_scene *s, nx_utf8_span *name, int *motion) {
     if (!s || !name || !motion) return 0;
@@ -153,6 +158,14 @@ int settings_frame(settings_scene *s, float width, float height) {
         custom.role=NX_ROLE_TEXT_FIELD; custom.bounds=(nx_rect){32,550,150,38};
         custom.name=text("Custom text probe"); custom.value=text("not a field");
         TRY(nx_semantics_add(s->ui,&custom,NULL));
+        nx_control_desc change={0}; change.id=10; change.parent_id=2;
+        change.bounds=(nx_rect){32,600,150,38}; change.name=text("Change text probe");
+        TRY(nx_button(s->ui,&change,&interaction));
+        if (interaction.clicked) {
+            const char *next=s->probe_step++?"A\xc3\xb6Z":"A\xc3\xb6\xf0\x9f\x8c\x8d";
+            TRY(nx_text_field_set_text(s->name,next,strlen(next)));
+            s->probe_redraw=1;
+        }
     }
     TRY(nx_end_frame(s->ui));
     return 1;
