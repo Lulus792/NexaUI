@@ -25,8 +25,10 @@ typedef struct test_server {
     struct wl_display *display;
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
     struct wl_resource *data_device, *keyboard, *seat;
+    struct wl_global *seat_global;
     int keyboard_enabled;
-    atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested;
+    atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested, seat_remove_requested;
+    atomic_int seat_remove_sent;
     atomic_int send_offer, send_drop;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
@@ -85,6 +87,10 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
 static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
+    if(atomic_exchange(&server->seat_remove_requested,0)) {
+        CHECK(server->seat_global);wl_global_remove(server->seat_global);
+        wl_display_flush_clients(server->display);atomic_store(&server->seat_remove_sent,1);
+    }
     if(atomic_exchange(&server->keyboard_remove_requested,0)) {
         CHECK(server->seat);wl_seat_send_capabilities(server->seat,0);
     }

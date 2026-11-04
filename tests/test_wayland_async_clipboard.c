@@ -17,16 +17,18 @@ static void close_peer(test_server *server) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed"))));
     int focus_loss=argc==2;
     int keyboard_removed=argc==2 && !strcmp(argv[1],"--keyboard-removed");
+    int seat_removed=argc==2 && !strcmp(argv[1],"--seat-removed");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-async-XXXXXX";
     server.keyboard_enabled=focus_loss;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));
     CHECK(wl_global_create(server.display, &wl_shm_interface, 1, &server, bind_shm));
-    CHECK(wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat));
+    server.seat_global=wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat);
+    CHECK(server.seat_global);
     CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, 3, &server, bind_data_manager));
     CHECK(wl_global_create(server.display, &xdg_wm_base_interface, 1, &server, bind_wm));
     CHECK(wl_global_create(server.display, &zwp_text_input_manager_v3_interface, 1, &server, bind_manager));
@@ -54,19 +56,21 @@ int main(int argc, char **argv) {
         CHECK(atomic_load(&server.stalled_fd));
         nx_event event;int event_available=0;
         do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);} while(event_available);
-        if(keyboard_removed)atomic_store(&server.keyboard_remove_requested,1);
+        if(seat_removed)atomic_store(&server.seat_remove_requested,1);
+        else if(keyboard_removed)atomic_store(&server.keyboard_remove_requested,1);
         else atomic_store(&server.keyboard_leave_requested,1);
         wl_surface_commit(nx_window_wayland_surface(window));
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
         CHECK(!nx_linux_window_clipboard_async_current(window,token));
         CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_ERROR_STATE);
+        if(seat_removed)CHECK(nx_window_poll(window,0)==NX_ERROR_PLATFORM);
         int saw_focus_loss=0;
         do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);
             if(event_available && event.type==NX_EVENT_FOCUS && !event.focused)saw_focus_loss=1;
         } while(event_available);
         CHECK(saw_focus_loss);
         close_peer(&server);
-        if(!keyboard_removed) {
+        if(!keyboard_removed && !seat_removed) {
             atomic_store(&server.offer_stall,0);atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
             CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_OK);
             char *bytes=NULL;int ready=0;

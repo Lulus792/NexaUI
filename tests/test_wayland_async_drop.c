@@ -20,12 +20,12 @@ static void *run_pausing_server(void *user) {
     }
     return NULL;
 }
-typedef struct drop_heap { window_heap heap; nx_window *window; int armed, reentered; } drop_heap;
+typedef struct drop_heap { window_heap heap; nx_window *window; int armed, reentered, expect_seat_error; } drop_heap;
 static void *drop_allocate(void *user, size_t size) {
     drop_heap *heap=user;
     if(heap->armed) {
         heap->armed=0; ++heap->reentered;
-        CHECK(nx_window_poll(heap->window,0)==NX_OK);
+        CHECK(nx_window_poll(heap->window,0)==(heap->expect_seat_error?NX_ERROR_PLATFORM:NX_OK));
         size_t length=0; nx_file_drop_info info={0}; int available=0;
         CHECK(nx_window_next_file_drop(heap->window,NULL,0,&length,&info,&available)==NX_ERROR_STATE);
     }
@@ -36,7 +36,7 @@ static void drop_free(void *user, void *pointer, size_t size) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy") || !strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--legacy2") || !strcmp(argv[1],"--reject") || !strcmp(argv[1],"--invalid") || !strcmp(argv[1],"--backpressure"))));
+    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--timeout") || !strcmp(argv[1],"--destroy") || !strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--legacy2") || !strcmp(argv[1],"--reject") || !strcmp(argv[1],"--invalid") || !strcmp(argv[1],"--backpressure") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--seat-removed-reentry"))));
     int timeout=argc==2 && !strcmp(argv[1],"--timeout");
     int destroy=argc==2 && !strcmp(argv[1],"--destroy");
     int legacy=argc==2 && !strcmp(argv[1],"--legacy") ? 1 :
@@ -44,12 +44,15 @@ int main(int argc, char **argv) {
     int reject=argc==2 && !strcmp(argv[1],"--reject");
     int invalid=argc==2 && !strcmp(argv[1],"--invalid");
     int backpressure=argc==2 && !strcmp(argv[1],"--backpressure");
+    int seat_removed=argc==2 && !strcmp(argv[1],"--seat-removed");
+    int seat_reentry=argc==2 && !strcmp(argv[1],"--seat-removed-reentry");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-drop-XXXXXX";
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));
     CHECK(wl_global_create(server.display, &wl_shm_interface, 1, &server, bind_shm));
-    CHECK(wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat));
+    server.seat_global=wl_global_create(server.display, &wl_seat_interface, 5, &server, bind_seat);
+    CHECK(server.seat_global);
     CHECK(wl_global_create(server.display, &wl_data_device_manager_interface, legacy?legacy:3, &server, bind_data_manager));
     CHECK(wl_global_create(server.display, &xdg_wm_base_interface, 1, &server, bind_wm));
     CHECK(wl_global_create(server.display, &zwp_text_input_manager_v3_interface, 1, &server, bind_manager));
@@ -87,7 +90,31 @@ int main(int argc, char **argv) {
     for (unsigned i=0; i<20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd) && now_seconds()-start < 1.5);
-    if (backpressure) {
+    if (seat_reentry) {
+        CHECK(nx_window_poll(window,0)==NX_OK);
+        atomic_store(&server.seat_remove_requested,1);
+        wl_surface_commit(nx_window_wayland_surface(window));
+        CHECK(wl_display_flush(nx_window_wayland_display(window))>=0);
+        while(!atomic_load(&server.seat_remove_sent) && now_seconds()-start<2.0) {
+            struct timespec wait={0,1000000}; nanosleep(&wait,NULL);
+        }
+        CHECK(atomic_load(&server.seat_remove_sent));
+        int fd=atomic_exchange(&server.stalled_fd,0); CHECK(fd>0 && close(fd-1)==0);
+        allocations.expect_seat_error=1; allocations.armed=1;
+        CHECK(nx_window_poll(window,0)==NX_ERROR_PLATFORM && allocations.reentered==1);
+        size_t length=0; nx_file_drop_info info={0}; int available=0;
+        CHECK(nx_window_next_file_drop(window,NULL,0,&length,&info,&available)==NX_ERROR_PLATFORM);
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        CHECK(atomic_load(&server.drop_finishes)==0);
+    } else if (seat_removed) {
+        atomic_store(&server.seat_remove_requested,1);
+        wl_surface_commit(nx_window_wayland_surface(window));
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        CHECK(nx_window_poll(window,0)==NX_ERROR_PLATFORM);
+        size_t length=0; nx_file_drop_info info={0}; int available=0;
+        CHECK(nx_window_next_file_drop(window,NULL,0,&length,&info,&available)==NX_ERROR_PLATFORM);
+        CHECK(atomic_load(&server.drop_finishes)==0);
+    } else if (backpressure) {
         atomic_store(&server.pause_server,1);
         while(!atomic_load(&server.server_paused) && now_seconds()-start<2.0) {
             struct timespec wait={0,1000000};nanosleep(&wait,NULL);

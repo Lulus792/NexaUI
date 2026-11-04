@@ -791,3 +791,23 @@ ASan/UBSan static. Those runs predate an additional test-only extension that
 also confirms focus before the earlier clipboard copy/cut steps. With that
 extension, each of the three native clipboard variants was run three times in
 each profile. The dual-backend X11 AT-SPI test also passed on this code.
+
+## Selected Wayland seat removal (2026-11-05)
+
+Candidate based on `5590a5531aad7d2c9b1d35866a82591043c516f0`. A controlled
+server removes the selected seat while a clipboard read or file drop is in
+flight. The window invalidates the selection, cancels the reads and reports
+`NX_ERROR_PLATFORM`; focus cancellation events remain drainable. A further
+drop test dispatches the removal reentrantly from the application's allocator
+and verifies that no offer completion or file path is exposed afterward. The
+clipboard regression failed on the base revision with the request still
+current. These are controlled protocol tests, not physical device acceptance.
+The private-Weston suites passed 176/176 (GCC shared) and 177/177
+(Clang ASan/UBSan static) before the final reentry guard was moved after
+transfer disposal. On the final candidate, all 10 controlled drop tests and
+all three clipboard focus/removal tests passed in each profile.
+
+Automatic replacement-seat binding, pointer-only capability removal acceptance,
+other compositor/device combinations and the remaining W06 reconnect behavior
+are still open. Destroy and recreate the affected window after the terminal
+error; this step does not claim automatic recovery.

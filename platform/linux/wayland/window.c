@@ -83,6 +83,7 @@ struct nx_wayland_window {
     struct wl_compositor *compositor;
     struct wl_shm *shm;
     struct wl_seat *seat;
+    uint32_t seat_global_name;
     struct wl_data_device_manager *data_manager;
     struct wl_data_device *data_device;
     struct wl_pointer *pointer;
@@ -211,6 +212,8 @@ static void nx_wayland_async_read_progress(nx_wayland_window *window);
 static void nx_wayland_async_read_clear(nx_wayland_window *window);
 static void nx_wayland_ime_activate(nx_wayland_window *window);
 static void nx_wayland_ime_deactivate(nx_wayland_window *window);
+static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
+                                         uint32_t capabilities);
 
 static void nx_wayland_refresh_scale(nx_wayland_window *window) {
     int scale = 1;
@@ -645,8 +648,10 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
     else if (!strcmp(interface, wl_shm_interface.name) && !window->shm)
         window->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
     else if (!strcmp(interface, wl_seat_interface.name) && !window->seat &&
-             version >= 5)
+             window->error == NX_OK && version >= 5) {
         window->seat = wl_registry_bind(registry, name, &wl_seat_interface, 5);
+        if (window->seat) window->seat_global_name = name;
+    }
     else if (!strcmp(interface, zwp_text_input_manager_v1_interface.name) &&
              !window->text_input_manager)
         window->text_input_manager = wl_registry_bind(registry, name,
@@ -687,6 +692,21 @@ static void nx_wayland_registry_remove(void *data, struct wl_registry *registry,
                                        uint32_t name) {
     (void)registry;
     nx_wayland_window *window = data;
+    if (window->seat && name == window->seat_global_name) {
+        /* No seat rebinding exists yet. Fail explicitly rather than leaving
+           stale focus, serials or clipboard requests apparently usable. */
+        window->error = NX_ERROR_PLATFORM;
+        nx_wayland_seat_capabilities(window, window->seat, 0);
+        nx_wayland_selection_focus_lost(window);
+        if (window->drop_read_active && !window->drop_processing) {
+            nx_wayland_read_transfer_dispose(&window->drop_read);
+            --window->drop_read_offer->in_use;
+            window->drop_read_offer->obsolete = 1;
+            window->drop_read_offer = NULL; window->drop_read_active = 0;
+        }
+        wl_seat_release(window->seat); window->seat = NULL; window->seat_global_name = 0;
+        return;
+    }
     for (nx_wayland_output *output = window->outputs; output;
          output = output->next)
         if (output->name == name && !output->removed) {
@@ -1745,11 +1765,18 @@ static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
             window->error = NX_ERROR_PLATFORM;
     } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) &&
                window->pointer) {
+        if (window->pointer_inside || window->left_pressed) {
+            nx_event cancel = {0}; cancel.type = NX_EVENT_POINTER_CANCEL;
+            nx_platform_event_queue_push(&window->event_queue, cancel);
+        }
         wl_pointer_release(window->pointer);
         window->pointer = NULL;
         window->pointer_inside = 0;
         window->left_pressed = 0;
         window->selection_serial = 0;
+        window->pointer_serial = 0;
+        window->axis_x = window->axis_y = 0.0f;
+        window->axis_steps_x = window->axis_steps_y = 0;
     }
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !window->keyboard) {
         window->keyboard = wl_seat_get_keyboard(seat);
@@ -2601,6 +2628,7 @@ nx_result nx_wayland_window_next_file_drop(nx_wayland_window *window,
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->drop_processing) return NX_ERROR_STATE;
+    if (window->error != NX_OK) return window->error;
     if (window->drop_finish_pending) return NX_OK;
     return nx_platform_drop_queue_next(&window->drop_queue, path_utf8,
                                         capacity, out_length, out_info,
@@ -2878,6 +2906,7 @@ static nx_result nx_wayland_process_drop(nx_wayland_window *window) {
                 local_host[0] ? local_host : NULL);
         }
         nx_wayland_read_transfer_dispose(transfer);
+        if (window->error != NX_OK) result = window->error;
         nx_wayland_clipboard_offer *finished = window->drop_read_offer;
         if (result == NX_OK && window->drop_queue.count > previous_count &&
             wl_data_offer_get_version(finished->native) >= 3 &&
