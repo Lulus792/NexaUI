@@ -28,8 +28,10 @@ operations. The independent test sets the name through
 AT-SPI and checks that Apply receives it.
 
 The private-Weston AT-SPI tests verify that copy/cut fail without a Wayland
-input serial and that copy/cut/paste work after virtual keyboard input. This
-exercises the window's owned clipboard source, not transfer to another app.
+input serial and that copy/cut/paste work after virtual keyboard input. If
+`wl-copy` and `wl-paste` are installed at configure time, an additional test
+transfers Unicode to and from those separate Wayland processes. The test uses
+an isolated compositor and virtual input; physical interaction remains open.
 
 `nexaui_settings_ime_v3` connects the same scene and native window adapter to a
 private Wayland text-input-v3 protocol fixture. It checks preedit, a UTF-8

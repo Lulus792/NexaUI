@@ -73,6 +73,16 @@ if(NEXAUI_BUILD_TESTS)
                     set_tests_properties(nexaui_settings_wayland_atspi_clipboard PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                         ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_CLIPBOARD_SERIAL=1;NEXAUI_SETTINGS_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE}"
                         RESOURCE_LOCK native_display)
+                    find_program(NEXAUI_WL_COPY_EXECUTABLE wl-copy)
+                    find_program(NEXAUI_WL_PASTE_EXECUTABLE wl-paste)
+                    if(NEXAUI_WL_COPY_EXECUTABLE AND NEXAUI_WL_PASTE_EXECUTABLE)
+                        add_test(NAME nexaui_settings_wayland_atspi_clipboard_peer
+                            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                                ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
+                        set_tests_properties(nexaui_settings_wayland_atspi_clipboard_peer PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                            ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_CLIPBOARD_SERIAL=1;NEXAUI_SETTINGS_CLIPBOARD_PEER=1;NEXAUI_SETTINGS_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE};NEXAUI_TEST_WL_COPY=${NEXAUI_WL_COPY_EXECUTABLE};NEXAUI_TEST_WL_PASTE=${NEXAUI_WL_PASTE_EXECUTABLE}"
+                            RESOURCE_LOCK native_display)
+                    endif()
                 endif()
             endif()
         endif()

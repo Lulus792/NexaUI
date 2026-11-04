@@ -8,7 +8,9 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <poll.h>
 static pid_t host=-1;
+static pid_t clipboard_peer=-1;
 typedef struct event_log { const char *path; unsigned deletions,insertions,caret,selection,phase; int bad; } event_log;
 static void text_event(AtspiEvent *event,void *user) {
     event_log *log=user;
@@ -40,7 +42,10 @@ static void movement_event(AtspiEvent *event,void *user) {
     }
     g_boxed_free(ATSPI_TYPE_EVENT,event);
 }
-static void cleanup(void) { if(host>0) { kill(host,SIGTERM); waitpid(host,NULL,0); host=-1; } }
+static void cleanup(void) {
+    if(clipboard_peer>0) {kill(clipboard_peer,SIGTERM);waitpid(clipboard_peer,NULL,0);clipboard_peer=-1;}
+    if(host>0) { kill(host,SIGTERM); waitpid(host,NULL,0); host=-1; }
+}
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"settings-atspi:%d: %s\n",__LINE__,#x); cleanup(); return 1; } } while(0)
 static void pump(unsigned ms) { for(unsigned i=0;i<ms;++i) { while(g_main_context_iteration(NULL,FALSE)) {} struct timespec t={0,1000000}; nanosleep(&t,NULL); } }
 static AtspiAccessible *find(AtspiAccessible *node,const char *wanted,unsigned depth) {
@@ -103,6 +108,37 @@ static int virtual_serial(void) {
         pump(300);
     }
     return 1;
+}
+static int peer_read(const char *expected) {
+    const char *tool=getenv("NEXAUI_TEST_WL_PASTE");if(!tool)return 0;
+    int pipes[2];if(pipe(pipes))return 0;
+    pid_t p=fork();if(p<0){close(pipes[0]);close(pipes[1]);return 0;}
+    if(!p){dup2(pipes[1],STDOUT_FILENO);close(pipes[0]);close(pipes[1]);
+        execl(tool,tool,"--no-newline",(char *)NULL);_exit(127);}
+    close(pipes[1]);struct pollfd fd={pipes[0],POLLIN|POLLHUP,0};char buffer[128];size_t used=0;int ready=0;
+    while(used<sizeof(buffer) && poll(&fd,1,2000)>0) {
+        ssize_t n=read(pipes[0],buffer+used,sizeof(buffer)-used);
+        if(n==0){ready=1;break;}if(n<0)break;used+=(size_t)n;
+    }
+    close(pipes[0]);if(!ready)kill(p,SIGTERM);
+    int status=0;if(waitpid(p,&status,0)!=p)return 0;
+    return ready && WIFEXITED(status) && WEXITSTATUS(status)==0 &&
+        used==strlen(expected) && !memcmp(buffer,expected,used);
+}
+static int peer_await(const char *expected) {
+    for(unsigned i=0;i<8;++i){pump(50);if(peer_read(expected))return 1;}
+    return 0;
+}
+static int peer_own(const char *value) {
+    const char *tool=getenv("NEXAUI_TEST_WL_COPY");if(!tool || clipboard_peer>0)return 0;
+    int pipes[2];if(pipe(pipes))return 0;
+    clipboard_peer=fork();if(clipboard_peer<0){clipboard_peer=-1;close(pipes[0]);close(pipes[1]);return 0;}
+    if(!clipboard_peer){dup2(pipes[0],STDIN_FILENO);close(pipes[0]);close(pipes[1]);
+        execl(tool,tool,"--foreground",(char *)NULL);_exit(127);}
+    close(pipes[0]);size_t length=strlen(value),written=0;
+    while(written<length){ssize_t n=write(pipes[1],value+written,length-written);if(n<=0)break;written+=(size_t)n;}
+    close(pipes[1]);if(written!=length)return 0;
+    return peer_await(value);
 }
 int main(int argc,char **argv) {
     const char *font=getenv("NEXAUI_SETTINGS_FONT"); CHECK(argc==2 && font && *font);
@@ -196,10 +232,19 @@ int main(int argc,char **argv) {
     g_object_unref(listener);
     if(getenv("NEXAUI_SETTINGS_CLIPBOARD_SERIAL")) {
         CHECK(virtual_serial());
-        CHECK(atspi_editable_text_copy_text(editable,0,1,&error) && !error);
-        CHECK(atspi_editable_text_cut_text(editable,0,1,&error) && !error);
-        all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"\xc3\xb6Z"));g_free(all);
-        CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
+        CHECK(atspi_editable_text_copy_text(editable,1,2,&error) && !error);
+        if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER"))CHECK(peer_await("\xc3\xb6") && virtual_serial());
+        CHECK(atspi_editable_text_cut_text(editable,1,2,&error) && !error);
+        all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"AZ"));g_free(all);
+        CHECK(atspi_editable_text_paste_text(editable,1,&error) && !error);
+        if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER")) {
+            CHECK(peer_own("Peer \xf0\x9f\x8c\x8d"));
+            CHECK(virtual_serial());
+            CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
+            all=atspi_text_get_text(text,0,-1,&error);
+            CHECK(!error && all && !strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z"));g_free(all);
+            CHECK(atspi_editable_text_set_text_contents(editable,"A\xc3\xb6Z",&error) && !error);
+        }
     } else {
         /* Without an input serial Wayland must not claim clipboard ownership. */
         (void)atspi_editable_text_copy_text(editable,0,1,&error);
@@ -228,5 +273,5 @@ int main(int argc,char **argv) {
     }
     CHECK(finished && WIFEXITED(status) && WEXITSTATUS(status)==0);
     g_object_unref(secret);g_object_unref(custom);g_object_unref(name);g_object_unref(motion);g_object_unref(apply);g_object_unref(app);g_object_unref(desktop);
-    atspi_exit(); puts("Independent AT-SPI text, checkbox and Apply updated the real model; host closed cleanly."); return 0;
+    atspi_exit();cleanup(); puts("Independent AT-SPI text, checkbox and Apply updated the real model; host closed cleanly."); return 0;
 }

@@ -456,3 +456,24 @@ text-value tests passed. An installed input method, an external clipboard
 owner/consumer, stalled clipboard callbacks and actual screenreader/Aetheri
 acceptance remain open. The two-second request deadline is checked before and
 after callbacks; synchronous callbacks can themselves block longer.
+
+## Independent Wayland clipboard peer (2026-11-04)
+
+An additional private-Weston Settings test uses `wl-paste` and a foreground
+`wl-copy` as separate Wayland processes. After virtual keyboard input supplies
+a valid serial, Settings copies `ö` through AT-SPI and the independent reader
+verifies its exact UTF-8 bytes. The external owner then publishes `Peer 🌍`;
+Settings pastes it through AT-SPI, verifies the resulting field value, applies
+the expected final model and exits cleanly. The fixture waits for the external
+clipboard state rather than assuming that the owner's D-Bus reply also means
+the Wayland selection has already reached another client. It restores virtual
+focus after the helper client has obtained clipboard access.
+
+On base `90a3b7f69b2f412ae5ddfddbcb6ddc2f9f1fdb0f`, the peer and owned-source
+Settings tests passed 2/2 in each of the GCC shared and Clang ASan/UBSan
+profiles. The peer was Alpine `wl-clipboard` 2.2.1-r1 extracted into `/tmp`;
+the test is registered when both tools and `xdotool` are found at configure
+time, and otherwise remains unverified. It is a private compositor with
+virtual input, not a physical desktop, real screenreader or Aetheri-compositor
+acceptance. External owner exit, very large/slow transfers and input-method
+overlap remain to be checked separately.
