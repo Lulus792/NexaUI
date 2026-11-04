@@ -26,6 +26,7 @@ typedef struct test_server {
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
     struct wl_resource *data_device;
     atomic_int send_offer;
+    atomic_int offer_reads, offer_once;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
     char surrounding[4001];
@@ -41,6 +42,16 @@ static void resource_destroy(struct wl_client *client,
     (void)client;
     wl_resource_destroy(resource);
 }
+static void offer_receive(struct wl_client *client,struct wl_resource *resource,
+                          const char *mime,int32_t fd) {
+    (void)client;(void)mime;test_server *server=wl_resource_get_user_data(resource);
+    int previous=atomic_fetch_add(&server->offer_reads,1);
+    if(!atomic_load(&server->offer_once) || previous==0) {
+        const char payload[]="Once";
+        if(write(fd,payload,sizeof(payload)-1u)!=(ssize_t)(sizeof(payload)-1u))abort();
+    }
+    close(fd);
+}
 
 static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
@@ -48,7 +59,7 @@ static void surface_commit(struct wl_client *client,
     if (atomic_exchange(&server->send_offer, 0)) {
         struct wl_resource *offer = wl_resource_create(client, &wl_data_offer_interface, 3, 0);
         CHECK(offer && server->data_device);
-        static const struct wl_data_offer_interface implementation = {.destroy = resource_destroy};
+        static const struct wl_data_offer_interface implementation = {.receive = offer_receive, .destroy = resource_destroy};
         wl_resource_set_implementation(offer, &implementation, server, NULL);
         wl_data_device_send_data_offer(server->data_device, offer);
         wl_data_offer_send_offer(offer, "text/plain;charset=utf-8");

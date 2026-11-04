@@ -18,6 +18,7 @@ static nx_result write_clipboard(void *user,const char *bytes,size_t length) {
 static nx_result read_clipboard(void *user,char *bytes,size_t capacity,size_t *out) {
     clipboard *c=user;++c->reads;size_t n=strlen(c->data);*out=n;
     if(c->mode==7) {*out=NX_TEXT_VALUE_MAX_BYTES+1u;return NX_OK;}
+    if(c->mode==9 && bytes) {*out=0;bytes[0]=0;return NX_OK;}
     if((c->mode==4 && !bytes) || (c->mode==5 && bytes))
         if(nx_text_field_set_text(c->field,"replaced",8)!=NX_OK)return NX_ERROR_STATE;
     if(c->mode==6 && bytes)c->ticket->current=0;
@@ -121,6 +122,10 @@ int main(void) {
         CHECK(nx_semantics_request_text_paste_with_completion(ctx,1,1,&guard,complete)==NX_OK);
         CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"abc")==0);
     }
+    clip.mode=9;strcpy(clip.data,"X");t.current=1;t.calls=0;
+    CHECK(nx_text_field_set_text(field,"abc",3)==NX_OK && frame(ctx,field,&d,1)==0);
+    CHECK(nx_semantics_request_text_paste_with_completion(ctx,1,1,&guard,complete)==NX_OK);
+    CHECK(frame(ctx,field,&d,1)==0 && t.calls==1 && t.applied==0 && has_text(field,"abc")==0);
     t.current=1;t.calls=0;clip.mode=0;
     CHECK(nx_semantics_request_text_value_with_completion(ctx,1,(nx_utf8_span){"destroy",7},&guard,complete)==NX_OK);
     nx_context_destroy(ctx);

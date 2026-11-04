@@ -129,15 +129,17 @@ static int peer_await(const char *expected) {
     for(unsigned i=0;i<8;++i){pump(50);if(peer_read(expected))return 1;}
     return 0;
 }
-static int peer_own(const char *value) {
+static int peer_own(const char *value,int once) {
     const char *tool=getenv("NEXAUI_TEST_WL_COPY");if(!tool || clipboard_peer>0)return 0;
     int pipes[2];if(pipe(pipes))return 0;
     clipboard_peer=fork();if(clipboard_peer<0){clipboard_peer=-1;close(pipes[0]);close(pipes[1]);return 0;}
     if(!clipboard_peer){dup2(pipes[0],STDIN_FILENO);close(pipes[0]);close(pipes[1]);
-        execl(tool,tool,"--foreground",(char *)NULL);_exit(127);}
+        if(once)execl(tool,tool,"--foreground","--paste-once",(char *)NULL);
+        else execl(tool,tool,"--foreground",(char *)NULL);_exit(127);}
     close(pipes[0]);size_t length=strlen(value),written=0;
     while(written<length){ssize_t n=write(pipes[1],value+written,length-written);if(n<=0)break;written+=(size_t)n;}
     close(pipes[1]);if(written!=length)return 0;
+    if(once){pump(300);return kill(clipboard_peer,0)==0;}
     return peer_await(value);
 }
 int main(int argc,char **argv) {
@@ -238,11 +240,17 @@ int main(int argc,char **argv) {
         all=atspi_text_get_text(text,0,-1,&error);CHECK(!error && all && !strcmp(all,"AZ"));g_free(all);
         CHECK(atspi_editable_text_paste_text(editable,1,&error) && !error);
         if(getenv("NEXAUI_SETTINGS_CLIPBOARD_PEER")) {
-            CHECK(peer_own("Peer \xf0\x9f\x8c\x8d"));
+            CHECK(peer_own("Peer \xf0\x9f\x8c\x8d",getenv("NEXAUI_SETTINGS_CLIPBOARD_ONCE")!=NULL));
             CHECK(virtual_serial());
             CHECK(atspi_editable_text_paste_text(editable,0,&error) && !error);
             all=atspi_text_get_text(text,0,-1,&error);
             CHECK(!error && all && !strcmp(all,"Peer \xf0\x9f\x8c\x8d" "A\xc3\xb6Z"));g_free(all);
+            if(getenv("NEXAUI_SETTINGS_CLIPBOARD_ONCE")) {
+                int status=0,exited=0;
+                for(unsigned i=0;i<60 && !exited;++i){pid_t p=waitpid(clipboard_peer,&status,WNOHANG);
+                    if(p==clipboard_peer){exited=1;clipboard_peer=-1;}else if(p<0)break;else pump(50);}
+                CHECK(exited && WIFEXITED(status) && WEXITSTATUS(status)==0);
+            }
             CHECK(atspi_editable_text_set_text_contents(editable,"A\xc3\xb6Z",&error) && !error);
         }
     } else {

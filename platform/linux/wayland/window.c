@@ -2738,6 +2738,57 @@ nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
     return result;
 }
 
+nx_result nx_wayland_window_clipboard_fetch_text(nx_wayland_window *window,
+                                                  char **out_bytes, size_t *out_length) {
+    if (!out_bytes || !out_length) return NX_ERROR_ARGUMENT;
+    *out_bytes = NULL; *out_length = 0;
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (!window->data_device) return NX_ERROR_UNSUPPORTED;
+    char *collected = NULL;
+    size_t length = 0, allocated = 0;
+    nx_result result = NX_OK;
+    if (window->owned_source) {
+        length = window->owned_source->length;
+        collected = window->owned_source->text;
+    } else {
+        nx_wayland_clipboard_offer *offer = window->selection_offer;
+        if (!offer) return NX_ERROR_STATE;
+        const char *mime = offer->mime_types & NX_WAYLAND_MIME_UTF8 ?
+            NX_WAYLAND_CLIPBOARD_UTF8 :
+            offer->mime_types & NX_WAYLAND_MIME_UTF8_STRING ? "UTF8_STRING" :
+            offer->mime_types & NX_WAYLAND_MIME_PLAIN ? "text/plain" : NULL;
+        if (!mime) return NX_ERROR_STATE;
+        int fds[2];
+        if (pipe2(fds, O_CLOEXEC) != 0) return NX_ERROR_PLATFORM;
+        int flags = fcntl(fds[0], F_GETFL);
+        if (flags < 0 || fcntl(fds[0], F_SETFL, flags | O_NONBLOCK) < 0) {
+            close(fds[0]); close(fds[1]); return NX_ERROR_PLATFORM;
+        }
+        ++offer->in_use;
+        wl_data_offer_receive(offer->native, mime, fds[1]);
+        close(fds[1]);
+        result = nx_wayland_read_fd(window, fds[0], &collected, &length, &allocated);
+        --offer->in_use;
+        if (offer->obsolete) nx_wayland_retire_offer(offer);
+    }
+    if (result == NX_OK) {
+        size_t validated = 0;
+        result = nx_wayland_clipboard_copy(collected, length, NULL, 0, &validated);
+        if (result == NX_OK) {
+            char *copy = malloc(length + 1u);
+            if (!copy) result = NX_ERROR_MEMORY;
+            else {
+                if (length) memcpy(copy, collected, length);
+                copy[length] = '\0';
+                *out_bytes = copy; *out_length = length;
+            }
+        }
+    }
+    if (allocated) window->allocator.deallocate(window->allocator.user, collected, allocated);
+    return result;
+}
+
 void nx_wayland_window_destroy(nx_wayland_window *window) {
     if (!window || !nx_wayland_on_owner_thread(window)) return;
     /* Another reader of this display can have decoded default-queue new-id

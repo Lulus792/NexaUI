@@ -21,7 +21,7 @@ if(NEXAUI_BUILD_TESTS)
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
             add_dependencies(nexaui_settings_ime_v3_tests nexaui_wayland_test_protocols)
             target_include_directories(nexaui_settings_ime_v3_tests PRIVATE
-                ${PROJECT_SOURCE_DIR}/tests ${PROJECT_SOURCE_DIR}/platform/linux ${NEXAUI_WAYLAND_PROTOCOL_DIR})
+                ${PROJECT_SOURCE_DIR}/tests ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/platform/linux ${NEXAUI_WAYLAND_PROTOCOL_DIR})
             target_link_libraries(nexaui_settings_ime_v3_tests PRIVATE nexaui_settings_scene
                 Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_settings_ime_v3 COMMAND nexaui_settings_ime_v3_tests "${_settings_font}")
@@ -30,6 +30,10 @@ if(NEXAUI_BUILD_TESTS)
             set_tests_properties(nexaui_settings_ime_v3_external PROPERTIES TIMEOUT 20)
             add_test(NAME nexaui_settings_ime_v3_same_value COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --same)
             set_tests_properties(nexaui_settings_ime_v3_same_value PROPERTIES TIMEOUT 20)
+            add_test(NAME nexaui_settings_clipboard_single_read COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --clipboard-once)
+            set_tests_properties(nexaui_settings_clipboard_single_read PROPERTIES TIMEOUT 20)
+            add_test(NAME nexaui_settings_keyboard_clipboard_single_read COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --keyboard-clipboard-once)
+            set_tests_properties(nexaui_settings_keyboard_clipboard_single_read PROPERTIES TIMEOUT 20)
         endif()
         if(TARGET nexaui_settings)
             find_program(NEXAUI_XDOTOOL_EXECUTABLE xdotool)
@@ -81,6 +85,12 @@ if(NEXAUI_BUILD_TESTS)
                                 ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
                         set_tests_properties(nexaui_settings_wayland_atspi_clipboard_peer PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                             ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_CLIPBOARD_SERIAL=1;NEXAUI_SETTINGS_CLIPBOARD_PEER=1;NEXAUI_SETTINGS_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE};NEXAUI_TEST_WL_COPY=${NEXAUI_WL_COPY_EXECUTABLE};NEXAUI_TEST_WL_PASTE=${NEXAUI_WL_PASTE_EXECUTABLE}"
+                            RESOURCE_LOCK native_display)
+                        add_test(NAME nexaui_settings_wayland_atspi_clipboard_once
+                            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                                ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
+                        set_tests_properties(nexaui_settings_wayland_atspi_clipboard_once PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                            ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_CLIPBOARD_SERIAL=1;NEXAUI_SETTINGS_CLIPBOARD_PEER=1;NEXAUI_SETTINGS_CLIPBOARD_ONCE=1;NEXAUI_SETTINGS_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE};NEXAUI_TEST_WL_COPY=${NEXAUI_WL_COPY_EXECUTABLE};NEXAUI_TEST_WL_PASTE=${NEXAUI_WL_PASTE_EXECUTABLE}"
                             RESOURCE_LOCK native_display)
                     endif()
                 endif()

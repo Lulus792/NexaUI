@@ -346,6 +346,38 @@ nx_result nx_window_clipboard_get_text(nx_window *window,
                     bytes, capacity, out_length));
 }
 
+nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_bytes,
+                                                size_t *out_length) {
+    if (!out_bytes || !out_length) return NX_ERROR_ARGUMENT;
+    *out_bytes = NULL; *out_length = 0;
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+    ++window->operations;
+    nx_result result;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    if (window->backend == NX_LINUX_X11) {
+        size_t length = 0;
+        result = nx_x11_window_clipboard_get_text(window->native.x11, NULL, 0, &length);
+        if (result == NX_OK && length != SIZE_MAX && !window->retired) {
+            char *bytes = malloc(length + 1u);
+            if (!bytes) result = NX_ERROR_MEMORY;
+            else {
+                size_t actual = 0;
+                result = nx_x11_window_clipboard_get_text(window->native.x11, bytes, length + 1u, &actual);
+                if (result == NX_OK && actual <= length) { *out_bytes = bytes; *out_length = actual; }
+                else free(bytes);
+            }
+        } else if (result == NX_OK) result = NX_ERROR_STATE;
+    } else
+#endif
+        result = nx_wayland_window_clipboard_fetch_text(window->native.wayland, out_bytes, out_length);
+    if (window->retired) {
+        free(*out_bytes); *out_bytes = NULL; *out_length = 0; result = NX_ERROR_STATE;
+    }
+    nx_linux_window_release(window);
+    return result;
+}
+
 void nx_window_destroy(nx_window *window) {
     if (!window || !nx_linux_on_owner_thread(window) || window->retired) return;
     window->retired=1;

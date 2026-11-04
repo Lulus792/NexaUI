@@ -2,6 +2,12 @@
 #define NEXAUI_PRIVATE_TEXT_VALUE_H
 #include "nexaui/nexaui.h"
 
+#if defined(__linux__)
+/* Private single-transfer clipboard read. The caller frees *out_bytes. */
+nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_bytes,
+                                                size_t *out_length);
+#endif
+
 /* Owner-thread model identities, never model addresses. Native snapshots may
    copy these scalars, but may not access the editor. A revision invalidates an
    admitted request when the application replaces text or changes edit policy. */

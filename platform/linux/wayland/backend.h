@@ -55,6 +55,8 @@ nx_result nx_wayland_window_clipboard_set_text(nx_wayland_window *window,
 nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
                                                char *bytes, size_t capacity,
                                                size_t *out_length);
+nx_result nx_wayland_window_clipboard_fetch_text(nx_wayland_window *window,
+                                                 char **out_bytes, size_t *out_length);
 void nx_wayland_window_destroy(nx_wayland_window *window);
 struct wl_display *nx_wayland_window_display(nx_wayland_window *window);
 struct wl_surface *nx_wayland_window_surface(nx_wayland_window *window);

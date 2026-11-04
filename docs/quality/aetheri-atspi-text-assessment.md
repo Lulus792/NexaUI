@@ -477,3 +477,26 @@ time, and otherwise remains unverified. It is a private compositor with
 virtual input, not a physical desktop, real screenreader or Aetheri-compositor
 acceptance. External owner exit, very large/slow transfers and input-method
 overlap remain to be checked separately.
+
+## Single-transfer Wayland paste (2026-11-04)
+
+Native-window AT-SPI paste now fetches once into its existing 65,536-byte
+limit. Keyboard paste uses a dynamically sized, bounded Wayland transfer, so
+it does not consume a one-shot owner in a separate size query. Existing custom
+clipboard callbacks retain their query/read contract; AT-SPI rejects a length
+change between those calls. The Wayland transfer retains its 32 MiB and
+five-second bounds. A private fixture supplies text only on its first receive:
+both the real Settings field's AT-SPI request and Ctrl+V previously issued two
+receives and failed the expected-value check; both now issue exactly one and
+insert the expected text. The independent `wl-copy --paste-once` Settings
+test additionally verifies a real external owner and its clean exit, although
+that process alone is not a reliable count of rapid receive requests.
+
+On base `708c7a127a96bf160a5b8381532c4de85ea28239`, the GCC shared private
+Weston suite passed 135/135, and the Clang ASan/UBSan suite passed 136/136,
+including the independent peer and keyboard tests. A separate X11-plus-Wayland
+library build succeeded. Wayland streams do
+not advertise an expected byte length: an owner closing after a valid UTF-8
+prefix cannot be distinguished from a complete short transfer. Large/slow
+transfers, IME overlap, installed screenreaders and actual Aetheri-compositor
+acceptance remain open.

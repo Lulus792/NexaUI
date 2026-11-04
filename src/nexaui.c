@@ -2255,6 +2255,7 @@ nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
     return nx_semantics_request_text_value_guarded(ctx, id, value, NULL);
 }
 
+static nx_result nx_window_clipboard_read_adapter(void *user,char *bytes,size_t capacity,size_t *out_length);
 static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
     nx_text_buffer **buffer_address,nx_text_value_target *live_target,
     const nx_text_clipboard *clipboard,int *changed) {
@@ -2314,14 +2315,22 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
         }
         if(r->ranged==5) {
             if(!clipboard || !clipboard->read) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
-            nx_text_clipboard cb=*clipboard;size_t length=0;
-            nx_result read=cb.read(cb.user,NULL,0,&length);
-            if(read!=NX_OK || length>NX_TEXT_VALUE_MAX_BYTES || !nx_text_request_current(ctx,r,live_target)) {
-                nx_text_value_dispose(ctx,r,0);return NX_OK;
+            nx_text_clipboard cb=*clipboard;size_t length=NX_TEXT_VALUE_MAX_BYTES;
+            int single_read=cb.read==nx_window_clipboard_read_adapter;
+            nx_result read=NX_OK;
+            /* Native clipboard ownership can disappear after a single read.
+               Fetch once into the bounded buffer instead of consuming an offer
+               in a separate size query. Custom callbacks retain their public
+               query-then-read contract. */
+            if(!single_read) {
+                length=0;read=cb.read(cb.user,NULL,0,&length);
+                if(read!=NX_OK || length>NX_TEXT_VALUE_MAX_BYTES || !nx_text_request_current(ctx,r,live_target)) {
+                    nx_text_value_dispose(ctx,r,0);return NX_OK;
+                }
             }
             char *copy=malloc(length+1u);if(!copy)return NX_ERROR_MEMORY;
             size_t actual=0;read=cb.read(cb.user,copy,length+1u,&actual);
-            if(read!=NX_OK || actual>length || !nx_text_request_current(ctx,r,live_target) ||
+            if(read!=NX_OK || actual>length || (!single_read && actual!=length) || !nx_text_request_current(ctx,r,live_target) ||
                (actual && memchr(copy,0,actual)) || nx_utf8_validate(copy,actual,NULL)!=NX_OK) {
                 free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
             }
@@ -6353,14 +6362,23 @@ static nx_result nx_field_clipboard_event(nx_text_buffer *buffer,
                                  NX_OK;
     }
     if (key != NX_KEY_V || !clipboard->read) return NX_OK;
-    size_t length = 0;
-    if (clipboard->read(clipboard->user, NULL, 0u, &length) != NX_OK ||
-        length == SIZE_MAX) return NX_OK;
-    char *bytes = malloc(length + 1u);
-    if (!bytes) return NX_ERROR_MEMORY;
-    size_t actual = 0;
-    nx_result result = clipboard->read(clipboard->user, bytes, length + 1u,
-                                       &actual);
+    size_t length = 0, actual = 0;
+    char *bytes = NULL;
+    nx_result result;
+#if defined(__linux__)
+    if (clipboard->read == nx_window_clipboard_read_adapter) {
+        result = nx_linux_window_clipboard_fetch_text((nx_window *)clipboard->user, &bytes, &actual);
+        if (result != NX_OK) return result == NX_ERROR_MEMORY ? result : NX_OK;
+        length = actual;
+    } else
+#endif
+    {
+        if (clipboard->read(clipboard->user, NULL, 0u, &length) != NX_OK ||
+            length == SIZE_MAX) return NX_OK;
+        bytes = malloc(length + 1u);
+        if (!bytes) return NX_ERROR_MEMORY;
+        result = clipboard->read(clipboard->user, bytes, length + 1u, &actual);
+    }
     if (result == NX_OK && actual <= length) {
         if (!multiline) {
             size_t written = 0;

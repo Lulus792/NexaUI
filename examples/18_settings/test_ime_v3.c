@@ -1,5 +1,14 @@
 #include "../../tests/wayland_v3_fixture.h"
 #include "scene.h"
+#include "text_value.h"
+
+typedef struct paste_ticket { int refs,calls,applied; } paste_ticket;
+static void paste_retain(void *p){++((paste_ticket *)p)->refs;}
+static void paste_release(void *p){--((paste_ticket *)p)->refs;}
+static int paste_current(void *p,uint64_t token,uint64_t context,uint64_t id,nx_text_value_target target) {
+    (void)p;(void)token;(void)context;(void)id;(void)target;return 1;
+}
+static void paste_complete(void *p,int applied){paste_ticket *t=p;++t->calls;t->applied=applied;}
 
 static unsigned char *read_font(const char *path,size_t *size) {
     FILE *f=fopen(path,"rb"); if(!f)return NULL;
@@ -16,9 +25,12 @@ static int value_is(nx_context *ctx,const char *expected) {
         view.value.length==strlen(expected) && !memcmp(view.value.data,expected,view.value.length);
 }
 int main(int argc,char **argv) {
-    CHECK(argc==2 || (argc==3 && (!strcmp(argv[2],"--external") || !strcmp(argv[2],"--same"))));
+    CHECK(argc==2 || (argc==3 && (!strcmp(argv[2],"--external") || !strcmp(argv[2],"--same") ||
+          !strcmp(argv[2],"--clipboard-once") || !strcmp(argv[2],"--keyboard-clipboard-once"))));
     int external=argc==3 && !strcmp(argv[2],"--external");
     int same=argc==3 && !strcmp(argv[2],"--same");
+    int once=argc==3 && !strcmp(argv[2],"--clipboard-once");
+    int keyboard_once=argc==3 && !strcmp(argv[2],"--keyboard-clipboard-once");
     size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
     test_server server={0}; server.width=640; server.height=360;
     char runtime[]="/tmp/nexaui-settings-ime-XXXXXX";
@@ -71,6 +83,21 @@ int main(int argc,char **argv) {
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     CHECK(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)==NX_OK &&
           preedit_length==0 && value_is(ctx,expected));
+    if(once || keyboard_once) {
+        CHECK(nx_focus_set(ctx,3)==NX_OK && settings_frame(scene,640,360));
+        atomic_store(&server.offer_once,1);atomic_store(&server.send_offer,1);
+        wl_surface_commit(nx_window_wayland_surface(window));
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        paste_ticket ticket={0};nx_text_value_guard guard={&ticket,1,paste_retain,paste_release,paste_current};
+        if(once)CHECK(nx_semantics_request_text_paste_with_completion(ctx,3,0,&guard,paste_complete)==NX_OK);
+        else {nx_event event={0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_V;event.modifiers=NX_MOD_CONTROL;
+              CHECK(nx_context_queue_event(ctx,&event)==NX_OK);}
+        CHECK(settings_frame(scene,640,360));
+        if(once)CHECK(ticket.calls==1 && ticket.applied==1 && ticket.refs==0);
+        fprintf(stderr,"one-shot clipboard: reads=%d expected-value=%d\n",
+            atomic_load(&server.offer_reads),value_is(ctx,once?"OnceAethericaf\xc3\xa9":"Aethericaf\xc3\xa9Once"));
+        CHECK(value_is(ctx,once?"OnceAethericaf\xc3\xa9":"Aethericaf\xc3\xa9Once") && atomic_load(&server.offer_reads)==1);
+    }
     settings_destroy(scene); nx_window_destroy(window); free(font);
     wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy(server.display);
