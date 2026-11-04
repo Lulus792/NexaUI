@@ -114,18 +114,20 @@ typedef struct nx_scroll_scope {
     int disabled;
 } nx_scroll_scope;
 
+typedef struct nx_selection_ancestor {
+    uint64_t id;
+    nx_semantic_role role;
+} nx_selection_ancestor;
+
 typedef struct nx_text_value_request {
     uint64_t id, parent_id, source_frame;
     nx_text_value_target target;
     char *bytes;
     size_t length;
     nx_text_value_guard guard;
+    uint32_t ancestor_count;
+    nx_selection_ancestor ancestors[NX_SEMANTIC_MAX_DEPTH];
 } nx_text_value_request;
-
-typedef struct nx_selection_ancestor {
-    uint64_t id;
-    nx_semantic_role role;
-} nx_selection_ancestor;
 
 typedef struct nx_multi_set_entry {
     uint64_t id, parent_id, membership;
@@ -1660,33 +1662,43 @@ uint64_t nx_context_selection_membership(const nx_context *ctx, uint64_t id) {
     return at != UINT32_MAX ? ctx->semantics.nodes[at].selection_membership : 0;
 }
 
-static nx_result nx_multi_capture_ancestry(const nx_context *ctx, const nx_semantic_record *node,
-    nx_multi_selection_request *request) {
-    request->role = node->role;
+static nx_result nx_capture_ancestry(const nx_context *ctx,const nx_semantic_record *node,
+    nx_selection_ancestor *ancestors,uint32_t *count) {
     uint64_t parent = node->parent_id;
     while (parent) {
-        if (request->ancestor_count == NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
+        if (*count == NX_SEMANTIC_MAX_DEPTH) return NX_ERROR_LIMIT;
         uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
         if (at == UINT32_MAX) return NX_ERROR_STATE;
         const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
-        request->ancestors[request->ancestor_count++] = (nx_selection_ancestor){ancestor->id, ancestor->role};
+        ancestors[(*count)++] = (nx_selection_ancestor){ancestor->id, ancestor->role};
         parent = ancestor->parent_id;
     }
     return NX_OK;
 }
 
-static int nx_multi_ancestry_live(const nx_context *ctx, const nx_semantic_record *node,
-    const nx_multi_selection_request *request) {
-    if (node->role != request->role) return 0;
+static int nx_ancestry_live(const nx_context *ctx,const nx_semantic_record *node,
+    const nx_selection_ancestor *ancestors,uint32_t count) {
     uint64_t parent = node->parent_id;
-    for (uint32_t i = 0; i < request->ancestor_count; ++i) {
+    for (uint32_t i = 0; i < count; ++i) {
         uint32_t at = nx_semantic_find_index(&ctx->semantics, parent);
         if (at == UINT32_MAX) return 0;
         const nx_semantic_record *ancestor = &ctx->semantics.nodes[at];
-        if (ancestor->id != request->ancestors[i].id || ancestor->role != request->ancestors[i].role) return 0;
+        if (ancestor->id != ancestors[i].id || ancestor->role != ancestors[i].role) return 0;
         parent = ancestor->parent_id;
     }
     return parent == 0;
+}
+
+static nx_result nx_multi_capture_ancestry(const nx_context *ctx,const nx_semantic_record *node,
+    nx_multi_selection_request *request) {
+    request->role=node->role;
+    return nx_capture_ancestry(ctx,node,request->ancestors,&request->ancestor_count);
+}
+
+static int nx_multi_ancestry_live(const nx_context *ctx,const nx_semantic_record *node,
+    const nx_multi_selection_request *request) {
+    return node->role==request->role &&
+        nx_ancestry_live(ctx,node,request->ancestors,request->ancestor_count);
 }
 
 nx_result nx_semantics_request_selection_guarded(nx_context *ctx, uint64_t id,
@@ -2157,6 +2169,8 @@ nx_result nx_semantics_request_text_value_guarded(nx_context *ctx, uint64_t id,
     nx_text_value_request request = {0};
     request.id = id; request.parent_id = node->parent_id;
     request.source_frame = ctx->frame_serial; request.target = node->text_value;
+    nx_result ancestry=nx_capture_ancestry(ctx,node,request.ancestors,&request.ancestor_count);
+    if (ancestry!=NX_OK) return ancestry;
     char *copy = ctx->allocator.allocate(ctx->allocator.user, value.length + 1u);
     if (!copy) return NX_ERROR_MEMORY;
     /* User allocation can reenter admission (including native owner routing).
@@ -2192,6 +2206,7 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
         const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
         int valid = r->source_frame != UINT64_MAX && r->source_frame + 1u == ctx->frame_serial &&
             r->parent_id == node->parent_id &&
+            nx_ancestry_live(ctx,node,r->ancestors,r->ancestor_count) &&
             r->target.identity == node->text_value.identity &&
             r->target.revision == node->text_value.revision &&
             r->target.multiline == node->text_value.multiline &&

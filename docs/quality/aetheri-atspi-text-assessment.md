@@ -19,12 +19,12 @@ application. Reuse it rather than introducing a second editor.
 
 A separate in-progress AppKit worktree has staged changes to the same portable
 `src/nexaui.c` and `tests/test_text_value.c` that capture and check the full
-ordered ancestor ID/role chain for deferred text requests. They are not part of
-this candidate, and their presence is not a review or acceptance. Coordinate
-and independently validate the exact final core fix before relying on deferred
-text writes after ancestry changes; do not overwrite or silently copy that
-worktree's staged changes. Linux-native queued requests also need their own
-binding/incarnation, disabled/protected/modal and connection-lifetime guards.
+ordered ancestor ID/role chain for deferred text requests. Those staged changes
+remain separate and have not been copied or overwritten. This candidate now
+independently reuses the existing multi-selection ancestry machinery to check
+text requests; the overlapping AppKit change still requires reconciliation.
+Linux-native queued requests also need binding/incarnation,
+disabled/protected/modal and connection-lifetime guards.
 
 Required implementation and evidence remain:
 
@@ -64,7 +64,7 @@ The core test covers reversed selection across a four-byte Unicode scalar,
 completed-frame lifetime after model replacement and field destruction, and
 the password/custom-node exclusions. That snapshot step itself did not advertise
 AT-SPI Text or EditableText. Later read-only work is described below; native
-editing, notifications, full protocol coverage and the ancestor guard remain open.
+editing, full protocol coverage and native lifetime guards remain open.
 
 The complete locally registered private-Weston Wayland-only suites passed:
 124/124 in the GCC shared build and 125/125 in the Clang static build with
@@ -217,3 +217,43 @@ Separate insertion/deletion boundary mutants failed in the native workflow
 restored and the shared group passed again. These results do not test the
 1 MiB text-reply limit, the 8 MiB outgoing budget, stalled readers or
 reconnection, all of which remain open.
+
+## Deferred text-value ancestry (2026-11-04)
+
+The portable text-value request previously captured only its immediate parent.
+An independent regression demonstrated that changing an ancestor's role or
+reparenting an ancestor while retaining the field and immediate-parent IDs
+could apply a stale request to the field. The request now captures and
+revalidates the complete ordered ancestor ID/role chain, reusing the same
+bounded mechanism as multi-selection. The queue remains bounded at 64 requests
+and each captures at most `NX_SEMANTIC_MAX_DEPTH` ancestor records. A rejected
+request does not prevent a later valid request.
+
+The test covers unchanged ancestry, five distinct role/parent/identity
+changes, a fresh request after each rejection, and the maximum supported
+semantic depth. With only the new text ancestry check disabled, the unchanged
+case passed and all five changed cases failed by applying the stale value
+(`out/aetheri-text-ancestor-negative-run-v2.log`, SHA-256
+`8c00ff5add5b4cca99308c8db3ba50535444e75f3fa68c68c80a6e17df52a18d`).
+The separate AppKit worktree's staged guard was inspected as prior work but
+not copied or altered; it overlaps this portable change and must be reconciled.
+The comparison follows the SDK's ID/role semantic identity contract and cannot
+distinguish an application recreating a logically different ancestor with the
+same ID and role in consecutive frames.
+
+On base `238d88a9f42f892e43f8b5fc4a3db877054f695f`, the complete local private
+Weston Wayland-only suites passed 127/127 (GCC shared) and 128/128 (Clang static
+ASan/UBSan with leak checking), with no skips, missing or duplicated test names,
+and fixture/child exits 0. No sanitizer error marker appeared. Native Windows
+MSVC 19.38 / Windows SDK 10.0.26100 ran the text-value, ancestry and
+multi-selection tests in Debug and Release, 3/3 each. Logs:
+`out/aetheri-text-ancestor-full-shared.log` SHA-256
+`0a71799c9d1562e5d8c6e18da84611199f9af9a9867995b8de5f228ffffdf83c`;
+`out/aetheri-text-ancestor-full-asan.log` SHA-256
+`f7e20384599599da488aa3aee7e4068fb7dc882ecbb0a833924cf23e53f3f1cc`;
+`out/aetheri-text-ancestor-msvc-tests.log` SHA-256
+`967069d77334d09352c0989b7dfdf24e2dda3c1584b5e5449a489ffcb9db6ecb`;
+and `out/aetheri-text-ancestor-msvc-release-tests.log` SHA-256
+`1e044f68c386fd73a249cee6f87222b8e598082ebf48ebf6daee1ce64af4160b`.
+These checks do not implement or approve Linux native text writes; their
+connection lifetime, model acknowledgement and policy guards remain open.
