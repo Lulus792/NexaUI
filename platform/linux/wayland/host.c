@@ -7,6 +7,8 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <math.h>
+#include <errno.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -29,6 +31,7 @@ struct nx_wayland_shm_host {
     pthread_t owner;
     nx_wayland_host_buffer *buffers;
     unsigned count;
+    int polling;
 };
 
 static void nx_host_buffer_destroy(nx_wayland_host_buffer *buffer) {
@@ -67,7 +70,7 @@ nx_result nx_wayland_shm_host_present(nx_wayland_shm_host *host,
     if (!host || !outcome || !isfinite(scale) || scale<.125 || scale>8 ||
         !nx_valid_color(clear) || (!commands && count) ||
         (!!size.width != !!size.height)) return NX_ERROR_ARGUMENT;
-    if (!pthread_equal(host->owner,pthread_self())) return NX_ERROR_STATE;
+    if (!pthread_equal(host->owner,pthread_self()) || host->polling) return NX_ERROR_STATE;
     if (wl_display_get_error(host->display)) return NX_ERROR_PLATFORM;
     if (count>SIZE_MAX/sizeof(*commands)) return NX_ERROR_LIMIT;
     nx_result result=nx_render_validate_commands(commands,count);
@@ -114,11 +117,73 @@ nx_result nx_wayland_shm_host_present(nx_wayland_shm_host *host,
     return NX_OK;
 }
 
+static int nx_host_dispatch_pending(nx_wayland_shm_host *host) {
+    return host->queue ? wl_display_dispatch_queue_pending(host->display,host->queue) :
+                         wl_display_dispatch_pending(host->display);
+}
+
+nx_result nx_wayland_shm_host_poll(nx_wayland_shm_host *host,
+    uint32_t timeout_ms, int app_fd, uint32_t *out_events) {
+    if (out_events) *out_events=0;
+    if (!host || !out_events || app_fd < -1) return NX_ERROR_ARGUMENT;
+    if (!pthread_equal(host->owner,pthread_self()) || host->polling) return NX_ERROR_STATE;
+    int display_fd=wl_display_get_fd(host->display);
+    if (app_fd>=0 && app_fd==display_fd) return NX_ERROR_ARGUMENT;
+    if (wl_display_get_error(host->display)) return NX_ERROR_PLATFORM;
+    host->polling=1;
+    nx_result result=NX_OK;
+    uint32_t events=0;
+    int dispatched=nx_host_dispatch_pending(host);
+    if (dispatched<0) { result=NX_ERROR_PLATFORM; goto done; }
+    if (dispatched) timeout_ms=0;
+    while ((host->queue ? wl_display_prepare_read_queue(host->display,host->queue) :
+                          wl_display_prepare_read(host->display))!=0) {
+        dispatched=nx_host_dispatch_pending(host);
+        if (dispatched<0) { result=NX_ERROR_PLATFORM; goto done; }
+        if (wl_display_get_error(host->display)) { result=NX_ERROR_PLATFORM; goto done; }
+        if (dispatched) timeout_ms=0;
+    }
+    int writable=0;
+    if (wl_display_flush(host->display)<0) {
+        if (errno!=EAGAIN) { wl_display_cancel_read(host->display); result=NX_ERROR_PLATFORM; goto done; }
+        writable=1;
+    }
+    struct pollfd fds[2]={{display_fd,(short)(POLLIN|(writable?POLLOUT:0)),0},
+                          {app_fd,POLLIN,0}};
+    int timeout=timeout_ms>(uint32_t)INT_MAX?INT_MAX:(int)timeout_ms;
+    int ready=poll(fds,app_fd>=0?2u:1u,timeout);
+    int poll_error=errno;
+    if (ready>0 && app_fd>=0) {
+        if (fds[1].revents&POLLIN) events|=NX_WINDOW_FD_READABLE;
+        if (fds[1].revents&POLLHUP) events|=NX_WINDOW_FD_HANGUP;
+        if (fds[1].revents&(POLLERR|POLLNVAL)) events|=NX_WINDOW_FD_ERROR;
+    }
+    if (ready>0 && (fds[0].revents&POLLIN)) {
+        if (wl_display_read_events(host->display)<0) { result=NX_ERROR_PLATFORM; goto done; }
+    } else {
+        wl_display_cancel_read(host->display);
+        if ((ready<0 && poll_error!=EINTR) ||
+            (ready>0 && (fds[0].revents&(POLLERR|POLLHUP|POLLNVAL)))) {
+            result=NX_ERROR_PLATFORM; goto done;
+        }
+    }
+    if (ready>0 && (fds[0].revents&POLLOUT) &&
+        wl_display_flush(host->display)<0 && errno!=EAGAIN) {
+        result=NX_ERROR_PLATFORM; goto done;
+    }
+    if (nx_host_dispatch_pending(host)<0 || wl_display_get_error(host->display))
+        result=NX_ERROR_PLATFORM;
+done:
+    host->polling=0;
+    if (result==NX_OK) *out_events=events;
+    return result;
+}
+
 nx_result nx_wayland_shm_host_destroy(nx_wayland_shm_host **address) {
     if (!address) return NX_ERROR_ARGUMENT;
     nx_wayland_shm_host *host=*address;
     if (!host) return NX_OK;
-    if (!pthread_equal(host->owner,pthread_self())) return NX_ERROR_STATE;
+    if (!pthread_equal(host->owner,pthread_self()) || host->polling) return NX_ERROR_STATE;
     while (host->buffers) nx_host_buffer_destroy(host->buffers);
     free(host); *address=NULL;
     return NX_OK;

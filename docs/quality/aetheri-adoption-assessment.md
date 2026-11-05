@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Host-owned Wayland worker wake candidate (2026-11-05)
+
+Candidate based on `dac7e21b8b9422bf2103a8db4ad3549ca0b78a5f` adds
+`nx_wayland_shm_host_poll`: the owner thread dispatches its selected borrowed
+Wayland queue and waits for that connection plus one application-owned readable
+descriptor. The host owns the descriptor, message and deadline policy. A
+controlled fake-role test checks a real delayed worker wake, readable plus
+hangup, invalid descriptors, prequeued events without a long sleep, both default
+and dedicated queues, wrong-thread and callback-reentry rejection, and display
+loss. GCC Wayland-only and dual-backend plus Clang shared ASan/UBSan passed.
+The installed-SDK host example used private Weston to configure a host-owned
+ordinary role, submit a frame and receive a worker reply. This does not provide
+an AT-SPI bridge for host-owned surfaces, general service persistence or proof
+of actual Aetheri private-role, idle-performance or physical acceptance.
+
 ## Host-owned Wayland surface candidate (2026-11-05)
 
 Candidate based on `48123ef1bfdba28986c7f86790005fa5ddf40c5d` adds

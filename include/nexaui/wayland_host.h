@@ -42,6 +42,17 @@ NX_API nx_result nx_wayland_shm_host_create(struct wl_display *display, struct w
 NX_API nx_result nx_wayland_shm_host_present(nx_wayland_shm_host *host,
     nx_pixel_size pixels, double scale, const nx_command *commands, size_t count,
     nx_color clear, nx_wayland_shm_outcome *out_outcome);
+/* Dispatch this host's selected Wayland queue and wait for its display or one
+   borrowed application-owned readable fd. Pass -1 for no application fd.
+   The fd must remain open throughout the call and differ from the display fd;
+   NX_WINDOW_FD_* flags report readable, hangup and error without consuming it.
+   Timeout is milliseconds; values above INT_MAX clamp to INT_MAX. Returns
+   promptly after dispatching already queued events. The host must arrange a
+   single reader/dispatcher for the connection during this call. Other queues
+   are not dispatched. Callbacks may update host state, but cannot reenter this
+   object's present, poll or destroy operations. *out_events is cleared on error. */
+NX_API nx_result nx_wayland_shm_host_poll(nx_wayland_shm_host *host,
+    uint32_t timeout_ms, int app_fd, uint32_t *out_events);
 /* Same owner thread. NULL object is a no-op. Releases owned proxies/mappings,
    including outstanding buffers, and clears *host; it does not touch the
    borrowed surface, queue, shm or connection. Host must stop using aliases. */

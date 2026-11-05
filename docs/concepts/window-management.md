@@ -155,7 +155,15 @@ surface state. The host must ensure its own viewport/scale and dimensions are
 compatible. READY means queued, not flushed, displayed or accepted as a role.
 Three buffers of at most 128 MiB each may await release. On BUSY, dispatch the
 chosen queue and retry after events, without a permanent polling thread. The
-adapter never dispatches or flushes the host connection. It uses unlinked
+presentation call does not dispatch or flush the host connection. An optional
+`nx_wayland_shm_host_poll` dispatches the selected queue, flushes the connection
+and waits for it plus one app-owned readable descriptor. The host must serialize
+all readers of that connection; other event queues are not dispatched. Already
+queued events return promptly, and callbacks cannot reenter that adapter's
+present, poll or destroy calls. The descriptor is neither consumed nor closed;
+readable/hangup/error are reported independently using the `NX_WINDOW_FD_*`
+flags. The host chooses redraw, worker and accessibility deadlines; this poll
+does not integrate an AT-SPI provider by itself. The adapter uses unlinked
 temporary files in `/tmp`; destruction releases adapter-owned proxies and
 mappings without destroying borrowed objects. The owner thread must stop all
 adapter use before destroying those objects or its connection.

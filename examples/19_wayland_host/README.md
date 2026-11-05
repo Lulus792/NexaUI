@@ -3,7 +3,9 @@
 This standalone C17 example opens and owns its Wayland connection, event queue,
 `wl_surface` and ordinary xdg-toplevel role. It waits for initial configure,
 acknowledges it, then uses `nx_wayland_shm_host_*` to commit a transparent
-NexaUI frame and closes. The SDK does not create the role or a second
+NexaUI frame. A short-lived worker writes a bounded reply to a pipe; the owner
+thread waits for Wayland events and that descriptor together, reads the reply,
+joins the worker and closes. The SDK does not create the role or a second
 connection. The example exits after one submitted frame; it is not a dock,
 input router, accessibility provider or proof of physical presentation.
 

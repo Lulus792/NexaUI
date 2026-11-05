@@ -2,15 +2,17 @@
 #include "nexaui/wayland_host.h"
 #include <wayland-client.h>
 #include <sys/socket.h>
+#include <time.h>
+#include <errno.h>
 
 /* A private test role: it is created and acknowledged by the host, not NexaUI. */
 static const struct wl_interface test_role_interface;
 static const struct wl_interface *get_role_types[]={&test_role_interface,&wl_surface_interface};
 static const struct wl_message manager_requests[]={{"get_role","no",get_role_types}};
 static const struct wl_interface test_manager_interface={"nexaui_test_role_manager",1,1,manager_requests,0,NULL};
-static const struct wl_message role_requests[]={{"destroy","",NULL},{"ack","u",NULL},{"release","",NULL}};
+static const struct wl_message role_requests[]={{"destroy","",NULL},{"ack","u",NULL},{"release","",NULL},{"notify","",NULL}};
 static const struct wl_message role_events[]={{"configure","u",NULL}};
-static const struct wl_interface test_role_interface={"nexaui_test_role",1,3,role_requests,1,role_events};
+static const struct wl_interface test_role_interface={"nexaui_test_role",1,4,role_requests,1,role_events};
 
 typedef struct host_server {
     test_server base;
@@ -37,9 +39,13 @@ static void role_release(struct wl_client *client, struct wl_resource *resource)
         wl_buffer_send_release(server->held[i]); server->held[i]=NULL;
     }
 }
+static void role_notify(struct wl_client *client, struct wl_resource *resource) {
+    (void)client; wl_resource_post_event(resource,0,42u);
+}
 static const struct { void (*destroy)(struct wl_client *,struct wl_resource *);
     void (*ack)(struct wl_client *,struct wl_resource *,uint32_t);
-    void (*release)(struct wl_client *,struct wl_resource *); } role_impl={role_destroy,role_ack,role_release};
+    void (*release)(struct wl_client *,struct wl_resource *);
+    void (*notify)(struct wl_client *,struct wl_resource *); } role_impl={role_destroy,role_ack,role_release,role_notify};
 static void manager_get_role(struct wl_client *client, struct wl_resource *manager,
                              uint32_t id, struct wl_resource *surface) {
     host_server *server=wl_resource_get_user_data(manager);
@@ -83,13 +89,41 @@ static void global(void *data,struct wl_registry *registry,uint32_t name,const c
 }
 static void global_remove(void *data,struct wl_registry *registry,uint32_t name) {(void)data;(void)registry;(void)name;}
 static const struct wl_registry_listener registry_listener={global,global_remove};
-static void configured(void *data,struct wl_proxy *role,uint32_t serial) {(void)role; *(uint32_t *)data=serial;}
+typedef struct role_state {
+    uint32_t serial;
+    nx_wayland_shm_host *host;
+    nx_result render_result, poll_result, destroy_result;
+} role_state;
+static void configured(void *data,struct wl_proxy *role,uint32_t serial) {
+    (void)role; role_state *state=data; state->serial=serial;
+    if (state->host) {
+        nx_wayland_shm_host *copy=state->host; nx_wayland_shm_outcome outcome;
+        uint32_t events=99;
+        state->render_result=nx_wayland_shm_host_present(state->host,(nx_pixel_size){1,1},1,NULL,0,(nx_color){0},&outcome);
+        state->poll_result=nx_wayland_shm_host_poll(state->host,0,-1,&events);
+        CHECK(events==0);
+        state->destroy_result=nx_wayland_shm_host_destroy(&copy);
+        CHECK(copy==state->host);
+    }
+}
 static void (*role_listener[])(void)={(void (*)(void))configured};
 static void *wrong_thread(void *data) {
     nx_wayland_shm_host *host=data,*copy=host; nx_wayland_shm_outcome outcome;
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){1,1},1,NULL,0,(nx_color){0},&outcome)==NX_ERROR_STATE);
+    uint32_t flags=99;
+    CHECK(nx_wayland_shm_host_poll(host,0,-1,&flags)==NX_ERROR_STATE && flags==0);
     CHECK(nx_wayland_shm_host_destroy(&copy)==NX_ERROR_STATE && copy==host);
     return NULL;
+}
+static void *write_worker(void *data) {
+    int fd=*(int *)data; struct timespec delay={0,150000000};
+    while (nanosleep(&delay,&delay)<0 && errno==EINTR) {}
+    unsigned char byte=42; CHECK(write(fd,&byte,1)==1);
+    return NULL;
+}
+static double seconds(void) {
+    struct timespec time; CHECK(clock_gettime(CLOCK_MONOTONIC,&time)==0);
+    return (double)time.tv_sec+(double)time.tv_nsec/1.e9;
 }
 int main(void) {
     char runtime[]="/tmp/nexaui-host-test-XXXXXX"; CHECK(mkdtemp(runtime));
@@ -111,12 +145,47 @@ int main(void) {
     CHECK(wl_display_roundtrip_queue(display,queue)>=0 && g.compositor && g.shm && g.manager);
     struct wl_surface *surface=wl_compositor_create_surface(g.compositor); CHECK(surface);
     struct wl_proxy *role=wl_proxy_marshal_flags(g.manager,0,&test_role_interface,1,0,NULL,surface); CHECK(role);
-    uint32_t serial=0; CHECK(wl_proxy_add_listener(role,role_listener,&serial)==0);
-    CHECK(wl_display_roundtrip_queue(display,queue)>=0 && serial==42);
-    wl_proxy_marshal_flags(role,1,NULL,1,0,serial);
+    role_state role_state_value={0}; CHECK(wl_proxy_add_listener(role,role_listener,&role_state_value)==0);
+    CHECK(wl_display_roundtrip_queue(display,queue)>=0 && role_state_value.serial==42);
+    wl_proxy_marshal_flags(role,1,NULL,1,0,role_state_value.serial);
     CHECK(wl_display_roundtrip_queue(display,queue)>=0 && atomic_load(&server.acknowledged));
+    nx_wayland_shm_host *default_host=NULL;
+    CHECK(nx_wayland_shm_host_create(display,g.shm,surface,NULL,&default_host)==NX_OK);
+    int default_pipe[2]; CHECK(pipe(default_pipe)==0);
+    unsigned char default_byte=1; CHECK(write(default_pipe[1],&default_byte,1)==1);
+    uint32_t default_events=0;
+    CHECK(nx_wayland_shm_host_poll(default_host,1000,default_pipe[0],&default_events)==NX_OK &&
+          (default_events&NX_WINDOW_FD_READABLE));
+    CHECK(close(default_pipe[0])==0 && close(default_pipe[1])==0);
+    CHECK(nx_wayland_shm_host_destroy(&default_host)==NX_OK && !default_host);
     nx_wayland_shm_host *host=NULL; CHECK(nx_wayland_shm_host_create(display,g.shm,surface,queue,&host)==NX_OK);
+    role_state_value.host=host;
     CHECK(pthread_create(&thread,NULL,wrong_thread,host)==0 && pthread_join(thread,NULL)==0);
+    int fds[2]; CHECK(pipe(fds)==0);
+    uint32_t events=99;
+    CHECK(nx_wayland_shm_host_poll(NULL,0,fds[0],&events)==NX_ERROR_ARGUMENT && events==0);
+    CHECK(nx_wayland_shm_host_poll(host,0,-2,&events)==NX_ERROR_ARGUMENT && events==0);
+    CHECK(nx_wayland_shm_host_poll(host,0,wl_display_get_fd(display),&events)==NX_ERROR_ARGUMENT);
+    CHECK(nx_wayland_shm_host_poll(host,0,fds[0],NULL)==NX_ERROR_ARGUMENT);
+    CHECK(nx_wayland_shm_host_poll(host,0,fds[0],&events)==NX_OK && events==0);
+    wl_proxy_marshal_flags(role,3,NULL,1,0);
+    CHECK(wl_display_roundtrip(display)>=0);
+    double pending_start=seconds();
+    CHECK(nx_wayland_shm_host_poll(host,1000,fds[0],&events)==NX_OK && events==0 && seconds()-pending_start<.5);
+    CHECK(role_state_value.render_result==NX_ERROR_STATE && role_state_value.poll_result==NX_ERROR_STATE &&
+          role_state_value.destroy_result==NX_ERROR_STATE);
+    CHECK(pthread_create(&thread,NULL,write_worker,&fds[1])==0);
+    double started=seconds();
+    do { CHECK(nx_wayland_shm_host_poll(host,1500,fds[0],&events)==NX_OK); }
+    while (!events && seconds()-started<2.0);
+    CHECK((events&NX_WINDOW_FD_READABLE) && seconds()-started>=.05 && seconds()-started<2.0);
+    CHECK(pthread_join(thread,NULL)==0);
+    unsigned char byte=0; CHECK(read(fds[0],&byte,1)==1 && byte==42);
+    CHECK(write(fds[1],&byte,1)==1 && close(fds[1])==0);
+    CHECK(nx_wayland_shm_host_poll(host,0,fds[0],&events)==NX_OK &&
+          (events&(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_HANGUP))==(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_HANGUP));
+    CHECK(read(fds[0],&byte,1)==1 && close(fds[0])==0);
+    CHECK(nx_wayland_shm_host_poll(host,0,fds[0],&events)==NX_OK && (events&NX_WINDOW_FD_ERROR));
     nx_wayland_shm_outcome outcome;
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){0,0},1,NULL,0,(nx_color){0},&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_SUSPENDED);
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){1,0},1,NULL,0,(nx_color){0},&outcome)==NX_ERROR_ARGUMENT);
@@ -137,10 +206,12 @@ int main(void) {
     wl_proxy_marshal_flags(role,2,NULL,1,0);
     CHECK(wl_display_roundtrip(display)>=0);
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){40,20},1,NULL,0,clears[0],&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_BUSY);
-    CHECK(wl_display_dispatch_queue_pending(display,queue)>=0);
+    started=seconds();
+    CHECK(nx_wayland_shm_host_poll(host,1000,-1,&events)==NX_OK && events==0 && seconds()-started<.5);
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){40,20},1,NULL,0,clears[0],&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_READY);
     CHECK(wl_display_roundtrip_queue(display,queue)>=0);
     CHECK(nx_wayland_shm_host_destroy(&host)==NX_OK && !host);
+    role_state_value.host=NULL;
     wl_surface_damage(surface,0,0,40,20); wl_surface_commit(surface);
     CHECK(wl_display_roundtrip_queue(display,queue)>=0);
     CHECK(nx_wayland_shm_host_create(display,g.shm,surface,queue,&host)==NX_OK);
@@ -150,6 +221,7 @@ int main(void) {
     wl_surface_commit(surface);
     CHECK(wl_display_roundtrip_queue(display,queue)<0);
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){40,20},1,NULL,0,clears[0],&outcome)==NX_ERROR_PLATFORM);
+    CHECK(nx_wayland_shm_host_poll(host,0,-1,&events)==NX_ERROR_PLATFORM && events==0);
     CHECK(nx_wayland_shm_host_destroy(&host)==NX_OK && !host);
     wl_proxy_destroy(role);
     wl_proxy_destroy((struct wl_proxy *)surface); wl_proxy_destroy((struct wl_proxy *)g.shm);

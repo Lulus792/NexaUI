@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
 #if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
     nx_wayland_shm_host *host=(nx_wayland_shm_host *)1;
     if (nx_wayland_shm_host_create(NULL,NULL,NULL,NULL,&host)!=NX_ERROR_ARGUMENT || host) return 22;
+    uint32_t host_events=99;
+    if (nx_wayland_shm_host_poll(NULL,0,-1,&host_events)!=NX_ERROR_ARGUMENT || host_events) return 23;
 #endif
     uint8_t scaled_pixels[4 * 4 * 4];
     nx_command scaled_box = {.type=NX_COMMAND_FILL_RECT, .rect={0,0,1,1},

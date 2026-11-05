@@ -1,7 +1,12 @@
+#define _POSIX_C_SOURCE 200809L
 #include <nexaui/nexaui.h>
 #include <nexaui/wayland_host.h>
 #include <stdio.h>
+#include <errno.h>
+#include <pthread.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
 
@@ -47,12 +52,23 @@ static const struct xdg_toplevel_listener toplevel_listener={
     .configure=toplevel_configure,.close=toplevel_close
 };
 
+/* The producer owns no Wayland/NexaUI objects. The owner thread consumes the
+   bounded reply and is solely responsible for any future view changes. */
+static void *worker(void *data) {
+    int fd=*(int *)data; struct timespec delay={0,150000000};
+    while (nanosleep(&delay,&delay)<0 && errno==EINTR) {}
+    unsigned char reply=42;
+    ssize_t written; do { written=write(fd,&reply,1); } while (written<0 && errno==EINTR);
+    return written==1?NULL:data;
+}
+
 int main(void) {
     int okay=0; host h={0}; nx_context *ui=NULL; nx_wayland_shm_host *renderer=NULL;
     struct wl_display *display=wl_display_connect(NULL);
     struct wl_event_queue *queue=NULL; struct wl_registry *registry=NULL;
     struct wl_surface *surface=NULL; struct xdg_surface *xdg=NULL;
     struct xdg_toplevel *toplevel=NULL;
+    int fds[2]={-1,-1}, worker_running=0; pthread_t worker_thread;
     if (!display || !(queue=wl_display_create_queue(display)) ||
         !(registry=wl_display_get_registry(display))) goto cleanup;
     wl_proxy_set_queue((struct wl_proxy *)registry,queue);
@@ -80,9 +96,23 @@ int main(void) {
                                     (nx_color){0,0,0,0},&outcome)!=NX_OK ||
         outcome!=NX_WAYLAND_SHM_READY || wl_display_roundtrip_queue(display,queue)<0)
         goto cleanup;
-    puts("Host configured and committed one NexaUI frame on its own surface.");
+    if (pipe(fds)!=0 || pthread_create(&worker_thread,NULL,worker,&fds[1])!=0) goto cleanup;
+    worker_running=1;
+    uint32_t events=0;
+    for (unsigned i=0;i<10 && !events;++i)
+        if (nx_wayland_shm_host_poll(renderer,1000,fds[0],&events)!=NX_OK) goto cleanup;
+    unsigned char reply=0;
+    if (!(events&NX_WINDOW_FD_READABLE) || (events&NX_WINDOW_FD_ERROR) ||
+        read(fds[0],&reply,1)!=1 || reply!=42) goto cleanup;
+    puts("Host configured its surface, committed a NexaUI frame and received a worker reply.");
     okay=1;
 cleanup:
+    if (worker_running) {
+        void *worker_result=NULL;
+        if (pthread_join(worker_thread,&worker_result)!=0 || worker_result) okay=0;
+    }
+    if (fds[0]>=0) close(fds[0]);
+    if (fds[1]>=0) close(fds[1]);
     if (renderer && nx_wayland_shm_host_destroy(&renderer)!=NX_OK) okay=0;
     nx_context_destroy(ui);
     if (toplevel) xdg_toplevel_destroy(toplevel);
