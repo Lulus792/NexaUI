@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## Accessible numeric text and selection (2026-11-05)
+
+Source `a65206f0b740069ae4a3d5f4f0a9eb93c25501f7` publishes the numeric
+field's current anchor and cursor with its existing text model. Before this
+change, an independent AT-SPI client found the numeric node but could not obtain
+its text interface: the Linux bridge requires an actual selection snapshot.
+The new client case failed on that missing interface with the previous source
+(`/tmp/nexaui-numeric-atspi-check/result.json`).
+
+On Alpine/WSL private Weston, an independent libatspi client now sets an invalid
+draft, reads it and observes the invalid state while the host confirms its
+committed value is unchanged; it then sets a valid draft, manipulates selection
+and caret and asks the host to commit it. This ran as part of the complete
+existing large-text native test in GCC shared Release and Clang ASan/UBSan
+with leak detection (1/1 each; fixtures `/tmp/nexaui-numeric-atspi-check3` and
+`/tmp/nexaui-numeric-atspi-asan-final`). Numeric, semantic, numeric clipboard,
+and v1/v3 input regressions passed in the sanitizer build (7/7). The Windows
+MSVC shared Debug numeric field test passed (1/1); an initial request for a
+Linux-only semantic test target failed before that separately executed check.
+The source applies across platforms, but native Windows UIA and macOS AX numeric
+editing, Aetheri integration and human screenreader acceptance remain open.
+T05 is not fully accepted; no consumer pin was changed.
+
 ## Deferred fixture disconnect after request dispatch (2026-11-05)
 
 On `1b5699f906979fe8aa5cdfdbecebb7c0a896f672`, the Ubuntu debugger caught
