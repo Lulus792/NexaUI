@@ -604,3 +604,30 @@ described above.
 These automated tests do not establish acceptance with other input methods,
 physical hardware or a human user; the keyboard workflow limitation above
 also remains open.
+
+## Deterministic v1 leave ordering (2026-11-05)
+
+On source `040fa777671d47e9565010e660dcc30223ba82bb` plus the test change,
+the controlled Wayland v1 server queues a deactivate/activate pair without
+dispatching the old leave first, sends new preedit, and checks that publishing
+the unchanged surrounding snapshot does not erase it. It then sends a real
+leave after the new enter and verifies that preedit is cancelled and a later
+commit is rejected. This exercises both sides of the leave distinction
+without relying on Weston timing.
+
+With the prior leave guard temporarily removed, this test failed at the
+preserved-preedit assertion (`/tmp/nexaui-v1-leave-negative.log`); the guard
+was restored before the final builds. The v1 and v3 controlled tests both
+passed in GCC shared Wayland-only, Clang ASan/UBSan static Wayland-only, and
+GCC static dual-backend builds. This supplements, rather than replaces, the
+actual simple-IME and independent AT-SPI evidence above.
+
+A subsequent full GCC Wayland-only suite without a second native fixture
+running concurrently reported 198 passes, four opt-in skips and two different
+failures: `nexaui_settings_ax_async_short` and
+`nexaui_settings_wayland_atspi`. Both passed when rerun in a fresh fixture.
+The 100 ms async timeout and the AT-SPI clipboard error assertion were involved,
+but the causes have not been established; no deadlines or assertions were
+weakened. The logs are `/tmp/nexaui-ime-full-isolated.log` and
+`/tmp/nexaui-ime-leave-retry.log`. These results do not establish a clean full
+suite or explain the earlier two failures.

@@ -30,6 +30,7 @@ typedef struct test_server {
     atomic_int activation_count, deactivation_count, caret_ok;
     atomic_int send_keysyms;
     atomic_int send_old_commit;
+    atomic_int send_race_preedit, send_real_leave;
     atomic_int normal_content, password_content;
     char surrounding[64];
     uint32_t surrounding_cursor, surrounding_anchor;
@@ -259,6 +260,18 @@ static void text_commit_state(struct wl_client *client,
     (void)client;
     CHECK(server->enabled);
     server->serial = serial;
+    if (atomic_load(&server->send_race_preedit) &&
+        strcmp(server->surrounding, "race") == 0) {
+        atomic_store(&server->send_race_preedit, 0);
+        zwp_text_input_v1_send_preedit_cursor(resource, 1);
+        zwp_text_input_v1_send_preedit_string(resource, serial, "'", "");
+        return;
+    }
+    if (atomic_exchange(&server->send_real_leave, 0)) {
+        zwp_text_input_v1_send_leave(resource);
+        zwp_text_input_v1_send_commit_string(resource, serial, "x");
+        return;
+    }
     if (atomic_exchange(&server->send_old_commit, 0)) {
         zwp_text_input_v1_send_delete_surrounding_text(resource, -1, 1);
         zwp_text_input_v1_send_commit_string(resource, serial, "p");
@@ -643,6 +656,37 @@ int main(void) {
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
     CHECK(atomic_load(&server.normal_content) > normal_before &&
           strcmp(server.surrounding, "abc") == 0);
+    /* Queue deactivation and reactivation before dispatching the old leave.
+       Publishing the same snapshot after enter must preserve new preedit. */
+    CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
+    CHECK(nx_window_set_ime_enabled(window, 1) == NX_OK);
+    atomic_store(&server.send_race_preedit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 94, 3,
+        "race", 4, 4, 1) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(atomic_load(&server.send_race_preedit) == 0);
+    CHECK(nx_window_get_ime_preedit(window, preedit, sizeof(preedit),
+        &length, &begin, &end) == NX_OK && length == 1 && preedit[0] == '\'');
+    CHECK(nx_window_set_ime_surrounding_text(window, 94, 3,
+        "race", 4, 4, 1) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_get_ime_preedit(window, preedit, sizeof(preedit),
+        &length, &begin, &end) == NX_OK && length == 1 && preedit[0] == '\'');
+    while (1) {
+        CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
+        if (!available) break;
+        CHECK(event.type != NX_EVENT_TEXT);
+    }
+    /* An actual leave after enter still cancels preedit and rejects a commit. */
+    atomic_store(&server.send_real_leave, 1);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){23, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(atomic_load(&server.send_real_leave) == 0);
+    CHECK(nx_window_get_ime_preedit(window, NULL, 0,
+        &length, &begin, &end) == NX_OK && length == 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK &&
+          available && event.type == NX_EVENT_IME_PREEDIT_CHANGED);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
     CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
     nx_window_destroy(window);
     wl_display_terminate(server.display);
