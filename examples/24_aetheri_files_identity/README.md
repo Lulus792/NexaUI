@@ -217,3 +217,14 @@ original Aetheri Files model snapshot specified above, not a migrated app.
 Complex input retains the prior scalar upper bound. Clipboard contents, IME,
 accessibility mutations and arbitrary combined event ordering are not proved by
 this replay; the earlier active-IME shortcut finding also remains open.
+
+On base `839f80a7e27e64e7f6f2dd28dd2b8f71fe0d6b34`, a separate private
+Weston protocol trace reproduced the shortcut observation: while simple-IME
+was active, the client received the Control press and release, but no Q key;
+the input method instead sent a `q` text commit. The IME probe now accepts
+either an actual forwarded close shortcut or a text commit that changes the
+filter without closing, and checks the latter against the protocol trace.
+Static, shared and ASan/UBSan variants exercised the commit path. A client
+cannot infer an unreceived shortcut from arbitrary committed text. Reliable
+closing and shortcut handling with other providers, composing states and real
+desktops remain open; this test does not claim to repair the input method.

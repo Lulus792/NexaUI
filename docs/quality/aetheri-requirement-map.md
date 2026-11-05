@@ -27,6 +27,11 @@ text/deletion batches are replayed through the existing text buffer: tested
 valid replacements at the byte limit are accepted, while a transient overflow
 remains rejected. Complex clipboard, IME, accessibility mutation and arbitrary
 event ordering remain separate evidence gaps.
+On base `839f80a7e27e64e7f6f2dd28dd2b8f71fe0d6b34`, a private Weston
+simple-IME trace showed that Ctrl+Q can arrive as a `q` text commit without
+the Q key reaching the client. The native regression distinguishes that path
+from a forwarded shortcut; other providers and reliable user-facing close
+paths with active composition remain open (I02/T04).
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

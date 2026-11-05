@@ -35,18 +35,21 @@ def main():
                     messages.put(line.strip())
         for stream, target, publish in ((host.stdout, output, True), (host.stderr, errors, False)):
             threading.Thread(target=collect, args=(stream, target, publish), daemon=True).start()
-        def wait(expected):
+        def wait_any(expected):
             deadline = time.monotonic()+12
             while True:
                 remaining = deadline-time.monotonic()
                 if remaining <= 0:
                     break
                 try:
-                    if messages.get(timeout=remaining) == expected:
-                        return
+                    message = messages.get(timeout=remaining)
+                    if message in expected:
+                        return message
                 except queue.Empty:
                     break
-            raise RuntimeError(f'Missing {expected}: {"".join(output)} {"".join(errors)[-6000:]}')
+            raise RuntimeError(f'Missing one of {expected}: {"".join(output)} {"".join(errors)[-6000:]}')
+        def wait(expected):
+            return wait_any({expected})
         def key(value):
             subprocess.run([xdotool, 'key', value], env=env, check=True, timeout=5)
         def wait_trace(pattern):
@@ -65,7 +68,22 @@ def main():
             wait_trace(r'zwp_text_input_v1#\d+\.enter\(')
             key('108');key('apostrophe');wait('FILES_NATIVE_PREEDIT 1 0')
             key('a');wait('FILES_NATIVE_FILTER 2 1 1');wait('FILES_NATIVE_VISIBLE á')
-            host.terminate();wait('FILES_NATIVE_CLOSED')
+            # A provider may forward Ctrl+Q as a key, or consume Q and commit
+            # text instead. The latter must never be guessed into an action.
+            trace_start = len(errors)
+            key('ctrl+q')
+            outcome = wait_any({'FILES_NATIVE_CLOSED', 'FILES_NATIVE_FILTER 3 0 1'})
+            if outcome != 'FILES_NATIVE_CLOSED':
+                wait_trace(r'commit_string\(\d+, "q"\)')
+                trace_after_shortcut = ''.join(errors[trace_start:])
+                if not re.search(r'commit_string\(\d+, "q"\)', trace_after_shortcut):
+                    raise RuntimeError('Changed filter lacked the IME q commit')
+                if host.poll() is not None:
+                    raise RuntimeError('IME text commit unexpectedly closed the window')
+                print('IME consumed shortcut key and committed text', flush=True)
+                host.terminate();wait('FILES_NATIVE_CLOSED')
+            else:
+                print('IME forwarded close shortcut', flush=True)
             if host.wait(timeout=10) != 0:
                 raise RuntimeError('Native Files consumer failed')
             trace = ''.join(errors)
@@ -73,7 +91,7 @@ def main():
                 raise RuntimeError('Missing separate simple-IME preedit')
             if len(re.findall(r'commit_string\(\d+, "á"\)', trace)) != 1:
                 raise RuntimeError('Expected exactly one simple-IME Unicode commit')
-            print('Native Files: separate preedit and one Unicode filter commit passed')
+            print('Native Files: IME composition and shortcut/commit routing passed')
             return 0
         finally:
             if host.poll() is None:
