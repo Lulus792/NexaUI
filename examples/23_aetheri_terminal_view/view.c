@@ -135,7 +135,7 @@ nx_result aetheri_terminal_view_frame(aetheri_terminal_view *v,uint64_t revision
     if(r==NX_OK)r=nx_semantics_add(v->context,&root,NULL);
     if(r==NX_OK)r=v->has_caret?
         nx_semantics_add_readonly_text_snapshot(v->context,&text,v->desc.text_identity,v->anchor,v->cursor,NULL):
-        nx_semantics_add(v->context,&text,NULL);
+        nx_semantics_add_readonly_text_snapshot_without_caret(v->context,&text,v->desc.text_identity,NULL);
     nx_result end=nx_end_frame(v->context);if(r!=NX_OK)return r;if(end!=NX_OK)return end;
     v->revision=revision;return NX_OK;
 }

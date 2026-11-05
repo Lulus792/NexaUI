@@ -43,9 +43,15 @@ int main(int argc,char **argv) {
     }
     CHECK(target);AtspiText *text=atspi_accessible_get_text_iface(target);
     if(getenv("NEXAUI_TERMINAL_AX_SCROLL")) {
-        CHECK(!text);
-        g_object_unref(target);g_object_unref(desktop);cleanup();
-        puts("Independent AT-SPI scrollback exposes no invented caret");return 0;
+        CHECK(text);GError *error=NULL;
+        CHECK(atspi_text_get_character_count(text,&error)>0 && !error);
+        char *value=atspi_text_get_text(text,0,-1,&error);
+        CHECK(!error && value && value[0]=='1');g_free(value);
+        CHECK(atspi_text_get_caret_offset(text,&error)==-1 && !error);
+        CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
+        CHECK(!atspi_text_set_caret_offset(text,0,&error) && !error);
+        g_object_unref(text);g_object_unref(target);g_object_unref(desktop);cleanup();
+        puts("Independent AT-SPI scrollback is readable without an invented caret");return 0;
     }
     CHECK(text);GError *error=NULL;
     int count=atspi_text_get_character_count(text,&error);CHECK(!error && count==26);
@@ -57,6 +63,17 @@ int main(int argc,char **argv) {
     CHECK(!error && range && range->start_offset==1 && range->end_offset==4);g_free(range);
     CHECK(!atspi_text_set_caret_offset(text,2,&error) && !error);
     CHECK(!atspi_text_set_selection(text,0,0,1,&error) && !error);
+    if(getenv("NEXAUI_TERMINAL_AX_TRANSITION")) {
+        CHECK(!kill(child,SIGUSR1));int caret=0;
+        for(unsigned attempt=0;attempt<300;++attempt) {
+            while(g_main_context_iteration(NULL,FALSE)){}
+            atspi_accessible_clear_cache(target);
+            caret=atspi_text_get_caret_offset(text,&error);
+            CHECK(!error);if(caret==-1)break;pause_ms();
+        }
+        CHECK(caret==-1 && atspi_text_get_n_selections(text,&error)==0 && !error);
+        value=atspi_text_get_text(text,0,-1,&error);CHECK(!error && value && value[0]=='1');g_free(value);
+    }
     g_object_unref(text);g_object_unref(target);g_object_unref(desktop);cleanup();
     puts("Independent AT-SPI terminal model text and selection passed");return 0;
 }

@@ -368,20 +368,21 @@ static int owner_policy_equal(nx_ax_snapshot *a,nx_ax_node *x,nx_ax_snapshot *b,
 /* Convert positions once while the owned UTF-8 snapshot is being built. A
    D-Bus string cannot carry embedded NUL; never expose a truncated value. */
 static void nx_ax_prepare_text(nx_ax_node *n,size_t length) {
-    if (!n->text_selection.present || !n->text_target.identity || (n->state&NX_SEM_PROTECTED) ||
-        memchr(n->value,0,length) || n->text_selection.anchor>length ||
-        n->text_selection.cursor>length) return;
+    if ((!n->text_selection.present && !n->text_snapshot_only) || !n->text_target.identity ||
+        (n->state&NX_SEM_PROTECTED) || memchr(n->value,0,length) ||
+        (n->text_selection.present && (n->text_selection.anchor>length ||
+        n->text_selection.cursor>length))) return;
     size_t offset=0; int32_t count=0,anchor=-1,cursor=-1;
     while (offset<length) {
-        if (offset==n->text_selection.anchor) anchor=count;
-        if (offset==n->text_selection.cursor) cursor=count;
+        if (n->text_selection.present && offset==n->text_selection.anchor) anchor=count;
+        if (n->text_selection.present && offset==n->text_selection.cursor) cursor=count;
         uint32_t scalar;
         if (count==INT32_MAX || nx_utf8_decode(n->value,length,&offset,&scalar)!=NX_OK) return;
         ++count;
     }
-    if (offset==n->text_selection.anchor) anchor=count;
-    if (offset==n->text_selection.cursor) cursor=count;
-    if (anchor<0 || cursor<0) return;
+    if (n->text_selection.present && offset==n->text_selection.anchor) anchor=count;
+    if (n->text_selection.present && offset==n->text_selection.cursor) cursor=count;
+    if (n->text_selection.present && (anchor<0 || cursor<0)) return;
     n->text_bytes=length; n->text_count=count;
     n->text_anchor=anchor; n->text_cursor=cursor; n->text_ready=1;
 }

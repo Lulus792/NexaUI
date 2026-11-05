@@ -8,12 +8,14 @@ This example neither modifies nor pins the Aetheri checkout.
 
 ## Reproduce
 
-Build against an installed NexaUI 0.1.14 or newer and a separately obtained,
+Build against an installed NexaUI 0.1.15 or newer and a separately obtained,
 immutable Aetheri source snapshot. The checked model came from Aetheri commit
 `87996e2f12128b172a80b325ad3b539df6aee527`; `model.c` Git blob is
 `5865f239a0c9b2c83392f3b7a1f341d5d4cea28e`, `model.h` is
-`cdcba69432c363c93848666d7b47fa73bac3f2bd`. NexaUI core and installed SDK
-for the checks below were based on `129dea2bffa9f084ee1dd7949fa69134291264f7`.
+`cdcba69432c363c93848666d7b47fa73bac3f2bd`. The original 0.1.14 example
+used core based on `129dea2bffa9f084ee1dd7949fa69134291264f7`. The 0.1.15
+no-caret snapshot extension was developed on NexaUI base
+`4763bdd73143708207e678e5df204bc375d98ad6`.
 Builds and this example do not need to write to Aetheri.
 
 ```sh
@@ -35,12 +37,16 @@ python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
 NEXAUI_TERMINAL_AX_SCROLL=1 python3 tests/run_atspi_native.py \
   /path/to/at-spi2-registryd /tmp/terminal-view/aetheri_terminal_atspi_client \
   /tmp/terminal-view/aetheri_terminal_ax_host
+NEXAUI_TERMINAL_AX_TRANSITION=1 python3 tests/run_atspi_native.py \
+  /path/to/at-spi2-registryd /tmp/terminal-view/aetheri_terminal_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_ax_host
 ```
 
 The host is a headless fixture with simulated focus and geometry; it is not a
 native Aetheri window. The first run checks real AT-SPI text, reverse selection,
 caret, and rejection of mutation on a read-only snapshot. The second checks that
-scrollback without a visible caret does not invent one. The fixture's zero-offset
+scrollback remains readable without an invented caret; the third queries the same
+accessible across the transition from an active selection to scrollback. The fixture's zero-offset
 combining-mark callback is synthetic and is not a shaping or visual-quality test.
 
 ## Contract and limits
@@ -58,8 +64,8 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   selection copying must use the original model's copy operation.
 - A snapshot is limited to 65,536 UTF-8 bytes. Oversized frames fail explicitly;
   they are never silently truncated. If no actual caret or entire selection is
-  visible, the plain read-only semantic node is published without AT-SPI Text;
-  readable scrollback with an absent caret remains an SDK accessibility gap.
+  visible, the read-only AT-SPI Text snapshot reports caret offset -1 and no
+  selection. Partial offscreen selection is not represented as a complete one.
 - Glyph lookup may return the font's missing-glyph index. Correct glyph coverage,
   width policy, mark positioning and actual font metrics remain host obligations.
 
@@ -74,3 +80,12 @@ and focus are simulated. No PTY, live keyboard/IME, native selection gestures,
 independent clipboard/paste, editor, session retention, measured performance,
 physical display or human screenreader acceptance is proved here. These remain
 open in delivery packet 5 and the quality gates.
+
+The 0.1.15 extension was checked on Alpine Linux/WSL with installed static and
+shared SDKs and Clang ASan/UBSan. The independent client read the expected
+scrollback, observed -1 with no selection, and exercised a transition on the
+same accessible object; the existing selected-text case also passed. The core
+semantic snapshot tests passed for static, shared and sanitizer configurations.
+The existing private-Weston large-text test was skipped outside its required
+fixture; a follow-up could not start because Weston was unavailable in this
+environment. These runs are not native Aetheri or human screenreader acceptance.

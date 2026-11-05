@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(NexaUIAetheriTerminalView LANGUAGES C)
-find_package(NexaUI 0.1.14 CONFIG REQUIRED)
+find_package(NexaUI 0.1.15 CONFIG REQUIRED)
 set(AETHERI_SOURCE_DIR "" CACHE PATH "Immutable Aetheri source snapshot")
 if(NOT EXISTS "${AETHERI_SOURCE_DIR}/src/terminal/model.c" OR NOT EXISTS "${AETHERI_SOURCE_DIR}/src/terminal/model.h")
     message(FATAL_ERROR "Set AETHERI_SOURCE_DIR to an Aetheri source snapshot")

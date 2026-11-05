@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 14
+#define NX_VERSION_PATCH 15
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -1833,6 +1833,11 @@ NX_API nx_result nx_semantics_add(nx_context *context,
 NX_API nx_result nx_semantics_add_readonly_text_snapshot(nx_context *context,
     const nx_semantic_desc *desc, uint64_t identity, size_t anchor_byte,
     size_t cursor_byte, uint32_t *out_index);
+/* As above, but the actual caret and selection are not represented within
+   this snapshot. Linux exposes readable AT-SPI Text with caret offset -1 and
+   no selection. This does not imply that the underlying model has no caret. */
+NX_API nx_result nx_semantics_add_readonly_text_snapshot_without_caret(nx_context *context,
+    const nx_semantic_desc *desc, uint64_t identity, uint32_t *out_index);
 NX_API nx_result nx_semantics_count(const nx_context *context, size_t *out_count);
 NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);

@@ -1643,9 +1643,9 @@ nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc, uint32
     return nx_semantics_add_impl(ctx, desc, out_index, 0);
 }
 
-nx_result nx_semantics_add_readonly_text_snapshot(nx_context *ctx,
+static nx_result nx_semantics_add_readonly_text_snapshot_impl(nx_context *ctx,
     const nx_semantic_desc *desc, uint64_t identity, size_t anchor, size_t cursor,
-    uint32_t *out_index) {
+    int has_caret, uint32_t *out_index) {
     if (out_index) *out_index = UINT32_MAX;
     if (!ctx || !desc || !identity || desc->role != NX_ROLE_TEXT ||
         !(desc->state & NX_SEM_READONLY) || (desc->state & NX_SEM_PROTECTED) ||
@@ -1653,19 +1653,30 @@ nx_result nx_semantics_add_readonly_text_snapshot(nx_context *ctx,
         return NX_ERROR_ARGUMENT;
     if (desc->value.length > NX_TEXT_VALUE_MAX_BYTES) return NX_ERROR_LIMIT;
     if (!nx_valid_span(desc->value)) return NX_ERROR_ARGUMENT;
-    if (anchor > desc->value.length || cursor > desc->value.length ||
+    if (has_caret && (anchor > desc->value.length || cursor > desc->value.length ||
         (anchor < desc->value.length && ((unsigned char)desc->value.data[anchor] & 0xc0u) == 0x80u) ||
-        (cursor < desc->value.length && ((unsigned char)desc->value.data[cursor] & 0xc0u) == 0x80u))
+        (cursor < desc->value.length && ((unsigned char)desc->value.data[cursor] & 0xc0u) == 0x80u)))
         return NX_ERROR_ARGUMENT;
     uint32_t index;
     nx_result result = nx_semantics_add_impl(ctx, desc, &index, 0);
     if (result != NX_OK) return result;
     nx_semantic_record *node = &ctx->semantics.nodes[index];
     node->text_value = (nx_text_value_target){identity, 0, 1};
-    node->text_selection = (nx_text_selection_snapshot){anchor, cursor, 1};
+    node->text_selection = (nx_text_selection_snapshot){anchor, cursor, has_caret};
     node->text_snapshot_only = 1;
     if (out_index) *out_index = index;
     return NX_OK;
+}
+
+nx_result nx_semantics_add_readonly_text_snapshot(nx_context *ctx,
+    const nx_semantic_desc *desc, uint64_t identity, size_t anchor, size_t cursor,
+    uint32_t *out_index) {
+    return nx_semantics_add_readonly_text_snapshot_impl(ctx,desc,identity,anchor,cursor,1,out_index);
+}
+
+nx_result nx_semantics_add_readonly_text_snapshot_without_caret(nx_context *ctx,
+    const nx_semantic_desc *desc, uint64_t identity, uint32_t *out_index) {
+    return nx_semantics_add_readonly_text_snapshot_impl(ctx,desc,identity,0,0,0,out_index);
 }
 
 nx_result nx_selection_apply(nx_context *ctx, uint64_t group_id, int required, uint64_t *selected_id) {

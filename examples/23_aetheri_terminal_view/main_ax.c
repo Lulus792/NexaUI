@@ -10,7 +10,15 @@
 #include <string.h>
 #define CHECK(x) do {if(!(x)){fprintf(stderr,"terminal-ax:%d: %s\n",__LINE__,#x);return 1;}} while(0)
 static volatile sig_atomic_t stop;
+static volatile sig_atomic_t scroll_requested;
 static void on_signal(int sig){(void)sig;stop=1;}
+static void on_scroll(int sig){(void)sig;scroll_requested=1;}
+static void scroll_history(struct ae_terminal *model) {
+    ae_terminal_select_clear(model);
+    const char lines[]="\r\n1\r\n2\r\n3\r\n4";
+    ae_terminal_feed(model,lines,sizeof(lines)-1);
+    ae_terminal_scroll(model,1);
+}
 static int width(uint32_t c){return c==0x754c?2:c==0x301?0:1;}
 static nx_result position(void *user,uint32_t base,uint32_t mark,unsigned index,float *x,float *y){
     (void)user;(void)base;(void)mark;(void)index;*x=0;*y=0;return NX_OK;
@@ -28,11 +36,8 @@ int main(int argc,char **argv) {
     const char input[]="A\xe7\x95\x8c" "e\xcc\x81";ae_terminal_feed(model,input,sizeof(input)-1);
     CHECK(ae_terminal_select_begin(model,0,4) && ae_terminal_select_extend(model,0,1));
     if(getenv("NEXAUI_TERMINAL_AX_SCROLL")) {
-        ae_terminal_select_clear(model);
-        const char lines[]="\r\n1\r\n2\r\n3\r\n4";
-        ae_terminal_feed(model,lines,sizeof(lines)-1);
+        scroll_history(model);
         CHECK(model->history_count>0);
-        ae_terminal_scroll(model,1);
     }
     aetheri_terminal_view_desc d={.model=model,.regular=font,.bold=font,.text_identity=123,
         .cell_width=12,.cell_height=22,.baseline=17,.pixels_per_em=16,.mark_position=position};
@@ -43,7 +48,14 @@ int main(int argc,char **argv) {
     CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
     struct sigaction action={0};action.sa_handler=on_signal;sigemptyset(&action.sa_mask);
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));
+    struct sigaction scroll_action={0};scroll_action.sa_handler=on_scroll;sigemptyset(&scroll_action.sa_mask);
+    CHECK(!sigaction(SIGUSR1,&scroll_action,NULL));
     while(!stop) {
+        if(scroll_requested) {
+            scroll_requested=0;scroll_history(model);CHECK(model->history_count>0);
+            CHECK(aetheri_terminal_view_frame(view,2,1)==NX_OK);
+            CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
+        }
         int fd=-1,writable=0;uint32_t timeout=1000;
         CHECK(nx_linux_accessibility_host_prepare(host,&fd,&writable,&timeout)==NX_OK);
         struct pollfd p={fd,(short)(POLLIN|(writable?POLLOUT:0)),0};
