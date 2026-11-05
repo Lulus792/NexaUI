@@ -144,7 +144,7 @@ elseif(UNIX AND NOT APPLE)
         DEPENDS ${NEXAUI_TEXT_INPUT_V3_XML}
         VERBATIM)
     target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c
-        platform/linux/wayland/window.c
+        platform/linux/wayland/window.c platform/linux/wayland/host.c
         platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c platform/linux/wayland/transfer.c platform/linux/wayland/scale.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
@@ -623,6 +623,16 @@ if(NEXAUI_BUILD_TESTS)
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_wayland_software COMMAND nexaui_wayland_software_tests)
             set_tests_properties(nexaui_wayland_software PROPERTIES TIMEOUT 20)
+            add_executable(nexaui_wayland_host_tests tests/test_wayland_host.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_host_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_host_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} platform/linux)
+            target_link_libraries(nexaui_wayland_host_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_host COMMAND nexaui_wayland_host_tests)
+            set_tests_properties(nexaui_wayland_host PROPERTIES TIMEOUT 20)
             add_executable(nexaui_wayland_management_tests tests/test_wayland_management.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c)

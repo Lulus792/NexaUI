@@ -137,3 +137,34 @@ The Linux Settings example demonstrates one correlated reply and joins its
 short-lived producer before closing the descriptor and scene. Other platforms,
 multiple descriptors, application service lifetimes and cross-process
 authorization require their own contracts.
+
+## Host-owned Wayland surface
+
+`<nexaui/wayland_host.h>` exposes `nx_wayland_shm_host_*` on Linux through
+`NexaUI::NexaUI`. The host supplies borrowed `wl_display`, `wl_shm`, `wl_surface` and a
+chosen event queue on one existing connection. It alone selects and creates the
+surface role, handles initial configure/acknowledgement, input, semantics,
+viewport and buffer-scale state, event dispatch, flushing and final teardown.
+The adapter opens no connection and does not confer authority. Only one
+presenter may attach buffers to that surface at a time.
+
+After configure, the host passes physical dimensions and the matching scale;
+the adapter rasterizes borrowed commands, converts straight RGBA into
+premultiplied ARGB8888, attaches and commits a buffer together with pending host
+surface state. The host must ensure its own viewport/scale and dimensions are
+compatible. READY means queued, not flushed, displayed or accepted as a role.
+Three buffers of at most 128 MiB each may await release. On BUSY, dispatch the
+chosen queue and retry after events, without a permanent polling thread. The
+adapter never dispatches or flushes the host connection. It uses unlinked
+temporary files in `/tmp`; destruction releases adapter-owned proxies and
+mappings without destroying borrowed objects. The owner thread must stop all
+adapter use before destroying those objects or its connection.
+Once a display error has been observed, presentation returns a platform error;
+an error detected after commit cannot establish whether that frame was received.
+
+The [standalone host example](../../examples/19_wayland_host/README.md) uses an
+ordinary host-owned xdg role. A controlled test uses a distinct fake private
+role and checks initial acknowledgement, queue isolation, transparency,
+backpressure and lifetime. Neither proves actual Aetheri private-role policy,
+input/AT-SPI integration, three-output behavior, physical presentation or
+display-loss recovery or re-establishment of a role after a disconnect.

@@ -1,4 +1,7 @@
 #include <nexaui/nexaui.h>
+#if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
+#include <nexaui/wayland_host.h>
+#endif
 #include <string.h>
 
 static nx_result sample_series(void *user, size_t index,
@@ -31,6 +34,10 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(int argc, char **argv) {
+#if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
+    nx_wayland_shm_host *host=(nx_wayland_shm_host *)1;
+    if (nx_wayland_shm_host_create(NULL,NULL,NULL,NULL,&host)!=NX_ERROR_ARGUMENT || host) return 22;
+#endif
     uint8_t scaled_pixels[4 * 4 * 4];
     nx_command scaled_box = {.type=NX_COMMAND_FILL_RECT, .rect={0,0,1,1},
                              .color={1,0,0,1}};

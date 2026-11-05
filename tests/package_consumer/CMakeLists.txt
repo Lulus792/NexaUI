@@ -3,6 +3,9 @@ project(NexaUIInstalledConsumer LANGUAGES C)
 find_package(NexaUI 0.1.1 CONFIG REQUIRED)
 add_executable(consumer main.c)
 target_link_libraries(consumer PRIVATE NexaUI::NexaUI)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_definitions(consumer PRIVATE NEXAUI_PACKAGE_LINUX_WAYLAND=1)
+endif()
 target_compile_definitions(consumer PRIVATE
     NEXAUI_PACKAGE_VERSION_MAJOR=${NexaUI_VERSION_MAJOR}
     NEXAUI_PACKAGE_VERSION_MINOR=${NexaUI_VERSION_MINOR}

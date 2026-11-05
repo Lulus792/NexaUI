@@ -4,6 +4,7 @@
 #include "drop_queue.h"
 #include "event_queue.h"
 #include "repeat.h"
+#include "pixels.h"
 #include "scale.h"
 #include "transfer.h"
 #include "uri_list.h"
@@ -1998,13 +1999,7 @@ nx_result nx_wayland_window_software_render(nx_wayland_window *window,
         nx_wayland_buffer_release(buffer,buffer->native);
         return result;
     }
-    uint8_t *rgba=buffer->pixels;
-    uint32_t *argb=buffer->pixels;
-    for (size_t i=0; i<buffer->size/4u; ++i) {
-        unsigned r=rgba[i*4u], g=rgba[i*4u+1u], b=rgba[i*4u+2u], a=rgba[i*4u+3u];
-        argb[i]=(a<<24u)|(((r*a+127u)/255u)<<16u)|
-                (((g*a+127u)/255u)<<8u)|((b*a+127u)/255u);
-    }
+    nx_wayland_premultiply_argb(buffer->pixels,buffer->size);
     buffer->software=1;
     ++window->software_buffers;
     int buffer_scale=window->scale;

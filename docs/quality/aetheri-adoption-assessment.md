@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Host-owned Wayland surface candidate (2026-11-05)
+
+Candidate based on `48123ef1bfdba28986c7f86790005fa5ddf40c5d` adds
+`nx_wayland_shm_host_*`: the host supplies its connection-bound `wl_shm`,
+already role-assigned surface and event queue. NexaUI does not open a second
+connection or assign a role; the host owns configure, scale, input, semantic
+publication, dispatch and flushing. A controlled server with a fake private
+role checks host configure/ack before the first attachment, transparent and
+premultiplied pixels, separate queue dispatch, bounded buffers, wrong-thread
+errors and destruction with an outstanding submission. GCC Wayland-only and
+dual-backend tests and Clang shared ASan/UBSan tests passed. A standalone C17
+consumer built against an installed Vulkan-free SDK, owned an ordinary xdg role,
+and queued a frame in private Weston. These tests do not prove Aetheri private
+role admission, actual dock/search behavior, input/AT-SPI integration, physical
+presentation, three-output operation or compositor-loss recovery.
+
 ## Settings renderer selection candidate (2026-11-05)
 
 Candidate based on `66fdd9aaa7729221db54c616fceb3aacae9db2ac` uses the
