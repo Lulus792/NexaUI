@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Compositor-requested close with two Wayland windows (2026-11-05)
+
+Source `1fce23a381cee879763cb2fceb562dad66113b26` extends the two-window
+host to react to `nx_window_info.should_close` and verify that the other
+window has no close request. An isolated, unprivileged headless Sway 1.12-rc3
+session targets window A through Sway IPC; the host observes and handles that
+close, while B remains in Sway's tree, submits another software frame and is
+reported focused after a focus request. Two independent GCC runs and one Clang
+ASan/UBSan run passed (`/tmp/nexaui-w02-sway-final1`, `-final2`, `-asan`). A
+fresh software-only build also ran the registered optional CTest successfully
+(`/tmp/nexaui-w02-sway-ctest-final/client.log`); the existing virtual-keyboard
+Weston test passed after the host change (`/tmp/nexaui-w02-sway-westonguard/result.json`).
+The Sway harness requires an explicitly provided compositor and refuses to use
+an existing session. Before using Sway, an isolated Weston attempt with
+`Super+K` ended the host without a close acknowledgement; this was not counted
+as a passing native close test. See [Weston's bindings manual](https://man.archlinux.org/man/weston-bindings.7.en)
+for that environment's kill binding. Headless IPC focus is not physical input,
+a displayed-pixel check, real screenreader acceptance, Aetheri compositor
+coverage, or an efficient multi-window event loop.
+
 ## Independent Wayland windows (2026-11-05)
 
 The earlier W02 source pointer `tests/test_multi_window.c` is Windows-only.
