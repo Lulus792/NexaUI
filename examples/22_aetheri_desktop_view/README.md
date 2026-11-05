@@ -2,7 +2,7 @@
 
 This separate C17 consumer builds against an installed NexaUI SDK and an
 explicit Aetheri source snapshot. It borrows the original desktop model and
-font bytes; it returns Search, Settings and Terminal intents to the caller.
+font bytes; it returns Search, Settings, Terminal and Files intents to the caller.
 The view does not start processes, mutate the Aetheri model, create a Wayland
 connection or select a privileged role. A pending app request disables its
 corresponding button. The host remains responsible for validating and acting
@@ -11,6 +11,12 @@ nonzero increasing revision, incremented on every model mutation including
 remove/re-add with the same ID. Events queued for an older revision produce no
 intent. The host must revalidate the revision and target again before acting;
 recreate the view before revision exhaustion.
+
+This current consumer requires an Aetheri desktop model with Files and
+`ae_desktop_app_selector`/`ae_desktop_app_from_selector`; older snapshots are
+rejected during CMake configuration. The tested immutable model is from Aetheri
+`7374f381719397abc100dcb784becf59c86d1462`. This requirement applies to the
+example consumer; it does not change the SDK's ABI or Aetheri's source pin.
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
@@ -98,8 +104,14 @@ and requests queued for an older revision produce no intent. An independent
 AT-SPI client tests the list's Selection interface, then edits the search field
 and activates Terminal; the current Aetheri snapshot also tests selecting Files.
 The test host uses simulated geometry and focus. Real private-role routing and
-human assistive acceptance remain open. Fixed dock buttons still cover only
-Search, Settings and Terminal; Files dock integration remains open.
+human assistive acceptance remain open.
+
+On base `96e8e06e67e5d95a47758276615c05b660ea30ff`, the four-button dock
+exposes Files/Dateien as a stable focusable action, disabled while the
+application-owned request is pending. It reports an intent; the test layer host
+uses the model's selector helpers to exchange `L2F` and A/E/X replies with its
+injected owner socket and fans confirmed state to its three models. Its
+socketpair test is not an actual process launcher or production admission.
 
 On 5 November 2026 the initial source `3c0dfd20cb7217cbbe81d0af7965533c19b0f506`
 was built on Alpine/WSL2 with GCC 15.2 against an installed static, Wayland-only

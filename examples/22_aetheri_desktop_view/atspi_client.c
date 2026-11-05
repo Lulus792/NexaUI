@@ -69,6 +69,14 @@ int main(int argc,char **argv) {
     AtspiAccessible *field=NULL;
     for(unsigned n=0;n<200 && !field;++n){atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);if(!field)field=find(app,"Suche",ATSPI_ROLE_ENTRY,0);if(!field)pump(10);}
     CHECK(field);AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
+    if(getenv("NEXAUI_AX_FILES_DOCK")) {
+        AtspiAccessible *button=find(app,"Files",ATSPI_ROLE_PUSH_BUTTON,0);CHECK(button);
+        AtspiAction *button_action=atspi_accessible_get_action_iface(button);CHECK(button_action);
+        GError *button_error=NULL;CHECK(atspi_action_do_action(button_action,0,&button_error) && !button_error);
+        char output[1024]={0};size_t used=0;
+        CHECK(wait_output(pipes[0],output,sizeof(output),&used,"INTENT kind=2 app=3 window=0\n"));
+        g_object_unref(button_action);g_object_unref(button);
+    }
     if(getenv("NEXAUI_AX_SELECTION")) {
         AtspiAccessible *list=find(app,"Search results",ATSPI_ROLE_LIST,0);
         AtspiAccessible *row=find(app,"Terminal",ATSPI_ROLE_LIST_ITEM,0);

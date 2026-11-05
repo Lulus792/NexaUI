@@ -9,7 +9,30 @@ int main(int argc,char **argv) {
     struct ae_desktop_model model;ae_desktop_model_init(&model);aetheri_desktop_view *view=NULL;
     CHECK(aetheri_desktop_view_create(&model,bytes,(size_t)n,&view));aetheri_desktop_intent intent;uint64_t revision=1;
     CHECK(aetheri_desktop_view_frame(view,640,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
-    nx_context *ctx=aetheri_desktop_view_context(view);CHECK(nx_semantics_request_action(ctx,11,NX_ACTION_PRESS)==NX_OK);
+    nx_context *ctx=aetheri_desktop_view_context(view);
+    CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_FILES);
+    CHECK(!model.pending[AE_DESKTOP_FILES] && !model.process[AE_DESKTOP_FILES]);
+    CHECK(ae_desktop_model_request(&model,AE_DESKTOP_FILES));++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_ERROR_STATE);
+    CHECK(ae_desktop_model_reply(&model,AE_DESKTOP_FILES,'E'));++revision;
+    CHECK(aetheri_desktop_view_frame(view,320,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    uint32_t files_index;nx_semantic_view files_sem;
+    CHECK(nx_semantics_find(ctx,13,&files_index)==NX_OK && nx_semantics_get(ctx,files_index,&files_sem)==NX_OK &&
+          files_sem.bounds.x>=0 && files_sem.bounds.x+files_sem.bounds.width<=320 && !(files_sem.state&NX_SEM_DISABLED));
+    CHECK(nx_focus_set(ctx,13)==NX_OK);
+    nx_event files_key={0};files_key.type=NX_EVENT_KEY_DOWN;files_key.key=NX_KEY_ENTER;
+    CHECK(nx_context_queue_event(ctx,&files_key)==NX_OK);files_key.type=NX_EVENT_KEY_UP;
+    CHECK(nx_context_queue_event(ctx,&files_key)==NX_OK && aetheri_desktop_view_frame(view,320,84,revision,&intent) &&
+          intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_FILES);
+    model.german=true;++revision;
+    CHECK(aetheri_desktop_view_frame(view,320,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_semantics_find(ctx,13,&files_index)==NX_OK && nx_semantics_get(ctx,files_index,&files_sem)==NX_OK &&
+          files_sem.name.length==7 && !memcmp(files_sem.name.data,"Dateien",7));
+    model.german=false;++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_semantics_request_action(ctx,11,NX_ACTION_PRESS)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_SETTINGS);
     CHECK(!model.pending[AE_DESKTOP_SETTINGS] && !model.process[AE_DESKTOP_SETTINGS]);
     CHECK(ae_desktop_model_request(&model,AE_DESKTOP_SETTINGS));++revision;

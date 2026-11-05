@@ -114,13 +114,13 @@ static void advance(struct view *v) {
         printf("INTENT %u %d %d %u\n",v->index,intent.kind,intent.app,intent.window);
         if(intent.kind==AETHERI_DESKTOP_LAUNCH && v->app->launcher>=0) {
             struct app *a=v->app;enum ae_desktop_app target=intent.app;
-            CHECK(target==AE_DESKTOP_SETTINGS || target==AE_DESKTOP_TERMINAL);
+            char selector=ae_desktop_app_selector(target);CHECK(selector);
             for(unsigned i=0;i<3;++i)CHECK(!a->views[i].model.pending[target] && a->views[i].revision<UINT64_MAX);
             for(unsigned i=0;i<3;++i) {
                 CHECK(ae_desktop_model_request(&a->views[i].model,target));++a->views[i].revision;
                 if(a->views[i].view)a->views[i].dirty=true;
             }
-            char packet[3]={'L','2',target==AE_DESKTOP_SETTINGS?'S':'T'};
+            char packet[3]={'L','2',selector};
             ssize_t sent;do {sent=send(a->launcher,packet,sizeof(packet),MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
             CHECK(sent==(ssize_t)sizeof(packet));printf("LAUNCH_REQUEST %c\n",packet[2]);
             aetheri_desktop_intent reconciled;
@@ -276,8 +276,8 @@ static void launcher_reply(struct app *a) {
         }
     }
     CHECK(n==3 && !extra && !(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) && bytes[1]=='2' &&
-          (bytes[2]=='S' || bytes[2]=='T') && (bytes[0]=='A' || bytes[0]=='E' || bytes[0]=='X'));
-    enum ae_desktop_app target=bytes[2]=='S'?AE_DESKTOP_SETTINGS:AE_DESKTOP_TERMINAL;
+          (bytes[0]=='A' || bytes[0]=='E' || bytes[0]=='X'));
+    enum ae_desktop_app target=ae_desktop_app_from_selector(bytes[2]);CHECK(target!=AE_DESKTOP_APP_NONE);
     for(unsigned i=0;i<3;++i) {
         struct view *v=&a->views[i];CHECK(v->revision<UINT64_MAX);
         CHECK(ae_desktop_model_reply(&v->model,target,bytes[0]));++v->revision;

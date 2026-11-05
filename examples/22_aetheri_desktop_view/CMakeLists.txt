@@ -5,6 +5,11 @@ set(AETHERI_SOURCE_DIR "" CACHE PATH "Aetheri source snapshot")
 if(NOT EXISTS "${AETHERI_SOURCE_DIR}/src/desktop/model.c" OR NOT EXISTS "${AETHERI_SOURCE_DIR}/src/desktop/model.h")
     message(FATAL_ERROR "Set AETHERI_SOURCE_DIR to an Aetheri source snapshot")
 endif()
+file(READ "${AETHERI_SOURCE_DIR}/src/desktop/model.h" _desktop_model_header)
+if(NOT _desktop_model_header MATCHES "AE_DESKTOP_FILES" OR
+   NOT _desktop_model_header MATCHES "ae_desktop_app_from_selector")
+    message(FATAL_ERROR "The desktop view requires an Aetheri model with Files and app selector support")
+endif()
 add_library(aetheri_desktop_model STATIC "${AETHERI_SOURCE_DIR}/src/desktop/model.c")
 target_include_directories(aetheri_desktop_model PUBLIC "${AETHERI_SOURCE_DIR}/src/desktop")
 add_library(aetheri_desktop_view STATIC view.c)
@@ -90,6 +95,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 target_include_directories(aetheri_desktop_layer_focus_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
                 target_link_libraries(aetheri_desktop_layer_focus_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
                 set_target_properties(aetheri_desktop_layer_focus_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                add_executable(aetheri_desktop_layer_launcher_test test_layer_launcher.c ime_transaction.c
+                    "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
+                    "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h" "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
+                    "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h" "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1.c")
+                target_include_directories(aetheri_desktop_layer_launcher_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+                target_link_libraries(aetheri_desktop_layer_launcher_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
+                set_target_properties(aetheri_desktop_layer_launcher_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
                 add_executable(aetheri_desktop_layer_ax_host_test test_layer_ax_host.c ime_transaction.c
                     "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
                     "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"

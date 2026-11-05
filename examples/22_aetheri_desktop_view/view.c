@@ -98,12 +98,14 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
     if(!v || !revision || revision<v->model_revision || width<320 || height<84 || (v->model->search && height<240) ||
        v->model->count>AE_DESKTOP_WINDOWS || !memchr(v->model->query,0,sizeof(v->model->query)))return 0;
     aetheri_desktop_intent pending={0};
-    const char *labels[]={v->model->german?"Suchen":"Search",v->model->german?"System":"Settings","Terminal"};
-    nx_text_layout *layouts[3]={0},*result_layouts[AE_DESKTOP_RESULTS]={0};int okay=0,guarded=0;
+    const char *labels[]={v->model->german?"Suchen":"Search",v->model->german?"System":"Settings","Terminal",
+                          ae_desktop_app_label(AE_DESKTOP_FILES,v->model->german)};
+    const enum ae_desktop_app apps[]={AE_DESKTOP_APP_NONE,AE_DESKTOP_SETTINGS,AE_DESKTOP_TERMINAL,AE_DESKTOP_FILES};
+    nx_text_layout *layouts[4]={0},*result_layouts[AE_DESKTOP_RESULTS]={0};int okay=0,guarded=0;
     struct ae_desktop_result results[AE_DESKTOP_RESULTS];size_t result_count=0;
     float result_y[AE_DESKTOP_RESULTS]={0},result_height[AE_DESKTOP_RESULTS]={0},content_height=0;
-    for(int i=0;i<3;++i)
-        if(nx_text_layout_create(v->fonts,labels[i],strlen(labels[i]),NX_BIDI_LTR,16,width,&layouts[i])!=NX_OK)goto done;
+    for(int i=0;i<4;++i)
+        if(nx_text_layout_create(v->fonts,labels[i],strlen(labels[i]),NX_BIDI_LTR,14,width,&layouts[i])!=NX_OK)goto done;
     if(v->model->search) {
         nx_utf8_span draft;
         if(nx_text_field_text(v->query,&draft)!=NX_OK)goto done;
@@ -136,17 +138,17 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
     nx_semantic_desc root={0};root.id=1;root.role=NX_ROLE_WINDOW;root.bounds=(nx_rect){0,0,width,height};
     root.name=(nx_utf8_span){"Aetheri Desktop",15};
     if(nx_semantics_add(v->context,&root,NULL)!=NX_OK)goto done;
-    float button_width=(width-48)/3;
-    for(int i=0;i<3;++i) {
+    float button_width=(width-40)/4;
+    for(int i=0;i<4;++i) {
         nx_control_desc d={0};d.id=(uint64_t)(10+i);d.parent_id=1;
         d.bounds=(nx_rect){8+(float)i*(button_width+8),height-70,button_width,44};
         d.name=(nx_utf8_span){labels[i],strlen(labels[i])};d.label_layout=layouts[i];
         d.label_origin=(nx_point){d.bounds.x+8,d.bounds.y+8};d.glyph_cache_bytes=1024u*1024u;
-        d.disabled=i>0 && v->model->pending[i==1?AE_DESKTOP_SETTINGS:AE_DESKTOP_TERMINAL];
+        d.disabled=apps[i]!=AE_DESKTOP_APP_NONE && v->model->pending[apps[i]];
         nx_interaction_state state;if(nx_button(v->context,&d,&state)!=NX_OK)goto done;
         if(state.clicked) {
             pending.kind=i?AETHERI_DESKTOP_LAUNCH:AETHERI_DESKTOP_SEARCH;
-            pending.app=i==1?AE_DESKTOP_SETTINGS:i==2?AE_DESKTOP_TERMINAL:AE_DESKTOP_APP_NONE;
+            pending.app=apps[i];
         }
     }
     if(v->model->search) {
@@ -266,7 +268,7 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
     v->model_revision=revision;okay=1;
 done:
     if(guarded && nx_text_field_set_read_only(v->query,0)!=NX_OK)okay=0;
-    for(int i=0;i<3;++i)nx_text_layout_destroy(layouts[i]);
+    for(int i=0;i<4;++i)nx_text_layout_destroy(layouts[i]);
     for(size_t i=0;i<AE_DESKTOP_RESULTS;++i)nx_text_layout_destroy(result_layouts[i]);
     return okay;
 }

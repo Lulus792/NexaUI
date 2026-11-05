@@ -1,5 +1,32 @@
 # Aetheri adoption: initial source assessment
 
+## Files dock intent and owner protocol (2026-11-06)
+
+On candidate base `96e8e06e67e5d95a47758276615c05b660ea30ff`, the desktop
+view adds Files/Dateien as the fourth dock action. The view emits the existing
+launch intent without mutating the application model; its button is disabled
+while Files is pending. The private layer test host uses the Aetheri model's
+app-selector functions rather than treating every non-Settings app as Terminal.
+A local socketpair verifies `L2F`, pending propagation across three models,
+accepted `A2F`, exit `X2F`, failed `E2F`, and rejection of a duplicate click.
+A mutant using the old two-app selector sent `L2T` and failed this test.
+
+With an immutable archive of Aetheri `7374f381719397abc100dcb784becf59c86d1462`,
+GCC static/shared and Clang ASan/UBSan builds passed the scene, socketpair,
+layer-focus and controlled IME-wire regressions. The scene checks keyboard
+activation, the German semantic name and in-bounds geometry at 320 logical
+pixels. An independent libatspi client invoked the Files dock button, selected
+Files and Terminal search results, and exercised search text and activation.
+The native accessibility host uses simulated geometry/focus. The first build
+attempt asked an existing build tree for the new target before reconfiguring;
+the final profiles reconfigured and passed. Older Aetheri snapshots lacking
+Files/selector helpers now fail explicitly at configure time.
+
+The socket is a test owner, not the Aetheri supervisor or a launched process.
+Actual shell integration, native keyboard/pointer operation on its private
+role, pixel-level layout/translation review, physical scaling and human
+assistive acceptance remain open. No SDK ABI or Aetheri checkout changed.
+
 ## Desktop search native selection owner (2026-11-06)
 
 On candidate base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, the external

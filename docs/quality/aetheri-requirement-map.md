@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/L01/A02: on base `96e8e06e67e5d95a47758276615c05b660ea30ff`, the
+desktop consumer exposes a Files dock intent and the private test host sends
+the model's `F` selector; real owner/shell integration remains open. See
+[candidate evidence](aetheri-adoption-assessment.md#files-dock-intent-and-owner-protocol-2026-11-06).
+
 D05/L05/A02: on base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, the
 external desktop search view exposes native single-selection actions and
 returns selection intents for owner validation. The current Aetheri model's Files
