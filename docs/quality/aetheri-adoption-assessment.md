@@ -1,5 +1,38 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric native IME composition (2026-11-05)
+
+Source `e965e3bd177ff61d9ea35ee9cd246e67f9a4db95` introduces the optional
+`nx_numeric_field_set_ime_window` in the 0.1.6 development package. The numeric field
+uses the existing composition painting, surrounding-text and focus lifecycle,
+and the general field's model/selection/buffer revision algorithm. A changed
+window invalidates old replies. IME replacement can leave an invalid visible
+draft; only a valid Enter changes the committed value. This supersedes the
+earlier deliberate rejection of all targeted numeric IME events when the
+application opts in; without a window they remain rejected.
+
+The controlled Wayland v3 server test covers hidden-caret preedit, deletion
+plus invalid insertion, multi-scalar valid replacement, valid Enter, stale
+replay after model replacement, and detaching/reattaching the window with the
+same text. On Alpine/WSL the v3 cases and numeric/general field tests passed
+in Clang 22.1.3 Debug ASan/UBSan with leak detection, GCC 15.2 Release
+Wayland-only and GCC Debug dual-backend (six cases each). V1 and the same
+regressions passed on the earlier candidate before the final window-detach
+invalidation. The isolated mutant omitting numeric revision checks failed the
+stale replay; the pre-fix `7f653b9` source with the new detach regression failed
+at the unchanged-draft assertion. Logs: `/tmp/nexaui-numeric-ime-asan.log`,
+`/tmp/nexaui-numeric-ime-release.log`, `/tmp/nexaui-numeric-ime-dual.log`,
+`/tmp/nexaui-ime-mutant-test.log` and `/tmp/nexaui-ime-detach-test.log`.
+The mutation and pre-fix test sources are isolated and not shipped.
+Static and shared installed C17 consumers also linked and called the new API
+with X11 discovery disabled (`/tmp/nexaui-numeric-ime-package-final.log`);
+the package test's synthetic source IDs are not provenance claims.
+
+The controlled v3 server is not an installed input method or Aetheri consumer.
+Native v1 numeric, other platforms, Aetheri input/focus/scale, IME batch failure
+injection, clipboard, visual navigation and human assistive acceptance remain
+open. The full T05 requirement is not complete.
+
 ## Numeric field logical commands (2026-11-05)
 
 Follow-up `0cbc61941106a6bdb3e57d9dc2b1fc1203d91bd8` rejects
