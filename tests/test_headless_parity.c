@@ -8,6 +8,7 @@
 } } while (0)
 #include <math.h>
 #include <string.h>
+#include <float.h>
 
 nx_result nx_reference_headless_render(const nx_command *, size_t, uint8_t *, uint32_t,
                                       uint32_t, size_t, nx_color);
@@ -46,7 +47,70 @@ static void compare(const nx_command *commands, size_t count, uint32_t w, uint32
     free(before);
     free(candidate);
 }
+
+static void scaled_contract(void) {
+    const uint8_t image[] = {255, 0, 0, 255, 0, 255, 0, 128};
+    const nx_color white = {1, 1, 1, 1}, clear = {.1f, .2f, .3f, 1};
+    const nx_command logical[] = {
+        {.type=NX_COMMAND_PUSH_CLIP, .rect={1, 1, 12, 10}},
+        {.type=NX_COMMAND_FILL_RECT, .rect={1, 1, 5, 3}, .color={1, 0, 0, 1}},
+        {.type=NX_COMMAND_STROKE_RECT, .rect={2, 2, 8, 6}, .color={0, 1, 0, 1}, .thickness=1},
+        {.type=NX_COMMAND_FILL_ROUND_RECT, .rect={4, 3, 5, 4}, .color={0, 0, 1, 1}, .radius=1},
+        {.type=NX_COMMAND_LINE, .color=white, .thickness=1, .points={{1, 2}, {9, 7}}},
+        {.type=NX_COMMAND_FILL_TRIANGLE, .color=white, .points={{3, 2}, {5, 8}, {9, 4}}},
+        {.type=NX_COMMAND_BITMAP, .rect={7, 5, 4, 2}, .color=white,
+         .bitmap={image, 2, 1, 8, NX_BITMAP_RGBA8}},
+        {.type=NX_COMMAND_POP_CLIP}
+    };
+    const nx_command physical[] = {
+        {.type=NX_COMMAND_PUSH_CLIP, .rect={2, 2, 24, 20}},
+        {.type=NX_COMMAND_FILL_RECT, .rect={2, 2, 10, 6}, .color={1, 0, 0, 1}},
+        {.type=NX_COMMAND_STROKE_RECT, .rect={4, 4, 16, 12}, .color={0, 1, 0, 1}, .thickness=2},
+        {.type=NX_COMMAND_FILL_ROUND_RECT, .rect={8, 6, 10, 8}, .color={0, 0, 1, 1}, .radius=2},
+        {.type=NX_COMMAND_LINE, .color=white, .thickness=2, .points={{2, 4}, {18, 14}}},
+        {.type=NX_COMMAND_FILL_TRIANGLE, .color=white, .points={{6, 4}, {10, 16}, {18, 8}}},
+        {.type=NX_COMMAND_BITMAP, .rect={14, 10, 8, 4}, .color=white,
+         .bitmap={image, 2, 1, 8, NX_BITMAP_RGBA8}},
+        {.type=NX_COMMAND_POP_CLIP}
+    };
+    enum { W=30, H=24, STRIDE=W*4+7, BYTES=STRIDE*H };
+    uint8_t actual[BYTES], expected[BYTES], untouched[BYTES];
+    memset(actual, 0xa5, sizeof(actual));
+    memset(expected, 0xa5, sizeof(expected));
+    memset(untouched, 0xa5, sizeof(untouched));
+    CHECK(nx_reference_headless_render(physical, 8, expected, W, H, STRIDE, clear)==NX_OK);
+    CHECK(nx_headless_render_scaled(logical, 8, actual, W, H, STRIDE, clear, 2)==NX_OK);
+    CHECK(!memcmp(actual, expected, sizeof(actual)));
+    memset(actual, 0xa5, sizeof(actual));
+    CHECK(nx_headless_render(logical, 8, expected, W, H, STRIDE, clear)==NX_OK);
+    CHECK(nx_headless_render_scaled(logical, 8, actual, W, H, STRIDE, clear, 1)==NX_OK);
+    CHECK(!memcmp(actual, expected, sizeof(actual)));
+    const double scales[] = {.125, 1.25, 1.5, 8};
+    const float extents[] = {.5f, 5, 6, 32};
+    nx_command square = {.type=NX_COMMAND_FILL_RECT, .rect={0, 0, 4, 4}, .color=white};
+    for (size_t i=0; i<sizeof(scales)/sizeof(scales[0]); ++i) {
+        nx_command reference = {.type=NX_COMMAND_FILL_RECT,
+                                .rect={0, 0, extents[i], extents[i]}, .color=white};
+        memset(actual, 0xa5, sizeof(actual));
+        memset(expected, 0xa5, sizeof(expected));
+        CHECK(nx_reference_headless_render(&reference, 1, expected, W, H, STRIDE, clear)==NX_OK);
+        CHECK(nx_headless_render_scaled(&square, 1, actual, W, H, STRIDE, clear, scales[i])==NX_OK);
+        CHECK(!memcmp(actual, expected, sizeof(actual)));
+    }
+    memset(actual, 0xa5, sizeof(actual));
+    CHECK(nx_headless_render_scaled(logical, 8, actual, W, H, STRIDE, clear, NAN)==NX_ERROR_ARGUMENT);
+    CHECK(nx_headless_render_scaled(logical, 8, actual, W, H, STRIDE, clear, .124)==NX_ERROR_ARGUMENT);
+    CHECK(nx_headless_render_scaled(logical, 8, actual, W, H, STRIDE, clear, 8.1)==NX_ERROR_ARGUMENT);
+    CHECK(nx_headless_render_scaled(logical, SIZE_MAX, actual, W, H, STRIDE, clear, 2)==NX_ERROR_LIMIT);
+    CHECK(nx_headless_render_scaled(logical, SIZE_MAX, actual, W, H, STRIDE, clear, 1)==NX_ERROR_LIMIT);
+    nx_command overflow = {.type=NX_COMMAND_FILL_RECT, .rect={FLT_MAX, 0, 1, 1}, .color=white};
+    CHECK(nx_headless_render_scaled(&overflow, 1, actual, W, H, STRIDE, clear, 2)==NX_ERROR_COMMAND);
+    nx_command invalid = {.type=NX_COMMAND_POP_CLIP};
+    CHECK(nx_headless_render_scaled(&invalid, 1, actual, W, H, STRIDE, clear, 2)==NX_ERROR_COMMAND);
+    CHECK(!memcmp(actual, untouched, sizeof(actual)));
+}
 int main(void) {
+    scaled_contract();
     nx_context *context = NULL;
     CHECK(nx_context_create(NULL, &context) == NX_OK);
     const float radii[] = {0, 0.125f, 0.5f, 1, 2, 7.75f, 8, 16, 1000000};

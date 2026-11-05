@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Scaled software rasterization (2026-11-05)
+
+Candidate based on `5feea514c339718f971fdbabefd3d11367ef699d` adds
+`nx_headless_render_scaled` for R01/R03/W04. On Alpine-Dev/WSL2 the reference
+parity test and installed C17 consumer passed with a Wayland-only GCC static
+build and a Wayland-only Clang shared build with ASan/UBSan and leak checking;
+the parity test also passed in a GCC dual-backend build. Vulkan was disabled in
+these three builds. The parity case compares all command types at 2x with the
+independent scalar reference, checks simple fractional and boundary scales,
+and verifies invalid and unrepresentable input leaves the destination intact.
+This is not a native Wayland presentation or a software fallback, and no
+physical-device, mixed-output or human acceptance is implied. The temporary
+command copy uses the default allocator; performance under large streams and
+allocation-failure injection remain unmeasured.
+
 Assessment baseline: `05e28bb16c1e60ac339cd9428ff2d3afbafc21f6` (published main, checked 2026-11-04). This is an inventory, not acceptance of the catalogue. The requirements and acceptance criteria remain in the separately supplied `NEXT_AETHERI_UI.md`; this file records the first dependency stage. Later catalogue rows remain to be individually assessed.
 
 The [preliminary full-catalogue source map](aetheri-requirement-map.md) originally

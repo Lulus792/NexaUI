@@ -2,6 +2,9 @@
 #include "renderer_backend.h"
 
 #include <stdint.h>
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct nx_bounds {
@@ -221,13 +224,22 @@ static void nx_paint_bitmap(uint8_t *pixels, uint32_t width, uint32_t height,
     }
 }
 
+static int nx_headless_valid_target(uint8_t *pixels, uint32_t width, uint32_t height,
+                                    size_t stride_bytes, nx_color clear_color) {
+    if (!pixels || !width || !height || !nx_valid_color(clear_color)) return 0;
+#if SIZE_MAX <= UINT32_MAX
+    if (width > SIZE_MAX / 4u) return 0;
+#endif
+    size_t row_bytes = (size_t)width * 4u;
+    return stride_bytes >= row_bytes &&
+           (size_t)height - 1u <= (SIZE_MAX - row_bytes) / stride_bytes;
+}
+
 nx_result nx_headless_render(const nx_command *commands, size_t count,
                              uint8_t *pixels, uint32_t width, uint32_t height,
                              size_t stride_bytes, nx_color clear_color) {
-    if (!pixels || !width || !height || !nx_valid_color(clear_color) ||
-        (!commands && count) || width > SIZE_MAX / 4u ||
-        stride_bytes < (size_t)width * 4u ||
-        ((size_t)height - 1u) > (SIZE_MAX - (size_t)width * 4u) / stride_bytes)
+    if ((!commands && count) ||
+        !nx_headless_valid_target(pixels, width, height, stride_bytes, clear_color))
         return NX_ERROR_ARGUMENT;
 
     nx_result validation = nx_render_validate_commands(commands, count);
@@ -264,4 +276,51 @@ nx_result nx_headless_render(const nx_command *commands, size_t count,
         }
     }
     return NX_OK;
+}
+
+static int nx_headless_scale_value(float *value, double scale) {
+    double scaled = (double)*value * scale;
+    if (!isfinite(scaled) || scaled > FLT_MAX || scaled < -FLT_MAX) return 0;
+    *value = (float)scaled;
+    return 1;
+}
+
+nx_result nx_headless_render_scaled(const nx_command *commands, size_t count,
+                                    uint8_t *pixels, uint32_t width, uint32_t height,
+                                    size_t stride_bytes, nx_color clear_color,
+                                    double scale) {
+    if (!isfinite(scale) || scale < .125 || scale > 8 || (!commands && count) ||
+        !nx_headless_valid_target(pixels, width, height, stride_bytes, clear_color))
+        return NX_ERROR_ARGUMENT;
+    if (count > SIZE_MAX / sizeof(*commands)) return NX_ERROR_LIMIT;
+    if (scale == 1 || !count)
+        return nx_headless_render(commands, count, pixels, width, height, stride_bytes, clear_color);
+    nx_result result = nx_render_validate_commands(commands, count);
+    if (result != NX_OK) return result;
+    nx_command *scaled = malloc(count * sizeof(*scaled));
+    if (!scaled) return NX_ERROR_MEMORY;
+    memcpy(scaled, commands, count * sizeof(*scaled));
+    for (size_t i = 0; i < count; ++i) {
+        nx_command *command = &scaled[i];
+        int valid = 1;
+        if (command->type == NX_COMMAND_LINE || command->type == NX_COMMAND_FILL_TRIANGLE) {
+            unsigned points = command->type == NX_COMMAND_LINE ? 2u : 3u;
+            for (unsigned j = 0; j < points; ++j)
+                valid = nx_headless_scale_value(&command->points[j].x, scale) &&
+                        nx_headless_scale_value(&command->points[j].y, scale) && valid;
+        } else if (command->type != NX_COMMAND_POP_CLIP) {
+            valid = nx_headless_scale_value(&command->rect.x, scale) &&
+                    nx_headless_scale_value(&command->rect.y, scale) &&
+                    nx_headless_scale_value(&command->rect.width, scale) &&
+                    nx_headless_scale_value(&command->rect.height, scale);
+        }
+        if (command->type == NX_COMMAND_STROKE_RECT || command->type == NX_COMMAND_LINE)
+            valid = nx_headless_scale_value(&command->thickness, scale) && valid;
+        if (command->type == NX_COMMAND_FILL_ROUND_RECT)
+            valid = nx_headless_scale_value(&command->radius, scale) && valid;
+        if (!valid) { free(scaled); return NX_ERROR_COMMAND; }
+    }
+    result = nx_headless_render(scaled, count, pixels, width, height, stride_bytes, clear_color);
+    free(scaled);
+    return result;
 }

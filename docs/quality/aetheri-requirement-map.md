@@ -55,6 +55,14 @@ For B04, `nx_get_version` reports the linked core's three-part version,
 Independently verified provenance, live session capabilities and a complete
 compatibility/error contract remain open.
 
+R01/R03/W04: `nx_headless_render_scaled` now provides scaled logical-command
+rasterization into caller-owned RGBA8 memory, reusing the existing software
+renderer. The reference parity test covers all command families at 2x, simple
+geometry at 0.125x/1.25x/1.5x/8x, and invalid/overflow atomicity. The installed
+C17 package consumer also exercises the new symbol. This is not native
+presentation, a GPU fallback, mixed-output acceptance or a complete CPU/GPU
+parity result; those gates remain open.
+
 The version-query candidate based on `e0d9b143a7f6e05b7cea4b07a3e84c679f8dd766`
 was checked on Alpine/WSL2 using fresh Wayland-only C17 consumers. Static and
 shared installed consumers compared the linked-library result with both their

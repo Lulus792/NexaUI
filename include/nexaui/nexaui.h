@@ -2583,6 +2583,16 @@ NX_API nx_result nx_headless_render(const nx_command *commands, size_t count,
                                     uint8_t *pixels, uint32_t width, uint32_t height,
                                     size_t stride_bytes, nx_color clear_color);
 
+/* As nx_headless_render, but maps logical command geometry to physical pixels.
+   scale must be finite and in [.125,8]. Bitmap pixels are borrowed unchanged;
+   the destination rectangle is scaled. Uses temporary default-allocator
+   storage for the scaled commands. On invalid input, unrepresentable geometry
+   or allocation failure no destination pixels are changed. */
+NX_API nx_result nx_headless_render_scaled(const nx_command *commands, size_t count,
+                                           uint8_t *pixels, uint32_t width, uint32_t height,
+                                           size_t stride_bytes, nx_color clear_color,
+                                           double scale);
+
 #ifdef __cplusplus
 }
 #endif

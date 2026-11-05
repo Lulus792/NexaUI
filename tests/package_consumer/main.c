@@ -31,6 +31,12 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(int argc, char **argv) {
+    uint8_t scaled_pixels[4 * 4 * 4];
+    nx_command scaled_box = {.type=NX_COMMAND_FILL_RECT, .rect={0,0,1,1},
+                             .color={1,0,0,1}};
+    if (nx_headless_render_scaled(&scaled_box, 1, scaled_pixels, 4, 4, 16,
+                                  (nx_color){0,0,0,1}, 2) != NX_OK ||
+        scaled_pixels[4] != 255 || scaled_pixels[8] != 0) return 21;
     const char *revision = "must be cleared";
     if (nx_get_source_revision(NULL) != NX_ERROR_ARGUMENT) return 19;
     nx_result revision_result = nx_get_source_revision(&revision);
