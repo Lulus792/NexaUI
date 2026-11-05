@@ -32,14 +32,13 @@ events through `aetheri_desktop_view_queue_event`, Tab and Shift-Tab in the
 search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
-revision. Native selection-owner actions and independent assistive-client
-verification remain open, as do Tab behavior outside the search field, real window activation,
+revision. Native selection-owner actions, Tab behavior outside the search field, real window activation,
 private-surface input and IME, borrowed-surface presentation,
 multi-output ownership and the original process owner integration remain open.
 The Linux preview uses an ordinary NexaUI window, the software presenter,
 native input/clipboard/IME binding and optional window AT-SPI publication; it
 prints launch/activation intents without performing them. It is not the
-private-role shell adapter. Native input-method and independent assistive-client
+private-role shell adapter. Native input-method and human assistive-technology
 acceptance remain open. The core view test uses synthetic context events and
 semantic requests; neither test establishes physical or human acceptance.
 
@@ -74,3 +73,24 @@ reconciled run passed; the earlier failure is not a pass. Fixture records are
 `/tmp/nexaui-dock-fast-asan-{1,2,3}-20261105/result.json`. This uses virtual
 input and a private software compositor, not the Aetheri shell connection or
 an installed input method.
+
+Source `99dc27a0fc2537fb42475d4995eb56a3336d732a` adds an independent
+AT-SPI client, built when the AT-SPI and GObject development packages are
+available. Under Alpine/WSL2, GCC 15.2 and private Weston 14/Xvfb, it located
+the ordinary preview by PID, set the search to `Terminal`, waited for the
+model acknowledgement, reacquired the native accessible, verified its text
+and editable state, changed it to `Termina`, and invoked the Terminal list
+item. It observed the launch intent and clean SIGTERM exit. Two final runs
+passed, as did the separate virtual-keyboard preview regression. The SDK was
+the installed Wayland-only build from `a7a3df4b8f803cc15f876b4623c9008834c590e9`;
+the Aetheri model blobs are those listed above. Fixture records include
+`/tmp/nexaui-desktop-atspi-final-b-20261105/result.json` and
+`/tmp/nexaui-desktop-input-after-atspi-20261105/result.json`.
+
+The host explicitly schedules an editable frame after model reconciliation.
+A test-only run without that scheduling also passed in this compositor setup,
+so the native test does not prove that the extra frame is necessary in every
+run. Reacquiring the accessible matters to the client after its interfaces
+change. This evidence covers ordinary-window AT-SPI query and press only: it
+does not prove a human screenreader workflow, native selection-owner actions,
+actual app launch, or semantics on an Aetheri-owned private shell surface.
