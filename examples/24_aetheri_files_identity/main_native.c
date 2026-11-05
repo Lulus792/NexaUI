@@ -11,7 +11,9 @@
 
 /* Ordinary-window integration probe, not Aetheri's production Files app. */
 static volatile sig_atomic_t stop_requested;
+static volatile sig_atomic_t test_clear_requested;
 static void request_stop(int signal_number){(void)signal_number;stop_requested=1;}
+static void request_test_clear(int signal_number){(void)signal_number;test_clear_requested=1;}
 static unsigned char *read_file(const char *path,size_t *size) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;
     if(fseek(f,0,SEEK_END)){fclose(f);return NULL;}long n=ftell(f);
@@ -32,6 +34,7 @@ int main(int argc,char **argv) {
     char previous_query[AE_FILES_QUERY+1]={0};int previous_valid=1,filter_reported=0;size_t previous_draft=0;
     struct sigaction action={0};action.sa_handler=request_stop;sigemptyset(&action.sa_mask);
     if(sigaction(SIGINT,&action,NULL) || sigaction(SIGTERM,&action,NULL))goto cleanup;
+    if(getenv("NEXAUI_FILES_IME_TEST")){action.sa_handler=request_test_clear;if(sigaction(SIGUSR1,&action,NULL))goto cleanup;}
     if(argc!=3 || (root=open(argv[1],O_RDONLY|O_DIRECTORY|O_CLOEXEC))<0)goto cleanup;
     enum ae_files_result model_result;model=ae_files_create(root,&model_result);close(root);root=-1;
     if(!model || model_result!=AE_FILES_OK || !(font_bytes=read_file(argv[2],&font_length)) ||
@@ -44,6 +47,9 @@ int main(int argc,char **argv) {
     while(okay && !done) {
         if(nx_window_poll(window,dirty?16:1000)!=NX_OK){okay=0;break;}
         if(stop_requested){done=1;break;}
+        if(test_clear_requested){test_clear_requested=0;
+            if(files_scene_focus_filter(scene,1)!=NX_OK){okay=0;break;}
+            dirty=1;if(trace){puts("FILES_NATIVE_TEST_CLEAR");fflush(stdout);}}
         nx_window_info info;if(nx_window_get_info(window,&info)!=NX_OK){okay=0;break;}
         if(info.should_close){done=1;break;}
         int drawable=info.width>=40 && info.height>=64;

@@ -2,6 +2,7 @@
 import os
 import queue
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -93,6 +94,13 @@ def main():
             key('a');wait('FILES_NATIVE_FILTER 1 1 1')
             if re.search(r'commit_string\(\d+, "á"\)', ''.join(errors)):
                 raise RuntimeError('Canceled preedit leaked into the next input')
+            click_control(pointer,252);wait('FILES_NATIVE_FILTER 0 2 1')
+            key('a');wait('FILES_NATIVE_FILTER 1 1 1')
+            key('108');key('apostrophe');wait('FILES_NATIVE_PREEDIT 1 1')
+            host.send_signal(signal.SIGUSR1);wait('FILES_NATIVE_TEST_CLEAR');wait('FILES_NATIVE_FILTER 0 2 1')
+            key('a');wait('FILES_NATIVE_FILTER 1 1 1')
+            if re.search(r'commit_string\(\d+, "á"\)', ''.join(errors)):
+                raise RuntimeError('Programmatic clear retained the canceled preedit')
             click_control(pointer,252);wait('FILES_NATIVE_FILTER 0 2 1')
             key('108');key('apostrophe');wait('FILES_NATIVE_PREEDIT 1 0')
             key('a');wait('FILES_NATIVE_FILTER 2 1 1');wait('FILES_NATIVE_VISIBLE á')

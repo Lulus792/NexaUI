@@ -56,6 +56,10 @@ the native IME before replacing the filter and reenables it for the refocused
 field. A private Weston simple-IME test now rejects a pre-clear composition
 and confirms a fresh one works; other input methods, text-input-v3 and delayed
 replies remain open (T04/I02/P05).
+On base `41563c9fd5aeba89146004430a5e4926c0fbfacf`, programmatic filter
+replacement and Ctrl+L's shared clear path also reset the native composition.
+A private test-only signal exercises that function during simple-IME preedit;
+it does not demonstrate Ctrl+L delivery by a provider that consumes it.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

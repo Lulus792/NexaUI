@@ -87,17 +87,27 @@ nx_result files_scene_enable_filter(files_scene *s,nx_window *window) {
     if(r==NX_OK)s->window=window;
     return r;
 }
+/* Replacing a draft cancels its native composition, even when the new text is
+   empty and identical to the old text. Only reactivate for the focused field. */
+static nx_result replace_filter_draft(files_scene *s,const char *text,size_t length) {
+    int reset_ime=0,wants_ime=nx_focus_id(s->ctx)==FILTER_ID;
+    if(s->window){nx_result reset=nx_window_set_ime_enabled(s->window,0);
+        if(reset==NX_OK)reset_ime=1;else if(reset!=NX_ERROR_UNSUPPORTED)return reset;}
+    nx_result r=nx_text_field_set_text(s->query,text,length);
+    if(reset_ime && wants_ime){nx_result enable=nx_window_set_ime_enabled(s->window,1);if(r==NX_OK)r=enable;}
+    return r;
+}
 nx_result files_scene_focus_filter(files_scene *s,int clear) {
     if(!s || !s->query || (clear!=0 && clear!=1))return NX_ERROR_ARGUMENT;
     nx_result r=nx_focus_set(s->ctx,FILTER_ID);if(r!=NX_OK)return r;
     if(!clear)return NX_OK;
-    r=nx_text_field_set_text(s->query,"",0);if(r==NX_OK)s->query_rejected=0;return r;
+    r=replace_filter_draft(s,"",0);if(r==NX_OK)s->query_rejected=0;return r;
 }
 int files_scene_filter_has_focus(const files_scene *s){return s && s->query && nx_focus_id(s->ctx)==FILTER_ID;}
 nx_result files_scene_filter(files_scene *s,const char *query,size_t length) {
     if(!s)return NX_ERROR_ARGUMENT;
     if(!ae_files_filter(s->model,query,length)){s->query_valid=0;s->query_rejected=1;return NX_ERROR_ARGUMENT;}
-    if(s->query){nx_result r=nx_text_field_set_text(s->query,query,length);if(r!=NX_OK){s->ready=0;return r;}}
+    if(s->query){nx_result r=replace_filter_draft(s,query,length);if(r!=NX_OK){s->ready=0;return r;}}
     s->query_valid=1;s->query_rejected=0;s->offset=0;return files_scene_sync(s);
 }
 nx_result files_scene_key(files_scene *s,nx_key key,int owns_focus) {
@@ -205,14 +215,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         clear.glyph_cache_bytes=1024*1024;nx_interaction_state clear_state;
         if(r==NX_OK)r=nx_push_clip(s->ctx,clear.bounds);
         if(r==NX_OK){r=nx_button(s->ctx,&clear,&clear_state);nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
-        if(r==NX_OK && clear_state.clicked){
-            int reset_ime=0;
-            if(s->window){nx_result reset=nx_window_set_ime_enabled(s->window,0);
-                if(reset==NX_OK)reset_ime=1;else if(reset!=NX_ERROR_UNSUPPORTED)r=reset;}
-            if(r==NX_OK)r=files_scene_filter(s,"",0);
-            if(r==NX_OK)r=nx_focus_set(s->ctx,FILTER_ID);
-            if(reset_ime){nx_result enable=nx_window_set_ime_enabled(s->window,1);if(r==NX_OK)r=enable;}
-        }
+        if(r==NX_OK && clear_state.clicked){r=nx_focus_set(s->ctx,FILTER_ID);if(r==NX_OK)r=files_scene_filter(s,"",0);}
         if(r==NX_OK)
         r=guard_text_burst(s,previous_focus,&simulation,&fallback_high);
         nx_text_field_desc field={0};field.id=FILTER_ID;field.bounds=(nx_rect){0,0,field_width,FILTER_HEIGHT};

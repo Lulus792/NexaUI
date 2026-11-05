@@ -305,3 +305,14 @@ This is a bounded text-input-v1/simple-IME observation. Other providers,
 text-input-v3, stale replies in flight, errors during context reset, physical
 input and human acceptance remain open; it does not prove general composition
 lifetime or keyboard shortcuts when an input method consumes them.
+
+On base `41563c9fd5aeba89146004430a5e4926c0fbfacf`, the reset moved into
+the common draft-replacement helper used by the button, the Ctrl+L clear path
+and valid programmatic filter replacement. Reactivation is requested only if
+the filter owns scene focus. The private simple-IME test starts a second
+composition and uses a test-only signal to invoke the same programmatic clear
+function as Ctrl+L; a following `a` is literal. An isolated mutant that skipped
+the programmatic reset reproduced the old `á` behavior. Static, shared and
+ASan/UBSan scene, native keyboard, IME and independent AT-SPI cases passed.
+This signal is enabled only in the explicit private IME fixture; it does not
+represent a native shortcut delivered through an input method.
