@@ -95,6 +95,18 @@ int main(int argc,char **argv) {
     CHECK(string_is(edit,kAXValueAttribute,CFSTR("ordinary")));
     CHECK(AXUIElementSetAttributeValue(edit,kAXValueAttribute,CFSTR("é🌍"))==kAXErrorSuccess);
     CHECK(wait_string(edit,kAXValueAttribute,CFSTR("é🌍")));
+    CFRange expected_range=CFRangeMake(1,2);AXValueRef range=AXValueCreate(kAXValueCFRangeType,&expected_range);CHECK(range);
+    CHECK(AXUIElementSetAttributeValue(edit,kAXSelectedTextRangeAttribute,range)==kAXErrorSuccess);CFRelease(range);
+    double range_end=now()+10;int selected=0;
+    do {
+        CFTypeRef result=NULL;
+        if(AXUIElementCopyAttributeValue(edit,kAXSelectedTextRangeAttribute,&result)==kAXErrorSuccess &&
+           result && CFGetTypeID(result)==AXValueGetTypeID()) {
+            CFRange got={0};selected=AXValueGetValue((AXValueRef)result,kAXValueCFRangeType,&got) && got.location==1 && got.length==2;
+        }
+        if(result)CFRelease(result);if(!selected)pause_poll();
+    } while(!selected && now()<range_end);
+    CHECK(selected);
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));
