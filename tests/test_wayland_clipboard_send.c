@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "wayland_v3_fixture.h"
 #include <errno.h>
 #include <fcntl.h>

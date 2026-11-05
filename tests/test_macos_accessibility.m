@@ -31,6 +31,7 @@ static void deallocate(void *user,void *pointer,size_t bytes) {
 typedef struct scene {
     nx_context *ui;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
+    int overlay_stage, nested_clicks;
     uint64_t required, optional, radio, other, legacy;
 } scene;
 static nx_control_desc control(uint64_t id,uint64_t parent,const char *name,nx_rect bounds) {
@@ -95,6 +96,30 @@ static int frame(scene *s) {
         d=control(id,1,"Queued",(nx_rect){120,60,100,30}); CHECK(nx_button(s->ui,&d,&state)==NX_OK);
         s->queued+=state.clicked;
     }
+    nx_semantic_desc disabled_group={0};disabled_group.id=2030;disabled_group.parent_id=1;
+    disabled_group.role=NX_ROLE_GROUP;disabled_group.name=(nx_utf8_span){"Disabled group",14};
+    disabled_group.bounds=(nx_rect){10,260,120,30};disabled_group.state=NX_SEM_DISABLED;
+    CHECK(nx_semantics_add(s->ui,&disabled_group,NULL)==NX_OK);
+    d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
+    CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+    if(s->overlay_stage) {
+        nx_overlay_desc outer={0};outer.panel.id=2000;outer.panel.parent_id=1;
+        outer.panel.bounds=(nx_rect){200,200,300,200};outer.panel.name=(nx_utf8_span){"Dialog",6};
+        outer.backdrop_id=2001;int dismissed=0;
+        CHECK(nx_modal_begin(s->ui,&outer,&dismissed)==NX_OK && !dismissed);
+        d=control(2002,2000,"Dialog trigger",(nx_rect){220,220,120,30});
+        CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        if(s->overlay_stage==2) {
+            nx_overlay_desc inner={0};inner.panel.id=2010;inner.panel.parent_id=2002;
+            inner.panel.bounds=(nx_rect){250,260,180,90};inner.panel.name=(nx_utf8_span){"Menu",4};
+            inner.backdrop_id=2011;
+            CHECK(nx_popup_begin(s->ui,&inner,&dismissed)==NX_OK && !dismissed);
+            d=control(2012,2010,"Nested action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->nested_clicks+=state.clicked;
+            CHECK(nx_overlay_end(s->ui)==NX_OK);
+        }
+        CHECK(nx_overlay_end(s->ui)==NX_OK);
+    }
     CHECK(nx_end_frame(s->ui)==NX_OK); return 0;
 }
 static id find(id root,uint64_t id_value) {
@@ -133,6 +158,17 @@ static int run(void) {
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
+    CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
+    s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    id trigger=[find(view,2002) retain],nested=[find(view,2012) retain];CHECK(trigger && nested);
+    CHECK(![trigger isAccessibilityEnabled] && ![trigger accessibilityPerformPress]);
+    CHECK([nested isAccessibilityEnabled] && [nested accessibilityPerformPress]);
+    CHECK(advance(window,&s)==0 && s.nested_clicks==1);
+    CHECK(nx_overlay_close(s.ui)==NX_OK && nx_focus_id(s.ui)==2002);s.overlay_stage=1;
+    CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK && [trigger isAccessibilityEnabled]);
+    CHECK(nx_overlay_close(s.ui)==NX_OK);s.overlay_stage=0;
+    CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    [nested release];[trigger release];
     CHECK([[find(view,20) accessibilityLabel] length]==1600 && [find(view,20) isAccessibilityHidden]);
     CHECK(![button isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     CHECK([button isAccessibilitySelectorAllowed:@selector(accessibilityPerformPress)]);

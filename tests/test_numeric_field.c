@@ -366,7 +366,9 @@ static int test_visual_text_commands(void) {
     CHECK(queue_command(ctx,(nx_text_command)(NX_TEXT_COMMAND_MOVE_LEFT|NX_TEXT_COMMAND_EXTEND_SELECTION)));
     CHECK(queue_text(ctx,'5') && numeric_frame(ctx,field,&desc,1) && expect_field(field,"5115",111));
     CHECK(queue_command(ctx,NX_TEXT_COMMAND_UNDO) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"5111",111));
-    CHECK(queue_key(ctx,NX_KEY_HOME,0) && queue_key(ctx,NX_KEY_RIGHT,NX_MOD_SHIFT) && queue_text(ctx,'1'));
+    /* Home is a scroll command on macOS; use the native line-start command
+       before testing the common physical Shift+Right selection. */
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_LINE_LEFT) && queue_key(ctx,NX_KEY_RIGHT,NX_MOD_SHIFT) && queue_text(ctx,'1'));
     CHECK(numeric_frame(ctx,field,&desc,1) && expect_field(field,"1111",111));
     nx_context_destroy(ctx); nx_numeric_field_destroy(field);
     nx_font_collection_destroy(fonts); nx_font_close(font);
