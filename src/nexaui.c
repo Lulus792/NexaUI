@@ -240,6 +240,9 @@ struct nx_context {
     int touch_active, touch_dragging;
     uint64_t previous_overlay_id, current_overlay_id, building_overlay_id;
     uint64_t overlay_return_focus_id;
+    uint64_t overlay_previous_path[16], overlay_current_path[16], overlay_build_path[16];
+    uint64_t overlay_focus_return[16];
+    unsigned overlay_previous_depth, overlay_current_depth, overlay_build_depth;
     int overlay_built_this_frame;
     float pointer_active_last_x, pointer_active_last_y;
     float touch_start_x, touch_start_y;
@@ -719,6 +722,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     ctx->scroll_scope_count = 0;
     ctx->current_overlay_id = 0;
     ctx->building_overlay_id = 0;
+    ctx->overlay_current_depth = ctx->overlay_build_depth = 0;
     ctx->overlay_built_this_frame = 0;
     ctx->theme_depth = 0;
     ctx->theme_stack[0] = ctx->base_theme;
@@ -2639,6 +2643,13 @@ nx_result nx_end_frame(nx_context *ctx) {
     for (size_t i = 0; i < ctx->semantics.count; ++i)
         if ((ctx->semantics.nodes[i].state & (NX_SEM_SELECTION_REQUIRED | NX_SEM_SELECTION_SINGLE)) ==
             (NX_SEM_SELECTION_REQUIRED | NX_SEM_SELECTION_SINGLE) && !ctx->semantics.nodes[i].selection_count) return NX_ERROR_STATE;
+    if (ctx->overlay_previous_depth>ctx->overlay_current_depth) {
+        unsigned common=0;
+        while (common<ctx->overlay_current_depth &&
+               ctx->overlay_previous_path[common]==ctx->overlay_current_path[common]) ++common;
+        if (common==ctx->overlay_current_depth)
+            nx_context_change_focus(ctx,ctx->overlay_focus_return[common]);
+    }
     if (ctx->current_overlay_id) {
         nx_region *focused_overlay = nx_region_find(&ctx->current_regions,
                                                      ctx->focused_id);
@@ -2697,6 +2708,9 @@ nx_result nx_end_frame(nx_context *ctx) {
         (ctx->current_overlay_id && key->overlay_id != ctx->current_overlay_id))
         ctx->key_active_id = 0;
     ctx->previous_overlay_id = ctx->current_overlay_id;
+    ctx->overlay_previous_depth=ctx->overlay_current_depth;
+    for (unsigned i=0;i<ctx->overlay_current_depth;++i)
+        ctx->overlay_previous_path[i]=ctx->overlay_current_path[i];
     nx_window *desired_ime_window =
         ctx->focused_id == ctx->ime_candidate_id ?
         ctx->ime_candidate_window : NULL;
@@ -4531,6 +4545,16 @@ nx_result nx_tree(nx_context *ctx, const nx_container_desc *desc) {
     return nx_container_run(ctx, desc, NX_ROLE_TREE);
 }
 
+static int nx_overlay_descends_from(const nx_context *ctx,uint64_t id,uint64_t ancestor) {
+    while (id) {
+        if (id==ancestor) return 1;
+        uint32_t index=nx_semantic_find_index(&ctx->semantics,id);
+        if (index==UINT32_MAX) return 0;
+        id=ctx->semantics.nodes[index].parent_id;
+    }
+    return 0;
+}
+
 static nx_result nx_overlay_begin_common(nx_context *ctx,
                                           const nx_overlay_desc *desc,
                                           int modal, int *out_dismissed) {
@@ -4539,9 +4563,13 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
     if (!ctx || !desc || !nx_valid_container_desc(&desc->panel) ||
         !desc->backdrop_id || desc->backdrop_id == desc->panel.id)
         return NX_ERROR_ARGUMENT;
-    if (ctx->state != 1u || ctx->building_overlay_id ||
-        ctx->overlay_built_this_frame || ctx->clip_depth ||
-        ctx->scroll_scope_count) return NX_ERROR_STATE;
+    if (ctx->state != 1u || ctx->clip_depth || ctx->scroll_scope_count ||
+        (!ctx->overlay_build_depth && ctx->overlay_built_this_frame) ||
+        (ctx->overlay_build_depth && (!nx_overlay_descends_from(ctx,desc->panel.parent_id,ctx->building_overlay_id) ||
+         ctx->overlay_current_depth!=ctx->overlay_build_depth))) return NX_ERROR_STATE;
+    if (ctx->overlay_build_depth>=16u) return NX_ERROR_LIMIT;
+    unsigned depth=ctx->overlay_build_depth;
+    uint64_t parent_overlay=ctx->building_overlay_id;
     size_t old_regions = ctx->current_regions.count;
     size_t old_semantics = ctx->semantics.count;
     size_t old_text = ctx->semantics.text_count;
@@ -4565,7 +4593,7 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
     result = nx_widget_register(ctx, &panel, &panel_state);
     if (result != NX_OK) goto overlay_rollback;
     int dismissed = desc->dismiss_on_outside && backdrop_state.clicked;
-    if (desc->dismiss_on_escape) {
+    if (desc->dismiss_on_escape && (!ctx->previous_overlay_id || ctx->previous_overlay_id==desc->panel.id)) {
         for (size_t i = 0; i < ctx->frame_events.count; ++i) {
             const nx_event *event = &ctx->frame_events.data[i];
             if (!event->repeat &&
@@ -4586,14 +4614,38 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
     }
     result = nx_container_paint(ctx, &desc->panel, panel.semantic.role);
     if (result != NX_OK) goto overlay_rollback;
-    if (!ctx->previous_overlay_id)
-        ctx->overlay_return_focus_id = ctx->focused_id;
-    ctx->current_overlay_id = dismissed ? 0 : desc->panel.id;
+    if (depth>=ctx->overlay_previous_depth || ctx->overlay_previous_path[depth]!=desc->panel.id) {
+        if (depth && depth<ctx->overlay_previous_depth &&
+            ctx->overlay_previous_path[depth-1u]==parent_overlay) {
+            /* Replacing a child keeps the original parent return point. */
+        } else {
+            uint64_t restore=ctx->focused_id;
+            nx_region *focused=nx_region_find(&ctx->current_regions,restore);
+            if (depth && (!focused || focused->overlay_id!=parent_overlay ||
+                !(focused->flags&NX_REGION_FOCUSABLE) || (focused->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE)))) {
+                restore=parent_overlay;
+                for (size_t i=0;i<ctx->current_regions.count;++i) {
+                    nx_region *candidate=&ctx->current_regions.data[i];
+                    if (candidate->overlay_id==parent_overlay && candidate->id!=parent_overlay &&
+                        (candidate->flags&NX_REGION_FOCUSABLE) && !(candidate->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE))) {
+                        restore=candidate->id; break;
+                    }
+                }
+            }
+            ctx->overlay_focus_return[depth]=restore;
+        }
+    }
+    if (!depth) ctx->overlay_return_focus_id=ctx->overlay_focus_return[0];
+    ctx->overlay_build_path[depth]=desc->panel.id;
+    ctx->overlay_build_depth=depth+1u;
+    ctx->overlay_current_path[depth]=desc->panel.id;
+    ctx->overlay_current_depth=dismissed?depth:depth+1u;
+    ctx->current_overlay_id=ctx->overlay_current_depth?ctx->overlay_current_path[ctx->overlay_current_depth-1u]:0;
     ctx->overlay_built_this_frame = 1;
     *out_dismissed = dismissed;
     return NX_OK;
 overlay_rollback:
-    ctx->building_overlay_id = 0;
+    ctx->building_overlay_id = parent_overlay;
     ctx->command_count = old_commands;
     nx_free_owned_bitmaps(ctx, old_bitmaps);
     while (ctx->current_regions.count > old_regions)
@@ -4616,19 +4668,23 @@ nx_result nx_modal_begin(nx_context *ctx, const nx_overlay_desc *desc,
 }
 
 nx_result nx_overlay_end(nx_context *ctx) {
-    if (!ctx || ctx->state != 1u || !ctx->building_overlay_id)
+    if (!ctx || ctx->state != 1u || !ctx->building_overlay_id || !ctx->overlay_build_depth)
         return NX_ERROR_STATE;
-    ctx->building_overlay_id = 0;
+    --ctx->overlay_build_depth;
+    ctx->building_overlay_id=ctx->overlay_build_depth?ctx->overlay_build_path[ctx->overlay_build_depth-1u]:0;
     return NX_OK;
 }
 
 nx_result nx_overlay_close(nx_context *ctx) {
-    if (!ctx || ctx->building_overlay_id || !ctx->state)
+    if (!ctx || !ctx->state || (ctx->building_overlay_id &&
+        ctx->overlay_current_depth<=ctx->overlay_build_depth))
         return NX_ERROR_STATE;
     if (ctx->state == 1u) {
         if (!ctx->current_overlay_id && !ctx->previous_overlay_id)
             return NX_ERROR_STATE;
-        ctx->current_overlay_id = 0;
+        if (ctx->overlay_current_depth) --ctx->overlay_current_depth;
+        ctx->current_overlay_id=ctx->overlay_current_depth?
+            ctx->overlay_current_path[ctx->overlay_current_depth-1u]:0;
         return NX_OK;
     }
     if (!ctx->previous_overlay_id) return NX_ERROR_STATE;
@@ -4643,13 +4699,18 @@ nx_result nx_overlay_close(nx_context *ctx) {
     nx_region *key = nx_region_find(&ctx->current_regions, ctx->key_active_id);
     if (key && key->overlay_id == closing_id)
         ctx->key_active_id = 0;
-    nx_context_change_focus(ctx, ctx->overlay_return_focus_id);
+    unsigned depth=ctx->overlay_previous_depth;
+    uint64_t restore=depth?ctx->overlay_focus_return[depth-1u]:ctx->overlay_return_focus_id;
+    if (depth) --depth;
+    ctx->overlay_previous_depth=ctx->overlay_current_depth=depth;
+    ctx->previous_overlay_id=ctx->current_overlay_id=depth?ctx->overlay_previous_path[depth-1u]:0;
+    nx_context_change_focus(ctx, restore);
     nx_region *focused = nx_region_find(&ctx->current_regions, ctx->focused_id);
     if (!focused || !(focused->flags & NX_REGION_FOCUSABLE) ||
-        (focused->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)))
+        (focused->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+        (ctx->previous_overlay_id && focused->overlay_id!=ctx->previous_overlay_id))
         nx_context_change_focus(ctx, 0);
-    ctx->overlay_return_focus_id = 0;
-    ctx->previous_overlay_id = 0;
+    if (!depth) ctx->overlay_return_focus_id=0;
     return NX_OK;
 }
 
@@ -7873,6 +7934,11 @@ static nx_result nx_search_popup_run(nx_context *ctx,
     uint64_t old_current_overlay = ctx->current_overlay_id;
     uint64_t old_return_focus = ctx->overlay_return_focus_id;
     uint64_t old_focus = ctx->focused_id;
+    unsigned old_overlay_build_depth=ctx->overlay_build_depth, old_overlay_current_depth=ctx->overlay_current_depth;
+    uint64_t old_overlay_build_path[16],old_overlay_current_path[16],old_overlay_focus_return[16];
+    memcpy(old_overlay_build_path,ctx->overlay_build_path,sizeof(old_overlay_build_path));
+    memcpy(old_overlay_current_path,ctx->overlay_current_path,sizeof(old_overlay_current_path));
+    memcpy(old_overlay_focus_return,ctx->overlay_focus_return,sizeof(old_overlay_focus_return));
     int old_overlay_built = ctx->overlay_built_this_frame;
     nx_result result = NX_OK;
     size_t *matches = NULL;
@@ -8123,6 +8189,10 @@ search_rollback:
     ctx->building_overlay_id = old_building_overlay;
     ctx->current_overlay_id = old_current_overlay;
     ctx->overlay_return_focus_id = old_return_focus;
+    ctx->overlay_build_depth=old_overlay_build_depth; ctx->overlay_current_depth=old_overlay_current_depth;
+    memcpy(ctx->overlay_build_path,old_overlay_build_path,sizeof(old_overlay_build_path));
+    memcpy(ctx->overlay_current_path,old_overlay_current_path,sizeof(old_overlay_current_path));
+    memcpy(ctx->overlay_focus_return,old_overlay_focus_return,sizeof(old_overlay_focus_return));
     nx_context_change_focus(ctx, old_focus);
     ctx->overlay_built_this_frame = old_overlay_built;
 search_finish:

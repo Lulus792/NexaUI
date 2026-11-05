@@ -252,6 +252,36 @@ static int test_popups(nx_font_collection *fonts) {
     return 0;
 }
 
+static int test_nested_select(nx_font_collection *fonts) {
+    const nx_search_option options[]={{.id=101,.name={"Alpha",5}},
+        {.id=102,.name={"Beta",4}}, {.id=103,.name={"Gamma",5}}};
+    nx_search_popup_desc desc=popup_desc(fonts,options);desc.overlay.panel.parent_id=500;
+    nx_overlay_desc outer={0};outer.panel.id=500;outer.backdrop_id=501;
+    outer.panel.bounds=(nx_rect){0,0,220,150};outer.panel.name=(nx_utf8_span){"Dialog",6};
+    nx_control_desc trigger={0};trigger.id=502;trigger.parent_id=500;
+    trigger.bounds=(nx_rect){5,5,10,10};trigger.name=(nx_utf8_span){"Open",4};
+    nx_text_field *field=NULL;nx_context *ctx=NULL;nx_font_collection *empty=NULL;
+    CHECK(nx_text_field_create("",0,1024,&field)==NX_OK && nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&empty)==NX_OK);
+    nx_search_state search={0};search.query=field;nx_interaction_state interaction;
+    int outer_dismissed=0,dismissed=0;uint64_t activated=0;
+    CHECK(nx_begin_frame(ctx,220,150,0)==NX_OK && nx_modal_begin(ctx,&outer,&outer_dismissed)==NX_OK);
+    CHECK(nx_button(ctx,&trigger,&interaction)==NX_OK && nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_focus_id(ctx)==502);
+    CHECK(nx_begin_frame(ctx,220,150,0)==NX_OK && nx_modal_begin(ctx,&outer,&outer_dismissed)==NX_OK);
+    CHECK(nx_button(ctx,&trigger,&interaction)==NX_OK);
+    nx_search_popup_desc invalid=desc;invalid.query.fonts=empty;
+    CHECK(nx_searchable_select(ctx,&invalid,&search,&dismissed,&activated)!=NX_OK);
+    CHECK(nx_searchable_select(ctx,&desc,&search,&dismissed,&activated)==NX_OK && !dismissed);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==21);
+    CHECK(key(ctx,NX_KEY_ENTER));
+    CHECK(nx_begin_frame(ctx,220,150,0)==NX_OK && nx_modal_begin(ctx,&outer,&outer_dismissed)==NX_OK);
+    CHECK(nx_button(ctx,&trigger,&interaction)==NX_OK);
+    CHECK(nx_searchable_select(ctx,&desc,&search,&dismissed,&activated)==NX_OK && dismissed && activated==101);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==502);
+    nx_font_collection_destroy(empty);nx_context_destroy(ctx);nx_text_field_destroy(field);return 0;
+}
+
 int main(void) {
     uint8_t bytes[512];
     font_fixture(bytes);
@@ -262,6 +292,7 @@ int main(void) {
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
     CHECK(test_filter() == 0);
     CHECK(test_popups(fonts) == 0);
+    CHECK(test_nested_select(fonts) == 0);
     nx_font_collection_destroy(fonts);
     nx_font_close(font);
     return 0;

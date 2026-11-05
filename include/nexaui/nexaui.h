@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 7
+#define NX_VERSION_PATCH 8
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2150,7 +2150,9 @@ NX_API nx_result nx_tree_item(nx_context *context,
 /* Register an overlay, then its children under panel.id, and end its scope.
    A modal dims the background. Both forms trap Tab navigation while shown.
    out_dismissed signals a backdrop click or Escape; omit the overlay next
-   frame to close it. Only one overlay may be built per frame. */
+   frame to close it. Overlays may be nested up to 16 levels; a nested panel's
+   parent must be inside its enclosing overlay. Build inner overlays after the
+   enclosing content so they paint on top; sibling overlays are not supported. */
 NX_API nx_result nx_popup_begin(nx_context *context,
                                 const nx_overlay_desc *desc,
                                 int *out_dismissed);
@@ -2158,8 +2160,9 @@ NX_API nx_result nx_modal_begin(nx_context *context,
                                 const nx_overlay_desc *desc,
                                 int *out_dismissed);
 NX_API nx_result nx_overlay_end(nx_context *context);
-/* Programmatic close after overlay_end or between frames. Between frames it
-   deactivates the previous backdrop before the next event-routing pass. */
+/* Close the topmost overlay after its overlay_end or between frames. Between
+   frames it deactivates that scope before the next event-routing pass and
+   restores focus to the enclosing scope, if any. */
 NX_API nx_result nx_overlay_close(nx_context *context);
 /* Noninteractive painted tooltip with an accessible semantic node. */
 NX_API nx_result nx_tooltip(nx_context *context,
