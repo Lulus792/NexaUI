@@ -82,16 +82,19 @@ int main(int argc,char **argv) {
     } while (!window && now()<end);
     CHECK(window);
     AXUIElementRef button=wait_find(window,2),toggle=wait_find(window,3),secret=wait_find(window,5);
-    AXUIElementRef count=wait_find(window,6),tab=wait_find(window,52);
-    CHECK(button && toggle && secret && count && tab);
+    AXUIElementRef count=wait_find(window,6),tab=wait_find(window,52),number=wait_find(window,2032);
+    CHECK(button && toggle && secret && count && tab && number);
     CHECK(string_is(button,kAXRoleAttribute,kAXButtonRole));
     CHECK(string_is(button,kAXTitleAttribute,CFSTR("Öffnen 📁")));
     CHECK(string_is(secret,kAXValueAttribute,CFSTR("")));
+    CHECK(string_is(number,kAXRoleAttribute,kAXTextFieldRole));
+    CHECK(string_is(number,kAXValueAttribute,CFSTR("1234")));
+    Boolean settable=true;CHECK(AXUIElementIsAttributeSettable(number,kAXValueAttribute,&settable)==kAXErrorSuccess && !settable);
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));
     CHECK(AXUIElementPerformAction(tab,kAXPressAction)==kAXErrorSuccess && wait_one(tab));
-    CFRelease(tab); CFRelease(count); CFRelease(secret); CFRelease(toggle); CFRelease(button); CFRelease(window); CFRelease(app);
+    CFRelease(number); CFRelease(tab); CFRelease(count); CFRelease(secret); CFRelease(toggle); CFRelease(button); CFRelease(window); CFRelease(app);
     puts("Independent OS AX client passed names/roles/protection/press/toggle/selection model checks");
     return 0;
 }

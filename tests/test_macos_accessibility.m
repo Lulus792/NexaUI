@@ -1,6 +1,7 @@
 #import <AppKit/AppKit.h>
 #include "nexaui/nexaui.h"
 #include "window_internal.h"
+#include "fixture_font.h"
 #include <pthread.h>
 #include <math.h>
 #include <stdio.h>
@@ -30,10 +31,12 @@ static void deallocate(void *user,void *pointer,size_t bytes) {
 }
 typedef struct scene {
     nx_context *ui;
+    nx_numeric_field *number;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
     int overlay_stage, nested_clicks;
     uint64_t required, optional, radio, other, legacy;
 } scene;
+static nx_font_collection *numeric_fonts;
 static nx_control_desc control(uint64_t id,uint64_t parent,const char *name,nx_rect bounds) {
     nx_control_desc d={0}; d.id=id; d.parent_id=parent; d.name=(nx_utf8_span){name,strlen(name)}; d.bounds=bounds; return d;
 }
@@ -56,6 +59,12 @@ static int frame(scene *s) {
     secret.semantic.name=(nx_utf8_span){"Password",8}; secret.semantic.value=(nx_utf8_span){"do-not-expose",13};
     secret.semantic.state=NX_SEM_PROTECTED; secret.semantic.actions=NX_ACTION_FOCUS;
     secret.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE; CHECK(nx_widget_register(s->ui,&secret,&state)==NX_OK);
+    if(!s->number)CHECK(nx_numeric_field_create(1234,1024,&s->number)==NX_OK);
+    nx_numeric_field_desc number={0};number.id=2032;number.parent_id=1;
+    number.name=(nx_utf8_span){"Numeric field",13};number.bounds=(nx_rect){120,350,100,30};
+    number.fonts=numeric_fonts;number.pixels_per_em=16;number.glyph_cache_bytes=65536;
+    number.minimum=-10000;number.maximum=10000;int number_valid=0;
+    CHECK(nx_numeric_field_widget(s->ui,&number,s->number,&state,&number_valid)==NX_OK && number_valid);
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
     if (!s->removed) {
@@ -157,6 +166,8 @@ static int run(void) {
     CHECK([button accessibilityParent]==find(view,1) && [button accessibilityWindow]==native);
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
+    id number=find(view,2032);CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
+    CHECK([[number accessibilityValue] isEqual:@"1234"] && ![number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
     s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
@@ -234,7 +245,7 @@ static int run(void) {
     CHECK(nx_window_route_events(other_window,s.ui,&routed)==NX_ERROR_STATE);
     CHECK([button accessibilityPerformPress] && advance(other_window,&other_scene)==0 && !other_scene.clicks);
     CHECK(advance(window,&s)==0 && s.clicks);
-    nx_context_destroy(other_scene.ui); nx_window_destroy(other_window);
+    nx_context_destroy(other_scene.ui);nx_numeric_field_destroy(other_scene.number); nx_window_destroy(other_window);
     CHECK(![other_button isAccessibilityElement] && [button isAccessibilityElement]); [other_button release];
     s.large=1; s.renamed=1; CHECK(frame(&s)==0); h.fail_next=1;
     CHECK(nx_window_publish_semantics(window,s.ui)==NX_ERROR_MEMORY && !h.fail_next);
@@ -259,7 +270,7 @@ static int run(void) {
     CHECK(nx_window_publish_semantics(window,NULL)==NX_OK && ![current isAccessibilityElement]);
     CHECK(nx_window_publish_semantics(window,s.ui)==NX_OK && find(view,2)!=current);
     id final=[find(view,2) retain];
-    nx_context_destroy(s.ui); nx_window_destroy(window);
+    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window);
     CHECK(h.count==0 && ![final isAccessibilityElement] && ![final accessibilityPerformPress] && NSEqualRects([final accessibilityFrame],NSZeroRect));
     CHECK([saved_label isEqualToString:@"Öffnen 📁"]); [saved_label release];
     [final release]; [current release]; [replacement release]; [dynamic release]; [secret release]; [toggle release]; [button release];
@@ -275,7 +286,7 @@ static int external(const char *client) {
     char parent[32]; snprintf(parent,sizeof(parent),"%ld",(long)getpid());
     char *arguments[]={(char *)client,parent,NULL}; pid_t child;
     int spawn_error=posix_spawn(&child,client,NULL,NULL,arguments,environ);
-    if (spawn_error) { nx_context_destroy(s.ui); nx_window_destroy(window); return 1; }
+    if (spawn_error) { nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window); return 1; }
     double started=[[NSProcessInfo processInfo] systemUptime]; int status=0,failed=0;
     for (;;) {
         pid_t result=waitpid(child,&status,WNOHANG);
@@ -287,9 +298,15 @@ static int external(const char *client) {
         }
         CFRunLoopRunInMode(kCFRunLoopDefaultMode,.001,true);
     }
-    nx_context_destroy(s.ui); nx_window_destroy(window);
+    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window);
     return failed || !WIFEXITED(status) ? 1 : WEXITSTATUS(status);
 }
 int main(int argc,char **argv) {
-    @autoreleasepool { return argc==2 ? external(argv[1]) : run(); }
+    @autoreleasepool {
+        uint8_t bytes[512];font_fixture(bytes);nx_font *font=NULL;
+        CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK);
+        CHECK(nx_font_collection_create(NULL,&numeric_fonts)==NX_OK && nx_font_collection_add(numeric_fonts,font)==NX_OK);
+        int result=argc==2 ? external(argv[1]) : run();
+        nx_font_collection_destroy(numeric_fonts);nx_font_close(font);return result;
+    }
 }
