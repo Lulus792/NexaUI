@@ -1,5 +1,42 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland application ID and Aetheri activation (2026-11-05)
+
+Source `41042e56d629c8532bd365212d97385b41eaa476` adds the Linux
+`nx_window_set_wayland_app_id` request and uses `org.aetheri.Settings` in the
+experimental consumer. The pre-1.0 development package version is 0.1.4;
+this is not a 1.0 release. The unchanged default is `nexaui`. The ID is
+descriptive client metadata and never proves identity or authorization.
+
+Wayland-only and dual-backend controlled-server tests on Alpine/WSL2 passed,
+including default ID, replacement, 255-byte boundary, invalid/oversize input,
+wrong-thread and close behavior. The Wayland-only case also passed Clang
+22.1.3 ASan/UBSan with leak detection. The private Xvfb dual-backend case
+returned UNSUPPORTED as required. An initial broad CTest regex also selected
+an unbuilt native-management executable, so that invocation was not a full
+pass; the subsequently executed exact controlled test passed. Installed 0.1.4
+C17 model consumers built and ran on both Alpine and Fedora.
+
+On the isolated Aetheri headless test compositor and original development
+supervisor/SDL desktop, clicking the Settings dock entry while the consumer was
+already running caused `ACTIVATED 1 1` without a second Settings spawn. Close,
+reopen, owner-requested orderly shutdown and independent AT-SPI actions passed.
+The otherwise identical driver against the previous consumer timed out waiting
+for activation: its fixed `nexaui` ID did not match the desktop's Settings ID.
+The original supervisor and fixture are unchanged and are identified in the
+following record. The SDK was built from this exact source, static, Wayland-only,
+AT-SPI enabled, Vulkan off; Fedora GCC 16.2.1, Wayland 1.26.0 and xkbcommon
+1.13.1. Installed library SHA-256:
+`752e10c0fe1dd00841af0a5ad795245461137669414448e20c43bc5b3fda9161`;
+consumer SHA-256:
+`42998a0f041f22a87f2a95a1561c050b35d88c4a39223afcd83e65872317f706`.
+Positive, negative and AT-SPI logs are retained at
+`D:/NexaUI/out/aetheri-model-2026-11-05/appid-results.tar.gz`, SHA-256
+`8fb91f36d6460cbf0daa18f56017e683f9974bc333852f22949eacc95c50cea1`.
+This supersedes the fixed-ID limitation in the historical record below, only
+for this scoped Wayland API. Physical sessions, Windows/macOS, full Settings,
+real app admission and human acceptance remain open.
+
 ## Original development owner and model-view lifecycle (2026-11-05)
 
 Consumer and test source `8e0b8d5dbac3fc975e3bca3f03ba3768550df857`
