@@ -1,5 +1,46 @@
 # Aetheri adoption: initial source assessment
 
+## Observed Wayland outputs in the Aetheri model (2026-11-05)
+
+SDK source `cf36802d8ef209eda91c85805e15761d0544bb26` adds the
+`<nexaui/wayland_outputs.h>` owner-thread snapshot and reuses the window's
+existing `wl_output` objects; it opens no additional connection or permanent
+thread. The 0.1.5 development package is pre-1.0. Output fields are committed
+on `wl_output.done`; incomplete additions return STATE, and subscribed changes
+send a coalesced native wake. Capacity failure leaves the output array intact.
+Names may be unavailable, integer output scale is distinct from fractional
+surface scale, and registry IDs are connection-local observations rather than
+persistent device identifiers or authority.
+
+The model consumer and integration test at
+`01d60fdb30e97d96778cf27cb4a2bdc9f0a0edc2` map those observations into the
+unchanged Aetheri Settings model; missing names receive a clearly generic
+connection-local label. This supersedes the older record below stating that
+the normal example does not acquire outputs. On the actual Aetheri headless
+test compositor, its original development supervisor launched the installed
+C17 consumer. The test checked the compositor-reported virtual modes
+1920x1080, 2560x1440 and 3840x2160, then used native virtual keyboard input to
+select the second observed ID. Existing window activation, close, reopen and
+ordered owner shutdown also passed. The previous 0.1.4 consumer failed this
+test at the missing three-output observation. An independent AT-SPI regression
+passed. These outputs are virtual, not physical-monitor evidence.
+
+On Alpine/WSL2, nine controlled Wayland tests passed with Clang 22.1.3
+ASan/UBSan and leak detection, including pending initial `done`, v3 unnamed/v4
+named output, unchanged data before `done`, mode updates, coalesced wake,
+removal, undersized storage and wrong-thread handling. The private Xvfb
+dual-backend test verified UNSUPPORTED. The installed model scene test passed
+under the same sanitizers. Fedora GCC 16.2.1 built a static, Wayland-only,
+AT-SPI-enabled, Vulkan-off SDK from the exact SDK revision above; library
+SHA-256 `383b3a9c9c5413c642a6cedfaccbd872c64a4aef1432c5edc58d48d09c053e0c`,
+consumer SHA-256 `5c2b0004484cb40e8badeb058423e0b5dc0d686c7939e9f71c3b4a69f51db796`.
+Positive, negative and AT-SPI logs are retained at
+`D:/NexaUI/out/aetheri-model-2026-11-05/outputs-results.tar.gz`, SHA-256
+`290c1b663c1df46f2b54dfd2fe54849396210217c5f648125153c75f4832e276`.
+Actual dynamic output addition/removal under the Aetheri compositor, output
+changes during app interaction, real session/driver/physical acceptance and
+configuration backends remain open; controlled removal is not a hotplug pass.
+
 ## App-owned display observations in the model view (2026-11-05)
 
 Consumer/test source `86e4d4c0f7c4d0eeee7e5a61d6931c7f41c7b05a` adds a
