@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## Original-model view reflow (2026-11-05)
+
+Consumer source `f66d0c427ab1fecd15ad870ee3ecd7c9168ac1e1` measures
+option labels at the selected text size, wraps controls and reveals the focused
+control in a scrollable area rather than shrinking labels. The bounded example
+adds visible mark boundaries because the high-contrast unchecked radio fill
+was indistinguishable from the scroll surface in the first captured image.
+This local treatment does not establish the contrast of all SDK controls.
+
+At 480x380 logical pixels, the C17 scene test traversed all nine focus targets
+with Tab at German 200%, checked each semantic rectangle was in the window,
+and compared the longest option's width with an independently created 28px
+text layout. It passed with DejaVu Sans on Alpine/WSL2 under Clang 22.1.3
+ASan/UBSan and leak detection, and with Liberation Sans on the Fedora carrier.
+A separate Clang `-Wall -Wextra -Wpedantic` build was warning-free. The test
+does not prove all fonts, pixel clipping or real keyboard interaction at 480x380.
+
+The 800x480 installed consumer ran on the private Aetheri headless compositor:
+virtual native keys selected contrast, German and 200% and closed it. The
+independent AT-SPI client repeated the selection and Close action. Consumer
+SHA-256 was `cb11d6757bc3f48734b7b81adc89f0f973e15410caadaacf92d4ba1843ca18b4`;
+the captured 1920x1080 output SHA-256 was
+`4fb285df9d9f8dc62dcd79dca49110cc262c88f91f1096189dda5d7d509585dc`.
+The [previous model record](#external-aetheri-settings-model-experiment-2026-11-05)
+identifies the installed SDK, original Aetheri source, compositor, client and
+private registry; none was replaced. Captures and logs are stored in
+`D:/NexaUI/out/aetheri-model-2026-11-05/reflow-final.tar.gz`, SHA-256
+`bfedff59316f0ac481fbede6f71faf295948d138ffa04fac2ec67f62b88f1604`.
+This is not complete A10 acceptance: broader sizes/fonts, physical scale,
+human screenreader and design review, real IME and full Settings remain open.
+
 ## External Aetheri Settings model experiment (2026-11-05)
 
 Consumer and test source `9ff75928edcf333662593c26b59bf03effc74b66`
