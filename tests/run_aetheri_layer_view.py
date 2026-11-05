@@ -1,5 +1,6 @@
 """Exercise the NexaUI model view on Aetheri's isolated test shell connection."""
 import argparse
+import array
 import gzip
 import hashlib
 import json
@@ -25,7 +26,13 @@ def main():
                         help="close the clicked window before the test owner validates it")
     parser.add_argument("--test-stale-after-collapse", action="store_true",
                         help="close the clicked window after search collapses")
+    parser.add_argument("--test-launch-channel", action="store_true",
+                        help="exercise the fixed three-byte launch protocol with a test owner")
+    parser.add_argument("--test-invalid-launch", choices=("uncorrelated", "oversized", "ancillary", "peer-loss"),
+                        help="require the test host to reject an invalid owner response")
     args = parser.parse_args()
+    if args.test_invalid_launch and not args.test_launch_channel:
+        parser.error("--test-invalid-launch requires --test-launch-channel")
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
     app_client = args.app_client.resolve(strict=True) if args.app_client else None
     root = args.work_dir.resolve()
@@ -39,6 +46,8 @@ def main():
         env.pop(key, None)
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     shell_server, shell_client = socket.socketpair(socket.AF_UNIX, socket.SOCK_STREAM)
+    launch_owner, launch_client = (socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+                                   if args.test_launch_channel else (None, None))
     processes, streams, expected_exits = [], [], set()
     def digest(path):
         with path.open("rb") as stream:
@@ -46,7 +55,8 @@ def main():
 
     result = {"status": "failed", "scope": "isolated Aetheri test compositor, virtual outputs",
               "server_sha256": digest(server), "desktop_sha256": digest(desktop),
-              "font_sha256": digest(font), "window_observation": "not-run"}
+              "font_sha256": digest(font), "window_observation": "not-run",
+              "launch_channel": "not-run"}
     if app_client:
         result["app_client_sha256"] = digest(app_client)
     try:
@@ -106,10 +116,46 @@ def main():
             if not app_client or args.test_stale_activation:
                 raise RuntimeError("after-collapse case requires --app-client and excludes --test-stale-activation")
             desktop_env["NEXAUI_TEST_HOLD_AFTER_COLLAPSE"] = "1"
-        client = start(desktop, "desktop", (), (shell_client.fileno(),), desktop_env)
+        inherited = (shell_client.fileno(),)
+        if launch_client:
+            desktop_env["NEXAUI_TEST_LAUNCH_FD"] = str(launch_client.fileno())
+            inherited += (launch_client.fileno(),)
+            launch_owner.settimeout(5)
+        client = start(desktop, "desktop", (), inherited, desktop_env)
         shell_client.close()
+        if launch_client:
+            launch_client.close()
         wait(lambda: all(f"PAINT {i} {width} 84\n" in log("desktop")
                          for i, width in enumerate((1920, 2560, 3840))), "three docks")
+        if args.test_invalid_launch:
+            if args.test_invalid_launch == "uncorrelated":
+                launch_owner.sendall(b"A2T")
+            elif args.test_invalid_launch == "oversized":
+                launch_owner.sendall(b"X2T-too-long")
+            elif args.test_invalid_launch == "ancillary":
+                fd = os.open("/dev/null", os.O_RDONLY)
+                try:
+                    launch_owner.sendmsg([b"X2T"], [(socket.SOL_SOCKET, socket.SCM_RIGHTS,
+                                                      array.array("i", [fd]))])
+                finally:
+                    os.close(fd)
+            else:
+                launch_owner.close()
+            if client.wait(timeout=10) == 0:
+                raise RuntimeError("invalid owner response did not fail the test host")
+            expected = {
+                "uncorrelated": "ae_desktop_model_reply(&v->model,target,bytes[0])",
+                "oversized": "n==3 && !extra",
+                "ancillary": "n==3 && !extra",
+                "peer-loss": "fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)",
+            }[args.test_invalid_launch]
+            if expected not in log("desktop"):
+                raise RuntimeError("host failed for a different reason")
+            if "LAUNCH_REPLY " in log("desktop"):
+                raise RuntimeError("invalid owner response changed model state")
+            result["invalid_launch_case"] = args.test_invalid_launch
+            result["status"] = "passed"
+            return
         dock = capture(1)
         result["dock_background"] = dock(100, 100)
         result["dock_button"] = dock(20, 1015)
@@ -149,10 +195,34 @@ def main():
         wait(lambda: log("desktop").count("QUERY 0 terminal\n") >= 2, "corrected search")
         key(28)
         wait(lambda: "INTENT 0 2 2 0\n" in log("desktop"), "terminal launch intent")
+        if launch_owner:
+            if launch_owner.recv(16) != b"L2T":
+                raise RuntimeError("wrong terminal launch packet")
+            key(28)
+            launch_owner.settimeout(.3)
+            try:
+                duplicate = launch_owner.recv(16)
+            except TimeoutError:
+                duplicate = None
+            finally:
+                launch_owner.settimeout(5)
+            if duplicate is not None:
+                raise RuntimeError("pending terminal request was duplicated")
+            paints = log("desktop").count("PAINT 0 1920 1080\n")
+            launch_owner.sendall(b"E2T")
+            wait(lambda: "LAUNCH_REPLY E T\n" in log("desktop") and
+                 log("desktop").count("PAINT 0 1920 1080\n") > paints, "terminal rejection applied")
         event("M 60 90")
         event("B 272 1")
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 2, "terminal pointer intent")
+        if launch_owner:
+            if launch_owner.recv(16) != b"L2T":
+                raise RuntimeError("wrong terminal retry packet")
+            launch_owner.sendall(b"A2T")
+            wait(lambda: "LAUNCH_REPLY A T\n" in log("desktop"), "terminal process acknowledged")
+            launch_owner.sendall(b"X2T")
+            wait(lambda: "LAUNCH_REPLY X T\n" in log("desktop"), "terminal process reaped")
         event("M 10 200")
         event("B 272 1")
         event("M 60 90")
@@ -177,6 +247,19 @@ def main():
         event("B 272 1")
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 3, "replacement pointer click")
+        if launch_owner:
+            if launch_owner.recv(16) != b"L2T":
+                raise RuntimeError("wrong terminal re-request packet")
+            launch_owner.sendall(b"E2T")
+            wait(lambda: log("desktop").count("LAUNCH_REPLY E T\n") >= 2, "second terminal rejection")
+            event("M 700 1030")
+            event("B 272 1")
+            event("B 272 0")
+            if launch_owner.recv(16) != b"L2S":
+                raise RuntimeError("wrong settings launch packet")
+            launch_owner.sendall(b"E2S")
+            wait(lambda: "LAUNCH_REPLY E S\n" in log("desktop"), "settings rejection applied")
+            result["launch_channel"] = "passed"
         if app_client:
             app = start(app_client, "app", ("--input",), (), env)
             wait(lambda: "Aetheri protocol test A | " in log("desktop") and
@@ -333,8 +416,9 @@ def main():
                 child.stdin.close()
         for stream in streams:
             stream.close()
-        for sock in (controller, issuer, shell_server, shell_client):
-            sock.close()
+        for sock in (controller, issuer, shell_server, shell_client, launch_owner, launch_client):
+            if sock:
+                sock.close()
         # Captures are owned by this fixture; keep them without exhausting
         # the test user's temporary-storage quota over repeated runs.
         for image in captures.glob("*.ppm"):

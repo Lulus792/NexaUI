@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
@@ -58,6 +59,7 @@ struct app {
     uint64_t activation_revision;
     unsigned activation_phase, activation_output;
     bool activation_enabled, activation_hold, activation_invalidated, hold_after_collapse;
+    int launcher;
 };
 static unsigned char *load_font(const char *path, size_t *length) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;long n=0;unsigned char *p=NULL;
@@ -78,6 +80,21 @@ static void advance(struct view *v) {
         printf("SELECT %u %d %u\n",v->index,intent.app,intent.window);
     } else if(intent.kind==AETHERI_DESKTOP_LAUNCH || intent.kind==AETHERI_DESKTOP_ACTIVATE || intent.kind==AETHERI_DESKTOP_SEARCH) {
         printf("INTENT %u %d %d %u\n",v->index,intent.kind,intent.app,intent.window);
+        if(intent.kind==AETHERI_DESKTOP_LAUNCH && v->app->launcher>=0) {
+            struct app *a=v->app;enum ae_desktop_app target=intent.app;
+            CHECK(target==AE_DESKTOP_SETTINGS || target==AE_DESKTOP_TERMINAL);
+            for(unsigned i=0;i<3;++i)CHECK(!a->views[i].model.pending[target] && a->views[i].revision<UINT64_MAX);
+            for(unsigned i=0;i<3;++i) {
+                CHECK(ae_desktop_model_request(&a->views[i].model,target));++a->views[i].revision;
+                if(a->views[i].view)a->views[i].dirty=true;
+            }
+            char packet[3]={'L','2',target==AE_DESKTOP_SETTINGS?'S':'T'};
+            ssize_t sent;do {sent=send(a->launcher,packet,sizeof(packet),MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
+            CHECK(sent==(ssize_t)sizeof(packet));printf("LAUNCH_REQUEST %c\n",packet[2]);
+            aetheri_desktop_intent reconciled;
+            CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&reconciled));
+            CHECK(reconciled.kind==AETHERI_DESKTOP_NONE);
+        }
         if(intent.kind==AETHERI_DESKTOP_ACTIVATE && v->app->activation_enabled) {
             CHECK(!v->app->activation_phase && intent.window);
             v->app->activation_id=intent.window;v->app->activation_revision=v->revision;
@@ -90,6 +107,29 @@ static void advance(struct view *v) {
         CHECK(intent.kind==AETHERI_DESKTOP_NONE);
     }
     v->dirty=true;
+}
+static void launcher_reply(struct app *a) {
+    char bytes[8];union {struct cmsghdr align;char bytes[CMSG_SPACE(sizeof(int)*4)];} ancillary;
+    struct iovec io={.iov_base=bytes,.iov_len=sizeof(bytes)};
+    struct msghdr message={.msg_iov=&io,.msg_iovlen=1,.msg_control=ancillary.bytes,.msg_controllen=sizeof(ancillary.bytes)};
+    ssize_t n;do {n=recvmsg(a->launcher,&message,MSG_CMSG_CLOEXEC|MSG_DONTWAIT);} while(n<0 && errno==EINTR);
+    bool extra=false;
+    if(n>=0)for(struct cmsghdr *h=CMSG_FIRSTHDR(&message);h;h=CMSG_NXTHDR(&message,h)) {
+        extra=true;
+        if(h->cmsg_level==SOL_SOCKET && h->cmsg_type==SCM_RIGHTS && h->cmsg_len>=CMSG_LEN(0)) {
+            size_t count=(h->cmsg_len-CMSG_LEN(0))/sizeof(int);
+            for(size_t i=0;i<count;++i) {int fd;memcpy(&fd,(unsigned char *)CMSG_DATA(h)+i*sizeof(fd),sizeof(fd));close(fd);}
+        }
+    }
+    CHECK(n==3 && !extra && !(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) && bytes[1]=='2' &&
+          (bytes[2]=='S' || bytes[2]=='T') && (bytes[0]=='A' || bytes[0]=='E' || bytes[0]=='X'));
+    enum ae_desktop_app target=bytes[2]=='S'?AE_DESKTOP_SETTINGS:AE_DESKTOP_TERMINAL;
+    for(unsigned i=0;i<3;++i) {
+        struct view *v=&a->views[i];CHECK(v->revision<UINT64_MAX);
+        CHECK(ae_desktop_model_reply(&v->model,target,bytes[0]));++v->revision;
+        if(v->view)v->dirty=true;
+    }
+    printf("LAUNCH_REPLY %c %c\n",bytes[0],bytes[2]);
 }
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
@@ -372,7 +412,16 @@ static const struct wl_registry_listener registry_listener = {.global = global, 
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     CHECK(argc == 1 || argc == 2 || argc == 4);
-    struct app a = {.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    struct app a = {.launcher=-1,.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    const char *launcher=getenv("NEXAUI_TEST_LAUNCH_FD");
+    if(launcher) {
+        char *end=NULL;errno=0;long fd=strtol(launcher,&end,10);
+        CHECK(*launcher && end && !*end && !errno && fd>=3 && fd<=INT32_MAX);
+        int type=0;socklen_t size=sizeof(type);struct sockaddr_storage peer;socklen_t peer_size=sizeof(peer);
+        CHECK(!getsockopt((int)fd,SOL_SOCKET,SO_TYPE,&type,&size) && type==SOCK_SEQPACKET &&
+              !getpeername((int)fd,(struct sockaddr *)&peer,&peer_size) && peer.ss_family==AF_UNIX);
+        CHECK(fcntl((int)fd,F_SETFD,FD_CLOEXEC)==0);a.launcher=(int)fd;
+    }
     a.activation_enabled=getenv("NEXAUI_TEST_ACTIVATE")!=NULL;
     a.activation_hold=getenv("NEXAUI_TEST_HOLD_ACTIVATION")!=NULL;
     a.hold_after_collapse=getenv("NEXAUI_TEST_HOLD_AFTER_COLLAPSE")!=NULL;
@@ -418,10 +467,11 @@ int main(int argc, char **argv) {
             activation_step(&a);
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
-            struct pollfd fds[2] = {{wl_display_get_fd(a.display), POLLIN, 0}, {STDIN_FILENO, POLLIN, 0}};
-            int ready; do { ready = poll(fds, 2, 10000); } while (ready < 0 && errno == EINTR);
+            struct pollfd fds[3] = {{wl_display_get_fd(a.display), POLLIN, 0}, {STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}};
+            int ready; do { ready = poll(fds, 3, 10000); } while (ready < 0 && errno == EINTR);
             CHECK(ready > 0);
             if (fds[0].revents) CHECK(wl_display_dispatch(a.display) >= 0);
+            if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
             if (fds[1].revents) {
                 char c; CHECK(read(STDIN_FILENO, &c, 1) == 1);
                 if (c == 'e') view_state(&a.views[0], true);
@@ -483,6 +533,7 @@ int main(int argc, char **argv) {
         if (a.outputs[i]) wl_output_destroy(a.outputs[i]);
     }
     free(a.font);
+    if(a.launcher>=0)close(a.launcher);
     xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     if (a.control) aetheri_development_desktop_v1_destroy(a.control);
     if (a.layers) zwlr_layer_shell_v1_destroy(a.layers);
