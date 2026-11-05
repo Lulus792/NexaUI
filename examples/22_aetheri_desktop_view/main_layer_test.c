@@ -36,7 +36,7 @@ struct view {
     struct ae_desktop_model model; uint64_t revision;
     aetheri_desktop_view *view; nx_wayland_shm_host *presenter;
     nx_linux_accessibility_host *accessibility;
-    bool dirty, configured;
+    bool dirty, configured, remove_pending;
 };
 struct app {
     struct wl_display *display;
@@ -62,6 +62,7 @@ struct app {
     size_t ime_length,ime_cursor,ime_anchor;
     bool ime_requested,ime_enabled,ime_defer;
     struct wl_output *outputs[3];
+    uint32_t output_names[3];
     struct aetheri_development_desktop_v1 *control;
     struct zwlr_layer_shell_v1 *layers;
     struct view views[3];
@@ -364,7 +365,9 @@ static void configured(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t
         v->app->ready_reported=true;puts("READY nexaui-layer");puts("LAYOUT 1");
     }
 }
-static void closed(void *data, struct zwlr_layer_surface_v1 *layer) { (void)data; (void)layer; CHECK(false); }
+static void closed(void *data, struct zwlr_layer_surface_v1 *layer) {
+    struct view *v=data;(void)layer;v->remove_pending=true;
+}
 static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure = configured, .closed = closed};
 static void pointer_event(struct app *a,nx_event_type type,uint32_t button);
 static void view_state(struct view *v, bool expanded) {
@@ -545,6 +548,36 @@ static void pointer_cancel_pending(struct app *a) {
         CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
     }
 }
+/* Called after dispatch returns, never from a Wayland listener. A removed
+   output cannot keep input capture, an accessibility tree or a pending intent. */
+static void retire_output(struct app *a,unsigned index) {
+    CHECK(index<3);struct view *v=&a->views[index];
+    if(!v->remove_pending)return;
+    v->remove_pending=false;
+    if(a->pointer_release_view==v)pointer_cancel_pending(a);
+    if(a->pointer_view==v){
+        pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
+        a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;
+    }
+    if(a->focused==v) {
+        ime_stop(a);
+        if(v->view)CHECK(aetheri_desktop_view_surface_focus(v->view,0)==NX_OK);
+        a->focused=NULL;
+    }
+    if(a->ime_surface==v->surface)a->ime_surface=NULL;
+    if(a->activation_phase && a->activation_output==index) {
+        a->activation_phase=0;a->activation_enabled=false;
+    }
+    if(a->toggle_output==(int)index)a->toggle_output=-1;
+    if(v->accessibility)CHECK(nx_linux_accessibility_host_destroy(&v->accessibility)==NX_OK);
+    if(v->presenter)CHECK(nx_wayland_shm_host_destroy(&v->presenter)==NX_OK);
+    aetheri_desktop_view_destroy(v->view);v->view=NULL;
+    if(v->layer){zwlr_layer_surface_v1_destroy(v->layer);v->layer=NULL;}
+    if(v->surface){wl_surface_destroy(v->surface);v->surface=NULL;}
+    if(a->outputs[index]){wl_output_destroy(a->outputs[index]);a->outputs[index]=NULL;}
+    a->output_names[index]=0;v->configured=false;v->expanded=false;v->dirty=false;
+    printf("OUTPUT_REMOVED %u\n",index);
+}
 static void pointer_release_ready(void *data,struct wl_callback *callback,uint32_t serial) {
     struct app *a=data;(void)serial;CHECK(callback==a->pointer_release_barrier);
     struct view *v=a->pointer_release_view;struct wl_pointer *device=a->pointer_release_device;
@@ -676,13 +709,17 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
         a->ime_manager=wl_registry_bind(registry,name,&zwp_text_input_manager_v3_interface,1);
     else if (!strcmp(interface, "wl_shm")) a->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
     else if (!strcmp(interface, "wl_output")) {
-        CHECK(a->output_count < 3); a->outputs[a->output_count++] = wl_registry_bind(registry, name, &wl_output_interface, 1);
+        CHECK(a->output_count < 3);a->output_names[a->output_count]=name;
+        a->outputs[a->output_count++] = wl_registry_bind(registry, name, &wl_output_interface, 1);
     } else if (!strcmp(interface, "wl_seat")) {
         a->seat = wl_registry_bind(registry, name, &wl_seat_interface, 5); CHECK(a->seat);
         CHECK(wl_seat_add_listener(a->seat, &seat_listener, a) == 0);
     }
 }
-static void global_remove(void *data, struct wl_registry *registry, uint32_t name) { (void)data; (void)registry; (void)name; CHECK(false); }
+static void global_remove(void *data, struct wl_registry *registry, uint32_t name) {
+    struct app *a=data;(void)registry;
+    for(unsigned i=0;i<3;++i)if(a->output_names[i]==name && name)a->views[i].remove_pending=true;
+}
 static const struct wl_registry_listener registry_listener = {.global = global, .global_remove = global_remove};
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
@@ -770,6 +807,7 @@ int main(int argc, char **argv) {
         bool stop = false;
         while (!stop) {
             CHECK(wl_display_dispatch_pending(a.display) >= 0);
+            for(unsigned i=0;i<3;++i)retire_output(&a,i);
             if(stop_requested) {
                 aetheri_development_desktop_v1_retire(a.control);
                 CHECK(wl_display_roundtrip(a.display)>=0 && a.retired);stop=true;break;
@@ -778,7 +816,7 @@ int main(int argc, char **argv) {
                 unsigned output=(unsigned)a.toggle_output;a.toggle_output=-1;
                 bool open=!a.views[output].expanded;
                 for(unsigned i=0;i<3;++i)if(a.views[i].expanded && (!open || i!=output))view_state(&a.views[i],false);
-                if(open)view_state(&a.views[output],true);
+                if(open && a.views[output].layer)view_state(&a.views[output],true);
             }
             if(a.close_search) {
                 a.close_search=false;
@@ -795,9 +833,13 @@ int main(int argc, char **argv) {
             if(stop_requested)continue;
             CHECK(ready >= 0);
             if (fds[0].revents) CHECK(wl_display_dispatch(a.display) >= 0);
+            for(unsigned i=0;i<3;++i)retire_output(&a,i);
             if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
             if (fds[1].revents) {
                 char c; CHECK(read(STDIN_FILENO, &c, 1) == 1);
+                if(strchr("enpzwfiur",c) && !a.views[0].layer) {
+                    printf("IGNORED_REMOVED_OUTPUT %c\n",c);continue;
+                }
                 if (c == 'e') view_state(&a.views[0], true);
                 else if (c == 'n') view_state(&a.views[0], false);
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);

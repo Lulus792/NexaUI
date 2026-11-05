@@ -33,6 +33,9 @@ int main(int argc,char **argv) {
             }
             accessibility_publish(other);other->dirty=false;
         }
+        a.output_names[2]=42;
+        global_remove(&a,NULL,99);
+        CHECK(!a.views[0].remove_pending && !a.views[1].remove_pending && !a.views[2].remove_pending);
     }
     struct sigaction action={0};action.sa_handler=stop_signal;sigemptyset(&action.sa_mask);
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));
@@ -41,8 +44,13 @@ int main(int argc,char **argv) {
     while(!stop_requested) {
         if(remove_requested) {
             remove_requested=0;struct view *other=&a.views[2];CHECK(other->view && other->accessibility);
-            CHECK(nx_linux_accessibility_host_destroy(&other->accessibility)==NX_OK);
-            aetheri_desktop_view_destroy(other->view);other->view=NULL;other->configured=false;puts("REMOVED 2");
+            a.pointer_view=other;a.axis_y=10;a.activation_phase=1;a.activation_output=2;
+            a.activation_enabled=true;a.toggle_output=2;
+            global_remove(&a,NULL,42);CHECK(other->remove_pending && a.views[0].view && a.views[1].view);
+            retire_output(&a,2);
+            CHECK(!other->view && !other->accessibility && !other->configured && !a.output_names[2] &&
+                  !a.pointer_view && a.axis_y==0 && !a.activation_phase && !a.activation_enabled && a.toggle_output==-1);
+            puts("REMOVED 2");
         }
         for(unsigned i=0;i<3;++i)if(a.views[i].view && a.views[i].dirty) {
             advance(&a.views[i]);accessibility_publish(&a.views[i]);a.views[i].dirty=false;

@@ -160,8 +160,22 @@ int main(int argc,char **argv) {
     capabilities(&a,a.seat,0);
     CHECK(!a.pointer && !a.pointer_release_barrier && !a.activation_phase);
     CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!a.activation_phase);
+    /* An output removal observed before the sync reply retires a real surface
+       and cancels its outstanding captured release before any activation. */
+    a.pointer=wl_seat_get_pointer(a.seat);CHECK(a.pointer);
+    CHECK(!wl_pointer_add_listener(a.pointer,&pointer_listener,&a));
+    pointer_enter(&a,a.pointer,0,v->surface,wl_fixed_from_double(row.bounds.x+8),wl_fixed_from_double(row.bounds.y+8));
+    pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+    pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+    CHECK(a.pointer_release_barrier && !a.activation_phase);
+    a.output_names[0]=77;global_remove(&a,NULL,77);
+    CHECK(v->remove_pending && v->surface && v->view);
+    retire_output(&a,0);
+    CHECK(!v->surface && !v->view && !a.pointer_release_barrier && !a.pointer_view && !a.focused);
+    CHECK(wl_display_roundtrip(a.display)>=0 && !a.activation_phase);
+    capabilities(&a,a.seat,0);
     ime_stop(&a);zwp_text_input_v3_destroy(a.ime_input);zwp_text_input_manager_v3_destroy(a.ime_manager);
-    aetheri_desktop_view_destroy(v->view);wl_surface_destroy(v->surface);wl_seat_destroy(a.seat);
+    wl_seat_destroy(a.seat);
     wl_compositor_destroy(a.compositor);wl_registry_destroy(a.registry);free(a.font);
     wl_display_terminate(server.display);wl_display_disconnect(a.display);CHECK(!pthread_join(thread,NULL));
     wl_display_destroy_clients(server.display);wl_display_destroy(server.display);return 0;

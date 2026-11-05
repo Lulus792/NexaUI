@@ -68,5 +68,9 @@ int main(int argc, char **argv) {
     CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x>before.x);
     ime_leave(&a,NULL,v->surface);advance(v);
     CHECK(!a.ime_enabled && aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x==before.x);
-    aetheri_desktop_view_destroy(v->view);free(a.font);return 0;
+    /* The registry callback only schedules teardown; the owner loop performs it. */
+    v->surface=NULL;a.ime_surface=NULL;a.output_names[0]=77;
+    global_remove(&a,NULL,77);CHECK(v->remove_pending && a.focused==v && v->view);
+    retire_output(&a,0);CHECK(!v->view && !a.focused && !v->configured && !a.output_names[0]);
+    free(a.font);return 0;
 }

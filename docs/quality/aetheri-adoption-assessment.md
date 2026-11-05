@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Deferred private-host output retirement (2026-11-05)
+
+On candidate base `c3dc49068f54a969edf78473341591fabf4894c6`, the test-only
+private layer host no longer aborts on a registry removal. It tracks its three
+initial output global names and defers known output or layer-close retirement
+until dispatch completes. Retirement cancels pending pointer release and
+activation for that output, clears its focus, IME surface and accumulated
+pointer deltas, then destroys its accessibility host, presenter, model view,
+layer, surface and output proxy. Other views remain available. Unknown removed
+globals do not destroy a view. Test-control commands targeting a removed first
+output are ignored rather than dereferencing it.
+
+The existing independent libatspi multi-view fixture now drives this same
+retirement function: its old German search accessible becomes defunct and the
+first view still accepts a query and Terminal intent. Callback tests check
+focus removal and cancellation of pointer/activation state. A controlled
+Wayland server test uses a real surface and a pending pointer-release sync;
+retirement before its reply prevents activation. All three tests passed in
+GCC static/shared and Clang ASan/UBSan builds with leak detection on Alpine.
+A test-only mutant that did not schedule registry removal failed the wire
+test's pending-removal assertion; the restored static test passed. The static
+SDK was declared at `71b71fa9b7065ec9e49e9afeea69374e8fe0c8ac`; its core
+sources are unchanged by this example-only candidate. The borrowed Aetheri
+desktop model files have SHA-256 `eead8bbb85ff528b5e42500a288c567d72615de434cf20b33577ab5741ac9e95`
+and `fe1bbb4061afa046463ca9190708f93940d4293649baaae3c1eda5960dbd9d10`.
+
+Removal callbacks in these tests are simulated: no Aetheri compositor or real
+output was removed. The fixture still requires three initial outputs and
+cannot add a replacement output after removal. Native hotplug ordering, full
+device-loss behavior, actual Aetheri shell ownership and human/physical
+acceptance remain open; this does not complete D05 or W05.
+
 ## Labeled nested dialog with independent AT-SPI (2026-11-05)
 
 On the candidate based on `504943f7be51d9b5d0d4ec869f2ccc4162d04e6f`,

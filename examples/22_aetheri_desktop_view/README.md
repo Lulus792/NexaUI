@@ -12,6 +12,18 @@ remove/re-add with the same ID. Events queued for an older revision produce no
 intent. The host must revalidate the revision and target again before acting;
 recreate the view before revision exhaustion.
 
+On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
+the test layer host defers a known output's registry removal or layer close
+until Wayland dispatch returns. It cancels a pending pointer release and
+activation, drops focus and IME association, retires the corresponding AT-SPI
+tree, presenter, view and Wayland objects, and leaves the other slots alive.
+Unknown removed globals are ignored. Callback and controlled-wire tests cover
+these paths with a real surface and a pending sync; an independent AT-SPI client
+checks that the removed tree becomes defunct while another remains operable.
+They simulate removal rather than hot-unplugging an Aetheri output. This test
+host still assumes three initial outputs and does not support output re-addition;
+actual compositor ordering, hotplug and production shell ownership remain open.
+
 ```sh
 cmake -S /path/to/copied-example -B build \
   -DCMAKE_PREFIX_PATH=/path/to/nexaui-sdk \

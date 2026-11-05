@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/W05/P05: the private test host based on
+`c3dc49068f54a969edf78473341591fabf4894c6` defers known output retirement,
+clears its focus/requests and accessibility tree and leaves the other views
+usable in simulated and controlled-wire tests. Real hotplug, re-addition and
+Aetheri ownership remain open; see [candidate evidence](aetheri-adoption-assessment.md#deferred-private-host-output-retirement-2026-11-05).
+
 L10/A02/I01: on base `504943f7be51d9b5d0d4ec869f2ccc4162d04e6f`, the
 native nested-keyboard fixture draws font-backed labels and an independent
 AT-SPI client checks blocked/enabled/focused states during the same workflow.
