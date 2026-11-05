@@ -4635,6 +4635,11 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
             uint64_t restore=ctx->focused_id;
             uint64_t previous_scope=depth?ctx->overlay_current_path[depth-1u]:0;
             nx_region *focused=nx_region_find(&ctx->current_regions,restore);
+            /* Rebuilding a different root while an overlay remains must keep
+               the original background return point, not the overlay itself. */
+            if (!depth && ctx->overlay_previous_depth &&
+                (!focused || focused->overlay_id))
+                restore=ctx->overlay_return_focus_id;
             if (depth && (!focused || focused->overlay_id!=previous_scope ||
                 !(focused->flags&NX_REGION_FOCUSABLE) || (focused->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE)))) {
                 restore=previous_scope;

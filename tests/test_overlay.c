@@ -283,7 +283,44 @@ static int test_sibling_overlays(void) {
     CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
     CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==12);
     CHECK(sibling_frame(ctx,0,&first,&second) && nx_focus_id(ctx)==12);
+    CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
+    CHECK(key(ctx,NX_KEY_ESCAPE,0));
+    CHECK(sibling_frame(ctx,1,&first,&second) && !first && second && nx_focus_id(ctx)==12);
+    CHECK(sibling_frame(ctx,0,&first,&second) && nx_focus_id(ctx)==12);
     CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==1);
+    CHECK(sibling_frame(ctx,0,&first,&second) && nx_focus_id(ctx)==12);
+    CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
+    nx_overlay_desc remaining=overlay(20,21);
+    nx_control_desc item=button(22,(nx_rect){100,50,40,20});item.parent_id=20;
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK && nx_button(ctx,&background,&state)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&remaining,&second)==NX_OK && !second && nx_button(ctx,&item,&state)==NX_OK);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==22);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==1);
+    nx_context_destroy(ctx);return 0;
+}
+
+static int nested_sibling_frame(nx_context *ctx,int second) {
+    nx_overlay_desc outer=overlay(10,11),one=overlay(20,21),two=overlay(30,31);
+    one.panel.parent_id=12;two.panel.parent_id=12;
+    nx_control_desc trigger=button(12,(nx_rect){20,20,30,20});trigger.parent_id=10;
+    nx_control_desc a=button(22,(nx_rect){60,40,30,20});a.parent_id=20;
+    nx_control_desc b=button(32,(nx_rect){100,40,30,20});b.parent_id=30;
+    nx_interaction_state state;int dismissed=0;
+    if(nx_begin_frame(ctx,200,120,0)!=NX_OK || nx_modal_begin(ctx,&outer,&dismissed)!=NX_OK ||
+       nx_button(ctx,&trigger,&state)!=NX_OK || nx_popup_begin(ctx,&one,&dismissed)!=NX_OK ||
+       nx_button(ctx,&a,&state)!=NX_OK || nx_overlay_end(ctx)!=NX_OK) return 0;
+    if(second && (nx_popup_begin(ctx,&two,&dismissed)!=NX_OK || nx_button(ctx,&b,&state)!=NX_OK ||
+                  nx_overlay_end(ctx)!=NX_OK)) return 0;
+    return nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
+static int test_nested_siblings(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nested_sibling_frame(ctx,0) && nx_focus_id(ctx)==22);
+    CHECK(nested_sibling_frame(ctx,1) && nx_focus_id(ctx)==32);
+    CHECK(nx_semantics_request_action(ctx,22,NX_ACTION_PRESS)==NX_ERROR_STATE);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==22);
+    CHECK(nested_sibling_frame(ctx,0) && nx_focus_id(ctx)==22);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==12);
     nx_context_destroy(ctx);return 0;
 }
 
@@ -327,7 +364,7 @@ static int test_nested_depth_limit(void) {
 }
 
 int main(void) {
-    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays()) return 1;
+    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays() || test_nested_siblings()) return 1;
     puts("overlay tests passed");
     return 0;
 }
