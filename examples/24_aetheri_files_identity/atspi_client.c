@@ -16,6 +16,9 @@ static AtspiAccessible *find(AtspiAccessible *node,const char *name,unsigned dep
     if(!node || depth>20)return NULL;
     GError *error=NULL;char *text=atspi_accessible_get_name(node,&error);
     int match=!error && text && !strcmp(text,name);if(error)g_error_free(error);g_free(text);
+    if(match){error=NULL;AtspiRole role=atspi_accessible_get_role(node,&error);
+        match=!error && role!=ATSPI_ROLE_APPLICATION && role!=ATSPI_ROLE_FRAME;
+        if(error)g_error_free(error);}
     if(match)return g_object_ref(node);
     error=NULL;int count=atspi_accessible_get_child_count(node,&error);
     if(error){g_error_free(error);return NULL;}
@@ -29,10 +32,16 @@ static int selected(AtspiAccessible *node) {
     if(!states)return 0;
     int result=atspi_state_set_contains(states,ATSPI_STATE_SELECTED);g_object_unref(states);return result;
 }
+static int invalid(AtspiAccessible *node) {
+    atspi_accessible_clear_cache(node);AtspiStateSet *states=atspi_accessible_get_state_set(node);
+    if(!states)return 0;
+    int result=atspi_state_set_contains(states,ATSPI_STATE_INVALID_ENTRY);g_object_unref(states);return result;
+}
 int main(int argc,char **argv) {
     int okay=0,root=-1,pipes[2]={-1,-1},created=0;pid_t child=-1;
     char path[]="/tmp/nexaui-files-atspi-XXXXXX",output[8192]={0};size_t used=0;
-    AtspiAccessible *desktop=NULL,*first=NULL,*second=NULL;AtspiAction *action=NULL;
+    AtspiAccessible *desktop=NULL,*first=NULL,*second=NULL,*filter=NULL;AtspiAction *action=NULL;
+    AtspiEditableText *edit=NULL;
     const char *font=getenv("NEXAUI_FILES_FONT");
     CHECK(argc==2 && font && *font && mkdtemp(path));created=1;
     root=open(path,O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(root>=0);
@@ -44,18 +53,19 @@ int main(int argc,char **argv) {
         execl(argv[1],argv[1],path,font,(char *)NULL);_exit(127);}
     close(pipes[1]);pipes[1]=-1;CHECK(fcntl(pipes[0],F_SETFL,fcntl(pipes[0],F_GETFL)|O_NONBLOCK)==0);
     CHECK(atspi_init()==0);atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
-    for(unsigned attempt=0;attempt<500 && (!first || !second);++attempt) {
+    for(unsigned attempt=0;attempt<500 && (!first || !second || !filter);++attempt) {
         while(g_main_context_iteration(NULL,FALSE)){}atspi_accessible_clear_cache(desktop);
         GError *error=NULL;int count=atspi_accessible_get_child_count(desktop,&error);
         if(error){g_error_free(error);pause_ms();continue;}
         for(int i=0;i<count;++i){AtspiAccessible *app=atspi_accessible_get_child_at_index(desktop,i,&error);
             if(error){g_error_free(error);error=NULL;continue;}if(!app)continue;
             guint pid=atspi_accessible_get_process_id(app,&error);
-            if(!error && pid==(guint)child){if(!first)first=find(app,"item00",0);if(!second)second=find(app,"item01",0);}
+            if(!error && pid==(guint)child){if(!first)first=find(app,"item00",0);if(!second)second=find(app,"item01",0);
+                if(!filter)filter=find(app,"Filter files",0);}
             if(error){g_error_free(error);error=NULL;}g_object_unref(app);}
-        if(!first || !second)pause_ms();
+        if(!first || !second || !filter)pause_ms();
     }
-    CHECK(first && second);GError *error=NULL;
+    CHECK(first && second && filter);GError *error=NULL;
     CHECK(atspi_accessible_get_role(first,&error)==ATSPI_ROLE_TREE_ITEM && !error);
     CHECK(selected(first) && !selected(second));action=atspi_accessible_get_action_iface(second);CHECK(action);
     int count=atspi_action_get_n_actions(action,&error);CHECK(!error && count>0);int index=-1;
@@ -72,19 +82,43 @@ int main(int argc,char **argv) {
         if(!observed || !model_observed)pause_ms();
     }
     CHECK(observed && model_observed);
+    atspi_accessible_clear_cache(filter);
+    edit=atspi_accessible_get_editable_text_iface(filter);
+    CHECK(edit);
+    CHECK(atspi_editable_text_set_text_contents(edit,"item01",&error) && !error);
+    int filtered=0;
+    for(unsigned attempt=0;attempt<500 && !filtered;++attempt) {
+        ssize_t n=read(pipes[0],output+used,sizeof(output)-1-used);
+        if(n>0){used+=(size_t)n;output[used]=0;filtered=strstr(output,"FILES_NATIVE_FILTER 6 1 1\n")!=NULL;}
+        if(!filtered)pause_ms();
+    }
+    CHECK(filtered && !invalid(filter));
+    char oversized[257];memset(oversized,'x',256);oversized[256]=0;
+    CHECK(atspi_editable_text_set_text_contents(edit,oversized,&error) && !error);
+    int rejected=0;
+    for(unsigned attempt=0;attempt<500 && !rejected;++attempt) {
+        ssize_t n=read(pipes[0],output+used,sizeof(output)-1-used);
+        if(n>0){used+=(size_t)n;output[used]=0;rejected=strstr(output,"FILES_NATIVE_FILTER 6 1 0\n")!=NULL;}
+        if(!rejected)pause_ms();
+    }
+    CHECK(rejected && invalid(filter));
+    CHECK(atspi_editable_text_set_text_contents(edit,"item01",&error) && !error && invalid(filter));
+    CHECK(atspi_editable_text_set_text_contents(edit,"",&error) && !error && !invalid(filter));
     CHECK(!kill(child,SIGTERM));int status=0;pid_t waited=0;
     for(unsigned i=0;i<300 && !waited;++i){waited=waitpid(child,&status,WNOHANG);if(!waited)pause_ms();}
     CHECK(waited==child && WIFEXITED(status) && WEXITSTATUS(status)==0);child=-1;okay=1;
 cleanup:
     if(child>0){(void)kill(child,SIGKILL);(void)waitpid(child,NULL,0);}
     if(action)g_object_unref(action);
+    if(edit)g_object_unref(edit);
     if(first)g_object_unref(first);
     if(second)g_object_unref(second);
+    if(filter)g_object_unref(filter);
     if(desktop)g_object_unref(desktop);
     if(pipes[0]>=0)close(pipes[0]);
     if(pipes[1]>=0)close(pipes[1]);
     if(root>=0){(void)unlinkat(root,"item00",0);(void)unlinkat(root,"item01",0);close(root);}
     if(created)(void)rmdir(path);
-    if(okay)puts("Independent AT-SPI Files row selection reached the original model");
+    if(okay)puts("Independent AT-SPI Files selection and guarded filtering reached the original model");
     return okay?0:1;
 }

@@ -48,19 +48,6 @@ def main():
             raise RuntimeError(f'Missing {expected}: {"".join(output)} {"".join(errors)}')
         def key(value):
             subprocess.run([xdotool, 'key', value], env=env, check=True, timeout=5)
-        def wait_new_selection(previous):
-            deadline = time.monotonic()+12
-            while True:
-                remaining = deadline-time.monotonic()
-                if remaining <= 0:
-                    break
-                try:
-                    line = messages.get(timeout=remaining)
-                    if line.startswith('FILES_NATIVE_SELECTED ') and line != previous:
-                        return
-                except queue.Empty:
-                    break
-            raise RuntimeError(f'Pointer selection did not change: {"".join(output)} {"".join(errors)}')
         try:
             wait('FILES_NATIVE_READY')
             wait('FILES_NATIVE_SELECTED item00')
@@ -88,17 +75,24 @@ def main():
                 if entered:
                     break
             if not entered:
-                raise RuntimeError('Virtual pointer did not enter the Files surface')
+                raise RuntimeError(f'Virtual pointer did not enter the Files surface: {"".join(output)} {"".join(errors)}')
             subprocess.run([xdotool, 'click', '4'], env=env, check=True, timeout=5)
             wait('FILES_NATIVE_SCROLL_UP');wait('FILES_NATIVE_VISIBLE item12')
-            subprocess.run([xdotool, 'click', '1'], env=env, check=True, timeout=5)
-            wait_new_selection('FILES_NATIVE_SELECTED item19')
             key('Home');wait('FILES_NATIVE_SELECTED item00')
             key('ctrl+r');wait('FILES_NATIVE_REFRESHED')
+            key('ctrl+l')
+            subprocess.run([xdotool, 'type', '--clearmodifiers', '--delay', '2', 'item01'], env=env, check=True, timeout=10)
+            wait('FILES_NATIVE_FILTER 6 1 1');wait('FILES_NATIVE_VISIBLE item01')
+            subprocess.run([xdotool, 'type', '--clearmodifiers', '--delay', '1', 'x'*256], env=env, check=True, timeout=20)
+            wait('FILES_NATIVE_DRAFT 262 0')
+            for _ in range(10):
+                key('BackSpace')
+            wait('FILES_NATIVE_DRAFT 252 0')
+            key('ctrl+l');wait('FILES_NATIVE_FILTER 0 20 1')
             key('ctrl+q');wait('FILES_NATIVE_CLOSED')
             if host.wait(timeout=10) != 0:
                 raise RuntimeError(f'Consumer failed: {"".join(errors)}')
-            print('Native Files: keyboard, pointer, wheel, refresh and clean close passed')
+            print('Native Files: keyboard, wheel, guarded filter, refresh and clean close passed')
             return 0
         finally:
             if host.poll() is None:

@@ -142,10 +142,58 @@ NEXAUI_FILES_FONT=/path/to/font.ttf xvfb-run -a python3 tests/run_weston_native.
   /tmp/nexaui-files-identity/aetheri_files_native
 ```
 
-This is a read-only integration probe, not Aetheri's Files application: it has
-no filter editor, directory entry/open action, file grants or operation UI.
-The viewport is capped at 1,764 logical pixels; a smaller-than-row window
+At that base this was a read-only integration probe, not Aetheri's Files
+application: it had no filter editor, directory entry/open action, file grants
+or operation UI. The viewport was capped at 1,764 logical pixels; a smaller-than-row window
 temporarily exposes no list. Offscreen semantics, accessible keyboard-focus
 restoration, localization, real Aetheri compositor/backend integration,
 additional compositors, physical input and human screenreader/design review
 remain open. A test registry and virtual keyboard do not close those gates.
+
+## Filter field and IME experiment
+
+On NexaUI base `00bb33d72b6938d6dbfb897911387ea6e0be46b6`, the native probe
+adds the existing NexaUI text field and the original model's case-sensitive
+filter. Ctrl+L clears and focuses the field; its name and invalid state are
+exposed through semantics. An overlong or invalid complete draft is latched as
+rejected until the field is cleared. The old model query is retained, but
+`files_scene_stage` refuses it while rejected. A conservative scalar-burst
+guard also catches an overlong burst followed by deletion in the same frame.
+Because it counts a byte upper bound, it can reject a valid near-limit
+replacement; the test explicitly demonstrates this limitation. Batched
+clipboard/IME/edit combinations and all possible event-ordering cases remain
+unproved. The native probe has no file activation or write operation.
+
+Private Weston virtual-keyboard tests exercised filtering, 256-byte overflow,
+deletion without reopening the retained prefix, clearing, navigation and
+shutdown. An independent libatspi client edited the filter, verified invalid
+state and recovery, and observed the original model. A separate
+`weston-simple-im` process produced apostrophe preedit without changing the
+model, followed by exactly one `á` commit and one matching result. Static,
+shared and Clang ASan/UBSan variants passed. A mutant disabling the burst guard
+failed the same-frame overflow test. A 240x120 headless capture of the focused
+field and list was visually inspected; this is not final design acceptance.
+
+The initial virtual IME attempt showed that activating the field on Ctrl+L
+key-down could admit the shortcut's later `l` release as text. The probe now
+focuses after that key is released, and its separate IME test waits for the
+actual text-input enter before composing. In another observed simple-IME run,
+Ctrl+Q while the field was already active arrived as a `q` commit instead of
+closing; the IME test therefore uses SIGTERM for the verified orderly exit.
+Ctrl+Q and Ctrl+L with an already active simple IME, other providers, stale
+composition/focus transitions and physical input remain open. This observation
+is specific to the private virtual setup, not a claim about every IME.
+
+To run the separate IME probe with the private Weston environment already
+described, set `NEXAUI_SETXKBMAP` to a usable `setxkbmap` and run:
+
+```sh
+python3 examples/24_aetheri_files_identity/run_ime_session.py \
+  /tmp/nexaui-files-identity/aetheri_files_native /path/to/font.ttf \
+  /path/to/xdotool /tmp/new-files-ime
+```
+
+The native window now reserves 36 logical pixels for the filter and caps the
+list viewport at 1,764 pixels. Empty/error explanations, complete paste
+semantics, file actions, native Aetheri integration, offscreen accessibility,
+localization and human review remain separate work.

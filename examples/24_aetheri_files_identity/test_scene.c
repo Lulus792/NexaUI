@@ -23,11 +23,11 @@ static int semantic(nx_context *ctx,uint64_t id,const char *name,int selected,in
         !memcmp(v.name.data,name,v.name.length) && !!(v.state&NX_SEM_SELECTED)==selected &&
         !!(v.state&NX_SEM_FOCUSED)==focused;
 }
-static int capture(const char *path,const unsigned char *pixels) {
+static int capture(const char *path,const unsigned char *pixels,unsigned width,unsigned height) {
     if(!path)return 1;
     FILE *f=fopen(path,"wb");if(!f)return 0;
-    int okay=fprintf(f,"P6\n240 84\n255\n")>0;
-    for(size_t i=0;okay && i<240u*84u;++i)okay=fwrite(pixels+i*4u,1,3,f)==3;
+    int okay=fprintf(f,"P6\n%u %u\n255\n",width,height)>0;
+    for(size_t i=0;okay && i<(size_t)width*height;++i)okay=fwrite(pixels+i*4u,1,3,f)==3;
     if(fclose(f))okay=0;
     return okay;
 }
@@ -51,7 +51,7 @@ int main(int argc,char **argv) {
     for(size_t i=0;i<command_count;++i)if(commands[i].type==NX_COMMAND_BITMAP)++bitmaps;
     CHECK(bitmaps>0);
     unsigned char pixels[240*84*4];CHECK(nx_headless_render(commands,command_count,pixels,240,84,240*4,(nx_color){0,0,0,1})==NX_OK);
-    CHECK(capture(getenv("NEXAUI_FILES_SCENE_CAPTURE"),pixels));
+    CHECK(capture(getenv("NEXAUI_FILES_SCENE_CAPTURE"),pixels,240,84));
     CHECK(files_scene_key(scene,NX_KEY_DOWN,0)==NX_OK && files_scene_selected(scene)==first);
     CHECK(files_scene_key(scene,NX_KEY_DOWN,1)==NX_OK);uint64_t second=files_scene_selected(scene);CHECK(second && second!=first);
     CHECK(files_scene_frame(scene,240,84)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
@@ -86,6 +86,39 @@ int main(int argc,char **argv) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK);event.type=NX_EVENT_POINTER_UP;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
     CHECK(files_scene_selected(scene)==clicked && !strcmp(ae_files_entry(model,ae_files_selected(model))->name,name));
+    CHECK(files_scene_enable_filter(scene,NULL)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(files_scene_focus_filter(scene,1)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='i';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && !strcmp(ae_files_query(model),"i") && files_scene_query_accepted(scene));
+    CHECK(nx_frame_commands(ctx,&commands,&command_count)==NX_OK);
+    unsigned char filtered_pixels[240*120*4];
+    CHECK(nx_headless_render(commands,command_count,filtered_pixels,240,120,240*4,(nx_color){0,0,0,1})==NX_OK);
+    CHECK(capture(getenv("NEXAUI_FILES_FILTER_CAPTURE"),filtered_pixels,240,120));
+    event.scalar='x';for(unsigned i=0;i<256;++i)CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene) && !strcmp(ae_files_query(model),"i"));
+    uint32_t field_index;nx_semantic_view field;
+    CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK &&
+          field.role==NX_ROLE_TEXT_FIELD && (field.state&NX_SEM_INVALID));
+    CHECK(files_scene_stage(scene,&intent)==AE_FILES_INVALID);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene) && !strcmp(ae_files_query(model),"i"));
+    CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && (field.state&NX_SEM_INVALID));
+    CHECK(files_scene_focus_filter(scene,1)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(files_scene_query_accepted(scene) && !strcmp(ae_files_query(model),""));
+    CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && !(field.state&NX_SEM_INVALID));
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='x';
+    for(unsigned i=0;i<256;++i)CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene));
+    CHECK(files_scene_focus_filter(scene,1)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    char maximum[AE_FILES_QUERY];memset(maximum,'x',sizeof(maximum));
+    CHECK(files_scene_filter(scene,maximum,sizeof(maximum))==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='y';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene));
     okay=1;
 cleanup:
     files_intent_clear(&intent);if(scene)files_scene_destroy(scene);

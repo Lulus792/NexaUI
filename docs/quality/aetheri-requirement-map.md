@@ -17,6 +17,11 @@ exercises keyboard, pointer, wheel and refresh on private Weston; an independent
 client selects a visible row and observes the original model change. It is
 read-only and leaves full Files controls, offscreen semantics, actual Aetheri
 acceptance and P02 open.
+On base `00bb33d72b6938d6dbfb897911387ea6e0be46b6`, the same probe adds an
+editable filter with rejected-query latching, independent AT-SPI editing and
+one private simple-IME preedit/commit check. A conservative same-frame scalar
+guard can reject valid near-limit replacements; complex input batching,
+active-IME shortcuts and real Aetheri acceptance remain open.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

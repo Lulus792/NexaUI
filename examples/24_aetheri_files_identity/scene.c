@@ -6,12 +6,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, ROW_HEIGHT=28, MAX_ROWS=64 };
+enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, FILTER_ID=2, FILTER_HEIGHT=36, ROW_HEIGHT=28, MAX_ROWS=64 };
 typedef struct row_key {dev_t dev;ino_t ino;enum ae_files_kind kind;char name[AE_FILES_NAME+1];uint64_t id;} row_key;
 struct files_scene {
     struct ae_files *model;nx_font_collection *fonts;nx_context *ctx;nx_virtual_list *list;
+    nx_text_field *query;nx_window *window;
     row_key keys[KEY_LIMIT];uint32_t slots[HASH_CAPACITY];size_t key_count,count;
-    uint64_t ids[AE_FILES_ENTRIES],next_id,selected;int directory,query_valid,need_focus,ready;
+    uint64_t ids[AE_FILES_ENTRIES],next_id,selected;int directory,query_valid,query_rejected,need_focus,ready;
     double offset;float viewport_height;
 };
 static uint64_t hash_bytes(uint64_t h,const void *p,size_t n) {
@@ -79,11 +80,25 @@ nx_result files_scene_create(struct ae_files *model,nx_font_collection *fonts,fi
     if(r!=NX_OK){files_scene_destroy(s);return r;}*out=s;return NX_OK;
 }
 void files_scene_destroy(files_scene *s){if(!s)return;if(s->directory>=0)close(s->directory);
-    nx_virtual_list_destroy(s->list);if(s->ctx)nx_context_destroy(s->ctx);free(s);}
+    nx_text_field_destroy(s->query);nx_virtual_list_destroy(s->list);if(s->ctx)nx_context_destroy(s->ctx);free(s);}
+nx_result files_scene_enable_filter(files_scene *s,nx_window *window) {
+    if(!s || s->query)return NX_ERROR_ARGUMENT;
+    const char *text=ae_files_query(s->model);nx_result r=nx_text_field_create(text,strlen(text),32768,&s->query);
+    if(r==NX_OK)s->window=window;
+    return r;
+}
+nx_result files_scene_focus_filter(files_scene *s,int clear) {
+    if(!s || !s->query || (clear!=0 && clear!=1))return NX_ERROR_ARGUMENT;
+    nx_result r=nx_focus_set(s->ctx,FILTER_ID);if(r!=NX_OK)return r;
+    if(!clear)return NX_OK;
+    r=nx_text_field_set_text(s->query,"",0);if(r==NX_OK)s->query_rejected=0;return r;
+}
+int files_scene_filter_has_focus(const files_scene *s){return s && s->query && nx_focus_id(s->ctx)==FILTER_ID;}
 nx_result files_scene_filter(files_scene *s,const char *query,size_t length) {
     if(!s)return NX_ERROR_ARGUMENT;
-    if(!ae_files_filter(s->model,query,length)){s->query_valid=0;return NX_ERROR_ARGUMENT;}
-    s->query_valid=1;s->offset=0;return files_scene_sync(s);
+    if(!ae_files_filter(s->model,query,length)){s->query_valid=0;s->query_rejected=1;return NX_ERROR_ARGUMENT;}
+    if(s->query){nx_result r=nx_text_field_set_text(s->query,query,length);if(r!=NX_OK){s->ready=0;return r;}}
+    s->query_valid=1;s->query_rejected=0;s->offset=0;return files_scene_sync(s);
 }
 nx_result files_scene_key(files_scene *s,nx_key key,int owns_focus) {
     if(!s || (owns_focus!=0 && owns_focus!=1))return NX_ERROR_ARGUMENT;
@@ -124,21 +139,75 @@ nx_result files_scene_scroll(files_scene *s,double pixels) {
     if(r==NX_OK)s->offset=range.effective_offset;
     return r;
 }
+static int query_valid(nx_utf8_span text,void *user) {
+    files_scene *s=user;if(text.length>AE_FILES_QUERY || (s->query_rejected && text.length))return 0;
+    size_t at=0;while(at<text.length){uint32_t scalar;if(nx_utf8_decode(text.data,text.length,&at,&scalar)!=NX_OK ||
+        scalar<32 || (scalar>=0x7f && scalar<=0x9f))return 0;}
+    return 1;
+}
+/* The widget validates the draft before and after a frame, not after each
+   queued scalar. Retain a conservative byte upper bound so an overlong burst
+   cannot become accepted merely because a later deletion shares that frame.
+   This can reject a valid replacement near the limit; clearing is explicit. */
+static nx_result guard_text_burst(files_scene *s) {
+    if(nx_focus_id(s->ctx)!=FILTER_ID)return NX_OK;
+    nx_utf8_span before={0};nx_result r=nx_text_field_text(s->query,&before);if(r!=NX_OK)return r;
+    const nx_event *events=NULL;size_t count=0;r=nx_frame_events(s->ctx,&events,&count);if(r!=NX_OK)return r;
+    size_t upper=before.length;
+    for(size_t i=0;i<count;++i) {
+        const nx_event *e=&events[i];
+        if(e->type!=NX_EVENT_TEXT || (e->ime_target && e->ime_target!=FILTER_ID))continue;
+        uint32_t scalar=e->scalar;
+        size_t bytes=scalar<=0x7f?1:scalar<=0x7ff?2:scalar<=0xffff?3:4;
+        if(upper>AE_FILES_QUERY || bytes>AE_FILES_QUERY-upper){s->query_rejected=1;s->query_valid=0;break;}
+        upper+=bytes;
+    }
+    return NX_OK;
+}
 nx_result files_scene_frame(files_scene *s,float width,float height) {
-    if(!s || !isfinite(width) || !isfinite(height) || width<40 || height<ROW_HEIGHT || height>ROW_HEIGHT*MAX_ROWS)
+    float header=s && s->query?FILTER_HEIGHT:0;
+    if(!s || !isfinite(width) || !isfinite(height) || width<40 || height<header+ROW_HEIGHT || height>ROW_HEIGHT*MAX_ROWS+header)
         return NX_ERROR_ARGUMENT;
     if(!s->ready)return NX_ERROR_STATE;
-    s->viewport_height=height;nx_virtual_range range;nx_result r=nx_virtual_list_range(s->list,s->offset,height,0,&range);
-    if(r!=NX_OK)return r;
-    if(range.end-range.first>MAX_ROWS)return NX_ERROR_LIMIT;
-    s->offset=range.effective_offset;
-    nx_text_layout *layouts[MAX_ROWS]={0};size_t made=0;
-    r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
-    nx_container_desc tree={0};tree.id=ROOT_ID;tree.bounds=(nx_rect){0,0,width,height};tree.name=(nx_utf8_span){"Files",5};
-    r=nx_tree(s->ctx,&tree);
+    s->viewport_height=height-header;nx_virtual_range range;
+    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL;size_t made=0;
+    nx_result r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
+    if(s->query) {
+        r=guard_text_burst(s);
+        nx_text_field_desc field={0};field.id=FILTER_ID;field.bounds=(nx_rect){0,0,width,FILTER_HEIGHT};
+        field.name=(nx_utf8_span){"Filter files",12};field.fonts=s->fonts;field.pixels_per_em=15;
+        field.glyph_cache_bytes=1024*1024;field.validate=query_valid;field.validate_user=s;field.ime_window=s->window;
+        if(r==NX_OK && s->window)r=nx_text_clipboard_for_window(s->window,&field.clipboard);
+        nx_interaction_state state;int valid=0,submitted=0;
+        if(r==NX_OK)r=nx_text_field_widget(s->ctx,&field,s->query,&state,&valid,&submitted);
+        nx_utf8_span draft={0};if(r==NX_OK)r=nx_text_field_text(s->query,&draft);
+        if(r==NX_OK && !draft.length && !state.focused) {
+            nx_color muted;
+            r=nx_theme_color(s->ctx,NX_COLOR_TEXT_MUTED,&muted);
+            if(r==NX_OK)r=nx_text_layout_create(s->fonts,"Filter files",12,NX_BIDI_AUTO,15,width-16,&hint);
+            if(r==NX_OK)r=nx_push_clip(s->ctx,field.bounds);
+            if(r==NX_OK){r=nx_draw_text_layout(s->ctx,hint,(nx_point){8,9},muted,1024*1024);
+                nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
+        }
+        if(r==NX_OK && !valid){s->query_valid=0;s->query_rejected=1;}
+        if(r==NX_OK && valid && s->query_rejected && !draft.length)s->query_rejected=0;
+        if(r==NX_OK && valid && !s->query_rejected) {
+            const char *current=ae_files_query(s->model);size_t size=strlen(current);
+            if(size!=draft.length || (size && memcmp(current,draft.data,size))) {
+                if(!ae_files_filter(s->model,draft.data,draft.length))r=NX_ERROR_STATE;
+                else {s->offset=0;r=files_scene_sync(s);}
+            }
+            if(r==NX_OK)s->query_valid=1;
+        }
+    }
+    if(r==NX_OK)r=nx_virtual_list_range(s->list,s->offset,s->viewport_height,0,&range);
+    if(r==NX_OK && range.end-range.first>MAX_ROWS)r=NX_ERROR_LIMIT;
+    if(r==NX_OK)s->offset=range.effective_offset;
+    nx_container_desc tree={0};tree.id=ROOT_ID;tree.bounds=(nx_rect){0,header,width,s->viewport_height};tree.name=(nx_utf8_span){"Files",5};
+    if(r==NX_OK)r=nx_tree(s->ctx,&tree);
     for(size_t i=range.first;r==NX_OK && i<range.end;++i) {
         const struct ae_files_entry *entry=ae_files_entry(s->model,i);if(!entry){r=NX_ERROR_STATE;break;}
-        float y=(float)((double)i*ROW_HEIGHT-s->offset),top=fmaxf(0,y),bottom=fminf(height,y+ROW_HEIGHT);
+        float y=header+(float)((double)i*ROW_HEIGHT-s->offset),top=fmaxf(header,y),bottom=fminf(height,y+ROW_HEIGHT);
         if(bottom<=top)continue;
         size_t len=strlen(entry->label);
         r=nx_text_layout_create(s->fonts,entry->label,len,NX_BIDI_AUTO,15,width-16,&layouts[made]);
@@ -155,6 +224,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         }
     }
     {nx_result end=nx_end_frame(s->ctx);if(r==NX_OK)r=end;}
+    if(hint)nx_text_layout_destroy(hint);
     for(size_t i=0;i<made;++i)nx_text_layout_destroy(layouts[i]);
     return r;
 }
