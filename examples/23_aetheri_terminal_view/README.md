@@ -330,12 +330,25 @@ earlier in this document, but select `aetheri_terminal_native_paste_pty` and
 append `/tmp/terminal-pty/aetheri_original_shell` as the final driver argument.
 Both executables must come from a build with the PTY experiment enabled.
 
-The PTY send and wait helpers are deliberately bounded, synchronous test code;
-a real app needs nonblocking event-loop integration, explicit handling of
-partial writes and an app-owned session policy. This is not an Aetheri target
-or glibc acceptance result, nor a native IME, real-session, physical-input or
-human accessibility test. It also does not establish clipboard persistence
-after an owner exits.
+On NexaUI base `5c844d726f268b465846b5f8b291ab2c75e7e227`, the native PTY
+paste consumer requires SDK 0.1.18 and copies the complete confirmed snapshot
+into the bounded queue. It requests PTY write readiness while bytes remain,
+reads output in the window event loop and checks the actual model for the
+result. This fixture retains its 50 ms poll timeout. Its separate test cleanup and cancellation probe still use bounded
+synchronous helpers. With `NEXAUI_TEST_PASTE_BACKPRESSURE=1`, the independent
+clipboard driver additionally stops its owned shell and fills the PTY before
+the accept case; it resumes the shell after confirmation. Static/shared and
+ASan/UBSan cases passed on private Weston for accept, both cancellations and
+rejected controls. An isolated mutant which did not drain the queue failed on
+the missing shell output. The original no-PTY consumer also passed; the
+0.1.16 SDK can still build that target and skips the new PTY consumer.
+
+The shell resumes immediately after confirmation, so this does not prove a
+particular number of blocked post-confirmation write attempts. This is not an
+Aetheri target or glibc acceptance result; a real app still owns its session
+policy, cancellation and handling of already-written prefixes. It is not a
+native IME, real-session, physical-input or human accessibility test and does
+not establish clipboard persistence after an owner exits.
 
 ### Terminal preedit adapter experiment
 

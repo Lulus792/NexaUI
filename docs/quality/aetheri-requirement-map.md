@@ -14,6 +14,10 @@ On base `8c77c8bab7676ff7213d1b23f6ef3edf7cc9fb56`, a private-Weston
 consumer additionally fills the PTY while the original shell is stopped,
 then resumes it and observes two queued commands and clean exit. Production
 session transitions and native Aetheri acceptance remain open.
+On base `5c844d726f268b465846b5f8b291ab2c75e7e227`, the independent native
+clipboard review/PTY example also uses that queue and passes acceptance and
+cancellation checks, including a full PTY before confirmation. Its real-host
+and session-policy gates are unchanged.
 
 T07/T08/A05: the [terminal model consumer](../../examples/23_aetheri_terminal_view/README.md)
 uses Aetheri model revision `87996e2f12128b172a80b325ad3b539df6aee527`.

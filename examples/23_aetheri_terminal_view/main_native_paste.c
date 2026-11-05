@@ -9,10 +9,12 @@
 #ifdef NEXAUI_TEST_PASTE_PTY
 #include "model.h"
 #include "pty.h"
+#include "pty_queue.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -42,19 +44,22 @@ static int model_has(const struct ae_terminal *model,const char *marker) {
     }
     return 0;
 }
+static int pty_drain(struct ae_terminal_pty *pty,struct ae_terminal *model) {
+    while(!pty->eof) {
+        char bytes[4096];ssize_t n=ae_terminal_pty_read(pty,bytes,sizeof(bytes));
+        if(n>0){if(model)ae_terminal_feed(model,bytes,(size_t)n);continue;}
+        if(n==0 || (n<0 && (errno==EAGAIN || errno==EWOULDBLOCK)))break;
+        if(n<0 && errno==EINTR)continue;
+        return 0;
+    }
+    return ae_terminal_pty_observe(pty)>=0;
+}
 static int pty_wait(struct ae_terminal_pty *pty,struct ae_terminal *model,const char *marker,int end) {
     double until=now_seconds()+10;
     while(now_seconds()<until) {
         struct pollfd p={pty->master,POLLIN|POLLHUP,0};int ready=poll(&p,1,100);
         if(ready<0 && errno!=EINTR)return 0;
-        if(ready>0 && !pty->eof)for(;;) {
-            char bytes[4096];ssize_t n=ae_terminal_pty_read(pty,bytes,sizeof(bytes));
-            if(n>0){if(model)ae_terminal_feed(model,bytes,(size_t)n);continue;}
-            if(n==0 || (n<0 && (errno==EAGAIN || errno==EWOULDBLOCK)))break;
-            if(n<0 && errno==EINTR)continue;
-            return 0;
-        }
-        if(ae_terminal_pty_observe(pty)<0)return 0;
+        if(!pty_drain(pty,model))return 0;
         if(marker && model && model_has(model,marker))return 1;
         if(end && pty->eof && pty->ended)return 1;
         if(!end && pty->ended)return 0;
@@ -78,13 +83,14 @@ static uint64_t checksum(const char *p,size_t length) {
     return value;
 }
 int main(int argc,char **argv) {
-    int okay=0,shown=0,review_shown=0,dirty=1,done=0;size_t size=0;
+    int okay=0,shown=0,review_shown=0,dirty=1,done=0,delivering=0;size_t size=0;
     unsigned char *bytes=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;nx_context *base=NULL;
     nx_window *window=NULL;nx_software_view *renderer=NULL;terminal_paste_review *review=NULL;
     terminal_paste_flow flow={0};terminal_paste_guard guard={1,1,1,0};
 #ifdef NEXAUI_TEST_PASTE_PTY
     struct ae_terminal_pty pty={.master=-1,.pin=-1,.pid=-1};
-    struct ae_terminal *model=NULL;int source=-1,delivered=0;
+    struct ae_terminal *model=NULL;int source=-1,delivered=0,pty_stopped=0,pty_blocked=0;
+    terminal_pty_queue pending={0};double delivery_deadline=0;
     if(argc!=3 || getuid()==0 || setenv("TERM","dumb",1)!=0 ||
        (source=open(argv[2],O_RDONLY|O_CLOEXEC))<3 || ae_terminal_pty_open(&pty,source,80,12)!=0)goto cleanup;
     close(source);source=-1;
@@ -104,7 +110,45 @@ int main(int argc,char **argv) {
        terminal_paste_init(&flow,terminal_paste_wayland_transport(window))!=NX_OK)goto cleanup;
     okay=1;
     while(okay && !done) {
+#ifdef NEXAUI_TEST_PASTE_PTY
+        uint32_t fd_events=0,interests=NX_WINDOW_FD_READABLE;
+        if(pending.length)interests|=NX_WINDOW_FD_WRITABLE;
+        if(nx_window_poll_with_fd_events(window,50,pty.master,interests,&fd_events)!=NX_OK ||
+           (fd_events&NX_WINDOW_FD_ERROR)){okay=0;break;}
+        if((fd_events&(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_HANGUP)) && !pty_drain(&pty,model)){okay=0;break;}
+        if((fd_events&NX_WINDOW_FD_WRITABLE) && terminal_pty_queue_write(&pending,pty.master)<0){okay=0;break;}
+        if(shown && !pty_blocked && getenv("NEXAUI_TEST_PASTE_BACKPRESSURE") && model_has(model,"aetheri>")) {
+            if(kill(pty.pid,SIGSTOP)){okay=0;break;}pty_stopped=1;
+            double until=now_seconds()+3;int status=0;pid_t result=0;
+            while(!result && now_seconds()<until) {
+                result=waitpid(pty.pid,&status,WUNTRACED|WNOHANG);
+                if(result<0 && errno==EINTR){result=0;continue;}
+                if(!result){struct timespec delay={0,10000000};(void)nanosleep(&delay,NULL);}
+            }
+            if(result==pty.pid && !WIFSTOPPED(status)){pty_stopped=0;pty.ended=1;
+                pty.status=WIFEXITED(status)?WEXITSTATUS(status):128+WTERMSIG(status);}
+            if(result!=pty.pid || !WIFSTOPPED(status)){okay=0;break;}
+            char filler[4096];memset(filler,12,sizeof(filler));size_t total=0;until=now_seconds()+3;
+            for(;;) {
+                ssize_t n=write(pty.master,filler,sizeof(filler));
+                if(n>0){total+=(size_t)n;if(total>4*1024*1024){okay=0;break;}continue;}
+                if(n<0 && errno==EINTR)continue;
+                if(n>=0 || (errno!=EAGAIN && errno!=EWOULDBLOCK)){okay=0;break;}
+                uint32_t writable=0;
+                if(nx_window_poll_with_fd_events(window,0,pty.master,NX_WINDOW_FD_WRITABLE,&writable)!=NX_OK){okay=0;break;}
+                if(!(writable&NX_WINDOW_FD_WRITABLE))break;
+                if(now_seconds()>=until){okay=0;break;}
+            }
+            if(!okay || !total){okay=0;break;}
+            pty_blocked=1;puts("NATIVE_PASTE_PTY_BLOCKED");fflush(stdout);
+        }
+        if(delivering && !pending.length && model_has(model,"CLIP_PTY_42")) {
+            delivered=1;puts("NATIVE_PASTE_PTY_OUTPUT");fflush(stdout);done=1;break;
+        }
+        if(delivering && (pty.ended || pty.eof || now_seconds()>=delivery_deadline)){okay=0;break;}
+#else
         if(nx_window_poll(window,50)!=NX_OK){okay=0;break;}
+#endif
         nx_window_info info;if(nx_window_get_info(window,&info)!=NX_OK){okay=0;break;}
         if(info.should_close)break;
         nx_event event;int available=0;
@@ -113,7 +157,7 @@ int main(int argc,char **argv) {
             if(!available)break;
             if(event.type==NX_EVENT_FOCUS) {
                 if(guard.focused!=!!event.focused){++guard.focus_epoch;guard.focused=!!event.focused;}
-                if(!guard.focused && flow.state){terminal_paste_reset(&flow);done=1;puts("NATIVE_PASTE_FOCUS_CANCEL");fflush(stdout);}
+                if(!guard.focused && flow.state && !delivering){terminal_paste_reset(&flow);done=1;puts("NATIVE_PASTE_FOCUS_CANCEL");fflush(stdout);}
             }
             if(event.type==NX_EVENT_RESIZE)dirty=1;
             if(!review && flow.state==1 && event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_ESCAPE && !event.repeat) {
@@ -123,7 +167,7 @@ int main(int argc,char **argv) {
                (event.modifiers&(NX_MOD_CONTROL|NX_MOD_SHIFT|NX_MOD_ALT|NX_MOD_SUPER))==(NX_MOD_CONTROL|NX_MOD_SHIFT) && !flow.state) {
                 if(terminal_paste_begin(&flow,guard,5000)!=NX_OK){okay=0;break;}
                 puts("NATIVE_PASTE_PENDING");fflush(stdout);
-            } else if(review) {
+            } else if(review && !delivering) {
                 if(nx_context_queue_event(terminal_paste_review_context(review),&event)!=NX_OK){okay=0;break;}
                 dirty=1;
             }
@@ -142,7 +186,7 @@ int main(int argc,char **argv) {
                 dirty=1;
             }
         }
-        if(!dirty)continue;
+        if(delivering || !dirty)continue;
         nx_context *context=review?terminal_paste_review_context(review):base;
         enum terminal_review_result result=TERMINAL_REVIEW_OPEN;nx_utf8_span confirmed={0};
         if(review) {
@@ -152,10 +196,9 @@ int main(int argc,char **argv) {
             if(result==TERMINAL_REVIEW_CONFIRMED){printf("NATIVE_PASTE_ACCEPTED %zu %016llx\n",confirmed.length,
                 (unsigned long long)checksum(confirmed.data,confirmed.length));fflush(stdout);
 #ifdef NEXAUI_TEST_PASTE_PTY
-                if(!pty_send(pty.master,confirmed.data,confirmed.length) ||
-                   !pty_wait(&pty,model,"CLIP_PTY_42",0)){okay=0;break;}
-                delivered=1;
-                puts("NATIVE_PASTE_PTY_OUTPUT");fflush(stdout);
+                if(!terminal_pty_queue_push(&pending,confirmed.data,confirmed.length)){okay=0;break;}
+                if(pty_stopped){if(kill(pty.pid,SIGCONT)){okay=0;break;}pty_stopped=0;}
+                delivering=1;delivery_deadline=now_seconds()+10;dirty=0;continue;
 #endif
                 done=1;continue;}
         } else if(nx_begin_frame(base,info.width,info.height,0)!=NX_OK ||
@@ -180,6 +223,8 @@ cleanup:
     if(font)nx_font_close(font);
     free(bytes);
 #ifdef NEXAUI_TEST_PASTE_PTY
+    terminal_pty_queue_clear(&pending);
+    if(pty_stopped)(void)kill(pty.pid,SIGCONT);
     if(done && okay && !delivered && model) {
         const char *probe="printf '%s%s\\n' 'SAFE_' 'PROBE'\n";
         if(!pty_send(pty.master,probe,strlen(probe)) || !pty_wait(&pty,model,"SAFE_PROBE",0) ||

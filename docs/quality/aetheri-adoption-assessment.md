@@ -2900,6 +2900,29 @@ claiming an actual native fractional-scale output.
 Installed IME candidate presentation, real Aetheri chrome and focus, physical
 output changes and human visual acceptance remain open.
 
+## Reviewed clipboard paste through a queued PTY — 5 November 2026
+
+On NexaUI base `5c844d726f268b465846b5f8b291ab2c75e7e227`, the installed
+native paste/PTY test consumer copies the confirmed full snapshot to the
+existing bounded example queue and uses the Linux descriptor readiness API
+to drain it in the window loop, which retains its 50 ms test timeout. It checks original Aetheri
+model output and owns the child process. The independent `wl-copy`/`wl-paste`
+driver passed pending cancellation, review cancellation, fresh acceptance and
+control-byte rejection with static, shared and Clang ASan/UBSan builds. In the
+accept case it also stopped the original shell and filled its PTY before the
+clipboard review, then resumed it after confirmation. A mutant suppressing
+queue drain failed on the missing output. The no-PTY native regression passed;
+the installed 0.1.16 package still built the no-PTY target while the new
+PTY target correctly required 0.1.18.
+
+This is private Weston/Xvfb with virtual input, original Aetheri revision
+`87996e2f12128b172a80b325ad3b539df6aee527`, and test-local Alpine/musl
+wrappers. The shell resumes immediately after confirmation, so no specific
+number of blocked writes after confirmation is claimed. Shutdown and the
+cancelled-paste probe retain bounded synchronous test helpers. Production
+session switching, partial-prefix policy, IME under the same pressure, actual
+Aetheri compositor and human acceptance remain open.
+
 ## Original Aetheri shell under PTY backpressure — 5 November 2026
 
 On NexaUI base `8c77c8bab7676ff7213d1b23f6ef3edf7cc9fb56`, the installed

@@ -28,7 +28,10 @@ def main():
         raise RuntimeError('Expected one isolated Weston output')
     for decision in ('cancel_pending', 'cancel', 'accept', 'invalid'):
         offered = payload if decision != 'invalid' else payload + b'\x1b[31m'
-        host = subprocess.Popen([app, font] + ([shell] if shell else []), env=env,
+        host_env = dict(env)
+        if not shell or decision != 'accept':
+            host_env.pop('NEXAUI_TEST_PASTE_BACKPRESSURE', None)
+        host = subprocess.Popen([app, font] + ([shell] if shell else []), env=host_env,
                                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         owner = None
         messages, output, errors = queue.Queue(), [], []
@@ -53,6 +56,8 @@ def main():
             raise RuntimeError(f'Missing {expected}: {"".join(output)} {"".join(errors)}')
         try:
             wait('NATIVE_PASTE_READY')
+            if shell and decision == 'accept' and host_env.get('NEXAUI_TEST_PASTE_BACKPRESSURE'):
+                wait('NATIVE_PASTE_PTY_BLOCKED')
             subprocess.run([xdotool, 'windowfocus', windows[0]], env=env, check=True)
             owner = subprocess.Popen([copy, '--foreground'], env=env, stdin=subprocess.PIPE,
                                      stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
