@@ -33,7 +33,7 @@ typedef struct scene {
     nx_context *ui;
     nx_numeric_field *number;nx_text_field *edit;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
-    int overlay_stage, nested_clicks, number_disabled;
+    int overlay_stage, nested_clicks, number_disabled, external_fixture;
     uint64_t required, optional, radio, other, legacy;
 } scene;
 static nx_font_collection *numeric_fonts;
@@ -75,6 +75,17 @@ static int frame(scene *s) {
     if(state.clicked) {
         CHECK(nx_text_field_set_text(s->edit,"a\xf0\x9f\x8c\x8d",5)==NX_OK);
         CHECK(nx_text_field_set_selection(s->edit,1,5)==NX_OK);
+    }
+    if(s->external_fixture) {
+        d=control(2035,1,"Open nested overlays",(nx_rect){10,430,140,30});
+        CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        if(state.clicked) s->overlay_stage=2;
+        char result[64];int n=snprintf(result,sizeof(result),"%d:%llu",s->nested_clicks,
+                                      (unsigned long long)nx_focus_id(s->ui));
+        nx_semantic_desc observed={0};observed.id=2036;observed.parent_id=1;
+        observed.role=NX_ROLE_STATUS;observed.name=(nx_utf8_span){"Nested result",13};
+        observed.value=(nx_utf8_span){result,(size_t)n};observed.bounds=(nx_rect){160,430,120,30};
+        CHECK(nx_semantics_add(s->ui,&observed,NULL)==NX_OK);
     }
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
@@ -346,7 +357,7 @@ static int run(void) {
 }
 static int external(const char *client) {
     nx_window_desc desc={"AX fixture",640,480,0,{0}}; nx_window *window=NULL;
-    scene s={0}; s.required=51; s.radio=71;
+    scene s={0}; s.required=51; s.radio=71; s.external_fixture=1;
     CHECK(nx_window_create(&desc,&window)==NX_OK && nx_context_create(NULL,&s.ui)==NX_OK);
     CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
     char parent[32]; snprintf(parent,sizeof(parent),"%ld",(long)getpid());
@@ -361,6 +372,10 @@ static int external(const char *client) {
         if ([[NSProcessInfo processInfo] systemUptime]-started>75 || nx_window_poll(window,0)!=NX_OK || advance(window,&s)) {
             /* Only the child created above is terminated. */
             kill(child,SIGKILL); waitpid(child,&status,0); failed=1; break;
+        }
+        if(s.overlay_stage==2 && s.nested_clicks) {
+            if(nx_overlay_close(s.ui)!=NX_OK) { kill(child,SIGKILL);waitpid(child,&status,0);failed=1;break; }
+            s.overlay_stage=1;
         }
         CFRunLoopRunInMode(kCFRunLoopDefaultMode,.001,true);
     }

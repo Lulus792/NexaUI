@@ -65,6 +65,17 @@ static int wait_one(AXUIElementRef e) {
     } while (now()<end);
     return 0;
 }
+static int wait_enabled(AXUIElementRef e,int enabled) {
+    double end=now()+10;
+    do {
+        CFTypeRef value=NULL;int match=0;
+        if(AXUIElementCopyAttributeValue(e,kAXEnabledAttribute,&value)==kAXErrorSuccess &&
+           value && CFGetTypeID(value)==CFBooleanGetTypeID())
+            match=!!CFBooleanGetValue((CFBooleanRef)value)==!!enabled;
+        if(value)CFRelease(value);if(match)return 1;pause_poll();
+    } while(now()<end);
+    return 0;
+}
 int main(int argc,char **argv) {
     if (argc!=2) return 2;
     if (!AXIsProcessTrusted()) {
@@ -134,6 +145,14 @@ int main(int argc,char **argv) {
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));
     CHECK(AXUIElementPerformAction(tab,kAXPressAction)==kAXErrorSuccess && wait_one(tab));
+    AXUIElementRef open=wait_find(window,2035),nested_result=wait_find(window,2036);CHECK(open && nested_result);
+    CHECK(AXUIElementPerformAction(open,kAXPressAction)==kAXErrorSuccess);
+    AXUIElementRef trigger=wait_find(window,2002),nested=wait_find(window,2012);
+    AXUIElementRef disabled_child=wait_find(window,2031);CHECK(trigger && nested && disabled_child);
+    CHECK(wait_enabled(trigger,0) && wait_enabled(nested,1) && wait_enabled(disabled_child,0));
+    CHECK(AXUIElementPerformAction(nested,kAXPressAction)==kAXErrorSuccess);
+    CHECK(wait_string(nested_result,kAXValueAttribute,CFSTR("1:2002")) && wait_enabled(trigger,1));
+    CFRelease(disabled_child);CFRelease(nested);CFRelease(trigger);CFRelease(nested_result);CFRelease(open);
     CFRelease(edit); CFRelease(number); CFRelease(tab); CFRelease(count); CFRelease(secret); CFRelease(toggle); CFRelease(button); CFRelease(window); CFRelease(app);
     puts("Independent OS AX client passed names/roles/protection/press/toggle/selection model checks");
     return 0;
