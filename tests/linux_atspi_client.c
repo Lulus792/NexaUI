@@ -146,6 +146,38 @@ int main(int argc,char **argv) {
     AtspiAccessible *disabled=find(app,"Disabled",0),*secret=find(app,"Password",0),*counter=find(app,"Button count 0",0);
     AtspiAccessible *required=find(app,"Required",0),*optional=find(app,"Optional",0),*dynamic=find(app,"Dynamic",0);
     CHECK(button && sync && disabled && secret && counter && required && optional && dynamic);
+    AtspiAccessible *disabled_child=find(app,"Disabled group child",0);CHECK(disabled_child);
+    CHECK(!state(disabled_child,ATSPI_STATE_ENABLED));
+    AtspiAction *disabled_child_action=atspi_accessible_get_action_iface(disabled_child);CHECK(disabled_child_action);
+    CHECK(!atspi_action_do_action(disabled_child_action,0,&error) && !error);
+    g_object_unref(disabled_child_action);g_object_unref(disabled_child);
+    /* This client is a separate process using libatspi. Exercise the actual
+       bridge while the app transitions through a nested modal and popup. */
+    AtspiAccessible *nested_count=find(app,"Nested counts 0 0",0);CHECK(nested_count);
+    CHECK(command("openmodal"));pump(100);
+    AtspiAccessible *dialog=find(app,"Nested dialog",0),*trigger=find(app,"Dialog trigger",0);
+    CHECK(dialog && trigger);
+    CHECK(atspi_accessible_get_role(dialog,&error)==ATSPI_ROLE_DIALOG && !error);
+    CHECK(command("openmenu"));pump(100);
+    AtspiAccessible *menu=find(app,"Nested menu",0),*inner=find(app,"Nested action",0);
+    CHECK(menu && inner);
+    atspi_accessible_clear_cache(trigger);atspi_accessible_clear_cache(inner);
+    if (getenv("NEXAUI_TEST_PRIVATE_WAYLAND"))
+        CHECK(state(inner,ATSPI_STATE_FOCUSED) && !state(trigger,ATSPI_STATE_FOCUSED));
+    CHECK(!state(trigger,ATSPI_STATE_ENABLED) && state(inner,ATSPI_STATE_ENABLED));
+    AtspiAction *trigger_action=atspi_accessible_get_action_iface(trigger);
+    AtspiAction *inner_action=atspi_accessible_get_action_iface(inner);
+    CHECK(trigger_action && inner_action);
+    CHECK(!atspi_action_do_action(trigger_action,0,&error) && !error);
+    CHECK(atspi_action_do_action(inner_action,0,&error) && !error);
+    for(unsigned i=0;i<100 && !named(nested_count,"Nested counts 0 1");++i) pump(10);
+    CHECK(named(nested_count,"Nested counts 0 1"));
+    CHECK(command("closemenu"));pump(100);atspi_accessible_clear_cache(trigger);
+    if (getenv("NEXAUI_TEST_PRIVATE_WAYLAND")) CHECK(state(trigger,ATSPI_STATE_FOCUSED));
+    CHECK(state(trigger,ATSPI_STATE_ENABLED));
+    CHECK(command("closemodal"));pump(100);
+    g_object_unref(inner_action);g_object_unref(trigger_action);
+    g_object_unref(inner);g_object_unref(menu);g_object_unref(trigger);g_object_unref(dialog);g_object_unref(nested_count);
     CHECK(atspi_accessible_get_role(button,&error)==ATSPI_ROLE_PUSH_BUTTON && !error);
     CHECK(atspi_accessible_get_role(secret,&error)==ATSPI_ROLE_PASSWORD_TEXT && !error);
     GHashTable *attrs=atspi_accessible_get_attributes(secret,&error); CHECK(attrs && !error && !g_hash_table_lookup(attrs,"nexaui-value")); g_hash_table_unref(attrs);

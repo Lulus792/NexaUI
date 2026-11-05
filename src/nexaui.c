@@ -2272,6 +2272,15 @@ int nx_context_text_snapshot_only(const nx_context *ctx, uint64_t id) {
     return i != UINT32_MAX && ctx->semantics.nodes[i].text_snapshot_only;
 }
 
+int nx_context_semantic_intrinsically_disabled(const nx_context *ctx,uint64_t id) {
+    if (!ctx || ctx->state!=2u) return 1;
+    uint32_t i=nx_semantic_find_index(&ctx->semantics,id);
+    if (i==UINT32_MAX) return 1;
+    const nx_region *region=nx_region_find(&ctx->current_regions,id);
+    return !!(ctx->semantics.nodes[i].state&NX_SEM_DISABLED) ||
+        (region && !!(region->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE)));
+}
+
 static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_record *node) {
     /* Match native disabled-state inheritance even when the child descriptor
        itself is enabled. Parents are already submitted before their children. */

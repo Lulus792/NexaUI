@@ -16,6 +16,7 @@ typedef struct scene {
     nx_context *ui;
     unsigned count;
     int checked, removed, retyped, renamed, long_name, fresh, fresh_type;
+    int overlay_stage; unsigned inner_clicks, outer_clicks;
     uint64_t required, optional;
 } scene;
 typedef struct heap { void *pointers[256]; size_t sizes[256],count; int fail_next; } heap;
@@ -92,6 +93,34 @@ static int frame(scene *s) {
             } else CHECK(nx_tab(s->ui,&d,choice,&state)==NX_OK);
         }
     }
+    if (s->overlay_stage) {
+        nx_overlay_desc modal={0};modal.panel.id=2000;modal.panel.parent_id=1;
+        modal.panel.name=span("Nested dialog");modal.panel.bounds=(nx_rect){200,200,300,200};
+        modal.backdrop_id=2001;modal.dismiss_on_escape=1;
+        int dismissed=0;CHECK(nx_modal_begin(s->ui,&modal,&dismissed)==NX_OK && !dismissed);
+        d=control(2002,2000,"Dialog trigger",(nx_rect){220,220,120,30});
+        CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->outer_clicks+=(unsigned)state.clicked;
+        if(s->overlay_stage==2) {
+            nx_overlay_desc popup={0};popup.panel.id=2010;popup.panel.parent_id=2002;
+            popup.panel.name=span("Nested menu");popup.panel.bounds=(nx_rect){250,260,180,90};
+            popup.backdrop_id=2011;popup.dismiss_on_escape=1;
+            CHECK(nx_popup_begin(s->ui,&popup,&dismissed)==NX_OK && !dismissed);
+            d=control(2012,2010,"Nested action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->inner_clicks+=(unsigned)state.clicked;
+            CHECK(nx_overlay_end(s->ui)==NX_OK);
+        }
+        CHECK(nx_overlay_end(s->ui)==NX_OK);
+    }
+    char nested_status[80];snprintf(nested_status,sizeof(nested_status),"Nested counts %u %u",s->outer_clicks,s->inner_clicks);
+    nx_semantic_desc nested={0};nested.id=2020;nested.parent_id=1;nested.role=NX_ROLE_STATUS;
+    nested.name=span(nested_status);nested.bounds=(nx_rect){10,220,100,30};
+    CHECK(nx_semantics_add(s->ui,&nested,NULL)==NX_OK);
+    nx_semantic_desc disabled_group={0};disabled_group.id=2030;disabled_group.parent_id=1;
+    disabled_group.role=NX_ROLE_GROUP;disabled_group.name=span("Disabled group");
+    disabled_group.bounds=(nx_rect){10,260,120,30};disabled_group.state=NX_SEM_DISABLED;
+    CHECK(nx_semantics_add(s->ui,&disabled_group,NULL)==NX_OK);
+    d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
+    CHECK(nx_button(s->ui,&d,&state)==NX_OK);
     CHECK(nx_end_frame(s->ui)==NX_OK); return 1;
 }
 int main(int argc,char **argv) {
@@ -136,6 +165,15 @@ int main(int argc,char **argv) {
             else if (!strcmp(command,"resume")) paused=0;
             else if (!strcmp(command,"wait")) poll_timeout=2000;
             else if (!strcmp(command,"normal")) poll_timeout=50;
+            else if (!strcmp(command,"openmodal")) app.overlay_stage=1;
+            else if (!strcmp(command,"openmenu")) app.overlay_stage=2;
+            else if (!strcmp(command,"closemenu")) {
+                if(nx_overlay_close(app.ui)!=NX_OK)return 1;
+                app.overlay_stage=1;
+            } else if (!strcmp(command,"closemodal")) {
+                if(nx_overlay_close(app.ui)!=NX_OK)return 1;
+                app.overlay_stage=0;
+            }
             else if (!strcmp(command,"remove")) app.removed=1;
             else if (!strcmp(command,"restore")) app.removed=0;
             else if (!strcmp(command,"retype")) app.retyped=1;

@@ -78,6 +78,7 @@ typedef struct nx_ax_node {
     size_t text_bytes;
     int32_t text_count, text_anchor, text_cursor;
     int text_ready, text_snapshot_only;
+    int intrinsic_disabled;
     int owner_multiple;
     char *name, *description, *value;
 } nx_ax_node;
@@ -414,6 +415,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK){if(staged)free(s);return NX_ERROR_STATE;}
         nx_ax_node *n=&s->nodes[i]; *n=(nx_ax_node){0};
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+        n->intrinsic_disabled=nx_context_semantic_intrinsically_disabled(context,v.id);
         n->text_selection=nx_context_text_selection_snapshot(context,v.id);
         n->text_target=nx_context_text_value_target(context,v.id);
         n->text_snapshot_only=nx_context_text_snapshot_only(context,v.id);
@@ -423,7 +425,8 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         n->membership=nx_context_selection_membership(context,n->id);
         if (n->raw_parent!=NX_AX_NONE) {
             nx_ax_node *p=&s->nodes[n->raw_parent];
-            n->state|=p->state&NX_SEM_DISABLED;
+            n->intrinsic_disabled|=p->intrinsic_disabled;
+            if(n->intrinsic_disabled)n->state|=NX_SEM_DISABLED;
             n->owner=(p->state&NX_AX_SELECTION) ? n->raw_parent : p->owner;
             if(n->owner!=NX_AX_NONE)n->owner_multiple=!!(s->nodes[n->owner].state&NX_SEM_SELECTION_MULTIPLE);
         }

@@ -39,6 +39,9 @@ typedef struct nx_text_selection_snapshot {
 nx_text_selection_snapshot nx_context_text_selection_snapshot(const nx_context *context,
                                                                uint64_t id);
 int nx_context_text_snapshot_only(const nx_context *context, uint64_t id);
+/* Node-local disability without overlay-derived suppression; native bridges
+   use this to inherit real disabled state across an active nested popup. */
+int nx_context_semantic_intrinsically_disabled(const nx_context *context,uint64_t id);
 
 /* Optional native lifetime lease. retain/release cannot call out; current runs
    only when the owner submits the actual widget, outside native snapshot locks.
