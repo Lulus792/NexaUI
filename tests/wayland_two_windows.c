@@ -36,6 +36,19 @@ int main(void) {
     for(unsigned n=0;n<8000;++n) {
         for(unsigned i=0;i<2;++i) if(slots[i].window) {
             CHECK(nx_window_poll(slots[i].window,5)==NX_OK);
+            nx_window_info info;
+            CHECK(nx_window_get_info(slots[i].window,&info)==NX_OK);
+            if(info.should_close) {
+                CHECK(getenv("NEXAUI_W02_NATIVE_CLOSE") && !first_closed && ready && slots[1-i].window);
+                nx_window_info other;
+                CHECK(nx_window_get_info(slots[1-i].window,&other)==NX_OK && !other.should_close);
+                printf("REQUESTED %c\n",i?'B':'A');fflush(stdout);
+                CHECK(nx_software_view_close(&slots[i].view)==NX_OK);
+                nx_context_destroy(slots[i].context);nx_window_destroy(slots[i].window);
+                slots[i]=(window_slot){0};slots[1-i].presented=0;first_closed=1;
+                printf("CLOSED %c\n",i?'B':'A');fflush(stdout);
+                continue;
+            }
             CHECK(draw(&slots[i]));
         }
         if(!ready && slots[0].presented && slots[1].presented) {
@@ -47,7 +60,7 @@ int main(void) {
                 survivor_presented=1;puts("SURVIVOR_PRESENTED");fflush(stdout);
             }
         }
-        /* The test driver requests close using a pipe-independent user key. */
+        /* The original fixture can also request an application-owned close. */
         if(!first_closed && getenv("NEXAUI_W02_CLOSE_FILE")) {
             FILE *signal=fopen(getenv("NEXAUI_W02_CLOSE_FILE"),"rb");
             if(signal) {
