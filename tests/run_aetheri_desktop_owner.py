@@ -74,6 +74,17 @@ def main():
             def tap(code):
                 event(f"K {code} 1")
                 event(f"K {code} 0")
+            def wait_app_focus(app_id, selector):
+                marker = "desktop: LAUNCH_REPLY A " + selector + "\n"
+                def restored():
+                    text = log()
+                    if marker not in text:
+                        return False
+                    after = text.rsplit(marker, 1)[1]
+                    return ("desktop: LEAVE\n" in after and
+                            bool(re.search(r"^desktop: WINDOW \d+ 1 .* \| " +
+                                           re.escape(app_id) + r"$", after, re.M)))
+                wait(restored, "search collapse and app focus")
             def launch(name):
                 selector = "S" if name == "settings" else "T"
                 codes = {"s":31,"e":18,"t":20,"i":23,"n":49,"g":34,
@@ -103,9 +114,11 @@ def main():
                  "desktop: LAUNCH_REPLY A S\n" in log(), "first owner-launched Settings")
             first = int(re.findall(r"^SPAWN settings (\d+)$", log(), re.M)[0])
             wait(lambda: "desktop: WINDOW " in log() and "org.aetheri.Settings" in log(), "Settings window observation")
+            wait_app_focus("org.aetheri.Settings", "S")
             replies = log().count("desktop: LAUNCH_REPLY A S\n")
             launch("settings")
             wait(lambda: log().count("desktop: LAUNCH_REPLY A S\n") > replies, "existing process acknowledgement")
+            wait_app_focus("org.aetheri.Settings", "S")
             if len(re.findall(r"^SPAWN settings \d+$", log(), re.M)) != 1:
                 raise RuntimeError("owner created a duplicate Settings process")
             event("K 29 1")
@@ -124,6 +137,7 @@ def main():
             wait(lambda: bool(re.search(r"^desktop: WINDOW \d+ \d+ .* \| org\.aetheri\.Settings$",
                                         log().split("SPAWN settings " + str(second), 1)[1], re.M)),
                  "reopened Settings window observation")
+            wait_app_focus("org.aetheri.Settings", "S")
             if args.terminal:
                 launch("terminal")
                 wait(lambda: len(re.findall(r"^SPAWN terminal \d+$", log(), re.M)) == 1 and
@@ -131,10 +145,12 @@ def main():
                      "desktop: LAUNCH_REPLY A T\n" in log() and
                      bool(re.search(r"^desktop: WINDOW \d+ \d+ .* \| org\.aetheri\.Terminal$", log(), re.M)),
                      "owner-launched Terminal")
+                wait_app_focus("org.aetheri.Terminal", "T")
                 replies = log().count("desktop: LAUNCH_REPLY A T\n")
                 launch("terminal")
                 wait(lambda: log().count("desktop: LAUNCH_REPLY A T\n") > replies,
                      "existing Terminal acknowledgement")
+                wait_app_focus("org.aetheri.Terminal", "T")
                 if len(re.findall(r"^SPAWN terminal \d+$", log(), re.M)) != 1:
                     raise RuntimeError("owner created a duplicate Terminal process")
                 result["terminal_case"] = "passed"
@@ -164,10 +180,12 @@ def main():
         if child and child.poll() is None:
             child.terminate()
             try:
-                child.wait(timeout=10)
+                child.wait(timeout=15)
             except subprocess.TimeoutExpired:
-                child.kill()
-                child.wait(timeout=5)
+                # Keep the original supervisor alive rather than orphaning
+                # children whose process/pipe drain it still owns.
+                result["cleanup"] = "supervisor-still-live"
+                result["owner_pid"] = child.pid
         issuer.close()
         controller.close()
         result["owner_exit"] = child.returncode if child else None
