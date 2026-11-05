@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric visual text navigation (2026-11-05)
+
+Source `2c77f66b27bd205d41a06d8785848404b2c8fc70` routes numeric
+fields' native visual commands and physical navigation keys through the
+existing general-field layout logic, retaining caret affinity, selection and
+scroll state. Pointer edits and other buffer changes invalidate stale caret
+state. Logical editing, numeric validation and commit remain in the existing
+numeric buffer.
+
+The widget test covers visual line edges, extended selection, replacement,
+undo and physical keys. A controlled Wayland v3 IME test inserts an invalid
+right-to-left draft, moves visually right within it and inserts a digit; the
+committed numeric value remains unchanged. The previous `672d047` source
+failed the new line-edge test (`/tmp/nexaui-numeric-visual-before.log`) and,
+in an isolated copy with the new v3 fixture, failed the bidirectional
+insertion check (`/tmp/nexaui-visual-before-v3.log`). The fixed numeric,
+general text and three controlled v3 tests passed on Alpine/WSL in Clang
+22.1.3 Debug ASan/UBSan with leak detection, GCC 15.2 Release Wayland-only,
+and GCC Debug dual Wayland/X11 (five each; logs
+`/tmp/nexaui-numeric-visual-asan.log`, `/tmp/nexaui-numeric-visual-release.log`
+and `/tmp/nexaui-numeric-visual-dual.log`). This is controlled-server evidence,
+not a human or installed-IME acceptance. Numeric clipboard integration,
+other native IME implementations and Aetheri acceptance remain open.
+
 ## Numeric native IME composition (2026-11-05)
 
 Source `e965e3bd177ff61d9ea35ee9cd246e67f9a4db95` introduces the optional
