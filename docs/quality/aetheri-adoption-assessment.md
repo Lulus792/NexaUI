@@ -20,9 +20,17 @@ simulated disconnect on the server loop's idle phase, after request dispatch.
 The same five client-facing failure scenarios still execute. Alpine/WSL GCC
 15.2 shared Release passed 30 repetitions each; Clang ASan/UBSan with leak
 detection passed ten each (`/tmp/nexaui-deferred-disconnect-release.log`,
-`/tmp/nexaui-deferred-disconnect-asan.log`). Neither local pass proves the
-Ubuntu failures are fixed: the new Ubuntu CI result remains required. This
-change only touches the controlled test fixture, not the NexaUI client.
+`/tmp/nexaui-deferred-disconnect-asan.log`). Neither local pass alone proves
+the Ubuntu failures are fixed. This change only touches the controlled test
+fixture, not the NexaUI client.
+Ubuntu CI for `d8b9db9d22656c7f1a70bd8f8639a3b37c533159` subsequently passed
+the complete native suites: [static 239/239](https://github.com/Lulus792/NexaUI/actions/runs/42009404549/job/127184266805)
+and [shared 237/237](https://github.com/Lulus792/NexaUI/actions/runs/42009404549/job/127184266756),
+including the previously failing multi-window, disconnect and Settings reopen
+cases. Both jobs also completed their installed-consumer checks. Windows and
+macOS core jobs in the same run passed; the separate Linux sanitizer job was
+still running when this evidence was recorded. This supports the fixture fix
+on Ubuntu without claiming the entire adoption or physical-device acceptance.
 The wider local Wayland fixture regression on `a346b47ca7b017927bc9a228c255a06cd02132f4`
 also passed 47/47 cases (GCC Release shared, exit 0), including scaling,
 software, host, IME, clipboard, drag/drop and multi-window checks; command
