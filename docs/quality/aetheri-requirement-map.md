@@ -46,6 +46,11 @@ On base `1edde529243be3481245e7b162319a44f9d7f16d`, an independent libatspi
 client observed the no-match status insertion and the same object's name
 change to the rejected-filter message. Actual screenreader announcements and
 human task acceptance remain open (A03/A07).
+On base `aa5b5cf6d1a92b4142b0ca353f1244b3a92c3d26`, a Clear filter button
+restores the accepted empty query and returns scene focus to the field. Native
+keyboard, independent AT-SPI and pointer input with simple-IME were exercised;
+clearing uncommitted composition and keyboard routing when Tab is consumed
+remain open (I01/I02/T04/A02).
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

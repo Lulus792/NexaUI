@@ -104,6 +104,10 @@ def main():
                     raise RuntimeError('Could not locate the Files window on the private output')
                 x, y, local_x, local_y = pointer
                 subprocess.run([xdotool, 'mousemove', '--window', windows[0],
+                                str(round(x+252-local_x)), str(round(y+18-local_y)), 'click', '1'],
+                               env=env, check=True, timeout=5)
+                wait('FILES_NATIVE_FILTER 0 2 1')
+                subprocess.run([xdotool, 'mousemove', '--window', windows[0],
                                 str(round(x+324-local_x)), str(round(y+18-local_y)), 'click', '1'],
                                env=env, check=True, timeout=5)
                 wait('FILES_NATIVE_CLOSED')

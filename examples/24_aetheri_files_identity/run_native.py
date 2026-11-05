@@ -88,7 +88,7 @@ def main():
             for _ in range(10):
                 key('BackSpace')
             wait('FILES_NATIVE_DRAFT 252 0')
-            key('ctrl+l');wait('FILES_NATIVE_FILTER 0 20 1')
+            key('shift+Tab');key('Return');wait('FILES_NATIVE_FILTER 0 20 1')
             key('Tab');key('Return');wait('FILES_NATIVE_CLOSED')
             if host.wait(timeout=10) != 0:
                 raise RuntimeError(f'Consumer failed: {"".join(errors)}')

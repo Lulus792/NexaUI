@@ -116,8 +116,15 @@ int main(int argc,char **argv) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene) && !strcmp(ae_files_query(model),"i"));
     CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && (field.state&NX_SEM_INVALID));
-    CHECK(files_scene_focus_filter(scene,1)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    uint32_t clear_index;nx_semantic_view clear_view;
+    CHECK(nx_semantics_find(ctx,5,&clear_index)==NX_OK && nx_semantics_get(ctx,clear_index,&clear_view)==NX_OK &&
+          clear_view.role==NX_ROLE_BUTTON && clear_view.name.length==12 && !memcmp(clear_view.name.data,"Clear filter",12));
+    CHECK(nx_focus_set(ctx,5)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_ENTER;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);event.type=NX_EVENT_KEY_UP;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
     CHECK(files_scene_query_accepted(scene) && !strcmp(ae_files_query(model),""));
+    CHECK(files_scene_filter_has_focus(scene));
     CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && !(field.state&NX_SEM_INVALID));
     event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='x';
     for(unsigned i=0;i<256;++i)CHECK(nx_context_queue_event(ctx,&event)==NX_OK);

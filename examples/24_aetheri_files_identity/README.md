@@ -271,3 +271,19 @@ object carrying the invalid-filter message. Static, shared and ASan/UBSan
 variants passed on private Weston; suppressing either observation in the
 client made the corresponding assertion fail. These events make the changes
 observable; they do not establish automatic announcements by a screenreader.
+
+## Clear-filter control
+
+On base `aa5b5cf6d1a92b4142b0ca353f1244b3a92c3d26`, a labeled button
+clears the complete rejected draft and model query through the existing scene
+operation, restores the list and returns scene focus to the filter. The action
+is also exposed as an AT-SPI push button named `Clear filter`. A native keyboard
+test uses Shift+Tab and Enter after a 256-byte overflow; an independent AT-SPI
+client clears an invalid draft; and a private simple-IME test clicks the button
+after an IME commit. Static, shared and ASan/UBSan variants passed. The invalid
+state at 240x120 was inspected.
+
+The IME test did not clear an active uncommitted preedit; that transition,
+keyboard-only navigation when a provider consumes Tab, very narrow layouts,
+localization and human assistive review remain open. The button does not grant
+access to files or change the original model's authorization boundaries.

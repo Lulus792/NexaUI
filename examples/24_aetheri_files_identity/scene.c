@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, FILTER_ID=2, CLOSE_ID=3, STATUS_ID=4, FILTER_HEIGHT=36, ROW_HEIGHT=28, MAX_ROWS=64 };
+enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, FILTER_ID=2, CLOSE_ID=3, STATUS_ID=4, CLEAR_ID=5, FILTER_HEIGHT=36, ROW_HEIGHT=28, MAX_ROWS=64 };
 typedef struct row_key {dev_t dev;ino_t ino;enum ae_files_kind kind;char name[AE_FILES_NAME+1];uint64_t id;} row_key;
 struct files_scene {
     struct ae_files *model;nx_font_collection *fonts;nx_context *ctx;nx_virtual_list *list;
@@ -193,12 +193,21 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         return NX_ERROR_ARGUMENT;
     if(!s->ready)return NX_ERROR_STATE;
     s->viewport_height=height-header;nx_virtual_range range;
-    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL,*close_label=NULL,*notice=NULL;nx_text_buffer *simulation=NULL;size_t made=0;int fallback_high=0;
+    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL,*close_label=NULL,*clear_label=NULL,*notice=NULL;nx_text_buffer *simulation=NULL;size_t made=0;int fallback_high=0;
     uint64_t previous_focus=nx_focus_id(s->ctx);
     nx_result r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
     if(s->query) {
+        float close_width=fminf(72,width*0.25f),clear_width=close_width,field_width=width-close_width-clear_width;
+        nx_control_desc clear={0};clear.id=CLEAR_ID;clear.bounds=(nx_rect){field_width,0,clear_width,FILTER_HEIGHT};
+        clear.name=(nx_utf8_span){"Clear filter",12};
+        if(r==NX_OK)r=nx_text_layout_create(s->fonts,"Clear",5,NX_BIDI_AUTO,15,100,&clear_label);
+        clear.label_layout=clear_label;clear.label_origin=(nx_point){field_width+(clear_width-(clear_label?(float)nx_text_layout_width(clear_label):0))*0.5f,9};
+        clear.glyph_cache_bytes=1024*1024;nx_interaction_state clear_state;
+        if(r==NX_OK)r=nx_push_clip(s->ctx,clear.bounds);
+        if(r==NX_OK){r=nx_button(s->ctx,&clear,&clear_state);nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
+        if(r==NX_OK && clear_state.clicked){r=files_scene_filter(s,"",0);if(r==NX_OK)r=nx_focus_set(s->ctx,FILTER_ID);}
+        if(r==NX_OK)
         r=guard_text_burst(s,previous_focus,&simulation,&fallback_high);
-        float close_width=fminf(72,width*0.4f),field_width=width-close_width;
         nx_text_field_desc field={0};field.id=FILTER_ID;field.bounds=(nx_rect){0,0,field_width,FILTER_HEIGHT};
         field.name=(nx_utf8_span){"Filter files",12};field.fonts=s->fonts;field.pixels_per_em=15;
         field.glyph_cache_bytes=1024*1024;field.validate=query_valid;field.validate_user=s;field.ime_window=s->window;
@@ -230,10 +239,10 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
             }
             if(r==NX_OK)s->query_valid=1;
         }
-        nx_control_desc close={0};close.id=CLOSE_ID;close.bounds=(nx_rect){field_width,0,close_width,FILTER_HEIGHT};
+        nx_control_desc close={0};close.id=CLOSE_ID;close.bounds=(nx_rect){field_width+clear_width,0,close_width,FILTER_HEIGHT};
         close.name=(nx_utf8_span){"Close",5};
         if(r==NX_OK)r=nx_text_layout_create(s->fonts,"Close",5,NX_BIDI_AUTO,15,100,&close_label);
-        close.label_layout=close_label;close.label_origin=(nx_point){field_width+(close_width-(close_label?(float)nx_text_layout_width(close_label):0))*0.5f,9};
+        close.label_layout=close_label;close.label_origin=(nx_point){field_width+clear_width+(close_width-(close_label?(float)nx_text_layout_width(close_label):0))*0.5f,9};
         close.glyph_cache_bytes=1024*1024;
         nx_interaction_state close_state;
         if(r==NX_OK)r=nx_push_clip(s->ctx,close.bounds);
@@ -280,6 +289,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
     nx_text_buffer_destroy(simulation);
     if(hint)nx_text_layout_destroy(hint);
     if(close_label)nx_text_layout_destroy(close_label);
+    if(clear_label)nx_text_layout_destroy(clear_label);
     if(notice)nx_text_layout_destroy(notice);
     for(size_t i=0;i<made;++i)nx_text_layout_destroy(layouts[i]);
     return r;
