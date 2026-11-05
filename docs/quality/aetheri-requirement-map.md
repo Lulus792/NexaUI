@@ -8,6 +8,10 @@ intent against selected-index retargeting after filter, refresh, directory or
 entry replacement; the caller must separately invalidate a rejected full query.
 This is a controlled owner-side experiment, not a Files UI, grant, durable
 identity, actual Aetheri adoption or the P02 100,000-row performance proof.
+On base `31da772f94a2fdea863157bf06819a30aa13480b`, a bounded font-backed
+headless tree scene adds virtual visible rows, selection retention and direct
+keyboard/pointer tests with core semantics. Native window/assistive acceptance,
+full focus restoration, persistent identity and P02 remain open.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

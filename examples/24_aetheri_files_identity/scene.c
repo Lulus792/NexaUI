@@ -1,0 +1,163 @@
+#include "scene.h"
+#include <fcntl.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, ROW_HEIGHT=28, MAX_ROWS=64 };
+typedef struct row_key {dev_t dev;ino_t ino;enum ae_files_kind kind;char name[AE_FILES_NAME+1];uint64_t id;} row_key;
+struct files_scene {
+    struct ae_files *model;nx_font_collection *fonts;nx_context *ctx;nx_virtual_list *list;
+    row_key keys[KEY_LIMIT];uint32_t slots[HASH_CAPACITY];size_t key_count,count;
+    uint64_t ids[AE_FILES_ENTRIES],next_id,selected;int directory,query_valid,need_focus,ready;
+    double offset;float viewport_height;
+};
+static uint64_t hash_bytes(uint64_t h,const void *p,size_t n) {
+    const unsigned char *bytes=p;while(n--)h=(h^*bytes++)*UINT64_C(1099511628211);return h;
+}
+static nx_result row_id(files_scene *s,const struct ae_files_entry *entry,uint64_t *out) {
+    uint64_t hash=UINT64_C(14695981039346656037);
+    hash=hash_bytes(hash,&entry->device,sizeof(entry->device));
+    hash=hash_bytes(hash,&entry->inode,sizeof(entry->inode));
+    hash=hash_bytes(hash,&entry->kind,sizeof(entry->kind));
+    hash=hash_bytes(hash,entry->name,strlen(entry->name));
+    size_t slot=(size_t)hash&(HASH_CAPACITY-1u);
+    while(s->slots[slot]) {
+        row_key *key=&s->keys[s->slots[slot]-1u];
+        if(key->dev==entry->device && key->ino==entry->inode && key->kind==entry->kind && !strcmp(key->name,entry->name)) {
+            *out=key->id;return NX_OK;
+        }
+        slot=(slot+1u)&(HASH_CAPACITY-1u);
+    }
+    if(s->key_count==KEY_LIMIT || s->next_id==UINT64_MAX)return NX_ERROR_LIMIT;
+    row_key *key=&s->keys[s->key_count];key->dev=entry->device;key->ino=entry->inode;key->kind=entry->kind;
+    memcpy(key->name,entry->name,strlen(entry->name)+1);key->id=s->next_id++;
+    s->slots[slot]=(uint32_t)++s->key_count;*out=key->id;return NX_OK;
+}
+static int same_directory(int a,int b) {
+    struct stat x,y;return a>=0 && b>=0 && !fstat(a,&x) && !fstat(b,&y) &&
+        S_ISDIR(x.st_mode) && S_ISDIR(y.st_mode) && x.st_dev==y.st_dev && x.st_ino==y.st_ino;
+}
+nx_result files_scene_sync(files_scene *s) {
+    if(!s)return NX_ERROR_ARGUMENT;
+    s->ready=0;
+    int dir=ae_files_directory(s->model);if(dir<0)return NX_ERROR_PLATFORM;
+    if(!same_directory(dir,s->directory)) {
+        if(s->directory>=0)close(s->directory);
+        s->directory=dir;dir=-1;memset(s->slots,0,sizeof(s->slots));s->key_count=0;s->selected=0;s->offset=0;
+    }
+    if(dir>=0)close(dir);
+    size_t count=ae_files_count(s->model);if(count>AE_FILES_ENTRIES)return NX_ERROR_LIMIT;
+    uint64_t ids[AE_FILES_ENTRIES];
+    for(size_t i=0;i<count;++i){const struct ae_files_entry *entry=ae_files_entry(s->model,i);
+        if(!entry)return NX_ERROR_STATE;
+        nx_result r=row_id(s,entry,&ids[i]);if(r!=NX_OK)return r;}
+    nx_virtual_list *next=NULL;nx_result r=nx_virtual_list_create(count,ROW_HEIGHT,NULL,&next);if(r!=NX_OK)return r;
+    nx_virtual_list_destroy(s->list);s->list=next;s->count=count;memcpy(s->ids,ids,count*sizeof(*ids));
+    if(!s->selected && count) {
+        size_t selected_index=ae_files_selected(s->model);
+        if(selected_index>=count)return NX_ERROR_STATE;
+        s->selected=s->ids[selected_index];
+    }
+    for(size_t i=0;i<count;++i)if(s->ids[i]==s->selected){
+        (void)ae_files_select(s->model,i);double y=(double)i*ROW_HEIGHT;
+        if(y<s->offset)s->offset=y;
+        if(y+ROW_HEIGHT>s->offset+s->viewport_height)s->offset=y+ROW_HEIGHT-s->viewport_height;
+        if(s->offset<0)s->offset=0;
+        break;
+    }
+    s->ready=1;return NX_OK;
+}
+nx_result files_scene_create(struct ae_files *model,nx_font_collection *fonts,files_scene **out) {
+    if(!out)return NX_ERROR_ARGUMENT;
+    *out=NULL;if(!model || !fonts)return NX_ERROR_ARGUMENT;
+    files_scene *s=calloc(1,sizeof(*s));if(!s)return NX_ERROR_MEMORY;
+    s->model=model;s->fonts=fonts;s->directory=-1;s->query_valid=1;s->next_id=100;s->viewport_height=ROW_HEIGHT;
+    nx_result r=nx_context_create(NULL,&s->ctx);if(r==NX_OK)r=files_scene_sync(s);
+    if(r!=NX_OK){files_scene_destroy(s);return r;}*out=s;return NX_OK;
+}
+void files_scene_destroy(files_scene *s){if(!s)return;if(s->directory>=0)close(s->directory);
+    nx_virtual_list_destroy(s->list);if(s->ctx)nx_context_destroy(s->ctx);free(s);}
+nx_result files_scene_filter(files_scene *s,const char *query,size_t length) {
+    if(!s)return NX_ERROR_ARGUMENT;
+    if(!ae_files_filter(s->model,query,length)){s->query_valid=0;return NX_ERROR_ARGUMENT;}
+    s->query_valid=1;s->offset=0;return files_scene_sync(s);
+}
+nx_result files_scene_key(files_scene *s,nx_key key,int owns_focus) {
+    if(!s || (owns_focus!=0 && owns_focus!=1))return NX_ERROR_ARGUMENT;
+    if(!s->ready)return NX_ERROR_STATE;
+    if(!owns_focus || !s->count)return NX_OK;
+    size_t index=0;int found=0;
+    for(size_t i=0;i<s->count;++i)if(s->ids[i]==s->selected){index=i;found=1;break;}
+    size_t page=s->viewport_height>=ROW_HEIGHT?(size_t)(s->viewport_height/ROW_HEIGHT):1;
+    int direction=1;
+    switch(key){case NX_KEY_UP:direction=-1;if(found && index)--index;break;case NX_KEY_DOWN:if(found && index+1<s->count)++index;break;
+        case NX_KEY_HOME:index=0;break;case NX_KEY_END:direction=-1;index=s->count-1;break;
+        case NX_KEY_PAGE_UP:direction=-1;index=index>page?index-page:0;break;
+        case NX_KEY_PAGE_DOWN:index=page<s->count-1-index?index+page:s->count-1;break;
+        default:return NX_OK;}
+    const struct ae_files_entry *entry=ae_files_entry(s->model,index);
+    if(!entry)return NX_ERROR_STATE;
+    while(entry->kind==AE_FILES_UNAVAILABLE) {
+        if((direction<0 && !index) || (direction>0 && index+1==s->count))return NX_OK;
+        index=direction<0?index-1:index+1;
+        entry=ae_files_entry(s->model,index);if(!entry)return NX_ERROR_STATE;
+    }
+    if(!ae_files_select(s->model,index))return NX_ERROR_STATE;
+    s->selected=s->ids[index];
+    double y=(double)index*ROW_HEIGHT;
+    if(y<s->offset)s->offset=y;
+    if(y+ROW_HEIGHT>s->offset+s->viewport_height)s->offset=y+ROW_HEIGHT-s->viewport_height;
+    if(s->offset<0)s->offset=0;
+    s->need_focus=1;return NX_OK;
+}
+nx_result files_scene_frame(files_scene *s,float width,float height) {
+    if(!s || !isfinite(width) || !isfinite(height) || width<40 || height<ROW_HEIGHT || height>ROW_HEIGHT*MAX_ROWS)
+        return NX_ERROR_ARGUMENT;
+    if(!s->ready)return NX_ERROR_STATE;
+    s->viewport_height=height;nx_virtual_range range;nx_result r=nx_virtual_list_range(s->list,s->offset,height,0,&range);
+    if(r!=NX_OK)return r;
+    if(range.end-range.first>MAX_ROWS)return NX_ERROR_LIMIT;
+    s->offset=range.effective_offset;
+    nx_text_layout *layouts[MAX_ROWS]={0};size_t made=0;
+    r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
+    nx_container_desc tree={0};tree.id=ROOT_ID;tree.bounds=(nx_rect){0,0,width,height};tree.name=(nx_utf8_span){"Files",5};
+    r=nx_tree(s->ctx,&tree);
+    for(size_t i=range.first;r==NX_OK && i<range.end;++i) {
+        const struct ae_files_entry *entry=ae_files_entry(s->model,i);if(!entry){r=NX_ERROR_STATE;break;}
+        float y=(float)((double)i*ROW_HEIGHT-s->offset),top=fmaxf(0,y),bottom=fminf(height,y+ROW_HEIGHT);
+        if(bottom<=top)continue;
+        size_t len=strlen(entry->label);
+        r=nx_text_layout_create(s->fonts,entry->label,len,NX_BIDI_AUTO,15,width-16,&layouts[made]);
+        if(r!=NX_OK)break;
+        nx_tree_item_desc item={0};item.control.id=s->ids[i];item.control.parent_id=ROOT_ID;
+        item.control.bounds=(nx_rect){0,top,width,bottom-top};item.control.name=(nx_utf8_span){entry->label,len};
+        item.control.label_layout=layouts[made++];item.control.label_origin=(nx_point){8,y+5};
+        item.control.glyph_cache_bytes=1024*1024;item.control.disabled=entry->kind==AE_FILES_UNAVAILABLE;
+        nx_interaction_state state;r=nx_push_clip(s->ctx,item.control.bounds);
+        if(r==NX_OK){r=nx_tree_item(s->ctx,&item,NULL,&s->selected,&state);nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
+        if(r==NX_OK && state.clicked){if(!ae_files_select(s->model,i))r=NX_ERROR_STATE;}
+        if(r==NX_OK && s->need_focus && s->selected==s->ids[i] && !item.control.disabled) {
+            r=nx_focus_set(s->ctx,s->selected);if(r==NX_OK)s->need_focus=0;
+        }
+    }
+    {nx_result end=nx_end_frame(s->ctx);if(r==NX_OK)r=end;}
+    for(size_t i=0;i<made;++i)nx_text_layout_destroy(layouts[i]);
+    return r;
+}
+nx_context *files_scene_context(files_scene *s){return s?s->ctx:NULL;}
+uint64_t files_scene_selected(const files_scene *s){return s?s->selected:0;}
+int files_scene_query_accepted(const files_scene *s){return s?s->query_valid:0;}
+enum ae_files_result files_scene_stage(files_scene *s,files_intent *intent) {
+    if(!s || !intent || !s->query_valid)return AE_FILES_INVALID;
+    if(!s->ready)return AE_FILES_CHANGED;
+    size_t index=0;while(index<s->count && s->ids[index]!=s->selected)++index;
+    if(index==s->count)return AE_FILES_CHANGED;
+    int dir=ae_files_directory(s->model);if(dir<0)return AE_FILES_IO;
+    int same=same_directory(dir,s->directory);close(dir);if(!same)return AE_FILES_CHANGED;
+    const struct ae_files_entry *entry=ae_files_entry(s->model,index);uint64_t id=0;
+    if(!entry || row_id(s,entry,&id)!=NX_OK || id!=s->selected || !ae_files_select(s->model,index))return AE_FILES_CHANGED;
+    return files_intent_stage(intent,s->model,1);
+}

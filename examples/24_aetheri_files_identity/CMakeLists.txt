@@ -15,5 +15,7 @@ add_library(aetheri_files_model STATIC "${AETHERI_SOURCE_DIR}/src/files/model.c"
 target_include_directories(aetheri_files_model PUBLIC "${AETHERI_SOURCE_DIR}/src")
 add_executable(aetheri_files_identity_test intent.c test_identity.c)
 target_link_libraries(aetheri_files_identity_test PRIVATE aetheri_files_model NexaUI::NexaUI)
-set_target_properties(aetheri_files_model aetheri_files_identity_test PROPERTIES
+add_executable(aetheri_files_scene_test scene.c intent.c test_scene.c)
+target_link_libraries(aetheri_files_scene_test PRIVATE aetheri_files_model NexaUI::NexaUI)
+set_target_properties(aetheri_files_model aetheri_files_identity_test aetheri_files_scene_test PROPERTIES
     C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)

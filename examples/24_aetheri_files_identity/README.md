@@ -54,8 +54,53 @@ The tested SDK was built from the 0.1.18 candidate committed as
 files are unchanged between that commit and the NexaUI base above. The example
 sources also compiled with C17 `-Wall -Wextra -Werror`.
 
-This is not a complete Files UI. It does not yet demonstrate keyboard/focus,
+That initial identity experiment is not a complete Files UI. It did not demonstrate keyboard/focus,
 screenreader semantics, live updates, asynchronous operations, native Aetheri
 integration, a 100,000-row workload or physical/human acceptance. The pinned
 model itself limits a directory snapshot to 4,096 entries; it is not evidence
 that the Aetheri model meets the separate 100,000-row toolkit performance goal.
+
+## Virtualized scene experiment
+
+On NexaUI base `31da772f94a2fdea863157bf06819a30aa13480b`, `scene.c` adds a
+font-backed headless scene using the same pinned model, `nx_virtual_list` and
+the existing tree widgets. It registers only rows intersecting the viewport,
+uses full escaped labels for semantics and clips painted row text. Up/Down,
+Home/End and Page Up/Down change selection and reveal it when the caller says
+the list owns keyboard focus; a pointer activation selects the matching model
+entry. The owner passes its events and calls `files_scene_sync` immediately
+after any external model mutation, before routing or publishing another frame.
+
+Within one held directory, the scene maps raw name, kind, device and inode to
+monotonic presentation IDs, retaining a hidden selection when a filter is
+removed. Directory replacement retires the directory's IDs. This mapping has
+an explicit 8,192-key lifetime budget and returns `NX_ERROR_LIMIT` when full;
+it is not a durable filesystem identity and inode reuse is possible. Pending
+actions must still use the held-witness intent contract. Staging through the
+scene rejects invalid queries, filtered-out selection and a selected row that
+no longer matches after an unannounced model refresh. A failed sync blocks
+further frames/actions until a successful sync. The host must not publish a
+frame returned with an error.
+
+Build the target in the same example build and pass a readable TTF:
+
+```sh
+cmake --build /tmp/nexaui-files-identity --target aetheri_files_scene_test
+/tmp/nexaui-files-identity/aetheri_files_scene_test /path/to/font.ttf
+```
+
+Static, shared and Clang ASan/UBSan tests passed as an unprivileged user on
+Alpine/WSL. They check bounded visible semantics, bitmap generation and
+headless rendering, selected/focused roles, keyboard and pointer selection,
+filter restoration, invalid queries and refresh-before-sync rejection. A
+row-index ID mutant and a mutant bypassing the pre-stage recheck failed the
+corresponding tests. A 240x84 headless capture showed three legible rows and
+the selected-row highlight; this is a limited visual inspection, not design
+acceptance. Test source and adapter also passed C17 strict warnings.
+
+The scene does not provide a native window, filter text field, scroll-wheel
+handling, offscreen accessibility children, independent AT-SPI/human
+screenreader evidence, full focus restoration after filtering, localization,
+or the actual Aetheri Files UI. It has no file-opening or permission authority.
+Large-list/100,000-row measurement, asynchronous operations, real service
+state and platform/physical acceptance remain separate gates.
