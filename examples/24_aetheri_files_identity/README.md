@@ -262,3 +262,12 @@ roles. Private Weston keyboard/pointer, IME and AT-SPI tests passed in static,
 shared and ASan/UBSan variants. A 240x120 invalid-state headless capture was
 inspected. Automatic status announcements, human screenreader review, very
 narrow layouts, localization and actual Aetheri integration remain open.
+
+On base `1edde529243be3481245e7b162319a44f9d7f16d`, the independent
+libatspi client additionally registered for native events. It observed an
+`object:children-changed:add` on the Files tree whose child was the no-match
+status, then an `object:property-change:accessible-name` on that same status
+object carrying the invalid-filter message. Static, shared and ASan/UBSan
+variants passed on private Weston; suppressing either observation in the
+client made the corresponding assertion fail. These events make the changes
+observable; they do not establish automatic announcements by a screenreader.

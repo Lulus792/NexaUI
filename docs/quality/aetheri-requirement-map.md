@@ -42,6 +42,10 @@ matches and rejected filters have distinct visible and semantic status text.
 Rejected filters hide retained-query rows and block hidden-selection keyboard
 navigation; independent AT-SPI clients checked two status paths. Live
 announcements, localization, human review and Aetheri adoption remain open.
+On base `1edde529243be3481245e7b162319a44f9d7f16d`, an independent libatspi
+client observed the no-match status insertion and the same object's name
+change to the rejected-filter message. Actual screenreader announcements and
+human task acceptance remain open (A03/A07).
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group
