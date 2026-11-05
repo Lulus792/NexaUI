@@ -51,6 +51,11 @@ restores the accepted empty query and returns scene focus to the field. Native
 keyboard, independent AT-SPI and pointer input with simple-IME were exercised;
 clearing uncommitted composition and keyboard routing when Tab is consumed
 remain open (I01/I02/T04/A02).
+On base `d07ff625ea726de55f66b3c3a6023954ddeaedae`, Clear explicitly resets
+the native IME before replacing the filter and reenables it for the refocused
+field. A private Weston simple-IME test now rejects a pre-clear composition
+and confirms a fresh one works; other input methods, text-input-v3 and delayed
+replies remain open (T04/I02/P05).
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

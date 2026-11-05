@@ -287,3 +287,21 @@ The IME test did not clear an active uncommitted preedit; that transition,
 keyboard-only navigation when a provider consumes Tab, very narrow layouts,
 localization and human assistive review remain open. The button does not grant
 access to files or change the original model's authorization boundaries.
+
+## Clear during preedit
+
+On base `d07ff625ea726de55f66b3c3a6023954ddeaedae`, a native simple-IME
+test started with a nonempty filter and an uncommitted apostrophe preedit,
+clicked Clear, and then typed `a`. The previous candidate produced `á`,
+revealing that the old composition remained active. The Clear handler now
+explicitly disables the native IME before replacing the filter and enables it
+again for the refocused field, using the existing window API. The next `a`
+is literal; a separately started apostrophe-plus-`a` composition still commits
+one `á`. The original previous-candidate test failed and the corrected test
+passed on private Weston in static, shared and ASan/UBSan variants. Ordinary
+native keyboard and independent AT-SPI tests also passed in all three.
+
+This is a bounded text-input-v1/simple-IME observation. Other providers,
+text-input-v3, stale replies in flight, errors during context reset, physical
+input and human acceptance remain open; it does not prove general composition
+lifetime or keyboard shortcuts when an input method consumes them.

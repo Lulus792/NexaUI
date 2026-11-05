@@ -205,7 +205,14 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         clear.glyph_cache_bytes=1024*1024;nx_interaction_state clear_state;
         if(r==NX_OK)r=nx_push_clip(s->ctx,clear.bounds);
         if(r==NX_OK){r=nx_button(s->ctx,&clear,&clear_state);nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
-        if(r==NX_OK && clear_state.clicked){r=files_scene_filter(s,"",0);if(r==NX_OK)r=nx_focus_set(s->ctx,FILTER_ID);}
+        if(r==NX_OK && clear_state.clicked){
+            int reset_ime=0;
+            if(s->window){nx_result reset=nx_window_set_ime_enabled(s->window,0);
+                if(reset==NX_OK)reset_ime=1;else if(reset!=NX_ERROR_UNSUPPORTED)r=reset;}
+            if(r==NX_OK)r=files_scene_filter(s,"",0);
+            if(r==NX_OK)r=nx_focus_set(s->ctx,FILTER_ID);
+            if(reset_ime){nx_result enable=nx_window_set_ime_enabled(s->window,1);if(r==NX_OK)r=enable;}
+        }
         if(r==NX_OK)
         r=guard_text_burst(s,previous_focus,&simulation,&fallback_high);
         nx_text_field_desc field={0};field.id=FILTER_ID;field.bounds=(nx_rect){0,0,field_width,FILTER_HEIGHT};
