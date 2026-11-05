@@ -88,7 +88,9 @@ int main(int argc,char **argv) {
                 dirty=1;continue;
             }
             if(trace && event.type==NX_EVENT_POINTER_MOVE && event.y>=0 && event.y<fminf(info.height,1800.0f)){
-                puts("FILES_NATIVE_POINTER");fflush(stdout);}
+                puts("FILES_NATIVE_POINTER");
+                if(getenv("NEXAUI_FILES_IME_TEST"))printf("FILES_NATIVE_POINTER_AT %.2f %.2f\n",event.x,event.y);
+                fflush(stdout);}
             if((drawable && (event.type==NX_EVENT_POINTER_DOWN || event.type==NX_EVENT_POINTER_UP ||
                event.type==NX_EVENT_POINTER_MOVE || event.type==NX_EVENT_KEY_DOWN || event.type==NX_EVENT_KEY_UP ||
                event.type==NX_EVENT_KEY_DOWN_CONSUMED || event.type==NX_EVENT_TEXT || event.type==NX_EVENT_TEXT_COMMAND ||
@@ -114,6 +116,7 @@ int main(int argc,char **argv) {
         if(nx_context_set_text_raster_scale(ctx,info.scale)!=NX_OK){okay=0;break;}
         if(info.width>=40 && view_height>=64) {
             if(files_scene_frame(scene,info.width,view_height)!=NX_OK){okay=0;break;}
+            if(files_scene_close_requested(scene)){done=1;break;}
         } else if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK || nx_end_frame(ctx)!=NX_OK){okay=0;break;}
         nx_result ax=nx_window_publish_semantics(window,ctx);
         if(ax!=NX_OK && ax!=NX_ERROR_UNSUPPORTED){okay=0;break;}

@@ -22,6 +22,8 @@ nx_result files_scene_frame(files_scene *scene,float width,float height);
 nx_context *files_scene_context(files_scene *scene);
 uint64_t files_scene_selected(const files_scene *scene);
 int files_scene_query_accepted(const files_scene *scene);
+/* A button activation requests owner-controlled shutdown. */
+int files_scene_close_requested(const files_scene *scene);
 /* Refuse an invalid query or a selection hidden by the current filter. */
 enum ae_files_result files_scene_stage(files_scene *scene,files_intent *intent);
 #endif

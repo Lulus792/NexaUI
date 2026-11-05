@@ -81,7 +81,32 @@ def main():
                 if host.poll() is not None:
                     raise RuntimeError('IME text commit unexpectedly closed the window')
                 print('IME consumed shortcut key and committed text', flush=True)
-                host.terminate();wait('FILES_NATIVE_CLOSED')
+                pointer = None
+                for y in range(50, 1200, 100):
+                    for x in range(50, 1600, 100):
+                        subprocess.run([xdotool, 'mousemove', '--window', windows[0], str(x), str(y)],
+                                       env=env, check=True, timeout=5)
+                        deadline = time.monotonic()+.04
+                        while time.monotonic() < deadline:
+                            try:
+                                message = messages.get(timeout=max(.001, deadline-time.monotonic()))
+                            except queue.Empty:
+                                break
+                            match = re.fullmatch(r'FILES_NATIVE_POINTER_AT ([\d.]+) ([\d.]+)', message)
+                            if match:
+                                pointer = (x, y, float(match[1]), float(match[2]))
+                                break
+                        if pointer:
+                            break
+                    if pointer:
+                        break
+                if not pointer:
+                    raise RuntimeError('Could not locate the Files window on the private output')
+                x, y, local_x, local_y = pointer
+                subprocess.run([xdotool, 'mousemove', '--window', windows[0],
+                                str(round(x+324-local_x)), str(round(y+18-local_y)), 'click', '1'],
+                               env=env, check=True, timeout=5)
+                wait('FILES_NATIVE_CLOSED')
             else:
                 print('IME forwarded close shortcut', flush=True)
             if host.wait(timeout=10) != 0:

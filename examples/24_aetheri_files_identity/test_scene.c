@@ -136,6 +136,15 @@ int main(int argc,char **argv) {
     CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene));
     CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && (field.state&NX_SEM_INVALID));
     CHECK(files_scene_stage(scene,&intent)==AE_FILES_INVALID);
+    uint32_t close_index;nx_semantic_view close_view;
+    CHECK(nx_semantics_find(ctx,3,&close_index)==NX_OK && nx_semantics_get(ctx,close_index,&close_view)==NX_OK &&
+          close_view.role==NX_ROLE_BUTTON && close_view.name.length==5 && !memcmp(close_view.name.data,"Close",5));
+    CHECK(!files_scene_close_requested(scene) && nx_focus_set(ctx,3)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_ENTER;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);event.type=NX_EVENT_KEY_UP;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(files_scene_close_requested(scene));
     okay=1;
 cleanup:
     files_intent_clear(&intent);if(scene)files_scene_destroy(scene);

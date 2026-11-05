@@ -228,3 +228,20 @@ Static, shared and ASan/UBSan variants exercised the commit path. A client
 cannot infer an unreceived shortcut from arbitrary committed text. Reliable
 closing and shortcut handling with other providers, composing states and real
 desktops remain open; this test does not claim to repair the input method.
+
+## Close control
+
+On base `84c3256043bc627bb8cc8c3f7b9935a4fcb5e1d1`, the native probe
+adds a labeled NexaUI button alongside the filter. The scene exposes a close
+request to the window owner, which performs normal cleanup. At 240x120 the
+headless rendering was inspected. A scene test exercises Enter with focus on
+the button. Private Weston tests exercise Tab/Enter when the key reaches the
+application, a pointer click after simple-IME composition, and activation via
+an independent AT-SPI client; static, shared and ASan/UBSan variants passed.
+
+During a separate simple-IME attempt, Tab and Enter were consumed before the
+client could use them to move focus and activate the button. The click and
+assistive paths do not prove keyboard-only access in that configuration.
+Other providers, physical input, very narrow layouts, localization and human
+accessibility review remain open. This remains a standalone probe, not an
+integrated Aetheri Files application.

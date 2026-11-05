@@ -89,10 +89,10 @@ def main():
                 key('BackSpace')
             wait('FILES_NATIVE_DRAFT 252 0')
             key('ctrl+l');wait('FILES_NATIVE_FILTER 0 20 1')
-            key('ctrl+q');wait('FILES_NATIVE_CLOSED')
+            key('Tab');key('Return');wait('FILES_NATIVE_CLOSED')
             if host.wait(timeout=10) != 0:
                 raise RuntimeError(f'Consumer failed: {"".join(errors)}')
-            print('Native Files: keyboard, wheel, guarded filter, refresh and clean close passed')
+            print('Native Files: keyboard, wheel, guarded filter, refresh and button close passed')
             return 0
         finally:
             if host.poll() is None:
