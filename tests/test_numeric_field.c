@@ -114,6 +114,11 @@ static int queue_text(nx_context *ctx, uint32_t scalar) {
     return nx_context_queue_event(ctx, &event) == NX_OK;
 }
 
+static int queue_command(nx_context *ctx, nx_text_command command) {
+    nx_event event={0}; event.type=NX_EVENT_TEXT_COMMAND; event.text_command=(uint32_t)command;
+    return nx_context_queue_event(ctx,&event)==NX_OK;
+}
+
 static int semantic_draft(nx_context *ctx, const char *draft, int invalid) {
     uint32_t index = UINT32_MAX;
     nx_semantic_view view;
@@ -284,7 +289,7 @@ static int test_retry_after_paint_failure(void) {
                                   &valid) == NX_OK);
     CHECK(nx_end_frame(ctx) == NX_OK);
     CHECK(nx_focus_set(ctx, 1) == NX_OK);
-    CHECK(queue_key(ctx, NX_KEY_A, NX_MOD_CONTROL));
+    CHECK(queue_command(ctx, NX_TEXT_COMMAND_SELECT_ALL));
     CHECK(queue_text(ctx, '1'));
     CHECK(nx_begin_frame(ctx, 100, 30, 0) == NX_OK);
     probe.fail_on = probe.calls + 1u;
@@ -305,9 +310,44 @@ static int test_retry_after_paint_failure(void) {
     return 0;
 }
 
+static int numeric_frame(nx_context *ctx, nx_numeric_field *field, const nx_numeric_field_desc *desc, int expected_valid) {
+    nx_interaction_state state; int valid=-1;
+    return nx_begin_frame(ctx,100,30,0)==NX_OK &&
+        nx_numeric_field_widget(ctx,desc,field,&state,&valid)==NX_OK && valid==expected_valid &&
+        nx_end_frame(ctx)==NX_OK;
+}
+static int test_native_text_commands(void) {
+    uint8_t bytes[512]; font_fixture(bytes);
+    nx_font *font=NULL; nx_font_collection *fonts=NULL; nx_numeric_field *field=NULL; nx_context *ctx=NULL;
+    CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    CHECK(nx_numeric_field_create(0,4096,&field)==NX_OK && nx_context_create(NULL,&ctx)==NX_OK);
+    nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){0,0,80,24};desc.name=(nx_utf8_span){"Number",6};
+    desc.fonts=fonts;desc.pixels_per_em=20;desc.glyph_cache_bytes=65536;desc.minimum=-10;desc.maximum=10;
+    CHECK(numeric_frame(ctx,field,&desc,1) && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'5') &&
+          queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1));
+    CHECK(expect_field(field,"5",5) && semantic_draft(ctx,"5",0));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_UNDO) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"0",5));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_REDO) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"5",5));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'-') &&
+          queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,0));
+    CHECK(expect_field(field,"-",5) && semantic_draft(ctx,"-",1));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'1'));
+    nx_event consumed={0};consumed.type=NX_EVENT_KEY_DOWN_CONSUMED;consumed.key=NX_KEY_ENTER;
+    CHECK(nx_context_queue_event(ctx,&consumed)==NX_OK && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",5));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
+    desc.disabled=1;
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'5') &&
+          queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
+    nx_context_destroy(ctx);nx_numeric_field_destroy(field);nx_font_collection_destroy(fonts);nx_font_close(font);
+    return 0;
+}
+
 int main(void) {
     if (test_numeric_field()) return 1;
     if (test_retry_after_paint_failure()) return 1;
+    if (test_native_text_commands()) return 1;
     puts("numeric field tests passed");
     return 0;
 }

@@ -6498,7 +6498,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             }
             if (route->focus_id!=desc->id) { ++field->next_event_index; continue; }
             if (event->type == NX_EVENT_KEY_DOWN ||
-                event->type == NX_EVENT_TEXT) {
+                event->type == NX_EVENT_TEXT || event->type == NX_EVENT_TEXT_COMMAND) {
                 field->pointer.active=0; field->suppress_caret_reveal=0;
                 int handled = 0;
                 result = nx_numeric_input_apply_event(field->buffer, event,

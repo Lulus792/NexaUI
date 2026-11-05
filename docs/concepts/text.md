@@ -37,8 +37,11 @@ affinity. Plain `PAGE_UP/DOWN` commands scroll without changing the selection;
 `MOVE_PAGE_UP/DOWN` move the caret, and selection variants preserve the anchor.
 Clipboard commands use the field's optional callbacks and suppress copy/cut for
 passwords. The standalone text model has no viewport or clipboard and leaves
-such commands unhandled. Numeric Enter commands commit a valid draft, but the
-numeric widget does not yet share the complete general-field native input path.
+such commands unhandled. The numeric widget forwards logical text commands to
+its existing numeric buffer, including selection, deletion, undo/redo and Enter
+to commit a valid draft. It does not yet share the complete general-field native
+input path: preedit, native replacement, clipboard callbacks and visual-layout
+navigation remain separate work.
 See the [native command report](../quality/macos-input-commands-report.md).
 
 General and numeric text fields now support left-button drag selection and
