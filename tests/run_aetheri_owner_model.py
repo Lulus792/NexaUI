@@ -26,7 +26,11 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--expect-test-outputs', action='store_true',
                         help='require the headless compositor\'s three advertised output modes')
+    parser.add_argument('--exercise-output-resize', action='store_true',
+                        help='resize and restore a selected virtual output through the test controller')
     args = parser.parse_args()
+    if args.exercise_output_resize and not args.expect_test_outputs:
+        parser.error('--exercise-output-resize requires --expect-test-outputs')
     fixture, owner_source, server, desktop, view = [p.resolve(strict=True) for p in
         (args.fixture, args.owner, args.server, args.desktop, args.view)]
     root = args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -97,6 +101,19 @@ def main():
                 for _ in range(10): tap(15);time.sleep(.04)
                 tap(57)
                 wait(lambda: 'settings: SELECTED_OUTPUT '+ids[1]+'\n' in log(), 'select observed second output')
+                if args.exercise_output_resize:
+                    rows=re.findall(r'^settings: OUTPUT (\d+) (\d+) (\d+) \d+ \d+ 1$',log(),re.M)
+                    original=next((int(w),int(h)) for ident,w,h in rows if ident==ids[1])
+                    index={(1920,1080):0,(2560,1440):1,(3840,2160):2}[original]
+                    changed=(1600,900)
+                    before=len(log()); event(f'O {index} {changed[0]} {changed[1]}')
+                    def seen_mode(start, mode):
+                        part=log()[start:]
+                        return bool(re.search(r'^settings: OUTPUT '+ids[1]+r' '+str(mode[0])+r' '+str(mode[1])+
+                                              r' \d+ \d+ 1$',part,re.M)) and 'settings: SELECTED_OUTPUT '+ids[1]+'\n' in part
+                    wait(lambda:seen_mode(before,changed),'selected output resize and retained selection')
+                    before=len(log()); event(f'O {index} {original[0]} {original[1]}')
+                    wait(lambda:seen_mode(before,original),'selected output restore and retained selection')
             key(29, True); tap(16); key(29, False)
             wait(lambda: 'desktop: LAUNCH_REPLY X S' in log(), 'first child and pipe drained')
             launch()
