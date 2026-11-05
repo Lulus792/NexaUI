@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Application-owned cell selection copy (2026-11-05)
+
+Example source `c7ceb2738d5a2cf3bfc0febcb51b1699ca827281` copies its
+application-owned visible selection with Ctrl+Shift+C through the existing
+Wayland clipboard API. It converts its cell endpoints to the corresponding
+UTF-8 snapshot range; empty selection leaves the current clipboard intact.
+Ctrl+C is not consumed as a copy shortcut by this example. A copy failure is
+reported on standard error. Clipboard persistence after owner exit is a
+compositor policy, not a guarantee made by the example.
+
+An independent `wl-paste` 2.2.1 peer and AT-SPI client on private Weston/Xvfb
+verified copied wide text, a combining mark, a line break, reverse selection,
+empty selection and Ctrl+C preservation. The case passed three successive
+runs (`/tmp/nexaui-cell-copy-final/result.json`); the pre-existing grid native
+keyboard, selection and AT-SPI tests also passed. A copied example from this
+source passed the same peer test against static and shared installed SDKs from
+`a91b30377209f57854fcfc44c171d792c1f22195`
+(`/tmp/nexaui-copy-c7-consumer-OFF/result.json` and
+`/tmp/nexaui-copy-c7-consumer-ON/result.json`). These are virtual-input tests,
+not human acceptance or a terminal implementation. Paste policy, PTY input,
+scrollback, clipboard-manager persistence and accessible mutation remain open.
+
 ## Application-owned cell selection (2026-11-05)
 
 Example source `07cb954062d18f597f3dd01538ab594d710caf37` keeps a cell
