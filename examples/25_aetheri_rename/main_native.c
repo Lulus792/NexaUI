@@ -17,14 +17,16 @@ static unsigned char *read_font(const char *path,size_t *size){FILE *f=fopen(pat
     unsigned char *p=malloc((size_t)n);if(!p){fclose(f);return NULL;}if(fread(p,1,(size_t)n,f)!=(size_t)n){free(p);fclose(f);return NULL;}
     fclose(f);*size=(size_t)n;return p;}
 int main(int argc,char **argv){
-    int ok=0,done=0,dir=-1,pin=-1,shown=0,trace=getenv("NEXAUI_RENAME_TRACE")!=NULL;
+    int ok=0,done=0,dir=-1,pin=-1,shown=0,trace=getenv("NEXAUI_RENAME_TRACE")!=NULL,last_confirm=-1;
     uint64_t last_focus=0;size_t bytes_size=0;unsigned char *bytes=NULL;
     nx_font *font=NULL;nx_font_collection *fonts=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     rename_review *view=NULL;rename_review_owner owner={0};struct ae_files_rename *op=NULL;
     if(argc!=3 || !getenv("NEXAUI_TEST_PRIVATE_WAYLAND") || strcmp(getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),"1"))goto cleanup;
     dir=open(argv[1],O_RDONLY|O_DIRECTORY|O_CLOEXEC);if(dir<0)goto cleanup;
     pin=openat(dir,"old.txt",O_PATH|O_NOFOLLOW|O_CLOEXEC);if(pin<0)goto cleanup;
-    enum ae_files_rename_result result;op=ae_files_rename_prepare(dir,pin,"old.txt",7,"new.txt",7,&result);
+    char long_name[256];memset(long_name,'x',255);long_name[255]=0;
+    const char *target=getenv("NEXAUI_RENAME_LONG_TEST")?long_name:"new.txt";
+    enum ae_files_rename_result result;op=ae_files_rename_prepare(dir,pin,"old.txt",7,target,strlen(target),&result);
     if(!op || result!=AE_FILES_RENAME_PREPARED || rename_review_owner_init(&owner,op)!=NX_OK)goto cleanup;
     bytes=read_font(argv[2],&bytes_size);
     if(!bytes || nx_font_open(bytes,bytes_size,NULL,&font)!=NX_OK || nx_font_collection_create(NULL,&fonts)!=NX_OK ||
@@ -47,7 +49,7 @@ int main(int argc,char **argv){
             if(nx_window_publish_semantics(window,NULL)!=NX_OK){ok=0;break;}
             rename_review_destroy(view);view=NULL;
             if(rename_review_create(&owner,fonts,&view)!=NX_OK){ok=0;break;}
-            last_focus=0;
+            last_focus=0;last_confirm=-1;
             puts("RENAME_NATIVE_REOPENED_UNKNOWN");fflush(stdout);continue;
         }
         if(action==REVIEW_CANCEL){done=1;break;}
@@ -59,6 +61,10 @@ int main(int argc,char **argv){
         if(trace && outcome==NX_SOFTWARE_VIEW_READY){
             if(!shown){puts("RENAME_NATIVE_READY");shown=1;}
             uint64_t focus=nx_focus_id(ctx);if(focus!=last_focus){printf("RENAME_NATIVE_FOCUS %llu\n",(unsigned long long)focus);last_focus=focus;}
+            uint32_t index;nx_semantic_view button;
+            if(nx_semantics_find(ctx,11,&index)==NX_OK && nx_semantics_get(ctx,index,&button)==NX_OK){
+                int enabled=!(button.state&NX_SEM_DISABLED);
+                if(enabled!=last_confirm){printf("RENAME_NATIVE_CONFIRM_ENABLED %d\n",enabled);last_confirm=enabled;}}
             fflush(stdout);
         }
     }

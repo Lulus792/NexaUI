@@ -21,6 +21,11 @@ On base `21abd07873507fa6253a39e4a2b3179f0c45c03f`, virtual-keyboard tests
 on private Weston exercised Escape cancellation, Tab/Enter confirmation and
 keyboard access to Cancel after an unknown result. Other layouts, physical
 input, human acceptance and actual Aetheri integration remain open (I01/L09).
+On base `220611c24ce92e4cb6897382681148db4dca91f1`, the rename review uses a
+scrollable, byte-preserving preview with confirmation gated until its bottom is
+reached. A 255-byte name was navigated by virtual keyboard and exposed in full
+to independent AT-SPI; human reading, screenreader scrolling, other fonts and
+actual Aetheri integration remain open (T01/L09/A04/P07).
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri

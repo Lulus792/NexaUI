@@ -22,11 +22,15 @@ def main():
         windows = re.findall(r'x11 output .*?window id (\d+)', stream.read())
     if len(windows) != 1:
         raise RuntimeError('Expected one private Weston output')
-    for confirm in (False, True):
+    for mode in ('cancel', 'confirm', 'long'):
         with tempfile.TemporaryDirectory(prefix='nexaui-rename-key-') as directory:
-            old, new = Path(directory, 'old.txt'), Path(directory, 'new.txt')
+            old = Path(directory, 'old.txt')
+            new = Path(directory, 'x'*255 if mode == 'long' else 'new.txt')
             old.write_bytes(b'original')
-            host = subprocess.Popen([app, directory, font], env=env, text=True,
+            case_env = dict(env)
+            if mode == 'long':
+                case_env['NEXAUI_RENAME_LONG_TEST'] = '1'
+            host = subprocess.Popen([app, directory, font], env=case_env, text=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             messages, output, errors = queue.Queue(), [], []
             def collect(stream, target, publish=False):
@@ -51,9 +55,20 @@ def main():
             def key(value):
                 subprocess.run([xdotool, 'key', value], env=env, check=True, timeout=5)
             try:
-                wait('RENAME_NATIVE_READY');wait('RENAME_NATIVE_FOCUS 10')
+                wait('RENAME_NATIVE_READY');wait('RENAME_NATIVE_FOCUS 31' if mode == 'long' else 'RENAME_NATIVE_FOCUS 10')
                 subprocess.run([xdotool, 'windowfocus', windows[0]], env=env, check=True, timeout=5)
-                if confirm:
+                if mode == 'long':
+                    wait('RENAME_NATIVE_CONFIRM_ENABLED 0')
+                    key('End');wait('RENAME_NATIVE_CONFIRM_ENABLED 1')
+                    if not old.exists() or new.exists():
+                        raise RuntimeError('Reviewing the long name changed the temporary files')
+                    key('Tab');wait('RENAME_NATIVE_FOCUS 10')
+                    key('Tab');wait('RENAME_NATIVE_FOCUS 11')
+                    key('Return');wait('RENAME_NATIVE_REOPENED_UNKNOWN');wait('RENAME_NATIVE_FOCUS 31')
+                    if old.exists() or not new.exists() or new.read_bytes() != b'original':
+                        raise RuntimeError('Long-name rename did not preserve the original content')
+                    key('Tab');wait('RENAME_NATIVE_FOCUS 10');key('Return');wait('RENAME_NATIVE_CLOSED 1 1')
+                elif mode == 'confirm':
                     key('Tab');wait('RENAME_NATIVE_FOCUS 11')
                     key('Return');wait('RENAME_NATIVE_REOPENED_UNKNOWN');wait('RENAME_NATIVE_FOCUS 10')
                     if old.exists() or not new.exists() or new.read_bytes() != b'original':
@@ -75,7 +90,7 @@ def main():
                         host.wait(timeout=5)
                     except subprocess.TimeoutExpired:
                         host.kill();host.wait()
-    print('Native rename: keyboard cancellation, confirmation and disabled replay passed')
+    print('Native rename: keyboard cancellation, long-name review and disabled replay passed')
     return 0
 
 

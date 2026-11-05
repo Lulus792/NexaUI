@@ -31,6 +31,7 @@ static int capture(nx_context *ctx,const char *path){
     return ok;
 }
 int main(int argc,char **argv){int ok=0,dir=-1,pin=-1;char path[]="/tmp/nexaui-rename-review-XXXXXX";
+    char raw_name[256]={0};
     unsigned char *font_data=NULL;size_t font_size=0;nx_font *font=NULL;nx_font_collection *fonts=NULL;
     struct ae_files_rename *op=NULL;rename_review *view=NULL;rename_review_action action=REVIEW_NONE;
     rename_review_owner owner={0};
@@ -114,7 +115,39 @@ int main(int argc,char **argv){int ok=0,dir=-1,pin=-1;char path[]="/tmp/nexaui-r
     char long_name[256];memset(long_name,'x',255);long_name[255]=0;
     op=ae_files_rename_prepare(dir,pin,"bad\nname",8,long_name,255,&result);CHECK(op && result==AE_FILES_RENAME_PREPARED);
     CHECK(rename_review_owner_init(&owner,op)==NX_OK);
-    CHECK(rename_review_create(&owner,fonts,&view)==NX_OK && rename_review_frame(view,&action)==NX_ERROR_LIMIT && action==REVIEW_NONE);
+    CHECK(rename_review_create(&owner,fonts,&view)==NX_OK && rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);
+    ctx=rename_review_context(view);
+    CHECK(value(ctx,4,long_name,-1) && value(ctx,5,"Scroll to review both names",-1) && value(ctx,11,NULL,1));
+    CHECK(capture(ctx,getenv("NEXAUI_RENAME_LONG_CAPTURE")));
+    CHECK(nx_semantics_request_action(ctx,11,NX_ACTION_PRESS)!=NX_OK);
+    uint32_t name_index;nx_semantic_view name_view;
+    CHECK(nx_semantics_find(ctx,4,&name_index)==NX_OK && nx_semantics_get(ctx,name_index,&name_view)==NX_OK);
+    float before_y=name_view.bounds.y;
+    CHECK(nx_focus_set(ctx,31)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_END;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);
+    CHECK(nx_semantics_find(ctx,4,&name_index)==NX_OK && nx_semantics_get(ctx,name_index,&name_view)==NX_OK &&
+          name_view.bounds.y<before_y && name_view.bounds.y+name_view.bounds.height<=168);
+    CHECK(rename_review_frame(view,&action)==NX_OK && value(ctx,11,NULL,0) && value(ctx,5,"Ready for confirmation",-1));
+    CHECK(capture(ctx,getenv("NEXAUI_RENAME_LONG_END_CAPTURE")));
+    CHECK(nx_focus_set(ctx,11)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_ENTER;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && action==REVIEW_CONFIRM);
+    CHECK(rename_calls==1 && flush_calls==1);
+    rename_review_destroy(view);view=NULL;ae_files_rename_close(op);op=NULL;close(pin);pin=-1;
+    memset(raw_name,0xff,255);raw_name[255]=0;
+    fd=openat(dir,raw_name,O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC,0600);CHECK(fd>=0 && !close(fd));
+    pin=openat(dir,raw_name,O_PATH|O_NOFOLLOW|O_CLOEXEC);CHECK(pin>=0);
+    op=ae_files_rename_prepare(dir,pin,raw_name,255,"clean",5,&result);CHECK(op && result==AE_FILES_RENAME_PREPARED);
+    CHECK(rename_review_owner_init(&owner,op)==NX_OK && rename_review_create(&owner,fonts,&view)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);ctx=rename_review_context(view);
+    char escaped[1021];for(size_t i=0;i<255;++i)memcpy(escaped+i*4,"\\xFF",4);escaped[1020]=0;
+    CHECK(value(ctx,3,escaped,-1) && value(ctx,11,NULL,1) && nx_focus_set(ctx,31)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_END;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && rename_review_frame(view,&action)==NX_OK && value(ctx,11,NULL,0));
     CHECK(rename_calls==1 && flush_calls==1);
     ok=1;
 cleanup:
@@ -123,7 +156,9 @@ cleanup:
     if(fonts)nx_font_collection_destroy(fonts);
     if(font)nx_font_close(font);
     free(font_data);if(pin>=0)close(pin);
-    if(dir>=0){(void)unlinkat(dir,"old.txt",0);(void)unlinkat(dir,"new.txt",0);(void)unlinkat(dir,"bad\nname",0);close(dir);(void)rmdir(path);}
+    if(dir>=0){(void)unlinkat(dir,"old.txt",0);(void)unlinkat(dir,"new.txt",0);(void)unlinkat(dir,"bad\nname",0);
+        if(raw_name[0])(void)unlinkat(dir,raw_name,0);
+        close(dir);(void)rmdir(path);}
     if(ok)puts("Original Aetheri rename: explicit confirmation, unknown outcome and no replay passed");
     return ok?0:1;
 }

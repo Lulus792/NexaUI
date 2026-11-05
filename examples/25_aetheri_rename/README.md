@@ -6,9 +6,9 @@ destination bytes as reversible escaped ASCII, an operation status, Cancel and
 Confirm. It returns an intent; it does not call `ae_files_rename_apply`, choose a
 directory or grant file access. The owner retains the original operation across
 view destruction and may dispatch only after its own checks. Confirm is disabled
-after any non-prepared outcome, including unknown or conflict. A name too long
-to display completely in the fixed 400x300 scene returns `NX_ERROR_LIMIT` before
-a frame can offer confirmation; it is not silently clipped.
+after any non-prepared outcome, including unknown or conflict. At the initial
+base a name too long for the fixed scene returned `NX_ERROR_LIMIT` instead of
+offering a clipped confirmation; the later scrollable version is described below.
 
 The tested original Files operation comes unchanged from Aetheri revision
 `8bfa5684c809899edfc2765e6c03478e2629e9bf`. The scene was developed on NexaUI
@@ -114,3 +114,24 @@ xvfb-run -a python3 tests/run_weston_native.py --work-dir /tmp/new-rename-key \
   -- python3 examples/25_aetheri_rename/run_keyboard.py \
   /tmp/rename-review/aetheri_rename_native /path/to/font.ttf /path/to/xdotool
 ```
+
+## Scrollable long-name review
+
+On base `220611c24ce92e4cb6897382681148db4dca91f1`, the 400x300 review uses
+the existing NexaUI scroll area for both full names. Its reversible ASCII byte
+representation wraps only between complete bytes, never inside `\xNN`. Before
+a long preview reaches the bottom, Confirm is disabled and the status asks for
+review. After reaching the bottom, a later frame enables confirmation. A new
+view starts the visual review again. This ensures the names are available and
+the bottom was reached; it cannot prove that a person read each line.
+
+Scene tests cover a 255-byte ASCII destination, a 255-byte non-UTF-8 original
+represented as 1,020 escaped characters, disabled confirmation before scrolling,
+End-key scrolling and no early filesystem effects. A mutant removing the
+pre-scroll gate failed. Private Weston keyboard tests scroll and confirm a
+255-byte name; an independent AT-SPI client verifies the full destination,
+scrollbar and initially disabled Confirm. Static, shared and ASan/UBSan variants
+passed; top and bottom 400x300 captures were inspected. The private host still
+uses a fixed-size layout and simulated flush failure. Actual screenreader
+scrolling/announcements, proportional fonts beyond the measured layout bound,
+localization, real Aetheri integration and physical acceptance remain open.
