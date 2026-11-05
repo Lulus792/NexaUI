@@ -28,6 +28,7 @@ cmake --build /tmp/terminal-view
 /tmp/terminal-view/aetheri_terminal_view_test /path/to/monospace.ttf
 /tmp/terminal-view/aetheri_terminal_selection_test /path/to/monospace.ttf
 /tmp/terminal-view/aetheri_terminal_paste_test
+/tmp/terminal-view/aetheri_terminal_review_test /path/to/monospace.ttf
 ```
 
 On Linux, the optional controlled Wayland fixture uses a NexaUI checkout and
@@ -40,7 +41,7 @@ cmake -S examples/23_aetheri_terminal_view -B /tmp/terminal-view \
   -DNEXAUI_FIXTURE_SOURCE_DIR=/path/to/nexaui-checkout \
   -DNEXAUI_FIXTURE_PROTOCOL_DIR=/path/to/nexaui-build/generated/wayland
 cmake --build /tmp/terminal-view
-/tmp/terminal-view/aetheri_terminal_paste_wayland_test
+/tmp/terminal-view/aetheri_terminal_paste_wayland_test /path/to/monospace.ttf
 ```
 
 On Linux with libatspi development files, D-Bus, a registry and Python, an
@@ -61,6 +62,12 @@ NEXAUI_TERMINAL_AX_EVENT=1 NEXAUI_TERMINAL_AX_TRANSITION=1 \
   python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
   /tmp/terminal-view/aetheri_terminal_atspi_client \
   /tmp/terminal-view/aetheri_terminal_ax_host
+python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  /tmp/terminal-view/aetheri_terminal_review_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_review_ax_host
+NEXAUI_REVIEW_ACCEPT=1 python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  /tmp/terminal-view/aetheri_terminal_review_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_review_ax_host
 ```
 
 The host is a headless fixture with simulated focus and geometry; it is not a
@@ -101,8 +108,15 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   focus epoch and supply the actual focus state; it must cancel on close and
   render/navigate the complete review before a fresh non-repeat confirmation.
   The owner copies confirmed bytes into its own PTY write queue. The example
-  does not write to a PTY or itself implement the review interface. Returned
-  text is borrowed and expires at reset; reset is not a secure-erasure promise.
+  does not write to a PTY. Returned text is borrowed and expires at reset;
+  reset is not a secure-erasure promise.
+- The example `paste_review` scene uses NexaUI's modal and buttons, and shows
+  every escaped preview row in navigable pages. Cancel has initial focus;
+  Escape cancels and repeated Enter does not confirm. Page navigation and
+  actions are exposed to AT-SPI. Destroying an open review cancels it. The scene
+  is fixed at 640x360 logical pixels, 16 preview columns and English labels;
+  responsive sizing, localization and integration in the actual Aetheri window
+  remain open. A fresh confirmation returns bytes to the app, not to a PTY.
 
 ## Evidence and remaining work
 
@@ -145,3 +159,14 @@ Wayland async transport was exercised against an in-process controlled protocol
 server, including a stalled transfer revoked on focus-epoch change. A deliberately
 broken stale guard failed the test. An independent application clipboard peer,
 native review UI, PTY writes and real Aetheri session remain open.
+
+The standalone review scene was developed on NexaUI base
+`3b4daee263a485639ea313a59853d97d252060bc`. Static, shared and Clang
+ASan/UBSan runs covered keyboard paging, modal focus, repeat suppression,
+guard changes, cancel and confirmation. Headless software output at 640x360
+was visually inspected with DejaVu Sans Mono. An independent libatspi client
+read the escaped rows, used Next, and exercised both Cancel and Paste against a
+simulated host with simulated native focus/geometry. A stale-guard mutant was
+detected. The controlled Wayland test also connected actual asynchronous receipt
+to the scene and exercised both confirmation and cancellation. This does not prove native Aetheri integration, a physical display,
+multiple scales, localization, or human assistive-technology acceptance.

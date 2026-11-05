@@ -17,6 +17,13 @@ the same consumer combines the installed nonblocking Wayland clipboard transport
 with Aetheri's original paste validator and preview. Controlled protocol and
 stale-focus evidence is in the example; independent peers, review UI, PTY
 delivery and native Aetheri acceptance remain open.
+On base `3b4daee263a485639ea313a59853d97d252060bc`, a fixed-size standalone
+review scene renders the original escaped preview with modal keyboard controls,
+and an independent AT-SPI client pages, cancels and confirms on a simulated
+host. Real Aetheri window/input, adaptive layout, localization, independent
+clipboard peer, PTY delivery and human accessibility acceptance remain open.
+The controlled Wayland fixture also exercises receipt through modal confirmation
+and cancellation; it does not substitute for an independent clipboard peer.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on
