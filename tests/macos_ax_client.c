@@ -152,7 +152,15 @@ int main(int argc,char **argv) {
     CHECK(wait_enabled(trigger,0) && wait_enabled(nested,1) && wait_enabled(disabled_child,0));
     CHECK(AXUIElementPerformAction(nested,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(nested_result,kAXValueAttribute,CFSTR("1:2002")) && wait_enabled(trigger,1));
+    CHECK(AXUIElementPerformAction(trigger,kAXPressAction)==kAXErrorSuccess && wait_enabled(open,1));
     CFRelease(disabled_child);CFRelease(nested);CFRelease(trigger);CFRelease(nested_result);CFRelease(open);
+    AXUIElementRef sibling_open=wait_find(window,2037);nested_result=wait_find(window,2036);CHECK(sibling_open && nested_result);
+    CHECK(AXUIElementPerformAction(sibling_open,kAXPressAction)==kAXErrorSuccess);
+    AXUIElementRef first_popup=wait_find(window,2102),second_popup=wait_find(window,2112);CHECK(first_popup && second_popup);
+    CHECK(wait_enabled(first_popup,0) && wait_enabled(second_popup,1));
+    CHECK(AXUIElementPerformAction(second_popup,kAXPressAction)==kAXErrorSuccess);
+    CHECK(wait_string(nested_result,kAXValueAttribute,CFSTR("1:2102")) && wait_enabled(first_popup,1));
+    CFRelease(first_popup);CFRelease(second_popup);CFRelease(nested_result);CFRelease(sibling_open);
     CFRelease(edit); CFRelease(number); CFRelease(tab); CFRelease(count); CFRelease(secret); CFRelease(toggle); CFRelease(button); CFRelease(window); CFRelease(app);
     puts("Independent OS AX client passed names/roles/protection/press/toggle/selection model checks");
     return 0;

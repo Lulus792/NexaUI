@@ -33,7 +33,7 @@ typedef struct scene {
     nx_context *ui;
     nx_numeric_field *number;nx_text_field *edit;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
-    int overlay_stage, nested_clicks, number_disabled, external_fixture;
+    int overlay_stage, nested_clicks, number_disabled, external_fixture, close_requested;
     uint64_t required, optional, radio, other, legacy;
 } scene;
 static nx_font_collection *numeric_fonts;
@@ -80,6 +80,9 @@ static int frame(scene *s) {
         d=control(2035,1,"Open nested overlays",(nx_rect){10,430,140,30});
         CHECK(nx_button(s->ui,&d,&state)==NX_OK);
         if(state.clicked) s->overlay_stage=2;
+        d=control(2037,1,"Open sibling overlays",(nx_rect){310,430,150,30});
+        CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        if(state.clicked) {s->overlay_stage=4;s->nested_clicks=0;}
         char result[64];int n=snprintf(result,sizeof(result),"%d:%llu",s->nested_clicks,
                                       (unsigned long long)nx_focus_id(s->ui));
         nx_semantic_desc observed={0};observed.id=2036;observed.parent_id=1;
@@ -133,13 +136,28 @@ static int frame(scene *s) {
     CHECK(nx_semantics_add(s->ui,&disabled_group,NULL)==NX_OK);
     d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
     CHECK(nx_button(s->ui,&d,&state)==NX_OK);
-    if(s->overlay_stage) {
+    if(s->overlay_stage==3 || s->overlay_stage==4) {
+        nx_overlay_desc first={0};first.panel.id=2100;first.panel.parent_id=1;
+        first.panel.bounds=(nx_rect){200,200,180,90};first.panel.name=(nx_utf8_span){"First",5};first.backdrop_id=2101;
+        int dismissed=0;CHECK(nx_popup_begin(s->ui,&first,&dismissed)==NX_OK && !dismissed);
+        d=control(2102,2100,"First action",(nx_rect){220,220,120,30});CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        CHECK(nx_overlay_end(s->ui)==NX_OK);
+        if(s->overlay_stage==4) {
+            nx_overlay_desc second={0};second.panel.id=2110;second.panel.parent_id=1;
+            second.panel.bounds=(nx_rect){250,260,180,90};second.panel.name=(nx_utf8_span){"Second",6};second.backdrop_id=2111;
+            CHECK(nx_popup_begin(s->ui,&second,&dismissed)==NX_OK && !dismissed);
+            d=control(2112,2110,"Second action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->nested_clicks+=state.clicked;
+            CHECK(nx_overlay_end(s->ui)==NX_OK);
+        }
+    } else if(s->overlay_stage) {
         nx_overlay_desc outer={0};outer.panel.id=2000;outer.panel.parent_id=1;
         outer.panel.bounds=(nx_rect){200,200,300,200};outer.panel.name=(nx_utf8_span){"Dialog",6};
         outer.backdrop_id=2001;int dismissed=0;
         CHECK(nx_modal_begin(s->ui,&outer,&dismissed)==NX_OK && !dismissed);
         d=control(2002,2000,"Dialog trigger",(nx_rect){220,220,120,30});
         CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+        if(s->external_fixture && s->overlay_stage==1 && state.clicked)s->close_requested=1;
         if(s->overlay_stage==2) {
             nx_overlay_desc inner={0};inner.panel.id=2010;inner.panel.parent_id=2002;
             inner.panel.bounds=(nx_rect){250,260,180,90};inner.panel.name=(nx_utf8_span){"Menu",4};
@@ -376,6 +394,14 @@ static int external(const char *client) {
         if(s.overlay_stage==2 && s.nested_clicks) {
             if(nx_overlay_close(s.ui)!=NX_OK) { kill(child,SIGKILL);waitpid(child,&status,0);failed=1;break; }
             s.overlay_stage=1;
+        }
+        if(s.overlay_stage==4 && s.nested_clicks) {
+            if(nx_overlay_close(s.ui)!=NX_OK) { kill(child,SIGKILL);waitpid(child,&status,0);failed=1;break; }
+            s.overlay_stage=3;
+        }
+        if(s.close_requested) {
+            if(nx_overlay_close(s.ui)!=NX_OK) { kill(child,SIGKILL);waitpid(child,&status,0);failed=1;break; }
+            s.overlay_stage=0;s.close_requested=0;
         }
         CFRunLoopRunInMode(kCFRunLoopDefaultMode,.001,true);
     }
