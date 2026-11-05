@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## IME reply after field replacement (2026-11-05)
+
+On parent `febf5ad8981f928573814a02d26f5186f7b290fa`, a controlled Wayland
+v3 test queued an IME delete and commit, destroyed the original text field and
+constructed an identical replacement. When the allocator actually reused the
+field address (`NEXAUI_TEST_REQUIRE_FIELD_REUSE=1`), the old reply edited the
+replacement and the test failed. Source `90aac97fe157500a13f7765540ab6e6ffbe08c54`
+includes the already assigned text-model identity in the IME revision; the
+same forced-reuse test passed. The normal test also runs without requiring a
+particular allocator to reuse an address. Ten controlled v1/v3, text-value and
+Settings protocol cases and five Clang ASan/UBSan cases passed; the sanitizer
+case does not claim address reuse. Three selection/IME clipboard cases passed.
+On isolated Weston/Xvfb, all four `weston-simple-im` cases passed
+(`/tmp/nexaui-ime-reuse-simple-final/result.json`), as did the native Settings
+keyboard and AT-SPI cases (`/tmp/nexaui-ime-reuse-atspi-final/result.json`).
+Before the fix the four simple-IME and 15 selected clipboard cases also passed;
+the first attempted simple-IME invocation failed because `setxkbmap` was not
+on PATH, then passed using the private binary. These are Linux fixture results;
+other IMEs, physical input, other platforms and human accessibility remain open.
+
 ## Settings text selection across view replacement (2026-11-05)
 
 Source `75958824484c4e373ec5ec49815fde357dfd0cf8` adds
