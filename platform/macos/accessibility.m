@@ -24,8 +24,11 @@ typedef struct nx_ax_node {
     uint64_t membership, policy_epoch;
     nx_selection_target target;
     nx_text_value_target text_target;
+    nx_text_selection_snapshot text_selection;
     int intrinsic_disabled;
     int owner_multiple;
+    int text_snapshot_only;
+    size_t value_length;
     const char *name, *help, *value;
 } nx_ax_node;
 typedef struct nx_ax_snapshot {
@@ -39,7 +42,7 @@ typedef struct nx_ax_snapshot {
    or an application allocator. A detached bridge revokes before freeing buffers. */
 typedef struct nx_ax_multi_lease {
     atomic_uint references;
-    uint64_t generation, context;
+    uint64_t generation, context, frame;
     nx_ax_snapshot *snapshot;
     int live;
 } nx_ax_multi_lease;
@@ -60,7 +63,9 @@ typedef struct nx_ax_text_request {
     nx_ax_multi_lease *lease;
     uint64_t generation, context, id, incarnation;
     nx_text_value_target target;
-    size_t bytes, length;
+    uint64_t frame;
+    size_t bytes, length, start, end;
+    int selection;
     char text[];
 } nx_ax_text_request;
 typedef struct nx_ax_request {
@@ -91,6 +96,7 @@ typedef struct nx_ax_request {
 - (id)focused;
 - (BOOL)request:(NXMacAXElement *)element action:(uint32_t)action;
 - (BOOL)requestText:(NXMacAXElement *)element value:(NSString *)value;
+- (BOOL)requestTextSelection:(NXMacAXElement *)element range:(NSRange)range;
 - (BOOL)requestSet:(NXMacAXElement *)owner children:(NSArray *)children rowsOnly:(BOOL)rows;
 - (NSArray *)selected:(NXMacAXElement *)owner rowsOnly:(BOOL)rows;
 - (nx_result)publish:(const nx_context *)context;
@@ -167,15 +173,26 @@ static int text_editable(nx_ax_node *n) {
     return n && n->role==NX_ROLE_TEXT_FIELD && n->text_target.identity &&
         (n->actions&NX_ACTION_SET_VALUE) && !(n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED));
 }
+static int text_readable(nx_ax_node *n) {
+    return n && n->text_target.identity && n->text_selection.present &&
+        !(n->state&NX_SEM_PROTECTED) && n->text_selection.anchor<=n->value_length &&
+        n->text_selection.cursor<=n->value_length && !memchr(n->value,0,n->value_length);
+}
+static int text_selectable(nx_ax_node *n) {
+    return text_readable(n) && !n->text_snapshot_only && !(n->state&NX_SEM_DISABLED);
+}
 static int text_current(void *user,uint64_t token,uint64_t context,uint64_t id,nx_text_value_target target) {
     if(!pthread_main_np())return 0;
     nx_ax_text_request *r=user;nx_ax_multi_lease *l=r->lease;
     if(!l->live || !l->snapshot || l->generation!=r->generation || token!=r->generation ||
-       l->context!=context || context!=r->context || id!=r->id || !text_target_equal(target,r->target))return 0;
+       l->context!=context || context!=r->context || id!=r->id || !text_target_equal(target,r->target) ||
+       (r->selection && l->frame!=r->frame))return 0;
     uint32_t at=find(l->snapshot,id);if(at==NX_AX_NONE)return 0;
     nx_ax_node *n=&l->snapshot->nodes[at];
-    return text_editable(n) && n->incarnation==r->incarnation && text_target_equal(n->text_target,r->target);
+    return (r->selection?text_selectable(n):text_editable(n)) &&
+        n->incarnation==r->incarnation && text_target_equal(n->text_target,r->target);
 }
+static void text_completed(void *user,int applied) { (void)user;(void)applied; }
 static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
 static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
     uint64_t owner_id,nx_selection_target target) {
@@ -293,6 +310,19 @@ static NSString *role(nx_semantic_role value) {
 static NSString *string(const char *bytes) {
     return [[[NSString alloc] initWithBytes:bytes length:strlen(bytes) encoding:NSUTF8StringEncoding] autorelease];
 }
+static NSString *text_string(nx_ax_node *n) {
+    if(!text_readable(n))return nil;
+    return [[[NSString alloc] initWithBytes:n->value length:n->value_length encoding:NSUTF8StringEncoding] autorelease];
+}
+static NSRange text_selection_range(nx_ax_node *n) {
+    if(!text_readable(n))return NSMakeRange(NSNotFound,0);
+    size_t first=n->text_selection.anchor<n->text_selection.cursor?n->text_selection.anchor:n->text_selection.cursor;
+    size_t last=n->text_selection.anchor<n->text_selection.cursor?n->text_selection.cursor:n->text_selection.anchor;
+    NSString *a=[[[NSString alloc] initWithBytes:n->value length:first encoding:NSUTF8StringEncoding] autorelease];
+    NSString *b=[[[NSString alloc] initWithBytes:n->value length:last encoding:NSUTF8StringEncoding] autorelease];
+    if(!a || !b)return NSMakeRange(NSNotFound,0);
+    return NSMakeRange([a length],[b length]-[a length]);
+}
 static const char *value_string(nx_ax_node *n) {
     return n->role==NX_ROLE_TEXT && !n->value[0] ? n->name : n->value;
 }
@@ -356,6 +386,17 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
     return string(value_string(n));
 }
 - (NSString *)accessibilityValueDescription { nx_ax_node *n=[self current]; return n ? string(n->value) : nil; }
+- (NSRange)accessibilitySelectedTextRange { return text_selection_range([self current]); }
+- (NSString *)accessibilitySelectedText {
+    nx_ax_node *n=[self current];NSString *text=text_string(n);NSRange range=text_selection_range(n);
+    return text && range.location!=NSNotFound && NSMaxRange(range)<=[text length] ? [text substringWithRange:range] : nil;
+}
+- (NSInteger)accessibilityNumberOfCharacters {
+    NSString *text=text_string([self current]);return text ? (NSInteger)[text length] : 0;
+}
+- (void)setAccessibilitySelectedTextRange:(NSRange)range {
+    NXMacAXBridge *owner=[bridge retain];[owner requestTextSelection:self range:range];[owner release];
+}
 - (void)setAccessibilityValue:(id)value {
     NXMacAXBridge *owner=[bridge retain];
     if ([value isKindOfClass:[NSString class]]) [owner requestText:self value:value];
@@ -470,6 +511,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
     nx_ax_node *n=[self current]; if (!n) return NO;
     int enabled=!(n->state&NX_SEM_DISABLED);
     if (selector==@selector(setAccessibilityValue:)) return text_editable(n);
+    if (selector==@selector(setAccessibilitySelectedTextRange:)) return text_selectable(n);
     if (selector==@selector(accessibilityPerformPress)) return enabled && press_action(n);
     if (selector==@selector(setAccessibilityFocused:))
         return enabled && ((n->actions&NX_ACTION_FOCUS) || ((n->state&NX_AX_SELECTION) && n->focus!=NX_AX_NONE));
@@ -636,7 +678,32 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
     nx_ax_text_request *r=malloc(allocation);if(!r)return NO;
     atomic_init(&r->references,1);r->lease=lease;lease_retain(lease);
     r->generation=generation;r->context=context;r->id=id;r->incarnation=incarnation;r->target=target;
+    r->frame=frame;r->selection=0;r->start=r->end=0;
     r->bytes=allocation;r->length=length;if(length)memcpy(r->text,bytes,length);r->text[length]=0;
+    nx_ax_request request={0};request.id=id;request.incarnation=incarnation;request.text=r;
+    requests[request_count++]=request;request_bytes+=allocation;wake_owner();return YES;
+}
+- (BOOL)requestTextSelection:(NXMacAXElement *)element range:(NSRange)range {
+    nx_ax_node *n=[element current];
+    if(!n || element->bridge!=self || !text_selectable(n) || !lease || !lease->live)return NO;
+    uint64_t id=n->id,incarnation=n->incarnation,generation=lease->generation,context=context_identity,source_frame=frame;
+    nx_text_value_target target=n->text_target;NSString *text=text_string(n);
+    if(!text || range.location==NSNotFound || range.location>[text length] || range.length>[text length]-range.location)return NO;
+    NSData *a=[[text substringToIndex:range.location] dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+    NSData *b=[[text substringToIndex:range.location+range.length] dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+    if(!a || !b || [a length]>[b length])return NO;
+    size_t start=[a length],end=[b length];
+    if(!lease->live || lease->generation!=generation || context_identity!=context || frame!=source_frame || !snapshot)return NO;
+    uint32_t index=find(snapshot,id);
+    if(index==NX_AX_NONE || snapshot->nodes[index].incarnation!=incarnation || !text_selectable(&snapshot->nodes[index]) ||
+       !text_target_equal(snapshot->nodes[index].text_target,target) || end>snapshot->nodes[index].value_length)return NO;
+    for(size_t i=0;i<request_count;++i)if(requests[i].text && requests[i].id==id)return NO;
+    size_t allocation=sizeof(nx_ax_text_request);
+    if(!queue_space(self,allocation,0))return NO;
+    nx_ax_text_request *r=calloc(1,allocation);if(!r)return NO;
+    atomic_init(&r->references,1);r->lease=lease;lease_retain(lease);
+    r->generation=generation;r->context=context;r->id=id;r->incarnation=incarnation;r->target=target;
+    r->frame=source_frame;r->selection=1;r->start=start;r->end=end;r->bytes=allocation;
     nx_ax_request request={0};request.id=id;request.incarnation=incarnation;request.text=r;
     requests[request_count++]=request;request_bytes+=allocation;wake_owner();return YES;
 }
@@ -748,6 +815,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
         n->first=n->last=n->next=n->owner=n->selected=n->focus=n->selected_last=n->next_selected=NX_AX_NONE;
         n->target=nx_context_selection_target(context,n->id);
         n->text_target=nx_context_text_value_target(context,n->id);
+        n->text_selection=nx_context_text_selection_snapshot(context,n->id);
+        n->text_snapshot_only=nx_context_text_snapshot_only(context,n->id);
         n->membership=nx_context_selection_membership(context,n->id);
         n->parent=find(s,v.parent_id);
         if (n->parent!=NX_AX_NONE) {
@@ -788,6 +857,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
         if(same)n->incarnation=snapshot->nodes[old].incarnation;
         else { if (next_incarnation==UINT64_MAX) return NX_ERROR_LIMIT; n->incarnation=++next_incarnation; }
         nx_utf8_span spans[3]={v.name,v.description,(v.state&NX_SEM_PROTECTED) ? (nx_utf8_span){0} : v.value};
+        n->value_length=spans[2].length;
         const char **dest[3]={&n->name,&n->help,&n->value};
         for (unsigned j=0;j<3;++j) {
             *dest[j]=text; if (spans[j].length) memcpy(text,spans[j].data,spans[j].length);
@@ -840,7 +910,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
     ++publication;
     if (context_identity!=binding) {++lease->generation;clear_requests(self);}
     context_identity=binding; frame=nx_context_frame_serial(context);
-    lease->context=binding;lease->snapshot=s;
+    lease->context=binding;lease->snapshot=s;lease->frame=frame;
     for (size_t i=0;i<request_count;) {
         nx_ax_multi_request *r=requests[i].multi;
         nx_ax_text_request *t=requests[i].text;
@@ -875,7 +945,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
             nx_result result=NX_OK;
             if(valid) {
                 nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current};
-                result=nx_semantics_request_text_value_guarded(context,t->id,(nx_utf8_span){t->text,t->length},&guard);
+                result=t->selection ? nx_semantics_request_text_selection_with_completion(context,t->id,t->start,t->end,&guard,text_completed) :
+                    nx_semantics_request_text_value_guarded(context,t->id,(nx_utf8_span){t->text,t->length},&guard);
             }
             at=0;while(at<request_count && requests[at].text!=t)++at;
             int live=text_current(t,t->generation,t->context,t->id,t->target);
