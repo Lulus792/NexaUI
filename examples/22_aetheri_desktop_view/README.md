@@ -354,3 +354,26 @@ an initial wrong-app-ID run and a later focus-timing failure, are in
 The test host is not yet the production desktop: private-surface IME/AT-SPI,
 the held-pointer removal failure, physical and human acceptance, the full
 Settings integration and broader app migration remain open.
+
+Source `7065ee9c0bdd46c9d333dc7fd4dd52dbfae3b999` extends the owner
+fixture so a successful fixed-app acknowledgement can select an already
+observed matching window and use the guarded activation path after search
+collapses. This mirrors the existing Aetheri development desktop's grouping
+behavior: app IDs are descriptive metadata, not proof of identity or
+authorization, and the process owner still chooses its fixed executable.
+If no matching window has been observed, acknowledgement does not fabricate
+one. A target closed before activation is cancelled.
+
+Two isolated original-supervisor runs started both the NexaUI Settings model
+consumer and original Aetheri Terminal, switched from Terminal to the
+already-running Settings window and back, observed successful compositor
+activation responses and verified no additional processes were spawned.
+Settings close/reopen and ordered shutdown checks also passed. A separate
+test-only binary whose app-ID match was deliberately disabled failed while
+waiting for Settings activation. The final desktop binary SHA-256 was
+`788109c5ea3a1a2c37587c77b8977fbac2d7ab0b752c2720f5ba7dd6de9c551c`;
+positive and negative logs are in
+`D:/NexaUI/out/aetheri-layer-owner-reuse-20261105.tar.gz`, SHA-256
+`8e7eaed9cc59281cdc8a09e8be64fa915991da3519faef122581a3cd63ed27b5`.
+This supersedes the earlier fixture's lack of observed-window activation, not
+the remaining production, IME, AT-SPI, held-pointer or human/physical gates.
