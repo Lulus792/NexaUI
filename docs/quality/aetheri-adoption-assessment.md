@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Sibling overlay stack and keyboard checks (2026-11-05)
+
+Implementation source `e1c23d95c3affb1a412c60ae9b51f1666c51425a` extends
+the bounded overlay stack to sibling scopes while retaining nested scopes.
+Test source `5a5c74708d24070a9c4b1d87eca566e602e04420` covers ordering,
+keyboard focus cycling, pointer blocking, Escape/outside dismissal, focus return,
+removed/reordered scopes, allocation failure and the 16-scope limit. The
+Windows shared Debug overlay, search and independent UIA tests passed on
+Windows 10.0.26200 with MSVC 19.38; the core overlay/search tests also passed
+on Alpine/WSL with Clang 22.1.3 ASan/UBSan and leak detection. See the next
+section for distinct native client sources and their test boundaries.
+
+The six core CI jobs for earlier equivalent implementation source
+`c8cbc8bc41f770b6cdda33046e10df02700ce526` passed Linux, Windows and macOS
+static/shared ([run](https://github.com/Lulus792/NexaUI/actions/runs/42024215210));
+its Linux sanitizer job was still running at this inspection and Windows ASan
+was skipped. A local Windows ASan Release attempt timed out on both core tests
+and is not counted as a pass. The intervening changes only add tests and
+documentation. Physical/human assistive and Aetheri acceptance remain open.
+
 ## Sibling overlay candidate: native checks (2026-11-05)
 
 Source `a4cebc1c1e98b2690049b7969eed851cb268801e` extends the independent
