@@ -8,7 +8,7 @@ not establish a completed transition or full desktop acceptance.
 The existing descriptor/info/event layouts remain unchanged. Two descriptor
 flags are opt-in: `NX_WINDOW_CLIENT_CHROME` for a client-drawn title area and
 `NX_WINDOW_STATE_EVENTS` for normalized native state notifications. Zero flags
-retain existing window creation and event behavior. An event's new union alias
+retain standard window creation behavior. An event's new union alias
 does not change its storage layout or earlier event enum values.
 
 `nx_window_get_status` separates observed state, observable state bits and native
@@ -39,7 +39,12 @@ must not occur reentrantly during an active native interaction.
   dimensions, later resizes, maximize and fullscreen are not clamped by that
   initial policy. Zero or unavailable bounds leave the requested size intact.
   Query actual logical and pixel sizes after creation before laying out or
-  allocating a frame. See the [xdg-shell protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/stable/xdg-shell/xdg-shell.xml).
+  allocating a frame. While an external renderer leases a visible window, an
+  acknowledged configure that does not change dimensions queues
+  `NX_EVENT_WAKE`: an event-driven owner should submit a frame, because the
+  compositor still needs a surface commit. A size change instead queues the
+  existing `NX_EVENT_RESIZE`. Hidden windows and the adapter-owned background
+  do not receive this additional wake. See the [xdg-shell protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/stable/xdg-shell/xdg-shell.xml).
 - X11: use WM/EWMH messages and observed properties. A bare X server is not a
   window manager; unavailable management must report unsupported. Motif hints
   request client decoration; the actual WM remains responsible for honoring it.

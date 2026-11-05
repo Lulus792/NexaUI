@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
+#include "nexaui/software.h"
 #include "wayland/window_internal.h"
 #include "xdg-shell-server-protocol.h"
 #include "xdg-decoration-unstable-v1-server-protocol.h"
@@ -64,6 +65,7 @@ static void commit(struct wl_client *c,struct wl_resource *r) {
         xdg_toplevel_send_configure(s->top,300,150,&a); wl_array_release(&a);
         xdg_surface_send_configure(s->xdg,++s->serial); break;
     }
+    case 11: configure(s); break; /* Same-size configure with a renderer lease. */
     }
 }
 static void attach(struct wl_client *c,struct wl_resource *r,struct wl_resource *buffer,int32_t x,int32_t y) {
@@ -183,6 +185,24 @@ static void test(int client_mode,int reject) {
         long_id[255]=0; CHECK(nx_window_set_wayland_app_id(w,long_id)==NX_OK); roundtrip(w);
         CHECK(atomic_load(&s.app_requests)==3 && atomic_load(&s.app_matches)==1);
         CHECK(atomic_load(&s.decorations)==client_mode);
+        if (!client_mode) {
+            nx_software_view *view=NULL; nx_event queued; int available=0, wakes=0;
+            CHECK(nx_software_view_open(w,&view)==NX_OK && view);
+            do { CHECK(nx_window_next_event(w,&queued,&available)==NX_OK); } while(available);
+            send(&s,w,11);
+            do { CHECK(nx_window_next_event(w,&queued,&available)==NX_OK);
+                if(available && queued.type==NX_EVENT_WAKE) ++wakes; } while(available);
+            CHECK(wakes>0);
+            nx_software_view_outcome outcome;
+            CHECK(nx_software_view_render(view,NULL,0,(nx_color){0,0,0,1},&outcome)==NX_OK &&
+                  outcome==NX_SOFTWARE_VIEW_READY);
+            CHECK(nx_software_view_close(&view)==NX_OK && !view); roundtrip(w);
+            do { CHECK(nx_window_next_event(w,&queued,&available)==NX_OK); } while(available);
+            send(&s,w,11); wakes=0;
+            do { CHECK(nx_window_next_event(w,&queued,&available)==NX_OK);
+                if(available && queued.type==NX_EVENT_WAKE) ++wakes; } while(available);
+            CHECK(!wakes);
+        }
         nx_window_status status; CHECK(nx_window_get_status(w,&status)==NX_OK && status.known==14u && status.state==NX_WINDOW_STATE_ACTIVE && status.client_chrome==client_mode);
         CHECK(!(status.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
         CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)9)==NX_ERROR_ARGUMENT);

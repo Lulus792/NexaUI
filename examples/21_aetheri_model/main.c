@@ -170,6 +170,7 @@ int main(int argc, char **argv) {
             double now=monotonic_seconds(); if(now<0) {okay=0;break;}
             next_ax_retry=now+1;
         }
+        if(diagnostics) {printf("FRAME %.0f %.0f %.2f\n",info.width,info.height,info.scale);fflush(stdout);}
         if(verify || diagnostics) {printf("MODEL theme=%d german=%d text=%u\n",(int)model.theme,model.german,model.text_percent);fflush(stdout);}
         if(diagnostics && !fixture_displays) {
             printf("SELECTED_OUTPUT %u\n",model.count?model.displays[model.selected].id:0);fflush(stdout);

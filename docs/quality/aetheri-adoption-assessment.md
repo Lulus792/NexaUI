@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Same-size Wayland configure and Settings resize (2026-11-05)
+
+On the candidate based on `993e02f1e352b3e38df855c43070ea70b7f55e2f`, an
+unchanged-size Wayland configure queues `NX_EVENT_WAKE` while a visible window
+has an external renderer. This lets an event-driven owner submit the surface
+commit associated with the configure. Size-changing configures already emit a
+resize event; the adapter's own background still commits without this wake.
+The controlled protocol test failed on the base at `wakes>0`, then passed with
+the candidate, and checks that releasing the renderer removes the extra wake.
+Eight fractional-protocol cases plus that management test passed 9/9 in each
+static, shared and Clang ASan/UBSan Wayland-only configuration. Initial broader
+CTest selections included unbuilt binaries and are not counted as passes.
+
+An installed C17 original-model consumer in each of those three configurations
+ran under private headless Sway 1.12-rc3/Pixman as an unprivileged user. The
+fixture waited for the tiled and floating frames, resized to 320x240, restored
+800x480, checked each submitted frame and unchanged default model/display
+fixture, then closed via SIGTERM (exit 0). Earlier attempts issued resize while
+the floating transition was still settling and timed out; the sequenced fixture
+passes on both old and new SDKs, so it does not establish that the wake fix
+caused the resize result. It also does not test keyboard, AT-SPI or a real
+Aetheri session during resize. Physical/human acceptance, other compositors,
+Vulkan-specific presentation and windows below 320x240 remain open.
+
 ## Original-model Settings narrow view (2026-11-05)
 
 On the consumer tree based on NexaUI

@@ -2360,6 +2360,15 @@ static void nx_wayland_surface_configure(void *data,
         event.scale = (float)((double)window->scale_120/120.0);
         nx_platform_event_queue_push(&window->event_queue, event);
     }
+    /* A same-size configure still needs a subsequent surface commit. When a
+       renderer owns presentation, wake its owner so it can submit that frame;
+       acknowledging the configure alone can leave compositor transactions
+       waiting and block later resizes. A resize event already wakes the owner. */
+    if (!resized && window->configured && window->external_renderer && !window->hidden &&
+        window->error == NX_OK) {
+        nx_event wake = {0}; wake.type = NX_EVENT_WAKE;
+        nx_platform_event_queue_push(&window->event_queue, wake);
+    }
     if (resized || !window->configured)
         xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
                                          width, height);

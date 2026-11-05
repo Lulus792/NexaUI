@@ -50,8 +50,10 @@ of physical monitors or display control.
 Its measured control wrapping and focus-following scroll area retain the chosen
 text size, but need broader font, viewport and human accessibility review. The
 layout remains provisional. At narrow widths its title scrolls with the content;
-controlled keyboard tests cover German at 200% and 320–480 pixels wide, not
-live compositor resize or every font and language. The broader Settings example in `examples/18_settings`
+controlled keyboard tests cover German at 200% and 320–480 pixels wide. A
+private headless Sway test drives a native 320x240 resize and restores 800x480;
+its default-model run does not cover native keyboard, all fonts or languages.
+Run `run_sway_resize.py --help` for the isolated fixture inputs. The broader Settings example in `examples/18_settings`
 provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.
