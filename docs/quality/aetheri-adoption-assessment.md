@@ -9,6 +9,11 @@ job failed its separate `nexaui_nexacloud_metal_native_example` after the AX
 test passed ([run](https://github.com/Lulus792/NexaUI/actions/runs/42023734697)).
 The Metal failure's cause was not established. Its log reports reference-equal
 frames and timing data; it is not a successful complete shared job.
+The later candidate `c8cbc8bc41f770b6cdda33046e10df02700ce526`, which adds
+profile-phase diagnostics without changing acceptance checks, passed both
+complete macOS jobs (111/111 shared, 112/112 static), including AX and Metal
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42024215210)). A later
+pass does not establish the cause of the earlier failure.
 
 The Windows UIA test at `63baf5e1f93e8d3bafa5b6a7e9c444e36bc108df` passed
 three runs each in STA, MTA and owner-initialized COM on Windows 10.0.26200,
@@ -23,12 +28,24 @@ screenreader or actual Aetheri acceptance.
 
 Test source `b2851034be5a9398d10626d921428777e76b9a4f` extends the independent
 macOS AX client and host with a nested-overlay interaction and host-observed
-action count and logical focus return. The native CI result is pending
-([run](https://github.com/Lulus792/NexaUI/actions/runs/42020716816)); the
-test is not a pass until it actually executes successfully. As a separate core
+action count and logical focus return. At that inspection the native CI result
+was pending; the completed result is recorded below. As a separate core
 regression on that source, Windows 10.0.26200 x64 with MSVC 19.38.33145 shared
 Debug passed `nexaui_overlay` and `nexaui_search` five consecutive times each.
 Those Windows tests are not macOS AX, VoiceOver or Aetheri acceptance.
+
+## Independent macOS AX nested overlay client (2026-11-05)
+
+Test source `fdbf7242f851e2a3c9a6af94f2ddabc15bfb7408` adds an independent
+AX client check for a nested modal and popup. It checks the disabled parent,
+enabled inner action and genuinely disabled child, invokes the inner action,
+and observes the host's action count and logical focus return. The equivalent
+test tree `b2851034be5a9398d10626d921428777e76b9a4f` passed the external test
+and full macOS shared (111/111) and static (112/112) CI suites
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42020716816)).
+The additional intervening main changes only modify the Windows IME test and
+documentation. This is an automated client result, not human VoiceOver,
+physical or Aetheri acceptance. Sibling overlays remain a separate open item.
 
 ## Windows IME focus transfer (2026-11-05)
 
