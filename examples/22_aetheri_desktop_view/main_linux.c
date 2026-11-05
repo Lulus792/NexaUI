@@ -95,7 +95,9 @@ int main(int argc,char **argv) {
             if(ax!=NX_OK && ax!=NX_ERROR_UNSUPPORTED){okay=0;break;}
             if(diagnostics && initial_focus==2) {puts("READY");fflush(stdout);initial_focus=3;}
         }
-        dirty=busy;
+        /* The revision guard is removed after the reconciliation frame.
+           Publish a fresh frame so native clients see the editable state. */
+        dirty=busy || model_changed;
         if(initial_focus==1){dirty=1;initial_focus=2;}
     }
 done:
