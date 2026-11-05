@@ -78,6 +78,37 @@ int main(int argc,char **argv) {
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     ae_desktop_model_backspace(&model);++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    /* A press captured for an old window must not activate an ID reused by a
+       newer model, even when release arrives after reconciliation. */
+    uint32_t old_index;nx_semantic_view old_row;
+    CHECK(nx_semantics_find(ctx,UINT64_C(0x100000000)+42,&old_index)==NX_OK &&
+          nx_semantics_get(ctx,old_index,&old_row)==NX_OK);
+    nx_event pointer={0};pointer.type=NX_EVENT_POINTER_MOVE;
+    pointer.x=old_row.bounds.x+8;pointer.y=old_row.bounds.y+8;
+    CHECK(aetheri_desktop_view_queue_event(view,&pointer)==NX_OK);
+    pointer.type=NX_EVENT_POINTER_DOWN;pointer.button=NX_BUTTON_LEFT;
+    CHECK(aetheri_desktop_view_queue_event(view,&pointer)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    ae_desktop_model_closed(&model,42);
+    CHECK(ae_desktop_model_window(&model,42,"Replacement","org.example.Other",false));++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    pointer.type=NX_EVENT_POINTER_UP;CHECK(aetheri_desktop_view_queue_event(view,&pointer)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    pointer.type=NX_EVENT_POINTER_DOWN;CHECK(aetheri_desktop_view_queue_event(view,&pointer)==NX_OK);
+    pointer.type=NX_EVENT_POINTER_UP;CHECK(aetheri_desktop_view_queue_event(view,&pointer)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_ACTIVATE && intent.window==42);
+    CHECK(nx_focus_set(ctx,UINT64_C(0x100000000)+42)==NX_OK);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_ENTER;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    ae_desktop_model_closed(&model,42);
+    CHECK(ae_desktop_model_window(&model,42,"Another replacement","org.example.Other",false));++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    key.type=NX_EVENT_KEY_UP;CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    key.type=NX_EVENT_KEY_DOWN;CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    key.type=NX_EVENT_KEY_UP;CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_ACTIVATE && intent.window==42);
     CHECK(nx_semantics_request_action(ctx,UINT64_C(0x100000000)+42,NX_ACTION_PRESS)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_ACTIVATE && intent.window==42 && intent.app==AE_DESKTOP_APP_NONE);
     CHECK(nx_semantics_request_action(ctx,UINT64_C(0x100000000)+42,NX_ACTION_PRESS)==NX_OK);

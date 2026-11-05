@@ -74,6 +74,12 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
             result_y[i]=content_height;result_height[i]=h;content_height+=h+8;
         }
     }
+    if(v->model_revision && revision!=v->model_revision) {
+        /* A captured press belongs to the previous model, even if its
+           semantic ID is immediately reused. Cancel after any queued input. */
+        nx_event cancel={0};cancel.type=NX_EVENT_POINTER_CANCEL;
+        if(nx_context_queue_event(v->context,&cancel)!=NX_OK)goto done;
+    }
     if(v->model->search && v->model_revision && revision!=v->model_revision) {
         if(nx_text_field_set_read_only(v->query,1)!=NX_OK)goto done;
         guarded=1;
@@ -184,6 +190,11 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         }
     }
     if(nx_end_frame(v->context)!=NX_OK)goto done;
+    if(v->model_revision && revision!=v->model_revision) {
+        /* Reassert the retained focus to retire an Enter/Space press captured
+           for the old model without moving focus to another control. */
+        if(nx_focus_set(v->context,nx_focus_id(v->context))!=NX_OK)goto done;
+    }
     if(v->model_revision && revision!=v->model_revision && v->model->search) {
         nx_utf8_span draft;if(nx_text_field_text(v->query,&draft)!=NX_OK)goto done;
         size_t n=strlen(v->model->query);
