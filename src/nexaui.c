@@ -6885,39 +6885,60 @@ nx_result nx_text_clipboard_for_window(nx_window *window,
     return NX_OK;
 }
 
-static nx_result nx_field_clipboard_event(nx_text_buffer *buffer,
-                                          const nx_text_clipboard *clipboard,
-                                          nx_key key, int multiline,
-                                          int sensitive) {
+static int nx_clipboard_edit_current(nx_context *ctx,nx_text_field *field,
+                                     uint64_t id,nx_text_buffer *buffer,
+                                     nx_text_value_target model,uint64_t serial,
+                                     uint64_t focus_serial) {
+    return ctx->focused_id==id && ctx->focus_serial==focus_serial &&
+        focus_serial!=UINT64_MAX && field->buffer==buffer &&
+        field->text_value.identity==model.identity && field->text_value.revision==model.revision &&
+        serial!=UINT64_MAX && nx_text_buffer_change_serial(field->buffer)==serial;
+}
+
+static nx_result nx_field_clipboard_event(nx_context *ctx,const nx_text_field_desc *desc,
+                                          nx_text_field *field,nx_key key) {
+    nx_text_buffer *buffer=field->buffer;
+    nx_text_clipboard clipboard=desc->clipboard;
+    nx_text_value_target model=field->text_value;
+    uint64_t id=desc->id;
+    uint64_t serial=nx_text_buffer_change_serial(buffer), focus_serial=ctx->focus_serial;
+    int multiline=desc->multiline, sensitive=field->sensitive;
+    if (!nx_clipboard_edit_current(ctx,field,id,buffer,model,serial,focus_serial)) return NX_OK;
     if (key == NX_KEY_C || key == NX_KEY_X) {
-        if (!clipboard->write) return NX_OK;
+        if (!clipboard.write) return NX_OK;
         nx_utf8_span selected;
         nx_result result = nx_text_buffer_selected_span(buffer, &selected);
         if (result != NX_OK || !selected.length) return result;
-        if (clipboard->write(clipboard->user, selected.data,
-                             selected.length) != NX_OK) return NX_OK;
+        char *copy=malloc(selected.length);
+        if (!copy) return NX_ERROR_MEMORY;
+        memcpy(copy,selected.data,selected.length);
+        result=clipboard.write(clipboard.user,copy,selected.length);
+        if (sensitive) nx_private_secure_zero(copy,selected.length);
+        free(copy);
+        if (result!=NX_OK || !nx_clipboard_edit_current(ctx,field,id,buffer,model,serial,focus_serial)) return NX_OK;
         return key == NX_KEY_X ? nx_text_buffer_replace(buffer, NULL, 0u) :
                                  NX_OK;
     }
-    if (key != NX_KEY_V || !clipboard->read) return NX_OK;
+    if (key != NX_KEY_V || !clipboard.read) return NX_OK;
     size_t length = 0, actual = 0;
     char *bytes = NULL;
     nx_result result;
 #if defined(__linux__)
-    if (clipboard->read == nx_window_clipboard_read_adapter) {
-        result = nx_linux_window_clipboard_fetch_text((nx_window *)clipboard->user, &bytes, &actual);
+    if (clipboard.read == nx_window_clipboard_read_adapter) {
+        result = nx_linux_window_clipboard_fetch_text((nx_window *)clipboard.user, &bytes, &actual);
         if (result != NX_OK) return result == NX_ERROR_MEMORY ? result : NX_OK;
         length = actual;
     } else
 #endif
     {
-        if (clipboard->read(clipboard->user, NULL, 0u, &length) != NX_OK ||
-            length == SIZE_MAX) return NX_OK;
+        if (clipboard.read(clipboard.user, NULL, 0u, &length) != NX_OK ||
+            length == SIZE_MAX || !nx_clipboard_edit_current(ctx,field,id,buffer,model,serial,focus_serial)) return NX_OK;
         bytes = malloc(length + 1u);
         if (!bytes) return NX_ERROR_MEMORY;
-        result = clipboard->read(clipboard->user, bytes, length + 1u, &actual);
+        result = clipboard.read(clipboard.user, bytes, length + 1u, &actual);
     }
-    if (result == NX_OK && actual <= length) {
+    if (result == NX_OK && actual <= length &&
+        nx_clipboard_edit_current(ctx,field,id,buffer,model,serial,focus_serial)) {
         if (!multiline) {
             size_t written = 0;
             for (size_t i = 0; i < actual; ++i) {
@@ -7104,7 +7125,7 @@ done:
     nx_text_layout_destroy(layout); nx_password_mask_destroy(&mask); return result;
 }
 
-static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_field *field,const nx_event *event) {
+static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc *desc,nx_text_field *field,const nx_event *event) {
     uint32_t command=nx_text_command_base(event->text_command);
     int scrolling=command>=NX_TEXT_COMMAND_SCROLL_LINE_UP && command<=NX_TEXT_COMMAND_SCROLL_DOCUMENT_END;
     if (command!=NX_TEXT_COMMAND_COPY && command!=NX_TEXT_COMMAND_PAGE_UP && command!=NX_TEXT_COMMAND_PAGE_DOWN && !scrolling)
@@ -7115,7 +7136,7 @@ static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_fi
     if (command>=NX_TEXT_COMMAND_COPY && command<=NX_TEXT_COMMAND_PASTE) {
         nx_key key=command==NX_TEXT_COMMAND_COPY?NX_KEY_C:command==NX_TEXT_COMMAND_CUT?NX_KEY_X:NX_KEY_V;
         if (desc->password && key!=NX_KEY_V) return NX_OK;
-        nx_result result=nx_field_clipboard_event(field->buffer,&desc->clipboard,key,desc->multiline,field->sensitive);
+        nx_result result=nx_field_clipboard_event(ctx,desc,field,key);
         if (result==NX_OK && key!=NX_KEY_C) field->command_caret_valid=field->vertical_x_valid=0;
         return result;
     }
@@ -7361,6 +7382,8 @@ nx_result nx_text_field_widget(nx_context *ctx,
         uint64_t ime_batch_target = 0, ime_batch_revision = 0;
         int ime_batch_accepted = 0;
         while (field->next_event_index < ctx->frame_events.count) {
+            size_t event_index=field->next_event_index;
+            nx_text_value_target event_model=field->text_value;
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
             if (event->type==NX_EVENT_POINTER_CANCEL ||
@@ -7424,7 +7447,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                     if (result!=NX_OK) goto rollback;
                 }
 #endif
-                result=paste_handled ? NX_OK : nx_field_text_command(desc,field,event);
+                result=paste_handled ? NX_OK : nx_field_text_command(ctx,desc,field,event);
                 if (result!=NX_OK) goto rollback;
             } else if (!desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
                 event->key == NX_KEY_ENTER &&
@@ -7444,8 +7467,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
                 }
 #endif
                 result = paste_handled || (desc->password && event->key != NX_KEY_V) ? NX_OK :
-                    nx_field_clipboard_event(field->buffer, &desc->clipboard, event->key,
-                                              desc->multiline, field->sensitive);
+                    nx_field_clipboard_event(ctx,desc,field,event->key);
                 if (result != NX_OK) goto rollback;
                 if (event->key!=NX_KEY_C) {
                     field->vertical_x_valid = 0;
@@ -7455,7 +7477,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
             } else if (event->type==NX_EVENT_KEY_DOWN && nx_field_key_command(event)) {
                 nx_event action=*event; action.type=NX_EVENT_TEXT_COMMAND;
                 action.text_command=nx_field_key_command(event);
-                result=nx_field_text_command(desc,field,&action);
+                result=nx_field_text_command(ctx,desc,field,&action);
                 if (result!=NX_OK) goto rollback;
             } else if (event->type == NX_EVENT_IME_DELETE_SURROUNDING ||
                        event->type == NX_EVENT_IME_DELETE_RANGE) {
@@ -7504,9 +7526,18 @@ nx_result nx_text_field_widget(nx_context *ctx,
                 if (result != NX_OK) goto rollback;
                 if (handled) field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
             }
-            ++field->next_event_index;
+            /* Application clipboard callbacks can replace the field and reset
+               its cursor. The current event was still consumed exactly once. */
+            if ((event_model.identity!=field->text_value.identity || event_model.revision!=field->text_value.revision) &&
+                desc->ime_window && ctx->ime_active_window==desc->ime_window && ctx->ime_active_id==desc->id &&
+                nx_window_set_ime_enabled(desc->ime_window,0)==NX_OK) {
+                ctx->ime_active_window=NULL; ctx->ime_active_id=0; ctx->ime_active_password=0;
+            }
+            field->last_context=ctx; field->last_frame_serial=ctx->frame_serial;
+            field->next_event_index=event_index+1u;
         }
     } else field->next_event_index = ctx->frame_events.count;
+    ctx->semantics.nodes[ctx->semantics.count-1u].text_value=field->text_value;
 #if defined(__linux__)
     if (field->paste_token && !nx_field_paste_current(ctx, desc, field))
         nx_field_paste_cancel(desc, field);

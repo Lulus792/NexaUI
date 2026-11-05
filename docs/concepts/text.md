@@ -36,7 +36,11 @@ word movement, line edges and vertical/page movement, including bidi and soft-wr
 affinity. Plain `PAGE_UP/DOWN` commands scroll without changing the selection;
 `MOVE_PAGE_UP/DOWN` move the caret, and selection variants preserve the anchor.
 Clipboard commands use the field's optional callbacks and suppress copy/cut for
-passwords. The standalone text model has no viewport or clipboard and leaves
+passwords. A callback may replace the field's text or move focus: the original
+selection is copied before invoking a writer, and the pending edit is discarded
+if its model, selection generation or focus changed. The application must keep
+the field, context and callback objects alive until the widget call returns.
+The standalone text model has no viewport or clipboard and leaves
 such commands unhandled. The numeric widget forwards logical text commands to
 its existing numeric buffer, including selection, deletion, undo/redo and Enter
 to commit a valid draft. It does not yet share the complete general-field native

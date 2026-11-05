@@ -232,6 +232,49 @@ static int test_clipboard_shortcuts(nx_font_collection *fonts, uint32_t primary)
     return 0;
 }
 
+typedef struct replacing_clipboard { nx_text_field *field; nx_context *ctx; int phase; unsigned reads,writes; char copied[16]; } replacing_clipboard;
+static nx_result replacing_read(void *user,char *bytes,size_t capacity,size_t *length) {
+    replacing_clipboard *cb=user; ++cb->reads; *length=1;
+    if (!bytes) {
+        if (cb->phase==1 && nx_text_field_set_text(cb->field,"new",3)!=NX_OK) return NX_ERROR_STATE;
+        if (cb->phase==3 && (nx_focus_set(cb->ctx,0)!=NX_OK || nx_focus_set(cb->ctx,1)!=NX_OK)) return NX_ERROR_STATE;
+        return NX_OK;
+    }
+    if (capacity<2) return NX_ERROR_LIMIT;
+    if (cb->phase==2 && nx_text_field_set_text(cb->field,"new",3)!=NX_OK) return NX_ERROR_STATE;
+    bytes[0]='5'; bytes[1]=0; return NX_OK;
+}
+static nx_result replacing_write(void *user,const char *bytes,size_t length) {
+    replacing_clipboard *cb=user; ++cb->writes;
+    if (nx_text_field_set_text(cb->field,"new",3)!=NX_OK || length>=sizeof(cb->copied)) return NX_ERROR_STATE;
+    memcpy(cb->copied,bytes,length); cb->copied[length]=0; return NX_OK;
+}
+static int test_clipboard_model_replacement(nx_font_collection *fonts) {
+    nx_context *ctx=NULL; nx_text_field *field=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("15",2,4096,&field)==NX_OK);
+    replacing_clipboard cb={.field=field,.ctx=ctx};
+    nx_text_field_desc desc={0}; desc.id=1; desc.bounds=(nx_rect){0,0,80,60};
+    desc.name=(nx_utf8_span){"Clipboard",9}; desc.fonts=fonts; desc.pixels_per_em=20;
+    desc.glyph_cache_bytes=65536; desc.clipboard=(nx_text_clipboard){&cb,replacing_read,replacing_write};
+    nx_interaction_state state; int valid=0,submitted=0;
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(queue_key(ctx,NX_KEY_A,NX_MOD_CONTROL) && queue_key(ctx,NX_KEY_X,NX_MOD_CONTROL));
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && expect_text(field,"new") && !strcmp(cb.copied,"15") && cb.writes==1);
+    for(int phase=1;phase<=2;++phase) {
+        cb.phase=phase; cb.reads=0; CHECK(nx_text_field_set_text(field,"15",2)==NX_OK);
+        CHECK(queue_key(ctx,NX_KEY_A,NX_MOD_CONTROL) && queue_key(ctx,NX_KEY_V,NX_MOD_CONTROL));
+        CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+        CHECK(nx_end_frame(ctx)==NX_OK && expect_text(field,"new") && cb.reads==(unsigned)phase);
+    }
+    cb.phase=3; cb.reads=0; CHECK(nx_text_field_set_text(field,"15",2)==NX_OK);
+    CHECK(queue_key(ctx,NX_KEY_A,NX_MOD_CONTROL) && queue_key(ctx,NX_KEY_V,NX_MOD_CONTROL));
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && expect_text(field,"15") && cb.reads==1);
+    nx_context_destroy(ctx); nx_text_field_destroy(field); return 0;
+}
+
 static uint64_t glyph_image_hash(nx_context *ctx, size_t *out_bitmaps) {
     const nx_command *commands = NULL;
     size_t count = 0;
@@ -632,6 +675,7 @@ int main(void) {
     CHECK(nx_font_collection_create(NULL, &fonts) == NX_OK);
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
     if (test_native_text_commands(fonts)) return 1;
+    if (test_clipboard_model_replacement(fonts)) return 1;
     if (test_single_line(fonts) || test_multiline(fonts) ||
         test_caret_scrolling(fonts) ||
         test_clipboard_shortcuts(fonts, NX_MOD_CONTROL) ||
