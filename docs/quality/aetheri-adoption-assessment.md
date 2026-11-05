@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Sibling overlay candidate: native checks (2026-11-05)
+
+Source `a4cebc1c1e98b2690049b7969eed851cb268801e` extends the independent
+macOS AX client to observe and activate sibling popups. The external client
+passed on both variants; the static job completed 112/112, while the shared
+job failed its separate `nexaui_nexacloud_metal_native_example` after the AX
+test passed ([run](https://github.com/Lulus792/NexaUI/actions/runs/42023734697)).
+The Metal failure's cause was not established. Its log reports reference-equal
+frames and timing data; it is not a successful complete shared job.
+
+The Windows UIA test at `63baf5e1f93e8d3bafa5b6a7e9c444e36bc108df` passed
+three runs each in STA, MTA and owner-initialized COM on Windows 10.0.26200,
+MSVC 19.38, shared Debug. A control with old product source `c8c763b` rejected
+the second popup. The Wayland AT-SPI test at `7682eed2a51f3651c04732934ff686d67470e299`
+passed on private Weston/Xvfb, while the same test with `c8c763b` failed when
+opening the second popup. The first Weston setup lacked helper paths and failed;
+only the corrected run passed. These client checks do not establish human
+screenreader or actual Aetheri acceptance.
+
 ## Nested overlay external macOS client candidate (2026-11-05)
 
 Test source `b2851034be5a9398d10626d921428777e76b9a4f` extends the independent
