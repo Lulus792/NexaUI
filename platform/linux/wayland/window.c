@@ -2565,6 +2565,13 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     return nx_wayland_poll_finish(window,&set,ready,poll_errno,app_fd,app_events);
 }
 
+/* Test-only controlled failures exercise cleanup after real read preparation. */
+#ifdef NEXAUI_WAYLAND_TEST_HOOKS
+static _Thread_local int nx_wayland_many_fault;
+void nx_wayland_test_poll_many_fault(int mode) { nx_wayland_many_fault=mode; }
+int nx_wayland_test_poll_many_fault_pending(void) { return nx_wayland_many_fault; }
+#endif
+
 /* The wrapper retains each owner and rejects nested group polling. No
    callbacks may run while any display has a prepared read reservation. */
 nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t count,
@@ -2584,6 +2591,13 @@ nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t coun
     }
     for(size_t i=0;i<count;++i) {
         nx_wayland_window *w=windows[i];
+#ifdef NEXAUI_WAYLAND_TEST_HOOKS
+        if(i==1 && (nx_wayland_many_fault==1 || nx_wayland_many_fault==2)) {
+            int mode=nx_wayland_many_fault;nx_wayland_many_fault=0;
+            if(mode==2)result=NX_ERROR_PLATFORM;
+            goto cancel;
+        }
+#endif
         /* Pending libwayland callbacks must be serviced without another
            display's read reservation held; let the caller iterate again. */
         if(wl_display_prepare_read(w->display)!=0) {
@@ -2604,7 +2618,12 @@ nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t coun
     }
     nfds_t app_index=total;
     if(app_fd>=0) fds[total++]=(struct pollfd){app_fd,POLLIN,0};
-    int ready=poll(fds,total,timeout), poll_errno=errno;
+    int ready, poll_errno;
+#ifdef NEXAUI_WAYLAND_TEST_HOOKS
+    if(nx_wayland_many_fault==3) {nx_wayland_many_fault=0;ready=-1;poll_errno=EINVAL;}
+    else
+#endif
+    {ready=poll(fds,total,timeout);poll_errno=errno;}
     if(ready<0 && poll_errno!=EINTR) {
         for(size_t i=0;i<prepared;++i) wl_display_cancel_read(windows[i]->display);
         return NX_ERROR_PLATFORM;

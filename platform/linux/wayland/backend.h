@@ -83,6 +83,8 @@ struct wl_display *nx_wayland_window_display(nx_wayland_window *window);
 struct wl_surface *nx_wayland_window_surface(nx_wayland_window *window);
 unsigned nx_wayland_window_ready(nx_wayland_window *window);
 #ifdef NEXAUI_WAYLAND_TEST_HOOKS
+void nx_wayland_test_poll_many_fault(int mode);
+int nx_wayland_test_poll_many_fault_pending(void);
 nx_result nx_wayland_window_test_uri_drop(nx_wayland_window *window,
                                           const char *text, size_t length,
                                           float x, float y);

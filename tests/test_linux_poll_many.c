@@ -1,10 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
 #include "wayland/window_internal.h"
+#include "wayland/backend.h"
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <sys/socket.h>
@@ -20,6 +22,10 @@ static void *produce(void *p) {
     while(nanosleep(&delay,&delay)<0 && errno==EINTR){}
     char value='x';return write(fd,&value,1)==1?NULL:p;
 }
+static void sync_done(void *data,struct wl_callback *callback,uint32_t serial) {
+    (void)serial;*(int *)data=1;wl_callback_destroy(callback);
+}
+static const struct wl_callback_listener sync_listener={sync_done};
 static int drain(nx_window *w) {
     nx_event event;int available;
     do {if(nx_window_next_event(w,&event,&available)!=NX_OK)return 0;} while(available);
@@ -41,6 +47,26 @@ int main(int argc,char **argv) {
     CHECK(!pthread_create(&thread,NULL,wrong_thread,&a) && !pthread_join(thread,NULL));
     CHECK(a.result==NX_ERROR_STATE && !a.flags);
     for(unsigned i=0;i<8;++i){CHECK(nx_window_poll_many(w,2,0,-1,&flags)==NX_OK);CHECK(drain(w[0]) && drain(w[1]));}
+    const char *only_fault=getenv("NEXAUI_TEST_POLL_MANY_FAULT_ONLY");
+    for(int mode=1;mode<=3;++mode) {
+        if(only_fault && atoi(only_fault)!=mode)continue;
+        fprintf(stderr,"FAULT_MODE %d\n",mode);
+        nx_wayland_test_poll_many_fault(mode);
+        result=nx_window_poll_many(w,2,0,-1,&flags);
+        CHECK(!nx_wayland_test_poll_many_fault_pending());
+        CHECK(result==(mode==1?NX_OK:NX_ERROR_PLATFORM));
+        CHECK(drain(w[0]) && drain(w[1]));
+        int completed=0;struct wl_display *display=nx_window_wayland_display(w[0]);
+        CHECK(display);struct wl_callback *sync=wl_display_sync(display);CHECK(sync);
+        CHECK(wl_callback_add_listener(sync,&sync_listener,&completed)==0 && wl_display_flush(display)>=0);
+        for(unsigned i=0;i<10 && !completed;++i) {
+            CHECK(nx_window_poll_many(w,2,500,-1,&flags)==NX_OK);
+            CHECK(drain(w[0]) && drain(w[1]));
+        }
+        CHECK(completed);
+        CHECK(nx_window_poll(w[0],0)==NX_OK && nx_window_poll(w[1],0)==NX_OK);
+        CHECK(drain(w[0]) && drain(w[1]));
+    }
     double wall=clock_seconds(CLOCK_MONOTONIC),cpu=clock_seconds(CLOCK_PROCESS_CPUTIME_ID);
     CHECK(wall>0 && cpu>=0);
     do {CHECK(nx_window_poll_many(w,2,100,-1,&flags)==NX_OK);CHECK(drain(w[0]) && drain(w[1]));}

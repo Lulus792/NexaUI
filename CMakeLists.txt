@@ -680,6 +680,16 @@ if(NEXAUI_BUILD_TESTS)
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
             add_dependencies(nexaui_wayland_async_clipboard_tests nexaui_wayland_test_protocols)
+            add_executable(nexaui_wayland_poll_many_transfer_tests tests/test_wayland_poll_many_transfer.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_poll_many_transfer_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_poll_many_transfer_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+            target_link_libraries(nexaui_wayland_poll_many_transfer_tests PRIVATE NexaUI::NexaUI Threads::Threads
+                PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_poll_many_transfer COMMAND nexaui_wayland_poll_many_transfer_tests)
+            set_tests_properties(nexaui_wayland_poll_many_transfer PROPERTIES TIMEOUT 15)
             target_include_directories(nexaui_wayland_async_clipboard_tests PRIVATE
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
             target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
@@ -791,10 +801,17 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         add_executable(nexaui_linux_poll_many_tests tests/test_linux_poll_many.c)
         target_include_directories(nexaui_linux_poll_many_tests PRIVATE platform/linux)
+        target_compile_definitions(nexaui_linux_poll_many_tests PRIVATE NEXAUI_WAYLAND_TEST_HOOKS)
         target_link_libraries(nexaui_linux_poll_many_tests PRIVATE NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_CLIENT)
         add_test(NAME nexaui_wayland_poll_many COMMAND nexaui_linux_poll_many_tests)
         set_tests_properties(nexaui_wayland_poll_many PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
             ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+        add_executable(nexaui_linux_poll_many_reentry_tests tests/test_linux_poll_many_reentry.c)
+        target_link_libraries(nexaui_linux_poll_many_reentry_tests PRIVATE NexaUI::NexaUI)
+        add_test(NAME nexaui_wayland_poll_many_reentry COMMAND nexaui_linux_poll_many_reentry_tests)
+        add_test(NAME nexaui_wayland_poll_many_destroy_peer COMMAND nexaui_linux_poll_many_reentry_tests --destroy-peer)
+        set_tests_properties(nexaui_wayland_poll_many_reentry nexaui_wayland_poll_many_destroy_peer PROPERTIES
+            TIMEOUT 15 SKIP_RETURN_CODE 77 ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
         if(NEXAUI_ENABLE_X11)
             add_test(NAME nexaui_x11_poll_many_unsupported COMMAND nexaui_linux_poll_many_tests --expect-unsupported)
             set_tests_properties(nexaui_x11_poll_many_unsupported PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
