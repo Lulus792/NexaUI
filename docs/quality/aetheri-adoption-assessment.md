@@ -1,5 +1,35 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland selection offered before focus (2026-11-05)
+
+The [Wayland core protocol](https://wayland.freedesktop.org/docs/html/apa.html)
+allows selection delivery immediately before keyboard focus and limits an
+external offer's focus lifetime. A controlled test on parent
+`1c61a6e93478086985d0709a7fb648a9ee79c22b` demonstrated that an external
+offer received after focus loss but before `keyboard.enter` could nevertheless
+be read. Source `6eac7ef25d79cc4d2544710324b53d598f73906d` rejects external
+reads without native keyboard focus in the async, synchronous and internal
+fetch paths. A fresh offer is retained through enter, while re-entry without a
+fresh offer cannot revive the old one. App-owned clipboard source handling is
+unchanged. The test server now emits real selection-before-enter ordering.
+
+Forty-three controlled clipboard/drop/Settings cases, eleven native Weston
+grid/AT-SPI cases, six Clang ASan/UBSan cases, default dual-backend X11 and
+Wayland checks, and four separate simple-IME cases passed. The first broader
+224-case run had 217 passes, four opt-in IME skips and three failures: those
+three independent AT-SPI test hosts had not simulated native keyboard focus.
+After updating that fixture, all three passed on rerun; the full 224-case run
+was not repeated. The four skipped IME cases were run separately and passed
+(`/tmp/nexaui-focus-guard-ime/result.json`). Initial and final fixture logs are
+`/tmp/nexaui-focus-guard-full.log`, `/tmp/nexaui-focus-guard-second.log`,
+and `/tmp/nexaui-focus-guard-native/result.json`.
+
+This protects against reading before focus and against reusing stale data; it
+does not make Weston re-send a missing offer after the redundant focus cycle
+recorded below. That scenario remains unavailable rather than being silently
+recovered with potentially obsolete clipboard content. Human and other
+compositor acceptance remain open.
+
 ## App-owned Wayland paste demonstration (2026-11-05)
 
 Example source `07bbbcae31358dcd5f47a3db817c99329b812349` uses the public
