@@ -172,6 +172,8 @@ static int run(void) {
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
     CHECK(![secret isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    CHECK(![secret isAccessibilitySelectorAllowed:@selector(setAccessibilitySelectedTextRange:)] &&
+          [secret accessibilitySelectedTextRange].location==NSNotFound);
     id number=[find(view,2032) retain];CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
     CHECK([[number accessibilityValue] isEqual:@"1234"] && [number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     [number setAccessibilityValue:@"bad"];CHECK(advance(window,&s)==0);
@@ -207,10 +209,14 @@ static int run(void) {
     CHECK([edit isAccessibilitySelectorAllowed:@selector(setAccessibilitySelectedTextRange:)]);
     [edit setAccessibilitySelectedTextRange:NSMakeRange(1,2)];CHECK(advance(window,&s)==0);
     CHECK(NSEqualRanges([edit accessibilitySelectedTextRange],NSMakeRange(1,2)));
+    CHECK([[edit accessibilitySelectedText] isEqual:@"🌍"] && [edit accessibilityNumberOfCharacters]==3);
     size_t edit_anchor=0,edit_cursor=0;
     CHECK(nx_text_field_selection(s.edit,&edit_anchor,&edit_cursor)==NX_OK && edit_anchor==2 && edit_cursor==6);
     [edit setAccessibilitySelectedTextRange:NSMakeRange(1,1)];CHECK(advance(window,&s)==0);
     CHECK(nx_text_field_selection(s.edit,&edit_anchor,&edit_cursor)==NX_OK && edit_anchor==2 && edit_cursor==6);
+    [edit setAccessibilitySelectedTextRange:NSMakeRange(NSNotFound,1)];
+    [edit setAccessibilitySelectedTextRange:NSMakeRange(2,NSUIntegerMax)];
+    CHECK(advance(window,&s)==0 && NSEqualRanges([edit accessibilitySelectedTextRange],NSMakeRange(1,2)));
     [edit setAccessibilitySelectedTextRange:NSMakeRange(0,1)];size_t edit_routed=0;
     CHECK(nx_window_route_events(window,s.ui,&edit_routed)==NX_OK && edit_routed>0);
     CHECK(nx_text_field_set_text(s.edit,"new",3)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
@@ -218,6 +224,9 @@ static int run(void) {
     CHECK(nx_text_field_set_read_only(s.edit,1)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
     CHECK(![edit isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     [edit setAccessibilityValue:@"denied"];CHECK(advance(window,&s)==0 && [[edit accessibilityValue] isEqual:@"new"]);
+    CHECK([edit isAccessibilitySelectorAllowed:@selector(setAccessibilitySelectedTextRange:)]);
+    [edit setAccessibilitySelectedTextRange:NSMakeRange(0,2)];CHECK(advance(window,&s)==0);
+    CHECK(NSEqualRanges([edit accessibilitySelectedTextRange],NSMakeRange(0,2)) && [[edit accessibilitySelectedText] isEqual:@"ne"]);
     CHECK(nx_text_field_set_read_only(s.edit,0)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);

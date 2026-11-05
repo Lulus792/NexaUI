@@ -106,7 +106,7 @@ int main(int argc,char **argv) {
         }
         if(result)CFRelease(result);if(!selected)pause_poll();
     } while(!selected && now()<range_end);
-    CHECK(selected);
+    CHECK(selected && wait_string(edit,kAXSelectedTextAttribute,CFSTR("🌍")));
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));
