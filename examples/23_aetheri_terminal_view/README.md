@@ -237,3 +237,20 @@ The previously skipped `nexaui_atspi_large_text_wayland_private` test was later
 executed successfully on the same kind of private Weston/Xvfb fixture against
 the 0.1.15 static build. This does not change the boundaries of the earlier
 headless AT-SPI evidence.
+
+On NexaUI base `ad4a54fcaa01083ec26c228e64d78b0bc2ea5c25`, the separate
+`aetheri_terminal_native_copy` consumer connects NexaUI selection events to the
+original Aetheri model and publishes the model's own copied bytes. An independent
+`wl-paste` 2.2.1 process received a two-line selection with a two-cell character
+and a combining mark under private Weston 14/Xvfb. After clearing the selection,
+an independent `wl-copy` owner published a marker; Ctrl+C and empty Ctrl+Shift+C
+left that marker intact. Static, shared and Clang ASan/UBSan runs passed with
+virtual keyboard input. A deliberately truncated publication failed the same
+receiver check. This demonstrates transfer while the owner is running; clipboard
+persistence after owner exit, a real Aetheri session, PTY behavior, physical
+input, other compositors and human accessibility acceptance remain open.
+
+The private fixture command above can be reused by replacing the driver and
+consumer arguments with `run_copy_native.py` and
+`/tmp/terminal-view/aetheri_terminal_native_copy`; the same font, xdotool,
+`wl-copy` and `wl-paste` arguments apply.

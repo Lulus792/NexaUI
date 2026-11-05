@@ -39,6 +39,11 @@ independent wl-clipboard 2.2.1 owner and native NexaUI test consumer exercised
 Wayland paste, model validation, review cancellation/acceptance, stalled-owner
 cancellation and rejected control bytes on private Weston. Copy in the opposite
 direction, actual Aetheri/PTY integration and physical acceptance remain open.
+I05/I07/T07: on base `ad4a54fcaa01083ec26c228e64d78b0bc2ea5c25`, the terminal
+consumer copied the original model's multiline Unicode selection to an
+independent Wayland receiver and left an external selection intact for empty
+copy on private Weston. Real Aetheri session/PTY, clipboard persistence and
+physical acceptance remain open.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on
