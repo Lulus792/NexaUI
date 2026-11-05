@@ -953,6 +953,19 @@ if(NEXAUI_BUILD_TESTS)
                     $<TARGET_FILE:nexaui_linux_multiselection_host>)
             set_tests_properties(nexaui_atspi_multi_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                 RESOURCE_LOCK native_display)
+            add_executable(nexaui_atspi_virtual_100k_host tests/atspi_virtual_100k_host.c)
+            target_link_libraries(nexaui_atspi_virtual_100k_host PRIVATE NexaUI::NexaUI)
+            add_executable(nexaui_atspi_virtual_100k_client tests/atspi_virtual_100k_client.c)
+            target_link_libraries(nexaui_atspi_virtual_100k_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            foreach(target nexaui_atspi_virtual_100k_host nexaui_atspi_virtual_100k_client)
+                set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+            endforeach()
+            add_test(NAME nexaui_atspi_virtual_100k
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_virtual_100k_client>
+                    $<TARGET_FILE:nexaui_atspi_virtual_100k_host>)
+            set_tests_properties(nexaui_atspi_virtual_100k PROPERTIES TIMEOUT 70)
             add_executable(nexaui_atspi_scroll_host tests/atspi_scroll_host.c)
             target_link_libraries(nexaui_atspi_scroll_host PRIVATE NexaUI::NexaUI)
             add_executable(nexaui_atspi_scroll_client tests/atspi_scroll_client.c)

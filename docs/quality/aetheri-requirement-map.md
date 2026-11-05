@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+P02/L05/A05: on base `8632bfbdef912fed11445e5391b148523e709968`, an
+independent AT-SPI client checks bounded visible rows and stable selection and
+references through scroll and filter of a synthetic 100,000-key tree. Actual
+Aetheri, offscreen navigation and human accessibility acceptance remain open;
+see [candidate evidence](aetheri-adoption-assessment.md#native-accessibility-of-a-virtual-100000-row-tree-2026-11-06).
+
 P02/L05: on base `735031712ce53bb3ca4e41e969679337ff9adccc`, the synthetic
 workload additionally scans 100,000 actual in-memory names, rebuilds the
 50,000 matches and retains the anchor's exact semantic name. Filesystem I/O,

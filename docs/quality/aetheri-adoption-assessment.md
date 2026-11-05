@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Native accessibility of a virtual 100,000-row tree (2026-11-06)
+
+On candidate base `8632bfbdef912fed11445e5391b148523e709968`, a synthetic
+100,000-key application model publishes a virtual tree through the Linux
+accessibility host. An independent libatspi process on a private D-Bus and
+AT-SPI registry checks the initial visible rows, scrolls to row 50,000,
+selects it through its native action, and filters to the even-numbered rows.
+At each step the tree exposes at most 21 children. The selected row retains
+its name and selected state after filtering, while retained references to a
+scrolled-out and a filtered-out row return an error. The host exits cleanly.
+GCC static and shared and Clang ASan/UBSan builds passed, with leak detection
+enabled in the sanitizer run. A test-only change assigning semantic IDs from
+row indices instead of stable keys failed the retained-selection assertion.
+
+The host uses simulated geometry and focus, and the scroll and filter requests
+are test signals rather than native user input. The model contains synthetic
+keys and names, not files; Aetheri's 4,096-entry limit, real application
+integration, offscreen navigation, compositor behavior and a human screenreader
+task remain open. This evidence does not complete P02, L05 or accessibility
+acceptance, and does not change the SDK implementation.
+
 ## Named 100,000-row filter workload (2026-11-05)
 
 On candidate base `735031712ce53bb3ca4e41e969679337ff9adccc`, the synthetic
