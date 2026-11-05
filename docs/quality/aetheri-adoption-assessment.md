@@ -2794,3 +2794,22 @@ The caller must still fence untagged native preedit notifications across focus
 and session changes. Preedit drawing and atomic whole-commit validation and
 delivery to the app-owned PTY are not implemented here. Installed IME, actual
 Aetheri, physical input, scale and human assistive acceptance remain open.
+
+## Wayland IME commit boundaries — 5 November 2026
+
+On NexaUI base `006cc663cf38111e8fcdebc18718ac79a64e89cb`, version 0.1.16
+adds START/END and filtered-content flags to existing Wayland v1/v3 scalar
+text events without changing event count or `nx_event` size. The terminal
+example buffers a bounded, consistently targeted sequence and validates the
+whole commit using the original Aetheri model before returning any bytes.
+Static, shared and Clang ASan/UBSan Wayland v1/v3 protocol tests passed,
+including an injected C0 character. The installed example passed valid and
+filtered controlled-v3 tests in all three configurations; stale targets,
+interruption and over-limit commits are also covered. A mutant which ignored
+the filtered flag failed the controlled-v3 rejection check.
+
+The flags preserve the legacy filtering behavior and expose when it happened;
+an all-filtered commit produces no text event. They do not delimit IME delete
+transactions, guarantee preedit focus fencing or implement PTY writes.
+Installed IME, real Aetheri, physical input and human assistive acceptance
+remain open.

@@ -1,8 +1,10 @@
 #include "wayland_v3_fixture.h"
 #include "ime_adapter.h"
 
-int main(void) {
+int main(int argc,char **argv) {
     test_server server={0};char runtime[]="/tmp/nexaui-terminal-ime-XXXXXX";
+    int filtered=argc==2 && !strcmp(argv[1],"--filtered");CHECK(argc==1 || filtered);
+    atomic_store(&server.commit_control_test,filtered);
     CHECK(mkdtemp(runtime));CHECK(setenv("XDG_RUNTIME_DIR",runtime,1)==0);
     CHECK(setenv("NEXAUI_PLATFORM","wayland",1)==0);
     server.display=wl_display_create();CHECK(server.display);
@@ -18,22 +20,29 @@ int main(void) {
     pthread_t thread;CHECK(pthread_create(&thread,NULL,run_server,&server)==0);
     nx_window_desc desc={0};desc.width=240;desc.height=120;desc.flags=NX_WINDOW_HIDDEN;
     nx_window *window=NULL;CHECK(nx_window_create(&desc,&window)==NX_OK);
+    terminal_ime_adapter ime={0};terminal_ime_guard guard={41,7,1};
+    CHECK(terminal_ime_bind(&ime,guard)==NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window,guard.identity,guard.epoch,"",0,0,0)==NX_OK);
     CHECK(nx_window_set_ime_rect(window,(nx_rect){12,34,2,18})==NX_OK);
     CHECK(nx_window_set_ime_enabled(window,1)==NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     wl_surface_commit(nx_window_wayland_surface(window));
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
-    nx_event event;int available=0,preedit=0;
+    nx_event event;int available=0,preedit=0,committed=0;
     do {
         CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
         if(available && event.type==NX_EVENT_IME_PREEDIT_CHANGED)preedit=1;
+        if(available && event.type==NX_EVENT_TEXT) {
+            int ready=0;nx_utf8_span bytes={0};
+            nx_result result=terminal_ime_commit_event(&ime,guard,&event,&ready,&bytes);
+            CHECK(result==(filtered?NX_ERROR_STATE:NX_OK));
+            if(ready){CHECK(bytes.length==5 && !memcmp(bytes.data,"caf\xc3\xa9",5));++committed;}
+        }
     } while(available);
-    CHECK(preedit);
+    CHECK(preedit && committed==(filtered?0:1));
     char draft[32];size_t length=0;int32_t begin=-1,end=-1;
     CHECK(nx_window_get_ime_preedit(window,draft,sizeof(draft),&length,&begin,&end)==NX_OK);
     CHECK(length==4 && !memcmp(draft,"na\xc3\xaf",4) && begin==2 && end==2);
-    terminal_ime_adapter ime={0};terminal_ime_guard guard={41,7,1};
-    CHECK(terminal_ime_bind(&ime,guard)==NX_OK);
     CHECK(terminal_ime_preedit(&ime,guard,draft,length,begin,end)==NX_OK);
     CHECK(ime.composition.size==4 && ime.composition.count==3 &&
           ime.composition.cursor==2 && ime.composition.anchor==2);
@@ -43,6 +52,6 @@ int main(void) {
     wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy_clients(server.display);wl_display_destroy(server.display);
     CHECK(unlink(socket_path)==0 || access(socket_path,F_OK)!=0);CHECK(rmdir(runtime)==0);
-    puts("Controlled Wayland preedit reached the original Aetheri composition model");
+    puts("Controlled Wayland preedit and whole commit reached original Aetheri models");
     return 0;
 }

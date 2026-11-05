@@ -41,6 +41,37 @@ int main(void) {
     CHECK(terminal_ime_bind(&ime,again)==NX_OK);
     terminal_ime_guard other={42,8,1};
     CHECK(terminal_ime_preedit(&ime,other,draft,8,1,1)==NX_ERROR_STATE);
+    CHECK(terminal_ime_bind(&ime,again)==NX_OK);
+    nx_event e={.type=NX_EVENT_TEXT,.ime_target=41,.ime_revision=8,.scalar='a',.ime_before=NX_IME_COMMIT_START};
+    nx_utf8_span committed={0};int ready=1;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready && !committed.data);
+    e.scalar=0xe4;e.ime_before=NX_IME_COMMIT_END;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && ready &&
+          committed.length==3 && !memcmp(committed.data,"a\xc3\xa4",3));
+    e.scalar='x';e.ime_before=NX_IME_COMMIT_START;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready);
+    terminal_ime_interrupt(&ime);
+    e.scalar='y';e.ime_before=NX_IME_COMMIT_END;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_STATE && !ready && !committed.data);
+    e.scalar='x';e.ime_before=NX_IME_COMMIT_START|NX_IME_COMMIT_FILTERED;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_STATE && !ready);
+    e.ime_before=NX_IME_COMMIT_START|NX_IME_COMMIT_END;e.scalar=0x202e;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_ARGUMENT && !ready);
+    e.scalar='\t';CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_ARGUMENT && !ready);
+    e.scalar='x';e.ime_before=NX_IME_COMMIT_START;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready);
+    e.ime_before=NX_IME_COMMIT_END;e.ime_revision=7;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_STATE && !ready);
+    e.ime_revision=8;e.ime_before=NX_IME_COMMIT_START;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready);
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_STATE && !ready);
+    e.scalar='z';e.ime_before=NX_IME_COMMIT_START;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready);
+    e.ime_before=0;
+    for(size_t i=1;i<AE_TERM_PASTE_BYTES;++i)
+        CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_OK && !ready);
+    e.ime_before=NX_IME_COMMIT_END;
+    CHECK(terminal_ime_commit_event(&ime,again,&e,&ready,&committed)==NX_ERROR_LIMIT && !ready && !committed.data);
     terminal_ime_reset(&ime);terminal_ime_reset(&ime);
     puts("Aetheri composition: byte-to-scalar, selection, rejection and stale guards passed");
     return 0;

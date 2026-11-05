@@ -361,9 +361,19 @@ This is an adapter experiment, not an IME-complete terminal. The Wayland
 preedit notification is not itself tagged with the application epoch; the
 owner must establish and fence that association, and the simulated guard
 test does not prove stale native notifications cannot cross a focus transition.
-The example does not draw the composition or forward commits to a PTY. NexaUI
-currently exposes committed text as scalar events; a complete terminal bridge
-still needs a verified boundary and atomic validation for the whole native
-commit, including rejection of controls and stale target changes, before any
-bytes reach the app-owned output queue. Actual Aetheri, installed IME, scale,
-focus, physical input and human accessibility acceptance remain open.
+The example does not draw the composition or forward commits to a PTY. Actual
+Aetheri, installed IME, scale, focus, physical input and human accessibility
+acceptance remain open.
+
+On NexaUI base `006cc663cf38111e8fcdebc18718ac79a64e89cb`, version 0.1.16
+adds Wayland v1/v3 commit-boundary and filtered-input flags to existing scalar
+events. The example buffers flagged, correctly targeted events until the END
+marker and uses the original Aetheri whole-snapshot paste validation before
+returning a borrowed complete commit. Incomplete, filtered, interrupted,
+stale, over-limit and unsafe content produces no output. The owner must call
+`terminal_ime_interrupt` on interleaved events or queue/transport failure,
+and copy successful bytes into its own output queue. Unmarked input is not a
+complete native commit. Static/shared and Clang ASan/UBSan installed SDKs
+passed both the adapter and controlled Wayland v3 valid/filtered cases; the
+existing v1/v3 tests also passed. This does not yet demonstrate actual IME
+input being written to a PTY or solve native preedit focus fencing.

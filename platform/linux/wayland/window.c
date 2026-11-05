@@ -1153,7 +1153,16 @@ static void nx_wayland_ime_emit_utf8(nx_wayland_window *window,
                                      const char *text, size_t length,
                                      uint64_t target, uint64_t revision) {
     if (nx_utf8_validate(text, length, NULL) != NX_OK) return;
-    size_t offset = 0;
+    size_t offset = 0, remaining = 0;
+    int filtered = 0;
+    while (offset < length) {
+        uint32_t scalar = 0;
+        if (nx_utf8_decode(text, length, &offset, &scalar) != NX_OK) return;
+        if (scalar < 0x20u || scalar == 0x7fu) filtered = 1;
+        else ++remaining;
+    }
+    offset = 0;
+    int first = 1;
     while (offset < length) {
         uint32_t scalar = 0;
         if (nx_utf8_decode(text, length, &offset, &scalar) != NX_OK) break;
@@ -1163,6 +1172,11 @@ static void nx_wayland_ime_emit_utf8(nx_wayland_window *window,
         event.scalar = scalar;
         event.ime_target = target;
         event.ime_revision = revision;
+        event.ime_before = (first ? NX_IME_COMMIT_START : 0u) |
+            (remaining == 1u ? NX_IME_COMMIT_END : 0u) |
+            (filtered ? NX_IME_COMMIT_FILTERED : 0u);
+        first = 0;
+        --remaining;
         nx_platform_event_queue_push(&window->event_queue, event);
     }
 }

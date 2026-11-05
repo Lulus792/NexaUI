@@ -456,6 +456,8 @@ int main(void) {
         CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
         CHECK(available && event.type == NX_EVENT_TEXT &&
               event.scalar == expected[i]);
+        CHECK(event.ime_before == ((i==0 ? NX_IME_COMMIT_START : 0u) |
+              (i==3 ? NX_IME_COMMIT_END : 0u)));
     }
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK &&
           !available);

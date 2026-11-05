@@ -3,8 +3,10 @@
 int main(int argc, char **argv) {
     int revert = argc == 2 && !strcmp(argv[1], "--selection-revert");
     int replace = argc == 2 && !strcmp(argv[1], "--field-replace");
-    CHECK(argc == 1 || revert || replace);
+    int filtered = argc == 2 && !strcmp(argv[1], "--commit-controls");
+    CHECK(argc == 1 || revert || replace || filtered);
     test_server server = {0};
+    atomic_store(&server.commit_control_test,filtered);
     char runtime[] = "/tmp/nexaui-wayland-v3-XXXXXX";
     CHECK(mkdtemp(runtime));
     CHECK(setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
@@ -72,6 +74,9 @@ int main(int argc, char **argv) {
         CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
         CHECK(available && event.type == NX_EVENT_TEXT &&
               event.scalar == expected[i]);
+        CHECK(event.ime_before == ((i==0 ? NX_IME_COMMIT_START : 0u) |
+              (i==3 ? NX_IME_COMMIT_END : 0u) |
+              (filtered ? NX_IME_COMMIT_FILTERED : 0u)));
     }
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
     CHECK(available && event.type == NX_EVENT_IME_PREEDIT_CHANGED);

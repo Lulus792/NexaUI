@@ -1,4 +1,4 @@
-# Core API (0.1.14)
+# Core API (0.1.16)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -17,7 +17,8 @@ the CMake package version 0.1.1 or newer in the same minor series. The
 `<nexaui/wayland_outputs.h>` snapshot requires 0.1.5 or newer;
 `nx_numeric_field_set_ime_window` requires 0.1.6 or newer;
 `nx_numeric_field_set_clipboard` requires 0.1.7 or newer; nested overlay
-scopes require 0.1.8 or newer. This does not declare a
+scopes require 0.1.8 or newer; Wayland IME commit-boundary flags require
+0.1.16 or newer. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full
@@ -65,6 +66,17 @@ fail before a version comparison can run.
 `nx_window_poll(window, timeout_ms)` waits up to the given number of milliseconds and dispatches pending messages. Win32 dispatches all windows on that thread; Linux uses one connection per window, so poll each Linux window. `nx_window_get_info(window, out_info)` returns logical client size, backing scale and the close-request flag after polling. A close request leaves the window alive until `nx_window_destroy`. Wayland uses the compositor's preferred fractional scale once received when both fractional-scale-v1 and viewporter are available; otherwise it uses the integer output scale. Scale changes emit a resize event; X11 currently reports 1.0. `nx_window_next_event(window, out_event, available)` copies one normalized event or sets `available` to zero when empty. All operations, including destruction, must run on the creation thread. The window API does not expose a renderer or native handle.
 
 `nx_window_get_pixel_size(window, out_size)` returns the native client backing extent to use for a render target. It avoids reconstructing pixel dimensions from the floating-point scale; zero in either dimension suspends rendering. The query uses the window's owner thread and clears `out_size` on error. Windows follows the process/window DPI-awareness context. A compositor or window manager can change the size, so poll and query again before drawing.
+
+Wayland IME v1/v3 `NX_EVENT_TEXT` events carry `NX_IME_COMMIT_START`,
+`NX_IME_COMMIT_END` and, when the backend discarded C0/DEL characters,
+`NX_IME_COMMIT_FILTERED` in `ime_before`. These preserve the existing scalar
+event stream and structure size. A consumer requiring atomic input must buffer
+until END, validate the entire result, reject FILTERED and mismatched
+target/revision, and discard incomplete sequences on any interruption or
+queue error. A commit containing only filtered characters produces no text
+event. Ordinary keyboard input and backends without this capability have no
+boundary flags; an unmarked event is not proof of a complete IME commit. These
+flags do not supply IME deletion transaction semantics or tag preedit updates.
 
 `nx_window_route_events(window, context, out_count)` moves queued events to one context in order. On an allocation failure, the unaccepted event remains in the window queue for retry. Win32 pumps messages for all windows on the thread, so applications route each window to its own context. `nx_window_get_reduced_motion` reads the current Windows client-area animation preference; pass it to `nx_context_set_reduced_motion` between frames. Other native backends currently return `NX_ERROR_UNSUPPORTED` for the preference query.
 
