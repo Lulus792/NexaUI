@@ -33,6 +33,7 @@ typedef struct test_server {
     atomic_int seat_remove_sent;
     atomic_int pointer_press_requested, pointer_remove_requested;
     atomic_int disconnect_requested, disconnect_sent;
+    struct wl_client *disconnect_client;
     atomic_int attached_width, attached_height, buffer_scale;
     atomic_int geometry_before_configure, geometry_after_configure;
     void (*surface_committed)(struct test_server *server,struct wl_client *client);
@@ -54,6 +55,21 @@ typedef struct test_server {
     atomic_int field_surrounding_ok, numeric_commit;
     atomic_int normal_content, password_content;
 } test_server;
+
+/* Request dispatch still uses the client and connection after the handler
+   returns. Destroy them on the server loop's idle phase, not in the handler. */
+static void disconnect_idle(void *data) {
+    test_server *server=data;
+    struct wl_client *client=server->disconnect_client;
+    server->disconnect_client=NULL;
+    wl_client_destroy(client);
+    atomic_store(&server->disconnect_sent,1);
+}
+static void disconnect_after_request(test_server *server,struct wl_client *client) {
+    CHECK(!server->disconnect_client);
+    server->disconnect_client=client;
+    CHECK(wl_event_loop_add_idle(wl_display_get_event_loop(server->display),disconnect_idle,server));
+}
 
 static void resource_destroy(struct wl_client *client,
                              struct wl_resource *resource) {
@@ -91,7 +107,7 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
     }
     if (atomic_exchange(&server->disconnect_on_receive,0)) {
         atomic_store(&server->stalled_fd,fd+1);
-        wl_client_destroy(client);
+        disconnect_after_request(server,client);
         return;
     }
     if (atomic_load(&server->offer_stall)) {
@@ -107,8 +123,7 @@ static void surface_commit(struct wl_client *client,
     if (resource != server->surface) return;
     if (server->surface_committed) server->surface_committed(server,client);
     if (atomic_exchange(&server->disconnect_requested,0)) {
-        wl_client_destroy(client);
-        atomic_store(&server->disconnect_sent,1);
+        disconnect_after_request(server,client);
         return;
     }
     if(atomic_exchange(&server->seat_remove_requested,0)) {
