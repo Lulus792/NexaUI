@@ -36,12 +36,35 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c"
                 COMMAND "${WAYLAND_SCANNER}" private-code "${XDG_XML}" "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c"
                 DEPENDS "${XDG_XML}" VERBATIM)
-            add_executable(aetheri_desktop_borrowed main_borrowed.c
+            add_library(aetheri_desktop_xdg_protocol STATIC
                 "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h"
                 "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c")
+            target_include_directories(aetheri_desktop_xdg_protocol PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
+            target_link_libraries(aetheri_desktop_xdg_protocol PUBLIC PkgConfig::WAYLAND_CLIENT)
+            add_executable(aetheri_desktop_borrowed main_borrowed.c)
             target_include_directories(aetheri_desktop_borrowed PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-            target_link_libraries(aetheri_desktop_borrowed PRIVATE aetheri_desktop_view PkgConfig::WAYLAND_CLIENT Threads::Threads)
+            target_link_libraries(aetheri_desktop_borrowed PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol Threads::Threads)
             set_target_properties(aetheri_desktop_borrowed PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            if(EXISTS "${AETHERI_SOURCE_DIR}/protocols/wlr-layer-shell-unstable-v1.xml" AND
+               EXISTS "${AETHERI_SOURCE_DIR}/protocols/aetheri-development-desktop-v1.xml")
+                foreach(protocol wlr-layer-shell-unstable-v1 aetheri-development-desktop-v1)
+                    set(xml "${AETHERI_SOURCE_DIR}/protocols/${protocol}.xml")
+                    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${protocol}-client.h"
+                        COMMAND "${WAYLAND_SCANNER}" client-header "${xml}" "${CMAKE_CURRENT_BINARY_DIR}/${protocol}-client.h"
+                        DEPENDS "${xml}" VERBATIM)
+                    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${protocol}.c"
+                        COMMAND "${WAYLAND_SCANNER}" private-code "${xml}" "${CMAKE_CURRENT_BINARY_DIR}/${protocol}.c"
+                        DEPENDS "${xml}" VERBATIM)
+                endforeach()
+                add_executable(aetheri_desktop_layer_test main_layer_test.c
+                    "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
+                    "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1.c")
+                target_include_directories(aetheri_desktop_layer_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+                target_link_libraries(aetheri_desktop_layer_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol)
+                set_target_properties(aetheri_desktop_layer_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            endif()
         endif()
     endif()
 endif()
