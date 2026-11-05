@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Synthetic 100,000-row virtual-list workload (2026-11-05)
+
+On candidate base `f9ec0de9f98374077e4a1d1fdec3267ebbcef23d`, the new
+`nexaui_virtual_list_bench` builds 100,000 stable-key rows, refreshes and
+reverses them, rebuilds a 50,000-row subset while retaining the visible anchor,
+and registers only visible/overscan button semantics for 1,000 scroll frames.
+It checks the anchor after both changes, limits visits to 32 and checks the
+semantic count. A test-only variant using row positions as keys failed the
+reorder anchor assertion. GCC shared Debug and Clang ASan/UBSan Debug with
+leak detection also executed the workload and balanced the tracked allocator.
+
+On Alpine/WSL2 x86-64, GCC 15.2.0, static Release, three final runs measured
+4.84–7.44 ms initial index construction, 4.65–5.89 ms refresh, 4.84–8.42 ms
+reorder and 2.03–2.27 ms filtered index rebuild. Mean construction of a scroll
+frame ranged 0.0039–0.0048 ms; the final frame had 24 row nodes plus one root.
+The instrumented list/context allocator peaked at 7,083,776 bytes and made no
+allocations during the measured frames after warmup. Times use the C wall clock;
+host load and machine differ, and no accepted performance budget is implied.
+
+The owner callback computes the filtered subset directly; application filter
+scanning, file I/O, renderer/presentation, native AT-SPI publication, stalled
+clients and actual Aetheri are not measured. The pinned Aetheri Files model
+itself still caps a directory snapshot at 4,096 entries. This is not a
+100,000-file application or P02 acceptance.
+
 ## Large terminal snapshot update events (2026-11-05)
 
 On candidate base `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`, the same

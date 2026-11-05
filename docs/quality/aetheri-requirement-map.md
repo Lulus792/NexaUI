@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+P02/L05: a synthetic 100,000-key virtual-list workload on base
+`f9ec0de9f98374077e4a1d1fdec3267ebbcef23d` measures index refresh, reorder,
+filtered rebuild and bounded visible semantics. Real model filtering, native
+accessibility and Aetheri's 4,096-entry model limit remain separate; see
+[candidate evidence](aetheri-adoption-assessment.md#synthetic-100000-row-virtual-list-workload-2026-11-05).
+
 T07/A05: on base `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`, an
 independent AT-SPI client replayed two sequential full terminal-grid updates,
 including chunked insertions and deletions. Throughput, stalled clients, real
