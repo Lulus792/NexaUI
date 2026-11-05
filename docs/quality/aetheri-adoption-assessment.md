@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Settings view replacement (2026-11-05)
+
+Example source `d612e51a04551e98f21aac707c0a1b7d2849445f` transfers its
+draft and operation state into application-owned memory when a view is closed.
+The host retires the old native accessibility bridge before destroying its
+context. An already claimed operation remains pending without being claimed
+again; the owner must query the original backend and report the result. The
+model test covers an unknown result, stale completions, a later draft, and an
+authoritative completion while no view exists. It passed with GCC and Clang
+ASan/UBSan. Twenty scene, protocol, native keyboard and AT-SPI tests passed on
+private Weston (`/tmp/nexaui-settings-session-regression/result.json`). A copied
+example also passed the independent AT-SPI reopen test against static and
+shared installed SDKs from `4e6c240bda94d8bc537851cdbb89846003eb86e3`
+(`/tmp/nexaui-session-d612-external-ON/result.json` and
+`/tmp/nexaui-session-d612-external-OFF/result.json`). These use a simulated
+service and virtual input. Real Aetheri service reconciliation, durable or
+cross-process recovery, restoration of focus, scroll and undo state, and human
+accessibility acceptance remain open.
+
 ## Settings uncertain operation outcome (2026-11-05)
 
 Example source `619d8c387e34807cd66f4bd70ef167d871416005` distinguishes an
