@@ -212,3 +212,20 @@ SHA-256 `7735efdabb14dea4a3c09a725e5b1094fe42fa3dc1ddf076011c2dfcfcf13323`.
 The host must still advance and recheck its revision before acting. This fix
 does not resolve the separate held-device removal case above, which can
 produce a native release before any model revision or device-loss event.
+
+Source `fc34f2b1b4e70110a75c33d1a05ddec631a61a5b` routes Wayland axis
+frames in the test layer host to the existing NexaUI scroll area, preferring
+discrete steps when supplied and clearing accumulated axes on pointer loss.
+The private Aetheri test compositor exercised a synthetic 30-window model:
+ten virtual wheel steps moved window 20 from logical y=1160 to y=760, three
+reverse steps moved it back to y=880, and scrolling outside the results left
+it there. A click on the scrolled row emitted window ID 20. The preceding
+keyboard, pointer and idle-device-replacement checks also passed. A separate
+test-only binary with wheel deltas suppressed failed with the row unchanged at
+y=1160. Desktop binary SHA-256:
+`e43bcc67b21609d2b25e3ff58cfed31ebb5823787afc1452e4a22df1e6e9607f`.
+Positive and negative logs are archived at
+`D:/NexaUI/out/aetheri-layer-scroll-20261105.tar.gz`, SHA-256
+`6c6cd136b39ef91ebbc9ecb7d6cf0135ec6e0ee372fb660d3542651b618fd992`.
+This tests virtual discrete wheel input only; continuous touchpad behavior,
+real window observations and the held-device removal failure remain open.
