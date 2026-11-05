@@ -5,12 +5,13 @@
 typedef struct aetheri_desktop_view aetheri_desktop_view;
 typedef enum aetheri_desktop_intent_kind {
     AETHERI_DESKTOP_NONE, AETHERI_DESKTOP_SEARCH,
-    AETHERI_DESKTOP_LAUNCH, AETHERI_DESKTOP_ACTIVATE
+    AETHERI_DESKTOP_LAUNCH, AETHERI_DESKTOP_ACTIVATE, AETHERI_DESKTOP_QUERY
 } aetheri_desktop_intent_kind;
 typedef struct aetheri_desktop_intent {
     aetheri_desktop_intent_kind kind;
     enum ae_desktop_app app;
     uint32_t window;
+    char query[AE_DESKTOP_QUERY];
 } aetheri_desktop_intent;
 /* Model and font bytes are borrowed until destroy. No process or role is owned. */
 int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out);

@@ -21,7 +21,11 @@ cmake --build build
 ```
 
 This is an initial dock and model-result view, not a complete shell adapter.
-Search query editing and selection, real window activation, native input and IME, borrowed-surface presentation,
+Search edits return bounded whole-query proposals; the host applies or rejects
+them and advances its model revision. The current frame on a concurrent model
+revision can still visually contain a queued stale edit before the next redraw;
+that edit is not returned as an intent. Search-result selection/navigation,
+real window activation, native input and IME, borrowed-surface presentation,
 AT-SPI publication, scaling, multi-output ownership and the original process
 owner integration remain open. The test uses synthetic context events and
 semantic requests; it does not establish actual Aetheri or human acceptance.

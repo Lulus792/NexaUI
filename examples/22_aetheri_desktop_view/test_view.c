@@ -25,6 +25,17 @@ int main(int argc,char **argv) {
     ae_desktop_model_search(&model,0,true);
     CHECK(ae_desktop_model_window(&model,42,"Editor","org.example.Editor",false));++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_focus_set(ctx,20)==NX_OK);
+    nx_event text={0};text.type=NX_EVENT_TEXT;text.scalar='A';CHECK(nx_context_queue_event(ctx,&text)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_QUERY && intent.query[0]=='A' && !intent.query[1]);
+    CHECK(!model.query[0] && ae_desktop_model_text(&model,intent.query));++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    ae_desktop_model_backspace(&model);++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    text.scalar='B';CHECK(nx_context_queue_event(ctx,&text)==NX_OK);
+    CHECK(ae_desktop_model_window(&model,42,"Editor updated","org.example.Editor",false));++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE && !model.query[0]);
     CHECK(nx_semantics_request_action(ctx,UINT64_C(0x100000000)+42,NX_ACTION_PRESS)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_ACTIVATE && intent.window==42 && intent.app==AE_DESKTOP_APP_NONE);
     CHECK(nx_semantics_request_action(ctx,UINT64_C(0x100000000)+42,NX_ACTION_PRESS)==NX_OK);
