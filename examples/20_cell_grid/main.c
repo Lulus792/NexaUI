@@ -78,6 +78,13 @@ static int text_snapshot(const app_model *model,char *text,size_t capacity,size_
     }
     return 1;
 }
+static nx_result copy_selection(nx_window *window,const app_model *model) {
+    if(model->anchor==model->cursor)return NX_OK; /* Leave an existing clipboard alone. */
+    char text[ROWS*COLS*8+ROWS]; size_t length=0,anchor=0,cursor=0;
+    if(!text_snapshot(model,text,sizeof(text),&length,&anchor,&cursor))return NX_ERROR_ARGUMENT;
+    size_t start=anchor<cursor?anchor:cursor, end=anchor<cursor?cursor:anchor;
+    return nx_window_clipboard_set_text(window,text+start,end-start);
+}
 int main(int argc,char **argv) {
     int verify=argc==3 && !strcmp(argv[2],"--verify");
     if(argc!=2 && !verify){fputs("usage: nexaui_cell_grid_example FONT [--verify]\n",stderr);return 2;}
@@ -99,6 +106,11 @@ int main(int argc,char **argv) {
             if(!available)break;
             if(event.type==NX_EVENT_RESIZE)dirty=1;
             if(event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_ESCAPE)goto finished;
+            if(event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_C && !event.repeat &&
+               (event.modifiers&(NX_MOD_CONTROL|NX_MOD_SHIFT|NX_MOD_ALT|NX_MOD_SUPER))==(NX_MOD_CONTROL|NX_MOD_SHIFT)) {
+                nx_result result=copy_selection(window,&model);
+                if(result!=NX_OK)fprintf(stderr,"Clipboard copy unavailable: %d\n",(int)result);
+            }
             if(event.type==NX_EVENT_KEY_DOWN && (event.key==NX_KEY_RIGHT || event.key==NX_KEY_LEFT)) {
                 unsigned next=model.cursor;
                 if(event.key==NX_KEY_RIGHT && next+1<ROWS*COLS) {

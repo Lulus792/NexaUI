@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 /* Independent libatspi consumer: no NexaUI headers or linkage. */
 #include <atspi/atspi.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,27 @@ static int await_selection(AtspiText *text,int caret,int start,int end) {
         if(correct)return 1;
         pause_ms();
     }
+    return 0;
+}
+static int clipboard_equals(const char *tool,const char *expected) {
+    int fds[2]; if(pipe(fds))return 0;
+    pid_t child=fork();
+    if(child<0){close(fds[0]);close(fds[1]);return 0;}
+    if(!child){dup2(fds[1],STDOUT_FILENO);close(fds[0]);close(fds[1]);
+        execl(tool,tool,"--no-newline",(char *)NULL);_exit(127);}
+    close(fds[1]); char bytes[128]; size_t count=0; int finished=0;
+    struct pollfd fd={fds[0],POLLIN|POLLHUP,0};
+    while(count<sizeof(bytes) && poll(&fd,1,2000)>0) {
+        ssize_t n=read(fds[0],bytes+count,sizeof(bytes)-count);
+        if(n==0){finished=1;break;} if(n<0)break; count+=(size_t)n;
+    }
+    close(fds[0]);if(!finished)kill(child,SIGTERM);
+    int status=0; if(waitpid(child,&status,0)!=child)return 0;
+    return finished && WIFEXITED(status) && !WEXITSTATUS(status) &&
+        count==strlen(expected) && !memcmp(bytes,expected,count);
+}
+static int await_clipboard(const char *tool,const char *expected) {
+    for(unsigned i=0;i<8;++i) { if(clipboard_equals(tool,expected))return 1; pause_ms(); }
     return 0;
 }
 static AtspiAccessible *find(AtspiAccessible *node,const char *name,unsigned depth) {
@@ -92,11 +114,15 @@ int main(int argc,char **argv) {
         CHECK(key_action(tool,"key","shift+Right") && await_selection(text,2,0,2));
         value=atspi_text_get_text(text,0,2,&error);
         CHECK(!error && value && !strcmp(value,"A\xe4\xb8\xad")); g_free(value);
+        const char *paste=getenv("NEXAUI_CELL_GRID_WL_PASTE");
+        if(paste)CHECK(key_action(tool,"key","ctrl+shift+c") && await_clipboard(paste,"A\xe4\xb8\xad"));
         CHECK(key_action(tool,"key","Left") && await_selection(text,1,1,1));
+        if(paste)CHECK(key_action(tool,"key","ctrl+shift+c") && await_clipboard(paste,"A\xe4\xb8\xad"));
         CHECK(key_action(tool,"key","Right") && await_selection(text,2,2,2));
         CHECK(key_action(tool,"key","shift+Left") && await_selection(text,1,1,2));
         value=atspi_text_get_text(text,1,2,&error);
         CHECK(!error && value && !strcmp(value,"\xe4\xb8\xad")); g_free(value);
+        if(paste)CHECK(key_action(tool,"key","ctrl+shift+c") && await_clipboard(paste,"\xe4\xb8\xad"));
         CHECK(!atspi_text_set_selection(text,0,0,1,&error) && !error);
         CHECK(await_selection(text,1,1,2));
         /* Move from the wide leading cell to row 1. Cell positions and AT-SPI
@@ -107,6 +133,11 @@ int main(int argc,char **argv) {
         CHECK(key_action(tool,"key","shift+Right") && await_selection(text,18,16,18));
         value=atspi_text_get_text(text,16,18,&error);
         CHECK(!error && value && !strcmp(value,"e\xcc\x81")); g_free(value);
+        if(paste) {
+            CHECK(key_action(tool,"key","ctrl+c") && await_clipboard(paste,"\xe4\xb8\xad"));
+            CHECK(await_selection(text,18,16,18));
+            CHECK(key_action(tool,"key","ctrl+shift+c") && await_clipboard(paste,"e\xcc\x81"));
+        }
         CHECK(key_action(tool,"key","shift+Left") && await_selection(text,16,16,16));
         CHECK(key_action(tool,"key","Right") && await_selection(text,18,18,18));
         CHECK(key_action(tool,"key","shift+Left") && await_selection(text,16,16,18));
@@ -114,6 +145,7 @@ int main(int argc,char **argv) {
         CHECK(key_action(tool,"key","shift+Right") && await_selection(text,16,14,16));
         value=atspi_text_get_text(text,14,16,&error);
         CHECK(!error && value && !strcmp(value," \n")); g_free(value);
+        if(paste)CHECK(key_action(tool,"key","ctrl+shift+c") && await_clipboard(paste," \n"));
     }
     g_object_unref(text);g_object_unref(target);g_object_unref(desktop);
     atspi_exit();cleanup();

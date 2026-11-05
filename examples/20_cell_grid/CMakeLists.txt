@@ -40,6 +40,16 @@ if(NEXAUI_BUILD_TESTS AND Python3_Interpreter_FOUND)
                 set_tests_properties(nexaui_cell_grid_native_selection PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                     ENVIRONMENT "NEXAUI_CELL_GRID_FONT=${_grid_font};NEXAUI_CELL_SELECTION_TEST=1;NEXAUI_CELL_GRID_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE}"
                     RESOURCE_LOCK native_display)
+                find_program(NEXAUI_WL_PASTE_EXECUTABLE wl-paste)
+                if(NEXAUI_WL_PASTE_EXECUTABLE)
+                    add_test(NAME nexaui_cell_grid_native_clipboard
+                        COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py"
+                            "${NEXAUI_ATSPI_REGISTRY}" $<TARGET_FILE:nexaui_cell_grid_atspi_client>
+                            $<TARGET_FILE:nexaui_cell_grid_example>)
+                    set_tests_properties(nexaui_cell_grid_native_clipboard PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                        ENVIRONMENT "NEXAUI_CELL_GRID_FONT=${_grid_font};NEXAUI_CELL_SELECTION_TEST=1;NEXAUI_CELL_GRID_XDOTOOL=${NEXAUI_XDOTOOL_EXECUTABLE};NEXAUI_CELL_GRID_WL_PASTE=${NEXAUI_WL_PASTE_EXECUTABLE}"
+                        RESOURCE_LOCK native_display)
+                endif()
             endif()
         endif()
     endif()

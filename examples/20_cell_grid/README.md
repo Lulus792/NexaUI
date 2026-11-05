@@ -6,10 +6,13 @@ an explicitly positioned combining glyph, selection colors, underline and a
 cursor outline, then paints with `nx_draw_cell_grid`. Right-arrow movement and
 typed text change only the example's model. Left/Right move between leading
 cells, including across rows; Shift+Left/Right extends or reverses an
-application-owned selection. The example colors selected cells and publishes
+application-owned selection. Ctrl+Shift+C copies the selected visible text;
+with no selection it leaves the clipboard unchanged. Ctrl+C is not treated as
+copy by this example. Copy failures are reported on standard error; retention
+after the owner exits depends on the compositor. The example colors selected cells and publishes
 the corresponding UTF-8 byte range in its read-only accessibility snapshot.
 It is not a terminal emulator: PTY,
-escape parsing, scrollback, clipboard, IME, full selection policy and
+escape parsing, scrollback, clipboard paste, IME, full selection policy and
 process ownership are outside the example and remain separate integration work.
 Fonts without a glyph draw their own `.notdef` glyph; no font fallback is added.
 The application independently maps the visible cells to a copied read-only
@@ -34,5 +37,6 @@ right-arrow traversal across a wide-cell continuation and normal close. It is
 virtual-input evidence, not a production terminal or human accessibility test.
 The separate libatspi client reads the published text, checks forward/reverse
 selection across a wide character and a combining-mark cell, and checks that
-native caret and selection setters fail. It does not constitute human Orca
-acceptance.
+native caret and selection setters fail. When `wl-paste` is available, a
+separate Wayland client also checks copied Unicode, line breaks, empty
+selection, and the Ctrl+C distinction. This is not human Orca acceptance.
