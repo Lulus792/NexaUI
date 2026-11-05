@@ -139,7 +139,23 @@ static void launcher_reply(struct app *a) {
         if(v->view)v->dirty=true;
     }
     printf("LAUNCH_REPLY %c %c\n",bytes[0],bytes[2]);
-    if(a->owner_fixture && bytes[0]=='A')a->close_search=true;
+    if(a->owner_fixture && bytes[0]=='A') {
+        struct view *v=NULL;
+        for(unsigned i=0;i<3;++i)if(a->views[i].expanded){v=&a->views[i];break;}
+        if(v && !a->activation_phase) {
+            const char *app_id=ae_desktop_app_id(target);
+            for(size_t i=0;i<v->model.count;++i) {
+                const struct ae_desktop_window *window=&v->model.windows[i];
+                if(strcmp(window->app_id,app_id))continue;
+                a->activation_id=window->id;a->activation_revision=v->revision;
+                a->activation_output=v->index;a->activation_phase=1;
+                a->activation_invalidated=false;
+                printf("REUSE_WINDOW %c %u\n",bytes[2],window->id);
+                break;
+            }
+        }
+        if(!a->activation_phase)a->close_search=true;
+    }
 }
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
@@ -195,7 +211,9 @@ static void activation_step(struct app *a) {
     if((a->activation_phase==1 && v->revision!=a->activation_revision) ||
        a->activation_invalidated || !has_window(v,a->activation_id)) {
         printf("ACTIVATION_CANCELLED %u\n",a->activation_id);
-        a->activation_phase=0;a->activation_enabled=false;return;
+        a->activation_phase=0;a->activation_enabled=false;
+        if(a->owner_fixture)a->close_search=true;
+        return;
     }
     if(a->activation_phase==1) {
         if(!v->expanded || !v->configured)return;

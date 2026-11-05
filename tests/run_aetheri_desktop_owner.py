@@ -146,10 +146,27 @@ def main():
                      bool(re.search(r"^desktop: WINDOW \d+ \d+ .* \| org\.aetheri\.Terminal$", log(), re.M)),
                      "owner-launched Terminal")
                 wait_app_focus("org.aetheri.Terminal", "T")
+                settings_ids = re.findall(r"^desktop: WINDOW (\d+) \d+ .* \| org\.aetheri\.Settings$",
+                                          log().split("SPAWN settings " + str(second), 1)[1], re.M)
+                terminal_ids = re.findall(r"^desktop: WINDOW (\d+) \d+ .* \| org\.aetheri\.Terminal$",
+                                          log(), re.M)
+                if not settings_ids or not terminal_ids:
+                    raise RuntimeError("missing app window identities")
+                settings_id, terminal_id = settings_ids[-1], terminal_ids[-1]
+                settings_activations = log().count("desktop: ACTIVATED " + settings_id + " 1\n")
+                launch("settings")
+                wait(lambda: log().count("desktop: ACTIVATED " + settings_id + " 1\n") > settings_activations,
+                     "reuse activates Settings window")
+                wait_app_focus("org.aetheri.Settings", "S")
+                if len(re.findall(r"^SPAWN settings \d+$", log(), re.M)) != 2:
+                    raise RuntimeError("switching to Settings spawned a duplicate")
                 replies = log().count("desktop: LAUNCH_REPLY A T\n")
+                terminal_activations = log().count("desktop: ACTIVATED " + terminal_id + " 1\n")
                 launch("terminal")
                 wait(lambda: log().count("desktop: LAUNCH_REPLY A T\n") > replies,
                      "existing Terminal acknowledgement")
+                wait(lambda: log().count("desktop: ACTIVATED " + terminal_id + " 1\n") > terminal_activations,
+                     "reuse activates Terminal window")
                 wait_app_focus("org.aetheri.Terminal", "T")
                 if len(re.findall(r"^SPAWN terminal \d+$", log(), re.M)) != 1:
                     raise RuntimeError("owner created a duplicate Terminal process")
