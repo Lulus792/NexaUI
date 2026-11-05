@@ -124,10 +124,23 @@ static void desktop_output(void *data, struct aetheri_development_desktop_v1 *co
 static void desktop_window(void *data, struct aetheri_development_desktop_v1 *control, uint32_t id,
         const char *title, const char *app_id, uint32_t active) {
     (void)control; struct app *a = data; if (!a->first_id) a->first_id = id;
+    CHECK(active<=1);
+    for(unsigned i=0;i<3;++i) {
+        struct view *v=&a->views[i];
+        CHECK(ae_desktop_model_window(&v->model,id,title,app_id,active!=0));
+        CHECK(v->revision<UINT64_MAX);++v->revision;
+        if(v->view)v->dirty=true;
+    }
     printf("WINDOW %u %u %s | %s\n", id, active, title, app_id);
 }
 static void desktop_closed(void *data, struct aetheri_development_desktop_v1 *control, uint32_t id) {
-    (void)data; (void)control; printf("CLOSED_WINDOW %u\n", id);
+    struct app *a=data;(void)control;
+    for(unsigned i=0;i<3;++i) {
+        struct view *v=&a->views[i];ae_desktop_model_closed(&v->model,id);
+        CHECK(v->revision<UINT64_MAX);++v->revision;
+        if(v->view)v->dirty=true;
+    }
+    printf("CLOSED_WINDOW %u\n", id);
 }
 static void desktop_toggle(void *data, struct aetheri_development_desktop_v1 *control, uint32_t output) {
     (void)data; (void)control; printf("TOGGLE %u\n", output);
@@ -321,6 +334,9 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     CHECK(argc == 1 || argc == 2 || argc == 4);
     struct app a = {.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    for(unsigned i=0;i<3;++i) {
+        a.views[i].app=&a;a.views[i].index=i;ae_desktop_model_init(&a.views[i].model);
+    }
     a.xkb=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(a.xkb);
     const char *font=getenv("NEXAUI_DESKTOP_FONT"); CHECK(font && (a.font=load_font(font,&a.font_size)));
     a.display = wl_display_connect(NULL); CHECK(a.display);
@@ -344,8 +360,7 @@ int main(int argc, char **argv) {
             CHECK(duplicate); CHECK(wl_display_roundtrip(a.display) >= 0);
         }
         for (unsigned i = 0; i < 3; ++i) {
-            struct view *v = &a.views[i]; v->app = &a; v->index = i;
-            ae_desktop_model_init(&v->model);
+            struct view *v = &a.views[i];
             v->surface = wl_compositor_create_surface(a.compositor); CHECK(v->surface);
             v->layer = zwlr_layer_shell_v1_get_layer_surface(a.layers, v->surface, a.outputs[i],
                 ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, "aetheri.desktop"); CHECK(v->layer);
@@ -371,6 +386,25 @@ int main(int argc, char **argv) {
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);
                 else if (c == 's') aetheri_development_desktop_v1_activate(a.control, UINT32_MAX);
                 else if (c == 'p') paint(&a.views[0]);
+                else if (c == 'z') {
+                    struct view *v=&a.views[0];ae_desktop_model_search(&v->model,0,true);
+                    CHECK(v->revision<UINT64_MAX);++v->revision;paint(v);
+                }
+                else if (c == 'w') {
+                    for(unsigned i=0;i<3;++i)
+                        if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
+                    for(unsigned i=0;i<3;++i)for(size_t j=0;j<a.views[i].model.count;++j) {
+                        const struct ae_desktop_window *w=&a.views[i].model.windows[j];
+                        printf("MODEL %u %u %s\n",i,w->id,w->title);
+                    }
+                    struct view *v=&a.views[0];nx_context *context=aetheri_desktop_view_context(v->view);
+                    for(size_t j=0;j<v->model.count;++j) {
+                        uint32_t index;nx_semantic_view row;
+                        uint64_t id=UINT64_C(0x100000000)+v->model.windows[j].id;
+                        if(nx_semantics_find(context,id,&index)==NX_OK && nx_semantics_get(context,index,&row)==NX_OK)
+                            printf("WINDOW_ROW %u %.1f %.*s\n",v->model.windows[j].id,row.bounds.y,(int)row.name.length,row.name.data);
+                    }
+                }
                 else if (c == 'f') {
                     struct view *v=&a.views[0];ae_desktop_model_search(&v->model,0,true);
                     for(uint32_t id=1;id<=30;++id) {

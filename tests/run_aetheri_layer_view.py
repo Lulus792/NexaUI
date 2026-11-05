@@ -17,8 +17,11 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--test-held-removal", action="store_true",
                         help="expose the currently unresolved pressed-device removal case")
+    parser.add_argument("--app-client", type=Path,
+                        help="independent Aetheri compositor test client")
     args = parser.parse_args()
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
+    app_client = args.app_client.resolve(strict=True) if args.app_client else None
     root = args.work_dir.resolve()
     root.mkdir(mode=0o700)
     runtime, captures = root / "runtime", root / "captures"
@@ -30,14 +33,16 @@ def main():
         env.pop(key, None)
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     shell_server, shell_client = socket.socketpair(socket.AF_UNIX, socket.SOCK_STREAM)
-    processes, streams = [], []
+    processes, streams, expected_exits = [], [], set()
     def digest(path):
         with path.open("rb") as stream:
             return hashlib.file_digest(stream, "sha256").hexdigest()
 
     result = {"status": "failed", "scope": "isolated Aetheri test compositor, virtual outputs",
               "server_sha256": digest(server), "desktop_sha256": digest(desktop),
-              "font_sha256": digest(font)}
+              "font_sha256": digest(font), "window_observation": "not-run"}
+    if app_client:
+        result["app_client_sha256"] = digest(app_client)
     try:
         def start(binary, name, arguments, inherited, environment):
             stream = (root / (name + ".log")).open("wb")
@@ -54,7 +59,7 @@ def main():
         def wait(predicate, label):
             end = time.monotonic() + 20
             while not predicate():
-                if any(p.poll() is not None for p in processes):
+                if any(p.poll() is not None and p not in expected_exits for p in processes):
                     raise RuntimeError("process exited before " + label)
                 if time.monotonic() > end:
                     raise RuntimeError("timeout: " + label)
@@ -156,6 +161,83 @@ def main():
         event("B 272 1")
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 3, "replacement pointer click")
+        if app_client:
+            app = start(app_client, "app", ("--input",), (), env)
+            wait(lambda: "Aetheri protocol test A | " in log("desktop") and
+                 "Aetheri protocol test B | " in log("desktop"), "real observed windows")
+            window_a = int(re.search(r"^WINDOW (\d+) \d+ Aetheri protocol test A \|", log("desktop"), re.M)[1])
+            window_b = int(re.search(r"^WINDOW (\d+) \d+ Aetheri protocol test B \|", log("desktop"), re.M)[1])
+            command(client, "z")
+            wait(lambda: "SYNC z\n" in log("desktop"), "unfiltered model")
+            command(client, "w")
+            wait(lambda: "SYNC w\n" in log("desktop"), "window snapshot")
+            first_snapshot = log("desktop").split("SYNC z\n", 1)[1].split("SYNC w\n", 1)[0]
+            for output in range(3):
+                for window in (window_a, window_b):
+                    if f"MODEL {output} {window} Aetheri protocol test " not in first_snapshot:
+                        raise RuntimeError("observed window missing on output")
+            row = re.search(rf"^WINDOW_ROW {window_a} (-?\d+\.\d+) Aetheri protocol test A$", first_snapshot, re.M)
+            if not row:
+                raise RuntimeError("observed window missing from view semantics")
+            event(f"M 60 {int(float(row[1]) + 20)}")
+            event("B 272 1")
+            event("B 272 0")
+            wait(lambda: f"INTENT 0 3 0 {window_a}\n" in log("desktop"), "observed window intent")
+            command(app, "u")
+            wait(lambda: f"WINDOW {window_a} " in log("desktop") and "Grüße " in log("desktop"),
+                 "window title update")
+            command(client, "w")
+            wait(lambda: log("desktop").count("SYNC w\n") >= 2, "updated title snapshot")
+            title_snapshot = log("desktop").split("SYNC w\n", 1)[1].split("SYNC w\n", 1)[0]
+            for output in range(3):
+                if f"MODEL {output} {window_a} Grüße " not in title_snapshot:
+                    raise RuntimeError("window title update missing on output")
+            if not re.search(rf"^WINDOW_ROW {window_a} -?\d+\.\d+ Grüße ", title_snapshot, re.M):
+                raise RuntimeError("view did not publish the updated title")
+            command(client, "a")
+            wait(lambda: f"ACTIVATED {window_a} 0\n" in log("desktop"), "exclusive-search activation denial")
+            command(app, "d")
+            wait(lambda: f"CLOSED_WINDOW {window_b}\n" in log("desktop"), "window close observation")
+            command(client, "w")
+            wait(lambda: log("desktop").count("SYNC w\n") >= 3, "updated window snapshot")
+            second_snapshot = log("desktop").split("SYNC w\n", 2)[2].split("SYNC w\n", 1)[0]
+            for output in range(3):
+                if f"MODEL {output} {window_b} " in second_snapshot:
+                    raise RuntimeError("closed window retained by model")
+            if f"WINDOW_ROW {window_b} " in second_snapshot:
+                raise RuntimeError("closed window retained by view")
+            command(app, "c")
+            def replacement_ids():
+                return [int(value) for value in re.findall(
+                    r"^WINDOW (\d+) \d+ Aetheri protocol test B \|", log("desktop"), re.M)]
+            wait(lambda: any(value != window_b for value in replacement_ids()), "replacement window observation")
+            replacement = next(value for value in replacement_ids() if value != window_b)
+            if replacement == window_a:
+                raise RuntimeError("replacement reused another live window ID")
+            command(client, "w")
+            wait(lambda: log("desktop").count("SYNC w\n") >= 4, "replacement window snapshot")
+            third_snapshot = log("desktop").split("SYNC w\n", 3)[3].split("SYNC w\n", 1)[0]
+            for output in range(3):
+                if f"MODEL {output} {window_b} " in third_snapshot or (
+                        f"MODEL {output} {replacement} Aetheri protocol test B" not in third_snapshot):
+                    raise RuntimeError("replacement window identity was not preserved")
+            if f"WINDOW_ROW {window_b} " in third_snapshot or (
+                    f"WINDOW_ROW {replacement} " not in third_snapshot):
+                raise RuntimeError("view did not replace the closed window")
+            command(client, "n")
+            wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapse before activation")
+            command(client, "a")
+            wait(lambda: f"ACTIVATED {window_a} 1\n" in log("desktop"), "observed window activation")
+            expected_exits.add(app)
+            command(app, "q")
+            if app.wait(timeout=10):
+                raise RuntimeError("app cleanup failed")
+            wait(lambda: f"CLOSED_WINDOW {window_a}\n" in log("desktop") and
+                 f"CLOSED_WINDOW {replacement}\n" in log("desktop"), "app removal")
+            command(client, "e")
+            wait(lambda: log("desktop").count("PAINT 0 1920 1080\n") >= 2, "reopen search")
+            result["window_observation"] = "passed"
+            result["observed_window_ids"] = [window_a, window_b, replacement]
         command(client, "f")
         wait(lambda: "SYNC f\n" in log("desktop"), "long results model")
         command(client, "i")
@@ -194,7 +276,8 @@ def main():
             raise RuntimeError("scroll outside results moved the list")
         result["scroll_reverse_y"], result["scroll_outside_y"] = reverse, outside
         command(client, "n")
-        wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapsed dock")
+        expected_collapses = 3 if app_client else 2
+        wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= expected_collapses, "collapsed dock")
         command(client, "q")
         if client.wait(timeout=10) or compositor.wait(timeout=10):
             raise RuntimeError("retirement failed")
