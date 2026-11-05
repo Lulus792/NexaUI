@@ -24,6 +24,12 @@ software renderer uses a minimum logical window size of 480 by 380. Native
 accessibility requires a NexaUI build with AT-SPI and an available service;
 the view remains usable when that optional service is unavailable. `--verify`
 prints only the three model values for the automated integration fixture.
+For an isolated owner integration probe, the executable also accepts
+`--font FONT --cache DIR --diagnostics`, matching the development owner's
+argument shape. The cache argument is accepted but unused; this example creates
+no cache or persistence. Escape, Ctrl+Q and SIGINT/SIGTERM request normal
+owner-thread teardown. This compatibility does not change Aetheri's launcher
+or establish its app identity, commands, service behavior or adoption.
 
 This experiment is not the complete Aetheri Settings application: it does not
 enumerate displays, integrate Aetheri's existing process owner or service

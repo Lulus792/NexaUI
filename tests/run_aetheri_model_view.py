@@ -19,6 +19,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','view','font','work-dir'):
         p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--owner-args', action='store_true', help='use Aetheri owner-style font/cache/diagnostics arguments')
+    p.add_argument('--signal-close', action='store_true', help='stop the idle view with SIGTERM instead of Escape')
     args=p.parse_args()
     server,view,font=[path.resolve(strict=True) for path in (args.server,args.view,args.font)]
     root=args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -49,7 +51,9 @@ def main():
             def key(code):
                 event(f'K {code} 1'); event(f'K {code} 0'); time.sleep(.12)
             wait(lambda:'READY ' in log('server.log'),'compositor')
-            app=subprocess.Popen([str(view),str(font),'--verify'],env=env,stdin=subprocess.DEVNULL,stdout=al,stderr=subprocess.STDOUT)
+            arguments=([str(view),'--font',str(font),'--cache',str(root),'--diagnostics'] if args.owner_args
+                       else [str(view),str(font),'--verify'])
+            app=subprocess.Popen(arguments,env=env,stdin=subprocess.DEVNULL,stdout=al,stderr=subprocess.STDOUT)
             wait(lambda:'MODEL theme=0 german=0 text=100\n' in log('view.log') and 'MAP 0\n' in log('server.log'),'initial model')
             for _ in range(3): key(15)
             key(57); wait(lambda:'MODEL theme=2 german=0 text=100\n' in log('view.log'),'contrast model')
@@ -65,8 +69,11 @@ def main():
             if magic!=b'P6' or peak!=b'255' or (width,height)!=(1920,1080) or len(pixels)!=width*height*3:
                 raise RuntimeError('bad capture')
             result['capture_sha256']=hashlib.sha256(image).hexdigest()
-            key(1)
+            if args.signal_close: app.send_signal(signal.SIGTERM)
+            else: key(1)
             if app.wait(timeout=10)!=0: raise RuntimeError('view did not close cleanly')
+            if args.signal_close and args.owner_args and 'SHUTDOWN signal\n' not in log('view.log'):
+                raise RuntimeError('signal cleanup path was not observed')
             result['status']='passed'
     finally:
         if app and app.poll() is None: app.terminate(); app.wait(timeout=5)
