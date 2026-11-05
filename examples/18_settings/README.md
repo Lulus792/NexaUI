@@ -65,3 +65,28 @@ viewport before releasing Tab and continuing. A separate test with
 `weston-simple-im` still fails the keyboard workflow; the controlled v3 test
 does not establish real installed-IME acceptance. See the adoption assessment
 for preserved traces and the limits of these checks.
+
+An opt-in `nexaui_settings_wayland_simple_ime` test separately exercises an
+actual `weston-simple-im` compose sequence: a private Xvfb seat sends Compose,
+apostrophe and `a`; Settings observes the preedit, then the committed `á`, with
+the applied model unchanged, and closes through its normal cleanup. It checks
+the Wayland wire trace as well as the scene's state. This does not resolve the
+keyboard-workflow failures above, test a production IME, or establish human
+accessibility and display acceptance. CTest skips it unless explicitly enabled.
+
+To run it, provision Weston with `weston-simple-im` and its desktop shell,
+`xvfb-run`, `setxkbmap`, `xdotool`, D-Bus and a Vulkan implementation. On Linux,
+from the repository root (adjust the build and helper paths):
+
+```sh
+NEXAUI_TEST_SIMPLE_IME=1 NEXAUI_WESTON_INPUT_METHOD=weston-simple-im \
+NEXAUI_WESTON_LIBEXEC=/path/to/weston/libexec \
+xvfb-run -a -s '-screen 0 1280x1024x24 -noreset' sh -c \
+  'setxkbmap -option compose:ralt && python3 tests/run_weston_native.py -- dbus-run-session -- ctest --test-dir build -R nexaui_settings_wayland_simple_ime --output-on-failure'
+```
+
+`-noreset` keeps the private X server's Compose mapping after `setxkbmap`
+exits. The test uses evdev X11 keycode 108 for right Alt; a different XKB map
+must be adapted rather than counted as a pass. Set `NEXAUI_TEST_IME_TRACE` to
+an output path to retain the test process's Wayland trace; it includes the
+example's fixed draft text and is not intended for real private data.

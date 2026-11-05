@@ -484,3 +484,34 @@ expected clipboard draft. Its output is retained locally in
 The earlier trace above shows that this input method commits control keys as
 text in that setup; this keysym correction does not solve that separate
 behavior. Real installed-IME and human acceptance remain open.
+
+## Real simple-IME compose in Settings (2026-11-05)
+
+Candidate based on `7253567b81b3f07570256cb06775d0a3f3a1dab9`. A private
+Weston 14.0.2/Xvfb run with `weston-simple-im` and a private `compose:ralt`
+keymap sent Compose, apostrophe and `a` to the actual Settings window. The
+test waited for the focused field and an apostrophe preedit while both its
+draft and applied model still contained `Aetheri`, then for a cleared preedit
+and the committed `Aetheriá` draft while the applied model remained unchanged.
+It checked the actual text-input-v1 preedit and commit wire messages, and the
+host exited through renderer, scene and window cleanup. The test passed once
+with GCC shared and once with Clang ASan/UBSan static. A later GCC run retained
+the Wayland trace in ignored local artifact
+`out/aetheri-real-ime-20261105-trace.txt`, SHA-256
+`d78272853b4951495009e52642397da1358c9dd1d4f1f02e79082849f6f3fa73`.
+Replacing the final
+`a` with `b` in a private test-driver copy caused the commit expectation to
+fail; its local output `/tmp/nexaui-real-ime-negative.log` has SHA-256
+`433d28fc8c7adb9a699a4e6a9bad1a70f04c335316ff1f888f414d545ece65d2`.
+The new CTest skips outside its explicitly enabled private fixture.
+
+The first exploratory run misplaced the desktop-shell configuration and Weston
+did not start; the corrected run launched, but the Xvfb server reset its keymap
+after the setup client disconnected, yielding two ordinary text commits. A
+private Xvfb with `-noreset` kept the mapping and produced genuine preedit and
+commit. The `setxkbmap` executable was extracted into `/tmp`, without a system
+installation. This narrow virtual-input check does not resolve the separate
+`weston-simple-im` keyboard-workflow failures, nor prove focus-loss
+cancellation, production IMEs, visual sharpness or human accessibility.
+The [Weston 14.0.2 simple-IME source](https://github.com/wayland-mirror/weston/blob/14.0.2/clients/simple-im.c)
+documents the test input method's compose table and event handling.

@@ -39,7 +39,8 @@ software-Vulkan run. Physical monitor, hardware renderer, mixed-output, input
 and visual acceptance remain open. An initial-geometry warning observed under
 Sway no longer appeared after the correction described in that assessment.
 The [adoption assessment](aetheri-adoption-assessment.md) records a T04 v1
-keysym-modifier fix and the still-failing `weston-simple-im` Settings cases.
+keysym-modifier fix, one real `weston-simple-im` compose check and the still-
+failing `weston-simple-im` Settings keyboard workflow.
 For B04, `nx_get_version` reports the linked core's three-part version,
 `nx_get_build_features` identifies compiled platform/transport support, and
 `nx_get_source_revision` exposes an optional builder-declared source ID.
