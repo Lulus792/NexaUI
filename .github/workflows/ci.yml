@@ -63,10 +63,17 @@ jobs:
         if: failure() && runner.os == 'Linux'
         run: |
           if [ -x build/nexaui_wayland_async_clipboard_tests ]; then
-            NEXAUI_TEST_PRIVATE_X11=1 xvfb-run -a -s '-screen 0 1600x1200x24' \
-              python tests/run_weston_native.py --timeout 30 --work-dir build/wayland-disconnect-diagnostic -- \
-              gdb --batch -ex 'set pagination off' -ex run -ex 'thread apply all bt' \
-              --args build/nexaui_wayland_async_clipboard_tests --disconnect
+            for attempt in $(seq 1 12); do
+              echo "Disconnect debugger attempt $attempt"
+              NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 \
+                VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1 \
+                NEXAUI_TEST_PRIVATE_X11=1 NEXAUI_VULKAN_TRACE_RETIRE=1 \
+                xvfb-run -a -s '-screen 0 1600x1200x24' \
+                python tests/run_weston_native.py --timeout 30 --work-dir "build/wayland-disconnect-diagnostic-$attempt" -- \
+                gdb --batch -ex 'set pagination off' -ex run -ex 'thread apply all bt' \
+                --args build/nexaui_wayland_async_clipboard_tests --disconnect 2>&1 | tee "$RUNNER_TEMP/nexaui-disconnect-gdb.log"
+              if grep -q 'received signal SIGSEGV' "$RUNNER_TEMP/nexaui-disconnect-gdb.log"; then break; fi
+            done
           fi
       - name: Require executed Wayland results
         if: runner.os == 'Linux'

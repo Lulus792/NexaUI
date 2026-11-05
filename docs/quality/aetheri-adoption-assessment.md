@@ -20,6 +20,14 @@ passed on Alpine/WSL with Vulkan validation enabled (2/2, exit 0; fixture
 not the Ubuntu CI result or broader Settings acceptance. The Ubuntu jobs and
 their independent disconnect stack diagnostics remain outstanding.
 
+On the subsequent `7fc4742` Ubuntu CI, the disconnect tests again segfaulted
+in the suite, but the single debugger rerun exited normally in both
+[static](https://github.com/Lulus792/NexaUI/actions/runs/42006411419/job/127174159715)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/42006411419/job/127174159993)
+jobs. This gives no stack or cause. The rerun did not reproduce all suite
+environment variables, and debugger timing could also matter. The diagnostic
+now repeats with the suite environment; the cause remains unproven.
+
 ## Nested overlays through macOS AX and CI portability (2026-11-05)
 
 Source `de808bdacef1e35111a6f0c69338f6017afab153`, based on the test-only
