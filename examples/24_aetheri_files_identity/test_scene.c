@@ -87,6 +87,10 @@ int main(int argc,char **argv) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
     CHECK(files_scene_selected(scene)==clicked && !strcmp(ae_files_entry(model,ae_files_selected(model))->name,name));
     CHECK(files_scene_enable_filter(scene,NULL)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(files_scene_filter(scene,"no-such-file",12)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    uint32_t status_index;nx_semantic_view status;
+    CHECK(nx_semantics_find(ctx,4,&status_index)==NX_OK && nx_semantics_get(ctx,status_index,&status)==NX_OK &&
+          status.role==NX_ROLE_STATUS && status.name.length==18 && !memcmp(status.name.data,"No matching files.",18));
     CHECK(files_scene_focus_filter(scene,1)==NX_OK);
     event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='i';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(files_scene_frame(scene,240,120)==NX_OK && !strcmp(ae_files_query(model),"i") && files_scene_query_accepted(scene));
@@ -99,6 +103,14 @@ int main(int argc,char **argv) {
     uint32_t field_index;nx_semantic_view field;
     CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK &&
           field.role==NX_ROLE_TEXT_FIELD && (field.state&NX_SEM_INVALID));
+    CHECK(nx_semantics_find(ctx,4,&status_index)==NX_OK && nx_semantics_get(ctx,status_index,&status)==NX_OK &&
+          status.role==NX_ROLE_STATUS && status.name.length==37 && !memcmp(status.name.data,"Invalid filter. Clear it to continue.",37));
+    CHECK(nx_semantics_find(ctx,files_scene_selected(scene),&status_index)!=NX_OK);
+    uint64_t held_selection=files_scene_selected(scene);
+    CHECK(files_scene_key(scene,NX_KEY_END,1)==NX_OK && files_scene_selected(scene)==held_selection);
+    CHECK(nx_frame_commands(ctx,&commands,&command_count)==NX_OK &&
+          nx_headless_render(commands,command_count,filtered_pixels,240,120,240*4,(nx_color){0,0,0,1})==NX_OK &&
+          capture(getenv("NEXAUI_FILES_INVALID_CAPTURE"),filtered_pixels,240,120));
     CHECK(files_scene_stage(scene,&intent)==AE_FILES_INVALID);
     event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_context_queue_event(ctx,&event)==NX_OK);
@@ -145,6 +157,11 @@ int main(int argc,char **argv) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK);event.type=NX_EVENT_KEY_UP;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
     CHECK(files_scene_close_requested(scene));
+    for(unsigned i=0;i<12;++i){snprintf(name,sizeof(name),"item%02u",i);CHECK(!unlinkat(root,name,0));}
+    CHECK(!unlinkat(root,"item00a",0) && ae_files_refresh(model)==AE_FILES_OK && files_scene_sync(scene)==NX_OK);
+    CHECK(files_scene_focus_filter(scene,1)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(nx_semantics_find(ctx,4,&status_index)==NX_OK && nx_semantics_get(ctx,status_index,&status)==NX_OK &&
+          status.role==NX_ROLE_STATUS && status.name.length==24 && !memcmp(status.name.data,"No files in this folder.",24));
     okay=1;
 cleanup:
     files_intent_clear(&intent);if(scene)files_scene_destroy(scene);

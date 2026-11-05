@@ -37,6 +37,11 @@ owner-handled close button: private Weston pointer, ordinary keyboard and
 independent AT-SPI activation were exercised. In a simple-IME attempt, Tab
 and Enter were consumed before reaching the client, so keyboard-only close
 under that provider remains open (I02/T04/A02/P05).
+On base `fd5174b14241b55522af22d5a4cbf3a243b11d48`, empty folders, no
+matches and rejected filters have distinct visible and semantic status text.
+Rejected filters hide retained-query rows and block hidden-selection keyboard
+navigation; independent AT-SPI clients checked two status paths. Live
+announcements, localization, human review and Aetheri adoption remain open.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

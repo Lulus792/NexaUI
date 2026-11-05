@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, FILTER_ID=2, CLOSE_ID=3, FILTER_HEIGHT=36, ROW_HEIGHT=28, MAX_ROWS=64 };
+enum { KEY_LIMIT=8192, HASH_CAPACITY=16384, ROOT_ID=1, FILTER_ID=2, CLOSE_ID=3, STATUS_ID=4, FILTER_HEIGHT=36, ROW_HEIGHT=28, MAX_ROWS=64 };
 typedef struct row_key {dev_t dev;ino_t ino;enum ae_files_kind kind;char name[AE_FILES_NAME+1];uint64_t id;} row_key;
 struct files_scene {
     struct ae_files *model;nx_font_collection *fonts;nx_context *ctx;nx_virtual_list *list;
@@ -103,7 +103,7 @@ nx_result files_scene_filter(files_scene *s,const char *query,size_t length) {
 nx_result files_scene_key(files_scene *s,nx_key key,int owns_focus) {
     if(!s || (owns_focus!=0 && owns_focus!=1))return NX_ERROR_ARGUMENT;
     if(!s->ready)return NX_ERROR_STATE;
-    if(!owns_focus || !s->count)return NX_OK;
+    if(!owns_focus || !s->count || !s->query_valid)return NX_OK;
     size_t index=0;int found=0;
     for(size_t i=0;i<s->count;++i)if(s->ids[i]==s->selected){index=i;found=1;break;}
     size_t page=s->viewport_height>=ROW_HEIGHT?(size_t)(s->viewport_height/ROW_HEIGHT):1;
@@ -193,7 +193,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         return NX_ERROR_ARGUMENT;
     if(!s->ready)return NX_ERROR_STATE;
     s->viewport_height=height-header;nx_virtual_range range;
-    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL,*close_label=NULL;nx_text_buffer *simulation=NULL;size_t made=0;int fallback_high=0;
+    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL,*close_label=NULL,*notice=NULL;nx_text_buffer *simulation=NULL;size_t made=0;int fallback_high=0;
     uint64_t previous_focus=nx_focus_id(s->ctx);
     nx_result r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
     if(s->query) {
@@ -245,7 +245,20 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
     if(r==NX_OK)s->offset=range.effective_offset;
     nx_container_desc tree={0};tree.id=ROOT_ID;tree.bounds=(nx_rect){0,header,width,s->viewport_height};tree.name=(nx_utf8_span){"Files",5};
     if(r==NX_OK)r=nx_tree(s->ctx,&tree);
-    for(size_t i=range.first;r==NX_OK && i<range.end;++i) {
+    const char *message=!s->query_valid?"Invalid filter. Clear it to continue.":
+        !s->count?(ae_files_query(s->model)[0]?"No matching files.":"No files in this folder."):NULL;
+    if(r==NX_OK && message) {
+        size_t length=strlen(message);nx_color color;
+        nx_semantic_desc status={0};status.id=STATUS_ID;status.parent_id=ROOT_ID;status.role=NX_ROLE_STATUS;
+        status.bounds=tree.bounds;status.name=(nx_utf8_span){message,length};
+        r=nx_semantics_add(s->ctx,&status,NULL);
+        if(r==NX_OK)r=nx_theme_color(s->ctx,NX_COLOR_TEXT,&color);
+        if(r==NX_OK)r=nx_text_layout_create(s->fonts,message,length,NX_BIDI_AUTO,15,fmaxf(1,width-16),&notice);
+        if(r==NX_OK)r=nx_push_clip(s->ctx,tree.bounds);
+        if(r==NX_OK){r=nx_draw_text_layout(s->ctx,notice,(nx_point){8,header+5},color,1024*1024);
+            nx_result pop=nx_pop_clip(s->ctx);if(r==NX_OK)r=pop;}
+    }
+    for(size_t i=range.first;r==NX_OK && !message && i<range.end;++i) {
         const struct ae_files_entry *entry=ae_files_entry(s->model,i);if(!entry){r=NX_ERROR_STATE;break;}
         float y=header+(float)((double)i*ROW_HEIGHT-s->offset),top=fmaxf(header,y),bottom=fminf(height,y+ROW_HEIGHT);
         if(bottom<=top)continue;
@@ -267,6 +280,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
     nx_text_buffer_destroy(simulation);
     if(hint)nx_text_layout_destroy(hint);
     if(close_label)nx_text_layout_destroy(close_label);
+    if(notice)nx_text_layout_destroy(notice);
     for(size_t i=0;i<made;++i)nx_text_layout_destroy(layouts[i]);
     return r;
 }

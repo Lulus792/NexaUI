@@ -245,3 +245,20 @@ assistive paths do not prove keyboard-only access in that configuration.
 Other providers, physical input, very narrow layouts, localization and human
 accessibility review remain open. This remains a standalone probe, not an
 integrated Aetheri Files application.
+
+## Empty and rejected filter states
+
+On base `fd5174b14241b55522af22d5a4cbf3a243b11d48`, the scene reports an
+empty folder, a valid filter without matches, and a rejected filter separately.
+Each is a visible message and a named status semantic node. While the filter is
+rejected, rows from the retained old model query are hidden and keyboard list
+navigation cannot move the hidden selection; staged intents remain rejected.
+Clearing the field restores the normal list. The original model retains its
+last accepted query until a valid replacement is applied.
+
+Scene tests cover all three messages and hidden-selection behavior. An
+independent AT-SPI client checks the no-match and invalid status names and
+roles. Private Weston keyboard/pointer, IME and AT-SPI tests passed in static,
+shared and ASan/UBSan variants. A 240x120 invalid-state headless capture was
+inspected. Automatic status announcements, human screenreader review, very
+narrow layouts, localization and actual Aetheri integration remain open.
