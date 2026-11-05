@@ -866,3 +866,21 @@ Clang ASan/UBSan static profiles. This establishes the tested failure path,
 not all possible interactions between multiple windows or compositors.
 The private-Weston clipboard selection also passed 23/23 in each profile,
 including the separate-process and one-shot Settings cases.
+
+## Clipboard pump and reentrant window destruction (2026-11-05)
+
+Candidate based on `b647c6beeecb759998245d9bff56e14b6f986bfd`. Controlled
+servers reproduce two use-after-free errors under ASan: the application
+allocator closes the reading window during a synchronous read, or closes a
+different window while its pending Wayland events are pumped. The public
+reader now retains its own window, and each pump pass retains a snapshot of
+window wrappers before calling any native event handler. A retired reading
+window aborts with `NX_ERROR_STATE`, including when the source remains stalled;
+other retired windows are released after the pass. Tests also cover a callback
+closing the reader from a different window, and closing a later candidate in a
+three-window pass. These tests use controlled servers and do not establish
+every possible allocator or renderer lifecycle.
+The complete private-Weston suites passed 190/190 with GCC shared and 191/191
+with Clang ASan/UBSan static. The dual-backend build, X11 window test and X11
+AT-SPI test also passed with Xvfb; these do not substitute for physical input
+or screenreader acceptance.

@@ -563,7 +563,12 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_wayland_multi_failure_tests PRIVATE
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_wayland_multi_failure COMMAND nexaui_wayland_multi_failure_tests)
-            set_tests_properties(nexaui_wayland_multi_failure PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_clipboard_self_destroy COMMAND nexaui_wayland_multi_failure_tests --self-destroy)
+            add_test(NAME nexaui_wayland_clipboard_self_destroy_stall COMMAND nexaui_wayland_multi_failure_tests --self-destroy-stall)
+            add_test(NAME nexaui_wayland_clipboard_other_destroy COMMAND nexaui_wayland_multi_failure_tests --other-destroy)
+            add_test(NAME nexaui_wayland_clipboard_reader_destroy COMMAND nexaui_wayland_multi_failure_tests --reader-destroy)
+            add_test(NAME nexaui_wayland_clipboard_next_destroy COMMAND nexaui_wayland_multi_failure_tests --next-destroy)
+            set_tests_properties(nexaui_wayland_multi_failure nexaui_wayland_clipboard_self_destroy nexaui_wayland_clipboard_self_destroy_stall nexaui_wayland_clipboard_other_destroy nexaui_wayland_clipboard_reader_destroy nexaui_wayland_clipboard_next_destroy PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_drop_tests tests/test_wayland_async_drop.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)

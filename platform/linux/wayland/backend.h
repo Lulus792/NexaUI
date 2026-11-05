@@ -11,6 +11,7 @@ nx_result nx_wayland_window_set_external_renderer(nx_wayland_window *window,
 
 nx_result nx_wayland_window_create(const nx_window_desc *desc,
                                    nx_wayland_window **out_window);
+void nx_wayland_window_set_owner(nx_wayland_window *window, nx_window *owner);
 nx_result nx_wayland_window_poll(nx_wayland_window *window, uint32_t timeout_ms);
 nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window, uint32_t timeout_ms, int fd, int writable);
 void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geometry *out);

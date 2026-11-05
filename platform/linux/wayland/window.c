@@ -6,6 +6,7 @@
 #include "repeat.h"
 #include "transfer.h"
 #include "uri_list.h"
+#include "../window_internal.h"
 #include "../../../src/secure_zero.h"
 #include "../../../src/context_identity.h"
 #include "xdg-shell-client-protocol.h"
@@ -76,6 +77,7 @@ typedef struct nx_wayland_clipboard_write {
 
 struct nx_wayland_window {
     struct nx_wayland_window *thread_next;
+    nx_window *owner;
     nx_allocator allocator;
     pthread_t owner_thread;
     struct wl_display *display;
@@ -174,6 +176,10 @@ struct nx_wayland_window {
 
 static _Thread_local nx_wayland_window *nx_wayland_thread_windows;
 static _Thread_local unsigned nx_wayland_sync_read_depth;
+
+void nx_wayland_window_set_owner(nx_wayland_window *window, nx_window *owner) {
+    if (window) window->owner = owner;
+}
 
 enum {
     NX_WAYLAND_MIME_UTF8 = 1u,
@@ -2851,6 +2857,43 @@ void nx_wayland_clipboard_cancel_token(uint64_t token) {
     }
 }
 
+typedef struct nx_wayland_pump_window {
+    nx_wayland_window *native;
+    nx_window *owner;
+} nx_wayland_pump_window;
+
+static nx_result nx_wayland_pump_thread_windows(nx_wayland_window *reader) {
+    size_t count=0;
+    for (nx_wayland_window *candidate=nx_wayland_thread_windows;candidate;candidate=candidate->thread_next) {
+        if (count==SIZE_MAX/sizeof(nx_wayland_pump_window)) return NX_ERROR_LIMIT;
+        ++count;
+    }
+    nx_wayland_pump_window *windows=count?malloc(count*sizeof(*windows)):NULL;
+    if (count && !windows) return NX_ERROR_MEMORY;
+    /* Snapshot and retain every wrapper before invoking any application
+       allocator: a callback may retire this window or a later candidate. */
+    size_t used=0;
+    for (nx_wayland_window *candidate=nx_wayland_thread_windows;candidate;candidate=candidate->thread_next) {
+        if (!candidate->owner || nx_linux_window_retired(candidate->owner)) continue;
+        if (!nx_linux_window_hold(candidate->owner)) {
+            for (size_t i=0;i<used;++i) nx_linux_window_unhold(windows[i].owner);
+            free(windows);
+            return NX_ERROR_LIMIT;
+        }
+        windows[used++]=(nx_wayland_pump_window){candidate,candidate->owner};
+    }
+    nx_result result=NX_OK;
+    for (size_t i=0;i<used;++i) {
+        if (nx_linux_window_retired(windows[i].owner)) continue;
+        nx_result pumped=nx_wayland_window_poll(windows[i].native,0);
+        /* Each window owns its connection; unrelated errors stay with it. */
+        if (pumped!=NX_OK && windows[i].native==reader) { result=pumped; break; }
+    }
+    for (size_t i=0;i<used;++i) nx_linux_window_unhold(windows[i].owner);
+    free(windows);
+    return result;
+}
+
 static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
                                     char **out_bytes, size_t *out_length,
                                     size_t *out_capacity) {
@@ -2865,25 +2908,22 @@ static nx_result nx_wayland_read_fd(nx_wayland_window *window, int read_fd,
     ++window->transfer_read_depth;
     ++nx_wayland_sync_read_depth;
     if (started) for (;;) {
+        if (nx_linux_window_retired(window->owner)) { result=NX_ERROR_STATE; break; }
         uint64_t now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;
-        for (nx_wayland_window *candidate = nx_wayland_thread_windows;
-             candidate; candidate = candidate->thread_next) {
-            nx_result pumped = nx_wayland_window_poll(candidate, 0);
-            /* Each window owns its Wayland connection. An unrelated window's
-               terminal error must not fail this window's clipboard transfer. */
-            if (pumped != NX_OK && candidate == window) { result = pumped; goto done; }
-        }
+        nx_result pumped=nx_wayland_pump_thread_windows(window);
+        if (pumped!=NX_OK) { result=pumped; break; }
+        if (nx_linux_window_retired(window->owner)) { result=NX_ERROR_STATE; break; }
         now = nx_wayland_now_ns();
         if (!now || now >= deadline) break;
         nx_wayland_read_transfer_step(&transfer, now);
+        if (nx_linux_window_retired(window->owner)) { result=NX_ERROR_STATE; break; }
         if (transfer.finished) { result = transfer.result; break; }
         if (transfer.waiting) {
             struct pollfd pipe_fd = {transfer.fd, POLLIN, 0};
             (void)poll(&pipe_fd, 1, 10);
         }
     }
-done:
     --nx_wayland_sync_read_depth;
     --window->transfer_read_depth;
     if (result == NX_OK)

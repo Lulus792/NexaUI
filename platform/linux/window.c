@@ -75,6 +75,19 @@ static void nx_linux_window_release(nx_window *window) {
     allocator.deallocate(allocator.user,window,sizeof(*window));
 }
 
+int nx_linux_window_hold(nx_window *window) {
+    if (!window || !nx_linux_on_owner_thread(window) || window->retired ||
+        window->operations == SIZE_MAX) return 0;
+    ++window->operations;
+    return 1;
+}
+int nx_linux_window_retired(nx_window *window) {
+    return !window || window->retired;
+}
+void nx_linux_window_unhold(nx_window *window) {
+    nx_linux_window_release(window);
+}
+
 nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     if (!out_window) return NX_ERROR_ARGUMENT;
     *out_window = NULL;
@@ -134,6 +147,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     if (wayland) window->native.wayland = wayland;
     else window->native.x11 = x11;
 #endif
+    if (wayland) nx_wayland_window_set_owner(wayland, window);
     *out_window = window;
     return NX_OK;
 }
@@ -344,10 +358,21 @@ nx_result nx_window_clipboard_get_text(nx_window *window,
         if (out_length) *out_length = 0;
         return NX_ERROR_ARGUMENT;
     }
-    return NX_LINUX_DISPATCH(nx_wayland_window_clipboard_get_text(window->native.wayland,
+    if (!nx_linux_on_owner_thread(window) || window->retired) {
+        if (out_length) *out_length = 0;
+        return NX_ERROR_STATE;
+    }
+    ++window->operations;
+    nx_result result = NX_LINUX_DISPATCH(nx_wayland_window_clipboard_get_text(window->native.wayland,
                     bytes, capacity, out_length),
         nx_x11_window_clipboard_get_text(window->native.x11,
                     bytes, capacity, out_length));
+    if (window->retired) {
+        if (out_length) *out_length = 0;
+        result = NX_ERROR_STATE;
+    }
+    nx_linux_window_release(window);
+    return result;
 }
 
 nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_bytes,

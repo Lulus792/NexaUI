@@ -34,7 +34,7 @@ typedef struct test_server {
     atomic_int disconnect_requested, disconnect_sent;
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
-    atomic_int send_offer, send_drop;
+    atomic_int send_offer, send_drop, offer_sent;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
     atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
@@ -142,6 +142,7 @@ static void surface_commit(struct wl_client *client,
         wl_data_device_send_data_offer(server->data_device, offer);
         wl_data_offer_send_offer(offer, "text/plain;charset=utf-8");
         wl_data_device_send_selection(server->data_device, offer);
+        wl_display_flush_clients(server->display);atomic_store(&server->offer_sent,1);
     }
     int drop = atomic_exchange(&server->send_drop, 0);
     if (drop) {
