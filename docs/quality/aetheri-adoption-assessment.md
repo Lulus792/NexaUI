@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## Nested overlay focus scopes (2026-11-05)
+
+Source `d929460b54ca47fe048b1a49784773f17afa8b6c` adds up to 16 nested
+overlay scopes in the 0.1.8 development package. The innermost active scope
+receives focus and dismissal; closing it restores focus to its enclosing scope.
+The semantic parent may be the enclosing panel or one of its descendants.
+Nested searchable selection reuses the existing widget and its failure rollback.
+Applications must build inner scopes after enclosing content; sibling overlays
+in one frame remain unsupported.
+
+Headless tests cover an inner popup in a modal, Tab and Shift-Tab, Escape,
+outside click, programmatic close, opening both levels together, omitted inner
+views, accepted inner and rejected outer semantic actions, a nested searchable
+select and activation, allocation failure/retry, invalid parent and the 16-level
+limit. The pre-change `ad42920` failed the nested-open test
+(`/tmp/nexaui-nested-before.log`). An isolated mutant that allowed Escape to
+dismiss every layer failed the inner-only dismissal check
+(`/tmp/nexaui-overlay-mutant-test.log`); it is not shipped.
+
+On Alpine/WSL the overlay, menu, search, semantics, multiselection, numeric and
+text tests passed in Clang 22.1.3 ASan/UBSan with leak detection (seven tests,
+`/tmp/nexaui-nested-final-asan.log`). Overlay, menu, search, semantics and
+multiselection passed in GCC 15.2 Release Wayland-only and GCC Debug dual
+Wayland/X11 (`/tmp/nexaui-nested-final-release.log`,
+`/tmp/nexaui-nested-final-dual.log`); the final overlay/search cases passed again
+after the additional semantic action assertion (`/tmp/nexaui-nested-release-last.log`,
+`/tmp/nexaui-nested-dual-last.log`) and under ASan/UBSan. Static and shared
+installed C17 package checks passed (`/tmp/nexaui-nested-package.log`).
+These are headless interaction/semantic tests, not native screenreader or
+Aetheri visual acceptance; L10 remains open for those and sibling overlays.
+
 ## Numeric clipboard integration (2026-11-05)
 
 Source `75d78e0a12d8262227d3518640423f627990e47b` adds the optional
