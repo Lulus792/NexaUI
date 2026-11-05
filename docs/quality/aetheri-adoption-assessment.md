@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## Application-owned cell selection (2026-11-05)
+
+Example source `07cb954062d18f597f3dd01538ab594d710caf37` keeps a cell
+cursor and anchor in its own model. Left/Right and Shift movement skip a wide
+continuation, paint the selected visible cells and independently map the
+selection to UTF-8 byte positions in the read-only semantic snapshot. The
+AT-SPI provider exposes scalar positions; native selection mutation remains
+rejected. No terminal parser, clipboard or PTY ownership was added.
+
+Private Weston/Xvfb tests with virtual keyboard and an independent libatspi
+client checked forward and reverse selection around the wide cell, a combining
+mark, and a line break; they also checked selection mutation rejection. The new
+native selection case passed three consecutive runs
+(`/tmp/nexaui-cell-selection-final/result.json`). Original native keyboard,
+read-only AT-SPI and semantic text tests passed as well. A separately copied
+example from this exact source was built against static and shared installed
+SDKs from `a91b30377209f57854fcfc44c171d792c1f22195`, and both passed the
+same selection client on private Weston
+(`/tmp/nexaui-selection-07cb-consumer-ON/result.json` and
+`/tmp/nexaui-selection-07cb-consumer-OFF/result.json`). This is not human
+screenreader or visual acceptance, production terminal selection policy,
+scrollback, full IME integration or an accessible mutation interface.
+
 ## Wayland build in an X11-free test root (2026-11-05)
 
 Git archive source `009fc6b2f652d36084fb23aa45de4e81083f82c5` built and
