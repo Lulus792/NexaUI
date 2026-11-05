@@ -17,6 +17,23 @@ input and do not prove physical presentation, a production IME, actual Aetheri,
 performance or human accessibility acceptance. Automatic runtime selection
 between renderers remains open.
 
+The committed source `4c76394c3bfd9e0c048dc3d57595e5820df1fc77` was then
+exported with `git archive` and built as separate static and shared Wayland-only
+SDKs with Vulkan disabled. The copied Settings consumer built and installed
+outside that source tree with X11 and Vulkan package discovery disabled. Both
+SDKs passed private-Weston keyboard and independent AT-SPI error/retry; a
+separate shared-SDK run passed `weston-simple-im` composition. All three
+fixture results report child, compositor and overall exit 0, and the consumer
+probe checked the package/linked-core revision and absence of Vulkan in `ldd`.
+Local logs and SHA-256:
+
+- `/tmp/nexaui-software-installed-shared.log`: `3664d776e98af098e1b7d1e9c5c4aee106a25383ea1a7453de25e99fa1be257c`
+- `/tmp/nexaui-software-installed-static.log`: `68e769a2661fc35676a044c646a72797366313e15c5ff02f605147205b487df5`
+- `/tmp/nexaui-software-installed-ime.log`: `822b0b04e1d5c97ca1cd7b333cde03f811622be85c807ffea5218fccf33938ad`
+
+These remain software-rendered, virtual-input checks; the external and human
+gates above are unchanged. No Aetheri consumer pin or backend was changed.
+
 ## Scaled software rasterization (2026-11-05)
 
 Candidate based on `5feea514c339718f971fdbabefd3d11367ef699d` adds
