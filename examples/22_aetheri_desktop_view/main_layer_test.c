@@ -4,6 +4,8 @@
 #include <nexaui/wayland_host.h>
 #include "aetheri-development-desktop-v1-client.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
+#include "text-input-v3-client.h"
+#include "ime_transaction.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -42,6 +44,16 @@ struct app {
     struct wl_seat *seat;
     struct wl_keyboard *keyboard;
     struct wl_pointer *pointer;
+    struct zwp_text_input_manager_v3 *ime_manager;
+    struct zwp_text_input_v3 *ime_input;
+    struct wl_surface *ime_surface;
+    aetheri_ime_transaction ime_transaction;
+    uint32_t ime_serial;
+    uint64_t ime_revision;
+    nx_rect ime_caret;
+    char ime_surrounding[AE_DESKTOP_QUERY];
+    size_t ime_length,ime_cursor,ime_anchor;
+    bool ime_requested,ime_enabled,ime_defer;
     struct wl_output *outputs[3];
     struct aetheri_development_desktop_v1 *control;
     struct zwlr_layer_shell_v1 *layers;
@@ -65,6 +77,8 @@ struct app {
     int launcher;
 };
 static volatile sig_atomic_t stop_requested,signal_writer=-1;
+static void ime_stop(struct app *a);
+static void ime_sync(struct app *a);
 static void stop_signal(int sig) {
     (void)sig;int saved=errno;stop_requested=1;
     if(signal_writer>=0){char byte=1;(void)write((int)signal_writer,&byte,1);}
@@ -117,6 +131,121 @@ static void advance(struct view *v) {
     }
     v->dirty=true;
 }
+static void ime_clear_visible(struct app *a) {
+    struct view *v=a->focused;uint64_t revision=0;
+    if(a->ime_enabled && v && v->view && v->surface==a->ime_surface &&
+       aetheri_desktop_view_host_ime_revision(v->view,&revision)==NX_OK &&
+       aetheri_desktop_view_host_ime_preedit(v->view,revision,NULL,0,0,0)==NX_OK)
+        v->dirty=true;
+}
+static void ime_stop(struct app *a) {
+    ime_clear_visible(a);
+    if(a->ime_input && a->ime_enabled) {
+        if(a->ime_serial==UINT32_MAX) {
+            zwp_text_input_v3_destroy(a->ime_input);a->ime_input=NULL;
+        } else {
+            zwp_text_input_v3_disable(a->ime_input);
+            zwp_text_input_v3_commit(a->ime_input);++a->ime_serial;
+        }
+    }
+    aetheri_ime_retire(&a->ime_transaction);
+    a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;
+}
+static void ime_sync(struct app *a) {
+    if(!a->ime_input)return;
+    struct view *v=a->focused;uint64_t revision=0;nx_rect caret={0};
+    if(!v || !v->view || !v->configured || !v->expanded || a->ime_surface!=v->surface ||
+       aetheri_desktop_view_host_ime_revision(v->view,&revision)!=NX_OK) {
+        if(a->ime_enabled)ime_stop(a);return;
+    }
+    if(aetheri_desktop_view_host_ime_caret(v->view,&caret)!=NX_OK) {
+        if(!a->ime_enabled)return;
+        caret=a->ime_caret; /* Hidden composition cursor: retain last visible placement. */
+    }
+    char surrounding[AE_DESKTOP_QUERY];size_t length=0,cursor=0,anchor=0;
+    CHECK(aetheri_desktop_view_host_ime_surrounding(v->view,revision,surrounding,sizeof(surrounding),
+          &length,&cursor,&anchor)==NX_OK);
+    if(a->ime_defer)return;
+    if(a->ime_enabled && revision==a->ime_revision && !memcmp(&caret,&a->ime_caret,sizeof(caret)))return;
+    double x=floor((double)caret.x),y=floor((double)caret.y);
+    double width=ceil((double)caret.width),height=ceil((double)caret.height);
+    if(!isfinite(x) || !isfinite(y) || !isfinite(width) || !isfinite(height) ||
+       x<INT32_MIN || x>INT32_MAX || y<INT32_MIN || y>INT32_MAX ||
+       width<1 || width>INT32_MAX || height<1 || height>INT32_MAX) {
+        ime_stop(a);return;
+    }
+    if(a->ime_serial==UINT32_MAX) {ime_stop(a);return;}
+    if(!a->ime_enabled) {
+        zwp_text_input_v3_enable(a->ime_input);
+        zwp_text_input_v3_set_content_type(a->ime_input,ZWP_TEXT_INPUT_V3_CONTENT_HINT_NONE,
+                                          ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NORMAL);
+    }
+    zwp_text_input_v3_set_surrounding_text(a->ime_input,surrounding,(int32_t)cursor,(int32_t)anchor);
+    zwp_text_input_v3_set_cursor_rectangle(a->ime_input,(int32_t)x,(int32_t)y,(int32_t)width,(int32_t)height);
+    zwp_text_input_v3_commit(a->ime_input);++a->ime_serial;
+    CHECK(aetheri_ime_publish(&a->ime_transaction,a->ime_serial,revision)==NX_OK);
+    a->ime_enabled=true;a->ime_revision=revision;a->ime_caret=caret;
+    memcpy(a->ime_surrounding,surrounding,length+1);a->ime_length=length;
+    a->ime_cursor=cursor;a->ime_anchor=anchor;
+}
+static void ime_enter(void *data,struct zwp_text_input_v3 *input,struct wl_surface *surface) {
+    struct app *a=data;(void)input;ime_stop(a);a->ime_surface=surface;
+}
+static void ime_leave(void *data,struct zwp_text_input_v3 *input,struct wl_surface *surface) {
+    struct app *a=data;(void)input;
+    if(a->ime_surface==surface) {
+        ime_clear_visible(a);
+        aetheri_ime_retire(&a->ime_transaction);
+        a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;a->ime_surface=NULL;
+    }
+}
+static void ime_preedit(void *data,struct zwp_text_input_v3 *input,const char *text,int32_t begin,int32_t end) {
+    struct app *a=data;(void)input;size_t n=text?strnlen(text,AETHERI_IME_TEXT_MAX+1u):0;
+    if(!text)begin=end=0;
+    (void)aetheri_ime_preedit(&a->ime_transaction,text,n,begin,end);
+}
+static void ime_commit(void *data,struct zwp_text_input_v3 *input,const char *text) {
+    struct app *a=data;(void)input;size_t n=text?strnlen(text,AETHERI_IME_TEXT_MAX+1u):0;
+    (void)aetheri_ime_commit(&a->ime_transaction,text,n);
+}
+static void ime_delete(void *data,struct zwp_text_input_v3 *input,uint32_t before,uint32_t after) {
+    struct app *a=data;(void)input;aetheri_ime_delete(&a->ime_transaction,before,after);
+}
+static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial) {
+    struct app *a=data;(void)input;struct view *v=a->focused;uint64_t current=0;
+    if(a->ime_enabled && serial==a->ime_serial)a->ime_defer=false;
+    if(!a->ime_enabled || !v || !v->view || !v->expanded || v->surface!=a->ime_surface ||
+       aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)current=0;
+    aetheri_ime_result result;
+    if(aetheri_ime_done(&a->ime_transaction,serial,current,&result)!=NX_OK)return;
+    a->ime_defer=!result.can_commit_state;
+    size_t lo=a->ime_cursor<a->ime_anchor?a->ime_cursor:a->ime_anchor;
+    size_t hi=a->ime_cursor>a->ime_anchor?a->ime_cursor:a->ime_anchor;
+    if(result.before>lo || result.after>a->ime_length-hi)return;
+    size_t start=lo-result.before,end=hi+result.after;
+    if((start<a->ime_length && ((unsigned char)a->ime_surrounding[start]&0xc0u)==0x80u) ||
+       (end<a->ime_length && ((unsigned char)a->ime_surrounding[end]&0xc0u)==0x80u))return;
+    CHECK(aetheri_desktop_view_host_ime_preedit(v->view,current,NULL,0,0,0)==NX_OK);
+    nx_event event={0};event.ime_target=20;event.ime_revision=current;
+    if(result.before || result.after) {
+        event.type=NX_EVENT_IME_DELETE_SURROUNDING;event.ime_before=result.before;event.ime_after=result.after;
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);
+    }
+    for(size_t i=0;i<result.scalar_count;++i) {
+        event.type=NX_EVENT_TEXT;event.scalar=result.scalars[i];
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);
+    }
+    advance(v);
+    if(aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)advance(v);
+    if(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK) {
+        CHECK(aetheri_desktop_view_host_ime_preedit(v->view,current,result.preedit,result.preedit_length,
+                                                     result.begin,result.end)==NX_OK);
+        advance(v);
+    }
+}
+static const struct zwp_text_input_v3_listener ime_listener={
+    .enter=ime_enter,.leave=ime_leave,.preedit_string=ime_preedit,
+    .commit_string=ime_commit,.delete_surrounding_text=ime_delete,.done=ime_done};
 static void launcher_reply(struct app *a) {
     char bytes[8];union {struct cmsghdr align;char bytes[CMSG_SPACE(sizeof(int)*4)];} ancillary;
     struct iovec io={.iov_base=bytes,.iov_len=sizeof(bytes)};
@@ -161,12 +290,18 @@ static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
     if(!v->view) {
         CHECK(aetheri_desktop_view_create(&v->model,a->font,a->font_size,&v->view));
+        if(a->ime_requested)CHECK(aetheri_desktop_view_set_host_ime(v->view,1)==NX_OK);
         if(a->focused==v) CHECK(aetheri_desktop_view_surface_focus(v->view,1)==NX_OK);
     }
     if(!v->presenter) CHECK(nx_wayland_shm_host_create(a->display,a->shm,v->surface,NULL,&v->presenter)==NX_OK);
     const nx_command *commands=NULL; size_t count=0;
     nx_wayland_shm_outcome outcome;
     advance(v);
+    if(a->ime_requested && a->focused==v && v->expanded &&
+       nx_focus_id(aetheri_desktop_view_context(v->view))==20) {
+        uint64_t revision=0;
+        if(aetheri_desktop_view_host_ime_revision(v->view,&revision)!=NX_OK)advance(v);
+    }
     CHECK(nx_frame_commands(aetheri_desktop_view_context(v->view),&commands,&count)==NX_OK);
     CHECK(nx_wayland_shm_host_present(v->presenter,(nx_pixel_size){v->width,v->height},1,commands,count,
                                       (nx_color){0,0,0,0},&outcome)==NX_OK);
@@ -189,6 +324,7 @@ static void closed(void *data, struct zwlr_layer_surface_v1 *layer) { (void)data
 static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure = configured, .closed = closed};
 static void pointer_event(struct app *a,nx_event_type type,uint32_t button);
 static void view_state(struct view *v, bool expanded) {
+    if(!expanded && v->app->focused==v)ime_stop(v->app);
     if(v->app->pointer_view==v)pointer_event(v->app,NX_EVENT_POINTER_CANCEL,0);
     CHECK(v->revision<UINT64_MAX);
     v->expanded = expanded;v->configured=false; ae_desktop_model_search(&v->model,v->index,expanded); ++v->revision;
@@ -295,6 +431,7 @@ static void leave(void *data, struct wl_keyboard *keyboard, uint32_t serial, str
     struct app *a=data;(void)keyboard;(void)serial;
     if(a->focused && a->focused->surface==surface) {
         struct view *v=a->focused;
+        ime_stop(a);
         if(v->view) {
             CHECK(aetheri_desktop_view_surface_focus(v->view,0)==NX_OK);
             if(v->configured)advance(v);
@@ -420,6 +557,7 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
         CHECK(wl_keyboard_add_listener(a->keyboard, &keyboard_listener, a) == 0);
     }
     if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && a->keyboard) {
+        ime_stop(a);
         if(a->focused && a->focused->view) {
             CHECK(aetheri_desktop_view_surface_focus(a->focused->view,0)==NX_OK);
             if(a->focused->configured)advance(a->focused);
@@ -450,6 +588,8 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
         a->layer_name = name;
         if (!a->ordinary) { CHECK(version >= 5); a->layers = wl_registry_bind(registry, name, &zwlr_layer_shell_v1_interface, 5); CHECK(a->layers); }
     } else if (!strcmp(interface, "wl_compositor")) a->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 4);
+    else if (!strcmp(interface,"zwp_text_input_manager_v3") && a->ime_requested)
+        a->ime_manager=wl_registry_bind(registry,name,&zwp_text_input_manager_v3_interface,1);
     else if (!strcmp(interface, "wl_shm")) a->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
     else if (!strcmp(interface, "wl_output")) {
         CHECK(a->output_count < 3); a->outputs[a->output_count++] = wl_registry_bind(registry, name, &wl_output_interface, 1);
@@ -465,6 +605,7 @@ int main(int argc, char **argv) {
     bool owner_fixture=argc>1 && !strcmp(argv[1],"--font");
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
+                    .ime_requested=getenv("NEXAUI_TEST_IME")!=NULL,
                     .ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
     const char *font=getenv("NEXAUI_DESKTOP_FONT");
     const char *launcher=getenv("NEXAUI_TEST_LAUNCH_FD");
@@ -510,6 +651,10 @@ int main(int argc, char **argv) {
     a.registry = wl_display_get_registry(a.display); CHECK(a.registry);
     CHECK(wl_registry_add_listener(a.registry, &registry_listener, &a) == 0);
     CHECK(wl_display_roundtrip(a.display) >= 0 && a.compositor && a.shm && a.output_count == 3);
+    if(a.ime_requested && a.ime_manager && a.seat) {
+        a.ime_input=zwp_text_input_manager_v3_get_text_input(a.ime_manager,a.seat);CHECK(a.ime_input);
+        CHECK(zwp_text_input_v3_add_listener(a.ime_input,&ime_listener,&a)==0);
+    }
     if (a.ordinary) {
         CHECK(!a.control_name && !a.layer_name);
         if (argc == 4) {
@@ -556,6 +701,7 @@ int main(int argc, char **argv) {
             }
             activation_step(&a);
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
+            ime_sync(&a);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
             struct pollfd fds[4] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
             int ready; do { ready = poll(fds, 4, owner_fixture?-1:10000); } while (ready < 0 && errno == EINTR && !stop_requested);
@@ -616,6 +762,9 @@ int main(int argc, char **argv) {
             }
         }
     }
+    ime_stop(&a);
+    if(a.ime_input)zwp_text_input_v3_destroy(a.ime_input);
+    if(a.ime_manager)zwp_text_input_manager_v3_destroy(a.ime_manager);
     for (unsigned i = 0; i < 3; ++i) {
         if (a.views[i].presenter) CHECK(nx_wayland_shm_host_destroy(&a.views[i].presenter)==NX_OK);
         aetheri_desktop_view_destroy(a.views[i].view);

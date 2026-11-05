@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T04/T06, I02 and D05: the private desktop test host candidate based on
+`340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on
+its existing connection and uses the field revision, preedit, surrounding text
+and caret contracts. Its controlled wire and callback evidence and remaining
+native Aetheri/provider, device, accessibility and physical gates are recorded
+in `examples/22_aetheri_desktop_view/README.md`. These rows remain open.
+
 The T05 and A04 rows below were reconciled on 2026-11-05 against published
 source `28b60f2fcad76374d5f2a91c722e8a2c27aa5829`. Their individual test results
 and earlier source revisions remain attributed in the adoption assessment;

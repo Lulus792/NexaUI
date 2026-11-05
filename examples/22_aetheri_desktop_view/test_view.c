@@ -144,6 +144,9 @@ int main(int argc,char **argv) {
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     uint64_t ime_revision=0;CHECK(aetheri_desktop_view_host_ime_revision(view,&ime_revision)==NX_OK && ime_revision);
+    char surrounding[AE_DESKTOP_QUERY];size_t sl=0,sc=0,sa=0;
+    CHECK(aetheri_desktop_view_host_ime_surrounding(view,ime_revision,surrounding,sizeof(surrounding),&sl,&sc,&sa)==NX_OK &&
+          sl==3 && !memcmp(surrounding,"ACB",3) && sc==2 && sa==2);
     uint64_t before_focus_loss=ime_revision;
     CHECK(aetheri_desktop_view_surface_focus(view,0)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);

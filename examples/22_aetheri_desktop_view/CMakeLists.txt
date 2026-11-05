@@ -51,6 +51,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             set_target_properties(aetheri_desktop_borrowed PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
             if(XKBCOMMON_FOUND AND EXISTS "${AETHERI_SOURCE_DIR}/protocols/wlr-layer-shell-unstable-v1.xml" AND
                EXISTS "${AETHERI_SOURCE_DIR}/protocols/aetheri-development-desktop-v1.xml")
+                set(TEXT_INPUT_XML "${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v3.xml")
+                add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h"
+                    COMMAND "${WAYLAND_SCANNER}" client-header "${TEXT_INPUT_XML}" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h"
+                    DEPENDS "${TEXT_INPUT_XML}" VERBATIM)
+                add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
+                    COMMAND "${WAYLAND_SCANNER}" private-code "${TEXT_INPUT_XML}" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
+                    DEPENDS "${TEXT_INPUT_XML}" VERBATIM)
                 foreach(protocol wlr-layer-shell-unstable-v1 aetheri-development-desktop-v1)
                     set(xml "${AETHERI_SOURCE_DIR}/protocols/${protocol}.xml")
                     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${protocol}-client.h"
@@ -60,7 +67,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                         COMMAND "${WAYLAND_SCANNER}" private-code "${xml}" "${CMAKE_CURRENT_BINARY_DIR}/${protocol}.c"
                         DEPENDS "${xml}" VERBATIM)
                 endforeach()
-                add_executable(aetheri_desktop_layer_test main_layer_test.c
+                add_executable(aetheri_desktop_layer_test main_layer_test.c ime_transaction.c
+                    "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
                     "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"
                     "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
                     "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h"
@@ -68,7 +77,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 target_include_directories(aetheri_desktop_layer_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
                 target_link_libraries(aetheri_desktop_layer_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
                 set_target_properties(aetheri_desktop_layer_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
-                add_executable(aetheri_desktop_layer_focus_test test_layer_focus.c
+                add_executable(aetheri_desktop_layer_focus_test test_layer_focus.c ime_transaction.c
+                    "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
                     "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"
                     "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
                     "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h"
@@ -76,6 +87,22 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 target_include_directories(aetheri_desktop_layer_focus_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
                 target_link_libraries(aetheri_desktop_layer_focus_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
                 set_target_properties(aetheri_desktop_layer_focus_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                pkg_check_modules(WAYLAND_SERVER QUIET IMPORTED_TARGET wayland-server)
+                if(WAYLAND_SERVER_FOUND)
+                    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-server.h"
+                        COMMAND "${WAYLAND_SCANNER}" server-header "${TEXT_INPUT_XML}" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-server.h"
+                        DEPENDS "${TEXT_INPUT_XML}" VERBATIM)
+                    add_executable(aetheri_desktop_layer_ime_wire_test test_layer_ime_wire.c ime_transaction.c
+                        "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h" "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-server.h"
+                        "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3.c"
+                        "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"
+                        "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
+                        "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h"
+                        "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1.c")
+                    target_include_directories(aetheri_desktop_layer_ime_wire_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+                    target_link_libraries(aetheri_desktop_layer_ime_wire_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON PkgConfig::WAYLAND_SERVER Threads::Threads)
+                    set_target_properties(aetheri_desktop_layer_ime_wire_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                endif()
             endif()
         endif()
     endif()

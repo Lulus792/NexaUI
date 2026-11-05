@@ -56,6 +56,21 @@ nx_result aetheri_desktop_view_host_ime_caret(aetheri_desktop_view *v,nx_rect *o
     if(!v){if(out_rect)*out_rect=(nx_rect){0};return NX_ERROR_ARGUMENT;}
     return nx_text_field_host_ime_caret(v->context,20,v->query,out_rect);
 }
+nx_result aetheri_desktop_view_host_ime_surrounding(aetheri_desktop_view *v,uint64_t revision,
+    char *bytes,size_t capacity,size_t *length,size_t *cursor,size_t *anchor) {
+    if(!length || !cursor || !anchor)return NX_ERROR_ARGUMENT;
+    *length=*cursor=*anchor=0;
+    if(!v || !bytes || !capacity)return NX_ERROR_ARGUMENT;
+    uint64_t current=0;nx_result r=aetheri_desktop_view_host_ime_revision(v,&current);
+    if(r!=NX_OK)return r;
+    if(!revision || revision!=current)return NX_ERROR_STATE;
+    nx_utf8_span text={0};size_t a=0,c=0;
+    r=nx_text_field_text(v->query,&text);if(r!=NX_OK)return r;
+    r=nx_text_field_selection(v->query,&a,&c);if(r!=NX_OK)return r;
+    if(text.length>=capacity)return NX_ERROR_LIMIT;
+    if(text.length)memcpy(bytes,text.data,text.length);
+    bytes[text.length]=0;*length=text.length;*cursor=c;*anchor=a;return NX_OK;
+}
 nx_result aetheri_desktop_view_surface_focus(aetheri_desktop_view *v,int focused) {
     if(!v || (focused!=0 && focused!=1))return NX_ERROR_ARGUMENT;
     nx_event event={0};event.type=NX_EVENT_FOCUS;event.focused=focused;

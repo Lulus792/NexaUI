@@ -28,5 +28,41 @@ int main(int argc, char **argv) {
     CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);CHECK(!v->model.query[0]);
     event.ime_revision=current;event.scalar='A';
     CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);CHECK(!strcmp(v->model.query,"A"));
+    advance(v);
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
+    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=1;a.ime_revision=current;
+    CHECK(aetheri_desktop_view_host_ime_surrounding(v->view,current,a.ime_surrounding,sizeof(a.ime_surrounding),
+          &a.ime_length,&a.ime_cursor,&a.ime_anchor)==NX_OK);
+    CHECK(aetheri_ime_publish(&a.ime_transaction,1,current)==NX_OK);
+    nx_rect before={0},after={0};CHECK(aetheri_desktop_view_host_ime_caret(v->view,&before)==NX_OK);
+    ime_commit(&a,NULL,"\xff");ime_done(&a,NULL,1);CHECK(!strcmp(v->model.query,"A"));
+    ime_delete(&a,NULL,99,0);ime_commit(&a,NULL,"X");ime_done(&a,NULL,1);CHECK(!strcmp(v->model.query,"A"));
+    ime_preedit(&a,NULL,"x",-1,-1);ime_done(&a,NULL,1);
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_ERROR_STATE && a.ime_enabled);
+    ime_preedit(&a,NULL,"x",1,1);ime_done(&a,NULL,1);
+    CHECK(!strcmp(v->model.query,"A"));
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x>before.x);
+    ime_commit(&a,NULL,"\xc3\xa9");ime_preedit(&a,NULL,"",0,0);ime_done(&a,NULL,1);
+    CHECK(!strcmp(v->model.query,"A\xc3\xa9"));
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
+    a.ime_serial=2;a.ime_revision=current;
+    CHECK(aetheri_desktop_view_host_ime_surrounding(v->view,current,a.ime_surrounding,sizeof(a.ime_surrounding),
+          &a.ime_length,&a.ime_cursor,&a.ime_anchor)==NX_OK);
+    CHECK(aetheri_ime_publish(&a.ime_transaction,2,current)==NX_OK);
+    ime_delete(&a,NULL,2,0);ime_commit(&a,NULL,"B");ime_done(&a,NULL,2);
+    CHECK(!strcmp(v->model.query,"AB"));
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
+    a.ime_serial=3;CHECK(aetheri_ime_publish(&a.ime_transaction,3,current)==NX_OK);
+    ime_commit(&a,NULL,"X");leave(&a,NULL,0,v->surface);ime_done(&a,NULL,3);
+    CHECK(!strcmp(v->model.query,"AB"));
+    enter(&a,NULL,0,v->surface,&keys);
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
+    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=4;
+    CHECK(aetheri_ime_publish(&a.ime_transaction,4,current)==NX_OK);
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&before)==NX_OK);
+    ime_preedit(&a,NULL,"x",1,1);ime_done(&a,NULL,4);
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x>before.x);
+    ime_leave(&a,NULL,v->surface);advance(v);
+    CHECK(!a.ime_enabled && aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x==before.x);
     aetheri_desktop_view_destroy(v->view);free(a.font);return 0;
 }

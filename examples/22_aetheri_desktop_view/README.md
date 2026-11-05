@@ -33,14 +33,16 @@ The private layer test host forwards native keyboard enter, leave and keyboard
 removal to the view's surface-focus queue. Its callback-level focus test can be
 run as `./build/aetheri_desktop_layer_focus_test /path/to/font.ttf` when the
 layer-shell and Aetheri test protocol headers are available. It invokes host
-callbacks without a compositor: the real host still has no text-input-v3
-binding and the test is not native IME or device-removal acceptance.
+callbacks without a compositor and is not native device-removal acceptance.
 The private `ime_transaction` helper stages bounded UTF-8 preedit, commit and
-deletion events until a protocol `done`. It is tested but not yet connected to
-the host or to Wayland. It admits an older serial only while it still refers to
-the same field revision; for such a `done`, the caller must defer protocol state
-requests until a matching serial arrives. The caller must additionally validate
-focus, surrounding bytes, selection, native lifecycle and atomic application.
+deletion events until a protocol `done`. The layer test host can opt into its
+text-input-v3 binding with `NEXAUI_TEST_IME=1` when the compositor offers the
+protocol. It admits an older serial only while it still refers to
+the same field revision; for such a `done`, the host defers protocol state
+requests until a matching serial arrives. It validates focus, surrounding bytes,
+selection and UTF-8 boundaries before applying the batch. This is a test host,
+not a production input method or admission authority. If no provider is
+advertised it retains its ordinary keyboard path.
 Search edits return bounded whole-query proposals; the host applies or rejects
 them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text
@@ -396,6 +398,21 @@ positive and negative logs are in
 `8e7eaed9cc59281cdc8a09e8be64fa915991da3519faef122581a3cd63ed27b5`.
 This supersedes the earlier fixture's lack of observed-window activation, not
 the remaining production, IME, AT-SPI, held-pointer or human/physical gates.
+
+The optional text-input-v3 candidate based on
+`340ac8b58c364bc479471e05292b313e9367f857` uses the existing host connection,
+field revision, preedit and caret APIs. On Alpine/WSL2, a controlled Wayland
+server exchanged actual text-input-v3 messages with the host callbacks: it
+observed surrounding text and caret requests, sent preedit, committed `é`,
+then deleted it and committed `B` in the original Aetheri search model. GCC
+and Clang ASan/UBSan with leak detection passed that wire test and callback,
+view and transaction tests. A separate mutant replacing committed scalars
+failed the expected model assertion. Focus loss, malformed text, invalid
+deletion and a hidden composition cursor were checked at callback level.
+The server and keyboard-focus callback are fixtures: this is not a run of the
+Aetheri compositor or its Compose provider, physical input, native AT-SPI,
+multi-output acceptance or human assistive review. It does not resolve the
+held-pointer removal failure; the private host remains test-only.
 
 The focus-forwarding candidate based on
 `b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
