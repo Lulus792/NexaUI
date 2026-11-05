@@ -114,11 +114,11 @@ int main(int argc, char **argv) {
             next_ax_retry=now+1.0;
         }
         const nx_command *commands; size_t count;
-        double w=ceil((double)info.width*info.scale), h=ceil((double)info.height*info.scale);
-        if (w>UINT32_MAX || h>UINT32_MAX || nx_frame_commands(settings_context(scene),&commands,&count)!=NX_OK) { okay=0; break; }
+        nx_pixel_size pixels;
+        if (nx_window_get_pixel_size(window,&pixels)!=NX_OK || nx_frame_commands(settings_context(scene),&commands,&count)!=NX_OK) { okay=0; break; }
         nx_color bg; nx_render_outcome outcome;
         if (nx_theme_color(settings_context(scene),NX_COLOR_BACKGROUND,&bg)!=NX_OK ||
-            nx_renderer_run(&renderer,(nx_render_target){(uint32_t)w,(uint32_t)h,info.scale},commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
+            nx_renderer_run(&renderer,(nx_render_target){pixels.width,pixels.height,info.scale},commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
         if (outcome==NX_RENDER_DEVICE_LOST && nx_renderer_recover(&renderer)!=NX_OK) { okay=0; break; }
         if (verify_keyboard_small && outcome==NX_RENDER_READY && (info.width!=240 || info.height!=150)) {
             fprintf(stderr,"Unexpected small-window size %.0fx%.0f\n",info.width,info.height);

@@ -284,6 +284,10 @@ int main(void) {
         CHECK(nx_window_create(&d,&w) == NX_OK && nx_window_create(&d,&second) == NX_OK);
         CHECK(nx_window_poll(w,0) == NX_OK);
         nx_window_info info; CHECK(nx_window_get_info(w,&info) == NX_OK && info.width == 320 && info.height == 200 && info.scale > 0);
+        nx_pixel_size pixels={0};
+        NSView *content=[nx_window_native_nswindow(w) contentView];
+        NSRect backing=[content convertRectToBacking:[content bounds]];
+        CHECK(nx_window_get_pixel_size(w,&pixels)==NX_OK && pixels.width==(uint32_t)ceil(backing.size.width) && pixels.height==(uint32_t)ceil(backing.size.height));
         printf("AppKit native client %.0fx%.0f points, backing %.2f\n",info.width,info.height,info.scale);
         CHECK(!strcmp([[nx_window_native_nswindow(w) title] UTF8String],d.title_utf8));
         CHECK(drain(second) == 0 && test_input(w) == 0 && test_native_commands(w)==0);

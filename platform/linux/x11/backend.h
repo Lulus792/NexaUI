@@ -14,6 +14,7 @@ nx_result nx_x11_window_poll_with_fd(nx_x11_window *window, uint32_t timeout_ms,
 void nx_x11_window_ax_geometry(nx_x11_window *window, nx_linux_ax_geometry *out);
 int nx_x11_window_ax_focus(nx_x11_window *window);
 nx_result nx_x11_window_get_info(nx_x11_window *window, nx_window_info *out_info);
+nx_result nx_x11_window_get_pixel_size(nx_x11_window *window, nx_pixel_size *out_size);
 nx_result nx_x11_window_set_cursor(nx_x11_window *window, nx_cursor_shape shape);
 nx_result nx_x11_window_get_status(nx_x11_window *window, nx_window_status *out);
 nx_result nx_x11_window_minimize(nx_x11_window *window);

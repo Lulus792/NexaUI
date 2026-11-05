@@ -173,6 +173,14 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
         nx_x11_window_get_info(window->native.x11, out_info));
 }
 
+nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {
+    if (!out_size) return NX_ERROR_ARGUMENT;
+    *out_size=(nx_pixel_size){0};
+    if (!window) return NX_ERROR_ARGUMENT;
+    return NX_LINUX_DISPATCH(nx_wayland_window_get_pixel_size(window->native.wayland,out_size),
+        nx_x11_window_get_pixel_size(window->native.x11,out_size));
+}
+
 nx_result nx_window_renderer_acquire(nx_window *window, const void *owner) {
     if (!window || !owner) return NX_ERROR_ARGUMENT;
     if (!nx_linux_on_owner_thread(window) || window->renderer_owner)

@@ -2331,6 +2331,20 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
     return NX_OK;
 }
 
+nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_size *out_size) {
+    if (!out_size) return NX_ERROR_ARGUMENT;
+    *out_size=(nx_pixel_size){0};
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (window->connection_failed) return NX_ERROR_PLATFORM;
+    if ((uint64_t)window->scale*120u>UINT32_MAX) return NX_ERROR_LIMIT;
+    int width=0,height=0;
+    nx_result result=nx_wayland_scale_extent(window->width,window->height,
+        (uint32_t)window->scale*120u,&width,&height);
+    if (result==NX_OK) *out_size=(nx_pixel_size){(uint32_t)width,(uint32_t)height};
+    return result;
+}
+
 static nx_result nx_wayland_management_ready(nx_wayland_window *window) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window) || !window->toplevel || window->should_close)

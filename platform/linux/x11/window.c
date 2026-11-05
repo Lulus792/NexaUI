@@ -1239,6 +1239,19 @@ nx_result nx_x11_window_get_info(nx_x11_window *window, nx_window_info *out_info
     return NX_OK;
 }
 
+nx_result nx_x11_window_get_pixel_size(nx_x11_window *window, nx_pixel_size *out_size) {
+    if (!out_size) return NX_ERROR_ARGUMENT;
+    *out_size=(nx_pixel_size){0};
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_x11_on_owner_thread(window) || !window->alive) return NX_ERROR_STATE;
+    if (!isfinite(window->width) || !isfinite(window->height) ||
+        window->width<0 || window->height<0 ||
+        (double)window->width>UINT32_MAX || (double)window->height>UINT32_MAX)
+        return NX_ERROR_LIMIT;
+    *out_size=(nx_pixel_size){(uint32_t)window->width,(uint32_t)window->height};
+    return NX_OK;
+}
+
 static nx_result nx_x11_management_ready(nx_x11_window *window) {
     if (!window) return NX_ERROR_ARGUMENT;
     return nx_x11_on_owner_thread(window) && window->alive && !window->should_close ? NX_OK : NX_ERROR_STATE;

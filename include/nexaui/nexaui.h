@@ -385,6 +385,10 @@ typedef struct nx_window_info {
     int should_close;    /* Set when the OS requests closure. */
 } nx_window_info;
 
+typedef struct nx_pixel_size {
+    uint32_t width, height;
+} nx_pixel_size;
+
 typedef enum nx_cursor_shape {
     NX_CURSOR_DEFAULT = 0,
     NX_CURSOR_TEXT,
@@ -415,6 +419,11 @@ typedef struct nx_file_drop_info {
 NX_API nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window);
 NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
+/* Recommended native client backing extent in pixels after polling. Use this
+   for render targets rather than reconstructing pixels from the float scale.
+   A zero extent means that rendering is suspended. On error, out_size is zero.
+   The query runs on the window's owner thread. */
+NX_API nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size);
 /* Owner-thread native window management. Default flags retain the existing OS
    window. CLIENT_CHROME lets the client draw the title area; unsupported or
    rejected decoration negotiation fails creation rather than silently changing

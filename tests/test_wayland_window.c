@@ -39,7 +39,7 @@ static void probe_deallocate(void *user, void *pointer, size_t size) {
 
 typedef struct wrong_thread_case {
     nx_window *window;
-    nx_result poll_result, info_result;
+    nx_result poll_result, info_result, pixel_result;
 } wrong_thread_case;
 
 static void *wrong_thread(void *user) {
@@ -47,6 +47,9 @@ static void *wrong_thread(void *user) {
     nx_window_info info;
     test->poll_result = nx_window_poll(test->window, 0);
     test->info_result = nx_window_get_info(test->window, &info);
+    nx_pixel_size pixels={99,99};
+    test->pixel_result = nx_window_get_pixel_size(test->window,&pixels);
+    if (pixels.width || pixels.height) test->pixel_result=NX_OK;
     return NULL;
 }
 
@@ -283,6 +286,10 @@ int main(void) {
           (nx_window_wayland_ready(visible) & 1u) != 0 &&
           (nx_window_wayland_ready(visible) & 6u) == 6u);
     nx_window_info info = {0};
+    nx_pixel_size pixels={99,99};
+    CHECK(nx_window_get_pixel_size(NULL,&pixels)==NX_ERROR_ARGUMENT && !pixels.width && !pixels.height);
+    CHECK(nx_window_get_pixel_size(hidden,NULL)==NX_ERROR_ARGUMENT);
+    CHECK(nx_window_get_pixel_size(hidden,&pixels)==NX_OK && pixels.width==240 && pixels.height==120);
     CHECK(nx_window_get_info(hidden, &info) == NX_OK &&
           info.width == 240 && info.height == 120 &&
           info.scale == 1.0f && !info.should_close);
@@ -374,6 +381,8 @@ int main(void) {
           event.height == (float)logical_height && event.scale == 2.0f);
     CHECK(nx_window_get_info(visible, &info) == NX_OK &&
           info.scale == 2.0f);
+    CHECK(nx_window_get_pixel_size(visible,&pixels)==NX_OK &&
+          pixels.width==(uint32_t)logical_width*2 && pixels.height==(uint32_t)logical_height*2);
     int bw = 0, bh = 0, cw = 0, ch = 0;
     CHECK(nx_window_wayland_test_extents(visible, &bw, &bh, &cw, &ch) == NX_OK &&
           bw == logical_width * 2 && bh == logical_height * 2 &&
@@ -511,12 +520,12 @@ int main(void) {
         CHECK(nx_window_next_event(hidden, &event, &available) == NX_OK);
         CHECK(!available || event.type != NX_EVENT_KEY_DOWN || !event.repeat);
     } while (available);
-    wrong_thread_case wrong = {visible, NX_OK, NX_OK};
+    wrong_thread_case wrong = {visible, NX_OK, NX_OK, NX_OK};
     pthread_t thread;
     CHECK(pthread_create(&thread, NULL, wrong_thread, &wrong) == 0);
     CHECK(pthread_join(thread, NULL) == 0);
     CHECK(wrong.poll_result == NX_ERROR_STATE &&
-          wrong.info_result == NX_ERROR_STATE);
+          wrong.info_result == NX_ERROR_STATE && wrong.pixel_result == NX_ERROR_STATE);
     CHECK(nx_window_wayland_test_output(visible, INT_MAX, 1) ==
           NX_ERROR_LIMIT);
     CHECK(nx_window_get_info(visible, &info) == NX_OK &&

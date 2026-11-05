@@ -19,6 +19,13 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     return NX_ERROR_UNSUPPORTED;
 }
 
+nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {
+    (void)window;
+    if (!out_size) return NX_ERROR_ARGUMENT;
+    *out_size=(nx_pixel_size){0};
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_set_cursor(nx_window *window, nx_cursor_shape shape) {
     if (!window || shape < NX_CURSOR_DEFAULT || shape > NX_CURSOR_BUSY)
         return NX_ERROR_ARGUMENT;

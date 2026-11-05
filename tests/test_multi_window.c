@@ -49,6 +49,12 @@ int main(void) {
     HWND first_hwnd = FindWindowW(L"NexaUIWindowClass", L"NexaUI multi-window first");
     HWND second_hwnd = FindWindowW(L"NexaUIWindowClass", L"NexaUI multi-window second");
     CHECK(first_hwnd && second_hwnd && first_hwnd != second_hwnd);
+    RECT client;
+    nx_pixel_size pixels={0};
+    CHECK(GetClientRect(first_hwnd,&client));
+    CHECK(nx_window_get_pixel_size(first,&pixels)==NX_OK &&
+          pixels.width==(uint32_t)(client.right-client.left) &&
+          pixels.height==(uint32_t)(client.bottom-client.top));
     BOOL system_animations = TRUE;
     int reduced = -1;
     CHECK(SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0,

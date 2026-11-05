@@ -771,6 +771,8 @@ int main(void) {
         if (info.width == 320 && info.height == 200) break;
     }
     CHECK(info.width == 320 && info.height == 200 && info.scale == 1.0f);
+    nx_pixel_size pixels={0};
+    CHECK(nx_window_get_pixel_size(first,&pixels)==NX_OK && pixels.width==320 && pixels.height==200);
     CHECK(XGetWindowAttributes(display, xid, &attrs) &&
           attrs.width == 320 && attrs.height == 200);
     nx_event event;

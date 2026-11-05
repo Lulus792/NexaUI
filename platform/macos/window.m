@@ -638,6 +638,21 @@ nx_result nx_window_get_info(nx_window *w, nx_window_info *out) {
         return NX_OK;
     }
 }
+nx_result nx_window_get_pixel_size(nx_window *w, nx_pixel_size *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out=(nx_pixel_size){0};
+    if (!w) return NX_ERROR_ARGUMENT;
+    if (!nx_mac_owner(w)) return NX_ERROR_STATE;
+    @autoreleasepool {
+        if ([w->native isMiniaturized]) return NX_OK;
+        NSRect pixels=[w->view convertRectToBacking:[w->view bounds]];
+        double width=ceil(pixels.size.width),height=ceil(pixels.size.height);
+        if (!isfinite(width) || !isfinite(height) || width<0 || height<0 ||
+            width>UINT32_MAX || height>UINT32_MAX) return NX_ERROR_LIMIT;
+        *out=(nx_pixel_size){(uint32_t)width,(uint32_t)height};
+        return NX_OK;
+    }
+}
 nx_result nx_window_get_status(nx_window *w, nx_window_status *out) {
     if (!out) return NX_ERROR_ARGUMENT;
     *out = (nx_window_status){0};

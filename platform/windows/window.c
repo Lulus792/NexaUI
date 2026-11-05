@@ -754,6 +754,19 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     return NX_OK;
 }
 
+nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {
+    if (!out_size) return NX_ERROR_ARGUMENT;
+    *out_size=(nx_pixel_size){0};
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (GetCurrentThreadId()!=window->owner_thread || !window->hwnd) return NX_ERROR_STATE;
+    RECT rect;
+    if (!GetClientRect(window->hwnd,&rect)) return NX_ERROR_PLATFORM;
+    if (rect.right<rect.left || rect.bottom<rect.top) return NX_ERROR_PLATFORM;
+    *out_size=(nx_pixel_size){(uint32_t)((int64_t)rect.right-rect.left),
+                              (uint32_t)((int64_t)rect.bottom-rect.top)};
+    return NX_OK;
+}
+
 static nx_result nx_window_management_ready(nx_window *window) {
     if (!window) return NX_ERROR_ARGUMENT;
     return GetCurrentThreadId() == window->owner_thread && window->hwnd && !window->should_close

@@ -30,6 +30,10 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(void) {
+    nx_pixel_size pixels={9,9};
+    nx_result pixel_result=nx_window_get_pixel_size(NULL,&pixels);
+    if ((pixel_result!=NX_ERROR_ARGUMENT && pixel_result!=NX_ERROR_UNSUPPORTED) || pixels.width || pixels.height)
+        return 15;
     nx_text_stamp *stamp=0;nx_rect stamp_bounds;nx_glyph_mask_view mask;
     if(nx_text_stamp_create_scaled(0,1.5f,65536,0,&stamp)!=NX_ERROR_ARGUMENT||stamp||
        nx_text_stamp_bounds(0,&stamp_bounds)!=NX_ERROR_ARGUMENT||

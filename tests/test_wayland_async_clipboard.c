@@ -103,6 +103,8 @@ int main(int argc, char **argv) {
                 CHECK(nx_window_get_status(window,&status)==NX_ERROR_PLATFORM);
                 nx_window_info info;
                 CHECK(nx_window_get_info(window,&info)==NX_ERROR_PLATFORM);
+                nx_pixel_size pixels={99,99};
+                CHECK(nx_window_get_pixel_size(window,&pixels)==NX_ERROR_PLATFORM && !pixels.width && !pixels.height);
                 nx_linux_window_ax_geometry(window,&geometry);
                 CHECK(!geometry.visible && !geometry.focused);
                 CHECK(nx_window_route_events(window,context,&count)==NX_OK);

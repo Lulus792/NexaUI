@@ -18,6 +18,7 @@ void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geomet
 int nx_wayland_window_ax_focus(nx_wayland_window *window);
 nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                      nx_window_info *out_info);
+nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_size *out_size);
 nx_result nx_wayland_window_get_status(nx_wayland_window *window, nx_window_status *out);
 nx_result nx_wayland_window_minimize(nx_wayland_window *window);
 nx_result nx_wayland_window_maximize(nx_wayland_window *window);

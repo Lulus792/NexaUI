@@ -49,10 +49,9 @@ int main(int argc, char **argv) {
         nx_window_info info;
         if (nx_window_get_info(window, &info) != NX_OK) { status = 1; break; }
         if (info.should_close) break;
-        double width = ceil((double)info.width * info.scale);
-        double height = ceil((double)info.height * info.scale);
-        if (width > UINT32_MAX || height > UINT32_MAX) { status = 1; break; }
-        nx_render_target target = {(uint32_t)width, (uint32_t)height, info.scale};
+        nx_pixel_size pixels;
+        if (nx_window_get_pixel_size(window,&pixels) != NX_OK) { status = 1; break; }
+        nx_render_target target = {pixels.width, pixels.height, info.scale};
         float phase = (float)((current - started) / duration);
         nx_color clear = {0.08f + 0.14f * phase, 0.16f, 0.28f + 0.32f * phase, 1};
         static const uint8_t rgba[24] = {255,0,0,255, 0,255,0,128, 0,0,255,255,

@@ -29,4 +29,28 @@ renderers without relying on binary `float` round-trips, and verify resize,
 input, cursor, IME and accessibility geometry. The Settings and NexaCloud
 Linux examples currently use `ceil(logical * scale)` for render targets;
 that must be reconciled with the native pixel extent before fractional scaling
-is exposed. Real compositor/monitor and visual acceptance remain open.
+is exposed; the subsequent API step below addresses that consumer mismatch.
+Real compositor/monitor and visual acceptance remain open.
+
+## Native render target extent API (2026-11-05)
+
+Candidate based on `48225d4b9a96e2cd41296460e703c529ef09e56a` adds
+`nx_window_get_pixel_size` and `nx_pixel_size`. It supplies a native backing
+extent without converting the public floating-point scale back into pixels.
+Wayland uses checked extent arithmetic; X11 uses its client dimensions;
+Windows uses `GetClientRect` in the window's DPI-awareness context; AppKit
+converts view bounds to backing coordinates via
+[NSView's backing conversion](https://developer.apple.com/documentation/appkit/nsview/converttobacking%28_%3A%29-3zors?language=objc).
+The Settings, NexaCloud and native
+clear Linux examples now use the API for their render targets. Existing
+`nx_window_info` remains ABI-compatible. This does not yet enable fractional
+Wayland scaling, and actual compositor, mixed-monitor, AppKit and physical-DPI
+acceptance remain open.
+Existing binaries are unchanged; consumers that call the new symbol require a
+library built from this candidate or a later compatible revision.
+The complete private-Weston tests passed 191/191 in GCC shared and 192/192 in
+Clang ASan/UBSan static. An installed C17 consumer called the new API in fresh
+Wayland-only static and shared packages. A Windows MSVC Debug multi-window test
+compared the API against `GetClientRect`, and the dual-backend X11 window test
+compared it against the native resized window. The AppKit implementation and
+its native oracle test were not built or run on this host.

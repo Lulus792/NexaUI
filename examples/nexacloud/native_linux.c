@@ -40,9 +40,9 @@ static int frame(nx_window *window, cloud_scene *scene, nx_renderer_driver *rend
     if (accessibility!=NX_OK && accessibility!=NX_ERROR_UNSUPPORTED) return 0;
     const nx_command *commands; size_t count;
     if (nx_frame_commands(cloud_context(scene), &commands, &count) != NX_OK) return 0;
-    double width = ceil((double)info.width * info.scale), height = ceil((double)info.height * info.scale);
-    if (width > UINT32_MAX || height > UINT32_MAX) return 0;
-    nx_render_target target = {(uint32_t)width, (uint32_t)height, info.scale};
+    nx_pixel_size pixels;
+    if (nx_window_get_pixel_size(window,&pixels) != NX_OK) return 0;
+    nx_render_target target = {pixels.width, pixels.height, info.scale};
     nx_render_outcome outcome;
     nx_result result = nx_renderer_run(renderer, target, commands, count, (nx_color){0,0,0,1}, &outcome);
     if (result != NX_OK) { fprintf(stderr, "Vulkan frame: %d\n", result); return 0; }
