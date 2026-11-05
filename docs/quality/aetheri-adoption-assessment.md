@@ -1,6 +1,6 @@
 # Aetheri adoption: initial source assessment
 
-## Pending macOS selection notification comparison (2026-11-05)
+## macOS selection notification comparison (2026-11-05)
 
 The native macOS static and shared CI jobs for source
 `8da965030f62b990ceac3e1d7aea120ca3a52a64` completed successfully
@@ -13,10 +13,15 @@ the native selection ([static job](https://github.com/Lulus792/NexaUI/actions/ru
 The earlier invalid-selection assertion is at line 126 and passed in both jobs.
 The counterexample exercises the added prefix case; it does not establish that
 the subsequent implementation fixes it.
-The native jobs for the subsequent implementation
-`1bb0c11c4401b0f248115d0346be4e3f4f21f2fd` were queued or running at inspection
-([run](https://github.com/Lulus792/NexaUI/actions/runs/42017296511)); this
-candidate must not be treated as passing based on the older successful run.
+The subsequent implementation `1bb0c11c4401b0f248115d0346be4e3f4f21f2fd`
+passed the independent AX client and the complete native macOS test sets:
+111/111 shared and 112/112 static
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42017296511)). The
+same run's Linux and Windows core jobs and Linux sanitizers also passed; the
+Windows ASan and fuzz jobs were skipped. A later merge with Windows IME changes
+is a separate CI candidate ([run](https://github.com/Lulus792/NexaUI/actions/runs/42019931482)).
+These automated client checks do not replace VoiceOver, physical IME or Aetheri
+acceptance.
 
 ## Windows numeric IME result identity (2026-11-05)
 
