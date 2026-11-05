@@ -848,6 +848,21 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
         find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
+        find_program(NEXAUI_NUMERIC_PEER_XDOTOOL xdotool)
+        find_program(NEXAUI_NUMERIC_PEER_COPY wl-copy)
+        find_program(NEXAUI_NUMERIC_PEER_PASTE wl-paste)
+        if(Python3_Interpreter_FOUND AND NEXAUI_NUMERIC_PEER_XDOTOOL AND
+           NEXAUI_NUMERIC_PEER_COPY AND NEXAUI_NUMERIC_PEER_PASTE)
+            add_executable(nexaui_wayland_numeric_peer_host tests/wayland_numeric_peer_host.c)
+            target_link_libraries(nexaui_wayland_numeric_peer_host PRIVATE NexaUI::NexaUI)
+            target_compile_features(nexaui_wayland_numeric_peer_host PRIVATE c_std_17)
+            add_test(NAME nexaui_wayland_numeric_clipboard_peer
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_numeric_peer.py
+                    $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL}
+                    ${NEXAUI_NUMERIC_PEER_COPY} ${NEXAUI_NUMERIC_PEER_PASTE})
+            set_tests_properties(nexaui_wayland_numeric_clipboard_peer PROPERTIES
+                TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        endif()
         add_executable(nexaui_linux_atspi_host tests/linux_atspi_host.c)
         target_include_directories(nexaui_linux_atspi_host PRIVATE platform/linux)
         target_link_libraries(nexaui_linux_atspi_host PRIVATE NexaUI::NexaUI)

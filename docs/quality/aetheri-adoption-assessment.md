@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric clipboard with independent Wayland peers (2026-11-05)
+
+On the candidate based on `70380daf3e73ffdaa89a5ab34434236ca54d8b24`, a
+visible test-only numeric host uses the public software presenter and optional
+numeric clipboard callbacks. Under private Weston 14/Xvfb, virtual keyboard
+input copies `1234` to an independent `wl-paste` process. Separate `wl-copy`
+owners then supply `bad` and `42`: the host observes the invalid draft without
+changing its committed 1234, then the valid draft before and after Enter commits
+42. Escape performs normal host cleanup. The fixture uses a 50 ms poll and is
+not an idle-performance example.
+
+The registered CTest case executed three consecutive times in GCC static
+Debug. The same driver passed once each with GCC shared Debug and Clang
+ASan/UBSan Debug with leak detection, on Alpine/WSL; the external peers were
+wl-clipboard 2.2.1. A negative control omitting numeric clipboard setup failed
+at the independent paste client. An initial complete run timed out on Alt+F4
+after exercising the clipboard; the test host now handles Escape explicitly.
+Those earlier runs do not count as passing full runs.
+
+These virtual compositor and keyboard checks do not establish real Aetheri
+clipboard peers, other compositors, physical input, installed IMEs or human
+accessibility acceptance. No SDK API or implementation changed; T05 and I05
+remain open for their broader requirements.
+
 ## Numeric clipboard selection reversion (2026-11-05)
 
 On the candidate based on `4ed4db364203c8ca5a82ce25a9621f565c7ded64`,

@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I05: on base `70380daf3e73ffdaa89a5ab34434236ca54d8b24`, an actual
+numeric widget exchanged clipboard data with independent wl-clipboard processes
+under private Weston and committed only the valid draft. Real Aetheri peers and
+human/physical acceptance remain open; see the
+[candidate evidence](aetheri-adoption-assessment.md#numeric-clipboard-with-independent-wayland-peers-2026-11-05).
+
 T05/I05: a controlled Wayland numeric paste based on
 `4ed4db364203c8ca5a82ce25a9621f565c7ded64` rejects its delayed result when
 the selection changes and is then restored. Independent desktop peers and
