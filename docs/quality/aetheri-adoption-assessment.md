@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Borrowed host scale and presenter ownership (2026-11-05)
+
+Test source `920787e36bfa298e734be5fc644cfb7cd20e0d2d` exercises the existing
+borrowed Wayland presenter with a controlled private role while three buffers
+are held: 40x20 at 1x, 80x40 at 2x, then 40x20 at 1x. Server-side assertions
+check dimensions, transparent and translucent pixels and scaling of a drawn
+rectangle before the held buffers are released. On Alpine/WSL2, Clang 22.1.3,
+static Wayland-only Debug with ASan/UBSan and leak detection, this test passed
+five consecutive runs. This is a protocol fixture, not real output hotplug,
+physical scaling or Aetheri's private role.
+
+The archived Aetheri desktop source `d621c9bba1df8ffd1083999300bcff742022b9dc`
+creates SDL custom-role Wayland windows, obtains their surfaces and display,
+assigns layer-shell roles and then creates SDL GLES renderers for those windows.
+NexaUI's borrowed presenter requires sole ownership of buffer presentation on
+its surface. A host integration must explicitly retire or replace the SDL
+presenter for each adopted surface; attaching both renderers concurrently is
+not established by this test. Role, input, scale, app lifecycle and semantic
+ownership remain host obligations. No Aetheri checkout or consumer pin changed.
+
 ## Sibling overlay stack and keyboard checks (2026-11-05)
 
 Implementation source `e1c23d95c3affb1a412c60ae9b51f1666c51425a` extends
