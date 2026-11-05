@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I01/L05/A02: on base `4cc5833e84cea2b9d19f0032e3d1947f3d152d6a`, queued
+Tab/End and Shift-Tab/End sequences in the Files consumer are routed after
+the preceding focus change; private Weston and independent AT-SPI checks pass.
+Other event orderings and actual Aetheri remain open. See [candidate evidence](aetheri-adoption-assessment.md#files-queued-focus-and-navigation-ordering-2026-11-06).
+
 I01/L05/A02: on base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the
 original-model Files consumer limits list keyboard navigation to the list's
 focus and verifies clear/close focus with private Weston virtual input. Actual

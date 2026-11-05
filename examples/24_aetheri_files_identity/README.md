@@ -62,6 +62,12 @@ that the Aetheri model meets the separate 100,000-row toolkit performance goal.
 
 ## Virtualized scene experiment
 
+On base `4cc5833e84cea2b9d19f0032e3d1947f3d152d6a`, the native loop
+defers a navigation key when preceding UI events await a frame, so its focus
+decision follows those events. A private Weston virtual-keyboard test covers
+queued Tab/End in both directions between Close and the visible list; this
+does not establish all input or IME ordering.
+
 On NexaUI base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the native
 consumer routes list navigation only while an existing list row or its tree
 owns focus, or while no control has focus. In particular, arrow and page

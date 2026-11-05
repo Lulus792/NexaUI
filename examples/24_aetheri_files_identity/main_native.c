@@ -43,9 +43,9 @@ int main(int argc,char **argv) {
     nx_window_desc desc={"NexaUI Files experiment",360,176,0,{0}};
     if(nx_window_create(&desc,&window)!=NX_OK || nx_software_view_open(window,&renderer)!=NX_OK ||
        files_scene_enable_filter(scene,window)!=NX_OK)goto cleanup;
-    nx_context *ctx=files_scene_context(scene);okay=1;
+    nx_context *ctx=files_scene_context(scene);nx_event deferred_event={0};int has_deferred=0;okay=1;
     while(okay && !done) {
-        if(nx_window_poll(window,dirty?16:1000)!=NX_OK){okay=0;break;}
+        if(nx_window_poll(window,has_deferred?0:(dirty?16:1000))!=NX_OK){okay=0;break;}
         if(stop_requested){done=1;break;}
         if(test_clear_requested){test_clear_requested=0;
             if(files_scene_focus_filter(scene,1)!=NX_OK){okay=0;break;}
@@ -53,10 +53,16 @@ int main(int argc,char **argv) {
         nx_window_info info;if(nx_window_get_info(window,&info)!=NX_OK){okay=0;break;}
         if(info.should_close){done=1;break;}
         int drawable=info.width>=40 && info.height>=64;
-        nx_event event;int available;
+        nx_event event;int available,queued=0;
         do {
-            if(nx_window_next_event(window,&event,&available)!=NX_OK){okay=0;break;}
+            if(has_deferred){event=deferred_event;has_deferred=0;available=1;}
+            else if(nx_window_next_event(window,&event,&available)!=NX_OK){okay=0;break;}
             if(!available)break;
+            /* A pending Tab, pointer or other UI event can change focus in the
+               next frame. Decide list navigation only after that frame. */
+            if(queued && event.type==NX_EVENT_KEY_DOWN && navigation(event.key) && !event.modifiers) {
+                deferred_event=event;has_deferred=1;break;
+            }
             if(event.type==NX_EVENT_FOCUS){focused=!!event.focused;if(!focused)focus_pending=0;dirty=1;}
             if(event.type==NX_EVENT_RESIZE)dirty=1;
             if(trace && getenv("NEXAUI_FILES_IME_TEST") && event.type==NX_EVENT_IME_PREEDIT_CHANGED) {
@@ -107,7 +113,7 @@ int main(int argc,char **argv) {
                event.type==NX_EVENT_IME_PREEDIT_CHANGED || event.type==NX_EVENT_IME_DELETE_SURROUNDING ||
                event.type==NX_EVENT_IME_DELETE_RANGE)) ||
                event.type==NX_EVENT_FOCUS) {
-                if(nx_context_queue_event(ctx,&event)!=NX_OK){okay=0;break;}dirty=1;
+                if(nx_context_queue_event(ctx,&event)!=NX_OK){okay=0;break;}dirty=1;queued=1;
             }
         } while(available);
         if(!okay || done)break;

@@ -2,6 +2,7 @@
 import os
 import queue
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -91,10 +92,23 @@ def main():
             key('shift+Tab');key('Return');wait('FILES_NATIVE_FILTER 0 20 1')
             key('End');wait('FILES_NATIVE_NAV_OTHER item00')
             key('Tab');key('End');wait('FILES_NATIVE_NAV_OTHER item00')
+            os.kill(host.pid, signal.SIGSTOP)
+            try:
+                subprocess.run([xdotool, 'key', '--delay', '0', 'Tab', 'End'], env=env, check=True, timeout=5)
+            finally:
+                os.kill(host.pid, signal.SIGCONT)
+            wait('FILES_NATIVE_SELECTED item19')
+            key('Home');wait('FILES_NATIVE_SELECTED item00')
+            os.kill(host.pid, signal.SIGSTOP)
+            try:
+                subprocess.run([xdotool, 'key', '--delay', '0', 'shift+Tab', 'End'], env=env, check=True, timeout=5)
+            finally:
+                os.kill(host.pid, signal.SIGCONT)
+            wait('FILES_NATIVE_NAV_OTHER item00')
             key('Return');wait('FILES_NATIVE_CLOSED')
             if host.wait(timeout=10) != 0:
                 raise RuntimeError(f'Consumer failed: {"".join(errors)}')
-            print('Native Files: keyboard, wheel, guarded filter, refresh and button close passed')
+            print('Native Files: keyboard, queued focus changes, wheel, guarded filter, refresh and button close passed')
             return 0
         finally:
             if host.poll() is None:

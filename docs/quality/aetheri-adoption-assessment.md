@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## Files queued focus and navigation ordering (2026-11-06)
+
+On base `4cc5833e84cea2b9d19f0032e3d1947f3d152d6a`, the Files consumer
+previously decided an End key using the old focus when Tab and End were
+drained in the same native event batch. The private Weston test stopped only
+the test consumer, sent both virtual key sequences, and resumed it. Before
+the fix, close-to-list Tab followed by End left the selection at item00;
+afterwards it selected item19. The reverse Shift-Tab/End sequence preserves
+item00 when focus moves from the first row to Close, which still activates.
+
+The consumer now retains one navigation key until the preceding queued UI
+events have produced a frame; its next poll is nonblocking. The full native
+workflow passed with GCC static/shared and Clang ASan/UBSan builds, with leak
+detection enabled, on private Weston/Xvfb. An independent AT-SPI client also
+passed selection, filter and button-close checks on the static build. Two
+intermediate driver attempts reached the new selection assertion but failed
+their subsequent close step because the test no longer had Close focused;
+the final driver explicitly verifies the reverse focus transition and closes
+via the button. This checks these bounded key sequences, not every possible
+native input/IME or accessibility event ordering. The model is a pinned
+Aetheri snapshot, input is virtual, and physical and human acceptance remain
+open.
+
 ## Files navigation respects control focus (2026-11-06)
 
 On candidate base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the
