@@ -233,8 +233,62 @@ int main(void) {
     CHECK(text.length == 5 &&
           memcmp(text.data, "01" "\xe9\x81\x93", 5) == 0);
 
+    nx_context_destroy(ctx); ctx = NULL;
+    nx_text_field_destroy(field); field = NULL;
+    CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
+    nx_numeric_field *number = NULL;
+    CHECK(nx_numeric_field_create(12, 1024, &number) == NX_OK);
+    CHECK(nx_numeric_field_set_ime_window(number, window) == NX_OK);
+    CHECK(nx_context_create(NULL, &ctx) == NX_OK);
+    nx_numeric_field_desc numeric = {0};
+    numeric.id=2; numeric.bounds=(nx_rect){10,12,65,26};
+    numeric.name=(nx_utf8_span){"IME number",10}; numeric.fonts=fonts;
+    numeric.pixels_per_em=18; numeric.glyph_cache_bytes=65536;
+    numeric.minimum=-1000; numeric.maximum=1000;
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_set(ctx,2)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && state.focused);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    CHECK(nx_window_windows_test_ime_preedit(window,L"34",2,2)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_frame_commands(ctx,&commands,&count)==NX_OK);
+    size_t numeric_lines=0;
+    for(size_t i=0;i<count;++i)if(commands[i].type==NX_COMMAND_LINE)++numeric_lines;
+    CHECK(numeric_lines>=2); /* composition underline and caret */
+    double numeric_value=0;
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==12);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"12",2));
+    CHECK(nx_focus_set(ctx,0)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && !state.focused);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_window_get_ime_preedit(window,NULL,0,&preedit_length,&preedit_begin,&preedit_end)==NX_OK && preedit_length==0);
+    CHECK(nx_focus_set(ctx,2)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && state.focused);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);} while(available);
+    SendMessageW(hwnd,WM_IME_CHAR,L'3',0);
+    CHECK(nx_window_poll(window,0)==NX_OK); committed=0;
+    do {
+        CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT && event.scalar=='3') {
+            ++committed;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        }
+    } while(available);
+    CHECK(committed==1 && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==3 && !memcmp(draft.data,"123",3));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==12);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_NEWLINE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==123);
     nx_context_destroy(ctx);
-    nx_text_field_destroy(field);
+    nx_numeric_field_destroy(number);
     nx_font_collection_destroy(fonts);
     nx_font_close(font);
     nx_window_destroy(window);
