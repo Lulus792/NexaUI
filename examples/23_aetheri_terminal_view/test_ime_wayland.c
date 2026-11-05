@@ -28,10 +28,10 @@ int main(int argc,char **argv) {
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
     wl_surface_commit(nx_window_wayland_surface(window));
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
-    nx_event event;int available=0,preedit=0,committed=0;
+    nx_event event,old_preedit={0};int available=0,preedit=0,committed=0;
     do {
         CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
-        if(available && event.type==NX_EVENT_IME_PREEDIT_CHANGED)preedit=1;
+        if(available && event.type==NX_EVENT_IME_PREEDIT_CHANGED){preedit=1;old_preedit=event;}
         if(available && event.type==NX_EVENT_TEXT) {
             int ready=0;nx_utf8_span bytes={0};
             nx_result result=terminal_ime_commit_event(&ime,guard,&event,&ready,&bytes);
@@ -41,11 +41,34 @@ int main(int argc,char **argv) {
     } while(available);
     CHECK(preedit && committed==(filtered?0:1));
     char draft[32];size_t length=0;int32_t begin=-1,end=-1;
-    CHECK(nx_window_get_ime_preedit(window,draft,sizeof(draft),&length,&begin,&end)==NX_OK);
+    CHECK(old_preedit.ime_target==guard.identity && old_preedit.ime_revision==guard.epoch);
+    CHECK(nx_window_get_ime_preedit_for(window,guard.identity,guard.epoch,draft,sizeof(draft),&length,&begin,&end)==NX_OK);
     CHECK(length==4 && !memcmp(draft,"na\xc3\xaf",4) && begin==2 && end==2);
-    CHECK(terminal_ime_preedit(&ime,guard,draft,length,begin,end)==NX_OK);
+    length=99;begin=end=99;
+    CHECK(nx_window_get_ime_preedit_for(window,41,7,draft,4,&length,&begin,&end)==NX_ERROR_LIMIT &&
+          !length && !begin && !end);
+    CHECK(nx_window_get_ime_preedit_for(window,41,7,NULL,0,&length,&begin,&end)==NX_OK && length==4);
+    CHECK(terminal_ime_native_preedit(&ime,guard,window,&old_preedit)==NX_OK);
     CHECK(ime.composition.size==4 && ime.composition.count==3 &&
           ime.composition.cursor==2 && ime.composition.anchor==2);
+    CHECK(nx_window_set_ime_surrounding_text(window,41,8,"",0,0,0)==NX_OK);
+    length=123;begin=end=123;
+    CHECK(nx_window_get_ime_preedit_for(window,41,7,draft,sizeof(draft),&length,&begin,&end)==NX_ERROR_STATE &&
+          !length && !begin && !end);
+    guard.epoch=8;CHECK(terminal_ime_bind(&ime,guard)==NX_OK);
+    CHECK(terminal_ime_native_preedit(&ime,guard,window,&old_preedit)==NX_ERROR_STATE && !ime.composition.size);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    preedit=0;
+    do {
+        CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_IME_PREEDIT_CHANGED && event.ime_revision==8) {
+            CHECK(terminal_ime_native_preedit(&ime,guard,window,&event)==NX_OK);preedit=1;
+        }
+    } while(available);
+    CHECK(preedit && ime.composition.size==4);
+    CHECK(terminal_ime_native_preedit(&ime,guard,window,&old_preedit)==NX_ERROR_STATE && ime.composition.size==4);
     guard.focused=0;
     CHECK(terminal_ime_preedit(&ime,guard,draft,length,begin,end)==NX_ERROR_STATE && !ime.composition.size);
     terminal_ime_reset(&ime);nx_window_destroy(window);

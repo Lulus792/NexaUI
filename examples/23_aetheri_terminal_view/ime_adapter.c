@@ -38,6 +38,17 @@ nx_result terminal_ime_preedit(terminal_ime_adapter *ime,terminal_ime_guard guar
     if(!ae_terminal_composition_set(&ime->composition,bytes,length,first,first<0?-1:last-first))return NX_ERROR_ARGUMENT;
     return NX_OK;
 }
+nx_result terminal_ime_native_preedit(terminal_ime_adapter *ime,terminal_ime_guard guard,
+    nx_window *window,const nx_event *event) {
+    nx_result r=current_guard(ime,guard);if(r!=NX_OK)return r;
+    if(!window || !event || event->type!=NX_EVENT_IME_PREEDIT_CHANGED ||
+       event->ime_target!=guard.identity || event->ime_revision!=guard.epoch)return NX_ERROR_STATE;
+    char bytes[AE_TERM_COMPOSITION_BYTES+1];size_t length=0;int32_t begin=0,end=0;
+    r=nx_window_get_ime_preedit_for(window,guard.identity,guard.epoch,bytes,sizeof(bytes),&length,&begin,&end);
+    if(r==NX_ERROR_STATE)ae_terminal_composition_clear(&ime->composition);
+    if(r!=NX_OK)return r;
+    return terminal_ime_preedit(ime,guard,bytes,length,begin,end);
+}
 nx_result terminal_ime_commit_event(terminal_ime_adapter *ime,terminal_ime_guard guard,
     const nx_event *event,int *ready,nx_utf8_span *out) {
     if(!ready || !out)return NX_ERROR_ARGUMENT;

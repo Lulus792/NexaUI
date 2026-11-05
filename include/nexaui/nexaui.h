@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 16
+#define NX_VERSION_PATCH 17
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -346,7 +346,7 @@ typedef struct nx_event {
     };
     int repeat;
     int focused;
-    /* Wayland IME TEXT and DELETE events, and Windows WM_IME_CHAR results
+    /* Wayland IME TEXT, PREEDIT and DELETE events, and Windows WM_IME_CHAR results
        from a tracked composition, carry the editor target and text/selection
        revision. Match both fields before editing. For Wayland IME TEXT,
        ime_before contains NX_IME_COMMIT_* flags; it is zero on other input
@@ -633,6 +633,13 @@ NX_API nx_result nx_window_set_ime_purpose(nx_window *window,
 NX_API nx_result nx_window_get_ime_preedit(nx_window *window,
     char *bytes, size_t capacity, size_t *out_length,
     int32_t *out_cursor_begin, int32_t *out_cursor_end);
+/* Like nx_window_get_ime_preedit, but require the current Wayland preedit
+   snapshot and advertised editor to match both nonzero values. Returns STATE
+   on a stale, withdrawn or untagged snapshot. Other backends return
+   UNSUPPORTED. Owner thread; output lengths and offsets clear on error. */
+NX_API nx_result nx_window_get_ime_preedit_for(nx_window *window,
+    uint64_t target, uint64_t revision, char *bytes, size_t capacity,
+    size_t *out_length, int32_t *out_cursor_begin, int32_t *out_cursor_end);
 /* Describe the focused editor's UTF-8 text near its cursor to Wayland v3/v1.
    Supply at most 4000 bytes, complete selection, and byte offsets relative
    to bytes. target is the editor's stable nonzero ID; revision must change

@@ -716,6 +716,11 @@ int main(void) {
     CHECK(atomic_load(&server.send_race_preedit) == 0);
     CHECK(nx_window_get_ime_preedit(window, preedit, sizeof(preedit),
         &length, &begin, &end) == NX_OK && length == 1 && preedit[0] == '\'');
+    CHECK(nx_window_get_ime_preedit_for(window,94,3,preedit,sizeof(preedit),
+        &length,&begin,&end)==NX_OK && length==1 && preedit[0]=='\'');
+    length=99;begin=end=99;
+    CHECK(nx_window_get_ime_preedit_for(window,94,2,preedit,sizeof(preedit),
+        &length,&begin,&end)==NX_ERROR_STATE && !length && !begin && !end);
     CHECK(nx_window_set_ime_surrounding_text(window, 94, 3,
         "race", 4, 4, 1) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);

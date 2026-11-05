@@ -2813,3 +2813,22 @@ an all-filtered commit produces no text event. They do not delimit IME delete
 transactions, guarantee preedit focus fencing or implement PTY writes.
 Installed IME, real Aetheri, physical input and human assistive acceptance
 remain open.
+
+## Guarded Wayland preedit snapshots — 5 November 2026
+
+On NexaUI base `21e90dd44606ef4d332b42f2f08a0d31f373983a`, version 0.1.17
+associates Wayland preedit notifications and snapshots with the advertised
+target and revision. The new guarded getter rejects snapshots whose identity
+does not match both the request and the currently advertised editor. The
+terminal example checks the notification and getter before updating Aetheri's
+composition model. In the controlled v3 test, changing the revision invalidated
+the old getter and an old notification could neither adopt nor clear the new
+draft. A v1 test checked a valid snapshot and wrong-revision rejection. Static,
+shared and Clang ASan/UBSan tests passed; a mutant ignoring event identity
+failed the stale-notification case.
+
+The owner remains responsible for advancing epochs and clearing its draft on
+focus/session changes. Other platforms report the guarded getter unsupported.
+Real Aetheri focus transitions, installed IMEs, preedit rendering, PTY input,
+physical interaction and human assistive acceptance are not established by
+these controlled tests.

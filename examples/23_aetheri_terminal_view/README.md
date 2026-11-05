@@ -357,10 +357,9 @@ preedit state after a v3 notification and passed it into the original Aetheri
 model. A separate mutant that treated byte offsets as scalar positions failed
 the multibyte test.
 
-This is an adapter experiment, not an IME-complete terminal. The Wayland
-preedit notification is not itself tagged with the application epoch; the
-owner must establish and fence that association, and the simulated guard
-test does not prove stale native notifications cannot cross a focus transition.
+This is an adapter experiment, not an IME-complete terminal. On the original
+`47d7436` base, Wayland preedit notifications were not tagged with an
+application epoch; the later guarded snapshot below addresses that case.
 The example does not draw the composition or forward commits to a PTY. Actual
 Aetheri, installed IME, scale, focus, physical input and human accessibility
 acceptance remain open.
@@ -377,3 +376,15 @@ complete native commit. Static/shared and Clang ASan/UBSan installed SDKs
 passed both the adapter and controlled Wayland v3 valid/filtered cases; the
 existing v1/v3 tests also passed. This does not yet demonstrate actual IME
 input being written to a PTY or solve native preedit focus fencing.
+
+On NexaUI base `21e90dd44606ef4d332b42f2f08a0d31f373983a`, version 0.1.17
+adds tagged Wayland preedit notifications and
+`nx_window_get_ime_preedit_for`. The example checks the event and current
+snapshot against the app-owned identity and epoch before changing the model.
+In controlled v3 tests a revision change invalidated the old snapshot; an old
+event could not adopt or clear a newer draft. A v1 controlled test also queried
+a tagged snapshot and rejected a wrong revision. Static/shared and Clang
+ASan/UBSan checks passed; a mutant that ignored the event identity failed the
+stale-event check. The owner must still advance epochs and clear composition on
+real focus loss; no installed IME, real Aetheri session or visual acceptance
+is claimed.

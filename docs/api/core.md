@@ -1,4 +1,4 @@
-# Core API (0.1.16)
+# Core API (0.1.17)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -18,7 +18,8 @@ the CMake package version 0.1.1 or newer in the same minor series. The
 `nx_numeric_field_set_ime_window` requires 0.1.6 or newer;
 `nx_numeric_field_set_clipboard` requires 0.1.7 or newer; nested overlay
 scopes require 0.1.8 or newer; Wayland IME commit-boundary flags require
-0.1.16 or newer. This does not declare a
+0.1.16 or newer; the guarded Wayland preedit snapshot requires 0.1.17 or
+newer. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full
@@ -76,7 +77,20 @@ target/revision, and discard incomplete sequences on any interruption or
 queue error. A commit containing only filtered characters produces no text
 event. Ordinary keyboard input and backends without this capability have no
 boundary flags; an unmarked event is not proof of a complete IME commit. These
-flags do not supply IME deletion transaction semantics or tag preedit updates.
+flags do not supply IME deletion transaction semantics.
+
+Wayland `NX_EVENT_IME_PREEDIT_CHANGED` events carry the target and revision
+associated with the published snapshot when one exists. The getter
+`nx_window_get_ime_preedit_for` accepts a nonzero expected target/revision and
+returns `NX_ERROR_STATE` unless both the currently advertised editor and the
+current preedit snapshot match them. Check the event tags as well: a later
+snapshot can replace an earlier one before either event is consumed. A caller
+must advance its revision on every relevant focus, session or editor change and
+clear its own draft when focus is lost. Untagged snapshots cannot be retrieved
+with this guarded getter. Other backends return `NX_ERROR_UNSUPPORTED`; the
+original unguarded getter remains available. The guarded getter clears output
+length and offsets on error, including a buffer-too-small result; query with a
+null buffer first to learn the required size.
 
 `nx_window_route_events(window, context, out_count)` moves queued events to one context in order. On an allocation failure, the unaccepted event remains in the window queue for retry. Win32 pumps messages for all windows on the thread, so applications route each window to its own context. `nx_window_get_reduced_motion` reads the current Windows client-area animation preference; pass it to `nx_context_set_reduced_motion` between frames. Other native backends currently return `NX_ERROR_UNSUPPORTED` for the preference query.
 

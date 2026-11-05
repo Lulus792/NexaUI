@@ -1005,6 +1005,15 @@ nx_result nx_window_get_ime_preedit(nx_window *window,
     return NX_OK;
 }
 
+nx_result nx_window_get_ime_preedit_for(nx_window *window,uint64_t target,uint64_t revision,
+    char *bytes,size_t capacity,size_t *length,int32_t *begin,int32_t *end) {
+    if(!length || !begin || !end || (!bytes && capacity))return NX_ERROR_ARGUMENT;
+    *length=0;*begin=*end=0;
+    if(!window || !target || !revision)return NX_ERROR_ARGUMENT;
+    if(GetCurrentThreadId()!=window->owner_thread || !window->hwnd)return NX_ERROR_STATE;
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_set_ime_surrounding_text(nx_window *window,
     uint64_t target, uint64_t revision, const char *bytes, size_t length,
     size_t cursor, size_t anchor) {

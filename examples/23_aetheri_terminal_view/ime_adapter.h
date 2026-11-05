@@ -28,6 +28,10 @@ void terminal_ime_reset(terminal_ime_adapter *ime);
    If the owner guard changed, clear the draft and reject the stale event. */
 nx_result terminal_ime_preedit(terminal_ime_adapter *ime,terminal_ime_guard current,
     const char *bytes,size_t length,int32_t begin,int32_t end);
+/* Check both the native event identity and the current window snapshot before
+   using it. Never adopt a later snapshot through an earlier notification. */
+nx_result terminal_ime_native_preedit(terminal_ime_adapter *ime,terminal_ime_guard current,
+    nx_window *window,const nx_event *event);
 /* Deliver Wayland IME text events in order. Complete commits are validated by
    the original Aetheri whole-snapshot policy before bytes are returned; no
    output is produced for partial, filtered, stale or rejected commits.

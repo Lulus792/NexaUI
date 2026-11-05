@@ -813,6 +813,13 @@ nx_result nx_window_get_ime_preedit(nx_window *w, char *bytes, size_t capacity, 
     if (capacity <= *length) return NX_ERROR_LIMIT;
     if (*length) memcpy(bytes,w->preedit,*length); bytes[*length] = 0; return NX_OK;
 }
+nx_result nx_window_get_ime_preedit_for(nx_window *w,uint64_t target,uint64_t revision,
+    char *bytes,size_t capacity,size_t *length,int32_t *begin,int32_t *end) {
+    if(!length || !begin || !end || (!bytes && capacity))return NX_ERROR_ARGUMENT;
+    *length=0;*begin=*end=0;
+    if(!w || !target || !revision)return NX_ERROR_ARGUMENT;
+    return nx_mac_owner(w)?NX_ERROR_UNSUPPORTED:NX_ERROR_STATE;
+}
 nx_result nx_window_set_ime_surrounding_text(nx_window *w, uint64_t target, uint64_t revision,
     const char *bytes, size_t length, size_t cursor, size_t anchor) {
     (void)target; (void)revision; (void)bytes; (void)length; (void)cursor; (void)anchor;

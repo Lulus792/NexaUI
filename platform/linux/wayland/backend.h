@@ -47,6 +47,9 @@ nx_result nx_wayland_window_set_ime_purpose(nx_wayland_window *window,
 nx_result nx_wayland_window_get_ime_preedit(nx_wayland_window *window,
     char *bytes, size_t capacity, size_t *out_length,
     int32_t *out_cursor_begin, int32_t *out_cursor_end);
+nx_result nx_wayland_window_get_ime_preedit_for(nx_wayland_window *window,
+    uint64_t target, uint64_t revision, char *bytes, size_t capacity,
+    size_t *out_length, int32_t *out_cursor_begin, int32_t *out_cursor_end);
 nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
     uint64_t target, uint64_t revision, const char *bytes, size_t length,
     size_t cursor, size_t anchor);

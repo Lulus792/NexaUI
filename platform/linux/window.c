@@ -429,6 +429,18 @@ nx_result nx_window_get_ime_preedit(nx_window *window,
             bytes, capacity, out_length, out_cursor_begin, out_cursor_end));
 }
 
+nx_result nx_window_get_ime_preedit_for(nx_window *window,
+    uint64_t target, uint64_t revision, char *bytes, size_t capacity,
+    size_t *out_length, int32_t *out_cursor_begin, int32_t *out_cursor_end) {
+    if (!out_length || !out_cursor_begin || !out_cursor_end || (!bytes && capacity))
+        return NX_ERROR_ARGUMENT;
+    *out_length=0;*out_cursor_begin=*out_cursor_end=0;
+    if (!window || !target || !revision) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_get_ime_preedit_for(window->native.wayland,
+        target,revision,bytes,capacity,out_length,out_cursor_begin,out_cursor_end),NX_ERROR_UNSUPPORTED);
+}
+
 nx_result nx_window_set_ime_surrounding_text(nx_window *window,
     uint64_t target, uint64_t revision, const char *bytes, size_t length,
     size_t cursor, size_t anchor) {

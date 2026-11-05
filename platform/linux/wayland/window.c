@@ -108,6 +108,7 @@ struct nx_wayland_window {
     size_t ime_pending_length;
     char *ime_preedit, *ime_pending_preedit;
     size_t ime_preedit_length, ime_pending_preedit_length;
+    uint64_t ime_preedit_target, ime_preedit_revision;
     int32_t ime_preedit_begin, ime_preedit_end;
     int32_t ime_pending_preedit_begin, ime_pending_preedit_end;
     int32_t ime_v1_preedit_cursor;
@@ -1131,6 +1132,7 @@ static void nx_wayland_ime_v1_clear_delete(nx_wayland_window *window) {
 static void nx_wayland_ime_clear_preedit(nx_wayland_window *window,
                                          int notify_change) {
     int changed = window->ime_preedit_length != 0;
+    uint64_t target=window->ime_preedit_target, revision=window->ime_preedit_revision;
     if (window->ime_preedit) {
         if (window->ime_password)
             nx_private_secure_zero(window->ime_preedit,
@@ -1142,9 +1144,12 @@ static void nx_wayland_ime_clear_preedit(nx_wayland_window *window,
     window->ime_preedit_length = 0;
     window->ime_preedit_begin = 0;
     window->ime_preedit_end = 0;
+    window->ime_preedit_target = window->ime_preedit_revision = 0;
     if (changed && notify_change) {
         nx_event event = {0};
         event.type = NX_EVENT_IME_PREEDIT_CHANGED;
+        event.ime_target = target;
+        event.ime_revision = revision;
         nx_platform_event_queue_push(&window->event_queue, event);
     }
 }
@@ -1261,11 +1266,17 @@ static void nx_wayland_ime_preedit(void *data,
     }
     if (!cursor_set) cursor = (int32_t)length;
     if (!length) cursor = 0;
-    int changed = length != window->ime_preedit_length ||
+    uint64_t target=window->ime_surrounding_sent ? window->ime_surrounding_target : 0;
+    uint64_t revision=target ? window->ime_surrounding_revision : 0;
+    int changed = (length && (target != window->ime_preedit_target || revision != window->ime_preedit_revision)) ||
+        length != window->ime_preedit_length ||
         cursor != window->ime_preedit_begin ||
         cursor != window->ime_preedit_end ||
         (length && memcmp(value, window->ime_preedit, length) != 0);
-    if (!changed) return;
+    if (!changed) {
+        window->ime_preedit_target=target;window->ime_preedit_revision=revision;
+        return;
+    }
     char *copy = NULL;
     if (length) {
         copy = window->allocator.allocate(window->allocator.user, length + 1u);
@@ -1280,8 +1291,12 @@ static void nx_wayland_ime_preedit(void *data,
     window->ime_preedit_length = length;
     window->ime_preedit_begin = cursor;
     window->ime_preedit_end = cursor;
+    window->ime_preedit_target = target;
+    window->ime_preedit_revision = revision;
     nx_event event = {0};
     event.type = NX_EVENT_IME_PREEDIT_CHANGED;
+    event.ime_target = target;
+    event.ime_revision = revision;
     nx_platform_event_queue_push(&window->event_queue, event);
 }
 
@@ -1601,7 +1616,11 @@ static void nx_wayland_ime_v3_done(void *data,
             snapshot_current ? window->ime_surrounding_target : 0,
             snapshot_current ? window->ime_surrounding_revision : 0);
     if (valid && delete_valid) {
-        int changed = window->ime_preedit_length !=
+        uint64_t target=snapshot_current ? window->ime_surrounding_target : 0;
+        uint64_t revision=target ? window->ime_surrounding_revision : 0;
+        int changed = (window->ime_pending_preedit_length &&
+                      (target != window->ime_preedit_target || revision != window->ime_preedit_revision)) ||
+                      window->ime_preedit_length !=
                       window->ime_pending_preedit_length ||
             window->ime_preedit_begin != window->ime_pending_preedit_begin ||
             window->ime_preedit_end != window->ime_pending_preedit_end ||
@@ -1613,11 +1632,15 @@ static void nx_wayland_ime_v3_done(void *data,
         window->ime_preedit_length = window->ime_pending_preedit_length;
         window->ime_preedit_begin = window->ime_pending_preedit_begin;
         window->ime_preedit_end = window->ime_pending_preedit_end;
+        window->ime_preedit_target = target;
+        window->ime_preedit_revision = revision;
         window->ime_pending_preedit = NULL;
         window->ime_pending_preedit_length = 0;
         if (changed) {
             nx_event event = {0};
             event.type = NX_EVENT_IME_PREEDIT_CHANGED;
+            event.ime_target = target;
+            event.ime_revision = revision;
             nx_platform_event_queue_push(&window->event_queue, event);
         }
     }
@@ -3009,6 +3032,24 @@ nx_result nx_wayland_window_get_ime_preedit(nx_wayland_window *window,
         memcpy(bytes, window->ime_preedit, window->ime_preedit_length);
     bytes[window->ime_preedit_length] = '\0';
     return NX_OK;
+}
+
+nx_result nx_wayland_window_get_ime_preedit_for(nx_wayland_window *window,
+    uint64_t target, uint64_t revision, char *bytes, size_t capacity,
+    size_t *out_length, int32_t *out_cursor_begin, int32_t *out_cursor_end) {
+    if (!out_length || !out_cursor_begin || !out_cursor_end || (!bytes && capacity))
+        return NX_ERROR_ARGUMENT;
+    *out_length=0;*out_cursor_begin=*out_cursor_end=0;
+    if (!window || !target || !revision) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (!window->text_input_v3 && !window->text_input) return NX_ERROR_UNSUPPORTED;
+    if (window->ime_preedit_target!=target || window->ime_preedit_revision!=revision ||
+        window->ime_surrounding_target!=target || window->ime_surrounding_revision!=revision ||
+        window->ime_surrounding_withdrawn || !window->ime_activated) return NX_ERROR_STATE;
+    size_t length=0;int32_t begin=0,end=0;
+    nx_result r=nx_wayland_window_get_ime_preedit(window,bytes,capacity,&length,&begin,&end);
+    if(r==NX_OK){*out_length=length;*out_cursor_begin=begin;*out_cursor_end=end;}
+    return r;
 }
 
 nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
