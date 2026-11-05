@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define CACHE_BYTES (4u * 1024u * 1024u)
-#define NAME_CAP 128u
+#define NAME_CAP SETTINGS_NAME_CAPACITY
 #define TRY(x) do { if ((x) != NX_OK) return 0; } while (0)
 
 typedef struct settings_strings {
@@ -41,6 +41,16 @@ struct settings_scene {
     float status_width, status_max_height;
     uint64_t revealed_focus;
     float revealed_viewport_height, revealed_width;
+};
+/* This belongs to the example application, not the toolkit or a backend. */
+struct settings_session {
+    char applied_name[NAME_CAP], submitted_name[NAME_CAP];
+    size_t applied_length, submitted_length, draft_length;
+    uint64_t next_submission, pending_submission;
+    int submitted_motion, apply_error, outcome_unknown, dispatch_pending;
+    int motion, applied_motion, applied;
+    unsigned language;
+    char draft[];
 };
 static nx_utf8_span text(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 static int valid_name(nx_utf8_span s, void *unused) {
@@ -173,8 +183,15 @@ uint64_t settings_pending_apply(const settings_scene *s) {
     return s ? s->pending_submission : 0;
 }
 uint64_t settings_take_apply_request(settings_scene *s) {
-    if (!s || !s->pending_submission || !s->dispatch_pending || s->outcome_unknown) return 0;
-    s->dispatch_pending=0; return s->pending_submission;
+    settings_apply_request request;
+    return settings_claim_apply_request(s,&request)?request.token:0;
+}
+int settings_claim_apply_request(settings_scene *s, settings_apply_request *out) {
+    if(out)memset(out,0,sizeof(*out));
+    if(!s || !out || !s->pending_submission || !s->dispatch_pending || s->outcome_unknown)return 0;
+    out->token=s->pending_submission;out->name_length=s->submitted_length;
+    memcpy(out->name,s->submitted_name,s->submitted_length);out->reduced_motion=s->submitted_motion;
+    s->dispatch_pending=0;return 1;
 }
 int settings_observe_apply_unknown(settings_scene *s, uint64_t token) {
     if (!s || !token || token!=s->pending_submission) return 0;
@@ -192,6 +209,68 @@ int settings_complete_apply(settings_scene *s, uint64_t token, int success) {
         s->applied=1;
     }
     return 1;
+}
+int settings_detach(settings_scene **scene, settings_session **out) {
+    if(out)*out=NULL;
+    if(!scene || !*scene || !out)return 0;
+    settings_scene *s=*scene; nx_utf8_span draft={0};
+    if(nx_text_field_text(s->name,&draft)!=NX_OK || draft.length>65536u)return 0;
+    settings_session *state=malloc(sizeof(*state)+draft.length);
+    if(!state)return 0;
+    memset(state,0,sizeof(*state));
+    memcpy(state->applied_name,s->applied_name,sizeof(state->applied_name));
+    memcpy(state->submitted_name,s->submitted_name,sizeof(state->submitted_name));
+    state->applied_length=s->applied_length;state->submitted_length=s->submitted_length;
+    state->next_submission=s->next_submission;state->pending_submission=s->pending_submission;
+    state->submitted_motion=s->submitted_motion;state->apply_error=s->apply_error;
+    state->dispatch_pending=s->dispatch_pending;
+    state->outcome_unknown=s->outcome_unknown || (s->pending_submission && !s->dispatch_pending);
+    state->motion=s->motion;state->applied_motion=s->applied_motion;state->applied=s->applied;
+    state->language=s->language;state->draft_length=draft.length;
+    if(draft.length)memcpy(state->draft,draft.data,draft.length);
+    settings_destroy(s);*scene=NULL;*out=state;return 1;
+}
+void settings_session_destroy(settings_session *session) {
+    if(!session)return;
+    size_t size=sizeof(*session)+session->draft_length;
+    volatile unsigned char *bytes=(volatile unsigned char *)session;
+    while(size--)*bytes++=0;
+    free(session);
+}
+uint64_t settings_session_pending_apply(const settings_session *session) {
+    return session?session->pending_submission:0;
+}
+int settings_session_observe_unknown(settings_session *session,uint64_t token) {
+    if(!session || !token || token!=session->pending_submission)return 0;
+    session->outcome_unknown=1;session->dispatch_pending=0;return 1;
+}
+int settings_session_complete_apply(settings_session *session,uint64_t token,int success) {
+    if(!session || !token || token!=session->pending_submission || (success!=0 && success!=1))return 0;
+    session->pending_submission=0;session->dispatch_pending=0;session->outcome_unknown=0;
+    session->apply_error=!success;
+    if(success) {
+        memcpy(session->applied_name,session->submitted_name,session->submitted_length);
+        session->applied_length=session->submitted_length;session->applied_motion=session->submitted_motion;
+        session->applied=1;
+    }
+    return 1;
+}
+int settings_resume(const unsigned char *bytes,size_t length,nx_window *window,
+                    settings_session **session,settings_scene **out) {
+    if(out)*out=NULL;
+    if(!session || !*session || !out)return 0;
+    settings_session *state=*session;settings_scene *s=NULL;
+    if(!settings_create(bytes,length,window,&s))return 0;
+    if(nx_text_field_set_text(s->name,state->draft,state->draft_length)!=NX_OK) {settings_destroy(s);return 0;}
+    memcpy(s->applied_name,state->applied_name,sizeof(s->applied_name));
+    memcpy(s->submitted_name,state->submitted_name,sizeof(s->submitted_name));
+    s->applied_length=state->applied_length;s->submitted_length=state->submitted_length;
+    s->next_submission=state->next_submission;s->pending_submission=state->pending_submission;
+    s->submitted_motion=state->submitted_motion;s->apply_error=state->apply_error;
+    s->outcome_unknown=state->outcome_unknown;s->dispatch_pending=state->dispatch_pending;
+    s->motion=state->motion;s->applied_motion=state->applied_motion;s->applied=state->applied;
+    s->language=state->language;s->status_width=0;
+    settings_session_destroy(state);*session=NULL;*out=s;return 1;
 }
 int settings_frame(settings_scene *s, float width, float height) {
     if (!s || width < 128 || height < 120) return 0;

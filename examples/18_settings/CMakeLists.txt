@@ -206,6 +206,11 @@ if(NEXAUI_BUILD_TESTS)
                         ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_unknown_client> $<TARGET_FILE:nexaui_settings>)
                 set_tests_properties(nexaui_settings_wayland_atspi_unknown PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                     ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font}" RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_atspi_reopen
+                    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                        ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_unknown_client> $<TARGET_FILE:nexaui_settings>)
+                set_tests_properties(nexaui_settings_wayland_atspi_reopen PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                    ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_REOPEN_TEST=1" RESOURCE_LOCK native_display)
                 if(TARGET nexaui_wayland_test_protocols)
                     add_executable(nexaui_settings_atspi_async_host atspi_async_host.c
                         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c

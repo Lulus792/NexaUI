@@ -107,6 +107,18 @@ EditableText supports full replacement, bounded insert/delete and clipboard
 operations. The independent test sets the name through
 AT-SPI and checks that Apply receives it.
 
+The optional session transfer in `scene.h` lets an application keep an in-memory
+draft and operation token while destroying and rebuilding the view. A claimed
+operation remains pending and is never claimed a second time; the application
+must query its original service and deliver an authoritative result. Retire
+published semantics with `nx_window_publish_semantics(window, NULL)` before
+destroying the view, then publish the rebuilt scene after its first frame. The
+private-Weston `nexaui_settings_wayland_atspi_reopen` test exercises that handoff
+with a simulated service and an independent accessibility client. The normal
+runner still ends its work on window close. This example does not provide disk
+persistence, cross-process recovery, real service reconciliation, or restored
+focus, scroll position and undo history.
+
 The private-Weston AT-SPI tests verify that copy/cut fail without a Wayland
 input serial and that copy/cut/paste work after virtual keyboard input. If
 `wl-copy` and `wl-paste` are installed at configure time, an additional test

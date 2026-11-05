@@ -13,8 +13,17 @@ static int type(nx_context *ui, const char *str) {
         if (nx_context_queue_event(ui,&e)!=NX_OK) return 0; }
     return 1;
 }
+typedef struct example_service { settings_apply_request request; int starts,queries,result; } example_service;
+static int service_submit(example_service *service,const settings_apply_request *request) {
+    if(!service || !request || !request->token || service->starts)return 0;
+    service->request=*request;++service->starts;service->result=-1;return 1;
+}
+static int service_query(example_service *service,uint64_t token,int *result) {
+    if(!service || !result || token!=service->request.token)return 0;
+    ++service->queries;*result=service->result;return 1;
+}
 int main(int argc,char **argv) {
-    FILE *f=NULL; unsigned char *bytes=NULL; settings_scene *s=NULL; long length;
+    FILE *f=NULL; unsigned char *bytes=NULL; settings_scene *s=NULL; settings_session *session=NULL; long length;
     CHECK(argc==2); f=fopen(argv[1],"rb"); CHECK(f);
     CHECK(fseek(f,0,SEEK_END)==0 && (length=ftell(f))>0 && length<64*1024*1024);
     CHECK(fseek(f,0,SEEK_SET)==0); bytes=malloc((size_t)length); CHECK(bytes);
@@ -193,7 +202,50 @@ int main(int argc,char **argv) {
     uint64_t resolved_retry=settings_pending_apply(s);CHECK(resolved_retry && resolved_retry!=unresolved);
     CHECK(!settings_complete_apply(s,unresolved,1) && settings_take_apply_request(s)==resolved_retry);
     CHECK(settings_complete_apply(s,resolved_retry,0));
+    /* The application keeps operation state while the view is absent. */
+    CHECK(settings_set_language(s,"en") && settings_set_draft_name(s,"Original",8) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t detached_token=settings_pending_apply(s);settings_apply_request original={0};example_service service={0};
+    CHECK(detached_token && settings_claim_apply_request(s,&original) && original.token==detached_token &&
+          original.name_length==8 && !memcmp(original.name,"Original",8) && service_submit(&service,&original));
+    CHECK(!settings_take_apply_request(s));
+    CHECK(settings_set_draft_name(s,"Newer draft",11) && settings_frame(s,640,360));
+    CHECK(!settings_detach(&s,NULL) && s);
+    CHECK(settings_detach(&s,&session) && !s && session && settings_session_pending_apply(session)==detached_token);
+    CHECK(!settings_session_complete_apply(session,detached_token+1,1));
+    int service_result=0;
+    CHECK(service_query(&service,settings_session_pending_apply(session),&service_result) && service_result==-1);
+    CHECK(settings_session_observe_unknown(session,detached_token));
+    CHECK(!settings_resume(NULL,0,NULL,&session,&s) && session && !s);
+    CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s) && !session && s);
+    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    CHECK(settings_pending_apply(s)==detached_token && !settings_take_apply_request(s));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(unknown) && !memcmp(view.value.data,unknown,view.value.length));
+    CHECK(nx_semantics_find(ui,3,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==11 && !memcmp(view.value.data,"Newer draft",11));
+    CHECK(settings_detach(&s,&session) && !s && session);
+    service.result=1;
+    CHECK(service_query(&service,settings_session_pending_apply(session),&service_result) && service_result==1);
+    CHECK(settings_session_complete_apply(session,detached_token,service_result) && service.starts==1 && service.queries==2);
+    CHECK(!settings_session_complete_apply(session,detached_token,1) && !settings_session_pending_apply(session));
+    CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s) && !session && s);
+    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    CHECK(settings_applied(s,&value,&motion) && value.length==8 && !memcmp(value.data,"Original",8));
+    CHECK(nx_semantics_find(ui,3,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==11 && !memcmp(view.value.data,"Newer draft",11));
+    CHECK(!settings_take_apply_request(s));
+    /* An unclaimed request stays claimable exactly once after transfer. */
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t unclaimed=settings_pending_apply(s);CHECK(unclaimed && unclaimed>detached_token);
+    CHECK(settings_detach(&s,&session) && settings_resume(bytes,(size_t)length,NULL,&session,&s));
+    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    CHECK(settings_take_apply_request(s)==unclaimed && !settings_take_apply_request(s));
+    CHECK(settings_complete_apply(s,unclaimed,0));
+    char *large=malloc(65537u);CHECK(large);memset(large,'x',65537u);
+    CHECK(settings_set_draft_name(s,large,65537u));free(large);large=NULL;
+    CHECK(!settings_detach(&s,&session) && s && !session);
     settings_destroy(s); free(bytes); return 0;
 fail:
-    if (f) fclose(f); settings_destroy(s); free(bytes); return 1;
+    if (f) fclose(f); settings_session_destroy(session);settings_destroy(s); free(bytes); return 1;
 }

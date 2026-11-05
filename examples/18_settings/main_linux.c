@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 typedef struct apply_reply { uint64_t token; int success; } apply_reply;
-typedef struct apply_worker { pthread_t thread; int read_fd, write_fd, running; apply_reply reply; } apply_worker;
+typedef struct apply_worker { pthread_t thread; int read_fd, write_fd, running; settings_apply_request request; apply_reply reply; } apply_worker;
 /* The worker owns only its write end and a copied reply; it never sees a UI or
    window. A fresh pipe bounds this example to one small result per request. */
 static void *apply_worker_run(void *data) {
@@ -23,14 +23,14 @@ static void *apply_worker_run(void *data) {
     close(worker->write_fd);
     return n==(ssize_t)sizeof(worker->reply) ? NULL : worker;
 }
-static int apply_worker_start(apply_worker *worker, uint64_t token, int success) {
+static int apply_worker_start(apply_worker *worker, const settings_apply_request *request, int success) {
     int fds[2]; if(pipe(fds)!=0) return 0;
     int flags=fcntl(fds[0],F_GETFL);
     if (flags<0 || fcntl(fds[0],F_SETFL,flags|O_NONBLOCK)<0 ||
         fcntl(fds[0],F_SETFD,FD_CLOEXEC)<0 || fcntl(fds[1],F_SETFD,FD_CLOEXEC)<0) {
         close(fds[0]); close(fds[1]); return 0;
     }
-    worker->read_fd=fds[0]; worker->write_fd=fds[1]; worker->reply=(apply_reply){token,success};
+    worker->read_fd=fds[0]; worker->write_fd=fds[1]; worker->request=*request; worker->reply=(apply_reply){request->token,success};
     if(pthread_create(&worker->thread,NULL,apply_worker_run,worker)!=0) {
         close(fds[0]); close(fds[1]); worker->read_fd=-1; return 0;
     }
@@ -74,15 +74,16 @@ int main(int argc, char **argv) {
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
     int simulate_unknown=argc==3 && !strcmp(argv[2],"--simulate-unknown");
+    int verify_reopen=argc==3 && !strcmp(argv[2],"--verify-reopen");
     int german_error=argc==4 && ((!strcmp(argv[2],"--de") && !strcmp(argv[3],"--simulate-error")) ||
                                  (!strcmp(argv[3],"--de") && !strcmp(argv[2],"--simulate-error")));
     int simulate_error=(argc==3 && !strcmp(argv[2],"--simulate-error")) || german_error;
     int german=(argc==3 && !strcmp(argv[2],"--de")) || german_error ||
         ((verify_ax || verify_keyboard) && getenv("NEXAUI_SETTINGS_TEST_GERMAN"));
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !verify_reopen && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
-    nx_window *window=NULL; settings_scene *scene=NULL; settings_renderer *renderer=NULL;
+    nx_window *window=NULL; settings_scene *scene=NULL; settings_session *session=NULL; settings_renderer *renderer=NULL;
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0, renderer_waiting=0;
@@ -104,6 +105,29 @@ int main(int argc, char **argv) {
     if (idle_probe) {start=seconds(CLOCK_MONOTONIC);cpu_start=seconds(CLOCK_PROCESS_CPUTIME_ID);if(start<0 || cpu_start<0)okay=0;}
     while (okay) {
         nx_window_info info; size_t routed;
+        if(session) {
+            /* Test-only view gap: the backend continues without a UI pointer.
+               Discard input during the gap instead of routing it to a new view. */
+            uint32_t events=0;
+            if(!worker.running || nx_window_poll_with_fd(window,1000,worker.read_fd,&events)!=NX_OK ||
+               nx_window_get_info(window,&info)!=NX_OK){okay=0;break;}
+            if(info.should_close)break;
+            nx_event ignored;int available=0;
+            do {if(nx_window_next_event(window,&ignored,&available)!=NX_OK){okay=0;break;}} while(available);
+            if(!okay)break;
+            if(events&NX_WINDOW_FD_ERROR){okay=0;break;}
+            if(events) {
+                apply_reply reply;ssize_t count;
+                do {count=read(worker.read_fd,&reply,sizeof(reply));} while(count<0 && errno==EINTR);
+                if(count<0 && (errno==EAGAIN || errno==EWOULDBLOCK))continue;
+                if(count!=(ssize_t)sizeof(reply) || !apply_worker_join(&worker) ||
+                   !settings_session_complete_apply(session,reply.token,reply.success) ||
+                   !settings_resume(font,font_size,window,&session,&scene)){okay=0;break;}
+                puts("SETTINGS_VIEW_REOPENED");fflush(stdout);
+                dirty=1;renderer_waiting=0;continue;
+            }
+            continue;
+        }
         if (test_continuous) dirty=1;
         uint32_t timeout=(dirty && drawable && !renderer_waiting) || smoke ? 16u : ax_unavailable ? 1000u : UINT32_MAX;
         if (idle_probe) {
@@ -168,11 +192,20 @@ int main(int argc, char **argv) {
             !settings_frame(scene,info.width,info.height)) { okay=0; break; }
         int scheduled_now=0;
         if (!worker.running) {
-            uint64_t request=settings_take_apply_request(scene);
-            if(request) {
-                if (!apply_worker_start(&worker,request,simulate_unknown?-1:!fail_first)) {okay=0;break;}
+            settings_apply_request request;
+            if(settings_claim_apply_request(scene,&request)) {
+                if (!apply_worker_start(&worker,&request,simulate_unknown?-1:!fail_first)) {okay=0;break;}
                 fail_first=0; simulate_unknown=0; scheduled_now=1;
             }
+        }
+        if(verify_reopen && scheduled_now) {
+            verify_reopen=0;
+            /* A native accessibility bridge is bound to one context. Retire
+               it before destroying that context and publishing its replacement. */
+            if(nx_window_publish_semantics(window,NULL)!=NX_OK){okay=0;break;}
+            if(!settings_detach(&scene,&session)){okay=0;break;}
+            puts("SETTINGS_VIEW_DETACHED");fflush(stdout);
+            continue;
         }
         if (verify_ax && !ax_test_ready) {
             nx_context *ui=settings_context(scene);
@@ -304,7 +337,7 @@ cleanup:
             okay=0;
         }
     }
-    settings_destroy(scene); nx_window_destroy(window); free(font);
+    settings_session_destroy(session);settings_destroy(scene); nx_window_destroy(window); free(font);
     if (verify_pending_close) {
         if (okay && pending_close_seen) {puts("SETTINGS_PENDING_CLOSED");fflush(stdout);}
         else okay=0;
