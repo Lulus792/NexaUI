@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Preparing a shared Wayland wait (2026-11-05)
+
+Source `b167379c14cf11348d3c788c93c0cd66add23b92` separates the existing
+single-window Wayland poll into preparation, descriptor/deadline collection,
+and completion. The public API and single-window behavior are unchanged. A
+successful preparation reserves a Wayland read and must be finished even after
+timeout, interruption or error. This is groundwork, not a multi-window wait.
+A future composition still needs owner/lifetime retention, cancellation of all
+prepared reads on partial failure, already queued work, accessibility hub FDs
+and deadlines, application FDs, per-window failures and bounded storage.
+
+Forty-six GCC protocol, FD, clipboard and drop tests and 21 Clang ASan/UBSan
+cases passed. On private Weston/Xvfb, two-window input, independent drop and
+Settings AT-SPI reopen passed (`/tmp/nexaui-pollsplit-native/result.json`), as
+did all four simple-IME cases (`/tmp/nexaui-pollsplit-simple-ime/result.json`).
+The headless Sway targeted-close test passed (`/tmp/nexaui-pollsplit-sway/client.log`).
+A dual-backend build passed four selected Wayland tests and the X11 window test
+under Xvfb. An initial dual-build test command named a nonexistent target; a
+corrected command ran the actual tests. No physical input, Aetheri compositor,
+or efficient shared idle/wakeup behavior is established by this refactor.
+
 ## Compositor-requested close with two Wayland windows (2026-11-05)
 
 Source `1fce23a381cee879763cb2fceb562dad66113b26` extends the two-window
