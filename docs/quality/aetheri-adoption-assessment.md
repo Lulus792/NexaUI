@@ -1,5 +1,16 @@
 # Aetheri adoption: initial source assessment
 
+## Nested overlay external macOS client candidate (2026-11-05)
+
+Test source `b2851034be5a9398d10626d921428777e76b9a4f` extends the independent
+macOS AX client and host with a nested-overlay interaction and host-observed
+action count and logical focus return. The native CI result is pending
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42020716816)); the
+test is not a pass until it actually executes successfully. As a separate core
+regression on that source, Windows 10.0.26200 x64 with MSVC 19.38.33145 shared
+Debug passed `nexaui_overlay` and `nexaui_search` five consecutive times each.
+Those Windows tests are not macOS AX, VoiceOver or Aetheri acceptance.
+
 ## macOS selection notification comparison (2026-11-05)
 
 The native macOS static and shared CI jobs for source
