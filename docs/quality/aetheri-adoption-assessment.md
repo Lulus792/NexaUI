@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Application-owned accessible text snapshot (2026-11-05)
+
+Source `d11786f68358d75488534623f729a94a298251c0` adds an explicit,
+copied, bounded read-only UTF-8 semantic snapshot. The application supplies
+the lifetime identity, visible text and byte positions. Linux exposes the
+supported AT-SPI Text reads in Unicode scalar offsets and rejects native
+caret/selection mutations. The cell-grid example independently constructs its
+visible text, including a wide cell and combining mark, from its own model.
+
+On Alpine WSL, GCC and a Wayland-only build succeeded. The independent libatspi
+client passed on private Weston/Xvfb with a private registry: it read the text,
+checked scalar count and caret, and verified rejected caret/selection requests.
+The native keyboard, semantic snapshot and existing Settings AT-SPI regression
+also passed. A 218-test private-compositor run reported one failure and four
+skips: `nexaui_settings_wayland_idle` saw zero long waits. The same test failed
+with the same observation in an independently archived and rebuilt parent
+`c876ee700f368668cce87f389ce76d90849d87d8` under the same fixture. The four
+simple-IME cases were skipped; Weston/Xvfb cleanup also reported an error in
+the full run. Logs: `/tmp/nexaui-cell-snapshot-full.log`,
+`/tmp/nexaui-cell-snapshot-parent.log` and
+`/tmp/nexaui-cell-snapshot-recheck/result.json`.
+
+This is not terminal, PTY, scrollback, IME, editable text, selection control,
+full document navigation, another platform's Text interface or human Orca
+acceptance. Installation from this exact revision remains to be verified.
+
 ## Fixed-cell drawing candidate (2026-11-05)
 
 Candidate based on `88aeef97f0cd9b90f335e8520cae65570994ba09` adds
