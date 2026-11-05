@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri virtual output mode change while Settings is running (2026-11-05)
+
+Test driver source `9ff7e08454679754b70294ed659cfc43c50594e9` extends the
+original-supervisor integration test using the existing inherited test-input
+controller from Aetheri source `d621c9bba1df8ffd1083999300bcff742022b9dc`.
+It does not alter Aetheri or a running carrier session. The SDK remains
+`cf36802d8ef209eda91c85805e15761d0544bb26` and consumer source
+`01d60fdb30e97d96778cf27cb4a2bdc9f0a0edc2`, built against its installed
+Wayland-only, AT-SPI-enabled 0.1.5 static package on Fedora. The executable
+SHA-256 is `5c2b0004484cb40e8badeb058423e0b5dc0d686c7939e9f71c3b4a69f51db796`.
+
+After the original development supervisor launched the consumer, native virtual
+keyboard input selected a compositor-observed output. The test controller then
+requested that same headless output change from 2560x1440 to 1600x900 and
+restore. The model logged the same connection-local ID 8 at both sizes, with
+snapshot revisions 6, 7 and 8 and retained selection 8. The original SDL
+desktop observed the resized dock. Settings then closed, reopened and stopped
+in the existing owner sequence; all original child statuses and owner were 0.
+
+An isolated test-only SDK mutant ignored mode events after an output's initial
+`done`. The same driver reached the resize and failed waiting for the new
+selected-output observation, while the desktop observed its resized dock.
+The mutant is not shipped. A separate preliminary setup attempt failed before
+the compositor started; it is retained and is not counted as a negative
+control. Positive, mutant and preliminary logs/results are retained in
+`D:/NexaUI/out/aetheri-model-2026-11-05/output-resize-results.tar.gz`, SHA-256
+`bb78cd952aef56c3fe534ac005ae39086a4b1fedefdb6a1351abb365b894ee81`.
+The mutation script is `D:/NexaUI/out/aetheri-model-2026-11-05/output-mutant.py`,
+SHA-256 `82b65c4a7442760a666b3ab77686b1c6ecc4126625deeb0643a40ebe3e61e947`.
+This is a virtual mode change, not output removal/addition, mixed-DPI movement,
+display configuration authority, a physical monitor or human acceptance.
+
 ## Observed Wayland outputs in the Aetheri model (2026-11-05)
 
 SDK source `cf36802d8ef209eda91c85805e15761d0544bb26` adds the
