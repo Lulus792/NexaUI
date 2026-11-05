@@ -78,8 +78,13 @@ int main(int argc,char **argv) {
     size_t many=240u*100u*4u;char *large=malloc(many);CHECK(large);
     for(size_t i=0;i<many;i+=4)memcpy(large+i,"\xf0\x9f\x98\x80",4);
     ae_terminal_feed(model,large,many);free(large);
-    CHECK(aetheri_terminal_view_frame(view,9,1)==NX_ERROR_LIMIT);
-    CHECK(aetheri_terminal_view_cells(view,9,&cells,&rows,&cols)==NX_ERROR_STATE && !cells);
+    CHECK(aetheri_terminal_view_frame(view,9,1)==NX_OK);
+    CHECK(aetheri_terminal_view_text(view,9,&text,&anchor,&cursor,&has_caret)==NX_OK && text.length>65536);
+    CHECK(aetheri_terminal_view_cells(view,9,&cells,&rows,&cols)==NX_OK && rows==100 && cols==240);
+    CHECK(nx_frame_commands(ctx,&commands,&count)==NX_OK && count);
+    size_t stride=2880u*4u;unsigned char *large_pixels=malloc(stride*2200u);CHECK(large_pixels);
+    nx_result rendered=nx_headless_render(commands,count,large_pixels,2880,2200,stride,(nx_color){0,0,0,1});
+    free(large_pixels);CHECK(rendered==NX_OK);
     CHECK(aetheri_terminal_view_frame(view,8,1)==NX_ERROR_STATE);
     aetheri_terminal_view_destroy(view);free(model);nx_font_close(font);free(bytes);return 0;
 }

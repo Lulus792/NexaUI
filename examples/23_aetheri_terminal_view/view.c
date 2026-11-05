@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { TEXT_LIMIT=65536 };
+enum { TEXT_LIMIT=NX_TEXT_SNAPSHOT_MAX_BYTES };
 struct aetheri_terminal_view {
     aetheri_terminal_view_desc desc;
     nx_context *context;

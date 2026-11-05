@@ -8,7 +8,7 @@ This example neither modifies nor pins the Aetheri checkout.
 
 ## Reproduce
 
-Build against an installed NexaUI 0.1.15 or newer and a separately obtained,
+Build against an installed NexaUI 0.1.19 or newer and a separately obtained,
 immutable Aetheri source snapshot. The checked model came from Aetheri commit
 `87996e2f12128b172a80b325ad3b539df6aee527`; `model.c` Git blob is
 `5865f239a0c9b2c83392f3b7a1f341d5d4cea28e`, `model.h` is
@@ -104,7 +104,7 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
 - Only visible cells are copied. The semantic value includes visible spaces and
   row separators, including soft-wrapped rows. It is not clipboard content:
   selection copying must use the original model's copy operation.
-- A snapshot is limited to 65,536 UTF-8 bytes. Oversized frames fail explicitly;
+- A read-only snapshot is limited to 512 KiB of UTF-8. Oversized frames fail explicitly;
   they are never silently truncated. If no actual caret or entire selection is
   visible, the read-only AT-SPI Text snapshot reports caret offset -1 and no
   selection. Partial offscreen selection is not represented as a complete one.
@@ -135,6 +135,19 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   confirmation returns bytes to the app, not to a PTY.
 
 ## Evidence and remaining work
+
+On candidate base `c3fdd31ae945626b40225e2464421bff24b98417`, the 0.1.19
+development SDK separates the read-only snapshot bound (512 KiB) from the
+unchanged writable-request bound (64 KiB). The full 240-by-100 Aetheri model
+filled with four-byte Unicode characters previously failed the frame at the
+64-KiB boundary; it now renders and publishes all 96,099 bytes including row
+separators. An independent libatspi client read and checked all 24,000 scalars
+and 99 separators from the copied snapshot. Static, shared and Clang
+ASan/UBSan consumers passed on Alpine/WSL, along with core bounds and grid
+tests. The accessible host uses simulated geometry/focus, the sample uses one
+font's missing-glyph behavior, and this does not establish Unicode shaping,
+physical rendering, human screenreader use, rapid large updates or production
+Aetheri integration. This is a development package, not a 1.0.0 release.
 
 On 5 November 2026, Alpine Linux/WSL consumers used installed static and shared
 SDKs, plus a Clang ASan/UBSan build. The model test exercises wide cells,

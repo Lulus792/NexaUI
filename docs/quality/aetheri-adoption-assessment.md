@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Large Unicode terminal accessibility snapshot (2026-11-05)
+
+On candidate base `c3fdd31ae945626b40225e2464421bff24b98417`, development
+version 0.1.19 introduces `NX_TEXT_SNAPSHOT_MAX_BYTES` (512 KiB) for copied,
+application-owned read-only snapshots. The existing 64-KiB limit for writable
+text replacement remains unchanged. Both caret and no-caret snapshot variants
+accept the new exact bound and reject an oversized length. The separate
+terminal consumer requires 0.1.19 and uses that public limit.
+
+A full 240x100 Aetheri model of four-byte Unicode characters failed the
+previous 64-KiB frame limit and now renders and publishes 96,099 bytes. An
+independent libatspi client read every one of the 24,000 scalars and 99 line
+separators. Installed GCC static/shared and Clang ASan/UBSan consumers passed
+on Alpine/WSL. Core cell-grid and writable-value tests passed in all three
+profiles; exact-bound snapshot tests passed in static and ASan/UBSan builds.
+The old-limit terminal test failed at the expected frame assertion, and the
+consumer's CMake configuration rejected the earlier 0.1.18 installed SDK. The
+external Aetheri snapshot remained unchanged.
+
+The AT-SPI host has simulated geometry/focus and one initial publication; it
+does not prove rapid large updates, physical presentation, selected glyph
+coverage, human screenreader use, other platform bridges or actual Aetheri
+adoption. Bridge snapshot and reply budgets remain separate bounds. This is a
+pre-1.0 development version and does not complete T07, A05 or P03.
+
 ## Unmapped output fallback in the private test host (2026-11-05)
 
 On candidate base `70a6a91b4f8edfb176f9f6147ab2f63a4ef8f44c`, an output

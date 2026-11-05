@@ -37,10 +37,15 @@ static unsigned char *read_file(const char *path,size_t *size) {
 int main(int argc,char **argv) {
     CHECK(argc==2);size_t length=0;unsigned char *bytes=read_file(argv[1],&length);CHECK(bytes);
     nx_font *font=NULL;CHECK(nx_font_open(bytes,length,NULL,&font)==NX_OK);
-    struct ae_terminal *model=malloc(sizeof(*model));CHECK(model);ae_terminal_init(model,8,3,width);
-    const char input[]="A\xe7\x95\x8c" "e\xcc\x81";ae_terminal_feed(model,input,sizeof(input)-1);
+    int large=getenv("NEXAUI_TERMINAL_AX_LARGE")!=NULL;
+    struct ae_terminal *model=malloc(sizeof(*model));CHECK(model);ae_terminal_init(model,large?240:8,large?100:3,width);
+    if(large) {
+        size_t count=240u*100u*4u;char *data=malloc(count);CHECK(data);
+        for(size_t i=0;i<count;i+=4)memcpy(data+i,"\xf0\x9f\x98\x80",4);
+        ae_terminal_feed(model,data,count);free(data);
+    } else {const char input[]="A\xe7\x95\x8c" "e\xcc\x81";ae_terminal_feed(model,input,sizeof(input)-1);}
     int from_events=getenv("NEXAUI_TERMINAL_AX_EVENT")!=NULL;
-    if(!from_events)CHECK(ae_terminal_select_begin(model,0,4) && ae_terminal_select_extend(model,0,1));
+    if(!large && !from_events)CHECK(ae_terminal_select_begin(model,0,4) && ae_terminal_select_extend(model,0,1));
     if(getenv("NEXAUI_TERMINAL_AX_SCROLL")) {
         scroll_history(model);
         CHECK(model->history_count>0);
@@ -73,7 +78,7 @@ int main(int argc,char **argv) {
         }
     }
     nx_linux_accessibility_host *host=NULL;CHECK(nx_linux_accessibility_host_create(&host)==NX_OK);
-    nx_linux_accessibility_geometry geometry={0,0,96,66,0,1,1};
+    nx_linux_accessibility_geometry geometry={0,0,large?2880:96,large?2200:66,0,1,1};
     CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
     struct sigaction action={0};action.sa_handler=on_signal;sigemptyset(&action.sa_mask);
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));

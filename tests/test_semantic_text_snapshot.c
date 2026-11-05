@@ -52,7 +52,7 @@ int main(void) {
     CHECK(nx_semantics_add_readonly_text_snapshot(ctx,&app,10,1,3,NULL)==NX_ERROR_ARGUMENT);
     app.state=NX_SEM_READONLY; app.actions=NX_ACTION_SET_VALUE;
     CHECK(nx_semantics_add_readonly_text_snapshot(ctx,&app,10,1,3,NULL)==NX_ERROR_ARGUMENT);
-    app.actions=0; app.value.length=NX_TEXT_VALUE_MAX_BYTES+1u;
+    app.actions=0; app.value.length=NX_TEXT_SNAPSHOT_MAX_BYTES+1u;
     CHECK(nx_semantics_add_readonly_text_snapshot(ctx,&app,10,1,3,NULL)==NX_ERROR_LIMIT);
     app.value.length=sizeof(app_text)-1;
     app_text[0]=0;
@@ -68,12 +68,28 @@ int main(void) {
     CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(ctx,&app,11,NULL)==NX_ERROR_ARGUMENT);
     app.state=NX_SEM_READONLY;app.actions=NX_ACTION_SET_VALUE;
     CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(ctx,&app,11,NULL)==NX_ERROR_ARGUMENT);
-    app.actions=0;app.value.length=NX_TEXT_VALUE_MAX_BYTES+1u;
+    app.actions=0;app.value.length=NX_TEXT_SNAPSHOT_MAX_BYTES+1u;
     CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(ctx,&app,11,NULL)==NX_ERROR_LIMIT);
     app.value.length=sizeof(app_text)-1;
     CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(ctx,&app,11,NULL)==NX_OK);
+    /* Large read-only snapshots have their own bound; writable requests retain
+       the smaller NX_TEXT_VALUE_MAX_BYTES contract. */
+    static char large[NX_TEXT_SNAPSHOT_MAX_BYTES];memset(large,'x',sizeof(large));
+    memcpy(large+sizeof(large)-4,"\xf0\x9f\x8c\x8d",4);
+    app.id=22;app.value=(nx_utf8_span){large,sizeof(large)};
+    CHECK(nx_semantics_add_readonly_text_snapshot(ctx,&app,12,sizeof(large)-4,sizeof(large),NULL)==NX_OK);
+    app.id=23;CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(ctx,&app,13,NULL)==NX_OK);
+    large[0]='Q'; /* Both published snapshots own their bytes. */
     app_text[0]='Z';
     CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_text_value(ctx,22,(nx_utf8_span){large,NX_TEXT_VALUE_MAX_BYTES+1u})==NX_ERROR_LIMIT);
+    uint32_t large_index=0;nx_semantic_view large_view;
+    CHECK(nx_semantics_find(ctx,22,&large_index)==NX_OK && nx_semantics_get(ctx,large_index,&large_view)==NX_OK &&
+          large_view.value.length==sizeof(large) && large_view.value.data[0]=='x' &&
+          !memcmp(large_view.value.data+sizeof(large)-4,"\xf0\x9f\x8c\x8d",4));
+    CHECK(nx_semantics_find(ctx,23,&large_index)==NX_OK && nx_semantics_get(ctx,large_index,&large_view)==NX_OK &&
+          large_view.value.length==sizeof(large) && large_view.value.data[0]=='x' &&
+          !nx_context_text_selection_snapshot(ctx,23).present);
     nx_semantic_view app_view;
     CHECK(nx_semantics_get(ctx,app_index,&app_view)==NX_OK && app_view.value.data[0]=='A');
     nx_text_selection_snapshot app_selection=nx_context_text_selection_snapshot(ctx,20);

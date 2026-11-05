@@ -42,6 +42,23 @@ int main(int argc,char **argv) {
         if(!target)pause_ms();
     }
     CHECK(target);AtspiText *text=atspi_accessible_get_text_iface(target);
+    if(getenv("NEXAUI_TERMINAL_AX_LARGE")) {
+        CHECK(text);GError *error=NULL;int count=atspi_text_get_character_count(text,&error);
+        CHECK(!error && count==24099);
+        char *value=atspi_text_get_text(text,0,-1,&error);
+        CHECK(!error && value && strlen(value)==96099 && g_utf8_validate(value,-1,NULL) &&
+              g_utf8_strlen(value,-1)==count && !memcmp(value,"\xf0\x9f\x98\x80",4));
+        size_t offset=0;
+        for(unsigned row=0;row<100;++row) {
+            for(unsigned column=0;column<240;++column) {
+                CHECK(!memcmp(value+offset,"\xf0\x9f\x98\x80",4));offset+=4;
+            }
+            if(row<99)CHECK(value[offset++]=='\n');
+        }
+        CHECK(offset==96099);
+        g_free(value);g_object_unref(text);g_object_unref(target);g_object_unref(desktop);cleanup();
+        puts("Independent AT-SPI read the full large Unicode terminal snapshot");return 0;
+    }
     if(getenv("NEXAUI_TERMINAL_AX_COMPOSITION")) {
         CHECK(text);GError *error=NULL;
         AtspiAccessible *parent=atspi_accessible_get_parent(target,&error);CHECK(!error && parent);

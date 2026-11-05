@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 18
+#define NX_VERSION_PATCH 19
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -1849,9 +1849,12 @@ NX_API uint64_t nx_focus_id(const nx_context *context);
    expire at the next begin_frame or context destruction. */
 NX_API nx_result nx_semantics_add(nx_context *context,
                                   const nx_semantic_desc *desc, uint32_t *out_index);
+/* Maximum copied UTF-8 bytes per application-owned read-only text snapshot. */
+#define NX_TEXT_SNAPSHOT_MAX_BYTES (512u * 1024u)
 /* Publish an application-owned, non-protected, read-only text snapshot.
    desc must have role NX_ROLE_TEXT, state NX_SEM_READONLY, and no SET_VALUE
-   action. value is copied; it may contain at most 65536 UTF-8 bytes. Anchor
+   action. value is copied; it may contain at most NX_TEXT_SNAPSHOT_MAX_BYTES
+   UTF-8 bytes. This separate bound does not change the writable-text limit. Anchor
    and cursor are UTF-8 byte offsets at scalar boundaries in that value. The
    nonzero identity must remain stable for the lifetime of the text object and
    change when that object is replaced. The application owns all selection and

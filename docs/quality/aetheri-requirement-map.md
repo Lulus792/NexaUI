@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T07/A05/P03: the 0.1.19 candidate based on
+`c3fdd31ae945626b40225e2464421bff24b98417` permits bounded 512-KiB
+read-only snapshots while keeping writable requests at 64 KiB. A full 240x100
+four-byte-character terminal model produced 96,099 accessible bytes read by
+an independent AT-SPI client. Rapid updates, real Aetheri, human and other
+platform acceptance remain open; see [candidate evidence](aetheri-adoption-assessment.md#large-unicode-terminal-accessibility-snapshot-2026-11-05).
+
 D05/W05: the private host on base `70a6a91b4f8edfb176f9f6147ab2f63a4ef8f44c`
 reports additional Wayland output globals as unmapped without stopping other
 views. It does not re-add them; reliable identity and actual Aetheri hotplug

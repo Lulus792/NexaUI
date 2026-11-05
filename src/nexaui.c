@@ -1659,7 +1659,7 @@ static nx_result nx_semantics_add_readonly_text_snapshot_impl(nx_context *ctx,
         !(desc->state & NX_SEM_READONLY) || (desc->state & NX_SEM_PROTECTED) ||
         (desc->actions & NX_ACTION_SET_VALUE))
         return NX_ERROR_ARGUMENT;
-    if (desc->value.length > NX_TEXT_VALUE_MAX_BYTES) return NX_ERROR_LIMIT;
+    if (desc->value.length > NX_TEXT_SNAPSHOT_MAX_BYTES) return NX_ERROR_LIMIT;
     if (!nx_valid_span(desc->value)) return NX_ERROR_ARGUMENT;
     if (has_caret && (anchor > desc->value.length || cursor > desc->value.length ||
         (anchor < desc->value.length && ((unsigned char)desc->value.data[anchor] & 0xc0u) == 0x80u) ||

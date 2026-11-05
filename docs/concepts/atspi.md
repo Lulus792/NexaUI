@@ -60,7 +60,9 @@ Unicode scalar values rather than UTF-8 bytes. A single text reply is limited to
 1 MiB; invalid ranges and oversized replies return errors. Unsupported text
 operations return `NotSupported`, including text geometry, attributes and
 non-character granularities. An application can also publish its own bounded,
-read-only text snapshot with `nx_semantics_add_readonly_text_snapshot`; its
+read-only text snapshot with `nx_semantics_add_readonly_text_snapshot`; since
+0.1.19 each snapshot is bounded at 512 KiB, independently of the 64-KiB
+writable-request limit. Its
 UTF-8 byte positions are translated to AT-SPI scalar offsets. This snapshot
 rejects native caret, selection and editing requests, because its model belongs
 to the application. When no caret or complete selection can be represented in
