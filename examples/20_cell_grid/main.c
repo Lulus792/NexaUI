@@ -6,7 +6,7 @@
 
 enum { COLS=16, ROWS=3 };
 typedef struct app_cell { uint32_t scalar, mark; unsigned span; } app_cell;
-typedef struct app_model { app_cell cells[ROWS][COLS]; unsigned cursor; } app_model;
+typedef struct app_model { app_cell cells[ROWS][COLS]; unsigned cursor, anchor; } app_model;
 
 static unsigned char *read_font(const char *path,size_t *out_size) {
     FILE *f=fopen(path,"rb"); if(!f)return NULL;
@@ -33,8 +33,11 @@ static int snapshot(const app_model *model,const nx_font *font,nx_cell_view *vie
         const app_cell *source=&model->cells[r][c]; nx_cell_view *cell=&view[r*COLS+c];
         *cell=(nx_cell_view){0}; cell->span=(uint8_t)source->span;
         cell->foreground=(nx_color){.9f,.92f,1,1};
-        cell->background=(r==1 && c==2)?(nx_color){.15f,.3f,.6f,1}:(nx_color){.04f,.05f,.08f,1};
-        if(r==0 && c==model->cursor)cell->flags|=NX_CELL_CURSOR_OUTLINE;
+        unsigned index=r*COLS+c;
+        unsigned first=model->anchor<model->cursor?model->anchor:model->cursor;
+        unsigned end=model->anchor<model->cursor?model->cursor:model->anchor;
+        cell->background=index>=first && index<end?(nx_color){.15f,.3f,.6f,1}:(nx_color){.04f,.05f,.08f,1};
+        if(index==model->cursor)cell->flags|=NX_CELL_CURSOR_OUTLINE;
         if(r==1 && c==0)cell->flags|=NX_CELL_UNDERLINE;
         if(source->span && source->scalar && source->scalar!=' ') {
             uint16_t glyph=0;
@@ -60,12 +63,13 @@ static int append_utf8(char *text,size_t capacity,size_t *length,uint32_t scalar
     }
     return 1;
 }
-static int text_snapshot(const app_model *model,char *text,size_t capacity,size_t *length,size_t *cursor) {
-    *length=0; *cursor=0;
+static int text_snapshot(const app_model *model,char *text,size_t capacity,size_t *length,size_t *anchor,size_t *cursor) {
+    *length=0; *anchor=0; *cursor=0;
     for(unsigned r=0;r<ROWS;++r) {
         for(unsigned c=0;c<COLS;++c) {
             const app_cell *cell=&model->cells[r][c];
-            if(!r && c==model->cursor)*cursor=*length;
+            if(r*COLS+c==model->cursor)*cursor=*length;
+            if(r*COLS+c==model->anchor)*anchor=*length;
             if(!cell->span)continue;
             if(!append_utf8(text,capacity,length,cell->scalar) ||
                (cell->mark && !append_utf8(text,capacity,length,cell->mark)))return 0;
@@ -95,18 +99,29 @@ int main(int argc,char **argv) {
             if(!available)break;
             if(event.type==NX_EVENT_RESIZE)dirty=1;
             if(event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_ESCAPE)goto finished;
-            if(event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_RIGHT && model.cursor+1<COLS) {
-                ++model.cursor; if(!model.cells[0][model.cursor].span && model.cursor+1<COLS)++model.cursor;
-                dirty=1;
+            if(event.type==NX_EVENT_KEY_DOWN && (event.key==NX_KEY_RIGHT || event.key==NX_KEY_LEFT)) {
+                unsigned next=model.cursor;
+                if(event.key==NX_KEY_RIGHT && next+1<ROWS*COLS) {
+                    ++next;
+                    if(!model.cells[next/COLS][next%COLS].span && next+1<ROWS*COLS)++next;
+                } else if(event.key==NX_KEY_LEFT && next>0) {
+                    --next;
+                    if(!model.cells[next/COLS][next%COLS].span && next>0)--next;
+                }
+                if(next!=model.cursor || (!(event.modifiers&NX_MOD_SHIFT) && model.anchor!=next)) {
+                    model.cursor=next;
+                    if(!(event.modifiers&NX_MOD_SHIFT))model.anchor=next;
+                    dirty=1;
+                }
             }
             if(event.type==NX_EVENT_TEXT && model.cursor==0 && event.scalar>=32) {
-                model.cells[0][0].scalar=event.scalar; dirty=1;
+                model.cells[0][0].scalar=event.scalar; model.anchor=model.cursor; dirty=1;
             }
         } while(available);
         if(!okay || !dirty)continue;
         nx_cell_view cells[ROWS*COLS]; if(!snapshot(&model,font,cells)){okay=0;break;}
-        char visible_text[ROWS*COLS*8+ROWS]; size_t text_length=0,text_cursor=0;
-        if(!text_snapshot(&model,visible_text,sizeof(visible_text),&text_length,&text_cursor)){okay=0;break;}
+        char visible_text[ROWS*COLS*8+ROWS]; size_t text_length=0,text_anchor=0,text_cursor=0;
+        if(!text_snapshot(&model,visible_text,sizeof(visible_text),&text_length,&text_anchor,&text_cursor)){okay=0;break;}
         nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
             .name={"Cell grid example",17}};
         nx_semantic_desc text={.id=2,.parent_id=1,.role=NX_ROLE_TEXT,.bounds={0,0,info.width,info.height},
@@ -118,7 +133,7 @@ int main(int argc,char **argv) {
         const nx_command *commands=NULL; size_t count=0; nx_software_view_outcome outcome;
         if(nx_context_set_text_raster_scale(ctx,info.scale)!=NX_OK || nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK ||
            nx_draw_cell_grid(ctx,&desc)!=NX_OK || nx_semantics_add(ctx,&root,NULL)!=NX_OK ||
-           nx_semantics_add_readonly_text_snapshot(ctx,&text,1,text_cursor,text_cursor,NULL)!=NX_OK ||
+           nx_semantics_add_readonly_text_snapshot(ctx,&text,1,text_anchor,text_cursor,NULL)!=NX_OK ||
            nx_end_frame(ctx)!=NX_OK ||
            nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
            nx_software_view_render(renderer,commands,count,(nx_color){0,0,0,1},&outcome)!=NX_OK) {okay=0;break;}

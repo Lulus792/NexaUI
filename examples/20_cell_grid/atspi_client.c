@@ -13,6 +13,26 @@ static pid_t host=-1;
 static void cleanup(void) { if(host>0){kill(host,SIGTERM);waitpid(host,NULL,0);host=-1;} }
 #define CHECK(x) do { if(!(x)){fprintf(stderr,"cell-atspi:%d: %s\n",__LINE__,#x);cleanup();return 1;} } while(0)
 static void pause_ms(void) { struct timespec t={0,10000000}; nanosleep(&t,NULL); }
+static int key_action(const char *tool,const char *action,const char *arg) {
+    pid_t child=fork(); if(child<0)return 0;
+    if(!child){execl(tool,tool,action,arg,(char *)NULL);_exit(127);}
+    int status=0; return waitpid(child,&status,0)==child && WIFEXITED(status) && !WEXITSTATUS(status);
+}
+static int await_selection(AtspiText *text,int caret,int start,int end) {
+    for(unsigned i=0;i<200;++i) {
+        while(g_main_context_iteration(NULL,FALSE)){}
+        GError *error=NULL; int actual=atspi_text_get_caret_offset(text,&error);
+        int count=!error?atspi_text_get_n_selections(text,&error):-1;
+        AtspiRange *range=!error && count==1?atspi_text_get_selection(text,0,&error):NULL;
+        int correct=!error && actual==caret && ((start==end && count==0) ||
+            (count==1 && range && range->start_offset==start && range->end_offset==end));
+        if(range)g_boxed_free(ATSPI_TYPE_RANGE,range);
+        if(error)g_error_free(error);
+        if(correct)return 1;
+        pause_ms();
+    }
+    return 0;
+}
 static AtspiAccessible *find(AtspiAccessible *node,const char *name,unsigned depth) {
     if(!node || depth>16)return NULL;
     GError *error=NULL; char *actual=atspi_accessible_get_name(node,&error);
@@ -57,8 +77,46 @@ int main(int argc,char **argv) {
     CHECK(atspi_text_get_caret_offset(text,&error)==0 && !error);
     CHECK(!atspi_text_add_selection(text,0,1,&error) && !error);
     CHECK(atspi_text_get_n_selections(text,&error)==0 && !error);
+    if(getenv("NEXAUI_CELL_SELECTION_TEST")) {
+        const char *tool=getenv("NEXAUI_CELL_GRID_XDOTOOL"),*logpath=getenv("NEXAUI_TEST_WESTON_LOG");
+        CHECK(tool && logpath);
+        FILE *log=fopen(logpath,"r"); CHECK(log);
+        char line[1024],window[32]={0};
+        while(fgets(line,sizeof(line),log)) {
+            char *id=strstr(line,"window id ");
+            if(id)snprintf(window,sizeof(window),"%lu",strtoul(id+10,NULL,10));
+        }
+        fclose(log); CHECK(window[0] && strcmp(window,"0"));
+        CHECK(key_action(tool,"windowfocus",window));
+        CHECK(key_action(tool,"key","shift+Right") && await_selection(text,1,0,1));
+        CHECK(key_action(tool,"key","shift+Right") && await_selection(text,2,0,2));
+        value=atspi_text_get_text(text,0,2,&error);
+        CHECK(!error && value && !strcmp(value,"A\xe4\xb8\xad")); g_free(value);
+        CHECK(key_action(tool,"key","Left") && await_selection(text,1,1,1));
+        CHECK(key_action(tool,"key","Right") && await_selection(text,2,2,2));
+        CHECK(key_action(tool,"key","shift+Left") && await_selection(text,1,1,2));
+        value=atspi_text_get_text(text,1,2,&error);
+        CHECK(!error && value && !strcmp(value,"\xe4\xb8\xad")); g_free(value);
+        CHECK(!atspi_text_set_selection(text,0,0,1,&error) && !error);
+        CHECK(await_selection(text,1,1,2));
+        /* Move from the wide leading cell to row 1. Cell positions and AT-SPI
+           scalar offsets differ: the wide continuation has no text, the line
+           break has one scalar, and the marked cell has two scalars. */
+        for(unsigned i=0;i<14;++i)CHECK(key_action(tool,"key","Right"));
+        CHECK(await_selection(text,16,16,16));
+        CHECK(key_action(tool,"key","shift+Right") && await_selection(text,18,16,18));
+        value=atspi_text_get_text(text,16,18,&error);
+        CHECK(!error && value && !strcmp(value,"e\xcc\x81")); g_free(value);
+        CHECK(key_action(tool,"key","shift+Left") && await_selection(text,16,16,16));
+        CHECK(key_action(tool,"key","Right") && await_selection(text,18,18,18));
+        CHECK(key_action(tool,"key","shift+Left") && await_selection(text,16,16,18));
+        CHECK(key_action(tool,"key","Left") && await_selection(text,14,14,14));
+        CHECK(key_action(tool,"key","shift+Right") && await_selection(text,16,14,16));
+        value=atspi_text_get_text(text,14,16,&error);
+        CHECK(!error && value && !strcmp(value," \n")); g_free(value);
+    }
     g_object_unref(text);g_object_unref(target);g_object_unref(desktop);
     atspi_exit();cleanup();
-    puts("Independent AT-SPI snapshot text, scalar offsets and rejected mutations passed.");
+    puts("Independent AT-SPI snapshot text, scalar offsets, selection and rejected mutations passed.");
     return 0;
 }
