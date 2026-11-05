@@ -29,6 +29,17 @@ int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,
     *out=v;return 1;
 }
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *v) {return v?v->context:NULL;}
+nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *v,const nx_event *event) {
+    if(!v || !event)return NX_ERROR_ARGUMENT;
+    nx_event mapped=*event;
+    if(v->model->search && nx_focus_id(v->context)==20 &&
+       (event->type==NX_EVENT_KEY_DOWN || event->type==NX_EVENT_KEY_UP) &&
+       event->key==NX_KEY_TAB && !(event->modifiers&~NX_MOD_SHIFT)) {
+        mapped.key=(event->modifiers&NX_MOD_SHIFT)?NX_KEY_UP:NX_KEY_DOWN;
+        mapped.modifiers&=~NX_MOD_SHIFT;
+    }
+    return nx_context_queue_event(v->context,&mapped);
+}
 static int valid_query(nx_utf8_span text,void *user) {(void)user;return text.length<AE_DESKTOP_QUERY;}
 int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,uint64_t revision,aetheri_desktop_intent *intent) {
     if(!intent)return 0;

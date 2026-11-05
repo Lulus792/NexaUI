@@ -26,10 +26,13 @@ them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text
 or produce an intent; it becomes editable again for the next frame. That frame's
 semantic snapshot also reports read-only. Up/Down in the search field proposes
-a selected result to the host; Enter proposes activation. The model-confirmed row
+a selected result to the host; Enter proposes activation. When the host queues
+events through `aetheri_desktop_view_queue_event`, Tab and Shift-Tab in the
+search field also propose next/previous selection without moving the text focus.
+Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
 revision. Native selection-owner actions and independent assistive-client
-verification remain open, as do Aetheri's Tab behavior, real window activation, native
+verification remain open, as do Tab behavior outside the search field, real window activation, native
 input and IME, borrowed-surface presentation,
 AT-SPI publication, scaling, multi-output ownership and the original process
 owner integration remain open. The test uses synthetic context events and
