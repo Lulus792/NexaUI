@@ -39,7 +39,7 @@ static void deallocate(void *u,void *p,size_t n) {
     if(p){if(a->callout&&a->reserve_ready){a->reserve_ready=0;allocator_callout(a,n);}--a->live;free(p);}
 }
 typedef struct scene {
-    nx_context *ctx;nx_font_collection *fonts;nx_text_field *fields[7];
+    nx_context *ctx;nx_font_collection *fonts;nx_text_field *fields[7];nx_numeric_field *number;
     int disabled,modal,value_protected;
 } scene;
 static int matches(nx_text_field *field,const char *expected) {
@@ -64,6 +64,12 @@ static int frame(scene *s) {
         nx_interaction_state state;int valid,submitted;
         CHECK(nx_text_field_widget(s->ctx,&d,s->fields[i],&state,&valid,&submitted)==NX_OK);
     }
+    nx_numeric_field_desc number={0};number.id=1209;number.parent_id=1000;
+    number.name=(nx_utf8_span){"Numeric field",13};number.bounds=(nx_rect){300,260,140,30};
+    number.fonts=s->fonts;number.pixels_per_em=16;number.glyph_cache_bytes=65536;
+    number.minimum=-10000;number.maximum=10000;
+    nx_interaction_state number_state;int number_valid;
+    CHECK(nx_numeric_field_widget(s->ctx,&number,s->number,&number_state,&number_valid)==NX_OK);
     /* Deliberately give protected custom semantics plaintext: native queries
        and event preparation must suppress it independently of built-in fields. */
     nx_semantic_desc custom={0};custom.id=1208;custom.parent_id=1000;custom.role=NX_ROLE_CUSTOM;
@@ -92,6 +98,7 @@ static int run(const WCHAR *client) {
         nx_result r=i==5?nx_text_field_create_password(initial[i],strlen(initial[i]),&s.fields[i]):
             nx_text_field_create(initial[i],strlen(initial[i]),8192,&s.fields[i]);CHECK(r==NX_OK);
     }
+    CHECK(nx_numeric_field_create(1234,1024,&s.number)==NX_OK);
     CHECK(nx_text_field_set_read_only(s.fields[3],1)==NX_OK);
     nx_context_desc cd={0};cd.allocator=allocator;CHECK(nx_context_create(&cd,&s.ctx)==NX_OK);
     CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ctx)==NX_OK);
@@ -165,6 +172,15 @@ static int run(const WCHAR *client) {
                 else if(command==VALUE_FRAME||command==VALUE_UNDO||command==VALUE_REDO) {
                     if(command!=VALUE_FRAME){nx_event e={0};e.type=NX_EVENT_TEXT_COMMAND;e.text_command=command==VALUE_UNDO?NX_TEXT_COMMAND_UNDO:NX_TEXT_COMMAND_REDO;CHECK(nx_context_queue_event(s.ctx,&e)==NX_OK);}
                     CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                } else if(command==VALUE_NUMERIC_INVALID) {
+                    double value=0;nx_utf8_span draft;
+                    CHECK(nx_numeric_field_value(s.number,&value)==NX_OK && value==1234);
+                    CHECK(nx_numeric_field_text(s.number,&draft)==NX_OK && draft.length==3 && !memcmp(draft.data,"bad",3));
+                } else if(command==VALUE_NUMERIC_COMMIT) {
+                    nx_event e={0};e.type=NX_EVENT_TEXT_COMMAND;e.text_command=NX_TEXT_COMMAND_NEWLINE;
+                    double value=0;CHECK(nx_focus_set(s.ctx,1209)==NX_OK && nx_context_queue_event(s.ctx,&e)==NX_OK);
+                    CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                    CHECK(nx_numeric_field_value(s.number,&value)==NX_OK && value==42);
                 } else if(command==VALUE_PROTECT_CUSTOM||command==VALUE_UNPROTECT_CUSTOM) {
                     s.value_protected=command==VALUE_PROTECT_CUSTOM;
                     CHECK(frame(&s)==0&&nx_window_publish_semantics(window,s.ctx)==NX_OK);
@@ -215,7 +231,7 @@ static int run(const WCHAR *client) {
     while(PeekNamedPipe(logs,NULL,0,NULL,&available,NULL)&&available){char buffer[4096];CHECK(ReadFile(logs,buffer,available<sizeof(buffer)?available:(DWORD)sizeof(buffer),&n,NULL));fwrite(buffer,1,n,stderr);}
     DWORD status=1;CHECK(GetExitCodeProcess(process.hProcess,&status));CloseHandle(process.hProcess);
     CloseHandle(commands);CloseHandle(acks);CloseHandle(logs);CloseHandle(done);
-    CHECK(destroyed);nx_context_destroy(s.ctx);for(unsigned i=0;i<7;++i)nx_text_field_destroy(s.fields[i]);
+    CHECK(destroyed);nx_context_destroy(s.ctx);nx_numeric_field_destroy(s.number);for(unsigned i=0;i<7;++i)nx_text_field_destroy(s.fields[i]);
     nx_font_collection_destroy(s.fonts);nx_font_close(font);CHECK(a.live==0&&status==0);
     puts("owned native edit values and lifetime guards passed");return 0;
 }

@@ -121,6 +121,18 @@ int wmain(int argc,WCHAR **argv) {
     OK(CoInitializeEx(NULL,COINIT_MULTITHREADED));IUIAutomation *uia=NULL;IUIAutomationElement *root=NULL;
     OK(CoCreateInstance(&CLSID_CUIAutomation,NULL,CLSCTX_INPROC_SERVER,&IID_IUIAutomation,(void **)&uia));
     OK(IUIAutomation_ElementFromHandle(uia,hwnd,&root));CHECK(root);
+    IUIAutomationElement *number=find(uia,root,1209);IUIAutomationValuePattern *number_pattern=NULL;
+    CHECK(number && pattern(number,&number_pattern)==0 && current(number_pattern,L"1234")==0);
+    OK(set_value(number_pattern,L"bad"));CHECK(host(VALUE_FRAME,0)==0);
+    CHECK(current(number_pattern,L"bad")==0 && host(VALUE_NUMERIC_INVALID,0)==0);
+    VARIANT number_valid;VariantInit(&number_valid);
+    OK(IUIAutomationElement_GetCurrentPropertyValue(number,UIA_IsDataValidForFormPropertyId,&number_valid));
+    CHECK(V_VT(&number_valid)==VT_BOOL && V_BOOL(&number_valid)==VARIANT_FALSE);VariantClear(&number_valid);
+    OK(set_value(number_pattern,L"42"));CHECK(host(VALUE_FRAME,0)==0);
+    OK(IUIAutomationElement_GetCurrentPropertyValue(number,UIA_IsDataValidForFormPropertyId,&number_valid));
+    CHECK(V_VT(&number_valid)==VT_BOOL && V_BOOL(&number_valid)==VARIANT_TRUE);VariantClear(&number_valid);
+    CHECK(current(number_pattern,L"42")==0 && host(VALUE_NUMERIC_COMMIT,0)==0);
+    IUIAutomationValuePattern_Release(number_pattern);IUIAutomationElement_Release(number);
     IUIAutomationElement *e[7]={0};IUIAutomationValuePattern *p[7]={0};
     const WCHAR *initial[]={L"10.42.0.1",L"7443",L"",L"read-only",L"disabled",NULL,L"one\ntwo"};
     for(unsigned i=0;i<7;++i) {
