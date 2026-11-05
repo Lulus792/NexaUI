@@ -1,5 +1,14 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
+on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri
+Files model at `87ff701f7d793b825c1d9012fc7d4bbd7b30773d` and the installed
+virtual-list API. A held parent/file witness and literal name protect a staged
+intent against selected-index retargeting after filter, refresh, directory or
+entry replacement; the caller must separately invalidate a rejected full query.
+This is a controlled owner-side experiment, not a Files UI, grant, durable
+identity, actual Aetheri adoption or the P02 100,000-row performance proof.
+
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group
 waits. Controlled nonblocking socket tests exercise backpressure and wakeup;
