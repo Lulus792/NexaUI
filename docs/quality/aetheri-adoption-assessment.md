@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Settings reopen test output isolation (2026-11-05)
+
+On Ubuntu CI, source `3d1c27fbd85e6fae952df223c7a97f6180176f1a`
+identified the failing reopen test's unexpected first marker as a Vulkan
+validation-layer warning on stdout ([shared job](https://github.com/Lulus792/NexaUI/actions/runs/42006206022/job/127173472897)).
+The test previously redirected the entire process stdout into its strict
+marker protocol. This explains the marker mismatch, not the separate Wayland
+disconnect segfaults.
+
+Source `b1a18b3b523ad0b039a9c4237e993e70d62367ba` passes an inherited test-only
+descriptor for the two reopen markers while leaving stdout available to the
+application and libraries. Without that descriptor the example retains its
+stdout marker behavior. The independent client emits unrelated stdout before
+starting Settings: on the previous code the private Weston test failed at the
+expected marker; after the change, the reopen and unknown-outcome tests both
+passed on Alpine/WSL with Vulkan validation enabled (2/2, exit 0; fixture
+`/tmp/nexaui-reopen-noise-after/result.json`). This checks channel isolation,
+not the Ubuntu CI result or broader Settings acceptance. The Ubuntu jobs and
+their independent disconnect stack diagnostics remain outstanding.
+
 ## Nested overlays through macOS AX and CI portability (2026-11-05)
 
 Source `de808bdacef1e35111a6f0c69338f6017afab153`, based on the test-only
