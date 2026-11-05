@@ -2,6 +2,18 @@
 
 ## Numeric field logical commands (2026-11-05)
 
+Follow-up `0cbc61941106a6bdb3e57d9dc2b1fc1203d91bd8` rejects
+IME-targeted text and command events in numeric widgets until those widgets
+publish and validate their own IME target and revision. A Release test using
+the same new regression with the preceding `a37cb43` source failed when a
+stale selection and text event modified the draft
+(`/tmp/nexaui-numeric-negative-test.log`); the corrected numeric widget test
+passed in GCC Release Wayland-only, GCC Debug dual-backend, and Clang Debug
+ASan/UBSan Wayland-only with leak detection. This prevents cross-field stale
+edits; it is not numeric IME composition support. An initial isolated-control
+archive attempt failed because WSL could not resolve the Windows Git worktree;
+the successful control used an archive created by Windows Git.
+
 Source `3c2b336ac8cbaa7fdd11dc3485d9ed080b0097b7` routes focused
 `NX_EVENT_TEXT_COMMAND` events through the existing numeric input buffer. The
 widget test exercises select-all and replacement, valid and invalid commits,
