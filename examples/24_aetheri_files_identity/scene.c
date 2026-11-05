@@ -113,6 +113,17 @@ nx_result files_scene_key(files_scene *s,nx_key key,int owns_focus) {
     if(s->offset<0)s->offset=0;
     s->need_focus=1;return NX_OK;
 }
+nx_result files_scene_scroll(files_scene *s,double pixels) {
+    if(!s || !isfinite(pixels))return NX_ERROR_ARGUMENT;
+    if(!s->ready)return NX_ERROR_STATE;
+    double desired=s->offset+pixels;
+    if(!isfinite(desired))return NX_ERROR_ARGUMENT;
+    if(desired<0)desired=0;
+    nx_virtual_range range;
+    nx_result r=nx_virtual_list_range(s->list,desired,s->viewport_height,0,&range);
+    if(r==NX_OK)s->offset=range.effective_offset;
+    return r;
+}
 nx_result files_scene_frame(files_scene *s,float width,float height) {
     if(!s || !isfinite(width) || !isfinite(height) || width<40 || height<ROW_HEIGHT || height>ROW_HEIGHT*MAX_ROWS)
         return NX_ERROR_ARGUMENT;

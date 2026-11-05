@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "scene.h"
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,6 +75,11 @@ int main(int argc,char **argv) {
     CHECK(files_scene_key(scene,NX_KEY_END,1)==NX_OK && files_scene_frame(scene,240,84)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
     CHECK(semantic(ctx,files_scene_selected(scene),"item11",1,1));
     CHECK(nx_semantics_count(ctx,&semantics)==NX_OK && semantics<=5);
+    uint64_t end_selection=files_scene_selected(scene);
+    CHECK(files_scene_scroll(scene,NAN)==NX_ERROR_ARGUMENT);
+    CHECK(files_scene_scroll(scene,-56)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
+    CHECK(files_scene_selected(scene)==end_selection);
+    CHECK(files_scene_scroll(scene,56)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
     nx_semantic_view visible;CHECK(nx_semantics_get(ctx,1,&visible)==NX_OK && visible.name.length<sizeof(name));
     uint64_t clicked=visible.id;memcpy(name,visible.name.data,visible.name.length);name[visible.name.length]=0;
     nx_event event={0};event.button=NX_BUTTON_LEFT;event.x=10;event.y=10;event.type=NX_EVENT_POINTER_DOWN;

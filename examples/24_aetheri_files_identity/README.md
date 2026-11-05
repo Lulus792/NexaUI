@@ -98,9 +98,54 @@ corresponding tests. A 240x84 headless capture showed three legible rows and
 the selected-row highlight; this is a limited visual inspection, not design
 acceptance. Test source and adapter also passed C17 strict warnings.
 
-The scene does not provide a native window, filter text field, scroll-wheel
+At that base, the scene did not provide a native window, filter text field, scroll-wheel
 handling, offscreen accessibility children, independent AT-SPI/human
 screenreader evidence, full focus restoration after filtering, localization,
 or the actual Aetheri Files UI. It has no file-opening or permission authority.
 Large-list/100,000-row measurement, asynchronous operations, real service
 state and platform/physical acceptance remain separate gates.
+
+## Native Wayland window experiment
+
+On NexaUI base `ef020881b4c2b12f52590388c3405a9472802033`, the optional
+`aetheri_files_native` target connects the same scene and original model to an
+ordinary NexaUI window and software renderer. Up/Down, Home/End, Page Up/Down,
+pointer selection and wheel scrolling operate the visible list; Ctrl+R reads a
+fresh model snapshot, Ctrl+Q closes, and SIGINT/SIGTERM use the same orderly
+cleanup. Frames publish window semantics and route native accessibility
+requests before rebuilding. When AT-SPI is unavailable, the loop retries
+publication; idle waits do not force redraws. Diagnostics containing file names
+are emitted only when the test-specific `NEXAUI_FILES_NATIVE_TRACE` is set.
+
+The native driver owns a temporary directory and private Weston/Xvfb seat. It
+checks actual virtual keyboard input, pointer selection, wheel scrolling after
+an observed pointer entry, refresh and clean close. An independent libatspi client with a private
+registry finds the native tree rows, invokes `select`, observes the selected
+state and confirms that the original model changed. Static, shared and Clang
+ASan/UBSan configurations passed both tests on Alpine/WSL. Isolated mutants
+that suppressed wheel movement or accessibility-request routing failed their
+respective checks. The earlier single fixed pointer coordinate missed Weston's
+window; the final driver searches for an observed pointer entry instead.
+
+Build from the same pinned snapshot and installed SDK as above. Set
+`NEXAUI_WESTON`, `NEXAUI_WESTON_SHELL` and `NEXAUI_WESTON_LIBEXEC` to the
+existing private Weston installation, then run each command with a new work
+directory as an unprivileged user:
+
+```sh
+xvfb-run -a python3 tests/run_weston_native.py --work-dir /tmp/new-files-native -- \
+  python3 examples/24_aetheri_files_identity/run_native.py \
+  /tmp/nexaui-files-identity/aetheri_files_native /path/to/font.ttf /path/to/xdotool
+NEXAUI_FILES_FONT=/path/to/font.ttf xvfb-run -a python3 tests/run_weston_native.py \
+  --work-dir /tmp/new-files-atspi -- python3 tests/run_atspi_native.py \
+  /path/to/at-spi2-registryd /tmp/nexaui-files-identity/aetheri_files_atspi_client \
+  /tmp/nexaui-files-identity/aetheri_files_native
+```
+
+This is a read-only integration probe, not Aetheri's Files application: it has
+no filter editor, directory entry/open action, file grants or operation UI.
+The viewport is capped at 1,764 logical pixels; a smaller-than-row window
+temporarily exposes no list. Offscreen semantics, accessible keyboard-focus
+restoration, localization, real Aetheri compositor/backend integration,
+additional compositors, physical input and human screenreader/design review
+remain open. A test registry and virtual keyboard do not close those gates.

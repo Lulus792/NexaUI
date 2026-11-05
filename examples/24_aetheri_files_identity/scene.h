@@ -12,6 +12,8 @@ nx_result files_scene_sync(files_scene *scene);
 /* Rejected whole queries keep the old model filter but invalidate activation. */
 nx_result files_scene_filter(files_scene *scene,const char *query,size_t length);
 nx_result files_scene_key(files_scene *scene,nx_key key,int owns_focus);
+/* Positive logical pixels move down; selection and pending intents are unchanged. */
+nx_result files_scene_scroll(files_scene *scene,double pixels);
 nx_result files_scene_frame(files_scene *scene,float width,float height);
 nx_context *files_scene_context(files_scene *scene);
 uint64_t files_scene_selected(const files_scene *scene);

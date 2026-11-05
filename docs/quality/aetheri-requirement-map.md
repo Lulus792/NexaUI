@@ -12,6 +12,11 @@ On base `31da772f94a2fdea863157bf06819a30aa13480b`, a bounded font-backed
 headless tree scene adds virtual visible rows, selection retention and direct
 keyboard/pointer tests with core semantics. Native window/assistive acceptance,
 full focus restoration, persistent identity and P02 remain open.
+On base `ef020881b4c2b12f52590388c3405a9472802033`, a native Wayland probe
+exercises keyboard, pointer, wheel and refresh on private Weston; an independent AT-SPI
+client selects a visible row and observes the original model change. It is
+read-only and leaves full Files controls, offscreen semantics, actual Aetheri
+acceptance and P02 open.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group
