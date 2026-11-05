@@ -21,6 +21,20 @@ consumer with Vulkan discovery disabled and passed keyboard and AT-SPI checks.
 These are virtual-input tests, not physical, Aetheri-compositor or human
 acceptance; production input methods and performance remain open.
 
+For committed source `0924790e3d21b76fd91014dd10e5a2973dfb7707`, separate
+SDKs were built from a Git archive: shared Wayland-only with Vulkan and static
+Wayland-only without Vulkan. A copied Settings consumer was built and installed
+against each. With the Vulkan SDK and both Vulkan ICD environment variables
+pointing to a nonexistent manifest, the consumer selected software and passed
+keyboard and independent AT-SPI failure/retry. With the Vulkan-free SDK and
+Vulkan discovery disabled, the consumer built and selected software without a
+Vulkan runtime dependency and passed the same checks. Package metadata and the
+linked core declared the tested revision; both fixtures recorded child,
+compositor and overall exit 0. Local logs and SHA-256:
+
+- `/tmp/nexaui-auto-092-installed-vulkan.log`: `5b0743b62ff62661bf8d1dd0a8f47fd80205d07bebcbe42e0e0bebf6f8dc4cc9`
+- `/tmp/nexaui-auto-092-installed-software.log`: `8966cec5dbdde99b402e13a0a04400b2c5351c5287f6728a115a442cf54a5872`
+
 ## Wayland software Settings candidate (2026-11-05)
 
 Candidate based on `94c3074ea50a247a04270d32170965c7cb40d7ec` adds the
