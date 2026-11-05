@@ -14,6 +14,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <wayland-client.h>
+#include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 struct app;
@@ -25,6 +27,7 @@ struct view {
     bool expanded;
     struct ae_desktop_model model; uint64_t revision;
     aetheri_desktop_view *view; nx_wayland_shm_host *presenter;
+    bool dirty;
 };
 struct app {
     struct wl_display *display;
@@ -42,6 +45,10 @@ struct app {
     unsigned output_count;
     uint32_t control_name, layer_name, first_id;
     bool ordinary, retired;
+    struct xkb_context *xkb;
+    struct xkb_keymap *keymap;
+    struct xkb_state *key_state;
+    struct view *focused;
 };
 static unsigned char *load_font(const char *path, size_t *length) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;long n=0;unsigned char *p=NULL;
@@ -50,23 +57,45 @@ static unsigned char *load_font(const char *path, size_t *length) {
     else {free(p);p=NULL;}
     if(fclose(f)){free(p);p=NULL;}return p;
 }
+static void advance(struct view *v) {
+    aetheri_desktop_intent intent;
+    CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
+    if(intent.kind==AETHERI_DESKTOP_QUERY) {
+        ae_desktop_model_search(&v->model,v->index,true);
+        CHECK(ae_desktop_model_text(&v->model,intent.query)); ++v->revision;
+        printf("QUERY %u %s\n",v->index,v->model.query);
+    } else if(intent.kind==AETHERI_DESKTOP_SELECT) {
+        v->model.selected=intent.window;v->model.selected_app=intent.app;++v->revision;
+        printf("SELECT %u %d %u\n",v->index,intent.app,intent.window);
+    } else if(intent.kind==AETHERI_DESKTOP_LAUNCH || intent.kind==AETHERI_DESKTOP_ACTIVATE) {
+        printf("INTENT %u %d %d %u\n",v->index,intent.kind,intent.app,intent.window);
+    } else CHECK(intent.kind==AETHERI_DESKTOP_NONE);
+    if(intent.kind==AETHERI_DESKTOP_QUERY || intent.kind==AETHERI_DESKTOP_SELECT) {
+        CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
+        CHECK(intent.kind==AETHERI_DESKTOP_NONE);
+    }
+    v->dirty=true;
+}
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
     if(!v->view) CHECK(aetheri_desktop_view_create(&v->model,a->font,a->font_size,&v->view));
     if(!v->presenter) CHECK(nx_wayland_shm_host_create(a->display,a->shm,v->surface,NULL,&v->presenter)==NX_OK);
-    aetheri_desktop_intent intent; const nx_command *commands=NULL; size_t count=0;
+    const nx_command *commands=NULL; size_t count=0;
     nx_wayland_shm_outcome outcome;
-    CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
-    CHECK(intent.kind==AETHERI_DESKTOP_NONE);
+    advance(v);
     CHECK(nx_frame_commands(aetheri_desktop_view_context(v->view),&commands,&count)==NX_OK);
     CHECK(nx_wayland_shm_host_present(v->presenter,(nx_pixel_size){v->width,v->height},1,commands,count,
                                       (nx_color){0,0,0,0},&outcome)==NX_OK);
+    if(outcome==NX_WAYLAND_SHM_BUSY){v->dirty=true;return;}
     CHECK(outcome==NX_WAYLAND_SHM_READY);
+    v->dirty=false;
     printf("PAINT %u %u %u\n",v->index,v->width,v->height);
 }
 static void configured(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t serial, uint32_t width, uint32_t height) {
-    struct view *v = data; v->width = width; v->height = height;
+    struct view *v = data; bool had_view=v->view!=NULL; v->width = width; v->height = height;
     zwlr_layer_surface_v1_ack_configure(layer, serial); paint(v);
+    if(!had_view && v->app->focused==v && v->expanded)
+        CHECK(nx_focus_set(aetheri_desktop_view_context(v->view),20)==NX_OK);
 }
 static void closed(void *data, struct zwlr_layer_surface_v1 *layer) { (void)data; (void)layer; CHECK(false); }
 static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure = configured, .closed = closed};
@@ -107,20 +136,66 @@ static const struct aetheri_development_desktop_v1_listener desktop_listener = {
     .output = desktop_output, .window = desktop_window, .closed = desktop_closed, .toggle = desktop_toggle,
     .activated = desktop_activated, .retired = desktop_retired, .done = desktop_done};
 static void keymap(void *data, struct wl_keyboard *keyboard, uint32_t format, int32_t fd, uint32_t size) {
-    (void)data; (void)keyboard; (void)format; (void)size; CHECK(close(fd) == 0);
+    struct app *a=data;(void)keyboard;
+    CHECK(format==WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 && size && size<=8u*1024u*1024u);
+    void *text=mmap(NULL,size,PROT_READ,MAP_PRIVATE,fd,0);CHECK(close(fd)==0 && text!=MAP_FAILED);
+    CHECK(((const char *)text)[size-1]==0);
+    struct xkb_keymap *map=xkb_keymap_new_from_string(a->xkb,text,XKB_KEYMAP_FORMAT_TEXT_V1,XKB_KEYMAP_COMPILE_NO_FLAGS);
+    CHECK(munmap(text,size)==0 && map);struct xkb_state *state=xkb_state_new(map);CHECK(state);
+    xkb_state_unref(a->key_state);xkb_keymap_unref(a->keymap);a->keymap=map;a->key_state=state;
 }
 static void enter(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
     (void)keyboard; (void)serial; (void)keys; struct app *a = data;
-    for (unsigned i = 0; i < 3; ++i) if (a->views[i].surface == surface) printf("ENTER %u\n", i);
+    for (unsigned i = 0; i < 3; ++i) if (a->views[i].surface == surface) {
+        a->focused=&a->views[i];
+        if(a->focused->expanded && a->focused->view) CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
+        printf("ENTER %u\n", i);
+    }
 }
 static void leave(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface) {
-    (void)data; (void)keyboard; (void)serial; (void)surface; puts("LEAVE");
+    struct app *a=data;(void)keyboard;(void)serial;
+    if(a->focused && a->focused->surface==surface)a->focused=NULL;
+    puts("LEAVE");
+}
+static nx_key logical_key(xkb_keysym_t sym) {
+    if(sym>=XKB_KEY_a && sym<=XKB_KEY_z)return (nx_key)(NX_KEY_A+sym-XKB_KEY_a);
+    if(sym>=XKB_KEY_A && sym<=XKB_KEY_Z)return (nx_key)(NX_KEY_A+sym-XKB_KEY_A);
+    switch(sym) {
+    case XKB_KEY_Tab: case XKB_KEY_ISO_Left_Tab:return NX_KEY_TAB;
+    case XKB_KEY_Return: case XKB_KEY_KP_Enter:return NX_KEY_ENTER;
+    case XKB_KEY_BackSpace:return NX_KEY_BACKSPACE;
+    case XKB_KEY_Left:return NX_KEY_LEFT;case XKB_KEY_Right:return NX_KEY_RIGHT;
+    case XKB_KEY_Up:return NX_KEY_UP;case XKB_KEY_Down:return NX_KEY_DOWN;
+    case XKB_KEY_Home:return NX_KEY_HOME;case XKB_KEY_End:return NX_KEY_END;
+    case XKB_KEY_Delete:return NX_KEY_DELETE;case XKB_KEY_Escape:return NX_KEY_ESCAPE;
+    default:return NX_KEY_UNKNOWN;
+    }
 }
 static void key(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t code, uint32_t state) {
-    (void)data; (void)keyboard; (void)serial; (void)time; printf("KEY %u %u\n", code, state);
+    struct app *a=data;(void)keyboard;(void)serial;(void)time;
+    struct view *v=a->focused;
+    if(!v || !v->expanded || !v->view || !a->key_state || code>UINT32_MAX-8u)return;
+    uint32_t mods=0;
+    if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_SHIFT,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_SHIFT;
+    if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_CTRL,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_CONTROL;
+    if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_ALT,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_ALT;
+    if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_LOGO,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_SUPER;
+    xkb_keycode_t xcode=code+8u;nx_key logical=logical_key(xkb_state_key_get_one_sym(a->key_state,xcode));
+    if(logical!=NX_KEY_UNKNOWN) {
+        nx_event event={0};event.type=state==WL_KEYBOARD_KEY_STATE_PRESSED?NX_EVENT_KEY_DOWN:NX_EVENT_KEY_UP;
+        event.key=logical;event.modifiers=mods;CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+    }
+    if(state==WL_KEYBOARD_KEY_STATE_PRESSED && !(mods&(NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER))) {
+        uint32_t scalar=xkb_state_key_get_utf32(a->key_state,xcode);
+        if(scalar>=32 && scalar!=127 && scalar<=0x10ffff && (scalar<0xd800 || scalar>0xdfff)) {
+            nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar=scalar;
+            CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+        }
+    }
 }
 static void modifiers(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t depressed, uint32_t latched, uint32_t locked, uint32_t group) {
-    (void)data; (void)keyboard; (void)serial; (void)depressed; (void)latched; (void)locked; (void)group;
+    struct app *a=data;(void)keyboard;(void)serial;
+    if(a->key_state)xkb_state_update_mask(a->key_state,depressed,latched,locked,0,0,group);
 }
 static void repeat(void *data, struct wl_keyboard *keyboard, int32_t rate, int32_t delay) {
     (void)data; (void)keyboard; (void)rate; (void)delay;
@@ -133,7 +208,7 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
         a->keyboard = wl_seat_get_keyboard(seat); CHECK(a->keyboard);
         CHECK(wl_keyboard_add_listener(a->keyboard, &keyboard_listener, a) == 0);
     }
-    if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && a->keyboard) { wl_keyboard_release(a->keyboard); a->keyboard = NULL; }
+    if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && a->keyboard) { wl_keyboard_release(a->keyboard); a->keyboard = NULL;a->focused=NULL; }
 }
 static void seat_name(void *data, struct wl_seat *seat, const char *name) { (void)data; (void)seat; (void)name; }
 static const struct wl_seat_listener seat_listener = {.capabilities = capabilities, .name = seat_name};
@@ -163,6 +238,7 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     CHECK(argc == 1 || argc == 2 || argc == 4);
     struct app a = {.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    a.xkb=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(a.xkb);
     const char *font=getenv("NEXAUI_DESKTOP_FONT"); CHECK(font && (a.font=load_font(font,&a.font_size)));
     a.display = wl_display_connect(NULL); CHECK(a.display);
     a.registry = wl_display_get_registry(a.display); CHECK(a.registry);
@@ -199,6 +275,7 @@ int main(int argc, char **argv) {
         bool stop = false;
         while (!stop) {
             CHECK(wl_display_dispatch_pending(a.display) >= 0);
+            for(unsigned i=0;i<3;++i)if(a.views[i].dirty)paint(&a.views[i]);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
             struct pollfd fds[2] = {{wl_display_get_fd(a.display), POLLIN, 0}, {STDIN_FILENO, POLLIN, 0}};
             int ready; do { ready = poll(fds, 2, 10000); } while (ready < 0 && errno == EINTR);
@@ -231,6 +308,7 @@ int main(int argc, char **argv) {
         if (a.outputs[i]) wl_output_destroy(a.outputs[i]);
     }
     free(a.font);
+    xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     if (a.control) aetheri_development_desktop_v1_destroy(a.control);
     if (a.layers) zwlr_layer_shell_v1_destroy(a.layers);
     if (a.keyboard) wl_keyboard_release(a.keyboard);

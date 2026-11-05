@@ -107,6 +107,22 @@ def main():
         result["search_field"] = search(20, 20)
         if search(20, 20) != (38, 44, 54):
             raise RuntimeError("search field pixels missing")
+        wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
+        controller.settimeout(5)
+        def key(code):
+            for down in (1, 0):
+                controller.sendall(f"K {code} {down}".encode("ascii"))
+                if controller.recv(32) != b"OK":
+                    raise RuntimeError("input rejected")
+        for code in (20, 18, 19, 50, 23, 49, 30, 38):
+            key(code)
+        wait(lambda: "QUERY 0 terminal\n" in log("desktop"), "typed search")
+        key(14)
+        wait(lambda: "QUERY 0 termina\n" in log("desktop"), "backspace")
+        key(38)
+        wait(lambda: log("desktop").count("QUERY 0 terminal\n") >= 2, "corrected search")
+        key(28)
+        wait(lambda: "INTENT 0 2 2 0\n" in log("desktop"), "terminal launch intent")
         command(client, "n")
         wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapsed dock")
         command(client, "q")
