@@ -1,4 +1,5 @@
 #include <nexaui/nexaui.h>
+#include <nexaui/cell_grid.h>
 #if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
 #include <nexaui/wayland_host.h>
 #endif
@@ -96,6 +97,14 @@ int main(int argc, char **argv) {
     nx_context *context = 0;
     nx_layout *layout = 0;
     if (nx_context_create(0, &context) != NX_OK) return 1;
+    nx_cell_view sample_cell={.foreground={1,1,1,1},.background={0,0,0,1},.span=1};
+    nx_cell_grid_desc grid={.bounds={0,0,8,8},.cell_width=8,.cell_height=8,.baseline=6,
+        .pixels_per_em=8,.cells=&sample_cell,.rows=1,.columns=1,.row_stride=1,.cell_capacity=1,
+        .glyph_cache_bytes=1024,.mask_budget_bytes=1024,.cursor_color={1,1,1,1}};
+    size_t grid_row=9,grid_column=9;
+    if(nx_cell_grid_hit_test(&grid,1,1,&grid_row,&grid_column)!=NX_OK || grid_row || grid_column ||
+       nx_begin_frame(context,8,8,0)!=NX_OK || nx_draw_cell_grid(context,&grid)!=NX_OK ||
+       nx_end_frame(context)!=NX_OK) return 24;
     float text_density=0;
     if (nx_context_get_text_raster_scale(context,&text_density)!=NX_OK || text_density!=1 ||
         nx_context_set_text_raster_scale(context,1.5f)!=NX_OK ||

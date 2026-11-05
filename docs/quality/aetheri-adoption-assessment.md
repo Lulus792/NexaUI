@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Fixed-cell drawing candidate (2026-11-05)
+
+Candidate based on `88aeef97f0cd9b90f335e8520cae65570994ba09` adds
+`nx_draw_cell_grid` and logical hit testing for an application-supplied visible
+cell snapshot. The caller chooses font/glyph IDs, cell spans, combining-glyph
+positions and selection colors; there is no implicit terminal parser, text
+shaping or accessible text implementation. Limits cover visible cells, fonts,
+glyph-cache budgets and copied A8 bytes. Font and source cells are borrowed
+only during drawing, with rollback on failure.
+
+GCC static Wayland-only and dual-backend tests and Clang shared ASan/UBSan
+tests passed. Controlled cases include a 240×100 visible grid, wide-cell hit
+testing, positioned multiple glyphs, clipped rendering, all observed allocator
+failure positions, mask budget, font-count limit and use after the source font
+is closed. Seven text/raster/cache regression cases passed in both GCC and
+Clang configurations. A separate application-owned model accepted native text
+and cursor keys, skipped a wide continuation and closed on private Weston;
+the same virtual-keyboard case passed with ASan/UBSan. It does not establish
+actual terminal/PTY behavior, retained glyph-atlas performance, Aetheri
+integration, IME, accessible text or human/physical acceptance.
+
 ## Host-owned Wayland worker wake candidate (2026-11-05)
 
 Candidate based on `dac7e21b8b9422bf2103a8db4ad3549ca0b78a5f` adds

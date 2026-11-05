@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nexaui/cell_grid.h"
 #include "edit_shortcuts.h"
 #include "secure_zero.h"
 #include "context_identity.h"
@@ -2804,6 +2805,146 @@ nx_result nx_draw_bitmap(nx_context *ctx, nx_rect dest,
     command.bitmap = bitmap;
     ctx->commands[ctx->command_count++] = command;
     return NX_OK;
+}
+
+static nx_result nx_cell_grid_validate(const nx_cell_grid_desc *d) {
+    if (!d || !d->cells || !d->rows || !d->columns || d->row_stride<d->columns ||
+        !nx_valid_rect(d->bounds) || d->bounds.width<=0 || d->bounds.height<=0 ||
+        !isfinite(d->cell_width) || d->cell_width<=0 ||
+        !isfinite(d->cell_height) || d->cell_height<=0 ||
+        !isfinite(d->baseline) || d->baseline<0 || d->baseline>d->cell_height ||
+        !isfinite(d->pixels_per_em) || d->pixels_per_em<.125 || d->pixels_per_em>16384 ||
+        !d->glyph_cache_bytes || d->glyph_cache_bytes>NX_CELL_GRID_MAX_CACHE_BYTES ||
+        !d->mask_budget_bytes || d->mask_budget_bytes>NX_CELL_GRID_MAX_MASK_BYTES ||
+        !nx_valid_color(d->cursor_color)) return NX_ERROR_ARGUMENT;
+    if (d->columns>NX_CELL_GRID_MAX_CELLS || d->rows>NX_CELL_GRID_MAX_CELLS/d->columns ||
+        d->columns>SIZE_MAX/sizeof(nx_cell_view) ||
+        (d->rows-1u)>(SIZE_MAX/sizeof(nx_cell_view)-d->columns)/d->row_stride)
+        return NX_ERROR_LIMIT;
+    if ((d->rows-1u)*d->row_stride+d->columns>d->cell_capacity)
+        return NX_ERROR_ARGUMENT;
+    double right=(double)d->bounds.x+(double)d->columns*d->cell_width;
+    double bottom=(double)d->bounds.y+(double)d->rows*d->cell_height;
+    if (!isfinite(right) || !isfinite(bottom) || right>FLT_MAX || bottom>FLT_MAX)
+        return NX_ERROR_LIMIT;
+    for (size_t r=0;r<d->rows;++r) {
+        const nx_cell_view *row=d->cells+r*d->row_stride;
+        for (size_t c=0;c<d->columns;++c) {
+            const nx_cell_view *cell=&row[c];
+            if (!nx_valid_color(cell->foreground) || !nx_valid_color(cell->background) ||
+                (cell->flags&~(NX_CELL_UNDERLINE|NX_CELL_CURSOR_OUTLINE)) ||
+                cell->span>2 || cell->glyph_count>NX_CELL_GRID_MAX_GLYPHS ||
+                (!cell->span && (cell->glyph_count || (c && row[c-1u].span!=2))) ||
+                (cell->span==2 && c+1u<d->columns && row[c+1u].span!=0))
+                return NX_ERROR_ARGUMENT;
+            for (unsigned g=0;g<cell->glyph_count;++g)
+                if (!cell->glyphs[g].font || !isfinite(cell->glyphs[g].offset_x) ||
+                    !isfinite(cell->glyphs[g].offset_y)) return NX_ERROR_ARGUMENT;
+        }
+    }
+    return NX_OK;
+}
+
+nx_result nx_cell_grid_hit_test(const nx_cell_grid_desc *d, float x, float y,
+                                size_t *out_row, size_t *out_column) {
+    if (out_row) *out_row=0;
+    if (out_column) *out_column=0;
+    if (!out_row || !out_column || out_row==out_column || !isfinite(x) || !isfinite(y)) return NX_ERROR_ARGUMENT;
+    nx_result result=nx_cell_grid_validate(d);
+    if (result!=NX_OK) return result;
+    double dx=(double)x-d->bounds.x,dy=(double)y-d->bounds.y;
+    if (dx<0 || dy<0 || dx>=d->bounds.width || dy>=d->bounds.height ||
+        dx>=(double)d->columns*d->cell_width || dy>=(double)d->rows*d->cell_height)
+        return NX_ERROR_ARGUMENT;
+    size_t col=(size_t)floor(dx/d->cell_width),row=(size_t)floor(dy/d->cell_height);
+    if (row>=d->rows || col>=d->columns) return NX_ERROR_ARGUMENT;
+    if (col && !d->cells[row*d->row_stride+col].span) --col;
+    *out_row=row; *out_column=col;
+    return NX_OK;
+}
+
+nx_result nx_draw_cell_grid(nx_context *ctx, const nx_cell_grid_desc *d) {
+    if (!ctx) return NX_ERROR_ARGUMENT;
+    nx_result result=nx_cell_grid_validate(d);
+    if (result!=NX_OK) return result;
+    if (ctx->state!=1u) return NX_ERROR_STATE;
+    double density=ctx->text_raster_scale,ppem=d->pixels_per_em*density;
+    if (!isfinite(ppem) || ppem<.125 || ppem>16384) return NX_ERROR_ARGUMENT;
+    size_t first_command=ctx->command_count,used=0;
+    unsigned first_clip=ctx->clip_depth;
+    nx_owned_bitmap *first_bitmap=ctx->owned_bitmaps;
+    const nx_font *fonts[NX_CELL_GRID_MAX_FONTS]={0};
+    nx_glyph_cache *caches[NX_CELL_GRID_MAX_FONTS]={0};
+    size_t font_count=0;
+    result=nx_push_clip(ctx,d->bounds);
+    for (size_t r=0;result==NX_OK && r<d->rows;++r) {
+        double y=(double)d->bounds.y+r*(double)d->cell_height;
+        if (y>=(double)d->bounds.y+d->bounds.height) break;
+        for (size_t c=0;result==NX_OK && c<d->columns;++c) {
+            double x=(double)d->bounds.x+c*(double)d->cell_width;
+            if (x>=(double)d->bounds.x+d->bounds.width) break;
+            const nx_cell_view *cell=&d->cells[r*d->row_stride+c];
+            result=nx_fill_rect(ctx,(nx_rect){(float)x,(float)y,d->cell_width,d->cell_height},cell->background);
+        }
+    }
+    for (size_t r=0;result==NX_OK && r<d->rows;++r) {
+        double y=(double)d->bounds.y+r*(double)d->cell_height;
+        if (y>=(double)d->bounds.y+d->bounds.height) break;
+        for (size_t c=0;result==NX_OK && c<d->columns;++c) {
+            double x=(double)d->bounds.x+c*(double)d->cell_width;
+            if (x>=(double)d->bounds.x+d->bounds.width) break;
+            const nx_cell_view *cell=&d->cells[r*d->row_stride+c];
+            float cell_span_width=d->cell_width*(cell->span?cell->span:1u);
+            if (cell->glyph_count) result=nx_push_clip(ctx,(nx_rect){(float)x,(float)y,cell_span_width,d->cell_height});
+            for (unsigned g=0;result==NX_OK && g<cell->glyph_count;++g) {
+                const nx_cell_glyph *glyph=&cell->glyphs[g];
+                size_t f=0; while(f<font_count && fonts[f]!=glyph->font) ++f;
+                if (f==font_count) {
+                    if (font_count==NX_CELL_GRID_MAX_FONTS) {result=NX_ERROR_LIMIT;break;}
+                    result=nx_glyph_cache_create(glyph->font,d->glyph_cache_bytes,&ctx->allocator,&caches[f]);
+                    if (result!=NX_OK) break;
+                    fonts[f]=glyph->font; ++font_count;
+                }
+                nx_glyph_mask_view mask;
+                result=nx_glyph_cache_get_fractional(caches[f],glyph->glyph_index,ppem,&mask);
+                if (result!=NX_OK || !mask.width || !mask.height) continue;
+                if (mask.width>SIZE_MAX/mask.height) {result=NX_ERROR_LIMIT;break;}
+                size_t bytes=(size_t)mask.width*mask.height;
+                if (bytes>d->mask_budget_bytes-used || bytes>SIZE_MAX-sizeof(nx_owned_bitmap)+1u) {
+                    result=NX_ERROR_LIMIT;break;
+                }
+                size_t allocation=sizeof(nx_owned_bitmap)+bytes-1u;
+                nx_owned_bitmap *owned=ctx->allocator.allocate(ctx->allocator.user,allocation);
+                if (!owned) {result=NX_ERROR_MEMORY;break;}
+                owned->next=ctx->owned_bitmaps; owned->allocation_size=allocation; ctx->owned_bitmaps=owned;
+                for (uint32_t line=0;line<mask.height;++line)
+                    memcpy(owned->pixels+(size_t)line*mask.width,mask.pixels+(size_t)line*mask.stride_bytes,mask.width);
+                used+=bytes;
+                double gx=x+glyph->offset_x+mask.x_offset/density;
+                double gy=y+d->baseline+glyph->offset_y+mask.y_offset/density;
+                if (!isfinite(gx) || !isfinite(gy) || fabs(gx)>FLT_MAX || fabs(gy)>FLT_MAX) {
+                    result=NX_ERROR_LIMIT;break;
+                }
+                nx_rect dest={(float)gx,(float)gy,(float)(mask.width/density),(float)(mask.height/density)};
+                nx_bitmap_view bitmap={owned->pixels,mask.width,mask.height,mask.width,NX_BITMAP_A8};
+                result=nx_draw_bitmap(ctx,dest,bitmap,cell->foreground);
+            }
+            if (result==NX_OK && cell->glyph_count) result=nx_pop_clip(ctx);
+            if (result==NX_OK && (cell->flags&NX_CELL_UNDERLINE)) {
+                float line=fminf(1.0f,d->cell_height);
+                result=nx_fill_rect(ctx,(nx_rect){(float)x,(float)(y+d->cell_height-line),cell_span_width,line},cell->foreground);
+            }
+            if (result==NX_OK && (cell->flags&NX_CELL_CURSOR_OUTLINE))
+                result=nx_stroke_rect(ctx,(nx_rect){(float)x,(float)y,cell_span_width,d->cell_height},fminf(1.0f,fminf(d->cell_width,d->cell_height)),d->cursor_color);
+        }
+    }
+    if (result==NX_OK) result=nx_pop_clip(ctx);
+    for (size_t f=0;f<font_count;++f) nx_glyph_cache_destroy(caches[f]);
+    if (result!=NX_OK) {
+        ctx->command_count=first_command; ctx->clip_depth=first_clip;
+        nx_free_owned_bitmaps(ctx,first_bitmap);
+    }
+    return result;
 }
 
 static size_t nx_text_style_index(const nx_text_style_span *spans,

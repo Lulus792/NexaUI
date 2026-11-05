@@ -1,5 +1,10 @@
 # Text engine status
 
+For terminal-style fixed-cell content, see the separate
+[cell-grid drawing contract](cell-grid.md). It consumes application-selected
+visible cells and positioned glyphs without applying prose layout or taking
+ownership of terminal/editor models.
+
 NexaUI has begun its own font stack with a bounded SFNT directory parser. `nx_font_open` accepts a single TrueType or OpenType SFNT face in an immutable caller-owned byte buffer. It checks the container signature, directory size, table bounds and duplicate tags, caps the directory at `NX_SFNT_MAX_TABLES`, and stores a sorted lookup table. `nx_font_table_at` and `nx_font_find_table` return borrowed byte spans. The original font bytes must remain unchanged and readable until `nx_font_close`.
 
 `nx_font_get_metrics` validates `head`, `maxp`, `hhea` and `hmtx` before returning units per em, glyph count, ascender, descender, line gap and horizontal metric count. `nx_font_glyph_hmetrics` reads a glyph's advance width and left side bearing. Glyphs beyond `number_of_hmetrics` reuse the final advance width and take their own bearing from the trailing `hmtx` entries.
