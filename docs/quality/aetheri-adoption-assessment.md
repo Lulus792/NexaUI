@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## Initial Wayland window bounds (2026-11-05)
+
+Source `792520c509935fb6f77231546b90e3b4d6f1eb20` uses xdg-shell v4+
+`configure_bounds` for the first normal window configure when the compositor
+leaves the corresponding dimension to the client. Explicit compositor sizes,
+later interactive resize, maximize and fullscreen are not clamped by this
+initial advisory policy. Unknown bounds preserve the requested dimension;
+the chosen normal size is restored after maximization. This addresses the
+Aetheri development compositor's documented dock/work-area recommendation,
+without changing the compositor, its shell or its process owner.
+
+The controlled native protocol server checks both dimensions, an unknown
+dimension, explicit configure precedence, zero bounds, the attached shared
+memory buffer size, subsequent resize, maximize/restore and an xdg-shell v3
+server. GCC and Clang ASan/UBSan Wayland-only runs passed. The new test failed
+on the former adapter's ignored initial bounds in an isolated source copy.
+Three v3 text-input tests, async clipboard and group-transfer tests passed;
+after rebuilding the Settings consumer, its small-window keyboard test and
+all four explicitly enabled Weston simple-IME cases passed. The initial IME
+attempt was skipped and the first dedicated runner lacked `setxkbmap`; neither
+counts. Final private runs are `/tmp/nexaui-bounds-native-small/result.json`
+and `/tmp/nexaui-bounds-simple-ime-final/simple-ime.xml`.
+
+The separately evolving Aetheri checkout was at committed
+`d621c9bba1df8ffd1083999300bcff742022b9dc` with concurrent uncommitted input
+and IME work during inspection; it was not modified. No runnable Aetheri
+compositor or wlroots development package was found in this Linux environment,
+so the Aetheri work-area, actual pixel placement, mixed scaling and human
+acceptance are still unverified. Weston and the controlled server do not replace
+those checks.
+
 ## Bounded outgoing Wayland clipboard transfers (2026-11-05)
 
 Source `a7bfc0964ee2773f47c1564d03b8bde462d5b021` gives each native
