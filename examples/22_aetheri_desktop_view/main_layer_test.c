@@ -67,7 +67,7 @@ struct app {
     struct zwlr_layer_shell_v1 *layers;
     struct view views[3];
     unsigned char *font; size_t font_size;
-    unsigned output_count;
+    unsigned output_count,unmapped_outputs;
     uint32_t control_name, layer_name, first_id;
     bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested;
     int toggle_output;
@@ -709,7 +709,14 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
         a->ime_manager=wl_registry_bind(registry,name,&zwp_text_input_manager_v3_interface,1);
     else if (!strcmp(interface, "wl_shm")) a->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
     else if (!strcmp(interface, "wl_output")) {
-        CHECK(a->output_count < 3);a->output_names[a->output_count]=name;
+        /* The development protocol only sends an initial index/name snapshot.
+           A later global cannot safely be assigned to an old desktop index
+           from registry ordering alone. Leave existing views running. */
+        if(a->output_count>=3){
+            if(a->unmapped_outputs<UINT32_MAX)++a->unmapped_outputs;
+            printf("OUTPUT_UNMAPPED %u\n",name);return;
+        }
+        a->output_names[a->output_count]=name;
         a->outputs[a->output_count++] = wl_registry_bind(registry, name, &wl_output_interface, 1);
     } else if (!strcmp(interface, "wl_seat")) {
         a->seat = wl_registry_bind(registry, name, &wl_seat_interface, 5); CHECK(a->seat);

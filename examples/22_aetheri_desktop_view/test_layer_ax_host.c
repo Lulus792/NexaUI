@@ -50,6 +50,8 @@ int main(int argc,char **argv) {
             retire_output(&a,2);
             CHECK(!other->view && !other->accessibility && !other->configured && !a.output_names[2] &&
                   !a.pointer_view && a.axis_y==0 && !a.activation_phase && !a.activation_enabled && a.toggle_output==-1);
+            a.output_count=3;global(&a,NULL,43,"wl_output",4);
+            CHECK(a.unmapped_outputs==1 && !a.output_names[2] && !other->view && a.views[0].view && a.views[1].view);
             puts("REMOVED 2");
         }
         for(unsigned i=0;i<3;++i)if(a.views[i].view && a.views[i].dirty) {

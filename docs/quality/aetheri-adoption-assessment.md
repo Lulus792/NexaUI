@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Unmapped output fallback in the private test host (2026-11-05)
+
+On candidate base `70a6a91b4f8edfb176f9f6147ab2f63a4ef8f44c`, an output
+global announced after the host's initial three is reported as unmapped rather
+than aborting the process or assigning it by registry order. It is not bound
+and does not recreate a view. A controlled Wayland server announced a real
+fourth global through the registry; the host ignored it and the existing IME
+wire and pointer scenarios continued. After simulated removal, a second
+synthetic announcement remained unmapped; an independent AT-SPI client could
+still operate another view. Focus, wire and independent AT-SPI tests passed in
+GCC static/shared and Clang ASan/UBSan with leak detection on Alpine. An
+intentional negative restoring the previous three-output assertion failed on
+the actual fourth global; the restored static wire test passed.
+
+Read-only inspection of Aetheri at `48fcdaf3171370fee355e18c637a970fe0692ad7`
+found that the development desktop protocol sends output index/name entries
+when the private control binds, with no output-add/remove update in that
+interface. Its XML Git blob was `d8ae3955153413299071ac0ec20c56870fbf4f75`;
+the inspected compositor and desktop files were blobs
+`7cf9178f457855a0aa4489a838bf0fa40a022a48` and
+`206171d3ccb30f4f552a31fee73d05f2583b1112`. Registry arrival order alone
+therefore does not prove a later global's current private output index. Actual
+output re-addition, a reliable identity/update contract, native Aetheri
+hotplug and human/physical acceptance remain open; no Aetheri files changed.
+
 ## Deferred private-host output retirement (2026-11-05)
 
 On candidate base `c3dc49068f54a969edf78473341591fabf4894c6`, the test-only

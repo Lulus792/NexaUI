@@ -20,6 +20,9 @@ static void wire_bind_compositor(struct wl_client *client,void *data,uint32_t ve
     static const struct wl_compositor_interface impl={.create_surface=wire_create_surface};
     wl_resource_set_implementation(r,&impl,data,NULL);
 }
+static void wire_bind_extra_output(struct wl_client *client,void *data,uint32_t version,uint32_t id) {
+    (void)client;(void)data;(void)version;(void)id;CHECK(false); /* never bind an unmapped output */
+}
 static void wire_get_pointer(struct wl_client *c,struct wl_resource *seat,uint32_t id) {
     struct wl_resource *r=wl_resource_create(c,&wl_pointer_interface,5,id);CHECK(r);
     static const struct wl_pointer_interface impl={.release=wire_destroy};
@@ -81,6 +84,7 @@ static void wire_global(void *data,struct wl_registry *registry,uint32_t name,co
     if(!strcmp(interface,"wl_compositor"))a->compositor=wl_registry_bind(registry,name,&wl_compositor_interface,1);
     else if(!strcmp(interface,"wl_seat"))a->seat=wl_registry_bind(registry,name,&wl_seat_interface,5);
     else if(!strcmp(interface,"zwp_text_input_manager_v3"))a->ime_manager=wl_registry_bind(registry,name,&zwp_text_input_manager_v3_interface,1);
+    else if(!strcmp(interface,"wl_output"))global(a,registry,name,interface,version);
 }
 static const struct wl_registry_listener wire_registry_listener={.global=wire_global};
 static void *wire_run(void *data){wl_display_run(((struct wire_server *)data)->display);return NULL;}
@@ -89,12 +93,13 @@ int main(int argc,char **argv) {
     CHECK(wl_global_create(server.display,&wl_compositor_interface,1,&server,wire_bind_compositor));
     CHECK(wl_global_create(server.display,&wl_seat_interface,5,&server,wire_bind_seat));
     CHECK(wl_global_create(server.display,&zwp_text_input_manager_v3_interface,1,&server,wire_bind_manager));
+    CHECK(wl_global_create(server.display,&wl_output_interface,1,&server,wire_bind_extra_output));
     int sockets[2];CHECK(socketpair(AF_UNIX,SOCK_STREAM,0,sockets)==0);CHECK(wl_client_create(server.display,sockets[0]));
     pthread_t thread;CHECK(!pthread_create(&thread,NULL,wire_run,&server));
-    struct app a={.launcher=-1,.toggle_output=-1,.ime_requested=true};
+    struct app a={.launcher=-1,.toggle_output=-1,.ime_requested=true,.output_count=3};
     a.display=wl_display_connect_to_fd(sockets[1]);CHECK(a.display);a.registry=wl_display_get_registry(a.display);CHECK(a.registry);
     CHECK(!wl_registry_add_listener(a.registry,&wire_registry_listener,&a));CHECK(wl_display_roundtrip(a.display)>=0);
-    CHECK(a.compositor && a.seat && a.ime_manager);
+    CHECK(a.compositor && a.seat && a.ime_manager && a.unmapped_outputs==1);
     a.font=load_font(argv[1],&a.font_size);CHECK(a.font);
     struct view *v=&a.views[0];v->app=&a;v->width=640;v->height=480;v->expanded=v->configured=true;
     v->surface=wl_compositor_create_surface(a.compositor);CHECK(v->surface);CHECK(wl_display_roundtrip(a.display)>=0);
@@ -173,6 +178,10 @@ int main(int argc,char **argv) {
     retire_output(&a,0);
     CHECK(!v->surface && !v->view && !a.pointer_release_barrier && !a.pointer_view && !a.focused);
     CHECK(wl_display_roundtrip(a.display)>=0 && !a.activation_phase);
+    /* A new output after the initial three cannot be assigned an Aetheri
+       desktop index from registry order; it must not recreate the old view. */
+    a.output_count=3;global(&a,NULL,88,"wl_output",4);
+    CHECK(a.unmapped_outputs==2 && !a.outputs[0] && !a.output_names[0] && !v->surface && !v->view && !a.activation_phase);
     capabilities(&a,a.seat,0);
     ime_stop(&a);zwp_text_input_v3_destroy(a.ime_input);zwp_text_input_manager_v3_destroy(a.ime_manager);
     wl_seat_destroy(a.seat);

@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/W05: the private host on base `70a6a91b4f8edfb176f9f6147ab2f63a4ef8f44c`
+reports additional Wayland output globals as unmapped without stopping other
+views. It does not re-add them; reliable identity and actual Aetheri hotplug
+remain open. See [candidate evidence](aetheri-adoption-assessment.md#unmapped-output-fallback-in-the-private-test-host-2026-11-05).
+
 D05/W05/P05: the private test host based on
 `c3dc49068f54a969edf78473341591fabf4894c6` defers known output retirement,
 clears its focus/requests and accessibility tree and leaves the other views

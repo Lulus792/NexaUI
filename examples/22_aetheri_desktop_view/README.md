@@ -23,6 +23,12 @@ checks that the removed tree becomes defunct while another remains operable.
 They simulate removal rather than hot-unplugging an Aetheri output. This test
 host still assumes three initial outputs and does not support output re-addition;
 actual compositor ordering, hotplug and production shell ownership remain open.
+On base `70a6a91b4f8edfb176f9f6147ab2f63a4ef8f44c`, later `wl_output`
+globals are reported as `OUTPUT_UNMAPPED` instead of aborting or guessing an
+index. They are not bound or displayed; existing views continue. A controlled
+server announces an extra global and the independent AT-SPI fixture exercises
+the same fallback after simulated removal. Re-adding a usable output requires
+a reliable current mapping to the private desktop's output identity.
 
 ```sh
 cmake -S /path/to/copied-example -B build \
