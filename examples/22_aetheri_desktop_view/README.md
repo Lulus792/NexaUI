@@ -291,3 +291,31 @@ This is an opt-in test host, not Aetheri's actual process owner or a production
 desktop. It does not launch Settings or Terminal. In particular, the
 held-pointer removal issue documented above remains unresolved and makes this
 test path unsuitable as a production activation policy.
+
+Source `cadaf8a3c4a6abd54b22851da64434c107858977` adds an optional,
+inherited Unix `SOCK_SEQPACKET` launch channel to the test host. It uses
+the existing Aetheri model's per-app pending/reply functions and the original
+three-byte `L2S`/`L2T` and `A2*`/`E2*`/`X2*` messages. The test host
+does not choose executable paths or launch a process. A nonblocking send
+failure terminates the test instead of retrying an uncertain effect; malformed
+or uncorrelated replies and connection loss also fail it.
+
+With `--test-launch-channel`, an independent test peer observed Terminal and
+Settings requests. A second Terminal Enter while its first response was
+pending produced no second packet. The test applied a definite error,
+retried, applied process acknowledgement and later process-end messages, and
+verified a Settings error separately. Four isolated negative cases rejected
+an uncorrelated acknowledgement, oversized packet, passed file descriptor
+and peer loss; their host and test compositor exits were intentionally
+nonzero. Each case verifies the expected failure site. The positive run also
+passed the observed-window activation and input regressions. Its host binary
+SHA-256 was `5e6d4b328a0b064727ee3f410fd743cf2d2468be26e4c5141b8863b1f450e2ea`;
+logs and result files are in
+`D:/NexaUI/out/aetheri-layer-launch-channel-20261105.tar.gz`, SHA-256
+`508702c12db0f16df797a7190f320cce3e0bdcec5c21043ab0b06ce182baaf07`.
+
+The peer is a test driver, not `development_session.py` or its actual
+process owner. No Settings/Terminal process or ordered owner shutdown is
+proved by this check; the `A` test message is not an application readiness
+claim. Real owner integration, private-surface IME/AT-SPI and the pressed-device
+removal failure remain open.
