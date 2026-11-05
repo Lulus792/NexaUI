@@ -93,7 +93,22 @@ static int frame(scene *s) {
             } else CHECK(nx_tab(s->ui,&d,choice,&state)==NX_OK);
         }
     }
-    if (s->overlay_stage) {
+    if (s->overlay_stage==3 || s->overlay_stage==4) {
+        nx_overlay_desc first={0};first.panel.id=2100;first.panel.parent_id=1;
+        first.panel.name=span("First popup");first.panel.bounds=(nx_rect){200,200,180,90};first.backdrop_id=2101;
+        int dismissed=0;CHECK(nx_popup_begin(s->ui,&first,&dismissed)==NX_OK && !dismissed);
+        d=control(2102,2100,"First popup action",(nx_rect){220,220,120,30});
+        CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->outer_clicks+=(unsigned)state.clicked;
+        CHECK(nx_overlay_end(s->ui)==NX_OK);
+        if(s->overlay_stage==4) {
+            nx_overlay_desc second={0};second.panel.id=2110;second.panel.parent_id=1;
+            second.panel.name=span("Second popup");second.panel.bounds=(nx_rect){250,260,180,90};second.backdrop_id=2111;
+            CHECK(nx_popup_begin(s->ui,&second,&dismissed)==NX_OK && !dismissed);
+            d=control(2112,2110,"Second popup action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ui,&d,&state)==NX_OK);s->inner_clicks+=(unsigned)state.clicked;
+            CHECK(nx_overlay_end(s->ui)==NX_OK);
+        }
+    } else if (s->overlay_stage) {
         nx_overlay_desc modal={0};modal.panel.id=2000;modal.panel.parent_id=1;
         modal.panel.name=span("Nested dialog");modal.panel.bounds=(nx_rect){200,200,300,200};
         modal.backdrop_id=2001;modal.dismiss_on_escape=1;
@@ -167,6 +182,14 @@ int main(int argc,char **argv) {
             else if (!strcmp(command,"normal")) poll_timeout=50;
             else if (!strcmp(command,"openmodal")) app.overlay_stage=1;
             else if (!strcmp(command,"openmenu")) app.overlay_stage=2;
+            else if (!strcmp(command,"opensiblings")) {app.outer_clicks=0;app.inner_clicks=0;app.overlay_stage=4;}
+            else if (!strcmp(command,"closesibling")) {
+                if(nx_overlay_close(app.ui)!=NX_OK)return 1;
+                app.overlay_stage=3;
+            } else if (!strcmp(command,"closesiblings")) {
+                if(nx_overlay_close(app.ui)!=NX_OK)return 1;
+                app.overlay_stage=0;
+            }
             else if (!strcmp(command,"closemenu")) {
                 if(nx_overlay_close(app.ui)!=NX_OK)return 1;
                 app.overlay_stage=1;
