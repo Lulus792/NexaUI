@@ -4578,11 +4578,10 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
         !desc->backdrop_id || desc->backdrop_id == desc->panel.id)
         return NX_ERROR_ARGUMENT;
     if (ctx->state != 1u || ctx->clip_depth || ctx->scroll_scope_count ||
-        (!ctx->overlay_build_depth && ctx->overlay_built_this_frame) ||
-        (ctx->overlay_build_depth && (!nx_overlay_descends_from(ctx,desc->panel.parent_id,ctx->building_overlay_id) ||
-         ctx->overlay_current_depth!=ctx->overlay_build_depth))) return NX_ERROR_STATE;
-    if (ctx->overlay_build_depth>=16u) return NX_ERROR_LIMIT;
-    unsigned depth=ctx->overlay_build_depth;
+        (ctx->overlay_build_depth && !nx_overlay_descends_from(ctx,desc->panel.parent_id,ctx->building_overlay_id))) return NX_ERROR_STATE;
+    if (ctx->overlay_build_depth>=16u || ctx->overlay_current_depth>=16u) return NX_ERROR_LIMIT;
+    unsigned depth=ctx->overlay_current_depth;
+    unsigned build_depth=ctx->overlay_build_depth;
     uint64_t parent_overlay=ctx->building_overlay_id;
     size_t old_regions = ctx->current_regions.count;
     size_t old_semantics = ctx->semantics.count;
@@ -4634,13 +4633,14 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
             /* Replacing a child keeps the original parent return point. */
         } else {
             uint64_t restore=ctx->focused_id;
+            uint64_t previous_scope=depth?ctx->overlay_current_path[depth-1u]:0;
             nx_region *focused=nx_region_find(&ctx->current_regions,restore);
-            if (depth && (!focused || focused->overlay_id!=parent_overlay ||
+            if (depth && (!focused || focused->overlay_id!=previous_scope ||
                 !(focused->flags&NX_REGION_FOCUSABLE) || (focused->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE)))) {
-                restore=parent_overlay;
+                restore=previous_scope;
                 for (size_t i=0;i<ctx->current_regions.count;++i) {
                     nx_region *candidate=&ctx->current_regions.data[i];
-                    if (candidate->overlay_id==parent_overlay && candidate->id!=parent_overlay &&
+                    if (candidate->overlay_id==previous_scope && candidate->id!=previous_scope &&
                         (candidate->flags&NX_REGION_FOCUSABLE) && !(candidate->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE))) {
                         restore=candidate->id; break;
                     }
@@ -4650,8 +4650,8 @@ static nx_result nx_overlay_begin_common(nx_context *ctx,
         }
     }
     if (!depth) ctx->overlay_return_focus_id=ctx->overlay_focus_return[0];
-    ctx->overlay_build_path[depth]=desc->panel.id;
-    ctx->overlay_build_depth=depth+1u;
+    ctx->overlay_build_path[build_depth]=desc->panel.id;
+    ctx->overlay_build_depth=build_depth+1u;
     ctx->overlay_current_path[depth]=desc->panel.id;
     ctx->overlay_current_depth=dismissed?depth:depth+1u;
     ctx->current_overlay_id=ctx->overlay_current_depth?ctx->overlay_current_path[ctx->overlay_current_depth-1u]:0;
