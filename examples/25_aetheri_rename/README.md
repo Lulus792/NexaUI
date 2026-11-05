@@ -1,7 +1,7 @@
 # Original Aetheri rename review experiment
 
-This standalone C17 scene borrows an already prepared Aetheri rename operation
-and an application-owned font collection. The scene presents exact source and
+This standalone C17 scene borrows an application-owned review state, a prepared
+Aetheri rename operation and an application-owned font collection. The scene presents exact source and
 destination bytes as reversible escaped ASCII, an operation status, Cancel and
 Confirm. It returns an intent; it does not call `ae_files_rename_apply`, choose a
 directory or grant file access. The owner retains the original operation across
@@ -38,9 +38,28 @@ observed. A mutant that enabled Confirm on the unknown result failed. A 400x300
 headless capture was inspected. Static, shared and Clang ASan/UBSan builds
 passed as an unprivileged user.
 
-This is a bounded headless composition, not a modal, native window, full Files
+At that base this was a bounded headless composition, not a modal, native window, full Files
 UI, restart recovery, asynchronous service or Aetheri adoption. Independent
 native assistive clients, long-name scrolling, localizations, visual and human
 accessibility acceptance, real Aetheri integration and more failure paths remain
 open. Aetheri's same-user source check is not a compare-and-swap or durable
 identity guarantee; the view does not strengthen that original contract.
+
+## Modal scope and pending confirmation
+
+On base `8e9e0cc4d4b6296fd0757e327f5f5c7ef8daea53`, the existing NexaUI
+modal API blocks a representative background action. Scene tests check the
+dialog role, blocked pointer and semantic background actions, Tab/Shift+Tab,
+Cancel and Escape, and focus returning to that background on dismissal.
+
+An app-owned `rename_review_owner` now retains the confirmation latch while
+views are destroyed and recreated. After one confirmation request, Confirm
+stays disabled and the view says it is awaiting a result even before the
+original operation changes state. The caller must initialize that owner once
+for each operation, retain it during view replacement, and never reinitialize
+it to retry a pending or unknown operation. The view still does not dispatch.
+Tests recreate the view both before dispatch and after an injected unknown
+result; mutants removing the latch or resetting it on recreation fail. Static,
+shared and ASan/UBSan tests passed, and a 400x300 headless capture was
+inspected. This is an in-process, in-memory example; native input and assistive
+clients, real async work, durable recovery and Aetheri integration remain open.

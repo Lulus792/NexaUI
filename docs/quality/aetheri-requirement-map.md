@@ -7,6 +7,11 @@ headless view distinguishes explicit confirmation, conflict and unknown,
 retains the original operation across view replacement and disables replay.
 Native modal/assistive acceptance, long-name scrolling, restart recovery and
 actual Aetheri integration remain open.
+On base `8e9e0cc4d4b6296fd0757e327f5f5c7ef8daea53`, that view uses a modal
+scope with tested background blocking, focus traversal and restoration. An
+app-owned in-memory latch preserves a confirmation request across view
+replacement, including before dispatch. Native and real-service gates remain
+open (L09/L10/I07/P07).
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri
