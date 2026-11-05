@@ -1,5 +1,16 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric input through controlled Wayland text-input-v1 (2026-11-05)
+
+Source `a01cbee4d45a3726b373564369c8b46eabc244e9` extends the existing
+controlled native v1 test with a numeric field. The fixture sends a relative
+deletion and invalid commit; the test verifies the resulting invalid draft,
+unchanged committed value and rejection of a replayed stale batch. On
+Alpine/WSL, GCC 15.2 Release shared Wayland-only, v1 and v3 each passed ten
+consecutive runs (ctest `--repeat until-fail:10`, exit 0). This is controlled
+protocol evidence, not an installed IME, other platform, Aetheri, or human
+acceptance; T05 remains open.
+
 ## Settings reopen test output isolation (2026-11-05)
 
 On Ubuntu CI, source `3d1c27fbd85e6fae952df223c7a97f6180176f1a`
