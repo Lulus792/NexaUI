@@ -64,6 +64,10 @@ NEXAUI_TERMINAL_AX_EVENT=1 NEXAUI_TERMINAL_AX_TRANSITION=1 \
   python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
   /tmp/terminal-view/aetheri_terminal_atspi_client \
   /tmp/terminal-view/aetheri_terminal_ax_host
+NEXAUI_TERMINAL_AX_LARGE=1 NEXAUI_TERMINAL_AX_LARGE_UPDATES=1 \
+  python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  /tmp/terminal-view/aetheri_terminal_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_ax_host
 python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
   /tmp/terminal-view/aetheri_terminal_review_atspi_client \
   /tmp/terminal-view/aetheri_terminal_review_ax_host
@@ -148,6 +152,14 @@ tests. The accessible host uses simulated geometry/focus, the sample uses one
 font's missing-glyph behavior, and this does not establish Unicode shaping,
 physical rendering, human screenreader use, rapid large updates or production
 Aetheri integration. This is a development package, not a 1.0.0 release.
+
+On base `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`, the large-snapshot
+fixture additionally alternates the same accessible twice between full grids
+of Unicode and ASCII. An independent libatspi client replays all text-change
+events and checks each reconstructed grid against the queried snapshot. Three
+insert and three delete chunks were observed in each static, shared and Clang
+ASan/UBSan run. Each update waits for the previous one to be observed; this is
+not a throughput, concurrent-update or stalled-client test.
 
 On 5 November 2026, Alpine Linux/WSL consumers used installed static and shared
 SDKs, plus a Clang ASan/UBSan build. The model test exercises wide cells,

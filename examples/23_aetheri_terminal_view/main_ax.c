@@ -86,7 +86,18 @@ int main(int argc,char **argv) {
     CHECK(!sigaction(SIGUSR1,&scroll_action,NULL));
     struct sigaction update_action={0};update_action.sa_handler=on_update;sigemptyset(&update_action.sa_mask);
     CHECK(!sigaction(SIGUSR2,&update_action,NULL));
+    int large_ascii=0;
     while(!stop) {
+        if(update_requested && large) {
+            update_requested=0;large_ascii=!large_ascii;
+            ae_terminal_init(model,240,100,width);
+            size_t count=240u*100u*(large_ascii?1u:4u);char *data=malloc(count);CHECK(data);
+            if(large_ascii)memset(data,'X',count);
+            else for(size_t i=0;i<count;i+=4)memcpy(data+i,"\xf0\x9f\x98\x80",4);
+            ae_terminal_feed(model,data,count);free(data);
+            CHECK(aetheri_terminal_view_frame(view,++revision,1)==NX_OK);
+            CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
+        }
 #ifdef NEXAUI_TERMINAL_AX_IME
         if(update_requested && composition) {
             update_requested=0;const char updated[]="n\xc3\xa4";

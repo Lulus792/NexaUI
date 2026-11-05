@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T07/A05: on base `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`, an
+independent AT-SPI client replayed two sequential full terminal-grid updates,
+including chunked insertions and deletions. Throughput, stalled clients, real
+Aetheri and human acceptance remain open; see
+[candidate evidence](aetheri-adoption-assessment.md#large-terminal-snapshot-update-events-2026-11-05).
+
 T07/A05/P03: the 0.1.19 candidate based on
 `c3fdd31ae945626b40225e2464421bff24b98417` permits bounded 512-KiB
 read-only snapshots while keeping writable requests at 64 KiB. A full 240x100

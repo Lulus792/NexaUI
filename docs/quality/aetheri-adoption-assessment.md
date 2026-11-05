@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Large terminal snapshot update events (2026-11-05)
+
+On candidate base `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`, the same
+application-owned terminal accessible transitions from 96,099-byte Unicode
+content to 24,099-byte ASCII and back. An independent libatspi client replays
+the bounded UTF-8 text-change events into its own copy, checks all 24,000
+cells and 99 separators, and compares each result to a fresh native query.
+GCC static/shared and Clang ASan/UBSan consumers with leak detection passed;
+each observed three insert and three delete events over both updates. Their
+ordinary small-selection AT-SPI regression also passed. A test-only client
+that discarded insertion events failed the replay comparison. The host waits
+for each update to be observed before the next, and has simulated geometry
+and focus. This does not establish throughput, stalled-client behavior,
+physical rendering, a human screenreader task or actual Aetheri integration.
+No SDK implementation or public contract changed in this candidate.
+
+Read-only inspection of Aetheri `48fcdaf3171370fee355e18c637a970fe0692ad7`
+also confirmed that its current development compositor terminates on nested
+output loss and reports DRM output loss as a failure. Together with the
+initial-only private output snapshot, this leaves live output re-addition an
+external session/protocol gate rather than an accepted NexaUI host behavior.
+
 ## Large Unicode terminal accessibility snapshot (2026-11-05)
 
 On candidate base `c3fdd31ae945626b40225e2464421bff24b98417`, development
