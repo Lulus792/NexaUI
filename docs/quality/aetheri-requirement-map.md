@@ -34,8 +34,10 @@ subsequent Wayland file-drop reader is also poll-driven, with a separate-source
 copy-drag test on private Weston. Actual file-manager and additional compositor
 acceptance, as well as the bounded-queue behavior, still need assessment.
 The [W04 scaling assessment](aetheri-wayland-scaling-assessment.md) records the
-fractional protocol implementation and controlled checks, together with the
-still-open real compositor, renderer, monitor and visual acceptance.
+fractional protocol implementation, controlled checks and a headless Sway
+software-Vulkan run. Physical monitor, hardware renderer, mixed-output, input
+and visual acceptance remain open; Sway also reported an initial-geometry
+warning that needs investigation.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |

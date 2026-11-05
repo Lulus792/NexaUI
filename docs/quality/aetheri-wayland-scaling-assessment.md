@@ -99,3 +99,39 @@ observed completion after 0.125 seconds with a 100 ms deadline while other
 builds were active. Ten isolated repetitions passed; scheduler contention is a
 plausible explanation, not a proven cause. No deadline or assertion changed.
 A subsequent GCC full run without the parallel sanitizer run passed 198/198.
+
+## Headless Sway and software Vulkan (2026-11-05)
+
+The tested source revision was `7519aa83dca26de23aac7f897d5528400dabc6db`.
+On Alpine 3.24.2 in WSL2, Sway 1.12-rc3 with wlroots 0.20.0 ran as an
+unprivileged user with a headless 1280×720 output and Pixman. Packages were
+extracted into a temporary directory; the system installation and Aetheri were
+not modified. The existing Wayland-only shared Settings example used Mesa
+lavapipe through its explicitly selected Vulkan ICD. Its `--smoke` run passed
+at 1.25×. A second instance remained open through these Sway output-scale
+changes; its Wayland trace recorded Mesa Vulkan presentation buffers:
+
+| Preferred scale | Logical viewport | Presented buffer |
+| --- | --- | --- |
+| 1.25× | 1020×549 | 1275×686 |
+| 1.5× | 849×453 | 1274×680 |
+| 2× | 636×333 | 1272×666 |
+| 1× | 1276×693 | 1276×693 |
+| 1.25× again | 1020×549 | 1275×686 |
+
+These extents include the protocol's nearest-pixel rounding, including the
+half-pixel cases at 1.5×. Sway's close command caused the Settings process to
+exit successfully, with the viewport and fractional-scale objects destroyed.
+Screenshots at each distinct scale and the dynamic Wayland trace are retained
+locally under `out/fractional-sway-20261105/`; this ignored directory is not
+part of the repository. The trace SHA-256 is
+`afce10fc5d2069727edd682ecbf03ef0d9d183ab9f5dd402f34a790cf1dba16d`.
+
+Sway also logged an invalid effective window geometry of 0×0 at the initial
+bufferless commit, warning that future versions may disconnect such clients.
+The trace shows the client requested a 640×360 xdg window geometry before
+that commit, and attached its first buffer after the configure. The precise
+cause and compatibility impact still need investigation; this run is not a
+clean W01 acceptance. It does not establish physical monitor sharpness,
+hardware Vulkan, mixed-output transitions, or real screenreader and installed
+IME behavior. Those and full visual/input acceptance remain open.
