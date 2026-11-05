@@ -21,6 +21,7 @@ def main():
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--owner-args', action='store_true', help='use Aetheri owner-style font/cache/diagnostics arguments')
     p.add_argument('--signal-close', action='store_true', help='stop the idle view with SIGTERM instead of Escape')
+    p.add_argument('--fixture-displays', action='store_true', help='exercise explicitly synthetic display observations')
     args=p.parse_args()
     server,view,font=[path.resolve(strict=True) for path in (args.server,args.view,args.font)]
     root=args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -53,6 +54,7 @@ def main():
             wait(lambda:'READY ' in log('server.log'),'compositor')
             arguments=([str(view),'--font',str(font),'--cache',str(root),'--diagnostics'] if args.owner_args
                        else [str(view),str(font),'--verify'])
+            if args.fixture_displays: arguments.append('--fixture-displays')
             app=subprocess.Popen(arguments,env=env,stdin=subprocess.DEVNULL,stdout=al,stderr=subprocess.STDOUT)
             wait(lambda:'MODEL theme=0 german=0 text=100\n' in log('view.log') and 'MAP 0\n' in log('server.log'),'initial model')
             for _ in range(3): key(15)
@@ -61,6 +63,9 @@ def main():
             key(57); wait(lambda:'MODEL theme=2 german=1 text=100\n' in log('view.log'),'language model')
             for _ in range(3): key(15)
             key(57); wait(lambda:'MODEL theme=2 german=1 text=200\n' in log('view.log'),'scale model')
+            if args.fixture_displays:
+                for _ in range(2): key(15)
+                key(57); wait(lambda:'FIXTURE_DISPLAYS count=2 selected=91 stale=0\n' in log('view.log'),'display selection')
             compositor.send_signal(signal.SIGUSR1)
             wait(lambda:all(f'CAPTURE 1 {i}\n' in log('server.log') for i in range(3)),'output capture')
             image=(captures/'capture-1-output-0.ppm').read_bytes()

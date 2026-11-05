@@ -1,4 +1,5 @@
 #include "view.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,7 +9,8 @@ struct aetheri_view {
     nx_context *context;
     nx_font *font;
     nx_font_collection *fonts;
-    nx_text_layout *labels[13];
+    nx_text_layout *labels[15];
+    nx_text_layout *displays[AE_SETTINGS_DISPLAYS];
     int close_requested;
     float scroll_x, scroll_y, revealed_width, revealed_height;
     unsigned revealed_text_percent;
@@ -18,7 +20,8 @@ struct aetheri_view {
 static nx_utf8_span span(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 void aetheri_view_destroy(aetheri_view *v) {
     if (!v) return;
-    for (size_t i=0;i<13;++i) nx_text_layout_destroy(v->labels[i]);
+    for (size_t i=0;i<15;++i) nx_text_layout_destroy(v->labels[i]);
+    for (size_t i=0;i<AE_SETTINGS_DISPLAYS;++i) nx_text_layout_destroy(v->displays[i]);
     nx_context_destroy(v->context); nx_font_collection_destroy(v->fonts);
     nx_font_close(v->font); free(v);
 }
@@ -40,17 +43,36 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     if (!v || !changed || width<480 || height<380) return 0;
     *changed=0;
     struct ae_settings *m=v->model;
-    if (m->theme<AE_SETTINGS_DARK || m->theme>AE_SETTINGS_CONTRAST ||
+    if (m->count>AE_SETTINGS_DISPLAYS || (m->count && m->selected>=m->count) ||
+        m->theme<AE_SETTINGS_DARK || m->theme>AE_SETTINGS_CONTRAST ||
         (m->text_percent!=100 && m->text_percent!=150 && m->text_percent!=200)) return 0;
     const char *en[]={"Aetheri Settings", "Appearance", "Dark", "Light", "High contrast", "Language", "English", "German", "Text size", "100%", "150%", "200%", "Close"};
     const char *de[]={"Aetheri Einstellungen", "Darstellung", "Dunkel", "Hell", "Hoher Kontrast", "Sprache", "Englisch", "Deutsch", "Textgr\xc3\xb6\xc3\x9f" "e", "100%", "150%", "200%", "Schlie\xc3\x9f" "en"};
     const char **labels=m->german?de:en;
-    for(size_t i=0;i<13;++i) { nx_text_layout_destroy(v->labels[i]); v->labels[i]=NULL; }
+    for(size_t i=0;i<15;++i) { nx_text_layout_destroy(v->labels[i]); v->labels[i]=NULL; }
+    for(size_t i=0;i<AE_SETTINGS_DISPLAYS;++i) { nx_text_layout_destroy(v->displays[i]); v->displays[i]=NULL; }
     double size=14.0*(double)m->text_percent/100.0;
     for(size_t i=0;i<13;++i) {
         double label_size=i==0?size*1.3:size;
         if(nx_text_layout_create(v->fonts,labels[i],strlen(labels[i]),NX_BIDI_LTR,
                                  label_size,width-64,&v->labels[i])!=NX_OK) return 0;
+    }
+    const char *display_heading=m->german?"Anzeigen":"Displays";
+    const char *status=m->stale ? (m->german?"Anzeigedaten veraltet":"Display data is stale") :
+        !m->refreshes ? (m->german?"Noch keine Anzeigedaten":"Display data not yet observed") :
+        !m->count ? (m->german?"Keine Anzeigen beobachtet":"No displays observed") :
+        (m->german?"Beobachtete Anzeigen":"Observed displays");
+    if(nx_text_layout_create(v->fonts,display_heading,strlen(display_heading),NX_BIDI_LTR,size,width-64,&v->labels[13])!=NX_OK ||
+       nx_text_layout_create(v->fonts,status,strlen(status),NX_BIDI_LTR,size,width-64,&v->labels[14])!=NX_OK) return 0;
+    char display_names[AE_SETTINGS_DISPLAYS][192]; nx_rect display_rects[AE_SETTINGS_DISPLAYS]={0};
+    for(size_t i=0;i<m->count;++i) {
+        const struct ae_settings_display *d=&m->displays[i];
+        if(!d->id || !memchr(d->name,0,sizeof(d->name))) return 0;
+        const char *selected=i==m->selected ? (m->german?" (ausgew\xc3\xa4hlt)":" (selected)") : "";
+        int written=d->mode_known ? snprintf(display_names[i],sizeof(display_names[i]),"%s (%d x %d)%s",d->name,d->width,d->height,selected) :
+                                   snprintf(display_names[i],sizeof(display_names[i]),"%s%s",d->name,selected);
+        if(written<0 || (size_t)written>=sizeof(display_names[i]) ||
+           nx_text_layout_create(v->fonts,display_names[i],(size_t)written,NX_BIDI_LTR,size,width-88,&v->displays[i])!=NX_OK) return 0;
     }
     /* Measure at the requested size and wrap whole controls, never shrink
        their text to fit an equal-width column. Coordinates are content-local. */
@@ -69,6 +91,16 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
         }
         cursor_y+=54;
         groups_rect[row]=(nx_rect){0,start_y,content_width,cursor_y-start_y};
+    }
+    float displays_y=cursor_y;
+    cursor_y+=(float)nx_text_layout_height(v->labels[13])+8;
+    float status_y=cursor_y;
+    cursor_y+=(float)nx_text_layout_height(v->labels[14])+8;
+    for(size_t i=0;i<m->count;++i) {
+        float item_height=(float)nx_text_layout_height(v->displays[i])+16;
+        if(item_height<42) item_height=42;
+        display_rects[i]=(nx_rect){0,cursor_y,content_width,item_height};
+        cursor_y+=item_height+8;
     }
     float close_width=(float)nx_text_layout_width(v->labels[12])+32;
     float title_height=(float)nx_text_layout_height(v->labels[0]);
@@ -101,6 +133,11 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
                 else if(bottom>v->scroll_y+scroll.viewport.height) v->scroll_y=bottom-scroll.viewport.height;
             }
         }
+        for(size_t i=0;i<m->count;++i) if(focus==(UINT64_C(0x100000000)+m->displays[i].id)) {
+            float top=display_rects[i].y, bottom=top+display_rects[i].height;
+            if(top<v->scroll_y) v->scroll_y=top;
+            else if(bottom>v->scroll_y+scroll.viewport.height) v->scroll_y=bottom-scroll.viewport.height;
+        }
         v->revealed_focus=focus; v->revealed_width=width; v->revealed_height=height;
         v->revealed_text_percent=m->text_percent; v->revealed_german=m->german;
     }
@@ -128,6 +165,25 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
             if(nx_stroke_rect(v->context,mark,2,border)!=NX_OK) return 0;
         }
     }
+    float dy=scroll.viewport.y-v->scroll_y;
+    nx_semantic_desc displays_group={.id=6,.parent_id=5,.role=NX_ROLE_GROUP,
+        .bounds={24,dy+displays_y,content_width,cursor_y-displays_y},.name=span(display_heading)};
+    nx_semantic_desc display_status={.id=7,.parent_id=6,.role=NX_ROLE_STATUS,
+        .bounds={24,dy+status_y,content_width,(float)nx_text_layout_height(v->labels[14])},.name=span(status)};
+    if(nx_semantics_add(v->context,&displays_group,NULL)!=NX_OK ||
+       nx_semantics_add(v->context,&display_status,NULL)!=NX_OK ||
+       nx_draw_text_layout(v->context,v->labels[13],(nx_point){24,dy+displays_y},fg,CACHE)!=NX_OK ||
+       nx_draw_text_layout(v->context,v->labels[14],(nx_point){24,dy+status_y},fg,CACHE)!=NX_OK) return 0;
+    uint32_t chosen_display=0;
+    for(size_t i=0;i<m->count;++i) {
+        nx_control_desc control={0}; control.id=UINT64_C(0x100000000)+m->displays[i].id; control.parent_id=6;
+        control.bounds=display_rects[i]; control.bounds.x+=24; control.bounds.y+=dy;
+        control.name=span(display_names[i]); control.disabled=m->stale;
+        control.label_layout=v->displays[i]; control.label_origin=(nx_point){control.bounds.x+8,control.bounds.y+8};
+        control.glyph_cache_bytes=CACHE; nx_interaction_state state;
+        if(nx_button(v->context,&control,&state)!=NX_OK) return 0;
+        if(state.clicked) chosen_display=m->displays[i].id;
+    }
     if(nx_scroll_area_end(v->context)!=NX_OK) return 0;
     nx_control_desc close={0}; close.id=19; close.parent_id=1;
     close.bounds=(nx_rect){width-24-close_width,close_y,close_width,42}; close.name=span(labels[12]);
@@ -139,6 +195,10 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     if(theme_id!=old_theme || lang_id!=old_lang || size_id!=old_size) {
         m->theme=(enum ae_settings_theme)(theme_id-1); m->german=lang_id==2;
         m->text_percent=size_id==1?100u:size_id==2?150u:200u; *changed=1;
+    }
+    if(chosen_display && !m->stale && m->displays[m->selected].id!=chosen_display) {
+        if(!ae_settings_select(m,chosen_display)) return 0;
+        *changed=1;
     }
     return 1;
 }

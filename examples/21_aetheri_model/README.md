@@ -5,7 +5,10 @@ an explicitly supplied source snapshot and links an installed NexaUI package.
 It edits the in-memory appearance, language and text-size fields through
 keyboard or accessibility actions. The model and font bytes belong to the
 caller and outlive the view. Destroying and recreating the view retains the
-model. Escape and the Close button request an orderly exit.
+model. Display observations supplied by the model owner are selectable by stable
+ID; stale observations are visible but disabled. An unpopulated model is shown
+as not yet observed, not as a confirmed empty output list. Escape and the Close
+button request an orderly exit.
 
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:
@@ -23,7 +26,11 @@ The process requires a working Wayland session and a TrueType font. The
 software renderer uses a minimum logical window size of 480 by 380. Native
 accessibility requires a NexaUI build with AT-SPI and an available service;
 the view remains usable when that optional service is unavailable. `--verify`
-prints only the three model values for the automated integration fixture.
+prints the three appearance model values for the automated integration fixture.
+The explicit `--fixture-displays` test option supplies two synthetic displays;
+it is not an operating-system observation.
+The model owner must request a new frame when it updates the observation; the
+view does not poll displays or treat a selection as a system configuration.
 For an isolated owner integration probe, the executable also accepts
 `--font FONT --cache DIR --diagnostics`, matching the development owner's
 argument shape. The cache argument is accepted but unused; this example creates

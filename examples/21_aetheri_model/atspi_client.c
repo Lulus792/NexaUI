@@ -74,7 +74,12 @@ static int await_checked(AtspiAccessible *item) {
 int main(int argc, char **argv) {
     const char *font = getenv("NEXAUI_SETTINGS_FONT"); CHECK(argc == 2 && font && *font);
     host = fork(); CHECK(host >= 0);
-    if (!host) { execl(argv[1], argv[1], font, "--verify", (char *)NULL); _exit(127); }
+    if (!host) {
+        if (getenv("NEXAUI_MODEL_DISPLAY_FIXTURE"))
+            execl(argv[1], argv[1], font, "--verify", "--fixture-displays", (char *)NULL);
+        else execl(argv[1], argv[1], font, "--verify", (char *)NULL);
+        _exit(127);
+    }
     CHECK(atspi_init() == 0); atspi_set_timeout(1000, 1000);
     AtspiAccessible *desktop = atspi_get_desktop(0); CHECK(desktop);
     AtspiAccessible *app = app_for_pid(desktop); CHECK(app);
@@ -89,6 +94,12 @@ int main(int argc, char **argv) {
     CHECK(activate(german) && await_checked(german));
     CHECK(activate(size) && await_checked(size));
     CHECK(checked(contrast) && checked(german) && checked(size));
+    if (getenv("NEXAUI_MODEL_DISPLAY_FIXTURE")) {
+        AtspiAccessible *display=find(app,"Monitor B",0); CHECK(display && activate(display));
+        AtspiAccessible *selected=NULL;
+        for(unsigned i=0;i<200 && !selected;++i) {pump(10); selected=find(app,"Monitor B (ausgew\xc3\xa4hlt)",0);}
+        CHECK(selected); g_object_unref(selected); g_object_unref(display);
+    }
     AtspiAccessible *close = find(app, "Schlie\xc3\x9f" "en", 0); CHECK(close && activate(close));
     int status = 0, finished = 0;
     for (unsigned i = 0; i < 300 && !finished; ++i) {

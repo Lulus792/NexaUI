@@ -48,12 +48,13 @@ static unsigned char *load_font(const char *path, size_t *length) {
     return data;
 }
 int main(int argc, char **argv) {
-    const char *font_path=NULL, *cache_path=NULL; int verify=0, diagnostics=0;
+    const char *font_path=NULL, *cache_path=NULL; int verify=0, diagnostics=0, fixture_displays=0;
     for(int i=1;i<argc;++i) {
         if(!strcmp(argv[i],"--font") && i+1<argc && !font_path) font_path=argv[++i];
         else if(!strcmp(argv[i],"--cache") && i+1<argc && !cache_path) cache_path=argv[++i];
         else if(!strcmp(argv[i],"--diagnostics") && !diagnostics) diagnostics=1;
         else if(!strcmp(argv[i],"--verify") && !verify) verify=1;
+        else if(!strcmp(argv[i],"--fixture-displays") && !fixture_displays) fixture_displays=1;
         else if(argv[i][0]!='-' && !font_path) font_path=argv[i];
         else return 2;
     }
@@ -66,6 +67,12 @@ int main(int argc, char **argv) {
     struct ae_settings model; ae_settings_init(&model);
     nx_window *window=NULL; nx_software_view *renderer=NULL; aetheri_view *view=NULL;
     nx_window_desc desc={"Aetheri settings model",800,480,0,{0}};
+    if(fixture_displays) {
+        const struct ae_settings_display sample[2]={
+            {.id=42,.name="Monitor A",.width=1920,.height=1080,.scale=1,.refresh=60,.mode_known=1},
+            {.id=91,.name="Monitor B",.scale=1,.refresh=0,.mode_known=0}};
+        if(!ae_settings_snapshot(&model,sample,2)) {okay=0;goto done;}
+    }
     if(!font || nx_window_create(&desc,&window)!=NX_OK ||
        nx_window_set_wayland_app_id(window,"org.aetheri.Settings")!=NX_OK ||
        !aetheri_view_create(&model,font,length,&view) || nx_software_view_open(window,&renderer)!=NX_OK) {
@@ -128,6 +135,10 @@ int main(int argc, char **argv) {
             next_ax_retry=now+1;
         }
         if(verify || diagnostics) {printf("MODEL theme=%d german=%d text=%u\n",(int)model.theme,model.german,model.text_percent);fflush(stdout);}
+        if(fixture_displays && (verify || diagnostics)) {
+            printf("FIXTURE_DISPLAYS count=%zu selected=%u stale=%d\n",model.count,
+                   model.count?model.displays[model.selected].id:0,model.stale);fflush(stdout);
+        }
         dirty=changed;
     }
 done:
