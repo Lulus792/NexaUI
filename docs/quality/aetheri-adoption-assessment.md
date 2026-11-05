@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Files actions through the layer test host's accessibility loop (2026-11-06)
+
+On candidate base `101507414e0e7c3806e0c1e93ce08dee83b20e9a`, an
+independent libatspi client exercised the existing layer test host's own
+accessibility prepare/route and view reconciliation with three simulated
+views. It invoked the Files dock button on the same view as the Search field,
+selected Files and Terminal, retired another view and checked its retained
+native object was defunct, then edited the surviving search and activated
+Terminal. The fixture also verifies the other two model selections and queries
+remain unchanged. The host has no launcher in this run; its launch output is
+an intent, not an actual process start.
+
+GCC static/shared and Clang ASan/UBSan builds with leak detection passed on
+Alpine/WSL using Aetheri model snapshot
+`7374f381719397abc100dcb784becf59c86d1462`. The single-view AT-SPI host
+regression passed as well. The first unscoped multi-view attempt timed out;
+the final client searches within the Search field's parent surface, avoiding
+ambiguity between same-named buttons. The views' Wayland configuration, geometry,
+focus and output removal are simulated, so this is not physical hotplug,
+production Aetheri owner integration or human screenreader acceptance.
+
 ## Files dock intent and owner protocol (2026-11-06)
 
 On candidate base `96e8e06e67e5d95a47758276615c05b660ea30ff`, the desktop

@@ -112,6 +112,10 @@ application-owned request is pending. It reports an intent; the test layer host
 uses the model's selector helpers to exchange `L2F` and A/E/X replies with its
 injected owner socket and fans confirmed state to its three models. Its
 socketpair test is not an actual process launcher or production admission.
+On base `101507414e0e7c3806e0c1e93ce08dee83b20e9a`, the independent AT-SPI
+client also checks Files actions, selection and a retired accessible through
+the layer host's accessibility loop with three simulated views. This does not
+establish native output removal or production shell ownership.
 
 On 5 November 2026 the initial source `3c0dfd20cb7217cbbe81d0af7965533c19b0f506`
 was built on Alpine/WSL2 with GCC 15.2 against an installed static, Wayland-only

@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/A02/W05: on base `101507414e0e7c3806e0c1e93ce08dee83b20e9a`, an
+independent AT-SPI client exercises Files actions and search through the layer
+test host with three simulated views and a removed accessible. Actual Aetheri
+shell/owner, physical outputs and human accessibility remain open. See
+[candidate evidence](aetheri-adoption-assessment.md#files-actions-through-the-layer-test-hosts-accessibility-loop-2026-11-06).
+
 D05/L01/A02: on base `96e8e06e67e5d95a47758276615c05b660ea30ff`, the
 desktop consumer exposes a Files dock intent and the private test host sends
 the model's `F` selector; real owner/shell integration remains open. See

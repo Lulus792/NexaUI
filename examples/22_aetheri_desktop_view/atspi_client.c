@@ -69,31 +69,36 @@ int main(int argc,char **argv) {
     AtspiAccessible *field=NULL;
     for(unsigned n=0;n<200 && !field;++n){atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);if(!field)field=find(app,"Suche",ATSPI_ROLE_ENTRY,0);if(!field)pump(10);}
     CHECK(field);AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
+    GError *scope_error=NULL;AtspiAccessible *scope=atspi_accessible_get_parent(field,&scope_error);
+    CHECK(scope && !scope_error);
     if(getenv("NEXAUI_AX_FILES_DOCK")) {
-        AtspiAccessible *button=find(app,"Files",ATSPI_ROLE_PUSH_BUTTON,0);CHECK(button);
+        AtspiAccessible *button=find(scope,"Files",ATSPI_ROLE_PUSH_BUTTON,0);CHECK(button);
         AtspiAction *button_action=atspi_accessible_get_action_iface(button);CHECK(button_action);
         GError *button_error=NULL;CHECK(atspi_action_do_action(button_action,0,&button_error) && !button_error);
         char output[1024]={0};size_t used=0;
-        CHECK(wait_output(pipes[0],output,sizeof(output),&used,"INTENT kind=2 app=3 window=0\n"));
+        CHECK(wait_output(pipes[0],output,sizeof(output),&used,getenv("NEXAUI_AX_LAYER")?
+                          "INTENT 0 2 3 0\n":"INTENT kind=2 app=3 window=0\n"));
         g_object_unref(button_action);g_object_unref(button);
     }
     if(getenv("NEXAUI_AX_SELECTION")) {
-        AtspiAccessible *list=find(app,"Search results",ATSPI_ROLE_LIST,0);
-        AtspiAccessible *row=find(app,"Terminal",ATSPI_ROLE_LIST_ITEM,0);
+        AtspiAccessible *list=find(scope,"Search results",ATSPI_ROLE_LIST,0);
+        AtspiAccessible *row=find(scope,"Terminal",ATSPI_ROLE_LIST_ITEM,0);
         CHECK(list && row);GError *selection_error=NULL;
         AtspiSelection *selection=atspi_accessible_get_selection_iface(list);CHECK(selection);
         if(getenv("NEXAUI_AX_CURRENT_FILES")) {
-            AtspiAccessible *files=find(app,"Files",ATSPI_ROLE_LIST_ITEM,0);CHECK(files);
+            AtspiAccessible *files=find(scope,"Files",ATSPI_ROLE_LIST_ITEM,0);CHECK(files);
             int files_index=atspi_accessible_get_index_in_parent(files,&selection_error);CHECK(files_index>=0 && !selection_error);
             CHECK(atspi_selection_select_child(selection,files_index,&selection_error) && !selection_error);
             char files_output[1024]={0};size_t files_used=0;
-            CHECK(wait_output(pipes[0],files_output,sizeof(files_output),&files_used,"SELECT 3 0\n"));
+            CHECK(wait_output(pipes[0],files_output,sizeof(files_output),&files_used,getenv("NEXAUI_AX_LAYER")?
+                              "SELECT 0 3 0\n":"SELECT 3 0\n"));
             CHECK(!strstr(files_output,"INTENT"));g_object_unref(files);
         }
         int index=atspi_accessible_get_index_in_parent(row,&selection_error);CHECK(index>=0 && !selection_error);
         CHECK(atspi_selection_select_child(selection,index,&selection_error) && !selection_error);
         char selected_output[1024]={0};size_t selected_used=0;
-        CHECK(wait_output(pipes[0],selected_output,sizeof(selected_output),&selected_used,"SELECT 2 0\n"));
+        CHECK(wait_output(pipes[0],selected_output,sizeof(selected_output),&selected_used,getenv("NEXAUI_AX_LAYER")?
+                          "SELECT 0 2 0\n":"SELECT 2 0\n"));
         int selected=0;
         for(unsigned i=0;i<300 && !selected;++i) {
             pump(10);atspi_accessible_clear_cache(row);AtspiStateSet *states=atspi_accessible_get_state_set(row);
@@ -154,7 +159,7 @@ int main(int argc,char **argv) {
         for(unsigned n=0;n<200 && !new_field;++n){atspi_accessible_clear_cache(replacement);new_field=find(replacement,"Search",ATSPI_ROLE_ENTRY,0);if(!new_field)pump(10);}
         CHECK(new_field);g_object_unref(new_field);g_object_unref(replacement);
     }
-    g_object_unref(action);g_object_unref(terminal);g_object_unref(editable);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);
+    g_object_unref(action);g_object_unref(terminal);g_object_unref(editable);g_object_unref(field);g_object_unref(scope);g_object_unref(app);g_object_unref(desktop);
     CHECK(kill(child,SIGTERM)==0);int status=0;CHECK(waitpid(child,&status,0)==child);child=-1;
     CHECK(WIFEXITED(status) && WEXITSTATUS(status)==0);close(pipes[0]);atspi_exit();
     puts("Independent AT-SPI desktop query and intent passed");return 0;

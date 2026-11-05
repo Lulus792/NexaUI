@@ -37,6 +37,8 @@ int main(int argc,char **argv) {
         global_remove(&a,NULL,99);
         CHECK(!a.views[0].remove_pending && !a.views[1].remove_pending && !a.views[2].remove_pending);
     }
+    uint32_t other_selected[2]={a.views[1].model.selected,a.views[2].model.selected};
+    enum ae_desktop_app other_app[2]={a.views[1].model.selected_app,a.views[2].model.selected_app};
     struct sigaction action={0};action.sa_handler=stop_signal;sigemptyset(&action.sa_mask);
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));
     action.sa_handler=remove_output;CHECK(!sigaction(SIGUSR1,&action,NULL));
@@ -58,6 +60,8 @@ int main(int argc,char **argv) {
             advance(&a.views[i]);accessibility_publish(&a.views[i]);a.views[i].dirty=false;
         }
         CHECK(!a.views[1].model.query[0] && !a.views[2].model.query[0]);
+        CHECK(a.views[1].model.selected==other_selected[0] && a.views[2].model.selected==other_selected[1] &&
+              a.views[1].model.selected_app==other_app[0] && a.views[2].model.selected_app==other_app[1]);
         struct pollfd fds[3];uint32_t timeout=accessibility_prepare(&a,fds,1000);
         int result=poll(fds,3,(int)timeout);
         if(result<0 && errno==EINTR)continue;
