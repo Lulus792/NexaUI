@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Measured four-button desktop dock layout (2026-11-06)
+
+On candidate base `6ced584aa23aec468bf6ed607228d3b0a5ac2045`, the 320-logical-
+pixel dock no longer divides its four buttons into equal 70-pixel widths.
+The old layout left 54 pixels of text width after padding, while the existing
+14-pixel DejaVu Sans `Settings` layout measured 57.42 pixels. The view now
+allocates button widths from actual shaped label widths, preserves at least
+44 pixels per hit target, and clips each button's drawing to its own bounds.
+If the available width cannot accommodate every label, proportional fallback
+keeps those hit targets and clips text rather than overlapping its neighbor.
+
+At width 320, the scene test checks actual semantic button rectangles and
+compares the full English and German labels with each button's padded width.
+DejaVu Sans, Sans Bold and Sans Mono passed in GCC static/shared and Clang
+ASan/UBSan profiles. A test-only equal-width mutant failed because Bold
+`Settings` needed 66.08 pixels while its available text width was 62. The
+German DejaVu Sans headless 320x84 capture was visually inspected; it is a
+local test image, not a product-design approval. The three profiles also
+passed layer launcher/focus/IME-wire and independent multi-view AT-SPI checks,
+plus private Weston/Xvfb keyboard preview. An intermediate variant keeping
+16 pixels of padding failed the Bold German `Suchen` fit; the final layout
+uses 4 pixels on each side. The tested Aetheri desktop model is from immutable
+commit `7374f381719397abc100dcb784becf59c86d1462`.
+
+This is a bounded example with three fonts, two languages and logical 320x84
+geometry. Other fonts, overflow fallback readability, 200% text scale, physical
+DPI, real private Aetheri shell and human visual/assistive acceptance remain
+open. No SDK implementation or Aetheri checkout changed.
+
 ## Keyboard focus between desktop search and Files (2026-11-06)
 
 On candidate base `30e05549b17329d2d8007e57069026cc938fbecb`, the existing

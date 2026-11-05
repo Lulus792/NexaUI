@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L01/D02/A10: on base `6ced584aa23aec468bf6ed607228d3b0a5ac2045`, the
+four-button example dock allocates measured label widths and clips drawing;
+320px English/German scene checks cover three fonts. Larger text scale, actual
+shell integration and human acceptance remain open; see [candidate evidence](aetheri-adoption-assessment.md#measured-four-button-desktop-dock-layout-2026-11-06).
+
 D05/I01/A02: on base `30e05549b17329d2d8007e57069026cc938fbecb`, the
 desktop preview and layer keyboard callback exercise Ctrl-Tab focus traversal
 between Search and the Files dock action while retaining plain-Tab result

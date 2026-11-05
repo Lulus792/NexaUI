@@ -3,6 +3,35 @@
 #include <stdlib.h>
 #include <string.h>
 #define CHECK(x) do {if(!(x)){fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x);return 1;}} while(0)
+static int dock_label_widths(nx_context *ctx,const void *bytes,size_t length) {
+    nx_font *font=NULL;nx_font_collection *fonts=NULL;
+    CHECK(nx_font_open(bytes,length,NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    float previous_right=0;
+    for(uint64_t id=10;id<=13;++id) {
+        uint32_t index;nx_semantic_view button;
+        CHECK(nx_semantics_find(ctx,id,&index)==NX_OK && nx_semantics_get(ctx,index,&button)==NX_OK);
+        CHECK(button.bounds.width>=44 && button.bounds.x>=previous_right && button.bounds.x+button.bounds.width<=320.01f);
+        previous_right=button.bounds.x+button.bounds.width;
+        nx_text_layout *layout=NULL;
+        CHECK(nx_text_layout_create(fonts,button.name.data,button.name.length,NX_BIDI_LTR,14,1000,&layout)==NX_OK);
+        double width=nx_text_layout_width(layout);nx_text_layout_destroy(layout);
+        if(width>button.bounds.width-8+0.01) {
+            fprintf(stderr,"Dock label %.*s requires %.2f but has %.2f logical pixels\n",
+                    (int)button.name.length,button.name.data,width,button.bounds.width-8);return 1;
+        }
+    }
+    nx_font_collection_destroy(fonts);nx_font_close(font);return 0;
+}
+static int capture_dock(nx_context *ctx,const char *path) {
+    if(!path)return 0;
+    const nx_command *commands=NULL;size_t count=0;unsigned char pixels[320*84*4];
+    CHECK(nx_frame_commands(ctx,&commands,&count)==NX_OK);
+    CHECK(nx_headless_render(commands,count,pixels,320,84,320*4,(nx_color){0,0,0,1})==NX_OK);
+    FILE *out=fopen(path,"wb");CHECK(out && fprintf(out,"P6\n320 84\n255\n")>0);
+    for(size_t i=0;i<320u*84u;++i)CHECK(fwrite(pixels+i*4,1,3,out)==3);
+    CHECK(!fclose(out));return 0;
+}
 int main(int argc,char **argv) {
     CHECK(argc==2);FILE *f=fopen(argv[1],"rb");CHECK(f && !fseek(f,0,SEEK_END));long n=ftell(f);
     CHECK(n>0 && !fseek(f,0,SEEK_SET));void *bytes=malloc((size_t)n);CHECK(bytes && fread(bytes,1,(size_t)n,f)==(size_t)n);CHECK(!fclose(f));
@@ -18,6 +47,8 @@ int main(int argc,char **argv) {
     CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_ERROR_STATE);
     CHECK(ae_desktop_model_reply(&model,AE_DESKTOP_FILES,'E'));++revision;
     CHECK(aetheri_desktop_view_frame(view,320,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(dock_label_widths(ctx,bytes,(size_t)n)==0);
+    CHECK(capture_dock(ctx,getenv("NEXAUI_DOCK_EN_CAPTURE"))==0);
     uint32_t files_index;nx_semantic_view files_sem;
     CHECK(nx_semantics_find(ctx,13,&files_index)==NX_OK && nx_semantics_get(ctx,files_index,&files_sem)==NX_OK &&
           files_sem.bounds.x>=0 && files_sem.bounds.x+files_sem.bounds.width<=320 && !(files_sem.state&NX_SEM_DISABLED));
@@ -28,6 +59,8 @@ int main(int argc,char **argv) {
           intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_FILES);
     model.german=true;++revision;
     CHECK(aetheri_desktop_view_frame(view,320,84,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(dock_label_widths(ctx,bytes,(size_t)n)==0);
+    CHECK(capture_dock(ctx,getenv("NEXAUI_DOCK_DE_CAPTURE"))==0);
     CHECK(nx_semantics_find(ctx,13,&files_index)==NX_OK && nx_semantics_get(ctx,files_index,&files_sem)==NX_OK &&
           files_sem.name.length==7 && !memcmp(files_sem.name.data,"Dateien",7));
     model.german=false;++revision;

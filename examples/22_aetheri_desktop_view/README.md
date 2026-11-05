@@ -126,6 +126,14 @@ client also checks Files actions, selection and a retired accessible through
 the layer host's accessibility loop with three simulated views. This does not
 establish native output removal or production shell ownership.
 
+On base `6ced584aa23aec468bf6ed607228d3b0a5ac2045`, button widths follow
+the shaped labels, with at least 44 logical pixels per hit target and clipping
+to each button. The 320-pixel test checks full DE/EN label fit with three
+DejaVu fonts. If a different font's labels cannot all fit, text can be clipped;
+larger text scaling, other fonts and human visual approval remain open. Set
+`NEXAUI_DOCK_EN_CAPTURE` and/or `NEXAUI_DOCK_DE_CAPTURE` to paths when running
+`aetheri_desktop_view_test` to save the corresponding 320x84 headless PPMs.
+
 On 5 November 2026 the initial source `3c0dfd20cb7217cbbe81d0af7965533c19b0f506`
 was built on Alpine/WSL2 with GCC 15.2 against an installed static, Wayland-only
 SDK built from `a7a3df4b8f803cc15f876b4623c9008834c590e9`; the test passed with

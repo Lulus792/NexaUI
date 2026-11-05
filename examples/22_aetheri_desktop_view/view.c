@@ -1,4 +1,5 @@
 #include "view.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -138,14 +139,31 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
     nx_semantic_desc root={0};root.id=1;root.role=NX_ROLE_WINDOW;root.bounds=(nx_rect){0,0,width,height};
     root.name=(nx_utf8_span){"Aetheri Desktop",15};
     if(nx_semantics_add(v->context,&root,NULL)!=NX_OK)goto done;
-    float button_width=(width-40)/4;
+    float button_widths[4],wanted=0,remaining=width-40;
+    for(int i=0;i<4;++i) {
+        button_widths[i]=fmaxf(44,(float)nx_text_layout_width(layouts[i])+8);
+        wanted+=button_widths[i];
+    }
+    if(wanted<=remaining) {
+        float extra=(remaining-wanted)/4;
+        for(int i=0;i<4;++i)button_widths[i]+=extra;
+    } else {
+        /* Preserve a 44px hit target; constrain overlong labels to their own
+           button when even the minimum widths cannot fit all text. */
+        float fraction=(remaining-4*44)/(wanted-4*44);
+        for(int i=0;i<4;++i)button_widths[i]=44+(button_widths[i]-44)*fraction;
+    }
+    float button_x=8;
     for(int i=0;i<4;++i) {
         nx_control_desc d={0};d.id=(uint64_t)(10+i);d.parent_id=1;
-        d.bounds=(nx_rect){8+(float)i*(button_width+8),height-70,button_width,44};
+        d.bounds=(nx_rect){button_x,height-70,button_widths[i],44};button_x+=button_widths[i]+8;
         d.name=(nx_utf8_span){labels[i],strlen(labels[i])};d.label_layout=layouts[i];
-        d.label_origin=(nx_point){d.bounds.x+8,d.bounds.y+8};d.glyph_cache_bytes=1024u*1024u;
+        d.label_origin=(nx_point){d.bounds.x+4,d.bounds.y+8};d.glyph_cache_bytes=1024u*1024u;
         d.disabled=apps[i]!=AE_DESKTOP_APP_NONE && v->model->pending[apps[i]];
-        nx_interaction_state state;if(nx_button(v->context,&d,&state)!=NX_OK)goto done;
+        nx_interaction_state state;if(nx_push_clip(v->context,d.bounds)!=NX_OK)goto done;
+        nx_result button_result=nx_button(v->context,&d,&state);
+        nx_result clip_result=nx_pop_clip(v->context);
+        if(button_result!=NX_OK || clip_result!=NX_OK)goto done;
         if(state.clicked) {
             pending.kind=i?AETHERI_DESKTOP_LAUNCH:AETHERI_DESKTOP_SEARCH;
             pending.app=apps[i];
