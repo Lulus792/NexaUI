@@ -18,6 +18,7 @@ static void closing_free(void *user,void *pointer,size_t size) {
 }
 
 static const char *start_server(test_server *server, pthread_t *thread, const char *socket) {
+    server->clipboard_auto_focus=1;
     server->display=wl_display_create();CHECK(server->display);
     CHECK(wl_global_create(server->display,&wl_compositor_interface,1,server,bind_compositor));
     CHECK(wl_global_create(server->display,&wl_shm_interface,1,server,bind_shm));

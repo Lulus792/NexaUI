@@ -10,6 +10,7 @@ extern "C" {
 
 /* Linux-only symbols: owner-thread, nonblocking clipboard text read on a
    NexaUI Wayland window.
+   An external selection offer cannot be read before keyboard focus is entered.
    Only one native read can be active per window, shared with text-field and
    accessibility paste. A busy slot returns NX_ERROR_LIMIT; the request never
    displaces another read. limit bounds UTF-8 bytes, timeout_ms must be nonzero,

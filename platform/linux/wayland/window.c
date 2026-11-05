@@ -2996,6 +2996,7 @@ nx_result nx_wayland_window_clipboard_async_start(nx_wayland_window *window,
         }
         transfer.finished = 1; transfer.result = NX_OK;
     } else {
+        if (!window->keyboard_focused) return NX_ERROR_STATE;
         offer = window->selection_offer;
         if (!offer) return NX_ERROR_STATE;
         const char *mime = offer->mime_types & NX_WAYLAND_MIME_UTF8 ? NX_WAYLAND_CLIPBOARD_UTF8 :
@@ -3248,6 +3249,7 @@ nx_result nx_wayland_window_clipboard_get_text(nx_wayland_window *window,
     if (window->owned_source)
         return nx_wayland_clipboard_copy(window->owned_source->text,
             window->owned_source->length, bytes, capacity, out_length);
+    if (!window->keyboard_focused) return NX_ERROR_STATE;
     nx_wayland_clipboard_offer *offer = window->selection_offer;
     if (!offer) return NX_ERROR_STATE;
     const char *mime = offer->mime_types & NX_WAYLAND_MIME_UTF8 ?
@@ -3290,6 +3292,7 @@ nx_result nx_wayland_window_clipboard_fetch_text(nx_wayland_window *window,
         length = window->owned_source->length;
         collected = window->owned_source->text;
     } else {
+        if (!window->keyboard_focused) return NX_ERROR_STATE;
         nx_wayland_clipboard_offer *offer = window->selection_offer;
         if (!offer) return NX_ERROR_STATE;
         const char *mime = offer->mime_types & NX_WAYLAND_MIME_UTF8 ?

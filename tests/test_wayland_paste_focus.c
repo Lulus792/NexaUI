@@ -34,6 +34,7 @@ static int paste(nx_context *ctx) {
 }
 int main(void) {
     test_server server={0};char runtime[]="/tmp/nexaui-paste-focus-XXXXXX";
+    server.clipboard_auto_focus=1;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR",runtime,1)==0 && setenv("NEXAUI_PLATFORM","wayland",1)==0);
     unsetenv("WAYLAND_SOCKET"); server.display=wl_display_create();CHECK(server.display);
     CHECK(wl_global_create(server.display,&wl_compositor_interface,1,&server,bind_compositor));

@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
     int pointer_removed=argc==2 && (!strcmp(argv[1],"--pointer-removed") || pointer_serial || disconnect);
     test_server server = {0}; char runtime[] = "/tmp/nexaui-async-XXXXXX";
     server.keyboard_enabled=focus_loss;
+    server.clipboard_auto_focus=!focus_loss;
     server.pointer_enabled=pointer_removed;
     if(pointer_removed)server.keyboard_bound=send_keymap;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
@@ -182,7 +183,27 @@ int main(int argc, char **argv) {
         CHECK(saw_focus_loss);
         close_peer(&server);
         if(!keyboard_removed && !seat_removed) {
-            atomic_store(&server.offer_stall,0);atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
+            /* Re-entering without a fresh offer must not resurrect stale data. */
+            atomic_store(&server.keyboard_enter_requested,1);
+            wl_surface_commit(nx_window_wayland_surface(window));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_ERROR_STATE && !token);
+            atomic_store(&server.keyboard_leave_requested,1);
+            wl_surface_commit(nx_window_wayland_surface(window));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+            /* Wayland selection can arrive before keyboard.enter. Until enter,
+               neither the public async nor synchronous reader may use it. */
+            atomic_store(&server.offer_stall,0);publish_offer(&server,window);
+            int reads_before=atomic_load(&server.offer_reads);
+            CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_ERROR_STATE && !token);
+            CHECK(nx_window_clipboard_get_text(window,NULL,0,&length)==NX_ERROR_STATE);
+            char *private_bytes=(char *)1; size_t private_length=1;
+            CHECK(nx_linux_window_clipboard_fetch_text(window,&private_bytes,&private_length)==NX_ERROR_STATE &&
+                  !private_bytes && !private_length);
+            CHECK(atomic_load(&server.offer_reads)==reads_before);
+            atomic_store(&server.keyboard_enter_requested,1);
+            wl_surface_commit(nx_window_wayland_surface(window));
+            CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
             CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_OK);
             char *bytes=NULL;int ready=0;
             for(unsigned i=0;i<20 && !ready;++i) {

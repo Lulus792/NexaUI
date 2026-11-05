@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
     int disconnect=argc==2 && !strcmp(argv[1],"--disconnect");
     int disconnect_finish=argc==2 && !strcmp(argv[1],"--disconnect-finish");
     test_server server = {0}; char runtime[] = "/tmp/nexaui-drop-XXXXXX";
+    server.clipboard_auto_focus=1;
     CHECK(mkdtemp(runtime) && setenv("XDG_RUNTIME_DIR", runtime, 1) == 0);
     server.display = wl_display_create(); CHECK(server.display);
     CHECK(wl_global_create(server.display, &wl_compositor_interface, 1, &server, bind_compositor));

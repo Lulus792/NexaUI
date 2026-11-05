@@ -20,7 +20,7 @@ int main(int argc,char **argv) {
     CHECK(argc==3 && (!strcmp(argv[2],"input") || !strcmp(argv[2],"timeout") || !strcmp(argv[2],"complete")));
     int input=!strcmp(argv[2],"input"),complete=!strcmp(argv[2],"complete");
     size_t size=0;unsigned char *font=font_read(argv[1],&size);CHECK(font);
-    test_server server={0};server.width=640;server.height=360;
+    test_server server={0};server.width=640;server.height=360;server.clipboard_auto_focus=1;
     char runtime[]="/tmp/nexaui-ax-async-XXXXXX";CHECK(mkdtemp(runtime));
     CHECK(setenv("XDG_RUNTIME_DIR",runtime,1)==0 && setenv("NEXAUI_PLATFORM","wayland",1)==0);unsetenv("WAYLAND_SOCKET");
     server.display=wl_display_create();CHECK(server.display);

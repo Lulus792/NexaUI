@@ -76,7 +76,7 @@ int main(int argc,char **argv) {
     int ax_async=ax_once || ax_stall || ax_short || ax_input || ax_model || ax_detach || ax_omit;
     int slow_allocator=argc==3 && !strcmp(argv[2],"--clipboard-slow-allocator");
     size_t length=0; unsigned char *font=read_font(argv[1],&length); CHECK(font);
-    test_server server={0}; server.width=640; server.height=360;
+    test_server server={0}; server.width=640; server.height=360; server.clipboard_auto_focus=1;
     char runtime[]="/tmp/nexaui-settings-ime-XXXXXX";
     CHECK(mkdtemp(runtime)); CHECK(setenv("XDG_RUNTIME_DIR",runtime,1)==0);
     CHECK(setenv("NEXAUI_PLATFORM","wayland",1)==0); unsetenv("WAYLAND_SOCKET");

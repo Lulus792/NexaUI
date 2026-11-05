@@ -27,7 +27,8 @@ typedef struct test_server {
     struct wl_resource *surface, *xdg_surface, *toplevel, *text_input;
     struct wl_resource *data_device, *keyboard, *pointer, *seat;
     struct wl_global *seat_global;
-    int keyboard_enabled, pointer_enabled;
+    int keyboard_enabled, pointer_enabled, clipboard_auto_focus;
+    atomic_int clipboard_focus_sent;
     atomic_int keyboard_enter_requested, keyboard_leave_requested, keyboard_remove_requested, seat_remove_requested;
     atomic_int seat_remove_sent;
     atomic_int pointer_press_requested, pointer_remove_requested;
@@ -147,6 +148,14 @@ static void surface_commit(struct wl_client *client,
         wl_data_device_send_data_offer(server->data_device, offer);
         wl_data_offer_send_offer(offer, "text/plain;charset=utf-8");
         wl_data_device_send_selection(server->data_device, offer);
+        /* Model the protocol's selection-before-keyboard-enter ordering for
+           tests which need an initially focused external clipboard offer. */
+        if(server->clipboard_auto_focus && !atomic_exchange(&server->clipboard_focus_sent,1)) {
+            CHECK(server->keyboard && server->surface);
+            struct wl_array keys;wl_array_init(&keys);
+            wl_keyboard_send_enter(server->keyboard,3,server->surface,&keys);
+            wl_array_release(&keys);
+        }
         wl_display_flush_clients(server->display);atomic_store(&server->offer_sent,1);
     }
     int drop = atomic_exchange(&server->send_drop, 0);
@@ -277,7 +286,7 @@ static void bind_seat(struct wl_client *client, void *data,
     wl_resource_set_implementation(resource, &seat_implementation, data, NULL);
     test_server *server=data;
     server->seat=resource;
-    wl_seat_send_capabilities(resource, (server->keyboard_enabled?WL_SEAT_CAPABILITY_KEYBOARD:0) |
+    wl_seat_send_capabilities(resource, ((server->keyboard_enabled || server->clipboard_auto_focus)?WL_SEAT_CAPABILITY_KEYBOARD:0) |
         (server->pointer_enabled?WL_SEAT_CAPABILITY_POINTER:0));
 }
 
