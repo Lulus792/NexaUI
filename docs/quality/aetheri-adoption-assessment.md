@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric value through Windows UI Automation (2026-11-05)
+
+Source `6dde095865b6465dd944ff702cc399f0f834c210` extends the existing
+independent Windows UIA ValuePattern client and host with a numeric field.
+The client reads the initial value, sends an invalid draft and observes the
+native invalid-form property while the host checks that the committed number
+remains unchanged. It then sends a valid draft, observes the valid state and
+the host commits the expected value. The full UIA value regression passed in
+STA, MTA and owner-initialized COM modes (3/3, exit 0) on Windows 10.0.26200,
+MSVC shared Debug; the native window was hidden. This is an independent client,
+not human screenreader or physical/visual acceptance. It does not establish
+Windows native text-selection or IME composition behavior, macOS AX numeric
+editing, or Aetheri consumer acceptance. T05 remains open.
+
 ## Accessible numeric text and selection (2026-11-05)
 
 Source `a65206f0b740069ae4a3d5f4f0a9eb93c25501f7` publishes the numeric
