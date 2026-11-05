@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## Nested overlays through Windows UI Automation (2026-11-05)
+
+Source `fafd19e808475d46e8f44db71b2dd9d3ddaa0bfd` applies the same distinction
+between intrinsic disabled state and overlay suppression to the Windows UIA
+snapshot. Real disabled state and offscreen state still inherit through the
+native tree. The change is in the 0.1.10 development package.
+
+The existing independent UIA client and host now exercise a nested modal and
+popup: an explicitly disabled group's child remains disabled; the outer trigger
+is disabled while the inner action is enabled and can be invoked; the host
+observes exactly one activation; closing the child restores the logical focus
+to the trigger, which becomes enabled again. On the preceding `f354ade` source
+with these new tests, the native client rejected the incorrectly disabled
+inner action (`D:/NexaUI/out/nested-uia-20261105/before.log`).
+
+On Windows version 10.0.26200, x64, MSVC 19.38.33145 and Windows SDK 10.0.26100,
+the static Release build passed nine independent UIA tests across STA, MTA and
+owner-initialized COM, including existing value and multi-selection regressions
+(`D:/NexaUI/out/nested-uia-20261105/regression.log`). The shared Release build
+with MSVC AddressSanitizer passed the nested UIA test
+(`D:/NexaUI/out/nested-uia-asan-20261105/after.log`); its build warned that
+debug information was not enabled, limiting sanitizer diagnostics. These test
+windows are hidden: the focus-return assertion uses the host's logical focus,
+not a visible desktop or human screenreader observation. Neither local build
+embedded `NEXAUI_SOURCE_REVISION`; the source above names the tested tree, not
+an in-binary provenance result.
+
+macOS AX has analogous inherited-state logic and still requires correction and
+native verification. Human screenreader, Aetheri and physical/visual acceptance,
+as well as sibling overlays, remain open. No 1.0.0 release was made.
+
 ## Nested overlays through Linux AT-SPI (2026-11-05)
 
 Source `01b04679211e380e28a6e341e1ca9f5df4967353` fixes a Linux bridge
