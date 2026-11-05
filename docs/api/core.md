@@ -14,6 +14,23 @@ may have the same 0.1.0 version but not export it, so applications using it
 must ship or require a library containing this API. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
+`nx_get_source_revision` returns an immutable borrowed string with the full
+Git commit ID supplied by the builder when configuring the linked core. Its
+lifetime is the lifetime of that library; the call is thread-safe and needs no
+context. A null output returns `NX_ERROR_ARGUMENT`; when the builder supplied
+no revision, the call clears the output and returns `NX_ERROR_UNSUPPORTED`.
+Set CMake cache variable `NEXAUI_SOURCE_REVISION` to a complete 40- or
+64-digit hexadecimal ID, or leave it empty. Invalid values fail configuration;
+accepted IDs are normalized to lowercase. The installed CMake package also
+exports the declaration as `NexaUI_SOURCE_REVISION` (empty if unknown).
+
+This is a **builder declaration**, not proof that the files, dependencies or
+binary match that commit. Builds do not invoke Git or inspect dirty files, and
+changing a checkout does not automatically update an existing CMake cache.
+Provenance requires independently verifying the source tree and build inputs
+and explicitly updating the declaration. This new symbol can also be absent
+from older libraries reporting the same pre-1.0 version.
+
 `nx_get_build_features` reports facilities compiled into the linked core as a
 `uint64_t` bit mask. It is thread-safe, needs no context and returns
 `NX_ERROR_ARGUMENT` for a null output. Ignore unrecognized bits. The window

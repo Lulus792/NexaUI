@@ -31,6 +31,18 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(int argc, char **argv) {
+    const char *revision = "must be cleared";
+    if (nx_get_source_revision(NULL) != NX_ERROR_ARGUMENT) return 19;
+    nx_result revision_result = nx_get_source_revision(&revision);
+#ifdef NEXAUI_PACKAGE_SOURCE_REVISION
+    if (NEXAUI_PACKAGE_SOURCE_REVISION[0]) {
+        if (revision_result != NX_OK || !revision ||
+            strcmp(revision, NEXAUI_PACKAGE_SOURCE_REVISION)) return 19;
+    } else if (revision_result != NX_ERROR_UNSUPPORTED || revision) return 19;
+#else
+    if ((revision_result != NX_OK || !revision) &&
+        (revision_result != NX_ERROR_UNSUPPORTED || revision)) return 19;
+#endif
     uint64_t features = 0;
     if (nx_get_build_features(NULL) != NX_ERROR_ARGUMENT ||
         nx_get_build_features(&features) != NX_OK)

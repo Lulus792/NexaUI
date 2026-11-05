@@ -76,6 +76,12 @@ typedef struct nx_version {
 
 NX_API nx_result nx_get_version(nx_version *out_version);
 
+/* Builder-declared full Git commit ID, not a verification of the source tree
+   or build. The immutable borrowed string lives as long as the linked library.
+   A non-null output is cleared and NX_ERROR_UNSUPPORTED is returned when no
+   revision was supplied. A null output returns NX_ERROR_ARGUMENT. Thread-safe. */
+NX_API nx_result nx_get_source_revision(const char **out_revision);
+
 /* Compiled core facilities, not runtime availability or renderer capability.
    Unknown future bits must be ignored. All bits describe the linked core. */
 #define NX_BUILD_WINDOW_WIN32             (UINT64_C(1) << 0)

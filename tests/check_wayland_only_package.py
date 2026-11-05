@@ -23,6 +23,8 @@ def main():
     with tempfile.TemporaryDirectory(prefix="nexaui-wayland-profile-") as tmp:
         root = Path(tmp)
         for shared in ("OFF", "ON"):
+            # Deliberately synthetic IDs test propagation, not source provenance.
+            revision = "A" * 40 if shared == "OFF" else "B" * 64
             build = root / ("sdk-" + shared)
             prefix = root / ("install-" + shared)
             consumer = root / ("consumer-" + shared)
@@ -30,7 +32,8 @@ def main():
                 "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_DISABLE_FIND_PACKAGE_X11=ON",
                 "-DNEXAUI_ENABLE_X11=OFF", "-DNEXAUI_BUILD_VULKAN=OFF",
                 "-DNEXAUI_BUILD_TESTS=OFF", "-DNEXAUI_BUILD_EXAMPLES=OFF",
-                "-DBUILD_SHARED_LIBS=" + shared, "-DCMAKE_INSTALL_PREFIX=" + str(prefix))
+                "-DBUILD_SHARED_LIBS=" + shared, "-DCMAKE_INSTALL_PREFIX=" + str(prefix),
+                "-DNEXAUI_SOURCE_REVISION=" + revision)
             run("cmake", "--build", str(build))
             run("cmake", "--install", str(build))
             run("cmake", "-S", str(SOURCE / "tests/package_consumer"), "-B", str(consumer),

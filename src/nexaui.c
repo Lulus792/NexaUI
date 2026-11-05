@@ -5,6 +5,7 @@
 #include "text_command.h"
 #include "text_value.h"
 #include "selection_model.h"
+#include "source_revision.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -18,6 +19,14 @@
 nx_result nx_get_version(nx_version *out_version) {
     if (!out_version) return NX_ERROR_ARGUMENT;
     *out_version = (nx_version){NX_VERSION_MAJOR, NX_VERSION_MINOR, NX_VERSION_PATCH};
+    return NX_OK;
+}
+
+nx_result nx_get_source_revision(const char **out_revision) {
+    if (!out_revision) return NX_ERROR_ARGUMENT;
+    *out_revision = NULL;
+    if (!NEXAUI_DECLARED_SOURCE_REVISION[0]) return NX_ERROR_UNSUPPORTED;
+    *out_revision = NEXAUI_DECLARED_SOURCE_REVISION;
     return NX_OK;
 }
 

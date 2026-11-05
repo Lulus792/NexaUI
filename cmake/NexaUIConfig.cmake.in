@@ -1,4 +1,6 @@
 @PACKAGE_INIT@
+# Builder declaration only; this is not a verified provenance attestation.
+set(NexaUI_SOURCE_REVISION "@NEXAUI_SOURCE_REVISION_NORMALIZED@")
 if(NOT WIN32)
     include(CMakeFindDependencyMacro)
     find_dependency(Threads)
