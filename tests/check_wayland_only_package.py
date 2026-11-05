@@ -46,6 +46,19 @@ def main():
             libdirs = [str(prefix / "lib"), str(prefix / "lib64")]
             env["LD_LIBRARY_PATH"] = os.pathsep.join(libdirs + [env.get("LD_LIBRARY_PATH", "")])
             run(str(consumer / "consumer"), "--expect-wayland-only", env=env)
+            missing = root / ("missing-vulkan-" + shared)
+            command = ["cmake", "-S", str(SOURCE / "tests/vulkan_consumer"),
+                       "-B", str(missing), "-DCMAKE_PREFIX_PATH=" + str(prefix),
+                       "-DCMAKE_DISABLE_FIND_PACKAGE_X11=ON"]
+            print("+ expect missing component:", *command, flush=True)
+            rejected = subprocess.run(command, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, text=True)
+            print(rejected.stdout, end="", flush=True)
+            configs = list(prefix.glob("lib*/cmake/NexaUI/NexaUIConfig.cmake"))
+            if (len(configs) != 1 or "set(NexaUI_Vulkan_FOUND FALSE)" not in
+                    configs[0].read_text(encoding="utf-8") or
+                    rejected.returncode == 0 or "NexaUI_FOUND" not in rejected.stdout):
+                raise RuntimeError("Vulkan-off package did not reject the required component")
     print("Static and shared installed consumers passed without CMake X11 discovery.")
 
 

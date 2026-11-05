@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "scene.h"
-#include "renderer.h"
+#include "nexaui/vulkan.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
     if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
-    nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
+    nx_window *window=NULL; settings_scene *scene=NULL; nx_vulkan_view *renderer=NULL;
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
         !settings_create(font,font_size,window,&scene) ||
-        nx_vulkan_driver_open(window,&renderer)!=NX_OK) goto cleanup;
+        nx_vulkan_view_open(window,&renderer)!=NX_OK) goto cleanup;
     opened=1; okay=1;
     if (german && !settings_set_language(scene,"de")) okay=0;
     if (verify_ax && (!settings_set_draft_name(scene,"A\xc3\xa9\xf0\x9f\x8c\x8d",7) ||
@@ -185,22 +185,22 @@ int main(int argc, char **argv) {
         const nx_command *commands; size_t count;
         nx_pixel_size pixels;
         if (nx_window_get_pixel_size(window,&pixels)!=NX_OK || nx_frame_commands(settings_context(scene),&commands,&count)!=NX_OK) { okay=0; break; }
-        nx_color bg; nx_render_outcome outcome;
+        nx_color bg; nx_vulkan_view_outcome outcome;
         if (nx_theme_color(settings_context(scene),NX_COLOR_BACKGROUND,&bg)!=NX_OK ||
-            nx_renderer_run(&renderer,(nx_render_target){pixels.width,pixels.height,info.scale},commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
-        if (outcome==NX_RENDER_DEVICE_LOST && nx_renderer_recover(&renderer)!=NX_OK) { okay=0; break; }
-        if (verify_keyboard_small && outcome==NX_RENDER_READY && (info.width!=(verify_keyboard_minimum?128:240) || info.height!=150)) {
+            nx_vulkan_view_render(renderer,pixels,info.scale,commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
+        if (outcome==NX_VULKAN_VIEW_DEVICE_LOST && nx_vulkan_view_recover(renderer)!=NX_OK) { okay=0; break; }
+        if (verify_keyboard_small && outcome==NX_VULKAN_VIEW_READY && (info.width!=(verify_keyboard_minimum?128:240) || info.height!=150)) {
             fprintf(stderr,"Unexpected small-window size %.0fx%.0f\n",info.width,info.height);
             okay=0; break;
         }
-        if (outcome==NX_RENDER_READY) ++presented;
-        if (verify_keyboard && outcome==NX_RENDER_READY && !keyboard_ready) {
+        if (outcome==NX_VULKAN_VIEW_READY) ++presented;
+        if (verify_keyboard && outcome==NX_VULKAN_VIEW_READY && !keyboard_ready) {
             puts("SETTINGS_KEYBOARD_READY"); fflush(stdout); keyboard_ready=1;
         }
-        if (verify_ime && outcome==NX_RENDER_READY && !keyboard_ready) {
+        if (verify_ime && outcome==NX_VULKAN_VIEW_READY && !keyboard_ready) {
             puts("SETTINGS_IME_READY"); fflush(stdout); keyboard_ready=1;
         }
-        if (verify_ime && outcome==NX_RENDER_READY) {
+        if (verify_ime && outcome==NX_VULKAN_VIEW_READY) {
             uint64_t ime_focus=nx_focus_id(settings_context(scene));
             if (ime_focus==3 && !ime_focus_reported) { puts("SETTINGS_IME_FOCUSED"); fflush(stdout); ime_focus_reported=1; }
             uint32_t index; nx_semantic_view view; nx_utf8_span applied; int motion=0;
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
         /* The scene learns the new focus while building this frame. Give it
            one further frame to reveal the focused control before going idle. */
         int probe_redraw=settings_take_accessibility_probe_redraw(scene);
-        dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw || scheduled_now;
+        dirty=outcome!=NX_VULKAN_VIEW_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw || scheduled_now;
         if (verify_pending_close && scheduled_now) {pending_close_seen=1;break;}
         if (verify_ax || verify_keyboard) {
             nx_utf8_span applied; int motion=0;
@@ -283,10 +283,10 @@ int main(int argc, char **argv) {
 cleanup:
     if (!apply_worker_join(&worker)) okay=0;
     if (opened) {
-        nx_result r=nx_renderer_close(&renderer);
+        nx_result r=nx_vulkan_view_close(&renderer);
         for (unsigned i=0; r==NX_ERROR_LIMIT && i<4; ++i) {
             if (nx_window_poll(window,16)!=NX_OK) break;
-            r=nx_renderer_close(&renderer);
+            r=nx_vulkan_view_close(&renderer);
         }
         if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
     }

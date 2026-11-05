@@ -258,17 +258,19 @@ if(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
-    option(NEXAUI_BUILD_VULKAN "Build the private Linux Vulkan backend" ON)
+    option(NEXAUI_BUILD_VULKAN "Build the optional Linux Vulkan backend" ON)
     if(NEXAUI_BUILD_VULKAN)
         find_package(Vulkan 1.3.250 REQUIRED)
         add_library(nexaui_renderer_vulkan STATIC renderers/vulkan/device.c
-            renderers/vulkan/renderer.c renderers/vulkan/pipeline.c renderers/vulkan/timing_history.c)
+            renderers/vulkan/renderer.c renderers/vulkan/pipeline.c renderers/vulkan/timing_history.c
+            renderers/vulkan/public.c)
+        add_library(NexaUI::Vulkan ALIAS nexaui_renderer_vulkan)
         target_include_directories(nexaui_renderer_vulkan PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
-        target_link_libraries(nexaui_renderer_vulkan PRIVATE
-            NexaUI::NexaUI Vulkan::Vulkan Threads::Threads
+        target_link_libraries(nexaui_renderer_vulkan PUBLIC NexaUI::NexaUI PRIVATE
+            Vulkan::Vulkan Threads::Threads
             PkgConfig::WAYLAND_CLIENT m)
         if(NEXAUI_ENABLE_X11)
             target_link_libraries(nexaui_renderer_vulkan PRIVATE X11::X11)
@@ -276,7 +278,8 @@ if(UNIX AND NOT APPLE)
             target_compile_definitions(nexaui_renderer_vulkan PRIVATE NEXAUI_VULKAN_WAYLAND_ONLY)
         endif()
         set_target_properties(nexaui_renderer_vulkan PROPERTIES
-            C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO EXPORT_NAME Vulkan
+            POSITION_INDEPENDENT_CODE ON)
         target_compile_options(nexaui_renderer_vulkan PRIVATE
             -Wall -Wextra -Wpedantic)
     endif()
@@ -317,6 +320,12 @@ if(NEXAUI_BUILD_TESTS)
     endif()
     add_test(NAME nexaui_build_features COMMAND nexaui_build_features_tests ${_nexaui_expect_window})
     if(TARGET nexaui_renderer_vulkan)
+        add_executable(nexaui_vulkan_public_consumer tests/vulkan_consumer/main.c)
+        target_compile_features(nexaui_vulkan_public_consumer PRIVATE c_std_17)
+        target_link_libraries(nexaui_vulkan_public_consumer PRIVATE NexaUI::Vulkan Threads::Threads)
+        add_test(NAME nexaui_vulkan_public_wayland COMMAND nexaui_vulkan_public_consumer)
+        set_tests_properties(nexaui_vulkan_public_wayland PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
+            ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
         add_executable(nexaui_vulkan_validation_tests tests/test_vulkan_validation.c)
         target_link_libraries(nexaui_vulkan_validation_tests PRIVATE Vulkan::Vulkan)
         target_compile_features(nexaui_vulkan_validation_tests PRIVATE c_std_17)
@@ -1660,6 +1669,13 @@ install(TARGETS nexaui EXPORT NexaUITargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(TARGET nexaui_renderer_vulkan)
+    install(TARGETS nexaui_renderer_vulkan EXPORT NexaUITargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    set(NEXAUI_PACKAGE_HAS_VULKAN TRUE)
+else()
+    set(NEXAUI_PACKAGE_HAS_VULKAN FALSE)
+endif()
 install(DIRECTORY include/nexaui DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES data/unicode/18.0.0/license.txt
     DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/NexaUI RENAME UNICODE-LICENSE.txt)

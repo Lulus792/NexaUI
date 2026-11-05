@@ -65,3 +65,18 @@ timeouts after real submissions and verify that a pending close retains the
 window lease. Drawing tests compare exact headless pixels across scales,
 fractional/shared edges, failed upload growth and renderer rebuild. See [the Vulkan contract](vulkan.md) for extension requirements
 and explicit compatibility modes.
+
+## Public Linux Vulkan view
+
+`nexaui/vulkan.h` offers an opaque `nx_vulkan_view` around the same driver; it
+does not expose the private callback table or Vulkan handles. Request the
+optional installed component with `find_package(NexaUI CONFIG REQUIRED
+COMPONENTS Vulkan)` and link `NexaUI::Vulkan`. The static adapter carries its
+Vulkan, Wayland, thread and selected X11 link dependencies; the target also
+propagates `NexaUI::NexaUI`. A core-only consumer need not request or discover
+Vulkan. A package built with `NEXAUI_BUILD_VULKAN=OFF` does not provide the
+component. The caller owns the window, polls it and destroys it only after a
+successful view close. Strict present retirement is required; unsupported
+devices return an error, and a failed close retains the view for retry. READY
+means submission, not physical presentation. Other platforms and externally
+owned shell-role surfaces remain separate work.

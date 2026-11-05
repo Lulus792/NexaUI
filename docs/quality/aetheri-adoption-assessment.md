@@ -818,3 +818,64 @@ also passed with ASan/UBSan (`/tmp/nexaui-worker-last-asan.log`). All four
 previously skipped simple-IME cases passed separately on the final candidate
 (`/tmp/nexaui-worker-last-ime.log`). The full suite was not rerun after that
 final small adjustment.
+
+## Public Linux Vulkan consumer (2026-11-05)
+
+Candidate based on `2c530da4d532f5d680b44563e5a10aacb0824768` adds the
+optional installed `NexaUI::Vulkan` target and opaque `nexaui/vulkan.h` view
+over the existing private renderer driver. Settings now uses this public
+contract, with no private renderer headers or private include directories in
+its host target. The caller owns the window, submits logical commands at a
+declared physical size/scale, handles suspended and lost outcomes, and retries
+close without discarding the window lease. Wrong-thread close preserves the
+view. The initial public view requires strict present retirement; the private
+compatibility policies are not yet exposed through this contract.
+
+Separate C17 consumers linked to the installed static and shared-core packages
+and each submitted a frame on private Weston/Xvfb with software rendering.
+They used only the installed include directory and public target; fixture
+results `/tmp/nexaui-vulkan-last-static-20261105/result.json` and
+`/tmp/nexaui-vulkan-last-shared-20261105/result.json` record child and Weston
+exit 0. They also checked malformed commands, zero-size suspension, duplicate
+window lease and wrong-thread close. An add_subdirectory consumer submitted a
+frame in `/tmp/nexaui-vulkan-subdir-native-20261105/result.json` before the
+final output-label-only test edit. A core-only consumer configured and ran with
+Vulkan discovery disabled even when the package included Vulkan. A package
+built without Vulkan rejected the required Vulkan component in both static and
+shared runs (`/tmp/nexaui-vulkan-package-off-verified.log`).
+
+The full GCC shared private-Weston suite passed 209 executed tests and skipped
+four opt-in IME cases (`/tmp/nexaui-vulkan-public-full.log`) before an explicit
+public-outcome mapping adjustment. After that adjustment, the public consumer,
+Settings keyboard and AT-SPI error/retry tests passed again
+(`/tmp/nexaui-vulkan-last-native.log`), as did the public consumer and Settings
+close/retry cases under ASan/UBSan (`/tmp/nexaui-vulkan-last-asan.log`). All
+four opt-in simple-IME cases also passed (`/tmp/nexaui-vulkan-last-ime.log`).
+These results demonstrate software submission, not physical presentation,
+Aetheri/wlroots behavior, a complete installed Settings application, GPU driver
+coverage or renderer packaging for other platforms. Those gates remain open.
+
+The renderer archive is now built as position-independent code. With a shared
+core, the installed consumer also built and loaded a separate shared component
+that links this archive before submitting its frame
+(`/tmp/nexaui-vulkan-pic-plugin-20261105/result.json`); the installed static
+consumer also submitted a frame (`/tmp/nexaui-vulkan-pic-static-20261105/result.json`).
+After that build change, the public consumer and Settings pending-close and
+AT-SPI retry cases passed under ASan/UBSan
+(`/tmp/nexaui-vulkan-pic-asan.log`). The earlier full suite predates the PIC
+build change; separately executed renderer regressions are recorded below.
+
+Four existing native Wayland Vulkan draw, present, timing and ring cases passed
+on the PIC build (`/tmp/nexaui-vulkan-pic-regression.log`). The first attempt
+used two nonexistent build-target names and ran no tests
+(`/tmp/nexaui-vulkan-pic-regression-build.log`); the corrected build used the
+actual target names.
+The four opt-in simple-IME cases also passed on the PIC build
+(`/tmp/nexaui-vulkan-pic-ime.log`).
+
+The final consumer CMake files link only `NexaUI::Vulkan` directly; they do not
+independently locate or link Threads, Vulkan or Wayland. Installed shared,
+installed static and add_subdirectory versions each submitted on private
+Weston (`/tmp/nexaui-vulkan-direct-shared-20261105/result.json`,
+`/tmp/nexaui-vulkan-direct-static-20261105/result.json`,
+`/tmp/nexaui-vulkan-direct-subdir-20261105/result.json`).

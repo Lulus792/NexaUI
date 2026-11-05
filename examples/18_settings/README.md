@@ -13,9 +13,10 @@ to select the German example catalog. The application-owned scene can switch
 between `en` and `de` with `settings_set_language` without changing semantic
 IDs, the focused field, draft or in-flight submission. Unsupported codes are
 rejected. This example catalog does not implement general plural rules,
-locale-sensitive formatting or system language detection. The runner
-currently uses the private build-tree Vulkan adapter and is not an installed-SDK
-consumer. `--smoke` closes after a bounded native run. The headless scene test
+locale-sensitive formatting or system language detection. The Linux runner uses
+the public `nexaui/vulkan.h` API and `NexaUI::Vulkan` target. The scene remains
+an example, not an Aetheri service. `--smoke` closes after a bounded native run.
+The headless scene test
 checks Tab and Shift-Tab traversal, text editing, checkbox and button activation,
 validation, applied model values and status semantics. It uses synthetic events.
 Run `nexaui_settings /path/to/font.ttf --simulate-error` to make the first
@@ -66,7 +67,7 @@ exercise an installed input method or both transports in the same process.
 This is not yet the complete first-view acceptance. Native IME/clipboard input,
 accessible text editing, human screenreader and keyboard checks, visual/contrast
 review, broader resize and text-scaling behavior,
-general service wakeup/recovery, hidden-window behavior, and portable public renderer packaging remain open. Windows
+general service wakeup/recovery, hidden-window behavior, and other-platform renderer packaging remain open. Windows
 and macOS native runners are not supplied. The options use a scroll area; a
 synthetic test checks focus visibility at 240x150. Below 128x120 the runner
 continues polling without drawing a new frame. Long-label reflow and native
