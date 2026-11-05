@@ -59,7 +59,8 @@ int main(int argc, char **argv) {
 #ifdef NEXAUI_PACKAGE_VERSION_MAJOR
     if (version.major != NEXAUI_PACKAGE_VERSION_MAJOR ||
         version.minor != NEXAUI_PACKAGE_VERSION_MINOR ||
-        version.patch != NEXAUI_PACKAGE_VERSION_PATCH)
+        version.patch != NEXAUI_PACKAGE_VERSION_PATCH ||
+        strcmp(NX_VERSION_STRING, NEXAUI_PACKAGE_VERSION_STRING))
         return 16;
 #endif
     nx_pixel_size pixels={9,9};

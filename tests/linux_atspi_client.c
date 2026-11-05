@@ -140,6 +140,8 @@ int main(int argc,char **argv) {
     GError *error=NULL;
     CHECK(atspi_accessible_get_role(app,&error)==ATSPI_ROLE_APPLICATION && !error);
     char *toolkit=atspi_accessible_get_toolkit_name(app,&error); CHECK(toolkit && !strcmp(toolkit,"NexaUI") && !error); g_free(toolkit);
+    char *toolkit_version=atspi_accessible_get_toolkit_version(app,&error);
+    CHECK(toolkit_version && !strcmp(toolkit_version,NEXAUI_EXPECTED_VERSION) && !error); g_free(toolkit_version);
     AtspiAccessible *button=find(app,"\xc3\x96" "ffnen \xf0\x9f\x93\x81",0),*sync=find(app,"Sync",0);
     AtspiAccessible *disabled=find(app,"Disabled",0),*secret=find(app,"Password",0),*counter=find(app,"Button count 0",0);
     AtspiAccessible *required=find(app,"Required",0),*optional=find(app,"Optional",0),*dynamic=find(app,"Dynamic",0);

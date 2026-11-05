@@ -85,6 +85,24 @@ the source or dependencies. An existing build cache must be updated explicitly
 when the declaration changes. Windows/macOS and independent provenance
 verification remain open.
 
+The 0.1.1 development-version candidate based on
+`80241dcd1499f03e1ef7587adfc6661d6747e565` makes these additive queries
+distinguishable from 0.1.0 at CMake package selection. An installed 0.1.0
+shared package from that source was rejected by a consumer requiring 0.1.1; a
+new shared installation configured, linked and ran. A loader-path negative
+control deliberately resolved the older same-SONAME library and the consumer's
+linked-version check rejected it. This older test library already exported the
+queries; still older 0.1.0 builds without them may fail symbol resolution
+before a comparison. An independent AT-SPI client saw the current toolkit
+version under private Weston and rejected the old library in a separate
+negative run. Two installed C17 and four add-subdirectory profiles passed.
+No Git tag, binary release or 1.0.0 approval is implied; Windows/macOS and
+full ABI compatibility remain open.
+The tested local old/new shared objects have SHA-256 values
+`49d09d0d49b7d96a09b0cd897c56c6aef2ec3406ff58181f02d96ffb2d74629a` and
+`ddf3dbe148d681e3a62667c6899356484c12fa8369c9114dbfd0bd19b5563f0b`,
+respectively. Their build directories are local test artifacts, not releases.
+
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |
 | B01 | 0 | Candidate implemented; acceptance matrix incomplete | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Explicit Wayland-only Linux build; current CMakeLists.txt:29 requires X11:** Configure, build and installed C17 consumer work without X11 headers/libraries; default dual-backend build still passes |

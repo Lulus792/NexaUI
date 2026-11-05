@@ -1,4 +1,4 @@
-# Core API (0.1.0)
+# Core API (0.1.1)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -9,9 +9,8 @@ It can be called on any thread without a context. In a shared build this is the
 library resolved by the platform loader; in a static build it is the core
 linked into the program. The three numbers are not a Git revision or backend
 capability report, and matching versions do not prove identical source. Record
-the actual source pin separately. This symbol is new: an older shared library
-may have the same 0.1.0 version but not export it, so applications using it
-must ship or require a library containing this API. This does not declare a
+the actual source pin separately. Applications using these queries can require
+the CMake package version 0.1.1 or newer in the same minor series. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full
@@ -28,8 +27,7 @@ This is a **builder declaration**, not proof that the files, dependencies or
 binary match that commit. Builds do not invoke Git or inspect dirty files, and
 changing a checkout does not automatically update an existing CMake cache.
 Provenance requires independently verifying the source tree and build inputs
-and explicitly updating the declaration. This new symbol can also be absent
-from older libraries reporting the same pre-1.0 version.
+and explicitly updating the declaration. Older 0.1.0 libraries may lack this symbol.
 
 `nx_get_build_features` reports facilities compiled into the linked core as a
 `uint64_t` bit mask. It is thread-safe, needs no context and returns
@@ -42,7 +40,10 @@ IME, compositor protocol or physical device is available. Use the operation's
 result and the existing per-window capabilities for the current session. This
 query describes the core only: the separately linked private Vulkan renderer
 is not represented. As with `nx_get_version`, an older 0.1.0 binary can lack
-this newer symbol.
+this newer symbol. CMake package selection only validates configuration-time
+metadata: ensure the runtime loader resolves the intended shared library. If
+an older loaded library lacks a required symbol, loading or the first call may
+fail before a version comparison can run.
 
 ## Results and ownership
 

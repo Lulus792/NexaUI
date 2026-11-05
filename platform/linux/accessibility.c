@@ -969,7 +969,7 @@ static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_prop
     if (!strcmp(name,"CaretOffset")) return nx_ax_int(it,n?n->text_cursor:0);
     if (!strcmp(name,"Id")) return nx_ax_int(it,r.hub->application_id);
     if (!strcmp(name,"ToolkitName")) return nx_ax_string(it,"NexaUI");
-    if (!strcmp(name,"Version") || !strcmp(name,"ToolkitVersion")) return nx_ax_string(it,"0.1.0");
+    if (!strcmp(name,"Version") || !strcmp(name,"ToolkitVersion")) return nx_ax_string(it,NX_VERSION_STRING);
     if (!strcmp(name,"AtspiVersion")) return nx_ax_string(it,"2.1");
     if (!strcmp(name,"Locale")) return nx_ax_string(it,"C");
     if (!strcmp(name,"AccessibleId")) { char path[128]; nx_ax_path(r,path); return nx_ax_string(it,path); }

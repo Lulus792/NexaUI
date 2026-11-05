@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — Development snapshot
+
+- Added linked core version, compiled platform features and optional builder-declared source revision queries. The declared revision is not a provenance attestation.
+- Added a Wayland-only Linux build profile and Settings example, including input and accessibility work in progress. See the Aetheri requirement map for acceptance boundaries and remaining work.
+- The CMake package now identifies these additive APIs as available from 0.1.1. This development version is not a 1.0.0 release or a full compatibility guarantee.
+
 ## 0.1.0 — Foundation in progress
 
 - Corrected D3D12 1:1 texel selection with an exact half-cell/integer bias, independently per axis. Coordinate-coded hardware/WARP fields establish the cause; 36 RGBA8/A8/axis/origin cases cover nextafter boundaries. Required paint scenes now include 1×/1.25×/1.5×/2×, with a separate WARP CTest; all local comparisons are byte-exact.

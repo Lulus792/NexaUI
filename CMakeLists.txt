@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.0 LANGUAGES C)
+project(NexaUI VERSION 0.1.1 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -750,6 +750,7 @@ if(NEXAUI_BUILD_TESTS)
                 AND NEXAUI_DBUS_DAEMON AND NEXAUI_DBUS_SEND AND Python3_Interpreter_FOUND)
             add_executable(nexaui_linux_atspi_client tests/linux_atspi_client.c)
             target_link_libraries(nexaui_linux_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            target_compile_definitions(nexaui_linux_atspi_client PRIVATE NEXAUI_EXPECTED_VERSION="${PROJECT_VERSION}")
             target_compile_features(nexaui_linux_atspi_client PRIVATE c_std_17)
             set_target_properties(nexaui_linux_atspi_client PROPERTIES
                 C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
