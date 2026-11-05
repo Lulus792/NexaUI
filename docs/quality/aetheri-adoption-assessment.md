@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## macOS AX text selection and UTF-16 conversion (2026-11-05)
+
+Source `6125a152c523afd3b4821637d9b6fafa664a0077` adds macOS AX selected-text,
+selected-range and character-count queries and a bounded guarded selection
+setter. Native UTF-16 ranges are converted to core UTF-8 byte offsets; invalid
+surrogate boundaries and out-of-range values are rejected, and core grapheme
+validation remains authoritative. Pending selection changes expire on a newer
+published frame or an invalidated model. Protected fields expose no selection;
+enabled read-only fields permit selection without permitting value changes.
+
+The test-only `36651e6918c27027d98870e0cf510d18542ab1b1` failed before the
+implementation in the native selector and independent AX client
+([static](https://github.com/Lulus792/NexaUI/actions/runs/42014114805/job/127200185128),
+[shared](https://github.com/Lulus792/NexaUI/actions/runs/42014114805/job/127200185178)).
+The corrected source passed the complete macOS ARM64 suites
+([static 112/112](https://github.com/Lulus792/NexaUI/actions/runs/42014683317/job/127202116569),
+[shared 111/111](https://github.com/Lulus792/NexaUI/actions/runs/42014683317/job/127202117153)).
+The independent client set and read an emoji selection and the selected text.
+In-process cases additionally cover half-surrogate and overflow rejection,
+stale model replacement, read-only and protected fields. Text-range editing,
+geometry and selection-change notifications remain open, as do VoiceOver,
+physical IME and Aetheri acceptance; this does not complete T05.
+
 ## Guarded macOS AX whole-value editing (2026-11-05)
 
 Source `6491d77caef0587293ebb4f3dbad2e3039da572d` adds bounded whole-value
@@ -21,8 +44,9 @@ Unicode text values and observes publication. The in-process AppKit case also
 checks invalid numeric drafts and commit, model replacement after routing,
 disable/re-enable, stale retained elements, read-only/protected targets,
 single-line newline rejection and the payload bound. This is whole-value
-editing, not native text selection/ranges, physical IME, VoiceOver or Aetheri
-acceptance. Those remain open, and no Aetheri consumer pin changed.
+editing; the subsequent selection work above adds native text selection.
+Text-range editing, physical IME, VoiceOver and Aetheri acceptance remain open,
+and no Aetheri consumer pin changed.
 
 ## Numeric value visibility through macOS AX (2026-11-05)
 
