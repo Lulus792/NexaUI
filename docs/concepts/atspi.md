@@ -158,6 +158,13 @@ Newly published focused incarnations additionally emit a focused state event
 after insertion; cache state alone is insufficient for the tested Orca modal.
 See the [focus regression and real Orca task](../quality/orca-focus-report.md).
 
+Scrollable thumb increment/decrement actions are forwarded to the owner-thread
+scroll area and use its configured step. A private Wayland client has exercised
+both directions on a vertical scrollbar. Action admission is not itself proof
+that a later application frame applied a request; a removed, disabled, moved or
+modal-blocked target can invalidate it. Other platform bridges and general
+slider step actions have separate acceptance requirements.
+
 ## Coordinates and validation limits
 
 Component queries support window and parent coordinates. X11 obtains actual root

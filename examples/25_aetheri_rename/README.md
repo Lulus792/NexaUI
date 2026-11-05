@@ -147,8 +147,15 @@ not claim the user read the contents. Static, shared and ASan/UBSan scene,
 keyboard and AT-SPI variants passed; a mutant that ignored page actions failed.
 A 400x300 headless capture was inspected.
 
-The generic scrollbar currently advertises increment/decrement actions, but
-the public core action queue does not handle those actions. The explicit page
+At that base the generic scrollbar advertised increment/decrement actions, but
+the public core action queue did not handle those actions. The explicit page
 buttons provide the tested assistive path for this example; they do not close
 that reusable scrollbar contract gap. Human screenreader and physical-input
 acceptance, other fonts and actual Aetheri integration remain open.
+
+On base `41c7dc2c122c938715a05ea13655dc7359375ef0`, generic scroll thumbs now
+handle both step actions. An independent private-Weston AT-SPI client exercised
+increment and decrement before paging and confirming this long-name review.
+The same test failed with the previously installed SDK. Static, shared and
+ASan/UBSan builds passed; horizontal native, other platforms and human
+screenreader acceptance remain open.

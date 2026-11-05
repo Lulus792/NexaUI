@@ -53,7 +53,7 @@ static int percent(AtspiAccessible *node){GError *error=NULL;atspi_accessible_cl
 int main(int argc,char **argv){
     int ok=0,dir=-1,pipes[2]={-1,-1},created=0;pid_t child=-1;char path[]="/tmp/nexaui-rename-atspi-XXXXXX";
     AtspiAccessible *desktop=NULL,*app=NULL,*dialog=NULL,*background=NULL,*confirm=NULL,*status=NULL,*cancel=NULL,*new_name=NULL,*scrollbar=NULL,*next_page=NULL,*previous_page=NULL;
-    AtspiAction *confirm_action=NULL,*cancel_action=NULL,*background_action=NULL,*next_action=NULL,*previous_action=NULL;const char *font=getenv("NEXAUI_RENAME_FONT");
+    AtspiAction *confirm_action=NULL,*cancel_action=NULL,*background_action=NULL,*next_action=NULL,*previous_action=NULL,*scroll_action=NULL;const char *font=getenv("NEXAUI_RENAME_FONT");
     int long_mode=getenv("NEXAUI_RENAME_LONG_TEST")!=NULL;char long_name[256];memset(long_name,'x',255);long_name[255]=0;
     CHECK(argc==2 && font && mkdtemp(path));created=1;dir=open(path,O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(dir>=0);
     int fd=openat(dir,"old.txt",O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC,0600);CHECK(fd>=0 && write(fd,"data",4)==4 && !close(fd));
@@ -83,6 +83,22 @@ int main(int argc,char **argv){
         CHECK(!atspi_action_do_action(background_action,0,&error));if(error){g_error_free(error);error=NULL;}}
     CHECK(!error);
     if(long_mode){
+        scroll_action=atspi_accessible_get_action_iface(scrollbar);CHECK(scroll_action);
+        int count=atspi_action_get_n_actions(scroll_action,&error),increment=-1,decrement=-1;CHECK(!error);
+        for(int i=0;i<count;++i){char *name=atspi_action_get_name(scroll_action,i,&error);CHECK(!error);
+            if(name && !strcmp(name,"increment"))increment=i;
+            if(name && !strcmp(name,"decrement"))decrement=i;
+            g_free(name);}
+        CHECK(increment>=0 && decrement>=0);
+        int initial=percent(scrollbar);CHECK(initial==0);
+        CHECK(atspi_action_do_action(scroll_action,increment,&error) && !error);
+        int moved=0;for(unsigned i=0;i<200 && !moved;++i){while(g_main_context_iteration(NULL,FALSE)){}
+            moved=percent(scrollbar)>initial;if(!moved)pause_ms();}
+        CHECK(moved && !enabled(confirm));
+        CHECK(atspi_action_do_action(scroll_action,decrement,&error) && !error);
+        int restored=0;for(unsigned i=0;i<200 && !restored;++i){while(g_main_context_iteration(NULL,FALSE)){}
+            restored=percent(scrollbar)==initial;if(!restored)pause_ms();}
+        CHECK(restored && !enabled(confirm));
         next_action=atspi_accessible_get_action_iface(next_page);CHECK(next_action);
         CHECK(atspi_action_get_n_actions(next_action,&error)>0 && !error);
         for(unsigned step=0;step<16 && !enabled(confirm);++step){
@@ -96,9 +112,9 @@ int main(int argc,char **argv){
         int before=percent(scrollbar);previous_action=atspi_accessible_get_action_iface(previous_page);CHECK(previous_action);
         CHECK(atspi_action_get_n_actions(previous_action,&error)>0 && !error);
         CHECK(atspi_action_do_action(previous_action,0,&error) && !error);
-        int moved=0;for(unsigned i=0;i<200 && !moved;++i){while(g_main_context_iteration(NULL,FALSE)){}
-            int after=percent(scrollbar);moved=after>=0 && after<before;if(!moved)pause_ms();}
-        CHECK(moved && enabled(confirm));
+        int moved_back=0;for(unsigned i=0;i<200 && !moved_back;++i){while(g_main_context_iteration(NULL,FALSE)){}
+            int after=percent(scrollbar);moved_back=after>=0 && after<before;if(!moved_back)pause_ms();}
+        CHECK(moved_back && enabled(confirm));
     }
     confirm_action=atspi_accessible_get_action_iface(confirm);CHECK(confirm_action);
     CHECK(atspi_action_get_n_actions(confirm_action,&error)>0 && !error);
@@ -133,6 +149,7 @@ cleanup:
     if(background_action)g_object_unref(background_action);
     if(next_action)g_object_unref(next_action);
     if(previous_action)g_object_unref(previous_action);
+    if(scroll_action)g_object_unref(scroll_action);
     if(dialog)g_object_unref(dialog);
     if(background)g_object_unref(background);
     if(new_name)g_object_unref(new_name);

@@ -412,6 +412,79 @@ static int test_horizontal_scrollbar_and_disabled(void) {
     return 0;
 }
 
+static int step_frame(nx_context *ctx,nx_scroll_area_desc *desc,float *x,float *y) {
+    nx_scroll_info info;
+    return nx_begin_frame(ctx,100,100,0)==NX_OK &&
+        nx_scroll_area_begin(ctx,desc,x,y,&info)==NX_OK &&
+        nx_scroll_area_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
+
+static int test_accessible_scrollbar_steps(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    nx_scroll_area_desc desc=scroll_desc(1,0,(nx_rect){0,0,100,100},(nx_size){500,500});
+    desc.axes=NX_SCROLL_X|NX_SCROLL_Y;desc.thumb_x_id=3;desc.thumb_y_id=4;desc.wheel_step=17;
+    float x=0,y=0;CHECK(step_frame(ctx,&desc,&x,&y));
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_ERROR_LIMIT);
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,17) && near(y,17));
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,34) && near(y,0));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(y,0));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(y,0));
+    x=400;y=400;
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,400) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    desc.disabled=1;
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_ERROR_STATE);
+    desc.disabled=0;CHECK(step_frame(ctx,&desc,&x,&y));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    desc.id=7; /* Reusing a thumb ID under a different owner cannot redirect it. */
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    desc.thumb_y_id=0;desc.thumb_x_id=4; /* Nor can the same ID switch axis. */
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,400) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,383) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_OK);
+    desc.content_size.width=100; /* The previously actionable thumb vanished. */
+    CHECK(step_frame(ctx,&desc,&x,&y) && near(x,0) && near(y,400));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_DECREMENT)==NX_ERROR_STATE);
+    desc.content_size.width=500;CHECK(step_frame(ctx,&desc,&x,&y));
+    nx_overlay_desc modal={0};modal.panel.id=8;modal.panel.bounds=(nx_rect){10,10,80,80};
+    modal.panel.name=(nx_utf8_span){"Modal",5};modal.backdrop_id=9;int dismissed=0;nx_scroll_info info;
+    CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK);
+    CHECK(nx_scroll_area_begin(ctx,&desc,&x,&y,&info)==NX_OK && nx_scroll_area_end(ctx)==NX_OK);
+    CHECK(nx_modal_begin(ctx,&modal,&dismissed)==NX_OK && !dismissed);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_INCREMENT)==NX_ERROR_STATE);
+    nx_context_destroy(ctx);return 0;
+}
+
+static int grouped_scroll_frame(nx_context *ctx,nx_scroll_area_desc *scroll,float *x,float *y,uint64_t *selected) {
+    nx_semantic_desc group={0};group.id=50;group.role=NX_ROLE_LIST;
+    group.bounds=(nx_rect){0,0,100,100};group.name=(nx_utf8_span){"Group",5};
+    nx_scroll_info info;
+    return nx_begin_frame(ctx,100,100,0)==NX_OK && nx_selection_group(ctx,&group,0,selected)==NX_OK &&
+        nx_scroll_area_begin(ctx,scroll,x,y,&info)==NX_OK && nx_scroll_area_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
+static int test_accessible_scrollbar_in_selection_group(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    nx_scroll_area_desc scroll=scroll_desc(1,50,(nx_rect){0,0,100,100},(nx_size){100,500});scroll.thumb_y_id=4;
+    float x=0,y=0;uint64_t selected=0;
+    CHECK(grouped_scroll_frame(ctx,&scroll,&x,&y,&selected));
+    CHECK(nx_semantics_request_action(ctx,4,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(grouped_scroll_frame(ctx,&scroll,&x,&y,&selected) && near(y,40) && selected==0);
+    nx_context_destroy(ctx);return 0;
+}
+
 static int test_scroll_area_and_layout(void) {
     nx_context *ctx = NULL;
     nx_layout *layout = NULL;
@@ -679,6 +752,8 @@ int main(void) {
         test_nested_wheel_routing() || test_scroll_failure_retry() ||
         test_scrollbar_drag_keyboard() ||
         test_horizontal_scrollbar_and_disabled() ||
+        test_accessible_scrollbar_steps() ||
+        test_accessible_scrollbar_in_selection_group() ||
         test_scroll_end_failure_retry()) return 1;
     puts("scroll and virtual list tests passed");
     return 0;

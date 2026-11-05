@@ -1870,11 +1870,13 @@ NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);
 NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
                                    uint32_t *out_index);
-/* Queue PRESS, FOCUS or selection actions against a completed frame. PRESS and
+/* Queue PRESS, FOCUS, selection or scrollbar INCREMENT/DECREMENT actions against a completed frame. PRESS and
    legacy ungrouped SELECT become ordinary interaction; explicit group selection
    is applied through nx_selection_group/apply in the next frame without a click.
    ADD_SELECTION and DESELECT are derived for group members; required groups
    cannot be cleared. Disabled, modal-blocked and unsupported targets are rejected.
+   Scrollbar steps use the area's wheel step and retain axis and owner identity;
+   other controls' increment/decrement requests remain unsupported.
    Duplicate/full 64-entry queues return LIMIT. Owner thread, between frames. */
 NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
 /* Maximum UTF-8 bytes per queued whole-text replacement (excluding terminator). */

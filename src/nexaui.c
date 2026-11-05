@@ -72,6 +72,9 @@ typedef struct nx_region {
     uint64_t overlay_id;
     uint64_t nav_parent_id;
     unsigned nav_axis; /* 1 vertical menu, 2 horizontal menu bar. */
+    uint64_t scroll_owner_id; /* A scrollbar action must retain its owner. */
+    unsigned scroll_axis; /* 1 horizontal, 2 vertical. */
+    int scroll_steps;
     nx_rect rect;
     double clip_x0, clip_y0, clip_x1, clip_y1;
     int has_clip;
@@ -759,6 +762,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         region->drag_delta_x = region->drag_delta_y = 0.0;
         region->wheel_delta_x = region->wheel_delta_y = 0.0;
         region->touch_delta_x = region->touch_delta_y = 0.0;
+        region->scroll_steps = 0;
     }
     if (ctx->focused_id && !nx_region_find(&ctx->previous_regions, ctx->focused_id))
         nx_context_change_focus(ctx, 0);
@@ -867,11 +871,15 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         nx_region *region = nx_region_find(&ctx->previous_regions, id);
         if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
             (ctx->previous_overlay_id && region->overlay_id != ctx->previous_overlay_id)) continue;
-        if (ctx->accessible_requests[i].owner_id && action != NX_ACTION_FOCUS && action != NX_ACTION_PRESS) {
+        if (ctx->accessible_requests[i].owner_id && (action == NX_ACTION_SELECT ||
+            action == NX_ACTION_ADD_SELECTION || action == NX_ACTION_DESELECT)) {
             size_t slot = ctx->selection_request_count++;
             ctx->selection_requests[slot].id = id;
             ctx->selection_requests[slot].owner_id = ctx->accessible_requests[i].owner_id;
             ctx->selection_requests[slot].action = action;
+        } else if (action == NX_ACTION_INCREMENT || action == NX_ACTION_DECREMENT) {
+            if (region->scroll_axis && region->scroll_owner_id)
+                region->scroll_steps += action == NX_ACTION_INCREMENT ? 1 : -1;
         } else if (action == NX_ACTION_FOCUS) {
             if (region->flags & NX_REGION_FOCUSABLE) { nx_context_change_focus(ctx, id); ctx->key_active_id = 0; }
         } else if (region->clicks != UINT_MAX) ++region->clicks;
@@ -2239,7 +2247,8 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
 nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t action) {
     if (!ctx || !id) return NX_ERROR_ARGUMENT;
     if (ctx->state != 2u) return NX_ERROR_STATE;
-    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT &&
+    int scroll_step=action==NX_ACTION_INCREMENT || action==NX_ACTION_DECREMENT;
+    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT && !scroll_step &&
         action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
         return NX_ERROR_UNSUPPORTED;
     uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
@@ -2252,6 +2261,8 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     if (!region || (node->state & NX_SEM_DISABLED) ||
         (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id)) return NX_ERROR_STATE;
+    if (scroll_step && (!region->scroll_axis || !region->scroll_owner_id ||
+        region->scroll_owner_id!=node->parent_id)) return NX_ERROR_UNSUPPORTED;
     const nx_semantic_record *owner = node->selection_owner == UINT32_MAX ? NULL : &ctx->semantics.nodes[node->selection_owner];
     uint32_t supported = node->actions;
     if (owner && (supported & NX_ACTION_SELECT)) {
@@ -4148,6 +4159,13 @@ nx_result nx_scroll_area_begin(nx_context *ctx,
                                            desc->thumb_x_id);
         nx_region *thumb_y = nx_region_find(&ctx->previous_regions,
                                            desc->thumb_y_id);
+        nx_region *current_scroll = nx_region_find(&ctx->current_regions,desc->id);
+        if (thumb_x && current_scroll && thumb_x->scroll_owner_id==desc->id && thumb_x->scroll_axis==1 &&
+            thumb_x->overlay_id==current_scroll->overlay_id && max_x>0.0)
+            x += thumb_x->scroll_steps * step;
+        if (thumb_y && current_scroll && thumb_y->scroll_owner_id==desc->id && thumb_y->scroll_axis==2 &&
+            thumb_y->overlay_id==current_scroll->overlay_id && max_y>0.0)
+            y += thumb_y->scroll_steps * step;
         if (thumb_x && travel_x > 0.0)
             x += thumb_x->drag_delta_x * max_x / travel_x;
         if (thumb_y && travel_y > 0.0)
@@ -4276,6 +4294,8 @@ static nx_result nx_scroll_thumb(nx_context *ctx, uint64_t id,
         nx_interaction_state interaction;
         nx_result result = nx_widget_register(ctx, &widget, &interaction);
         if (result != NX_OK) return result;
+        nx_region *region=nx_region_find(&ctx->current_regions,id);
+        if(region){region->scroll_owner_id=parent_id;region->scroll_axis=vertical?2u:1u;}
         *out_registered = 1;
     }
     return nx_fill_round_rect(ctx, rect,

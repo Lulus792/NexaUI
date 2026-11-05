@@ -28,8 +28,12 @@ to independent AT-SPI; human reading, screenreader scrolling, other fonts and
 actual Aetheri integration remain open (T01/L09/A04/P07).
 On base `7cf7062d81fbaa33d36b5127a711e65855e48b9b`, explicit previous/next
 page buttons let an independent native AT-SPI client navigate the long rename
-preview and complete the tested review. Generic scrollbar increment/decrement
-actions remain unhandled by the core request queue (A04/L04/L09).
+preview and complete the tested review. At that base, generic scrollbar
+increment/decrement actions remained unhandled by the core request queue (A04/L04/L09).
+On base `41c7dc2c122c938715a05ea13655dc7359375ef0`, the core accepts those
+actions for actual scroll thumbs, revalidates owner/axis/modal state and applies
+bounded steps. An independent AT-SPI client exercised both directions on a
+vertical thumb; horizontal native and other platform acceptance remain open.
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri
