@@ -1,5 +1,46 @@
 # Aetheri adoption: initial source assessment
 
+## Independent AT-SPI on the Aetheri compositor (2026-11-05)
+
+Driver `tests/run_aetheri_atspi.py`, source
+`91caaead6b6d57bb6b94560ff1fb3608f030c074`, runs the existing independent
+libatspi Settings client and a private D-Bus/AT-SPI registry against Aetheri's
+headless test compositor `d621c9bba1df8ffd1083999300bcff742022b9dc`. The
+Settings example was copied and separately built against an installed static
+Wayland-only SDK from `d4c9aab9354feb4c9e045b960f4985468bec3253`, this time
+with AT-SPI enabled. The real independent client exercised Unicode Text and
+EditableText, caret/selection operations and notifications, checkbox and Apply,
+observed the resulting model, and the app closed. Registry, client and
+compositor completed successfully. The AT-SPI-disabled build failed the same
+client at application discovery, confirming that an absent semantic provider
+is not counted as success.
+
+The Fedora 44 carrier did not have the required development files or AT-SPI
+registry installed. The test used a separate temporary prefix extracted from
+Fedora-signed RPMs: at-spi2-core and devel 2.60.7, D-Bus daemon/devel/tools
+1.16.2, glib2-devel 2.88.0, libXi 1.8.3, libXtst 1.2.5 and libXext 1.3.6.
+All nine signatures and digests passed the carrier's `rpmkeys --checksig`.
+The registry and its private libatspi depend on X11 client libraries even
+though the NexaUI window backend is Wayland-only; those are test runtime
+dependencies, not evidence of an X11 window backend. No RPM was installed.
+The independent client was built separately with explicit private include and
+library paths because the carrier lacked the complete GLib development
+`pkg-config` dependency chain. The initial download from the Fedora redirect
+returned HTML and the first mirror had a certificate name mismatch; neither was
+used. Original Fedora packages came from the OSUOSL Fedora mirror and were
+verified on the carrier before extraction.
+
+Host, independent client and registry SHA-256 values are respectively
+`5e7a5b4b9e62ffb67b524124e64a1d9a90389d343829cc4f17ac0858dff08856`,
+`251f28d0a4d97c8cee7ce1e4177e4e710dbcfa436c3ff9f284dddd9a0b893505` and
+`fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324`.
+Positive and negative logs are retained in
+`D:/NexaUI/out/aetheri-atspi-2026-11-05/results.tar.gz`, SHA-256
+`ed62865cb537173b64e941f404fdd6b3d89bf717d47bca19f09773d93183d24a`.
+This private-registry, headless result does not establish the Aetheri target
+image's accessibility services, actual desktop/session integration, IME,
+human screenreader use or physical accessibility acceptance.
+
 ## Aetheri SDL desktop with installed NexaUI consumers (2026-11-05)
 
 Driver source `374e69da19ef9708068bdb3ab808254d603a024c` exercises the
