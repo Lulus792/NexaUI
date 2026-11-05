@@ -26,6 +26,31 @@ proves actual AT-SPI delivery, physical presentation or human acceptance.
 Record the exact archive, selected font, SDK artifacts and results when using a
 different candidate; a successful build is not approval to change Aetheri's pin.
 
+For the original Aetheri compositor test, use a full, independently verified
+source archive, a freshly built shared Wayland/AT-SPI candidate, the separately
+built native host above, and the existing Aetheri test compositor. The candidate
+must be in a new `nexaui-settings-release-02` directory with its installed
+library at `prefix/lib/libnexaui.so.0.1.19`. The script checks the library's
+reported revision and build features, creates a separate Aetheri test copy with
+only its test pin adjusted, verifies the test script is unchanged, and writes
+candidate metadata and hashes. Verify source archives and compiler inputs
+independently: a library's self-reported revision is not source provenance.
+
+```sh
+python3 tests/aetheri_settings_candidate/prepare_compositor_trial.py \
+  --snapshot /tmp/trial/aetheri-archive --test-copy /tmp/trial/aetheri-test-copy \
+  --candidate /tmp/trial/nexaui-settings-release-02 --revision FULL_SDK_REVISION
+python3 /tmp/trial/aetheri-test-copy/tools/test_settings_view.py \
+  /path/to/test_compositor_server /path/to/aetheri_settings_candidate_native \
+  /path/to/verified/font.ttf /tmp/trial/results /path/to/private-atspi-fixture
+```
+
+The output directory must exist, and the optional final fixture enables the
+independent accessibility client and disabled-bridge negative. The original
+test validates fixture hashes and its pinned font. Use only disposable isolated
+directories: a failed preparation may leave a partial test copy or metadata.
+This test does not change Aetheri's actual pin, owner or production session.
+
 With the private Weston fixture and `xdotool`, the same unchanged native process
 can be exercised using virtual keyboard input:
 

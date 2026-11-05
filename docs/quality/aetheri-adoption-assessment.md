@@ -1,5 +1,39 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri-owned Settings on the Aetheri test compositor (2026-11-06)
+
+The unchanged Aetheri Settings model, view, native host and compositor test from
+commit `d242c7abf944e08f2693de0e1848f542be107981` passed against an isolated
+installed NexaUI 0.1.19 shared Release SDK built from
+`874ebfd6afb5f4f95f3e047ea8219ec251b17a8a` on the Fedora/glibc carrier.
+Wayland and AT-SPI were enabled; X11 and Vulkan were disabled. The original
+scene test passed at both raster densities (270 combinations each). The
+original native test passed on Aetheri's headless test compositor, covering
+pointer and keyboard interaction, 320x240 reflow, maximize/restore, nine captured
+states on three virtual outputs, idle and clean close. A second run passed with
+an independent libatspi client and private registry, including the disabled
+bridge negative. The native test also checks missing font/display failures.
+
+The Aetheri test requires pinned package metadata. For this experiment only, a
+copy of the source snapshot had its test pin changed to the actual 0.1.19
+candidate, and metadata was generated from that library; the original test
+script was unchanged. This is not an Aetheri owner or dependency-pin change.
+The preparation script and reproducible invocation are described in the
+[compatibility probe](../../tests/aetheri_settings_candidate/README.md).
+
+SHA-256: SDK library `64df78f8b82ee5044db957a5d84ea5be881e61b5ef48e59e58e44a8e5d8784e2`,
+Settings executable `7d4e867ea47fc35f4c7a7559c56338ef35fef3f554253876ddbe898409cfb084`,
+pre-existing compositor test binary `06eaa949bd87e726b9a533361d61e45587b2db076b1e317ccd2e43a56ea377a8`,
+independent AT-SPI peer `548aa0294a6e56b7cca12b6c4f198eb5f7b5f7a3e5b931eb6e880a9b8db2b0f6`,
+and unchanged test script `59e043b9aa9c6922ccf163e516064690dae4b1fb60aa1eb49304e0c5691a8ca5`.
+The retained guest results are under
+`/tmp/nexaui-compat-874ebfd-vx34kitL/test-artifacts/`, including
+`settings-view-qy99zltt/result.json` and `settings-view-cgquptnn/result.json`.
+This advances B03/W01/W04/I01/A02/A10/Q04; it does not establish normal owner
+integration, actual device settings, physical outputs or input, IME on this
+compositor, spoken screenreader behavior or human visual acceptance. Aetheri's
+actual reviewed 0.1.18 pin remains unchanged.
+
 ## Aetheri Settings keyboard and native focus together (2026-11-06)
 
 On NexaUI base `185dd6947e61c4b0a7180248d9d03718e6286ea1`, the existing

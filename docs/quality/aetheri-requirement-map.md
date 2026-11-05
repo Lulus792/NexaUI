@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/W01/W04/I01/A02/A10/Q04: the unchanged Aetheri-owned Settings host and
+native test passed on Aetheri's headless test compositor with an isolated
+0.1.19 SDK built from `874ebfd6afb5f4f95f3e047ea8219ec251b17a8a`, including
+independent AT-SPI and its disabled-bridge negative. The test copy's pin was
+adjusted only for the candidate experiment; actual owner adoption, physical
+and human acceptance remain open. See [candidate evidence](aetheri-adoption-assessment.md#aetheri-owned-settings-on-the-aetheri-test-compositor-2026-11-06).
+
 B03/I01/A02/A10/Q06: on base `185dd6947e61c4b0a7180248d9d03718e6286ea1`,
 the Aetheri-owned Settings keyboard workflow has simultaneous independent AT-SPI
 focus/checked-state checks against 0.1.19. Native event order, a human
