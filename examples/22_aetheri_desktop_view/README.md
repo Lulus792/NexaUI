@@ -260,3 +260,34 @@ Positive and negative logs are archived at
 `e60bdba6d8626d05c95373c1855b3cdbcbc0236de304c75c40a6493e96badfb8`.
 Actual process-owner launching, private-surface IME/AT-SPI, dynamic output
 removal, physical operation and the held-device removal failure remain open.
+
+Source `96382bedae8fb1cfb959875a6433e40ae49a90c8` adds an opt-in
+**test-owner** path for activating an already observed window. After a row
+click, it validates the originating model revision and ID, collapses the
+exclusive search surface, waits for its configure and verifies the target
+again before sending the original Aetheri desktop-control activation request.
+An unrelated focus observation during collapse may change the overall model
+revision; the second check therefore uses the target's continued presence and
+an explicit close invalidation. The compositor retains authority and reports
+the result. Aetheri's development protocol specifies that window IDs are not
+reused during a compositor lifetime.
+
+The isolated test now observes the clicked real test window being activated.
+Two additional runs hold the owner at explicit test barriers and close the
+target respectively before validation and after search collapse; both cancel
+without sending its activation request. The first implementation rejected a
+valid click when collapse changed an unrelated window's active state; that
+failing log is retained. A later capture run also failed before the input
+case, with a compositor capture/write error after temporary captures had
+accumulated. After compressing this task's captures, all three final runs
+passed; the driver now compresses its own captures after each run.
+
+The final test desktop binary SHA-256 was
+`255ee73f650cb0edab5bc4cae1455bcded236465fc48dfbb8bf183a3cd3369be`.
+Results and logs are archived at
+`D:/NexaUI/out/aetheri-layer-activation-20261105.tar.gz`, SHA-256
+`0c534fd5610e79f97bfb0709ca5a8fdb1ff5fd56c14fc14daba38280d872b02c`.
+This is an opt-in test host, not Aetheri's actual process owner or a production
+desktop. It does not launch Settings or Terminal. In particular, the
+held-pointer removal issue documented above remains unresolved and makes this
+test path unsuitable as a production activation policy.
