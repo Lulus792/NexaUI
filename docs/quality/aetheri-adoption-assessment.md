@@ -2756,3 +2756,24 @@ underlying cause remains a hypothesis, and this is not a pass for unmodified
 Aetheri on musl or for its glibc target. Actual process-owner and native-input
 integration, IME, clipboard-to-PTY delivery, session policy, physical input and
 human assistive acceptance remain open.
+
+## Independent clipboard to original Aetheri PTY — 5 November 2026
+
+On NexaUI base `105b9f67dc73649cfe908e37e8d63765ae90c172`, the optional
+[native paste/PTY experiment](../../examples/23_aetheri_terminal_view/README.md#independent-wayland-clipboard-to-the-original-pty)
+combines an independent Wayland clipboard owner, the existing full paste review
+and the Aetheri shell, PTY and terminal model from revision
+`87996e2f12128b172a80b325ad3b539df6aee527`. A confirmed controlled command
+produced a split marker in actual shell output. A fixed subsequent shell probe
+completed without the offered marker after pending cancellation, review
+cancellation and invalid control content. The shell exited and the PTY reached
+EOF. Static, shared and Clang ASan/UBSan private Weston/Xvfb runs passed as an
+unprivileged user; the existing no-PTY clipboard regression also passed.
+An isolated mutant suppressing the confirmed PTY write failed because the
+expected shell-output marker was absent.
+
+The Alpine runs enabled both test-only musl compatibility and the separately
+documented termios normalization. The synchronous PTY helpers are for the
+bounded fixture only. Aetheri's real process owner, native IME, app event-loop
+backpressure, glibc target, physical input and human assistive acceptance remain
+open; this result does not move shell or session ownership into NexaUI.

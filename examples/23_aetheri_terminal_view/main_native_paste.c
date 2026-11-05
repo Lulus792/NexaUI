@@ -1,10 +1,70 @@
+#ifdef NEXAUI_TEST_PASTE_PTY
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "paste_review.h"
 #include <nexaui/software.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef NEXAUI_TEST_PASTE_PTY
+#include "model.h"
+#include "pty.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <signal.h>
+#include <time.h>
+#include <unistd.h>
 
-/* Private-test consumer only. It never writes clipboard data to a PTY. */
+/* Bounded test-only helpers. A real app must integrate PTY readiness and
+   partial writes into its event loop and own its shutdown policy. */
+static double now_seconds(void){struct timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))return 0;return t.tv_sec+t.tv_nsec/1e9;}
+static int pty_send(int fd,const char *bytes,size_t length) {
+    size_t at=0;double until=now_seconds()+5;
+    while(at<length && now_seconds()<until) {
+        ssize_t n=write(fd,bytes+at,length-at);
+        if(n>0){at+=(size_t)n;continue;}
+        if(n<0 && errno==EINTR)continue;
+        if(n<0 && (errno==EAGAIN || errno==EWOULDBLOCK)) {
+            struct pollfd p={fd,POLLOUT,0};if(poll(&p,1,100)<0 && errno!=EINTR)return 0;continue;
+        }
+        return 0;
+    }
+    return at==length;
+}
+static int model_has(const struct ae_terminal *model,const char *marker) {
+    size_t length=strlen(marker);
+    for(unsigned y=0;y<model->rows;++y) {
+        const struct ae_term_cell *row=ae_terminal_row(model,y);if(!row)continue;
+        for(unsigned x=0;x+length<=model->cols;++x){size_t i=0;
+            while(i<length && row[x+i].code==(unsigned char)marker[i])++i;
+            if(i==length)return 1;}
+    }
+    return 0;
+}
+static int pty_wait(struct ae_terminal_pty *pty,struct ae_terminal *model,const char *marker,int end) {
+    double until=now_seconds()+10;
+    while(now_seconds()<until) {
+        struct pollfd p={pty->master,POLLIN|POLLHUP,0};int ready=poll(&p,1,100);
+        if(ready<0 && errno!=EINTR)return 0;
+        if(ready>0 && !pty->eof)for(;;) {
+            char bytes[4096];ssize_t n=ae_terminal_pty_read(pty,bytes,sizeof(bytes));
+            if(n>0){if(model)ae_terminal_feed(model,bytes,(size_t)n);continue;}
+            if(n==0 || (n<0 && (errno==EAGAIN || errno==EWOULDBLOCK)))break;
+            if(n<0 && errno==EINTR)continue;
+            return 0;
+        }
+        if(ae_terminal_pty_observe(pty)<0)return 0;
+        if(marker && model && model_has(model,marker))return 1;
+        if(end && pty->eof && pty->ended)return 1;
+        if(!end && pty->ended)return 0;
+    }
+    return 0;
+}
+#endif
+
+/* Private-test consumer only. The optional PTY variant sends confirmed bytes
+   to its own disposable test shell, never to another application's session. */
 static int width(uint32_t c){return c==0x754c?2:c==0x301?0:1;}
 static unsigned char *read_file(const char *path,size_t *size) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;if(fseek(f,0,SEEK_END)){fclose(f);return NULL;}
@@ -22,7 +82,21 @@ int main(int argc,char **argv) {
     unsigned char *bytes=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;nx_context *base=NULL;
     nx_window *window=NULL;nx_software_view *renderer=NULL;terminal_paste_review *review=NULL;
     terminal_paste_flow flow={0};terminal_paste_guard guard={1,1,1,0};
-    if(argc!=2 || !(bytes=read_file(argv[1],&size)) || nx_font_open(bytes,size,NULL,&font)!=NX_OK ||
+#ifdef NEXAUI_TEST_PASTE_PTY
+    struct ae_terminal_pty pty={.master=-1,.pin=-1,.pid=-1};
+    struct ae_terminal *model=NULL;int source=-1,delivered=0;
+    if(argc!=3 || getuid()==0 || setenv("TERM","dumb",1)!=0 ||
+       (source=open(argv[2],O_RDONLY|O_CLOEXEC))<3 || ae_terminal_pty_open(&pty,source,80,12)!=0)goto cleanup;
+    close(source);source=-1;
+    model=malloc(sizeof(*model));if(!model)goto cleanup;ae_terminal_init(model,80,12,width);
+#endif
+    if(argc!=
+#ifdef NEXAUI_TEST_PASTE_PTY
+       3
+#else
+       2
+#endif
+       || !(bytes=read_file(argv[1],&size)) || nx_font_open(bytes,size,NULL,&font)!=NX_OK ||
        nx_font_collection_create(NULL,&fonts)!=NX_OK || nx_font_collection_add(fonts,font)!=NX_OK ||
        nx_context_create(NULL,&base)!=NX_OK)goto cleanup;
     nx_window_desc desc={"NexaUI terminal paste test",640,360,0,{0}};
@@ -76,7 +150,14 @@ int main(int argc,char **argv) {
                terminal_paste_review_frame(review,guard,&result,&confirmed)!=NX_OK){okay=0;break;}
             if(result==TERMINAL_REVIEW_CANCELLED){puts("NATIVE_PASTE_CANCELLED");fflush(stdout);done=1;continue;}
             if(result==TERMINAL_REVIEW_CONFIRMED){printf("NATIVE_PASTE_ACCEPTED %zu %016llx\n",confirmed.length,
-                (unsigned long long)checksum(confirmed.data,confirmed.length));fflush(stdout);done=1;continue;}
+                (unsigned long long)checksum(confirmed.data,confirmed.length));fflush(stdout);
+#ifdef NEXAUI_TEST_PASTE_PTY
+                if(!pty_send(pty.master,confirmed.data,confirmed.length) ||
+                   !pty_wait(&pty,model,"CLIP_PTY_42",0)){okay=0;break;}
+                delivered=1;
+                puts("NATIVE_PASTE_PTY_OUTPUT");fflush(stdout);
+#endif
+                done=1;continue;}
         } else if(nx_begin_frame(base,info.width,info.height,0)!=NX_OK ||
                   nx_fill_rect(base,(nx_rect){0,0,info.width,info.height},(nx_color){.08f,.1f,.14f,1})!=NX_OK ||
                   nx_end_frame(base)!=NX_OK){okay=0;break;}
@@ -98,6 +179,28 @@ cleanup:
     if(fonts)nx_font_collection_destroy(fonts);
     if(font)nx_font_close(font);
     free(bytes);
+#ifdef NEXAUI_TEST_PASTE_PTY
+    if(done && okay && !delivered && model) {
+        const char *probe="printf '%s%s\\n' 'SAFE_' 'PROBE'\n";
+        if(!pty_send(pty.master,probe,strlen(probe)) || !pty_wait(&pty,model,"SAFE_PROBE",0) ||
+           model_has(model,"CLIP_PTY_42"))okay=0;
+        else {puts("NATIVE_PASTE_PTY_UNCHANGED");fflush(stdout);}
+    }
+    if(pty.pid>0 && !pty.ended) {
+        if(!pty_send(pty.master,"exit 0\n",7) || !pty_wait(&pty,model,NULL,1)) {
+            (void)ae_terminal_pty_hangup(&pty);
+            if(!pty_wait(&pty,model,NULL,1) && !pty.ended) {
+                (void)kill(pty.pid,SIGKILL);(void)pty_wait(&pty,model,NULL,1);
+            }
+            okay=0;
+        }
+    }
+    if(pty.pid>0 && pty.ended && pty.eof) {
+        if(pty.status!=0 || ae_terminal_pty_close(&pty)!=0)okay=0;
+    } else if(pty.pid>0)okay=0;
+    if(source>=0)close(source);
+    free(model);
+#endif
     if(!okay)fputs("Native paste test consumer failed\n",stderr);
     return okay && done?0:1;
 }

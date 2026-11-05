@@ -300,3 +300,35 @@ test to fail as expected. These are headless, synthetic command checks: real
 Aetheri process-owner integration, native input and IME, real clipboard-to-PTY
 delivery, resize, terminal session policy, physical and human accessibility
 acceptance remain open. The toolkit does not own the PTY or the shell.
+
+### Independent Wayland clipboard to the original PTY
+
+On NexaUI base `105b9f67dc73649cfe908e37e8d63765ae90c172`, the optional
+`aetheri_terminal_native_paste_pty` test combines the existing native paste
+review with the same immutable Aetheri shell, PTY and model. A separate
+`wl-copy` process offers two controlled shell commands. The split output
+marker cannot be produced by echoing the offered commands. Only after a fresh
+review confirmation does this private test consumer write the confirmed bytes
+to its own disposable shell; actual PTY output is parsed by the original model
+and must contain the marker. For pending-receive cancellation, review
+cancellation and rejected control bytes, a separate fixed probe command must
+complete and the offered marker must not appear in the model. The shell must
+then exit and reach EOF before PTY close.
+
+On Alpine/WSL the musl syscall and termios test options described above were
+enabled. Static and shared installed 0.1.15 builds and Clang ASan/UBSan with
+leak detection passed as an unprivileged user under private Weston 14.0.2,
+Xvfb and virtual keyboard input. The original no-PTY consumer also passed its
+independent peer regression. In an isolated mutant build, suppressing the
+confirmed PTY write made the driver fail on the missing shell-output marker.
+Reproduce using the private Weston command shown
+earlier in this document, but select `aetheri_terminal_native_paste_pty` and
+append `/tmp/terminal-pty/aetheri_original_shell` as the final driver argument.
+Both executables must come from a build with the PTY experiment enabled.
+
+The PTY send and wait helpers are deliberately bounded, synchronous test code;
+a real app needs nonblocking event-loop integration, explicit handling of
+partial writes and an app-owned session policy. This is not an Aetheri target
+or glibc acceptance result, nor a native IME, real-session, physical-input or
+human accessibility test. It also does not establish clipboard persistence
+after an owner exits.

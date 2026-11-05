@@ -10,13 +10,15 @@ import time
 
 
 def main():
-    if len(sys.argv) != 6:
+    if len(sys.argv) not in (6, 7):
         return 2
     if os.environ.get('NEXAUI_TEST_PRIVATE_WAYLAND') != '1' or os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test':
         return 77
-    app, font, xdotool, copy, paste = sys.argv[1:]
+    app, font, xdotool, copy, paste = sys.argv[1:6]
+    shell = sys.argv[6] if len(sys.argv) == 7 else None
     env = dict(os.environ, NEXAUI_PLATFORM='wayland')
-    payload = 'Hello 界\ne\u0301'.encode('utf-8')
+    payload = (b"printf 'ok\\n'\nprintf '%s%s\\n' 'CLIP_' 'PTY_42'\n" if shell
+               else 'Hello 界\ne\u0301'.encode('utf-8'))
     checksum = 14695981039346656037
     for value in payload:
         checksum = ((checksum ^ value) * 1099511628211) & 0xffffffffffffffff
@@ -26,7 +28,8 @@ def main():
         raise RuntimeError('Expected one isolated Weston output')
     for decision in ('cancel_pending', 'cancel', 'accept', 'invalid'):
         offered = payload if decision != 'invalid' else payload + b'\x1b[31m'
-        host = subprocess.Popen([app, font], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        host = subprocess.Popen([app, font] + ([shell] if shell else []), env=env,
+                                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         owner = None
         messages, output, errors = queue.Queue(), [], []
         def collect(stream, target, publish=False):
@@ -84,8 +87,14 @@ def main():
                 subprocess.run([xdotool, 'key', 'Tab'], env=env, check=True)
                 subprocess.run([xdotool, 'key', 'Return'], env=env, check=True)
                 wait(f'NATIVE_PASTE_ACCEPTED {len(payload)} {checksum:016x}')
+                if shell:
+                    wait('NATIVE_PASTE_PTY_OUTPUT')
+            if shell and decision != 'accept':
+                wait('NATIVE_PASTE_PTY_UNCHANGED')
             if host.wait(timeout=10) != 0:
                 raise RuntimeError(f'Consumer exited with failure: {"".join(errors)}')
+            if shell and decision != 'accept' and any(line.startswith('NATIVE_PASTE_PTY_OUTPUT') for line in output):
+                raise RuntimeError('Cancelled or rejected paste reached the test PTY')
         finally:
             if owner is not None and owner.poll() is None:
                 try:
