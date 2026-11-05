@@ -762,6 +762,15 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         find_package(Python3 COMPONENTS Interpreter QUIET)
         find_program(NEXAUI_DROP_XDOTOOL xdotool)
+        if(TARGET nexaui_wayland_host_tests AND Python3_Interpreter_FOUND AND NEXAUI_DROP_XDOTOOL)
+            add_executable(nexaui_wayland_two_windows_host tests/wayland_two_windows.c)
+            target_link_libraries(nexaui_wayland_two_windows_host PRIVATE NexaUI::NexaUI)
+            add_test(NAME nexaui_wayland_two_windows
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_two_windows.py
+                    $<TARGET_FILE:nexaui_wayland_two_windows_host> ${NEXAUI_DROP_XDOTOOL})
+            set_tests_properties(nexaui_wayland_two_windows PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+        endif()
         if(TARGET nexaui_wayland_drop_source AND Python3_Interpreter_FOUND AND NEXAUI_DROP_XDOTOOL)
             add_test(NAME nexaui_wayland_drop_peer
                 COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_drop_peer.py
