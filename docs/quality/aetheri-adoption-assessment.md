@@ -1,5 +1,32 @@
 # Aetheri adoption: initial source assessment
 
+## Reentrant text clipboard callbacks (2026-11-05)
+
+Source `3ec8314e53804b94e9034954faf5be34f3f341c3` protects the shared
+general-text clipboard path when a callback replaces the field model or changes
+focus. A writer receives a separate snapshot of the selected bytes; a pending
+cut or paste is applied only if model identity, generation, selection/buffer
+serial and focus generation still match. An event consumed during a model
+replacement is not replayed on the same frame. The field and context themselves
+must remain alive through the widget call.
+
+The original `b1f55d6` source with the new reentrant cut test failed under
+ASan with heap-use-after-free (`/tmp/nexaui-clipboard-reentrant-before.log`).
+An intermediate first fix timed out because replacement reset the event index
+(`/tmp/nexaui-clipboard-reentrant-fixed.log` was later overwritten by a
+passing repeat; the timeout is also recorded in the execution transcript).
+The final test checks cut snapshot, replacement during each paste-read phase,
+focus away and back, and callback execution counts. It passed in Alpine/WSL
+Clang 22.1.3 ASan/UBSan with leak detection and GCC 15.2 Release Wayland-only;
+it also passed GCC Debug dual-backend before the final IME-reset adjustment. An earlier
+candidate also passed selected numeric, text, Wayland v3 and asynchronous
+clipboard regressions (`/tmp/nexaui-clipboard-safe-asan.log`,
+`/tmp/nexaui-clipboard-safe-release.log`, `/tmp/nexaui-clipboard-safe-dual.log`).
+After that adjustment, the text and v3 cases passed again with ASan/UBSan
+(`/tmp/nexaui-clipboard-safe-final.log`); the Release text case also passed.
+These checks do not implement numeric clipboard support or close native
+Aetheri clipboard acceptance; both remain open.
+
 ## Numeric visual text navigation (2026-11-05)
 
 Source `2c77f66b27bd205d41a06d8785848404b2c8fc70` routes numeric
