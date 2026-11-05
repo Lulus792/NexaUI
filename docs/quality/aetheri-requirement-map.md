@@ -34,6 +34,11 @@ preflights every preview row before committing a new layout and keeps the
 existing paste and scene after a rejected resize. The example records the
 later-page wide-glyph counterexample and one bounded local timing; native resize
 handling and target-device performance budgets are still open.
+I05/I07/T06/T07: on base `782ba7d210fe960af2bd391c2143aaa629fbca4a`, an
+independent wl-clipboard 2.2.1 owner and native NexaUI test consumer exercised
+Wayland paste, model validation, review cancellation/acceptance, stalled-owner
+cancellation and rejected control bytes on private Weston. Copy in the opposite
+direction, actual Aetheri/PTY integration and physical acceptance remain open.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on

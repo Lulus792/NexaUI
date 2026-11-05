@@ -203,3 +203,37 @@ The guard also covers held activation after a rejected resize. A single local
 Alpine/WSL measurement of creation and preflight for 4096 bytes with roughly
 1365 distinct short preview rows took about 0.07 seconds (shell `time`, static
 SDK, DejaVu Sans Mono); this is not a target-hardware latency guarantee.
+
+The independent clipboard integration was developed on NexaUI base
+`782ba7d210fe960af2bd391c2143aaa629fbca4a`, with Aetheri model/paste source
+`87996e2f12128b172a80b325ad3b539df6aee527` and an installed 0.1.15 SDK based
+on `3f93c535fd3bfa9387a232a732594210f3cd6dfd`. On 5 November 2026, separate
+`wl-copy`/`wl-paste` 2.2.1 processes and a private Weston 14.0.2/Xvfb session
+exercised actual Wayland receipt, Review Cancel and Paste, and Escape during an
+intentionally stalled independent owner. A separate payload containing ESC was
+rejected before review or delivery. Static, shared and Clang ASan/UBSan builds
+passed; the consumer reports only a test length/checksum and never writes a PTY.
+The Alpine package `wl-clipboard-2.2.1-r1.apk` SHA-256 was
+`ba96cc7dc6daf8998816a556ff2a915c54087428655632f6fd5abedb42fed853`;
+it was extracted into a temporary directory, not installed globally. Weston
+binary SHA-256 was `9803344d5ed2c07c4976524b948d895eba120fb822a73f4db7c6fa018538934f`.
+The test driver is `run_paste_native.py` and requires the existing private
+`tests/run_weston_native.py` fixture, xdotool, the two clipboard binaries and
+the installed example target `aetheri_terminal_native_paste`. It is a test
+consumer with virtual input, not Aetheri's production terminal. Independent
+copy in the opposite direction, real Aetheri integration, actual PTY writes,
+other compositors and physical/human acceptance remain open.
+
+```sh
+NEXAUI_WESTON=/path/to/weston NEXAUI_WESTON_SHELL=/path/to/desktop-shell.so \
+  NEXAUI_WESTON_LIBEXEC=/path/to/weston-libexec xvfb-run -a \
+  python3 tests/run_weston_native.py --work-dir /tmp/new-terminal-peer-run -- \
+  python3 examples/23_aetheri_terminal_view/run_paste_native.py \
+  /tmp/terminal-view/aetheri_terminal_native_paste /path/to/font.ttf \
+  /path/to/xdotool /path/to/wl-copy /path/to/wl-paste
+```
+
+The previously skipped `nexaui_atspi_large_text_wayland_private` test was later
+executed successfully on the same kind of private Weston/Xvfb fixture against
+the 0.1.15 static build. This does not change the boundaries of the earlier
+headless AT-SPI evidence.
