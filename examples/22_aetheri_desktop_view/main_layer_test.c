@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 /* Adapted from Aetheri tests/test_desktop_client.c (MIT); host owns all Wayland objects. */
 #include "view.h"
 #include <nexaui/wayland_host.h>
@@ -19,6 +20,7 @@
 #include <xkbcommon/xkbcommon-keysyms.h>
 #include <linux/input-event-codes.h>
 #include <math.h>
+#include <signal.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 struct app;
@@ -47,7 +49,8 @@ struct app {
     unsigned char *font; size_t font_size;
     unsigned output_count;
     uint32_t control_name, layer_name, first_id;
-    bool ordinary, retired;
+    bool ordinary, retired, owner_fixture, ready_reported, close_search;
+    int toggle_output;
     struct xkb_context *xkb;
     struct xkb_keymap *keymap;
     struct xkb_state *key_state;
@@ -61,6 +64,12 @@ struct app {
     bool activation_enabled, activation_hold, activation_invalidated, hold_after_collapse;
     int launcher;
 };
+static volatile sig_atomic_t stop_requested,signal_writer=-1;
+static void stop_signal(int sig) {
+    (void)sig;int saved=errno;stop_requested=1;
+    if(signal_writer>=0){char byte=1;(void)write((int)signal_writer,&byte,1);}
+    errno=saved;
+}
 static unsigned char *load_font(const char *path, size_t *length) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;long n=0;unsigned char *p=NULL;
     if(!fseek(f,0,SEEK_END) && (n=ftell(f))>0 && n<64*1024*1024 && !fseek(f,0,SEEK_SET) &&
@@ -130,6 +139,7 @@ static void launcher_reply(struct app *a) {
         if(v->view)v->dirty=true;
     }
     printf("LAUNCH_REPLY %c %c\n",bytes[0],bytes[2]);
+    if(a->owner_fixture && bytes[0]=='A')a->close_search=true;
 }
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
@@ -151,6 +161,10 @@ static void configured(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t
     zwlr_layer_surface_v1_ack_configure(layer, serial); paint(v);
     if(!had_view && v->app->focused==v && v->expanded)
         CHECK(nx_focus_set(aetheri_desktop_view_context(v->view),20)==NX_OK);
+    if(v->app->owner_fixture && !v->app->ready_reported &&
+       v->app->views[0].configured && v->app->views[1].configured && v->app->views[2].configured) {
+        v->app->ready_reported=true;puts("READY nexaui-layer");puts("LAYOUT 1");
+    }
 }
 static void closed(void *data, struct zwlr_layer_surface_v1 *layer) { (void)data; (void)layer; CHECK(false); }
 static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure = configured, .closed = closed};
@@ -222,7 +236,8 @@ static void desktop_closed(void *data, struct aetheri_development_desktop_v1 *co
     printf("CLOSED_WINDOW %u\n", id);
 }
 static void desktop_toggle(void *data, struct aetheri_development_desktop_v1 *control, uint32_t output) {
-    (void)data; (void)control; printf("TOGGLE %u\n", output);
+    struct app *a=data;(void)control;printf("TOGGLE %u\n", output);
+    if(a->owner_fixture){CHECK(output<3);a->toggle_output=(int)output;}
 }
 static void desktop_activated(void *data, struct aetheri_development_desktop_v1 *control, uint32_t id, uint32_t found) {
     (void)data; (void)control; printf("ACTIVATED %u %u\n", id, found);
@@ -411,9 +426,23 @@ static void global_remove(void *data, struct wl_registry *registry, uint32_t nam
 static const struct wl_registry_listener registry_listener = {.global = global, .global_remove = global_remove};
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
-    CHECK(argc == 1 || argc == 2 || argc == 4);
-    struct app a = {.launcher=-1,.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    bool owner_fixture=argc>1 && !strcmp(argv[1],"--font");
+    CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
+    struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
+                    .ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    const char *font=getenv("NEXAUI_DESKTOP_FONT");
     const char *launcher=getenv("NEXAUI_TEST_LAUNCH_FD");
+    if(owner_fixture) {
+        font=NULL;launcher=NULL;const char *cache=NULL;bool diagnostics=false;
+        for(int i=1;i<argc;++i) {
+            if(!strcmp(argv[i],"--font") && !font && i+1<argc)font=argv[++i];
+            else if(!strcmp(argv[i],"--cache") && !cache && i+1<argc)cache=argv[++i];
+            else if(!strcmp(argv[i],"--launcher-fd") && !launcher && i+1<argc)launcher=argv[++i];
+            else if(!strcmp(argv[i],"--diagnostics") && !diagnostics)diagnostics=true;
+            else CHECK(false);
+        }
+        CHECK(font && cache && cache[0]=='/' && launcher && diagnostics);
+    }
     if(launcher) {
         char *end=NULL;errno=0;long fd=strtol(launcher,&end,10);
         CHECK(*launcher && end && !*end && !errno && fd>=3 && fd<=INT32_MAX);
@@ -429,7 +458,18 @@ int main(int argc, char **argv) {
         a.views[i].app=&a;a.views[i].index=i;ae_desktop_model_init(&a.views[i].model);
     }
     a.xkb=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(a.xkb);
-    const char *font=getenv("NEXAUI_DESKTOP_FONT"); CHECK(font && (a.font=load_font(font,&a.font_size)));
+    CHECK(font && (a.font=load_font(font,&a.font_size)));
+    int signal_fds[2]={-1,-1};
+    if(owner_fixture) {
+        CHECK(pipe(signal_fds)==0);
+        for(unsigned i=0;i<2;++i) {
+            int flags=fcntl(signal_fds[i],F_GETFL),desc=fcntl(signal_fds[i],F_GETFD);
+            CHECK(flags>=0 && desc>=0 && fcntl(signal_fds[i],F_SETFL,flags|O_NONBLOCK)==0 &&
+                  fcntl(signal_fds[i],F_SETFD,desc|FD_CLOEXEC)==0);
+        }
+        struct sigaction action={0};action.sa_handler=stop_signal;sigemptyset(&action.sa_mask);
+        signal_writer=signal_fds[1];CHECK(sigaction(SIGINT,&action,NULL)==0 && sigaction(SIGTERM,&action,NULL)==0);
+    }
     a.display = wl_display_connect(NULL); CHECK(a.display);
     a.registry = wl_display_get_registry(a.display); CHECK(a.registry);
     CHECK(wl_registry_add_listener(a.registry, &registry_listener, &a) == 0);
@@ -464,11 +504,26 @@ int main(int argc, char **argv) {
         bool stop = false;
         while (!stop) {
             CHECK(wl_display_dispatch_pending(a.display) >= 0);
+            if(stop_requested) {
+                aetheri_development_desktop_v1_retire(a.control);
+                CHECK(wl_display_roundtrip(a.display)>=0 && a.retired);stop=true;break;
+            }
+            if(a.toggle_output>=0) {
+                unsigned output=(unsigned)a.toggle_output;a.toggle_output=-1;
+                bool open=!a.views[output].expanded;
+                for(unsigned i=0;i<3;++i)if(a.views[i].expanded && (!open || i!=output))view_state(&a.views[i],false);
+                if(open)view_state(&a.views[output],true);
+            }
+            if(a.close_search) {
+                a.close_search=false;
+                for(unsigned i=0;i<3;++i)if(a.views[i].expanded)view_state(&a.views[i],false);
+            }
             activation_step(&a);
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
-            struct pollfd fds[3] = {{wl_display_get_fd(a.display), POLLIN, 0}, {STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}};
-            int ready; do { ready = poll(fds, 3, 10000); } while (ready < 0 && errno == EINTR);
+            struct pollfd fds[4] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
+            int ready; do { ready = poll(fds, 4, owner_fixture?-1:10000); } while (ready < 0 && errno == EINTR && !stop_requested);
+            if(stop_requested)continue;
             CHECK(ready > 0);
             if (fds[0].revents) CHECK(wl_display_dispatch(a.display) >= 0);
             if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
@@ -533,6 +588,7 @@ int main(int argc, char **argv) {
         if (a.outputs[i]) wl_output_destroy(a.outputs[i]);
     }
     free(a.font);
+    signal_writer=-1;if(signal_fds[0]>=0)close(signal_fds[0]);if(signal_fds[1]>=0)close(signal_fds[1]);
     if(a.launcher>=0)close(a.launcher);
     xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     if (a.control) aetheri_development_desktop_v1_destroy(a.control);
