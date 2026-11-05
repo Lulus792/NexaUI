@@ -319,3 +319,38 @@ process owner. No Settings/Terminal process or ordered owner shutdown is
 proved by this check; the `A` test message is not an application readiness
 claim. Real owner integration, private-surface IME/AT-SPI and the pressed-device
 removal failure remain open.
+
+Sources `e58e718ff39900ece9ac0f5027528a28a8c39a54` and
+`ac3915ac5b609e63d29784c13734a9a3e63b1cde` exercise this test host
+through Aetheri's original development supervisor and its existing isolated
+headless fixture. The fixture substitutes a test compositor, temporary paths
+and notification handling; it does not modify the running carrier session or
+installation. The host accepts the supervisor's existing desktop arguments,
+uses its inherited launch and private Wayland connections, handles the
+compositor's search toggle and retires on owner-requested signal shutdown.
+
+Virtual keyboard search launched the separately built NexaUI Settings
+**model consumer** through the real supervisor. A second request reused its
+existing process; after Ctrl+Q and the supervisor's process/pipe drain, a
+third request started a new Settings process. The same test then launched the
+separately built original Aetheri SDL Terminal and its Aetheri shell; another
+request reused that Terminal process. On supervisor shutdown, the terminal
+reported its shell status as 129 and clean terminal cleanup, followed by
+Settings signal shutdown, desktop retirement and zero exit statuses for the
+four supervised children. The test waits for observed focus restoration before
+sending the next input. It does not prove the shell or its jobs survived
+shutdown, or that a repeated launch activated the existing window.
+
+The final two runs passed on the isolated Fedora carrier with the historical
+Aetheri source `d621c9bba1df8ffd1083999300bcff742022b9dc` and an installed
+Wayland-only NexaUI SDK from
+`a7a3df4b8f803cc15f876b4623c9008834c590e9`. The Settings model consumer
+was the previously verified binary from NexaUI source
+`41042e56d629c8532bd365212d97385b41eaa476`, not the complete Settings
+application. SHA-256 values are recorded in the test results. Logs, including
+an initial wrong-app-ID run and a later focus-timing failure, are in
+`D:/NexaUI/out/aetheri-layer-real-owner-final-v2-20261105.tar.gz`, SHA-256
+`8e732e02eb8f3e599d05baadd316778c35c95496d593fb2d33e73fec89b0941f`.
+The test host is not yet the production desktop: private-surface IME/AT-SPI,
+the held-pointer removal failure, physical and human acceptance, the full
+Settings integration and broader app migration remain open.
