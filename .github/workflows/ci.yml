@@ -62,19 +62,25 @@ jobs:
       - name: Diagnose Wayland disconnect after Linux test failure
         if: failure() && runner.os == 'Linux'
         run: |
-          if [ -x build/nexaui_wayland_async_clipboard_tests ]; then
-            for attempt in $(seq 1 12); do
-              echo "Disconnect debugger attempt $attempt"
+          for scenario in disconnect multi; do
+            if [ "$scenario" = disconnect ]; then
+              test_command=(build/nexaui_wayland_async_clipboard_tests --disconnect)
+            else
+              test_command=(build/nexaui_wayland_multi_failure_tests)
+            fi
+            if [ ! -x "${test_command[0]}" ]; then continue; fi
+            for attempt in $(seq 1 6); do
+              echo "$scenario debugger attempt $attempt"
               NEXAUI_REQUIRE_VULKAN=1 NEXAUI_REQUIRE_VULKAN_WAYLAND=1 \
                 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LAYER_VALIDATE_SYNC=1 \
                 NEXAUI_TEST_PRIVATE_X11=1 NEXAUI_VULKAN_TRACE_RETIRE=1 \
                 xvfb-run -a -s '-screen 0 1600x1200x24' \
-                python tests/run_weston_native.py --timeout 30 --work-dir "build/wayland-disconnect-diagnostic-$attempt" -- \
+                python tests/run_weston_native.py --timeout 30 --work-dir "build/wayland-$scenario-diagnostic-$attempt" -- \
                 gdb --batch -ex 'set pagination off' -ex run -ex 'thread apply all bt' \
-                --args build/nexaui_wayland_async_clipboard_tests --disconnect 2>&1 | tee "$RUNNER_TEMP/nexaui-disconnect-gdb.log"
+                --args "${test_command[@]}" 2>&1 | tee "$RUNNER_TEMP/nexaui-disconnect-gdb.log"
               if grep -q 'received signal SIGSEGV' "$RUNNER_TEMP/nexaui-disconnect-gdb.log"; then break; fi
             done
-          fi
+          done
       - name: Require executed Wayland results
         if: runner.os == 'Linux'
         run: python tests/check_wayland_results.py build/native-ctest.xml
