@@ -38,6 +38,92 @@ static int expect_text(nx_text_field *field, const char *wanted) {
            memcmp(text.data, wanted, text.length) == 0;
 }
 
+static int host_ime_frame(nx_context *ctx, const nx_text_field_desc *desc,
+                          nx_text_field *field) {
+    nx_interaction_state state;int valid=0,submitted=0;
+    return nx_begin_frame(ctx,100,80,0)==NX_OK &&
+        nx_text_field_widget(ctx,desc,field,&state,&valid,&submitted)==NX_OK &&
+        nx_end_frame(ctx)==NX_OK;
+}
+
+static int test_host_ime_tokens(nx_font_collection *fonts) {
+    nx_context *ctx=NULL;nx_text_field *field=NULL,*secret=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_text_field_create("AB",2,4096,&field)==NX_OK);
+    CHECK(nx_text_field_create_password("",0,&secret)==NX_OK);
+    CHECK(nx_text_field_set_host_ime(secret,1)==NX_ERROR_UNSUPPORTED);
+    uint64_t token=7;
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_ERROR_UNSUPPORTED && !token);
+    CHECK(nx_text_field_set_host_ime(field,1)==NX_OK);
+    nx_text_field_desc desc={0};desc.id=1;desc.name=(nx_utf8_span){"Host",4};
+    desc.bounds=(nx_rect){0,0,80,40};desc.fonts=fonts;
+    desc.pixels_per_em=20;desc.glyph_cache_bytes=65536;
+    CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_focus_set(ctx,1)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field));
+    token=7;CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_ERROR_STATE && !token);
+    nx_event focus={0};focus.type=NX_EVENT_FOCUS;focus.focused=1;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK && host_ime_frame(ctx,&desc,field));
+    CHECK(nx_text_field_set_selection(field,2,2)==NX_OK && host_ime_frame(ctx,&desc,field));
+    token=0;
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK && token);
+    nx_event event={0};event.type=NX_EVENT_IME_DELETE_SURROUNDING;
+    event.ime_target=1;event.ime_revision=token;event.ime_before=1;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.ime_target=1;
+    event.ime_revision=token;event.scalar='Z';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.scalar='X';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    event.scalar='Q';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    CHECK(nx_text_field_set_selection(field,0,0)==NX_OK);
+    CHECK(nx_text_field_set_selection(field,3,3)==NX_OK);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    CHECK(nx_focus_set(ctx,0)==NX_OK && nx_focus_set(ctx,1)==NX_OK);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    CHECK(nx_text_field_set_host_ime(field,0)==NX_OK);
+    CHECK(nx_text_field_set_host_ime(field,1)==NX_OK);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    desc.disabled=1;CHECK(host_ime_frame(ctx,&desc,field));
+    desc.disabled=0;CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_focus_set(ctx,1)==NX_OK);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    focus=(nx_event){0};focus.type=NX_EVENT_FOCUS;focus.focused=0;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK);focus.focused=1;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);
+    focus=(nx_event){0};focus.type=NX_EVENT_FOCUS;focus.focused=0;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK && host_ime_frame(ctx,&desc,field));
+    uint64_t unavailable=9;
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&unavailable)==NX_ERROR_STATE && !unavailable);
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    focus.focused=1;CHECK(nx_context_queue_event(ctx,&focus)==NX_OK && host_ime_frame(ctx,&desc,field));
+    event.ime_revision=token;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    desc.ime_window=(nx_window *)(uintptr_t)1;
+    nx_interaction_state state;int valid=0,submitted=0;
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK);
+    CHECK(nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    CHECK(nx_end_frame(ctx)==NX_OK);desc.ime_window=NULL;
+    CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_text_field_set_read_only(field,1)==NX_OK);
+    token=7;CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_ERROR_STATE && token==0);
+    nx_text_field_destroy(secret);nx_text_field_destroy(field);nx_context_destroy(ctx);
+    return 0;
+}
+
 static int expect_semantic(nx_context *ctx, const char *wanted,
                            int invalid) {
     uint32_t index = UINT32_MAX;
@@ -674,6 +760,7 @@ int main(void) {
     CHECK(nx_font_open(bytes, sizeof(bytes), NULL, &font) == NX_OK);
     CHECK(nx_font_collection_create(NULL, &fonts) == NX_OK);
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
+    if (test_host_ime_tokens(fonts)) return 1;
     if (test_native_text_commands(fonts)) return 1;
     if (test_clipboard_model_replacement(fonts)) return 1;
     if (test_single_line(fonts) || test_multiline(fonts) ||

@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 11
+#define NX_VERSION_PATCH 12
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2288,6 +2288,24 @@ NX_API nx_result nx_text_field_selection(const nx_text_field *field,
    Submit another frame to publish the selection and update native IME state. */
 NX_API nx_result nx_text_field_set_selection(nx_text_field *field,
                                              size_t anchor, size_t cursor);
+/* Opt in to IME events supplied by an external surface host. Owner thread,
+   between widget submissions. A field cannot use this mode with ime_window.
+   Sensitive/password fields are unsupported. Changing the mode invalidates
+   previous host tokens. This does not bind a Wayland input method or paint
+   preedit; the host still owns focus, protocol lifecycle and event ordering. */
+NX_API nx_result nx_text_field_set_host_ime(nx_text_field *field, int enabled);
+/* After a successful end_frame, obtain a nonzero token for the currently
+   focused, enabled host-IME field. The host must route NX_EVENT_FOCUS for
+   surface focus gain/loss before requesting tokens or submitting replies.
+   Use it as nx_event.ime_revision and the
+   submitted field ID as ime_target on the corresponding event batch. Text,
+   selection, focus, field identity, policy and context changes invalidate it.
+   The token is a freshness check, not an authorization credential.
+   *out_revision is zero on failure. */
+NX_API nx_result nx_text_field_host_ime_revision(const nx_context *context,
+                                                 uint64_t id,
+                                                 const nx_text_field *field,
+                                                 uint64_t *out_revision);
 NX_API nx_result nx_text_field_widget(nx_context *context,
                                       const nx_text_field_desc *desc,
                                       nx_text_field *field,

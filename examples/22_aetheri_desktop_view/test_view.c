@@ -138,5 +138,15 @@ int main(int argc,char **argv) {
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent));
     text.scalar='C';CHECK(aetheri_desktop_view_queue_event(view,&text)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_QUERY && !strcmp(intent.query,"ACB"));
+    ae_desktop_model_search(&model,0,true);CHECK(ae_desktop_model_text(&model,intent.query));++revision;
+    CHECK(aetheri_desktop_view_set_host_ime(view,1)==NX_OK);
+    nx_event surface_focus={0};surface_focus.type=NX_EVENT_FOCUS;surface_focus.focused=1;
+    CHECK(aetheri_desktop_view_queue_event(view,&surface_focus)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    uint64_t ime_revision=0;CHECK(aetheri_desktop_view_host_ime_revision(view,&ime_revision)==NX_OK && ime_revision);
+    text=(nx_event){0};text.type=NX_EVENT_TEXT;text.scalar='D';text.ime_target=20;text.ime_revision=ime_revision;
+    CHECK(aetheri_desktop_view_queue_event(view,&text)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_QUERY && !strcmp(intent.query,"ACDB"));
     aetheri_desktop_view_destroy(view);free(bytes);return 0;
 }

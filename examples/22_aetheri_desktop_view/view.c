@@ -12,6 +12,7 @@ struct aetheri_desktop_view {
     float scroll_x,scroll_y;
     float revealed_width,revealed_height;
     uint64_t model_revision;
+    int host_ime;
 };
 void aetheri_desktop_view_destroy(aetheri_desktop_view *v) {
     if(!v)return;
@@ -32,7 +33,19 @@ int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *v) {return v?v->context:NULL;}
 nx_result aetheri_desktop_view_set_window(aetheri_desktop_view *v,nx_window *window) {
     if(!v)return NX_ERROR_ARGUMENT;
+    if(window && v->host_ime)return NX_ERROR_STATE;
     v->window=window;return NX_OK;
+}
+nx_result aetheri_desktop_view_set_host_ime(aetheri_desktop_view *v,int enabled) {
+    if(!v || (enabled!=0 && enabled!=1))return NX_ERROR_ARGUMENT;
+    if(enabled && v->window)return NX_ERROR_STATE;
+    nx_result result=nx_text_field_set_host_ime(v->query,enabled);
+    if(result==NX_OK)v->host_ime=enabled;
+    return result;
+}
+nx_result aetheri_desktop_view_host_ime_revision(aetheri_desktop_view *v,uint64_t *out_revision) {
+    if(!v){if(out_revision)*out_revision=0;return NX_ERROR_ARGUMENT;}
+    return nx_text_field_host_ime_revision(v->context,20,v->query,out_revision);
 }
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *v,const nx_event *event) {
     if(!v || !event)return NX_ERROR_ARGUMENT;

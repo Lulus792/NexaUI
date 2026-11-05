@@ -317,6 +317,8 @@ struct nx_text_field {
     int command_caret_valid;
     int suppress_caret_reveal;
     nx_field_pointer pointer;
+    uint64_t host_ime_id, host_ime_context_id, host_ime_generation;
+    int host_ime_enabled, host_ime_accepting;
 #if defined(__linux__)
     uint64_t paste_token, paste_context, paste_id, paste_focus_serial;
     uint64_t paste_model_revision, paste_buffer_serial;
@@ -7045,6 +7047,51 @@ nx_result nx_text_field_set_selection(nx_text_field *field,
     return NX_OK;
 }
 
+static uint64_t nx_field_ime_revision(const nx_text_field *field);
+
+nx_result nx_text_field_set_host_ime(nx_text_field *field, int enabled) {
+    if (!field || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (enabled && field->sensitive) return NX_ERROR_UNSUPPORTED;
+    if (field->host_ime_enabled == enabled) return NX_OK;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
+    field->host_ime_enabled = enabled;
+    field->host_ime_accepting = 0;
+    ++field->text_value.revision;
+    return NX_OK;
+}
+
+static uint64_t nx_field_host_ime_revision(const nx_context *ctx,
+                                            const nx_text_field *field) {
+    uint64_t hash = nx_field_ime_revision(field);
+    uint64_t values[] = {ctx->native_identity, ctx->focus_serial,
+                         field->host_ime_generation};
+    for (size_t i=0;i<sizeof(values)/sizeof(values[0]);++i)
+        for (unsigned byte=0;byte<8;++byte)
+            hash=(hash^(uint8_t)(values[i]>>(byte*8u)))*UINT64_C(1099511628211);
+    return hash ? hash : 1u;
+}
+
+nx_result nx_text_field_host_ime_revision(const nx_context *ctx, uint64_t id,
+                                           const nx_text_field *field,
+                                           uint64_t *out_revision) {
+    if (!out_revision) return NX_ERROR_ARGUMENT;
+    *out_revision=0;
+    if (!ctx || !field || !id) return NX_ERROR_ARGUMENT;
+    if (!field->host_ime_enabled || field->sensitive || !ctx->native_identity ||
+        !field->text_value.identity) return NX_ERROR_UNSUPPORTED;
+    if (ctx->state!=2u || ctx->focus_serial==UINT64_MAX ||
+        field->text_value.revision==UINT64_MAX ||
+        nx_text_buffer_change_serial(field->buffer)==UINT64_MAX ||
+        field->host_ime_generation==UINT64_MAX ||
+        !ctx->input.focused || ctx->focused_id!=id || field->last_context!=ctx ||
+        field->last_frame_serial!=ctx->frame_serial ||
+        field->host_ime_id!=id || field->host_ime_context_id!=ctx->native_identity ||
+        !field->host_ime_accepting || field->read_only)
+        return NX_ERROR_STATE;
+    *out_revision=nx_field_host_ime_revision(ctx,field);
+    return NX_OK;
+}
+
 static nx_result nx_window_clipboard_read_adapter(void *user, char *bytes,
                                                    size_t capacity,
                                                    size_t *out_length) {
@@ -7334,6 +7381,21 @@ static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc 
 static uint64_t nx_field_ime_revision(const nx_text_field *field) {
     return nx_buffer_ime_revision(field->buffer, field, &field->text_value);
 }
+static int nx_field_ime_event_current(const nx_context *ctx,
+    const nx_text_field_desc *desc, const nx_text_field *field,
+    const nx_event *event, const nx_event_route *route) {
+    if (event->ime_target != desc->id) return 0;
+    if (desc->ime_window) return event->ime_revision == nx_field_ime_revision(field);
+    return field->host_ime_enabled && field->host_ime_accepting && ctx->input.focused &&
+        ctx->native_identity && field->text_value.identity &&
+        field->text_value.revision != UINT64_MAX &&
+        nx_text_buffer_change_serial(field->buffer) != UINT64_MAX &&
+        field->host_ime_id == desc->id && field->host_ime_context_id == ctx->native_identity &&
+        field->host_ime_generation != UINT64_MAX &&
+        ctx->focus_serial != UINT64_MAX &&
+        route->focus_serial == ctx->focus_serial &&
+        event->ime_revision == nx_field_host_ime_revision(ctx,field);
+}
 
 #if defined(__linux__)
 static int nx_field_paste_current(nx_context *ctx, const nx_text_field_desc *desc,
@@ -7520,7 +7582,8 @@ nx_result nx_text_field_widget(nx_context *ctx,
         !isfinite(desc->pixels_per_em) || desc->pixels_per_em < 1.0 ||
         desc->pixels_per_em > 16384.0 ||
         !desc->glyph_cache_bytes || (desc->password && desc->multiline) ||
-        (!!desc->password != !!field->sensitive))
+        (!!desc->password != !!field->sensitive) ||
+        (field->host_ime_enabled && desc->ime_window))
         return NX_ERROR_ARGUMENT;
     nx_utf8_span draft;
     nx_result result = nx_text_field_text(field, &draft);
@@ -7651,8 +7714,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
             if (event->type==NX_EVENT_TEXT_COMMAND) {
                 if (event->ime_target) {
                     int same=ime_batch_target==event->ime_target && ime_batch_revision==event->ime_revision;
-                    if (!same) ime_batch_accepted=desc->ime_window && event->ime_target==desc->id &&
-                        event->ime_revision==nx_field_ime_revision(field);
+                    if (!same) ime_batch_accepted=nx_field_ime_event_current(ctx,desc,field,event,route);
                     ime_batch_target=event->ime_target; ime_batch_revision=event->ime_revision;
                     if (!ime_batch_accepted) { ++field->next_event_index; continue; }
                 }
@@ -7700,9 +7762,8 @@ nx_result nx_text_field_widget(nx_context *ctx,
                        event->type == NX_EVENT_IME_DELETE_RANGE) {
                 ime_batch_target = event->ime_target;
                 ime_batch_revision = event->ime_revision;
-                ime_batch_accepted = !desc->password && desc->ime_window &&
-                    event->ime_target == desc->id &&
-                    event->ime_revision == nx_field_ime_revision(field);
+                ime_batch_accepted = !desc->password &&
+                    nx_field_ime_event_current(ctx,desc,field,event,route);
                 if (ime_batch_accepted) {
                     result = event->type == NX_EVENT_IME_DELETE_RANGE ?
                         nx_text_buffer_delete_relative(field->buffer,
@@ -7718,14 +7779,13 @@ nx_result nx_text_field_widget(nx_context *ctx,
                 }
             } else if (event->type == NX_EVENT_TEXT &&
                        event->ime_target) {
-                if (desc->ime_window &&
-                    event->ime_target == desc->id &&
+                if (event->ime_target == desc->id &&
                     ((ime_batch_target == event->ime_target &&
                       ime_batch_revision == event->ime_revision &&
                       ime_batch_accepted) ||
                      ((ime_batch_target != event->ime_target ||
                        ime_batch_revision != event->ime_revision) &&
-                      event->ime_revision == nx_field_ime_revision(field)))) {
+                      nx_field_ime_event_current(ctx,desc,field,event,route)))) {
                     ime_batch_target = event->ime_target;
                     ime_batch_revision = event->ime_revision;
                     ime_batch_accepted = 1;
@@ -7885,6 +7945,14 @@ nx_result nx_text_field_widget(nx_context *ctx,
     *out_state = state;
     *out_valid = valid;
     *out_submitted = field->submitted;
+    int host_accepting=field->host_ime_enabled && ctx->input.focused && state.focused &&
+        !desc->disabled && !field->read_only;
+    if (field->host_ime_id!=desc->id || field->host_ime_context_id!=ctx->native_identity ||
+        field->host_ime_accepting!=host_accepting) {
+        if (field->host_ime_generation!=UINT64_MAX) ++field->host_ime_generation;
+    }
+    field->host_ime_id=desc->id;field->host_ime_context_id=ctx->native_identity;
+    field->host_ime_accepting=host_accepting;
     if (desc->password && ime_preedit_copy)
         nx_private_secure_zero(ime_preedit_copy, ime_preedit_capacity);
     free(ime_preedit_copy);

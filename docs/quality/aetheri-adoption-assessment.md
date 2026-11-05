@@ -2675,3 +2675,26 @@ installed static and add_subdirectory versions each submitted on private
 Weston (`/tmp/nexaui-vulkan-direct-shared-20261105/result.json`,
 `/tmp/nexaui-vulkan-direct-static-20261105/result.json`,
 `/tmp/nexaui-vulkan-direct-subdir-20261105/result.json`).
+# External-host committed text seam — 5 November 2026
+
+Candidate based on `bcd3859849f24a41fb0347b94c8589f7f9436c07` adds the
+0.1.12 `nx_text_field_set_host_ime` and `nx_text_field_host_ime_revision`
+contracts for ordinary fields on host-owned surfaces. This advances T04/T06,
+I02 and D05; it does not finish native IME or the private desktop adapter.
+The host must forward surface focus and manage native protocol lifecycle,
+preedit, candidate positioning and once-only replies. Password fields remain
+unsupported. See the external-host text-input section in `docs/api/core.md`.
+
+On Alpine/WSL2, the static Wayland-only GCC text-field test passed, including
+tagged deletion and multi-scalar commit, stale replay, selection and focus
+round trips, policy changes and an incompatible window binding. The same test
+passed with GCC shared and Clang ASan/UBSan with leak detection. Four existing
+controlled Wayland v1/v3 input tests passed. A copied desktop consumer built
+against the installed 0.1.12 static SDK and passed its synthetic tagged-commit
+test with DejaVu Sans; the older 0.1.11 SDK was rejected at configuration. A
+separate negative-control source with host event matching disabled failed the
+positive commit test. The initial copied-consumer invocation used a nonexistent
+font path and failed; the corrected path passed. A broad test-name filter also
+selected an unbuilt unrelated timeout test; after building that target it
+passed separately. Neither is evidence for native host preedit, physical input,
+an actual input-method provider or accessibility acceptance.

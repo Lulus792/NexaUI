@@ -22,6 +22,11 @@ cmake --build build
 ```
 
 This is an initial dock and model-result view, not a complete shell adapter.
+The view can opt into the 0.1.12 external-host tagged commit/deletion seam and
+expose the search-field freshness token to its host. The synthetic view test
+exercises one committed scalar through that seam. It does not connect a native
+input method: preedit, candidate placement, serials and cancellation remain the
+host's responsibility. The ordinary preview continues to use its window IME.
 Search edits return bounded whole-query proposals; the host applies or rejects
 them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text

@@ -1,4 +1,4 @@
-# Core API (0.1.11)
+# Core API (0.1.12)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -196,3 +196,26 @@ contract. Policy changes and application whole-model replacements invalidate
 pending accessibility edits even if policy is restored before the next frame.
 Keep all field operations on its owner thread. The Windows native adapter copies
 and guards these requests as described in the [accessibility contract](../concepts/accessibility.md#windows-owned-editor-values).
+
+## External-host text input
+
+Since 0.1.12, a host that owns a surface can opt a non-sensitive text field
+into tagged input with `nx_text_field_set_host_ime(field, 1)`. This mode and
+`desc.ime_window` are mutually exclusive. The host must forward native surface
+focus gains and losses as `NX_EVENT_FOCUS`, submit the field, and complete the
+frame. It can then obtain a nonzero freshness token with
+`nx_text_field_host_ime_revision(context, id, field, &token)` only while that
+field is focused, enabled and editable. The output is zero on error. Use the
+field ID as `ime_target` and the token as `ime_revision` on the ordered deletion
+and committed Unicode scalar events of one response; submit that batch in one
+frame. A changed text model, selection, focus, field identity, context or input
+policy invalidates the previous token. A token is a freshness check, not an
+authorization credential or a substitute for host-side exactly-once delivery.
+
+This is a commit/deletion seam, not a native IME adapter: the host remains
+responsible for protocol serials, provider admission, focus and input-context
+lifetime, cancellation, preedit, candidate geometry and rejecting old or
+duplicate replies. No preedit is rendered or candidate rectangle published by
+this mode. Password fields are unsupported. Disabling the mode invalidates
+prior tokens; ordinary `ime_window` behavior is unchanged. A consumer must
+require the newer SDK and ensure the matching shared library is loaded.
