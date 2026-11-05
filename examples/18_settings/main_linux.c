@@ -36,12 +36,15 @@ int main(int argc, char **argv) {
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe]\n",stderr); return 2; }
+    int simulate_error=argc==3 && !strcmp(argv[2],"--simulate-error");
+    int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
+    double apply_deadline=0; uint64_t scheduled_apply=0;
     nx_window_info previous={0};
     nx_window_desc desc={"Settings example",640,360,0,{0}};
     if (verify_keyboard_small) { desc.width=240; desc.height=150; }
@@ -56,6 +59,13 @@ int main(int argc, char **argv) {
         nx_window_info info; size_t routed;
         if (test_continuous) dirty=1;
         uint32_t timeout=(dirty && drawable) || smoke ? 16u : ax_unavailable ? 1000u : UINT32_MAX;
+        if (scheduled_apply) {
+            double now=seconds(CLOCK_MONOTONIC);
+            if (now<0) {okay=0;break;}
+            double remaining=apply_deadline-now;
+            uint32_t wait=remaining<=0 ? 0u : (uint32_t)ceil(remaining*1000.0);
+            if (wait<timeout) timeout=wait;
+        }
         if (idle_probe) {
             double current=seconds(CLOCK_MONOTONIC);
             if(current<0) {okay=0;break;}
@@ -75,6 +85,14 @@ int main(int argc, char **argv) {
             if(waited-wait_started>=1.0) ++idle_long_waits;
         }
         if (info.should_close || (smoke && loops++>=20)) break;
+        if (scheduled_apply) {
+            double now=seconds(CLOCK_MONOTONIC);
+            if (now<0) {okay=0;break;}
+            if (now>=apply_deadline) {
+                if (!settings_complete_apply(scene,scheduled_apply,!fail_first)) {okay=0;break;}
+                fail_first=0; scheduled_apply=0; dirty=1;
+            }
+        }
         if (idle_probe) {
             double now=seconds(CLOCK_MONOTONIC),cpu=seconds(CLOCK_PROCESS_CPUTIME_ID);
             if(now<0 || cpu<0) {okay=0;break;}
@@ -101,6 +119,13 @@ int main(int argc, char **argv) {
         uint64_t previous_focus=nx_focus_id(settings_context(scene));
         if (nx_context_set_text_raster_scale(settings_context(scene),info.scale)!=NX_OK ||
             !settings_frame(scene,info.width,info.height)) { okay=0; break; }
+        int scheduled_now=0;
+        if (!scheduled_apply && settings_pending_apply(scene)) {
+            double now=seconds(CLOCK_MONOTONIC);
+            if (now<0) {okay=0;break;}
+            scheduled_apply=settings_pending_apply(scene);
+            apply_deadline=now+0.25; scheduled_now=1;
+        }
         if (verify_ax && !ax_test_ready) {
             nx_context *ui=settings_context(scene);
             nx_event event={0}; event.type=NX_EVENT_TEXT_COMMAND;
@@ -168,7 +193,7 @@ int main(int argc, char **argv) {
         /* The scene learns the new focus while building this frame. Give it
            one further frame to reveal the focused control before going idle. */
         int probe_redraw=settings_take_accessibility_probe_redraw(scene);
-        dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw;
+        dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw || scheduled_now;
         if (verify_ax || verify_keyboard) {
             nx_utf8_span applied; int motion=0;
             if (!settings_applied(scene,&applied,&motion)) { okay=0; break; }

@@ -1,8 +1,9 @@
 # Settings example (in progress)
 
 This small C17 example keeps an application-owned display name and reduced-motion
-choice. Apply copies a valid draft into the example's in-memory model only; it
-does not change OS or Aetheri settings. The scene uses public text-field,
+choice. Apply submits a snapshot to a deterministic in-memory example backend;
+the host completes it after a short timer, and only then does the example update
+its model. It does not change OS or Aetheri settings. The scene uses public text-field,
 checkbox, button, focus, semantic and theme APIs. The Linux host passes its
 window to the text field for native IME and clipboard routing, publishes the
 semantic tree, and retires the renderer before destroying the scene and window.
@@ -12,11 +13,20 @@ currently uses the private build-tree Vulkan adapter and is not an installed-SDK
 consumer. `--smoke` closes after a bounded native run. The headless scene test
 checks Tab and Shift-Tab traversal, text editing, checkbox and button activation,
 validation, applied model values and status semantics. It uses synthetic events.
+Run `nexaui_settings /path/to/font.ttf --simulate-error` to make the first
+submission fail; the status describes the example failure and Apply retries.
+While a submission is pending Apply is disabled, edits remain a separate draft,
+and a late or duplicate completion cannot apply another submission. A newer
+draft remains unsaved after the submitted snapshot succeeds. Closing destroys
+the local pending operation. This timer is a demonstration, not an OS service,
+worker-thread wakeup implementation or proof of external operation completion.
 
 An independent libatspi test discovers this actual native example, activates
 Reduce motion and Apply, and requires the application to observe the applied
 model and exit through normal cleanup. It runs only in the private Weston and
 accessibility-bus test fixture.
+An additional native-client case observes the simulated failure in the status,
+retries Apply, and waits for successful model confirmation and normal exit.
 The client checks the nonstandard `nexaui-value` attribute and the supported
 read-only AT-SPI Text queries using a Unicode draft and selection. Text range,
 character, caret and selection reads and change notifications are available

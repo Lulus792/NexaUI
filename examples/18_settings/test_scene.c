@@ -35,6 +35,19 @@ int main(int argc,char **argv) {
           resize_view.bounds.y>=70 && resize_view.bounds.y+resize_view.bounds.height<=134);
     CHECK(settings_frame(s,640,360));
     CHECK(key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t token=settings_pending_apply(s); CHECK(token);
+    CHECK(settings_applied(s,&value,&motion) && value.length==7 && !memcmp(value.data,"Aetheri",7) && !motion);
+    CHECK(settings_frame(s,640,360));
+    uint32_t pending_index; nx_semantic_view pending_view;
+    CHECK(nx_semantics_find(ui,5,&pending_index)==NX_OK && nx_semantics_get(ui,pending_index,&pending_view)==NX_OK &&
+          (pending_view.state & NX_SEM_DISABLED));
+    CHECK(nx_semantics_find(ui,6,&pending_index)==NX_OK && nx_semantics_get(ui,pending_index,&pending_view)==NX_OK &&
+          pending_view.value.length==strlen("Applying to example...") &&
+          !memcmp(pending_view.value.data,"Applying to example...",pending_view.value.length));
+    CHECK(!settings_complete_apply(s,token+1,1) && settings_pending_apply(s)==token);
+    CHECK(settings_complete_apply(s,token,1) && !settings_complete_apply(s,token,1));
+    CHECK(settings_frame(s,640,360));
+    CHECK(nx_focus_id(ui)==5);
     CHECK(settings_applied(s,&value,&motion) && value.length==3 && !memcmp(value.data,"Ada",3) && motion==1);
     uint32_t index; nx_semantic_view view;
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
@@ -59,6 +72,30 @@ int main(int argc,char **argv) {
     CHECK(settings_frame(s,240,150));
     CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134);
+    /* Failure preserves the old model; retry snapshots the submitted draft,
+       even if the user edits again before the reply arrives. */
+    CHECK(settings_set_draft_name(s,"First",5) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    token=settings_pending_apply(s); CHECK(token && settings_complete_apply(s,token,0));
+    CHECK(settings_frame(s,640,360));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==28 && !memcmp(view.value.data,"Example apply failed. Retry.",28));
+    CHECK(settings_applied(s,&value,&motion) && value.length==3 && !memcmp(value.data,"Ada",3) && motion==1);
+    CHECK(settings_set_draft_name(s,"",0) && settings_frame(s,640,360));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen("Enter a name under 128 bytes") &&
+          !memcmp(view.value.data,"Enter a name under 128 bytes",view.value.length));
+    CHECK(settings_set_draft_name(s,"First",5) && settings_frame(s,640,360) && nx_focus_set(ui,5)==NX_OK);
+    CHECK(key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t retry=settings_pending_apply(s); CHECK(retry && retry!=token);
+    CHECK(!settings_complete_apply(s,token,1));
+    CHECK(settings_set_draft_name(s,"Later",5) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,3)==NX_OK);
+    CHECK(settings_complete_apply(s,retry,1) && settings_frame(s,640,360));
+    CHECK(nx_focus_id(ui)==3);
+    CHECK(settings_applied(s,&value,&motion) && value.length==5 && !memcmp(value.data,"First",5));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==15 && !memcmp(view.value.data,"Unsaved changes",15));
     settings_destroy(s); free(bytes); return 0;
 fail:
     if (f) fclose(f); settings_destroy(s); free(bytes); return 1;

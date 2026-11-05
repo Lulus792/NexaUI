@@ -672,3 +672,43 @@ After adding the lock, the same two-test selection with `-j 2 --repeat
 until-fail:6` ran each case six times successfully, with the seat-dependent
 cases serialized (`/tmp/nexaui-atspi-pair-lock.log`, SHA-256
 `8c6b27be3ec1fde7b21722132d7d0191210d850539f26ae79c7b6565f323f213`).
+
+## Settings submission and example-backend failure (2026-11-05)
+
+Candidate based on `cc2d39da75cb1eab9fe954c54cbf2df81e882612` adds an
+application-owned, single in-flight submission to the Settings example. Apply
+captures the name and reduced-motion choice with a nonzero token; its displayed
+model changes only after a matching successful host completion. Stale and
+duplicate completions are rejected. The draft remains editable during the
+operation, and a later draft does not change the submitted snapshot. Pending,
+failure, validation and retry are exposed through the existing status semantics;
+the Apply control is disabled during the operation. Focus is restored after
+completion only if it was lost from Apply and the user has not focused another
+control. The native example host uses a 250 ms owner-loop timer and can fail the
+first request with `--simulate-error`; this is a local deterministic example
+backend, not a real Aetheri or operating-system operation. Closing the scene
+discards the pending local work.
+
+The scene test covers pending state and disabled Apply, unchanged applied model,
+stale/duplicate replies, failure, retry, modified draft, snapshot application
+and focus retention. A separate libatspi client observed the failure status,
+retried Apply, and observed normal host completion on private Weston/Xvfb;
+the ordinary AT-SPI case passed in the same two-case run
+(`/tmp/nexaui-apply-atspi.log`). Four private-Weston keyboard cases passed
+(`/tmp/nexaui-apply-keyboard.log`). The scene and 11 adjacent IME/accessibility
+cases passed with Clang ASan/UBSan before the final validation-message priority
+adjustment; final focused reruns are recorded below. Human screenreader and
+visual acceptance, resizing/long-label reflow, real service integration and
+worker-thread wakeup remain open. This advances the first-view L04/A02/P07
+scenarios without claiming their entire catalogue rows are complete.
+
+The complete GCC Wayland-only private-Weston suite passed 202 executed tests
+with four opt-in simple-IME skips (`/tmp/nexaui-apply-full.log`) before the
+final validation-message priority adjustment and its added assertion. On the
+final candidate, the scene test passed again in GCC shared and Clang ASan/UBSan;
+the native AT-SPI failure/retry and keyboard cases both passed
+(`/tmp/nexaui-apply-final-native.log`). All four opt-in real simple-IME cases
+then passed separately (`/tmp/nexaui-apply-simple-ime.log`). These are virtual
+fixture results, not physical-device or human acceptance. The native AT-SPI
+failure/retry case also passed with Clang ASan/UBSan and leak detection
+(`/tmp/nexaui-apply-asan-native.log`).

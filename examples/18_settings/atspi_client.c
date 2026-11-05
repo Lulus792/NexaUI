@@ -295,6 +295,19 @@ int main(int argc,char **argv) {
     int changed=0;
     for(unsigned i=0;i<200 && !changed;++i) {pump(10);atspi_accessible_clear_cache(motion);changed=checked(motion);}
     CHECK(changed && activate(apply));
+    if (getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR")) {
+        AtspiAccessible *message=find(app,"Settings status",0); CHECK(message);
+        int failed=0;
+        for(unsigned i=0;i<200 && !failed;++i) {
+            pump(10); atspi_accessible_clear_cache(message);
+            GHashTable *attrs=atspi_accessible_get_attributes(message,&error);
+            CHECK(attrs && !error);
+            failed=g_strcmp0(g_hash_table_lookup(attrs,"nexaui-value"),"Example apply failed. Retry.")==0;
+            g_hash_table_unref(attrs);
+        }
+        CHECK(failed && activate(apply));
+        g_object_unref(message);
+    }
     int status=0,finished=0;
     for(unsigned i=0;i<300 && !finished;++i) {
         pump(10); pid_t p=waitpid(host,&status,WNOHANG);

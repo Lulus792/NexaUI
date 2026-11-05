@@ -14,8 +14,13 @@ struct settings_scene {
     nx_text_field *name, *probe_secret;
     nx_text_layout *title, *name_label, *motion_label, *apply_label;
     nx_text_layout *pending_label, *applied_label, *invalid_label, *clean_label;
+    nx_text_layout *applying_label, *error_label;
     char applied_name[NAME_CAP];
     size_t applied_length;
+    char submitted_name[NAME_CAP];
+    size_t submitted_length;
+    uint64_t next_submission, pending_submission;
+    int submitted_motion, apply_error, restore_apply_focus;
     int motion, applied_motion, applied;
     int probe_redraw, probe_step;
     float scroll_x, scroll_y;
@@ -33,6 +38,7 @@ static int label(settings_scene *s, const char *str, double size, nx_text_layout
 }
 void settings_destroy(settings_scene *s) {
     if (!s) return;
+    nx_text_layout_destroy(s->error_label); nx_text_layout_destroy(s->applying_label);
     nx_text_layout_destroy(s->clean_label);
     nx_text_layout_destroy(s->invalid_label); nx_text_layout_destroy(s->applied_label);
     nx_text_layout_destroy(s->pending_label); nx_text_layout_destroy(s->apply_label);
@@ -62,6 +68,8 @@ int settings_create(const unsigned char *bytes, size_t length, nx_window *window
         !label(s, "Unsaved changes", 15, &s->pending_label) ||
         !label(s, "Applied to this example", 15, &s->applied_label) ||
         !label(s, "No changes", 15, &s->clean_label) ||
+        !label(s, "Applying to example...", 15, &s->applying_label) ||
+        !label(s, "Example apply failed. Retry.", 15, &s->error_label) ||
         !label(s, "Enter a name under 128 bytes", 15, &s->invalid_label)) {
         settings_destroy(s); return 0;
     }
@@ -83,6 +91,21 @@ int settings_applied(settings_scene *s, nx_utf8_span *name, int *motion) {
     if (!s || !name || !motion) return 0;
     *name = (nx_utf8_span){s->applied_name, s->applied_length};
     *motion = s->applied_motion; return 1;
+}
+uint64_t settings_pending_apply(const settings_scene *s) {
+    return s ? s->pending_submission : 0;
+}
+int settings_complete_apply(settings_scene *s, uint64_t token, int success) {
+    if (!s || !token || token != s->pending_submission || (success != 0 && success != 1)) return 0;
+    s->pending_submission = 0;
+    s->apply_error = !success;
+    if (success) {
+        memcpy(s->applied_name,s->submitted_name,s->submitted_length);
+        s->applied_length=s->submitted_length;
+        s->applied_motion=s->submitted_motion;
+        s->applied=1;
+    }
+    return 1;
 }
 int settings_frame(settings_scene *s, float width, float height) {
     if (!s || width < 128 || height < 120) return 0;
@@ -131,18 +154,29 @@ int settings_frame(settings_scene *s, float width, float height) {
     TRY(nx_checkbox(s->ui,&motion,&s->motion,&interaction));
     nx_control_desc apply={0}; apply.id=5; apply.parent_id=7;
     apply.bounds=(nx_rect){32,210-y,110,38}; apply.name=text("Apply settings");
-    apply.label_layout=s->apply_label; apply.label_origin=(nx_point){61,218-y}; apply.glyph_cache_bytes=CACHE_BYTES; apply.disabled=!valid;
+    apply.label_layout=s->apply_label; apply.label_origin=(nx_point){61,218-y}; apply.glyph_cache_bytes=CACHE_BYTES;
+    apply.disabled=!valid || s->pending_submission || s->next_submission==UINT64_MAX;
     TRY(nx_button(s->ui,&apply,&interaction));
+    if (!s->pending_submission && s->restore_apply_focus) {
+        if (!nx_focus_id(s->ui) && !apply.disabled)
+            TRY(nx_focus_set(s->ui,5));
+        s->restore_apply_focus=0;
+    }
     nx_utf8_span name; TRY(nx_text_field_text(s->name,&name));
-    if (interaction.clicked && valid) {
-        memcpy(s->applied_name,name.data,name.length); s->applied_length=name.length;
-        s->applied_motion=s->motion; s->applied=1;
+    if (interaction.clicked && !apply.disabled) {
+        memcpy(s->submitted_name,name.data,name.length); s->submitted_length=name.length;
+        s->submitted_motion=s->motion; s->apply_error=0;
+        s->restore_apply_focus=nx_focus_id(s->ui)==5;
+        s->pending_submission=++s->next_submission;
     }
     int same = name.length==s->applied_length &&
         memcmp(name.data,s->applied_name,name.length)==0 && s->motion==s->applied_motion;
-    const char *message = !valid ? "Enter a name under 128 bytes" :
+    const char *message = s->pending_submission ? "Applying to example..." :
+                          !valid ? "Enter a name under 128 bytes" :
+                          s->apply_error ? "Example apply failed. Retry." :
                           !same ? "Unsaved changes" : s->applied ? "Applied to this example" : "No changes";
-    nx_text_layout *status = !valid ? s->invalid_label :
+    nx_text_layout *status = s->pending_submission ? s->applying_label :
+                             !valid ? s->invalid_label : s->apply_error ? s->error_label :
                              !same ? s->pending_label : s->applied ? s->applied_label : s->clean_label;
     nx_semantic_desc state={0}; state.id=6; state.parent_id=7; state.role=NX_ROLE_STATUS;
     state.bounds=(nx_rect){32,252-y,width-64,20}; state.name=text("Settings status"); state.value=text(message);
