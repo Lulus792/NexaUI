@@ -9,7 +9,11 @@ unchanged committed value and rejection of a replayed stale batch. On
 Alpine/WSL, GCC 15.2 Release shared Wayland-only, v1 and v3 each passed ten
 consecutive runs (ctest `--repeat until-fail:10`, exit 0). This is controlled
 protocol evidence, not an installed IME, other platform, Aetheri, or human
-acceptance; T05 remains open.
+acceptance; T05 remains open. On current source
+`1b5699f906979fe8aa5cdfdbecebb7c0a896f672`, both tests also passed in the
+Alpine/WSL Clang AddressSanitizer/UndefinedBehaviorSanitizer build with leak
+detection enabled (2/2, exit 0). The build emitted three existing missing-field
+initializer warnings in `src/nexaui.c`; no sanitizer failure was reported.
 
 ## Settings reopen test output isolation (2026-11-05)
 
@@ -29,7 +33,11 @@ expected marker; after the change, the reopen and unknown-outcome tests both
 passed on Alpine/WSL with Vulkan validation enabled (2/2, exit 0; fixture
 `/tmp/nexaui-reopen-noise-after/result.json`). This checks channel isolation,
 not the Ubuntu CI result or broader Settings acceptance. The Ubuntu jobs and
-their independent disconnect stack diagnostics remain outstanding.
+their independent disconnect stack diagnostics remain outstanding. The later
+`6270109` Ubuntu CI passed the reopen case in both
+[static](https://github.com/Lulus792/NexaUI/actions/runs/42007186198/job/127176799982)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/42007186198/job/127176799892)
+builds; each suite still failed the separate multi-window disconnect case.
 
 On the subsequent `7fc4742` Ubuntu CI, the disconnect tests again segfaulted
 in the suite, but the single debugger rerun exited normally in both
