@@ -6952,7 +6952,7 @@ static uint64_t nx_field_ime_revision(const nx_text_field *field) {
         hash = (hash ^ (unsigned char)bytes[i]) * UINT64_C(1099511628211);
     uint64_t values[] = {(uint64_t)length, (uint64_t)anchor,
                          (uint64_t)cursor, (uint64_t)(uintptr_t)field,
-                         field->text_value.revision,
+                         field->text_value.identity, field->text_value.revision,
                          nx_text_buffer_change_serial(field->buffer)};
     for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
         for (unsigned byte = 0; byte < 8; ++byte)

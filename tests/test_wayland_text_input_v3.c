@@ -2,7 +2,8 @@
 
 int main(int argc, char **argv) {
     int revert = argc == 2 && !strcmp(argv[1], "--selection-revert");
-    CHECK(argc == 1 || revert);
+    int replace = argc == 2 && !strcmp(argv[1], "--field-replace");
+    CHECK(argc == 1 || revert || replace);
     test_server server = {0};
     char runtime[] = "/tmp/nexaui-wayland-v3-XXXXXX";
     CHECK(mkdtemp(runtime));
@@ -159,12 +160,25 @@ int main(int argc, char **argv) {
         CHECK(nx_text_field_set_selection(field,0,0)==NX_OK);
         CHECK(nx_text_field_set_selection(field,4,4)==NX_OK);
     }
+    if (replace) {
+        uintptr_t old_address=(uintptr_t)field;
+        nx_text_field_destroy(field);field=NULL;
+        int reused=0;
+        for (unsigned attempt=0;attempt<256 && !reused;++attempt) {
+            CHECK(nx_text_field_create("x",1,1024,&field)==NX_OK);
+            reused=(uintptr_t)field==old_address;
+            if (!reused && attempt<255) {nx_text_field_destroy(field);field=NULL;}
+        }
+        fprintf(stderr,"FIELD_ADDRESS_REUSED=%d\n",reused);
+        CHECK(!getenv("NEXAUI_TEST_REQUIRE_FIELD_REUSE") || reused);
+        CHECK(nx_text_field_set_text(field,"abcd",4)==NX_OK);
+    }
     CHECK(nx_text_field_widget(context, &field_desc, field, &interaction,
         &valid, &submitted) == NX_OK && interaction.focused);
     CHECK(nx_end_frame(context) == NX_OK);
     CHECK(nx_text_field_text(field, &draft) == NX_OK);
-    CHECK(draft.length == 4 && memcmp(draft.data, revert?"abcd":"abc!", 4) == 0);
-    if (revert) CHECK(nx_text_field_set_text(field,"abc!",4)==NX_OK);
+    CHECK(draft.length == 4 && memcmp(draft.data, (revert || replace)?"abcd":"abc!", 4) == 0);
+    if (revert || replace) CHECK(nx_text_field_set_text(field,"abc!",4)==NX_OK);
     CHECK(nx_context_queue_event(context, &stale_delete) == NX_OK);
     CHECK(nx_context_queue_event(context, &stale_commit) == NX_OK);
     CHECK(nx_begin_frame(context, 160, 60, 0) == NX_OK);
