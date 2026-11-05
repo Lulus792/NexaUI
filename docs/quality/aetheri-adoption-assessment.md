@@ -1,5 +1,35 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri dock and ordinary NexaUI window (2026-11-05)
+
+Test source `7598f34c0f5d7ce0002a1d831316ba5a709031d9` adds a strict C17
+consumer of the installed public SDK and an isolated driver for Aetheri's
+test compositor and its private-role test desktop. The same independently
+built Aetheri `d621c9bba1df8ffd1083999300bcff742022b9dc` compositor and
+installed Wayland-only static NexaUI `d4c9aab9354feb4c9e045b960f4985468bec3253`
+SDK from the preceding carrier run were used; Aetheri's separate work was not
+changed. Its test desktop actually maps the 84-pixel exclusive dock on three
+headless outputs. It is a solid-color protocol fixture, not the SDL desktop.
+
+On the first 1920×1080 output, the consumer requests 2100×1200 and observes
+1840×916 logical pixels and the same buffer extent, matching the dock and
+40-pixel margins. It then observes 1920×996 when maximized and 1840×916 on
+restore. Three compositor captures check the app, reserved background and dock
+pixels; both repeated runs have matching hashes. The consumer closes, the
+private desktop receives `retired`, all three processes exit 0 and the private
+socket disappears. With the same consumer built against the earlier SDK
+`2e4e8e9ffa0e0244b9a6bbecbe73f7fc43e91c65`, the first submitted frame instead
+reported 2100×1200 and the check failed. This negative run's cleanup also
+reported connection loss after the test stopped the processes; it is not a
+clean-retirement result.
+
+The successful log and first-output captures are retained at
+`D:/NexaUI/out/aetheri-dock-2026-11-05/positive.tar.gz`, SHA-256
+`8caae3eb0ec45de849f6249171e4571db1e4aec2983df695e447bf72dbc8199f`;
+the three extracted image hashes match the recorded run. Headless test roles,
+solid-color content and 1× output do not establish actual SDL dock integration,
+physical placement, mixed DPI, accessibility or complete Settings adoption.
+
 ## Aetheri headless compositor and installed Settings consumer (2026-11-05)
 
 An isolated Fedora carrier run combined NexaUI source
