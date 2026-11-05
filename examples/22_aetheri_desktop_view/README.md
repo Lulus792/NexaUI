@@ -229,3 +229,34 @@ Positive and negative logs are archived at
 `6c6cd136b39ef91ebbc9ecb7d6cf0135ec6e0ee372fb660d3542651b618fd992`.
 This tests virtual discrete wheel input only; continuous touchpad behavior,
 real window observations and the held-device removal failure remain open.
+
+Source `41fb0b20f0d1df0afa9d9368b1a67ac034be7101` connects the test
+host's existing Aetheri desktop-observation callbacks to each view's original
+model. Each observation or close advances that view's revision; painting is
+deferred outside the callback. The driver accepts an optional
+`--app-client /path/to/test_compositor_client`: without it, the result
+explicitly records `window_observation: not-run`.
+
+On the same isolated Aetheri headless test compositor, the independently
+started native test client created two real xdg-toplevels. Their titles and
+IDs appeared in the model for all three outputs and in the first view's
+semantics. The test clicked the first window's row, observed its exact ID in
+the proposed intent, confirmed that direct activation is denied while search
+is exclusive, and separately activated it through the desktop-control test
+command after collapsing search. A Unicode title change propagated to all
+three models and the first view; closing the second window removed it.
+Reopening it produced a new ID and replaced the old row. This fixture observed
+IDs 1, 2 and 3; the app, desktop and compositor all exited 0. The app was
+started by the test driver; the clicked intent was not itself wired to the
+activation command or a process owner.
+
+The desktop test binary SHA-256 was
+`3c493eec7771d60487398d2b323daa146933baa77021d7520ae60f682bd4e938`;
+the independent app client was
+`d979f958d7471b3e6231908f09f8ba99384e7568e193f1bec8f546d13909d5fc`.
+Suppressing model updates in a test-only binary made the same check fail.
+Positive and negative logs are archived at
+`D:/NexaUI/out/aetheri-layer-observation-20261105.tar.gz`, SHA-256
+`e60bdba6d8626d05c95373c1855b3cdbcbc0236de304c75c40a6493e96badfb8`.
+Actual process-owner launching, private-surface IME/AT-SPI, dynamic output
+removal, physical operation and the held-device removal failure remain open.
