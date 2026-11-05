@@ -11,7 +11,7 @@
 
 typedef struct fixture {
     nx_window *window; nx_context *context; nx_font *font;
-    nx_font_collection *fonts; nx_text_field *field;
+    nx_font_collection *fonts; nx_text_field *field; nx_numeric_field *number;
     int disabled, omitted;
     int clipboard_mode;
     char copied[64];
@@ -38,10 +38,15 @@ static int draw(fixture *f) {
     d.bounds=(nx_rect){8,8,300,32}; d.fonts=f->fonts; d.pixels_per_em=16; d.glyph_cache_bytes=65536;
     d.disabled=f->disabled;
     d.clipboard=(nx_text_clipboard){f,clipboard_read,clipboard_write};
+    nx_numeric_field_desc number={0}; number.id=3; number.parent_id=1;
+    number.name=(nx_utf8_span){"Numeric field",13}; number.bounds=(nx_rect){8,48,300,32};
+    number.fonts=f->fonts; number.pixels_per_em=16; number.glyph_cache_bytes=65536;
+    number.minimum=-10000; number.maximum=10000;
     nx_interaction_state state; int valid,submitted;
     return nx_begin_frame(f->context,320,120,0)==NX_OK &&
         nx_semantics_add(f->context,&root,NULL)==NX_OK &&
         (f->omitted || nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)==NX_OK) &&
+        nx_numeric_field_widget(f->context,&number,f->number,&state,&valid)==NX_OK &&
         nx_end_frame(f->context)==NX_OK;
 }
 static int frame(fixture *f) {return draw(f) && nx_window_publish_semantics(f->window,f->context)==NX_OK;}
@@ -56,7 +61,8 @@ int main(void) {
     if (nx_window_create(&desc,&f.window)!=NX_OK || nx_context_create(NULL,&f.context)!=NX_OK ||
         nx_font_open(font_bytes,sizeof(font_bytes),NULL,&f.font)!=NX_OK ||
         nx_font_collection_create(NULL,&f.fonts)!=NX_OK || nx_font_collection_add(f.fonts,f.font)!=NX_OK ||
-        nx_text_field_create("AZ",2,65536,&f.field)!=NX_OK || !frame(&f)) goto done;
+        nx_text_field_create("AZ",2,65536,&f.field)!=NX_OK ||
+        nx_numeric_field_create(1234,1024,&f.number)!=NX_OK || !frame(&f)) goto done;
     setvbuf(stdout,NULL,_IOLBF,0); puts("READY");
     if (fcntl(STDIN_FILENO,F_SETFL,fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK)<0) goto done;
     char input[64]; size_t used=0; int paused=0;
@@ -71,7 +77,18 @@ int main(void) {
         input[used]=0; char *end=memchr(input,'\n',used); if (!end) continue;
         *end=0;
         if (!strcmp(input,"quit")) { okay=1; break; }
-        if (!strcmp(input,"large")) {
+        if (!strcmp(input,"numeric-invalid")) {
+            double value=0; nx_utf8_span draft;
+            if(nx_numeric_field_value(f.number,&value)!=NX_OK || value!=1234 ||
+               nx_numeric_field_text(f.number,&draft)!=NX_OK || draft.length!=3 || memcmp(draft.data,"bad",3))goto done;
+            puts("ACK numeric-invalid");
+        } else if (!strcmp(input,"numeric-enter")) {
+            nx_event event={0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_NEWLINE;
+            double value=0;
+            if(nx_focus_set(f.context,3)!=NX_OK || nx_context_queue_event(f.context,&event)!=NX_OK || !frame(&f) ||
+               nx_numeric_field_value(f.number,&value)!=NX_OK || value!=42)goto done;
+            puts("ACK numeric-enter");
+        } else if (!strcmp(input,"large")) {
             if (nx_text_field_set_text(f.field,large,length)!=NX_OK || !frame(&f)) goto done;
             puts("ACK large");
         } else if (!strcmp(input,"short")) {
@@ -145,7 +162,7 @@ int main(void) {
     }
 done:
     if (f.window) nx_window_publish_semantics(f.window,NULL);
-    nx_text_field_destroy(f.field); nx_context_destroy(f.context);
+    nx_numeric_field_destroy(f.number); nx_text_field_destroy(f.field); nx_context_destroy(f.context);
     nx_font_collection_destroy(f.fonts); nx_font_close(f.font); nx_window_destroy(f.window);
     free(large); return okay?0:1;
 }

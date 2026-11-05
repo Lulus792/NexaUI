@@ -153,6 +153,28 @@ int main(int argc,char **argv) {
         }
     }
     CHECK(app); AtspiAccessible *field=find(app,"Large text field",0); CHECK(field);
+    /* Exercise the numeric widget through an independent native client. */
+    AtspiAccessible *number=find(app,"Numeric field",0); CHECK(number);
+    AtspiText *number_text=atspi_accessible_get_text_iface(number); CHECK(number_text);
+    AtspiEditableText *number_edit=atspi_accessible_get_editable_text_iface(number); CHECK(number_edit);
+    GError *number_error=NULL;
+    CHECK(atspi_editable_text_set_text_contents(number_edit,"bad",&number_error) && !number_error);
+    char *number_draft=atspi_text_get_text(number_text,0,-1,&number_error);
+    CHECK(!number_error && number_draft && !strcmp(number_draft,"bad"));g_free(number_draft);
+    atspi_accessible_clear_cache(number);
+    AtspiStateSet *number_state=atspi_accessible_get_state_set(number);
+    CHECK(number_state && atspi_state_set_contains(number_state,ATSPI_STATE_INVALID_ENTRY));g_object_unref(number_state);
+    CHECK(command("numeric-invalid"));
+    CHECK(atspi_editable_text_set_text_contents(number_edit,"42",&number_error) && !number_error);
+    atspi_accessible_clear_cache(number);number_state=atspi_accessible_get_state_set(number);
+    CHECK(number_state && !atspi_state_set_contains(number_state,ATSPI_STATE_INVALID_ENTRY));g_object_unref(number_state);
+    CHECK(atspi_text_add_selection(number_text,0,1,&number_error) && !number_error);
+    AtspiRange *number_selection=atspi_text_get_selection(number_text,0,&number_error);
+    CHECK(!number_error && number_selection && number_selection->start_offset==0 && number_selection->end_offset==1);
+    g_free(number_selection);
+    CHECK(atspi_text_set_caret_offset(number_text,2,&number_error) && !number_error);
+    CHECK(command("numeric-enter"));
+    g_object_unref(number_edit);g_object_unref(number_text);g_object_unref(number);
     AtspiText *text=atspi_accessible_get_text_iface(field); CHECK(text);
     replay r={0}; r.path=ATSPI_OBJECT(field)->path; r.model=g_string_new("AZ"); r.phase=1;
     AtspiEventListener *listener=atspi_event_listener_new(event,&r,NULL); CHECK(listener);

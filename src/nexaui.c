@@ -6853,6 +6853,10 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     node->value_length = draft.length;
     if (valid) node->state &= ~NX_SEM_INVALID;
     else node->state |= NX_SEM_INVALID;
+    size_t selection_anchor=0, selection_cursor=0;
+    result=nx_text_buffer_selection(field->buffer,&selection_anchor,&selection_cursor);
+    if (result!=NX_OK) goto rollback;
+    node->text_selection=(nx_text_selection_snapshot){selection_anchor,selection_cursor,1};
     nx_utf8_span ime_preedit={0}; int32_t ime_begin=0, ime_end=0;
     if (state.focused && !desc->disabled && field->ime_window && !ctx->ime_active_password &&
         (!ctx->ime_active_window || (ctx->ime_active_window==field->ime_window && ctx->ime_active_id==desc->id))) {
