@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric clipboard integration (2026-11-05)
+
+Source `75d78e0a12d8262227d3518640423f627990e47b` adds the optional
+`nx_numeric_field_set_clipboard` to the 0.1.7 development package. Numeric
+fields reuse the general-field clipboard callback validation and bounded native
+Wayland asynchronous reader. A complete paste is applied to the draft; invalid
+text is visible and does not change the committed value. Model replacement,
+focus changes and removing callbacks cancel or invalidate pending edits; field
+destruction cancels its outstanding native transfer. The application must keep
+callback data and any borrowed native window alive through that lifecycle.
+
+The numeric widget test covers copy, cut, paste, invalid multiline text,
+semantic invalid state and reentrant model replacement. A controlled Wayland
+peer supplies an actual asynchronous paste; tests check confirmation, stalled
+peer/model replacement, focus away and back, and destruction with the reader
+slot subsequently reusable. Clang 22.1.3 ASan/UBSan with leak detection ran
+eight selected tests, GCC 15.2 Release Wayland-only seven, and GCC Debug dual
+Wayland/X11 four (`/tmp/nexaui-numclip-asan.log`,
+`/tmp/nexaui-numclip-release.log`, `/tmp/nexaui-numclip-dual.log`). The final
+native numeric case including confirmation passed separately in all three
+profiles (`/tmp/nexaui-numclip-native-final.log`,
+`/tmp/nexaui-numclip-release-final.log`, `/tmp/nexaui-numclip-dual-final.log`).
+An isolated mutant that omitted cancellation on destruction failed the
+reader-slot check (`/tmp/nexaui-numclip-mutant-test.log`); it is not shipped.
+Static and shared installed C17 consumers linked and called the new symbol
+with X11 discovery disabled (`/tmp/nexaui-numclip-package.log`).
+
+The server is a controlled native Wayland fixture, not an independent Aetheri
+peer or physical/human acceptance. Other native IME implementations, actual
+Aetheri clipboard interactions and native assistive numeric editing remain open;
+T05 is not fully accepted. No Aetheri consumer pin was changed.
+
 ## Reentrant text clipboard callbacks (2026-11-05)
 
 Source `3ec8314e53804b94e9034954faf5be34f3f341c3` protects the shared
