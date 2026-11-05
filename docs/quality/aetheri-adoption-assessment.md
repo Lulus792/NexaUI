@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland build in an X11-free test root (2026-11-05)
+
+Git archive source `009fc6b2f652d36084fb23aa45de4e81083f82c5` built and
+installed as static and shared C17 Wayland-only SDKs in a separate Alpine
+3.24.2 filesystem. Independent package consumers compiled and ran inside that
+filesystem. The sandbox mounted the root and source read-only, used a private
+temporary filesystem and an isolated network namespace, and checked standard
+X11/XCB header, library and pkg-config locations before building. Both package
+checks rejected a required Vulkan component as expected. D-Bus development
+headers were present and both builds compiled the AT-SPI implementation; this
+is not a native AT-SPI or IME exercise.
+
+The root contained GCC 15.2.0-r5, CMake 4.2.3-r0, Wayland 1.25.0-r0,
+wayland-protocols 1.48-r0, libxkbcommon 1.13.1-r0 and dbus-dev 1.16.2-r2.
+Alpine's `libxkbcommon-dev` package requires X11 libraries even though this
+consumer does not: its signed package was verified, then only its non-X11
+headers, core linker symlink and `xkbcommon.pc` were extracted into the test
+root. Its SHA-256 was `94fd46087a1830db5238a37cf913ebef8c831ea682d53d0a498b26637f5caa7c`.
+The root still contains XKB keyboard data, which is not an X11 library. The
+source archive SHA-256 was `a5689006216eae19810b5f9899bf73f7cfaf8d7069ddef92056945b49dfc7fd2`.
+
+The reusable [root checker](../../tests/check_wayland_no_x11_root.py) also
+rejected a deliberate X11-header counterexample. Package listing and successful
+log are `/tmp/nexaui-no-x11-root-009-packages.txt` (SHA-256
+`b787780caba9c0c8c7e8af55e0673509fc25021d6c65fff220dae8271443f153`) and
+`/tmp/nexaui-no-x11-009.log` (SHA-256
+`e0189af7991b29c34f6b01fbda6b2cd1d115b27f20902f9081e37fc2d2b1479e`).
+The package probe uses synthetic source-revision declarations to test metadata
+propagation; the archive identity above is a separate source observation. This
+does not replace default dual-backend, native-compositor, installed IME,
+screenreader or other-distribution acceptance.
+
 ## Minimal offline software profile (2026-11-05)
 
 Static and shared Wayland-only SDKs built from Git archive source
