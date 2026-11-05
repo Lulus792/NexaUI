@@ -24,6 +24,7 @@ cmake -S examples/23_aetheri_terminal_view -B /tmp/terminal-view \
   -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot
 cmake --build /tmp/terminal-view
 /tmp/terminal-view/aetheri_terminal_view_test /path/to/monospace.ttf
+/tmp/terminal-view/aetheri_terminal_selection_test /path/to/monospace.ttf
 ```
 
 On Linux with libatspi development files, D-Bus, a registry and Python, an
@@ -39,6 +40,10 @@ NEXAUI_TERMINAL_AX_SCROLL=1 python3 tests/run_atspi_native.py \
   /tmp/terminal-view/aetheri_terminal_ax_host
 NEXAUI_TERMINAL_AX_TRANSITION=1 python3 tests/run_atspi_native.py \
   /path/to/at-spi2-registryd /tmp/terminal-view/aetheri_terminal_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_ax_host
+NEXAUI_TERMINAL_AX_EVENT=1 NEXAUI_TERMINAL_AX_TRANSITION=1 \
+  python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  /tmp/terminal-view/aetheri_terminal_atspi_client \
   /tmp/terminal-view/aetheri_terminal_ax_host
 ```
 
@@ -59,6 +64,13 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   this catches selection clear in the tested Aetheri revision, which does not
   itself advance the model sequence. It cannot detect arbitrary unannounced
   mutations. Borrowed frame data expires at the next frame or destruction.
+- The example can route host-authorized `nx_event` pointer selection and
+  Ctrl+Shift+A/arrow selection to the original model, including cancel and
+  focus loss. The host must enforce focus/modal/input policy, copy any queued
+  events before rebuilding, and build a newer frame after every mutation. The
+  mapping uses Aetheri's boundary policy; it does not use cell hit identity as
+  a substitute for the model's selection boundaries. IME-composition and paste
+  review precedence remain the host's responsibility.
 - Only visible cells are copied. The semantic value includes visible spaces and
   row separators, including soft-wrapped rows. It is not clipboard content:
   selection copying must use the original model's copy operation.
@@ -89,3 +101,14 @@ semantic snapshot tests passed for static, shared and sanitizer configurations.
 The existing private-Weston large-text test was skipped outside its required
 fixture; a follow-up could not start because Weston was unavailable in this
 environment. These runs are not native Aetheri or human screenreader acceptance.
+
+The event-selection example was developed on NexaUI base
+`3f93c535fd3bfa9387a232a732594210f3cd6dfd` and checked against the same
+Aetheri model snapshot using installed static and shared SDKs and Clang
+ASan/UBSan. Queued pointer events (including several in one frame), reverse
+selection, original-model copy, Ctrl+Shift keyboard selection, consumed keys,
+focus loss, pointer cancellation and stale model changes were exercised. An
+isolated negative control that removed selection extension failed the copy
+assertion. A separate libatspi client also read a reverse selection created by
+these events, then the same accessible after scrolling. The events are synthetic
+and no native pointer capture is proved.

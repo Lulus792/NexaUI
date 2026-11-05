@@ -30,4 +30,12 @@ nx_result aetheri_terminal_view_text(const aetheri_terminal_view *view,uint64_t 
     nx_utf8_span *text,size_t *anchor,size_t *cursor,int *has_caret);
 nx_result aetheri_terminal_view_hit(const aetheri_terminal_view *view,uint64_t revision,
     float x,float y,size_t *row,size_t *column);
+/* Route one host-authorized NexaUI event to the original selection model.
+   The caller must route modal/focus policy first, and rebuild with a strictly
+   newer revision whenever changed is set before routing another event. Copy
+   queued events before rebuilding: nx_frame_events storage expires at begin_frame. Capture
+   is canceled on focus loss, pointer cancel, or a stale model. This is not a
+   PTY, clipboard, IME or native-window event loop. */
+nx_result aetheri_terminal_view_selection_event(aetheri_terminal_view *view,uint64_t revision,
+    const nx_event *event,int *handled,int *changed);
 #endif

@@ -11,7 +11,7 @@ struct aetheri_terminal_view {
     char *text;
     size_t rows,columns,text_length,anchor,cursor;
     uint64_t revision,last_revision,last_sequence;
-    int has_caret;
+    int has_caret,selecting;
     struct ae_term_selection last_selection;
 };
 static int same_selection(const struct ae_term_selection *a,const struct ae_term_selection *b) {
@@ -165,4 +165,58 @@ nx_result aetheri_terminal_view_hit(const aetheri_terminal_view *v,uint64_t revi
     if(v->revision!=revision || v->last_sequence!=v->desc.model->sequence ||
        !same_selection(&v->last_selection,&v->desc.model->selection))return NX_ERROR_STATE;
     nx_cell_grid_desc d=grid(v);return nx_cell_grid_hit_test(&d,x,y,row,column);
+}
+
+/* Match Aetheri's selection boundary policy, not cell_grid_hit_test's cell
+   identity policy. Aetheri resolves a continuation boundary in its model. */
+static int selection_point(const aetheri_terminal_view *v,float x,float y,int clamp,
+                           unsigned *row,unsigned *column) {
+    if(!isfinite(x) || !isfinite(y))return 0;
+    float col=x/v->desc.cell_width,line=y/v->desc.cell_height;
+    if(!clamp && (col<0 || col>=(float)v->columns || line<0 || line>=(float)v->rows))return 0;
+    col=fmaxf(0,fminf((float)v->columns,floorf(col+.5f)));
+    line=fmaxf(0,fminf((float)v->rows-1,floorf(line)));
+    *row=(unsigned)line;*column=(unsigned)col;return 1;
+}
+nx_result aetheri_terminal_view_selection_event(aetheri_terminal_view *v,uint64_t revision,
+    const nx_event *e,int *handled,int *changed) {
+    if(!handled || !changed || handled==changed)return NX_ERROR_ARGUMENT;
+    *handled=*changed=0;
+    if(!v || !revision || !e)return NX_ERROR_ARGUMENT;
+    if(e->type==NX_EVENT_POINTER_CANCEL || (e->type==NX_EVENT_FOCUS && !e->focused)) {
+        v->selecting=0;return NX_OK;
+    }
+    if(v->revision!=revision || v->last_sequence!=v->desc.model->sequence ||
+       !same_selection(&v->last_selection,&v->desc.model->selection)) {
+        v->selecting=0;return NX_ERROR_STATE;
+    }
+    struct ae_terminal *m=v->desc.model;unsigned row=0,col=0;
+    if(e->type==NX_EVENT_POINTER_DOWN && e->button==NX_BUTTON_LEFT) {
+        v->selecting=0;
+        if(!selection_point(v,e->x,e->y,0,&row,&col))return NX_OK;
+        if(revision==UINT64_MAX)return NX_ERROR_LIMIT;
+        v->selecting=ae_terminal_select_begin(m,row,col);*handled=*changed=1;
+    } else if((e->type==NX_EVENT_POINTER_MOVE ||
+              (e->type==NX_EVENT_POINTER_UP && e->button==NX_BUTTON_LEFT)) && v->selecting) {
+        if(!selection_point(v,e->x,e->y,1,&row,&col)){v->selecting=0;return NX_ERROR_ARGUMENT;}
+        if(revision==UINT64_MAX){v->selecting=0;return NX_ERROR_LIMIT;}
+        if(!ae_terminal_select_extend(m,row,col))v->selecting=0;
+        if(e->type==NX_EVENT_POINTER_UP)v->selecting=0;
+        *handled=*changed=1;
+    } else if(e->type==NX_EVENT_KEY_DOWN && e->key==NX_KEY_ESCAPE && m->selection.count) {
+        if(revision==UINT64_MAX)return NX_ERROR_LIMIT;
+        ae_terminal_select_clear(m);v->selecting=0;*handled=*changed=1;
+    } else if(e->type==NX_EVENT_KEY_DOWN &&
+              (e->modifiers&(NX_MOD_CONTROL|NX_MOD_SHIFT|NX_MOD_ALT|NX_MOD_SUPER))==
+              (NX_MOD_CONTROL|NX_MOD_SHIFT)) {
+        int dx=e->key==NX_KEY_LEFT?-1:e->key==NX_KEY_RIGHT?1:0;
+        int dy=e->key==NX_KEY_UP?-1:e->key==NX_KEY_DOWN?1:0;
+        if(e->key!=NX_KEY_A && !dx && !dy)return NX_OK;
+        if(revision==UINT64_MAX)return NX_ERROR_LIMIT;
+        if(e->key==NX_KEY_A)(void)ae_terminal_select_all(m);
+        else (void)ae_terminal_select_step(m,dx,dy);
+        v->selecting=0;*handled=*changed=1;
+    }
+    if(*changed)v->revision=0;
+    return NX_OK;
 }

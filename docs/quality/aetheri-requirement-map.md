@@ -8,6 +8,10 @@ It demonstrates bounded visible cells, owner selection and copy, and simulated
 host AT-SPI text/selection. Scrollback without a visible caret remains readable
 with caret offset -1 and no selection. Native interaction, editor, PTY/session and other packet 5
 gates remain open; this example does not establish Aetheri adoption.
+On base `3f93c535fd3bfa9387a232a732594210f3cd6dfd`, the example additionally
+routes synthetic queued pointer and selection-key events to the original model,
+with revision/focus/cancellation checks and the model's own copy operation.
+Native input and independent clipboard peers remain unproved.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on
