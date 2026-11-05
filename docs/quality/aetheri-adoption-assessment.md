@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Application-owned asynchronous Wayland clipboard read (2026-11-05)
+
+Source `4e6c240bda94d8bc537851cdbb89846003eb86e3` exposes the existing
+bounded, poll-driven native clipboard read in `<nexaui/wayland_clipboard.h>`.
+A caller owns a token and the returned bytes; focus/model/selection validation
+and paste policy remain application responsibilities. Text-field paste cannot
+cancel a pending application-owned read; the window still has one shared read
+slot. The API rejects unsupported X11 windows and does not change the portable
+synchronous getter.
+
+GCC Wayland protocol tests covered a stalled source, continued IME work,
+completion, timeout, over-limit and malformed content, cancellation, focus and
+seat loss, stale tokens, wrong-thread calls and the shared-slot guard. Ten
+clipboard/focus tests passed; 22 Settings/AT-SPI paste regression tests also
+passed. Clang 22 ASan/UBSan passed the asynchronous and focus/seat cases. A
+dual-backend shared build passed the X11 unsupported check under private Xvfb
+and the Wayland async case. From an archive of this exact source, separate
+static and shared Wayland-only installed SDKs and copied C17 package consumers
+built and ran, including the new header and null-argument calls. These package
+checks do not themselves perform a live clipboard read; the protocol fixture
+is a separate controlled server, not a human desktop or Aetheri integration.
+No terminal paste model, cross-platform asynchronous API or human acceptance
+is claimed by this step.
+
 ## Application-owned cell selection copy (2026-11-05)
 
 Example source `c7ceb2738d5a2cf3bfc0febcb51b1699ca827281` copies its
