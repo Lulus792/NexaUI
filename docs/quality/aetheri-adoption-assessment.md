@@ -2900,6 +2900,26 @@ claiming an actual native fractional-scale output.
 Installed IME candidate presentation, real Aetheri chrome and focus, physical
 output changes and human visual acceptance remain open.
 
+## Private Weston simple-IME to Aetheri PTY — 5 November 2026
+
+On NexaUI base `2f3b3af20af80918738b5dbeef13fb8b9d0fbb19`, an optional
+[native terminal test](../../examples/23_aetheri_terminal_view/README.md#private-weston-simple-ime-to-the-original-pty)
+used a private Weston 14.0.2/Xvfb seat, its separate `weston-simple-im`
+process, virtual keys and the original Aetheri shell/PTY/model at revision
+`87996e2f12128b172a80b325ad3b539df6aee527`. In static, shared and Clang
+ASan/UBSan builds, the app rendered a preedit, forwarded one validated Unicode
+commit, observed it in PTY output and shut down cleanly. A second case moved
+focus away during composition, returned and observed only a new commit. The
+native trace showed the IME and candidate-rectangle requests. An isolated
+mutant suppressing the PTY write failed the shell-output check.
+
+An earlier forced-focus run of the initial consumer failed preedit adoption
+after queued focus changes; synchronizing the final queued focus state allowed
+the refocus case to pass. Both Alpine syscall and termios test adapters were
+enabled. This does not establish general Wayland-v1 focus correctness,
+production Aetheri integration, chosen IME behavior, physical input/output,
+native candidate placement quality or human visual/screenreader acceptance.
+
 ## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
 
 On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional

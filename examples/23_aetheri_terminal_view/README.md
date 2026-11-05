@@ -540,3 +540,51 @@ This uses a deterministic in-process test compositor. It does not verify an
 installed IME's candidate popup, native fractional-output scale transitions,
 real Aetheri window/chrome geometry or human visual acceptance. The owner
 still controls focus and native-window lifetime.
+
+### Private Weston simple-IME to the original PTY
+
+On NexaUI base `2f3b3af20af80918738b5dbeef13fb8b9d0fbb19`, the optional
+`aetheri_terminal_native_ime_pty` test consumer combines an ordinary Wayland
+window, terminal grid and preedit overlay, guarded IME adapter and the
+original Aetheri shell/PTY from `87996e2f12128b172a80b325ad3b539df6aee527`.
+The owner opens the shell before UI initialization, validates each complete
+native commit before sending it to its own PTY, observes the resulting shell
+output, and waits for shell exit and PTY EOF before closing. It processes all
+queued focus changes before synchronizing the final IME state and avoids
+republishing an unchanged candidate rectangle. This is a test consumer: its
+bounded synchronous PTY writes are not a production backpressure solution.
+
+With both IME and PTY experiment options enabled and the separately described
+Alpine/musl test wrappers selected, the following owns a private Xvfb/Weston
+seat. Supply the existing Weston executable, desktop-shell module and libexec
+directory via `NEXAUI_WESTON`, `NEXAUI_WESTON_SHELL` and
+`NEXAUI_WESTON_LIBEXEC`; `NEXAUI_SETXKBMAP` can name a private setxkbmap.
+The work directory must be new. Run as an unprivileged user:
+
+```sh
+NEXAUI_TEST_FORCE_FOCUS=1 python3 examples/23_aetheri_terminal_view/run_native_ime_pty_session.py \
+  /tmp/terminal-pty/aetheri_terminal_native_ime_pty /path/to/font.ttf \
+  /tmp/terminal-pty/aetheri_original_shell /path/to/xdotool /tmp/new-ime-commit-run
+NEXAUI_TEST_FOCUS_CANCEL=1 python3 examples/23_aetheri_terminal_view/run_native_ime_pty_session.py \
+  /tmp/terminal-pty/aetheri_terminal_native_ime_pty /path/to/font.ttf \
+  /tmp/terminal-pty/aetheri_original_shell /path/to/xdotool /tmp/new-ime-cancel-run
+```
+
+With Weston 14.0.2 `weston-simple-im`, virtual compose-key input produced an
+apostrophe preedit, one `á` commit and one matching original PTY/model cell;
+the native protocol trace included a candidate rectangle. The second run
+moved focus to an independent X11 peer during preedit, restored it, and
+observed only the new `z` commit and PTY cell, not the cancelled `á`.
+Static/shared and Clang ASan/UBSan runs passed on Alpine/WSL. An early
+focus-forcing run of the initial test consumer failed to adopt native preedit
+after multiple queued focus changes; the consumer was changed to synchronize
+the final queued focus state, then the explicit refocus case passed. This is
+specific evidence for the test consumer, not a general claim that all
+Wayland-v1 focus races are solved.
+An isolated mutant suppressing the validated PTY write failed because the
+expected shell output did not appear.
+
+The setup uses a real separate Weston input-method process and virtual input,
+not a selected production IME, real Aetheri session, physical input/output or
+human assistive/visual acceptance. The app still owns session focus, security,
+asynchronous output queuing, font selection and process policy.
