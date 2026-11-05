@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland multi-window wait (2026-11-05)
+
+Source `c254f0a0bbf826dfdbc94412311d7bb1e1586ffb` adds Linux
+`nx_window_poll_many` for up to 16 distinct owner-thread Wayland windows and
+one optional borrowed application fd. The implementation retains the window
+wrappers, includes accessibility and transfer descriptors/deadlines, rejects
+nested polling, and releases every prepared Wayland read before dispatching
+callbacks. X11 windows return `NX_ERROR_UNSUPPORTED`. The development package
+version is 0.1.3; this is not a release or a 1.0.0 approval.
+
+On private Weston/Xvfb, a real virtual keyboard switched between two windows;
+the group wait woke for each and for the application pipe, then the surviving
+window rendered and received input after close. Separate checks covered idle
+CPU, timeout, wrong thread, invalid and duplicate inputs, fd hangup/error,
+16 windows and a disconnected peer. The final FD/capacity check passed with
+GCC and ASan/UBSan (`/tmp/nexaui-many-fd-final/result.json`,
+`/tmp/nexaui-many-fd-asan/result.json`). Five group-wait, AT-SPI and clipboard
+cases passed with each compiler (`/tmp/nexaui-many-last-native/result.json`,
+`/tmp/nexaui-many-last-asan/result.json`). The AT-SPI case used an independent
+client and included a second window and reconnect; the clipboard cases used a
+single-window group. Headless Sway targeted-close passed
+(`/tmp/nexaui-many-sway-final/client.log`). Seventeen selected native and
+protocol regression cases, four simple-IME cases and the X11 unsupported/legacy
+checks passed. Separate strict-C17 consumers built and ran against static and
+shared 0.1.3 installations; configuration rejected 0.1.2.
+
+The exact partial-preparation/reentrant-destruction interleavings and transfer
+deadlines on a different group member still need targeted fault-injection;
+these tests do not establish complete W02/W10 acceptance, real Aetheri behavior,
+physical input or human screenreader acceptance. An initial dual-backend build
+used a nonexistent target name and was rerun with the correct target.
+
 ## Preparing a shared Wayland wait (2026-11-05)
 
 Source `b167379c14cf11348d3c788c93c0cd66add23b92` separates the existing
