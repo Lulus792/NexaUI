@@ -28,8 +28,9 @@ prints only the three model values for the automated integration fixture.
 This experiment is not the complete Aetheri Settings application: it does not
 enumerate displays, integrate Aetheri's existing process owner or service
 requests, persist settings, implement an IME text field, or perform OS changes.
-Its layout and automatic label fitting are provisional and need design and
-text-scaling review. The broader Settings example in `examples/18_settings`
+Its measured control wrapping and focus-following scroll area retain the chosen
+text size, but need broader font, viewport and human accessibility review. The
+layout remains provisional. The broader Settings example in `examples/18_settings`
 provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.

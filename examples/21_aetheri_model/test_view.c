@@ -13,6 +13,12 @@ static int checked(nx_context *ui,uint64_t id) {
     return nx_semantics_find(ui,id,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
            view.role==NX_ROLE_RADIO && (view.state & NX_SEM_CHECKED);
 }
+static int visible(nx_context *ui,uint64_t id,float width,float height) {
+    uint32_t index; nx_semantic_view item;
+    return nx_semantics_find(ui,id,&index)==NX_OK && nx_semantics_get(ui,index,&item)==NX_OK &&
+           item.bounds.x>=0 && item.bounds.y>=0 && item.bounds.width>0 && item.bounds.height>0 &&
+           item.bounds.x+item.bounds.width<=width && item.bounds.y+item.bounds.height<=height;
+}
 int main(int argc,char **argv) {
     FILE *file=NULL; unsigned char *font=NULL; aetheri_view *view=NULL; long length; int changed=0;
     struct ae_settings model; ae_settings_init(&model);
@@ -37,6 +43,26 @@ int main(int argc,char **argv) {
     CHECK(aetheri_view_create(&model,font,(size_t)length,&view));
     CHECK(aetheri_view_frame(view,800,480,&changed) && checked(aetheri_view_context(view),12) &&
           checked(aetheri_view_context(view),14) && checked(aetheri_view_context(view),18));
+    ui=aetheri_view_context(view);
+    CHECK(aetheri_view_frame(view,480,380,&changed));
+    CHECK(nx_focus_set(ui,10)==NX_OK && aetheri_view_frame(view,480,380,&changed));
+    const uint64_t order[]={10,11,12,13,14,16,17,18,19};
+    for(size_t i=0;i<sizeof(order)/sizeof(order[0]);++i) {
+        CHECK(nx_focus_id(ui)==order[i]);
+        CHECK(visible(ui,order[i],480,380));
+        if(i+1<sizeof(order)/sizeof(order[0]))
+            CHECK(press(ui,NX_KEY_TAB) && aetheri_view_frame(view,480,380,&changed));
+    }
+    /* At 200% the longest option retains its 28px layout, rather than being
+       squeezed into a third of the window. */
+    nx_font *measure_font=NULL; nx_font_collection *measure_fonts=NULL; nx_text_layout *measure=NULL;
+    CHECK(nx_font_open(font,(size_t)length,NULL,&measure_font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&measure_fonts)==NX_OK && nx_font_collection_add(measure_fonts,measure_font)==NX_OK);
+    CHECK(nx_text_layout_create(measure_fonts,"Hoher Kontrast",14,NX_BIDI_LTR,28,416,&measure)==NX_OK);
+    uint32_t index; nx_semantic_view option;
+    CHECK(nx_semantics_find(ui,12,&index)==NX_OK && nx_semantics_get(ui,index,&option)==NX_OK);
+    CHECK(option.bounds.width>=nx_text_layout_width(measure)+63);
+    nx_text_layout_destroy(measure); nx_font_collection_destroy(measure_fonts); nx_font_close(measure_font);
     aetheri_view_destroy(view); free(font);
     puts("Original Aetheri model retains theme, language and scale across NexaUI view replacement"); return 0;
 fail:
