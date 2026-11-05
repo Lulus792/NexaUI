@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import socket
 import subprocess
@@ -155,6 +156,43 @@ def main():
         event("B 272 1")
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 3, "replacement pointer click")
+        command(client, "f")
+        wait(lambda: "SYNC f\n" in log("desktop"), "long results model")
+        command(client, "i")
+        wait(lambda: len(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)) == 1,
+             "initial row position")
+        before = float(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)[0])
+        event("M 60 250")
+        for _ in range(10):
+            event("S 10")
+        command(client, "i")
+        wait(lambda: len(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)) == 2,
+             "scrolled row position")
+        after = float(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)[1])
+        if not (before - after >= 300 and 68 <= after < 940):
+            raise RuntimeError(f"unexpected scroll position {before} -> {after}")
+        result["scroll_before_y"], result["scroll_after_y"] = before, after
+        event(f"M 60 {int(after + 20)}")
+        event("B 272 1")
+        event("B 272 0")
+        wait(lambda: "INTENT 0 3 0 20\n" in log("desktop"), "scrolled stable window intent")
+        for _ in range(3):
+            event("S -10")
+        command(client, "i")
+        wait(lambda: len(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)) == 3,
+             "reverse scroll position")
+        reverse = float(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)[2])
+        if reverse - after < 80:
+            raise RuntimeError(f"reverse scroll did not restore position: {after} -> {reverse}")
+        event("M 10 20")
+        event("S 10")
+        command(client, "i")
+        wait(lambda: len(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)) == 4,
+             "outside scroll position")
+        outside = float(re.findall(r"^ROW 20 (-?\d+\.\d+)$", log("desktop"), re.M)[3])
+        if outside != reverse:
+            raise RuntimeError("scroll outside results moved the list")
+        result["scroll_reverse_y"], result["scroll_outside_y"] = reverse, outside
         command(client, "n")
         wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapsed dock")
         command(client, "q")

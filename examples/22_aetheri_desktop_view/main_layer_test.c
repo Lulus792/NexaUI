@@ -17,6 +17,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 #include <linux/input-event-codes.h>
+#include <math.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 struct app;
@@ -52,6 +53,7 @@ struct app {
     struct view *focused;
     struct view *pointer_view;
     float pointer_x, pointer_y;
+    double axis_x,axis_y,steps_x,steps_y;
 };
 static unsigned char *load_font(const char *path, size_t *length) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;long n=0;unsigned char *p=NULL;
@@ -223,6 +225,7 @@ static void pointer_leave(void *data,struct wl_pointer *pointer,uint32_t serial,
     struct app *a=data;(void)pointer;(void)serial;
     if(a->pointer_view && a->pointer_view->surface==surface) {
         pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
+        a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;
     }
 }
 static void pointer_motion(void *data,struct wl_pointer *pointer,uint32_t time,wl_fixed_t x,wl_fixed_t y) {
@@ -240,9 +243,23 @@ static void pointer_button(void *data,struct wl_pointer *pointer,uint32_t serial
     }
 }
 static void pointer_axis(void *data,struct wl_pointer *pointer,uint32_t time,uint32_t axis,wl_fixed_t value) {
-    (void)data;(void)pointer;(void)time;(void)axis;(void)value;
+    struct app *a=data;(void)pointer;(void)time;
+    if(axis==WL_POINTER_AXIS_VERTICAL_SCROLL)a->axis_y-=wl_fixed_to_double(value);
+    else if(axis==WL_POINTER_AXIS_HORIZONTAL_SCROLL)a->axis_x-=wl_fixed_to_double(value);
 }
-static void pointer_frame(void *data,struct wl_pointer *pointer) {(void)data;(void)pointer;}
+static void pointer_frame(void *data,struct wl_pointer *pointer) {
+    struct app *a=data;(void)pointer;
+    double dx=a->steps_x?a->steps_x:a->axis_x/10.0;
+    double dy=a->steps_y?a->steps_y:a->axis_y/10.0;
+    struct view *v=a->pointer_view;
+    if(v && v->configured && v->view && isfinite(dx) && isfinite(dy) &&
+       fabs(dx)<=1000000 && fabs(dy)<=1000000 && (dx || dy)) {
+        nx_event event={0};event.type=NX_EVENT_WHEEL;
+        event.x=a->pointer_x;event.y=a->pointer_y;event.delta_x=(float)dx;event.delta_y=(float)dy;
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+    }
+    a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;
+}
 static void pointer_axis_source(void *data,struct wl_pointer *pointer,uint32_t source) {
     (void)data;(void)pointer;(void)source;
 }
@@ -250,7 +267,9 @@ static void pointer_axis_stop(void *data,struct wl_pointer *pointer,uint32_t tim
     (void)data;(void)pointer;(void)time;(void)axis;
 }
 static void pointer_axis_discrete(void *data,struct wl_pointer *pointer,uint32_t axis,int32_t discrete) {
-    (void)data;(void)pointer;(void)axis;(void)discrete;
+    struct app *a=data;(void)pointer;
+    if(axis==WL_POINTER_AXIS_VERTICAL_SCROLL)a->steps_y-=(double)discrete;
+    else if(axis==WL_POINTER_AXIS_HORIZONTAL_SCROLL)a->steps_x-=(double)discrete;
 }
 static const struct wl_pointer_listener pointer_listener={
     .enter=pointer_enter,.leave=pointer_leave,.motion=pointer_motion,.button=pointer_button,.axis=pointer_axis,
@@ -270,7 +289,8 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
     }
     if(!(caps & WL_SEAT_CAPABILITY_POINTER) && a->pointer) {
         pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
-        wl_pointer_release(a->pointer);a->pointer=NULL;puts("POINTER REMOVED");
+        wl_pointer_release(a->pointer);a->pointer=NULL;
+        a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;puts("POINTER REMOVED");
     }
 }
 static void seat_name(void *data, struct wl_seat *seat, const char *name) { (void)data; (void)seat; (void)name; }
@@ -351,6 +371,20 @@ int main(int argc, char **argv) {
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);
                 else if (c == 's') aetheri_development_desktop_v1_activate(a.control, UINT32_MAX);
                 else if (c == 'p') paint(&a.views[0]);
+                else if (c == 'f') {
+                    struct view *v=&a.views[0];ae_desktop_model_search(&v->model,0,true);
+                    for(uint32_t id=1;id<=30;++id) {
+                        char title[32];CHECK(snprintf(title,sizeof(title),"Window %02u",id)>0);
+                        CHECK(ae_desktop_model_window(&v->model,id,title,"org.example.Window",false));
+                    }
+                    ++v->revision;paint(v);
+                }
+                else if (c == 'i') {
+                    uint32_t index;nx_semantic_view row;
+                    nx_context *context=aetheri_desktop_view_context(a.views[0].view);
+                    CHECK(nx_semantics_find(context,UINT64_C(0x100000000)+20,&index)==NX_OK);
+                    CHECK(nx_semantics_get(context,index,&row)==NX_OK);printf("ROW 20 %.1f\n",row.bounds.y);
+                }
                 else if (c == 'u') {
                     wl_surface_attach(a.views[0].surface, NULL, 0, 0); wl_surface_commit(a.views[0].surface);
                 }
