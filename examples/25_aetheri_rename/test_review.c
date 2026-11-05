@@ -45,6 +45,7 @@ int main(int argc,char **argv){int ok=0,dir=-1,pin=-1;char path[]="/tmp/nexaui-r
     CHECK(rename_review_create(&owner,fonts,&view)==NX_OK && rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);
     nx_context *ctx=rename_review_context(view);
     CHECK(value(ctx,3,"old.txt",-1) && value(ctx,4,"new.txt",-1) && value(ctx,5,"Ready for confirmation",-1) && value(ctx,11,NULL,0));
+    CHECK(value(ctx,20,NULL,1));
     uint32_t modal_index;nx_semantic_view modal;
     CHECK(nx_semantics_find(ctx,1,&modal_index)==NX_OK && nx_semantics_get(ctx,modal_index,&modal)==NX_OK && modal.role==NX_ROLE_DIALOG);
     CHECK(capture(ctx,getenv("NEXAUI_RENAME_CAPTURE")));

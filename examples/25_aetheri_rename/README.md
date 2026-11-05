@@ -63,3 +63,32 @@ result; mutants removing the latch or resetting it on recreation fail. Static,
 shared and ASan/UBSan tests passed, and a 400x300 headless capture was
 inspected. This is an in-process, in-memory example; native input and assistive
 clients, real async work, durable recovery and Aetheri integration remain open.
+
+## Private Wayland and independent AT-SPI
+
+On base `55eca9d05604d31dbf81272bfd0952c728709967`, a separate test host
+renders the review in an ordinary Wayland software window. An independent
+libatspi client uses a private registry to discover the modal, checks that the
+background is disabled, invokes Confirm, and observes an injected flush error
+after the original Aetheri rename. The host retires the old accessibility
+bridge, recreates the view using the same owner and operation, and the client
+rediscovers the unknown status and disabled Confirm before activating Cancel.
+The fixture verifies the original temporary file's new name and exactly one
+rename and flush call. A mutant leaving Confirm enabled after the unknown
+result fails the client assertion. Static, shared and ASan/UBSan variants passed.
+
+The host runs only in the private Wayland fixture and injects the error; it is
+not the Aetheri Files app or a production async service. Its fixed 400x300
+layout and 50 ms polling loop are test scaffolding, not resize or idle-power
+evidence. Native keyboard, long names, physical input, human screenreader
+review, other compositors, real failures and restart recovery remain open.
+
+With the private Weston environment described in the Files example, build this
+example and run as an unprivileged user:
+
+```sh
+NEXAUI_RENAME_FONT=/path/to/font.ttf xvfb-run -a python3 tests/run_weston_native.py \
+  --work-dir /tmp/new-rename-atspi -- python3 tests/run_atspi_native.py \
+  /path/to/at-spi2-registryd /tmp/rename-review/aetheri_rename_atspi_client \
+  /tmp/rename-review/aetheri_rename_native
+```

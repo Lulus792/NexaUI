@@ -12,6 +12,11 @@ scope with tested background blocking, focus traversal and restoration. An
 app-owned in-memory latch preserves a confirmation request across view
 replacement, including before dispatch. Native and real-service gates remain
 open (L09/L10/I07/P07).
+On base `55eca9d05604d31dbf81272bfd0952c728709967`, a private Weston window
+and independent AT-SPI client exercised modal blocking, explicit confirmation,
+an injected unknown result, view/bridge replacement and disabled replay.
+The host is a fixed-size polling fixture; native keyboard, real async service,
+physical/human acceptance and Aetheri integration remain open (A02/L09/P07).
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri

@@ -20,5 +20,17 @@ target_include_directories(aetheri_rename_original PUBLIC "${AETHERI_SOURCE_DIR}
 add_executable(aetheri_rename_review_test review.c test_review.c)
 target_link_libraries(aetheri_rename_review_test PRIVATE aetheri_rename_original NexaUI::NexaUI)
 target_link_options(aetheri_rename_review_test PRIVATE -Wl,--wrap=fsync,--wrap=renameat2)
-set_target_properties(aetheri_rename_original aetheri_rename_review_test PROPERTIES
+add_executable(aetheri_rename_native review.c main_native.c)
+target_link_libraries(aetheri_rename_native PRIVATE aetheri_rename_original NexaUI::NexaUI)
+target_link_options(aetheri_rename_native PRIVATE -Wl,--wrap=fsync,--wrap=renameat2)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(ATSPI QUIET IMPORTED_TARGET atspi-2 gobject-2.0)
+    if(ATSPI_FOUND)
+        add_executable(aetheri_rename_atspi_client atspi_client.c)
+        target_link_libraries(aetheri_rename_atspi_client PRIVATE PkgConfig::ATSPI)
+        set_target_properties(aetheri_rename_atspi_client PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    endif()
+endif()
+set_target_properties(aetheri_rename_original aetheri_rename_review_test aetheri_rename_native PROPERTIES
     C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
