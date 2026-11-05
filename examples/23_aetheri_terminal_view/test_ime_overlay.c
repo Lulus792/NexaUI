@@ -21,12 +21,22 @@ static int render(aetheri_terminal_view *view,unsigned char *pixels) {
         nx_headless_render(commands,count,pixels,200,40,800,(nx_color){0,0,0,1})==NX_OK;
 }
 int main(int argc,char **argv) {
-    CHECK(argc==2);size_t size=0;unsigned char *font_bytes=read_file(argv[1],&size);CHECK(font_bytes);
+    CHECK(argc==2 || argc==3);size_t size=0;unsigned char *font_bytes=read_file(argv[1],&size);CHECK(font_bytes);
     nx_font *font=NULL;CHECK(nx_font_open(font_bytes,size,NULL,&font)==NX_OK);
+    unsigned char *fallback_bytes=NULL;nx_font *fallback_font=NULL;nx_font_collection *fallback=NULL;
+    if(argc==3) {
+        size_t fallback_size=0;fallback_bytes=read_file(argv[2],&fallback_size);CHECK(fallback_bytes);
+        CHECK(nx_font_open(fallback_bytes,fallback_size,NULL,&fallback_font)==NX_OK);
+        CHECK(nx_font_collection_create(NULL,&fallback)==NX_OK && nx_font_collection_add(fallback,fallback_font)==NX_OK);
+        uint16_t primary_glyph=0,fallback_glyph=0;
+        CHECK(nx_font_glyph_index(font,0x754c,&primary_glyph)==NX_OK && !primary_glyph);
+        CHECK(nx_font_glyph_index(fallback_font,0x754c,&fallback_glyph)==NX_OK && fallback_glyph);
+    }
     struct ae_terminal *model=malloc(sizeof(*model));CHECK(model);ae_terminal_init(model,20,2,width);
     ae_terminal_feed(model,"base",4);unsigned mark_calls=0;
     aetheri_terminal_view_desc desc={.model=model,.regular=font,.bold=font,.text_identity=77,
-        .cell_width=10,.cell_height=20,.baseline=15,.pixels_per_em=14,.mark_position=mark,.mark_user=&mark_calls};
+        .cell_width=10,.cell_height=20,.baseline=15,.pixels_per_em=14,.mark_position=mark,.mark_user=&mark_calls,
+        .regular_fallback=fallback,.bold_fallback=fallback};
     aetheri_terminal_view *view=NULL;CHECK(aetheri_terminal_view_create(&desc,&view)==NX_OK);
     terminal_ime_adapter ime={0};terminal_ime_guard guard={77,1,1};CHECK(terminal_ime_bind(&ime,guard)==NX_OK);
     terminal_ime_overlay overlay={&ime,guard};
@@ -48,6 +58,21 @@ int main(int argc,char **argv) {
         CHECK(fclose(image)==0);
     }
     CHECK(mark_calls==1 && memcmp(base,paint,sizeof(base))!=0);
+    if(fallback) {
+        const nx_font *selected=NULL;uint16_t glyph=0;
+        CHECK(aetheri_terminal_resolve_glyph(&desc,0,0x754c,&selected,&glyph)==NX_OK && selected==fallback_font && glyph);
+        CHECK(aetheri_terminal_resolve_glyph(&desc,0,'A',&selected,&glyph)==NX_OK && selected==font && glyph);
+        CHECK(aetheri_terminal_resolve_glyph(&desc,1,0x754c,&selected,&glyph)==NX_OK && selected==fallback_font && glyph);
+        aetheri_terminal_view_desc no_bold=desc;no_bold.bold=NULL;
+        CHECK(aetheri_terminal_resolve_glyph(&no_bold,1,0x754c,&selected,&glyph)==NX_OK && selected==fallback_font && glyph);
+        CHECK(aetheri_terminal_resolve_glyph(&desc,0,0x10ffff,&selected,&glyph)==NX_ERROR_UNSUPPORTED && !selected && !glyph);
+        aetheri_terminal_view_desc no_fallback=desc;no_fallback.regular_fallback=NULL;no_fallback.bold_fallback=NULL;
+        aetheri_terminal_view *legacy=NULL;unsigned char legacy_pixels[200*40*4];
+        CHECK(aetheri_terminal_view_create(&no_fallback,&legacy)==NX_OK);
+        CHECK(aetheri_terminal_view_frame_with_overlay(legacy,1,1,terminal_ime_overlay_draw,&overlay)==NX_OK && render(legacy,legacy_pixels));
+        CHECK(memcmp(legacy_pixels,paint,sizeof(paint))!=0);
+        aetheri_terminal_view_destroy(legacy);
+    }
     CHECK(memcmp(paint+(1*200+65)*4,paint+(1*200+45)*4,4)!=0);
     /* The background after the four visible cells and caret is untouched. */
     CHECK(!memcmp(base+(5*200+160)*4,paint+(5*200+160)*4,4));
@@ -61,6 +86,12 @@ int main(int argc,char **argv) {
     CHECK(aetheri_terminal_view_create(&without_marks,&unsupported)==NX_OK);
     CHECK(aetheri_terminal_view_frame_with_overlay(unsupported,1,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_UNSUPPORTED);
     aetheri_terminal_view_destroy(unsupported);
+    if(fallback) {
+        const char missing[]="\xf4\x8f\xbf\xbf";
+        CHECK(terminal_ime_preedit(&ime,guard,missing,4,0,0)==NX_OK);
+        CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_UNSUPPORTED);
+        CHECK(terminal_ime_preedit(&ime,guard,draft,sizeof(draft)-1,1,4)==NX_OK);
+    }
     CHECK(terminal_ime_preedit(&ime,guard,draft,sizeof(draft)-1,-1,-1)==NX_OK);
     CHECK(terminal_ime_overlay_caret(&overlay,&desc,&caret)==NX_OK && caret.x==80);
     CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1.5f,terminal_ime_overlay_draw,&overlay)==NX_OK && render(view,paint));
@@ -70,11 +101,27 @@ int main(int argc,char **argv) {
     model->x=19;model->sequence++;
     CHECK(terminal_ime_overlay_caret(&overlay,&desc,&caret)==NX_OK && caret.x==190);
     CHECK(aetheri_terminal_view_frame_with_overlay(view,2,2,terminal_ime_overlay_draw,&overlay)==NX_OK && render(view,paint));
+    uint64_t last_revision=2;
+    if(fallback) {
+        ae_terminal_init(model,20,2,width);
+        const char text[]="A\xe7\x95\x8c\x1b[1m\xe7\x95\x8c";
+        ae_terminal_feed(model,text,sizeof(text)-1);
+        CHECK(aetheri_terminal_view_frame(view,3,1)==NX_OK);
+        const nx_cell_view *cells=NULL;size_t rows=0,columns=0;
+        CHECK(aetheri_terminal_view_cells(view,3,&cells,&rows,&columns)==NX_OK && rows==2 && columns==20);
+        CHECK(cells[0].glyphs[0].font==font && cells[1].glyphs[0].font==fallback_font &&
+              cells[1].span==2 && cells[3].glyphs[0].font==fallback_font && cells[3].span==2);
+        last_revision=3;
+    }
     overlay.current.epoch++;
     CHECK(terminal_ime_overlay_caret(&overlay,&desc,&caret)==NX_ERROR_STATE);
-    CHECK(aetheri_terminal_view_frame_with_overlay(view,2,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_STATE);
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,last_revision,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_STATE);
     overlay.current=guard;terminal_ime_reset(&ime);
-    CHECK(aetheri_terminal_view_frame_with_overlay(view,2,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_STATE);
-    aetheri_terminal_view_destroy(view);free(model);nx_font_close(font);free(font_bytes);
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,last_revision,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_STATE);
+    aetheri_terminal_view_destroy(view);free(model);
+    if(fallback)nx_font_collection_destroy(fallback);
+    if(fallback_font)nx_font_close(fallback_font);
+    free(fallback_bytes);
+    nx_font_close(font);free(font_bytes);
     puts("Terminal preedit overlay, caret, visible range and unchanged semantic text passed");return 0;
 }

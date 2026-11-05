@@ -85,9 +85,10 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
 
 ## Contract and limits
 
-- The app retains the model and fonts until the view is destroyed; access is on
-  the same owner thread. It supplies real combining-mark offsets and a bold font
-  when needed. Neither font fallback nor shaping is provided by this adapter.
+- The app retains the model, font collections, faces and font bytes until the
+  view is destroyed; access is on the same owner thread. It supplies real
+  combining-mark offsets and the desired regular/bold face policy. Optional
+  ordered collections supply missing glyphs; this adapter does not shape text.
 - The owner supplies a revision increasing for every model mutation, including
   selection clearing. The adapter also checks model sequence and selection state;
   this catches selection clear in the tested Aetheri revision, which does not
@@ -107,8 +108,11 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   they are never silently truncated. If no actual caret or entire selection is
   visible, the read-only AT-SPI Text snapshot reports caret offset -1 and no
   selection. Partial offscreen selection is not represented as a complete one.
-- Glyph lookup may return the font's missing-glyph index. Correct glyph coverage,
-  width policy, mark positioning and actual font metrics remain host obligations.
+- Without an explicit fallback collection, glyph lookup preserves the primary
+  font's missing-glyph index. With one, unavailable coverage returns
+  `NX_ERROR_UNSUPPORTED` before presenting the frame. Width policy,
+  mark positioning across selected fonts and actual font metrics remain host
+  obligations; the grid limits the number of distinct faces in a frame.
 - `paste_flow` uses the real nonblocking Wayland clipboard API and original
   `ae_terminal_paste_set`/preview. The owner must advance identity, revision and
   focus epoch and supply the actual focus state; it must cancel on close and
@@ -443,9 +447,40 @@ scales 1, 1.5 and 2. An optional `NEXAUI_IME_OVERLAY_PPM=/tmp/frame.ppm`
 writes the synthetic first frame; a mutant that omitted the overlay failed the
 pixel and mark checks. The DejaVu Mono test font did not contain the selected
 CJK glyph, so its glyph appeared as a missing-glyph box in the inspected
-image: font fallback and complete Unicode shaping remain open.
+image. The later fallback experiment below addresses that specific missing
+glyph; complete Unicode shaping remains open.
 
 This is not an installed-IME or real-Aetheri visual pass. Candidate placement
 still needs connection to the live native window, and preedit text is not yet
 published as a separate accessible composition; the unchanged read-only
 terminal snapshot must not be mistaken for full screenreader acceptance.
+
+### Ordered fallback for terminal and preedit glyphs
+
+On NexaUI base `6cf6baf7fc7ad2734ed6661f092e10b4d0b438e0`, the app can
+provide optional borrowed `regular_fallback` and `bold_fallback` font
+collections in the view descriptor. The primary face is tried first; for a
+missing glyph, the existing ordered `nx_font_collection_resolve` selects the
+first face with coverage. The terminal cells and IME overlay share that
+selection. A supplied collection with no covering glyph returns
+`NX_ERROR_UNSUPPORTED`; without a collection the legacy primary `.notdef`
+behavior remains. Collections, fonts and their source bytes must outlive the
+view. The app remains responsible for cell widths, mark positioning when the
+base and mark use different fonts, font metrics, licensing and shaping.
+
+On Alpine/WSL, a locally available DejaVu Sans Mono primary
+(`b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582`)
+and the local Windows Noto Sans JP variable TTF
+(`5113756f8a3b5d01b2211025e267c50121e3b36f465b7bbaf3cdaf4c3430bfd0`)
+were passed to the test without copying or bundling either font. The primary
+had no U+754C glyph; the fallback did. Static/shared and Clang ASan/UBSan runs
+verified regular and bold cell selection, primary preference, explicit
+no-coverage failure, the overlay's changed pixels, and legacy behavior. The
+synthetic image was inspected and showed the glyph instead of the previous
+box. A mutant that ignored fallback failed the face-selection check.
+
+The result covers this glyph and test font pair only. It does not establish
+general CJK shaping, cross-font mark placement, variable-font interpolation,
+font discovery or redistribution rights. Real Aetheri visual and human
+accessibility acceptance remain open. Supply both font paths to
+`aetheri_terminal_ime_overlay_test` to run the fallback-specific case.

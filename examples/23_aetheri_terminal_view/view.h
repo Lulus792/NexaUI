@@ -16,7 +16,14 @@ typedef struct aetheri_terminal_view_desc {
     double pixels_per_em;
     aetheri_terminal_mark_position mark_position;
     void *mark_user;
+    /* Optional borrowed ordered fallbacks, kept alive with their faces/bytes
+       through view destruction. Primary regular/bold face is tried first. */
+    const nx_font_collection *regular_fallback,*bold_fallback;
 } aetheri_terminal_view_desc;
+/* With a fallback collection, a missing scalar returns UNSUPPORTED. Without
+   one, preserve the primary face's existing .notdef behavior. */
+nx_result aetheri_terminal_resolve_glyph(const aetheri_terminal_view_desc *desc,int bold,
+    uint32_t scalar,const nx_font **font,uint16_t *glyph);
 /* Optional app-owned overlay, called inside the frame after the terminal grid.
    It must not mutate the model, destroy/reenter the view or retain the context. */
 typedef nx_result (*aetheri_terminal_overlay)(void *user,nx_context *context,

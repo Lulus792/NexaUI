@@ -51,17 +51,18 @@ nx_result terminal_ime_overlay_draw(void *user,nx_context *context,const aetheri
         uint32_t scalar=0;r=nx_utf8_decode(c->text,g.draft.end,&at,&scalar);if(r!=NX_OK)return r;
         int advance=d->model->width?d->model->width(scalar):1;
         if(advance<0 || advance>2)advance=1;
-        uint16_t glyph=0;r=nx_font_glyph_index(d->regular,scalar,&glyph);if(r!=NX_OK)return r;
+        const nx_font *font=NULL;uint16_t glyph=0;
+        r=aetheri_terminal_resolve_glyph(d,0,scalar,&font,&glyph);if(r!=NX_OK)return r;
         if(!advance) {
             if(!have_base || marks>=3 || !d->mark_position)return NX_ERROR_UNSUPPORTED;
             float x=0,y=0;r=d->mark_position(d->mark_user,base,scalar,marks,&x,&y);
             if(r!=NX_OK)return r;
             if(!isfinite(x) || !isfinite(y))return NX_ERROR_ARGUMENT;
-            cells[last].glyphs[cells[last].glyph_count++]=(nx_cell_glyph){d->regular,glyph,x,y};++marks;
+            cells[last].glyphs[cells[last].glyph_count++]=(nx_cell_glyph){font,glyph,x,y};++marks;
             continue;
         }
         if(column>=occupied)return NX_ERROR_STATE;
-        cells[column].span=(uint8_t)advance;cells[column].glyphs[0]=(nx_cell_glyph){d->regular,glyph,0,0};
+        cells[column].span=(uint8_t)advance;cells[column].glyphs[0]=(nx_cell_glyph){font,glyph,0,0};
         cells[column].glyph_count=1;last=column;base=scalar;marks=0;have_base=1;
         if(advance==2 && column+1<occupied)cells[column+1].span=0;
         column+=(unsigned)advance;

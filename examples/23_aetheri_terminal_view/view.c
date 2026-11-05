@@ -24,6 +24,23 @@ static nx_color color(uint32_t value) {
     return (nx_color){(float)((value>>16)&255u)/255.f,(float)((value>>8)&255u)/255.f,
                       (float)(value&255u)/255.f,1.f};
 }
+nx_result aetheri_terminal_resolve_glyph(const aetheri_terminal_view_desc *d,int bold,
+    uint32_t scalar,const nx_font **font,uint16_t *glyph) {
+    if(!font || !glyph)return NX_ERROR_ARGUMENT;
+    *font=NULL;*glyph=0;
+    if(!d || (bold!=0 && bold!=1))return NX_ERROR_ARGUMENT;
+    const nx_font *primary=bold?d->bold:d->regular;
+    const nx_font_collection *fallback=bold?d->bold_fallback:d->regular_fallback;
+    if(primary) {
+        nx_result r=nx_font_glyph_index(primary,scalar,glyph);if(r!=NX_OK)return r;
+        if(*glyph || !fallback){*font=primary;return NX_OK;}
+    }
+    if(!fallback)return NX_ERROR_UNSUPPORTED;
+    nx_font_match match={0};nx_result r=nx_font_collection_resolve(fallback,scalar,&match);
+    if(r!=NX_OK)return r;
+    if(!match.font || !match.glyph_index)return NX_ERROR_UNSUPPORTED;
+    *font=match.font;*glyph=match.glyph_index;return NX_OK;
+}
 static uint64_t visible_token(const struct ae_terminal *m,unsigned row) {
     unsigned offset=m->alt?0:m->view;
     if(row<offset)return m->history_rows[(m->history_head+m->history_count-offset+row)%AE_TERM_HISTORY].token;
@@ -102,10 +119,11 @@ nx_result aetheri_terminal_view_frame_with_overlay(aetheri_terminal_view *v,uint
             if(m->cursor && !m->view && m->y==y && m->x==x)c->flags|=NX_CELL_CURSOR_OUTLINE;
             if(!s->width) {if(s->count)return NX_ERROR_STATE;continue;}
             nx_result r=append(v->text,&v->text_length,s->code);if(r!=NX_OK)return r;
-            const nx_font *font=(s->style&AE_TERM_BOLD)?v->desc.bold:v->desc.regular;
-            if(!font)return NX_ERROR_UNSUPPORTED;
+            int bold=(s->style&AE_TERM_BOLD)!=0;
+            if(bold && !v->desc.bold && !v->desc.bold_fallback)return NX_ERROR_UNSUPPORTED;
             if(s->code!=' ') {
-                uint16_t glyph=0;r=nx_font_glyph_index(font,s->code,&glyph);if(r!=NX_OK)return r;
+                const nx_font *font=NULL;uint16_t glyph=0;
+                r=aetheri_terminal_resolve_glyph(&v->desc,bold,s->code,&font,&glyph);if(r!=NX_OK)return r;
                 c->glyphs[c->glyph_count++]=(nx_cell_glyph){font,glyph,0,0};
             }
             for(unsigned j=0;j<s->count;++j) {
@@ -114,7 +132,8 @@ nx_result aetheri_terminal_view_frame_with_overlay(aetheri_terminal_view *v,uint
                 float ox=0,oy=0;r=v->desc.mark_position(v->desc.mark_user,s->code,s->marks[j],j,&ox,&oy);
                 if(r!=NX_OK)return r;
                 if(!isfinite(ox) || !isfinite(oy))return NX_ERROR_ARGUMENT;
-                uint16_t glyph=0;r=nx_font_glyph_index(font,s->marks[j],&glyph);if(r!=NX_OK)return r;
+                const nx_font *font=NULL;uint16_t glyph=0;
+                r=aetheri_terminal_resolve_glyph(&v->desc,bold,s->marks[j],&font,&glyph);if(r!=NX_OK)return r;
                 c->glyphs[c->glyph_count++]=(nx_cell_glyph){font,glyph,ox,oy};
             }
         }

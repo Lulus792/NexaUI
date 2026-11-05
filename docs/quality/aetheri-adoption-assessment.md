@@ -2850,6 +2850,24 @@ Accessible preedit publication, actual native candidate placement, installed
 IME, production Aetheri integration, physical input and human visual and
 screenreader acceptance remain open.
 
+## Terminal glyph fallback — 5 November 2026
+
+On NexaUI base `6cf6baf7fc7ad2734ed6661f092e10b4d0b438e0`, the external
+[terminal example](../../examples/23_aetheri_terminal_view/README.md#ordered-fallback-for-terminal-and-preedit-glyphs)
+uses existing ordered font collections for missing regular and bold glyphs in
+both the cell grid and composition overlay. No configured match fails the
+frame explicitly; absent collections retain the original `.notdef` behavior.
+An installed SDK test used local DejaVu Sans Mono and Noto Sans JP TTF files:
+the first lacked U+754C and the second contained it. Static/shared and Clang
+ASan/UBSan runs verified selected faces, unsupported coverage, unchanged
+legacy behavior and a changed headless overlay. The synthetic frame was
+visually inspected; a mutant ignoring fallback failed the face assertion.
+Font hashes and bounds are in the example README. No font was bundled.
+
+One glyph and font pair do not establish general shaping, bidi, cross-font
+mark placement, font discovery, visual quality on Aetheri, or human assistive
+acceptance. Those gates remain open.
+
 ## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
 
 On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional
