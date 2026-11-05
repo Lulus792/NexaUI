@@ -33,7 +33,7 @@ search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
 revision. Native selection-owner actions, Tab behavior outside the search field, real window activation,
-private-surface input and IME, borrowed-surface presentation,
+private-surface input and IME, actual Aetheri shell-surface presentation,
 multi-output ownership and the original process owner integration remain open.
 The Linux preview uses an ordinary NexaUI window, the software presenter,
 native input/clipboard/IME binding and optional window AT-SPI publication; it
@@ -94,3 +94,24 @@ run. Reacquiring the accessible matters to the client after its interfaces
 change. This evidence covers ordinary-window AT-SPI query and press only: it
 does not prove a human screenreader workflow, native selection-owner actions,
 actual app launch, or semantics on an Aetheri-owned private shell surface.
+
+Source `08ba9becf3c6177f450df3047c061f06829caa71` adds
+`aetheri_desktop_borrowed`, built when the Wayland client and protocols
+development packages, `wayland-scanner` and threads are available. Run it
+with `./build/aetheri_desktop_borrowed /path/to/font.ttf` inside a Wayland
+session. The example owns one connection, queue, surface and ordinary
+xdg-toplevel role; after configure/ack it borrows them into the existing
+software host presenter. It submits a desktop-model frame, waits for an
+app-owned worker reply on the same owner loop, then submits a second,
+host-updated model revision. It destroys the presenter and view before the
+host-owned Wayland objects. It creates no Aetheri private role or second
+connection, and does not route native input or publish AT-SPI semantics.
+
+On Alpine/WSL2 and private Weston 14/Xvfb the example exited successfully with
+GCC 15.2 and with Clang 22.1.3 ASan/UBSan and leak detection, using the installed
+Wayland-only SDK and original model snapshot identified above. Fixture records:
+`/tmp/nexaui-desktop-borrowed-model-20261105/result.json` and
+`/tmp/nexaui-desktop-borrowed-asan-20261105/result.json`. These results
+establish configure, submission, worker wakeup and teardown in this ordinary
+host fixture; they do not establish display pixels, a private layer role,
+multi-output operation, real Aetheri compositor integration or human acceptance.
