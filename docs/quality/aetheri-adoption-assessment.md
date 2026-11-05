@@ -1,5 +1,41 @@
 # Aetheri adoption: initial source assessment
 
+## App-owned display observations in the model view (2026-11-05)
+
+Consumer/test source `86e4d4c0f7c4d0eeee7e5a61d6931c7f41c7b05a` adds a
+display section to the existing original-model view. It distinguishes not yet
+observed, observed-empty and stale states, exposes selected names and available
+mode dimensions, and uses the Aetheri model's stable IDs for selection. Stale
+entries are disabled. The application owner supplies snapshots and schedules
+redraw; selection is not an OS display configuration. The normal executable
+does not yet acquire display data. `--fixture-displays` is an explicit test
+option and its two records are synthetic.
+
+The model test used the original Aetheri model from
+`d621c9bba1df8ffd1083999300bcff742022b9dc`: it selected ID 91, reordered the
+snapshot, verified selection stayed on that ID, made a pending action stale,
+verified the action was rejected and previous data retained, then observed an
+empty snapshot. It passed on Fedora and Alpine/WSL2, including Clang 22.1.3
+ASan/UBSan with leak detection on Alpine. Tests use synthetic observations and
+do not prove real monitor enumeration or hotplug behavior.
+
+On the private headless Aetheri compositor, native virtual keyboard input and
+an independent AT-SPI client each selected synthetic ID 91. The existing
+original-owner launch/activation/close/reopen regression also passed without
+the fixture. The native consumer, built against the installed 0.1.4 Wayland-only
+SDK from `41042e56d629c8532bd365212d97385b41eaa476`, had SHA-256
+`4be4edb321fceec069e176f83d3697c9be916d3e29c5babf7177f3c3b725caf5`;
+the independent client SHA-256 was
+`a9c4a5a51404f298324a639a1725478be3e0387866d7837ddb9f4cc275b7cbad`.
+The captured output SHA-256 was
+`b7c1514e85bfa140c8c6505cc9284166af3b641e8aece2f073c352165046da69`.
+Logs and capture are retained at `D:/NexaUI/out/aetheri-model-2026-11-05/displays.tar.gz`,
+SHA-256 `e9168962fb8c00654b72a001e732a703cedb8c6a60af20cd3c60076c0e0df370`.
+The [previous record](#wayland-application-id-and-aetheri-activation-2026-11-05)
+identifies the SDK/compositor and test environment. Real Aetheri output
+acquisition, dynamic hotplug and failure delivery, physical monitors, human
+review and full Settings functionality remain open.
+
 ## Wayland application ID and Aetheri activation (2026-11-05)
 
 Source `41042e56d629c8532bd365212d97385b41eaa476` adds the Linux
