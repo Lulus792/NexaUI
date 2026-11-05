@@ -146,11 +146,16 @@ static int profile_compare(nx_window *window, cloud_scene *scene, nx_renderer_dr
     static const uint32_t limits[] = {1,3,3,1};
     for (unsigned block = 0; block < 4; ++block) {
         char name[80];
-        if (snprintf(name, sizeof(name), "%s-%s-%u", workload, limits[block] == 3 ? "ring" : "serial", block) >= (int)sizeof(name) ||
-            nx_metal_test_set_per_draw_bindings(renderer->backend.user,0) != NX_OK ||
-            nx_metal_test_set_batching(renderer->backend.user,1) != NX_OK ||
-            nx_metal_test_set_frame_limit(renderer->backend.user,limits[block]) != NX_OK ||
-            !profile_workload(window,scene,renderer,prefix,name)) return 0;
+        if (snprintf(name, sizeof(name), "%s-%s-%u", workload, limits[block] == 3 ? "ring" : "serial", block) >= (int)sizeof(name)) return 0;
+        nx_result result = nx_metal_test_set_per_draw_bindings(renderer->backend.user,0);
+        if (result != NX_OK) { fprintf(stderr,"Metal profile %s: per-draw mode: %d\n",name,result); return 0; }
+        result = nx_metal_test_set_batching(renderer->backend.user,1);
+        if (result != NX_OK) { fprintf(stderr,"Metal profile %s: batching: %d\n",name,result); return 0; }
+        result = nx_metal_test_set_frame_limit(renderer->backend.user,limits[block]);
+        if (result != NX_OK) { fprintf(stderr,"Metal profile %s: frame limit: %d\n",name,result); return 0; }
+        if (!profile_workload(window,scene,renderer,prefix,name)) {
+            fprintf(stderr,"Metal profile %s: workload or capture failed\n",name); return 0;
+        }
     }
     return nx_metal_test_set_frame_limit(renderer->backend.user,3) == NX_OK;
 }
