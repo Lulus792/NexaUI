@@ -34,14 +34,51 @@ static int frame(terminal_paste_review *r,terminal_paste_guard guard,enum termin
     enum terminal_review_result result;nx_utf8_span bytes;
     CHECK(terminal_paste_review_frame(r,guard,&result,&bytes)==NX_OK && result==want);return 0;
 }
+static int late_wide_test(const char *path) {
+    size_t size=0;unsigned char *bytes=read_file(path,&size);CHECK(bytes);
+    nx_font *font=NULL;nx_font_collection *fonts=NULL;CHECK(nx_font_open(bytes,size,NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    const char narrow[]="iiiiiiiiiiiiiiii",wide[]="WWWWWWWWWWWWWWWW";
+    nx_text_layout *layout=NULL;CHECK(nx_text_layout_create(fonts,narrow,16,NX_BIDI_AUTO,32,424,&layout)==NX_OK &&
+        nx_text_layout_width(layout)<424);nx_text_layout_destroy(layout);
+    CHECK(nx_text_layout_create(fonts,wide,16,NX_BIDI_AUTO,32,424,&layout)==NX_OK &&
+        nx_text_layout_width(layout)>424);nx_text_layout_destroy(layout);
+    terminal_paste_guard guard={31,1,1,1};terminal_paste_flow flow={0};flow.guard=guard;
+    char control[17];memcpy(control,narrow,16);control[16]='\n';
+    CHECK(ae_terminal_paste_set(&flow.paste,control,sizeof(control))==AE_TERM_PASTE_OK);flow.state=2;
+    terminal_paste_review *review=NULL;CHECK(terminal_paste_review_create(&flow,fonts,width,&review)==NX_OK);
+    CHECK(terminal_paste_review_configure(review,480,380,32,1)==NX_OK);
+    CHECK(!frame(review,guard,TERMINAL_REVIEW_OPEN));
+    terminal_paste_review_destroy(review);
+    char input[34];memcpy(input,narrow,16);input[16]='\n';memcpy(input+17,wide,16);input[33]='\n';
+    flow.guard=guard;
+    CHECK(ae_terminal_paste_set(&flow.paste,input,sizeof(input))==AE_TERM_PASTE_OK);flow.state=2;
+    review=NULL;CHECK(terminal_paste_review_create(&flow,fonts,width,&review)==NX_OK &&
+        !frame(review,guard,TERMINAL_REVIEW_OPEN));
+    CHECK(terminal_paste_review_configure(review,480,380,32,1)==NX_ERROR_LIMIT && flow.state==2 &&
+        flow.paste.size==sizeof(input) && !memcmp(flow.paste.text,input,sizeof(input)));
+    CHECK(!frame(review,guard,TERMINAL_REVIEW_OPEN));
+    terminal_paste_review_destroy(review);nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);return 0;
+}
 int main(int argc,char **argv) {
-    CHECK(argc==2);size_t size=0;unsigned char *font_bytes=read_file(argv[1],&size);CHECK(font_bytes);
+    CHECK(argc==2 || argc==3);size_t size=0;unsigned char *font_bytes=read_file(argv[1],&size);CHECK(font_bytes);
     nx_font *font=NULL;nx_font_collection *fonts=NULL;CHECK(nx_font_open(font_bytes,size,NULL,&font)==NX_OK);
     CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
     terminal_paste_guard guard={11,1,1,1};terminal_paste_flow flow={0};flow.guard=guard;
     char input[4096];memset(input,'x',sizeof(input));for(size_t i=31;i<sizeof(input);i+=32)input[i]='\n';
+    if(getenv("NEXAUI_REVIEW_WORST"))memset(input,'\n',sizeof(input));
+    if(getenv("NEXAUI_REVIEW_DIVERSE")) {
+        size_t at=0;for(uint32_t c=0x100;at+3<=sizeof(input);++c) {
+            input[at++]=(char)(0xc0u|(c>>6));input[at++]=(char)(0x80u|(c&63u));input[at++]='\n';
+        }
+        while(at<sizeof(input))input[at++]='\n';
+    }
     CHECK(ae_terminal_paste_set(&flow.paste,input,sizeof(input))==AE_TERM_PASTE_OK && flow.paste.review);flow.state=2;
     terminal_paste_review *review=NULL;CHECK(terminal_paste_review_create(&flow,fonts,width,&review)==NX_OK);
+    if(getenv("NEXAUI_REVIEW_WORST") || getenv("NEXAUI_REVIEW_DIVERSE")) {
+        terminal_paste_review_destroy(review);nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);
+        puts("Worst-case bounded preflight passed");return 0;
+    }
     CHECK(terminal_paste_review_configure(review,399,380,32,1)==NX_ERROR_ARGUMENT &&
           terminal_paste_review_configure(review,480,380,NAN,1)==NX_ERROR_ARGUMENT &&
           terminal_paste_review_configure(review,480,380,33,1)==NX_ERROR_ARGUMENT);
@@ -49,6 +86,15 @@ int main(int argc,char **argv) {
     CHECK(nx_focus_id(ctx)==10);uint32_t index=0;nx_semantic_view view;
     CHECK(nx_semantics_find(ctx,3,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK && view.role==NX_ROLE_DIALOG);
     CHECK(nx_semantics_find(ctx,100,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK && view.value.length==16);
+    /* An unsupported resize must preserve the staged text and previous scene. */
+    CHECK(terminal_paste_review_configure(review,400,320,32,1)==NX_ERROR_LIMIT);
+    CHECK(flow.state==2 && flow.paste.size==sizeof(input) && !memcmp(flow.paste.text,input,sizeof(input)) &&
+          !frame(review,guard,TERMINAL_REVIEW_OPEN) && nx_focus_id(ctx)==10);
+    CHECK(nx_focus_set(ctx,13)==NX_OK);nx_event rejected_hold={.type=NX_EVENT_KEY_DOWN,.key=NX_KEY_ENTER};
+    CHECK(nx_context_queue_event(ctx,&rejected_hold)==NX_OK &&
+          terminal_paste_review_configure(review,400,320,32,1)==NX_ERROR_LIMIT && !frame(review,guard,TERMINAL_REVIEW_OPEN));
+    rejected_hold.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&rejected_hold)==NX_OK &&
+          !frame(review,guard,TERMINAL_REVIEW_OPEN) && nx_focus_set(ctx,10)==NX_OK);
     const nx_command *commands=NULL;size_t count=0;CHECK(nx_frame_commands(ctx,&commands,&count)==NX_OK && count>5);
     unsigned char *pixels=malloc(640u*360u*4u);CHECK(pixels);
     CHECK(nx_headless_render(commands,count,pixels,640,360,640u*4u,(nx_color){0,0,0,1})==NX_OK);
@@ -123,5 +169,6 @@ int main(int argc,char **argv) {
     CHECK(terminal_paste_review_create(&flow,fonts,width,&review)==NX_OK);
     terminal_paste_review_destroy(review);CHECK(!flow.state && !flow.paste.size);
     nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);
+    if(argc==3)CHECK(!late_wide_test(argv[2]));
     puts("Paste review navigation, modal focus and guarded decisions passed");return 0;
 }

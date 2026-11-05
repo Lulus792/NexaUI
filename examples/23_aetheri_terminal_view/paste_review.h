@@ -12,8 +12,10 @@ nx_result terminal_paste_review_create(terminal_paste_flow *flow,const nx_font_c
 void terminal_paste_review_destroy(terminal_paste_review *review);
 nx_context *terminal_paste_review_context(terminal_paste_review *review);
 /* Set logical window size, text pixels per em (16..32), and language (0 EN,
-   1 DE). Too-small layouts return LIMIT during frame rather than clipping.
-   Resizing preserves the visible source position where possible. */
+   1 DE). A candidate is checked against all preview rows before commitment;
+   unsupported layouts return LIMIT and retain the prior settings and paste.
+   The width callback must be deterministic and cannot reenter or mutate the
+   review or model. Resizing preserves the visible source position where possible. */
 nx_result terminal_paste_review_configure(terminal_paste_review *review,float width,float height,
     float pixels_per_em,int german);
 /* Build a frame after queuing events. Guard changes cancel; confirmed bytes are

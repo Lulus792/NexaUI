@@ -29,6 +29,11 @@ paste review supports German/English reflow and 16–32 px text. A 480x380 Germa
 200% headless/AT-SPI case, focus preservation and resize activation guards are
 recorded in the example. Actual native resize, physical scale, other locales,
 fonts and human assistive acceptance remain open.
+A10/P03: on base `b009c9f25205845c43e250707061fb0c6090c4d5`, the example
+preflights every preview row before committing a new layout and keeps the
+existing paste and scene after a rejected resize. The example records the
+later-page wide-glyph counterexample and one bounded local timing; native resize
+handling and target-device performance budgets are still open.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on

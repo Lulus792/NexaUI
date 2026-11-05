@@ -29,6 +29,8 @@ cmake --build /tmp/terminal-view
 /tmp/terminal-view/aetheri_terminal_selection_test /path/to/monospace.ttf
 /tmp/terminal-view/aetheri_terminal_paste_test
 /tmp/terminal-view/aetheri_terminal_review_test /path/to/monospace.ttf
+# Optional: a proportional font tests an overwide glyph on a later page.
+/tmp/terminal-view/aetheri_terminal_review_test /path/to/monospace.ttf /path/to/proportional.ttf
 ```
 
 On Linux, the optional controlled Wayland fixture uses a NexaUI checkout and
@@ -119,8 +121,10 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   Escape cancels and repeated Enter does not confirm. Page navigation and
   actions are exposed to AT-SPI. Destroying an open review cancels it. The scene
   supports English and German, configurable logical size and 16–32 px text,
-  with 16 preview columns. It rejects sizes or fonts that cannot fit its
-  required content rather than clipping it. The visible source position is
+  with 16 preview columns. It checks every preview row before accepting a new
+  size or font scale; rejection retains the previous configuration and paste.
+  The caller must not present the old layout in a window that no longer fits.
+  The visible source position is
   preserved where possible on reflow. After geometry/text/language changes,
   confirmation waits for a frame in which activation keys and buttons are
   released. Integration in the actual Aetheri window remains open. A fresh
@@ -189,3 +193,13 @@ an independent libatspi client navigated and confirmed that German scene with
 simulated native focus/geometry. Static, shared and ASan/UBSan configurations
 passed; disabling the resize guard produced a failing counterexample. This is
 not acceptance at every size, font, native pixel scale, compositor or locale.
+
+The transactional layout check was developed on NexaUI base
+`b009c9f25205845c43e250707061fb0c6090c4d5`. A 400x320/32 px request is rejected
+without losing the model, old layout or focus. A proportional-font case verifies
+that an overwide row on a later page rejects the candidate, while a matching
+narrow-row case succeeds. A mutant that checked only the first row was detected.
+The guard also covers held activation after a rejected resize. A single local
+Alpine/WSL measurement of creation and preflight for 4096 bytes with roughly
+1365 distinct short preview rows took about 0.07 seconds (shell `time`, static
+SDK, DejaVu Sans Mono); this is not a target-hardware latency guarantee.

@@ -22,6 +22,82 @@ static int same(terminal_paste_guard a,terminal_paste_guard b) {
 static nx_result label(terminal_paste_review *r,const char *text,float max_width,nx_text_layout **out) {
     return nx_text_layout_create(r->fonts,text,strlen(text),NX_BIDI_AUTO,r->ppem,max_width,out);
 }
+/* Status uses individually positioned ASCII glyphs, so its maximum extent is
+   established by the widest supported glyph rather than every possible page. */
+static nx_result status_metrics(const nx_font_collection *fonts,float ppem,float width,int german,
+                                float advances[128],float *height) {
+    const char *alphabet=german?"0123456789 Zeiln-/":"0123456789 Rows-/";
+    const char *longest=german?"Zeilen 4096-4096/4096":"Rows 4096-4096/4096";
+    memset(advances,0,128*sizeof(*advances));float digit_width=0;*height=0;
+    for(const char *c=alphabet;*c;++c) {
+        nx_text_layout *layout=NULL;
+        nx_result e=nx_text_layout_create(fonts,c,1,NX_BIDI_AUTO,ppem,width,&layout);if(e!=NX_OK)return e;
+        float glyph_width=(float)nx_text_layout_width(layout),glyph_height=(float)nx_text_layout_height(layout);
+        advances[(unsigned char)*c]=glyph_width;
+        if(*c>='0' && *c<='9' && glyph_width>digit_width)digit_width=glyph_width;
+        if(glyph_height>*height)*height=glyph_height;
+        nx_text_layout_destroy(layout);
+    }
+    for(unsigned c='0';c<='9';++c)advances[c]=digit_width;
+    advances[' ']=digit_width;
+    float total=0;for(const unsigned char *c=(const unsigned char *)longest;*c;++c)total+=advances[*c];
+    return digit_width>0 && *height>0 && total<=width?NX_OK:NX_ERROR_LIMIT;
+}
+/* Validate a candidate completely before accepting it. A later page must not
+   discover an oversized glyph after the old frame has already been lost. */
+static nx_result preflight(const terminal_paste_review *r,float window_width,float window_height,float ppem,int german) {
+    float inner_width=window_width-56,line_height=ceilf(ppem*1.5f);
+    float button_height=fmaxf(36,line_height+8),min_button=fmaxf(130,ppem*6.25f);
+    unsigned columns=inner_width>=4*min_button+24?4:2,button_rows=columns==4?1:2;
+    float button_width=(inner_width-8*(columns-1))/columns;
+    float button_y=window_height-24-(button_rows*button_height+(button_rows-1)*8);
+    const char *title=german?"Einfügen prüfen":"Review paste";
+    const char *note=german?"Kann Befehle ausführen":"Paste may run commands";
+    const char *buttons_de[]={"Abbrechen","Zurück","Weiter","Einfügen"};
+    const char *buttons_en[]={"Cancel","Previous","Next","Paste"};
+    const char *texts[]={title,note};float heights[2]={0};nx_text_layout *layout=NULL;
+    nx_result result=NX_OK;
+    for(unsigned i=0;i<2;++i) {
+        result=nx_text_layout_create(r->fonts,texts[i],strlen(texts[i]),NX_BIDI_AUTO,ppem,inner_width,&layout);
+        if(result!=NX_OK)return result;
+        heights[i]=(float)nx_text_layout_height(layout);
+        if(nx_text_layout_width(layout)>inner_width)result=NX_ERROR_LIMIT;
+        nx_text_layout_destroy(layout);layout=NULL;if(result!=NX_OK)return result;
+    }
+    float status_advances[128],status_height=0;
+    result=status_metrics(r->fonts,ppem,inner_width,german,status_advances,&status_height);if(result!=NX_OK)return result;
+    float preview_y=22+heights[0]+4+status_height+4+heights[1]+8;
+    float available=button_y-preview_y-8;
+    size_t visible=available>0?(size_t)floorf(available/line_height):0;
+    if(visible>PREVIEW_ROWS)visible=PREVIEW_ROWS;
+    if(!visible || button_width<min_button)return NX_ERROR_LIMIT;
+    for(unsigned i=0;i<4;++i) {
+        const char *name=german?buttons_de[i]:buttons_en[i];
+        result=nx_text_layout_create(r->fonts,name,strlen(name),NX_BIDI_AUTO,ppem,button_width-16,&layout);
+        if(result!=NX_OK)return result;
+        if(nx_text_layout_width(layout)>button_width-16 || nx_text_layout_height(layout)>button_height-4)result=NX_ERROR_LIMIT;
+        nx_text_layout_destroy(layout);layout=NULL;if(result!=NX_OK)return result;
+    }
+    struct { uint64_t hash;size_t index;int valid; } cache[512]={{0}};
+    for(size_t i=0;i<r->count;++i) {
+        char text[AE_TERM_PREVIEW_BYTES];size_t at=r->offsets[i];
+        if(ae_terminal_paste_preview(&r->flow->paste,at,PREVIEW_COLS,r->width,text)<=at)return NX_ERROR_STATE;
+        uint64_t hash=UINT64_C(14695981039346656037);
+        for(const unsigned char *p=(const unsigned char *)text;*p;++p)hash=(hash^*p)*UINT64_C(1099511628211);
+        size_t slot=(size_t)(hash%512u);
+        if(cache[slot].valid && cache[slot].hash==hash) {
+            char prior[AE_TERM_PREVIEW_BYTES];size_t previous=r->offsets[cache[slot].index];
+            if(ae_terminal_paste_preview(&r->flow->paste,previous,PREVIEW_COLS,r->width,prior)<=previous)return NX_ERROR_STATE;
+            if(!strcmp(prior,text))continue;
+        }
+        result=nx_text_layout_create(r->fonts,text,strlen(text),NX_BIDI_AUTO,ppem,inner_width,&layout);
+        if(result!=NX_OK)return result;
+        if(nx_text_layout_width(layout)>inner_width || nx_text_layout_height(layout)>line_height)result=NX_ERROR_LIMIT;
+        nx_text_layout_destroy(layout);layout=NULL;if(result!=NX_OK)return result;
+        cache[slot].valid=1;cache[slot].hash=hash;cache[slot].index=i;
+    }
+    return NX_OK;
+}
 static nx_result button(terminal_paste_review *r,uint64_t id,nx_rect bounds,const char *name,int disabled,int *clicked) {
     nx_text_layout *layout=NULL;nx_result result=label(r,name,bounds.width-16,&layout);if(result!=NX_OK)return result;
     if(nx_text_layout_width(layout)>bounds.width-16 || nx_text_layout_height(layout)>bounds.height-4) {
@@ -47,16 +123,23 @@ nx_result terminal_paste_review_create(terminal_paste_flow *flow,const nx_font_c
         r->offsets[r->count++]=at;size_t next=ae_terminal_paste_preview(&flow->paste,at,PREVIEW_COLS,width,line);
         if(next<=at || next>flow->paste.size){free(r);return NX_ERROR_STATE;}at=next;
     }
-    nx_result result=nx_context_create(NULL,&r->context);if(result!=NX_OK){free(r);return result;}
+    nx_result result=preflight(r,r->window_width,r->window_height,r->ppem,r->german);
+    if(result!=NX_OK){free(r);return result;}
+    result=nx_context_create(NULL,&r->context);if(result!=NX_OK){free(r);return result;}
     *out=r;return NX_OK;
 }
 void terminal_paste_review_destroy(terminal_paste_review *r){if(r){if(r->open)terminal_paste_reset(r->flow);nx_context_destroy(r->context);free(r);}}
 nx_context *terminal_paste_review_context(terminal_paste_review *r){return r?r->context:NULL;}
 nx_result terminal_paste_review_configure(terminal_paste_review *r,float width,float height,float ppem,int german) {
-    if(!r || !isfinite(width) || !isfinite(height) || !isfinite(ppem) || width<400 || height<320 ||
-       width>8192 || height>8192 || ppem<16 || ppem>32 || (german!=0 && german!=1))return NX_ERROR_ARGUMENT;
+    if(!r)return NX_ERROR_ARGUMENT;
     if(!r->open)return NX_ERROR_STATE;
-    if(r->window_width!=width || r->window_height!=height || r->ppem!=ppem || r->german!=german)r->settling=1;
+    if(!isfinite(width) || !isfinite(height) || !isfinite(ppem) || width<400 || height<320 ||
+       width>8192 || height>8192 || ppem<16 || ppem>32 || (german!=0 && german!=1)) {
+        r->settling=1;return NX_ERROR_ARGUMENT;
+    }
+    if(r->window_width==width && r->window_height==height && r->ppem==ppem && r->german==german)return NX_OK;
+    r->settling=1;
+    nx_result checked=preflight(r,width,height,ppem,german);if(checked!=NX_OK)return checked;
     r->window_width=width;r->window_height=height;r->ppem=ppem;r->german=german;return NX_OK;
 }
 nx_result terminal_paste_review_frame(terminal_paste_review *r,terminal_paste_guard guard,
@@ -77,17 +160,16 @@ nx_result terminal_paste_review_frame(terminal_paste_review *r,terminal_paste_gu
     unsigned button_rows=button_columns==4?1:2;
     float button_width=(inner_width-8*(button_columns-1))/button_columns;
     float button_y=r->window_height-24-(button_rows*button_height+(button_rows-1)*8);
-    nx_text_layout *title=NULL,*note_layout=NULL,*metric=NULL;
+    nx_text_layout *title=NULL,*note_layout=NULL;
     nx_result e=label(r,title_text,inner_width,&title);if(e!=NX_OK)return e;
     e=label(r,note,inner_width,&note_layout);if(e!=NX_OK){nx_text_layout_destroy(title);return e;}
-    e=label(r,r->german?"Zeilen 4096-4096/4096":"Rows 4096-4096/4096",inner_width,&metric);
+    float status_advances[128],status_budget=0;
+    e=status_metrics(r->fonts,r->ppem,inner_width,r->german,status_advances,&status_budget);
     if(e!=NX_OK){nx_text_layout_destroy(title);nx_text_layout_destroy(note_layout);return e;}
     float title_y=22,status_y=title_y+(float)nx_text_layout_height(title)+4;
-    float status_budget=(float)nx_text_layout_height(metric);
     float note_y=status_y+status_budget+4;
     float note_height=(float)nx_text_layout_height(note_layout);
     float preview_y=note_y+note_height+8;
-    nx_text_layout_destroy(metric);
     float available=button_y-preview_y-8;
     size_t visible=available>0?(size_t)floorf(available/line_height):0;
     if(visible>PREVIEW_ROWS)visible=PREVIEW_ROWS;
@@ -130,15 +212,20 @@ nx_result terminal_paste_review_frame(terminal_paste_review *r,terminal_paste_gu
     char status[96];int written=snprintf(status,sizeof(status),r->german?"Zeilen %zu-%zu/%zu":"Rows %zu-%zu/%zu",r->top+1,
         r->top+visible<r->count?r->top+visible:r->count,r->count);
     if(written<0 || (size_t)written>=sizeof(status))return NX_ERROR_STATE;
-    nx_text_layout *status_layout=NULL;e=label(r,status,inner_width,&status_layout);if(e!=NX_OK)return e;
-    float status_height=(float)nx_text_layout_height(status_layout);
-    if(status_height>status_budget || nx_text_layout_width(status_layout)>inner_width) {
-        nx_text_layout_destroy(status_layout);return NX_ERROR_LIMIT;
+    float status_x=inner_x;
+    for(int i=0;i<written;++i) {
+        char character[2]={status[i],0};nx_text_layout *glyph=NULL;
+        e=label(r,character,inner_width,&glyph);if(e!=NX_OK)return e;
+        unsigned char code=(unsigned char)status[i];
+        if(code>=128 || nx_text_layout_width(glyph)>status_advances[code] || nx_text_layout_height(glyph)>status_budget) {
+            nx_text_layout_destroy(glyph);return NX_ERROR_LIMIT;
+        }
+        e=nx_draw_text_layout(r->context,glyph,(nx_point){status_x,status_y},foreground,CACHE_BYTES);
+        status_x+=status_advances[code];
+        nx_text_layout_destroy(glyph);if(e!=NX_OK)return e;
     }
-    e=nx_draw_text_layout(r->context,status_layout,(nx_point){inner_x,status_y},foreground,CACHE_BYTES);
-    nx_text_layout_destroy(status_layout);if(e!=NX_OK)return e;
     nx_semantic_desc summary={0};summary.id=5;summary.parent_id=3;summary.role=NX_ROLE_STATUS;
-    summary.bounds=(nx_rect){inner_x,status_y,inner_width,status_height};summary.name=span(r->german?"Vorschauposition":"Preview position");summary.value=span(status);
+    summary.bounds=(nx_rect){inner_x,status_y,inner_width,status_budget};summary.name=span(r->german?"Vorschauposition":"Preview position");summary.value=span(status);
     e=nx_semantics_add(r->context,&summary,NULL);if(e!=NX_OK)return e;
     e=label(r,note,inner_width,&note_layout);if(e!=NX_OK)return e;
     e=nx_draw_text_layout(r->context,note_layout,(nx_point){inner_x,note_y},foreground,CACHE_BYTES);
