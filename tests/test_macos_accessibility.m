@@ -33,7 +33,7 @@ typedef struct scene {
     nx_context *ui;
     nx_numeric_field *number;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
-    int overlay_stage, nested_clicks;
+    int overlay_stage, nested_clicks, number_disabled;
     uint64_t required, optional, radio, other, legacy;
 } scene;
 static nx_font_collection *numeric_fonts;
@@ -63,7 +63,7 @@ static int frame(scene *s) {
     nx_numeric_field_desc number={0};number.id=2032;number.parent_id=1;
     number.name=(nx_utf8_span){"Numeric field",13};number.bounds=(nx_rect){120,350,100,30};
     number.fonts=numeric_fonts;number.pixels_per_em=16;number.glyph_cache_bytes=65536;
-    number.minimum=-10000;number.maximum=10000;int number_valid=0;
+    number.minimum=-10000;number.maximum=10000;number.disabled=s->number_disabled;int number_valid=0;
     CHECK(nx_numeric_field_widget(s->ui,&number,s->number,&state,&number_valid)==NX_OK);
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
@@ -175,6 +175,17 @@ static int run(void) {
     nx_event enter={0};enter.type=NX_EVENT_TEXT_COMMAND;enter.text_command=NX_TEXT_COMMAND_NEWLINE;
     CHECK(nx_focus_set(s.ui,2032)==NX_OK && nx_context_queue_event(s.ui,&enter)==NX_OK && advance(window,&s)==0);
     CHECK(nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==42);
+    /* A queued AX value may not overwrite a replacement model, even if the
+       native request has already been routed into the context. */
+    [number setAccessibilityValue:@"99"];size_t numeric_routed=0;
+    CHECK(nx_window_route_events(window,s.ui,&numeric_routed)==NX_OK && numeric_routed>0);
+    CHECK(nx_numeric_field_set_value(s.number,7)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    CHECK([[number accessibilityValue] isEqual:@"7"] && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
+    [number setAccessibilityValue:@"88"];s.number_disabled=1;
+    CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    CHECK(![number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    s.number_disabled=0;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK && advance(window,&s)==0);
+    CHECK([[number accessibilityValue] isEqual:@"7"] && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
     s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
