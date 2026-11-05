@@ -16,6 +16,33 @@ and queued a frame in private Weston. These tests do not prove Aetheri private
 role admission, actual dock/search behavior, input/AT-SPI integration, physical
 presentation, three-output operation or compositor-loss recovery.
 
+The controlled host test also checks that a known connection loss returns a
+platform error and that outstanding adapter-owned buffers can be destroyed;
+it does not recreate the lost connection or role. An initial version of this
+test destroyed a server-side client inside its active request callback and
+crashed the test server; the corrected fixture shuts down the socket and lets
+the server retire the client normally. The corrected GCC and Clang ASan/UBSan
+tests pass.
+
+For committed source `52703944c85ae9c79fd4df00fb1a70f69fbc10fd`, static and
+shared Wayland-only SDKs were built from `git archive` with Vulkan disabled.
+Separate copied C17 host examples and package probes built against each
+installation with X11 discovery disabled; the probes checked the declared
+linked-core revision. The example's compile commands contained only the copied
+source, generated protocol bindings and installed SDK headers. Both examples
+configured their own ordinary xdg role and queued a frame on private Weston;
+both fixtures report child, compositor and overall exit 0. `ldd` resolved the
+shared core from its tested prefix and showed no Vulkan dependency; the static
+consumer had no shared NexaUI dependency. Local artifacts and SHA-256:
+
+- `/tmp/nexaui-host-527-consumer-ON.log`: `ddf78136043076ce0f85ed9f00dc5b891ba7b2d6337b8f64755e9bcbf76f1c80`
+- `/tmp/nexaui-host-527-consumer-OFF.log`: `93c4ad7ee93e685c0934749074860fd2b8b786f2999cfc38d2fe7e6816de0658`
+- `/tmp/nexaui-host-527-native-shared/result.json`: `3c95253814bf2b566fa3765fe4eb78371ccb5487ad50b536f40a5826ca4d846a`
+- `/tmp/nexaui-host-527-native-static/result.json`: `9f1828a02014dd771992de22c63e9d292fdd947af5b46f9ea3ffec656d1092c9`
+
+The Aetheri private shell, its three outputs, input, semantics and real
+compositor integration were not tested or modified.
+
 ## Settings renderer selection candidate (2026-11-05)
 
 Candidate based on `66fdd9aaa7729221db54c616fceb3aacae9db2ac` uses the
