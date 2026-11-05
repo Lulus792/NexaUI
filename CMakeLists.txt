@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.4 LANGUAGES C)
+project(NexaUI VERSION 0.1.5 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -608,7 +608,7 @@ if(NEXAUI_BUILD_TESTS)
                     ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/tests)
                 target_link_libraries(nexaui_wayland_fractional_tests PRIVATE
                     NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
-                foreach(_mode IN ITEMS both both-integer delayed invalid fractional-only viewport-only neither)
+                foreach(_mode IN ITEMS both both-integer delayed invalid fractional-only viewport-only neither output-pending)
                     add_test(NAME nexaui_wayland_fractional_${_mode} COMMAND nexaui_wayland_fractional_tests ${_mode})
                     set_tests_properties(nexaui_wayland_fractional_${_mode} PROPERTIES TIMEOUT 15)
                 endforeach()

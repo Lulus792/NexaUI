@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "view.h"
 #include <nexaui/software.h>
+#include <nexaui/wayland_outputs.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -47,6 +48,33 @@ static unsigned char *load_font(const char *path, size_t *length) {
     if(fclose(f)!=0) {free(data);data=NULL;}
     return data;
 }
+/* Aetheri owns the model; the Wayland adapter provides a bounded observation,
+   never a device identity or an instruction to change a display. */
+static int observe_displays(nx_window *window, struct ae_settings *model,
+                            uint64_t *seen, int *dirty, int diagnostics) {
+    nx_wayland_output_info outputs[AE_SETTINGS_DISPLAYS]; size_t count=0; uint64_t revision=0;
+    nx_result result=nx_window_get_wayland_outputs(window,outputs,AE_SETTINGS_DISPLAYS,&count,&revision);
+    if(result==NX_ERROR_STATE || result==NX_ERROR_LIMIT) {
+        if(model->refreshes && !model->stale) {model->stale=true;*dirty=1;}
+        if(result==NX_ERROR_LIMIT && !model->stale) {model->stale=true;*dirty=1;}
+        return 1;
+    }
+    if(result!=NX_OK) return 0;
+    if(*seen==revision && !model->stale) return 1;
+    struct ae_settings_display records[AE_SETTINGS_DISPLAYS]={0};
+    for(size_t i=0;i<count;++i) {
+        nx_wayland_output_info *source=&outputs[i]; struct ae_settings_display *target=&records[i];
+        target->id=source->id; target->scale=(float)source->scale;
+        target->width=source->width; target->height=source->height;
+        target->refresh=(float)source->refresh_millihz/1000.0f; target->mode_known=source->mode_known!=0;
+        if(source->name[0]) memcpy(target->name,source->name,sizeof(target->name));
+        else if(snprintf(target->name,sizeof(target->name),"Output %u",source->id)<0) return 0;
+    }
+    if(!ae_settings_snapshot(model,records,count)) {model->stale=true;*dirty=1;return 1;}
+    *seen=revision; *dirty=1;
+    if(diagnostics) {printf("OUTPUTS count=%zu revision=%llu\n",count,(unsigned long long)revision);fflush(stdout);}
+    return 1;
+}
 int main(int argc, char **argv) {
     const char *font_path=NULL, *cache_path=NULL; int verify=0, diagnostics=0, fixture_displays=0;
     for(int i=1;i<argc;++i) {
@@ -62,6 +90,7 @@ int main(int argc, char **argv) {
     int fds[2]={-1,-1}; if(!signal_pipe(fds)) return 1;
     int okay=1, dirty=1, unavailable=0, busy=0;
     double next_ax_retry=0;
+    uint64_t outputs_seen=UINT64_MAX;
     nx_window_info previous={0};
     size_t length=0; unsigned char *font=load_font(font_path,&length);
     struct ae_settings model; ae_settings_init(&model);
@@ -86,6 +115,7 @@ int main(int argc, char **argv) {
         if(signal_events & (NX_WINDOW_FD_ERROR|NX_WINDOW_FD_HANGUP)) {okay=0;break;}
         if(stopping) break;
         if(info.should_close) break;
+        if(!fixture_displays && !observe_displays(window,&model,&outputs_seen,&dirty,diagnostics)) {okay=0;break;}
         do {
             if(nx_window_next_event(window,&event,&available)!=NX_OK) {okay=0;break;}
             if(available) {

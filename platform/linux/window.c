@@ -1,6 +1,7 @@
 #include "nexaui/nexaui.h"
 #include "nexaui/software.h"
 #include "nexaui/wayland_clipboard.h"
+#include "nexaui/wayland_outputs.h"
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/backend.h"
 #include "x11/window_internal.h"
@@ -193,6 +194,16 @@ nx_result nx_window_set_wayland_app_id(nx_window *window, const char *id) {
     if (i==255 && id[i]) return NX_ERROR_LIMIT;
     if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
     return NX_LINUX_DISPATCH(nx_wayland_window_set_app_id(window->native.wayland,id),
+                             NX_ERROR_UNSUPPORTED);
+}
+
+nx_result nx_window_get_wayland_outputs(nx_window *window, nx_wayland_output_info *items,
+                                         size_t capacity, size_t *count, uint64_t *revision) {
+    if (count) *count=0;
+    if (revision) *revision=0;
+    if (!window || !count || !revision || (!items && capacity)) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_get_outputs(window->native.wayland,items,capacity,count,revision),
                              NX_ERROR_UNSUPPORTED);
 }
 

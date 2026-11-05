@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
+#include "nexaui/wayland_outputs.h"
 #include "window_internal.h"
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -43,6 +44,8 @@ int main(int argc, char **argv) {
     nx_window_desc d={"X11 management",320,200,NX_WINDOW_CLIENT_CHROME|NX_WINDOW_STATE_EVENTS,{0}};
     nx_window *w=NULL; CHECK(nx_window_create(&d,&w)==NX_OK);
     CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_UNSUPPORTED);
+    size_t output_count=1; uint64_t revision=1;
+    CHECK(nx_window_get_wayland_outputs(w,NULL,0,&output_count,&revision)==NX_ERROR_UNSUPPORTED && !output_count && !revision);
     nx_window_status s; CHECK(nx_window_get_status(w,&s)==NX_OK && s.client_chrome && !s.known && s.capabilities==NX_WINDOW_CAP_CLIENT_CHROME);
     CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED && nx_window_restore(w)==NX_ERROR_UNSUPPORTED);
     CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)0)==NX_ERROR_ARGUMENT);

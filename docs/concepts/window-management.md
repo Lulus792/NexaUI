@@ -210,3 +210,18 @@ unchanged. Invalid input is rejected before a request; X11 returns unsupported.
 The call reports request delivery/queuing, not compositor acceptance, launcher
 admission, process identity or authority. The app and its desktop owner decide
 which ID and desktop entry are appropriate. This API requires NexaUI 0.1.4.
+
+## Wayland output observations
+
+`<nexaui/wayland_outputs.h>` provides a copied owner-thread snapshot of the
+outputs advertised on an ordinary window's Wayland connection. It reuses the
+objects already needed for scale tracking, commits each output's properties at
+`wl_output.done`, and uses a coalesced `NX_EVENT_WAKE` after subscription.
+The client retries STATE while a newly announced output is incomplete and may
+query the required count before providing storage. Capacity failure leaves the
+array untouched. A missing/invalid/oversized name is empty; refresh zero is
+unknown and dimensions are mode units, not logical desktop geometry. The
+integer output scale is not the window's fractional scale. IDs are
+connection-local registry names and must not become persisted device IDs or
+authority. The output list is compositor-reported, not physical-display proof.
+The API returns UNSUPPORTED on X11 and requires NexaUI 0.1.5.

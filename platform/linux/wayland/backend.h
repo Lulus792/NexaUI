@@ -2,6 +2,7 @@
 #define NEXAUI_WAYLAND_BACKEND_H
 
 #include "nexaui/nexaui.h"
+#include "nexaui/wayland_outputs.h"
 #include "../accessibility.h"
 #include <wayland-client.h>
 
@@ -26,6 +27,8 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
 nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_size *out_size);
 nx_result nx_wayland_window_get_status(nx_wayland_window *window, nx_window_status *out);
 nx_result nx_wayland_window_set_app_id(nx_wayland_window *window, const char *id);
+nx_result nx_wayland_window_get_outputs(nx_wayland_window *window,
+    nx_wayland_output_info *items, size_t capacity, size_t *count, uint64_t *revision);
 nx_result nx_wayland_window_minimize(nx_wayland_window *window);
 nx_result nx_wayland_window_maximize(nx_wayland_window *window);
 nx_result nx_wayland_window_restore(nx_wayland_window *window);

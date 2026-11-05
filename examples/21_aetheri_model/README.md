@@ -29,8 +29,11 @@ the view remains usable when that optional service is unavailable. `--verify`
 prints the three appearance model values for the automated integration fixture.
 The explicit `--fixture-displays` test option supplies two synthetic displays;
 it is not an operating-system observation.
-The model owner must request a new frame when it updates the observation; the
-view does not poll displays or treat a selection as a system configuration.
+The Linux host uses NexaUI's Wayland output snapshot on its existing connection
+and supplies it to the original Aetheri model; updates wake the owner thread.
+Output IDs are connection-local and selecting one does not change system
+configuration. Another embedding owner must request a new frame when it
+updates the model.
 For an isolated owner integration probe, the executable also accepts
 `--font FONT --cache DIR --diagnostics`, matching the development owner's
 argument shape. The cache argument is accepted but unused; this example creates
@@ -39,8 +42,9 @@ owner-thread teardown. This compatibility does not change Aetheri's launcher
 or establish its app identity, commands, service behavior or adoption.
 
 This experiment is not the complete Aetheri Settings application: it does not
-enumerate displays, integrate Aetheri's existing process owner or service
-requests, persist settings, implement an IME text field, or perform OS changes.
+integrate real Aetheri service requests, persist settings, implement an IME text
+field, or perform OS changes. Its compositor output observations are not proof
+of physical monitors or display control.
 Its measured control wrapping and focus-following scroll area retain the chosen
 text size, but need broader font, viewport and human accessibility review. The
 layout remains provisional. The broader Settings example in `examples/18_settings`

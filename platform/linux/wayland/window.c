@@ -54,6 +54,8 @@ typedef struct nx_wayland_output {
     uint32_t name;
     int scale, entered, removed;
     uint32_t version;
+    int ready;
+    nx_wayland_output_info pending, committed;
 } nx_wayland_output;
 
 typedef struct nx_wayland_clipboard_source {
@@ -153,6 +155,8 @@ struct nx_wayland_window {
     unsigned software_buffers;
     int software_waiting, software_woken;
     nx_wayland_output *outputs;
+    uint64_t outputs_revision;
+    int outputs_subscribed, outputs_wake_pending;
     nx_wayland_clipboard_source *sources, *owned_source;
     nx_wayland_clipboard_offer *offers, *selection_offer;
     nx_wayland_clipboard_offer *pending_offer, *drag_offer, *drop_offer;
@@ -319,15 +323,34 @@ static void nx_wayland_output_geometry(void *data, struct wl_output *native,
     (void)transform;
 }
 
+static void nx_wayland_outputs_changed(nx_wayland_window *window) {
+    if (window->outputs_revision==UINT64_MAX) {window->error=NX_ERROR_LIMIT;return;}
+    ++window->outputs_revision;
+    if (window->outputs_subscribed && !window->outputs_wake_pending) {
+        nx_event event={0}; event.type=NX_EVENT_WAKE;
+        nx_platform_event_queue_push(&window->event_queue,event);
+        if(window->event_queue.error==NX_OK) window->outputs_wake_pending=1;
+    }
+}
+
 static void nx_wayland_output_mode(void *data, struct wl_output *native,
                                    uint32_t flags, int32_t width,
                                    int32_t height, int32_t refresh) {
-    (void)data; (void)native; (void)flags; (void)width;
-    (void)height; (void)refresh;
+    nx_wayland_output *output=data; (void)native;
+    if(output->removed || !(flags & WL_OUTPUT_MODE_CURRENT)) return;
+    output->pending.mode_known=width>0 && height>0 && refresh>=0;
+    output->pending.width=output->pending.mode_known?width:0;
+    output->pending.height=output->pending.mode_known?height:0;
+    output->pending.refresh_millihz=output->pending.mode_known?refresh:0;
 }
 
 static void nx_wayland_output_done(void *data, struct wl_output *native) {
-    (void)data; (void)native;
+    nx_wayland_output *output=data; (void)native;
+    if(output->removed) return;
+    if(!output->ready || memcmp(&output->committed,&output->pending,sizeof(output->pending))) {
+        output->committed=output->pending; output->ready=1;
+        nx_wayland_outputs_changed(output->window);
+    }
 }
 
 static void nx_wayland_output_scale(void *data, struct wl_output *native,
@@ -335,15 +358,33 @@ static void nx_wayland_output_scale(void *data, struct wl_output *native,
     nx_wayland_output *output = data;
     (void)native;
     if (factor < 1 || output->removed) return;
+    output->pending.scale=factor;
     output->scale = factor;
     nx_wayland_refresh_scale(output->window);
 }
+
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+static void nx_wayland_output_name(void *data, struct wl_output *native, const char *name) {
+    nx_wayland_output *output=data; (void)native;
+    if(output->removed) return;
+    size_t length=strnlen(name,sizeof(output->pending.name));
+    memset(output->pending.name,0,sizeof(output->pending.name));
+    if(length<sizeof(output->pending.name) && nx_utf8_validate(name,length,NULL)==NX_OK)
+        memcpy(output->pending.name,name,length);
+}
+static void nx_wayland_output_description(void *data, struct wl_output *native, const char *description) {
+    (void)data; (void)native; (void)description;
+}
+#endif
 
 static const struct wl_output_listener nx_wayland_output_listener = {
     .geometry = nx_wayland_output_geometry,
     .mode = nx_wayland_output_mode,
     .done = nx_wayland_output_done,
     .scale = nx_wayland_output_scale
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+    , .name = nx_wayland_output_name, .description = nx_wayland_output_description
+#endif
 };
 
 static void nx_wayland_surface_enter(void *data, struct wl_surface *surface,
@@ -758,7 +799,12 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
         output->window = window;
         output->name = name;
         output->scale = 1;
+        output->pending.id=name; output->pending.scale=1;
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+        output->version = version < 4 ? version : 4;
+#else
         output->version = version < 3 ? version : 3;
+#endif
         output->native = wl_registry_bind(registry, name,
             &wl_output_interface, output->version);
         if (!output->native || wl_output_add_listener(output->native,
@@ -771,6 +817,7 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
         }
         output->next = window->outputs;
         window->outputs = output;
+        nx_wayland_outputs_changed(window);
     }
 }
 
@@ -810,6 +857,7 @@ static void nx_wayland_registry_remove(void *data, struct wl_registry *registry,
         if (output->name == name && !output->removed) {
             output->removed = 1;
             output->entered = 0;
+            nx_wayland_outputs_changed(window);
             nx_wayland_refresh_scale(window);
             return;
         }
@@ -2745,6 +2793,32 @@ nx_result nx_wayland_window_set_app_id(nx_wayland_window *window, const char *id
     if (result!=NX_OK) return result;
     xdg_toplevel_set_app_id(window->toplevel,id);
     return nx_wayland_management_flush(window);
+}
+
+nx_result nx_wayland_window_get_outputs(nx_wayland_window *window,
+    nx_wayland_output_info *items, size_t capacity, size_t *count, uint64_t *revision) {
+    nx_result result=nx_wayland_management_ready(window);
+    if(result!=NX_OK) return result;
+    if(window->event_queue.error!=NX_OK) return window->event_queue.error;
+    window->outputs_subscribed=1;
+    /* A query acknowledges the prior wake even when a newly announced output
+       is still incomplete; its later done must be able to wake the host. */
+    window->outputs_wake_pending=0;
+    size_t needed=0;
+    for(nx_wayland_output *output=window->outputs;output;output=output->next) {
+        if(output->removed) continue;
+        if(!output->ready) return NX_ERROR_STATE;
+        if(needed==SIZE_MAX) return NX_ERROR_LIMIT;
+        ++needed;
+    }
+    *count=needed; *revision=window->outputs_revision;
+    if(items && capacity<needed) return NX_ERROR_LIMIT;
+    if(items) {
+        size_t i=0;
+        for(nx_wayland_output *output=window->outputs;output;output=output->next)
+            if(!output->removed) items[i++]=output->committed;
+    }
+    return NX_OK;
 }
 
 nx_result nx_wayland_window_minimize(nx_wayland_window *window) {
