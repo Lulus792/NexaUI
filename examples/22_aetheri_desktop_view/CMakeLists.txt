@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(NexaUIAetheriDesktopView LANGUAGES C)
-find_package(NexaUI 0.1.12 CONFIG REQUIRED)
+find_package(NexaUI 0.1.13 CONFIG REQUIRED)
 set(AETHERI_SOURCE_DIR "" CACHE PATH "Aetheri source snapshot")
 if(NOT EXISTS "${AETHERI_SOURCE_DIR}/src/desktop/model.c" OR NOT EXISTS "${AETHERI_SOURCE_DIR}/src/desktop/model.h")
     message(FATAL_ERROR "Set AETHERI_SOURCE_DIR to an Aetheri source snapshot")

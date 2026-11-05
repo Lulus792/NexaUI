@@ -1,4 +1,4 @@
-# Core API (0.1.12)
+# Core API (0.1.13)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -212,10 +212,19 @@ frame. A changed text model, selection, focus, field identity, context or input
 policy invalidates the previous token. A token is a freshness check, not an
 authorization credential or a substitute for host-side exactly-once delivery.
 
-This is a commit/deletion seam, not a native IME adapter: the host remains
+Since 0.1.13, `nx_text_field_host_ime_preedit` copies at most 4096 bytes of
+validated UTF-8 for a current token; the cursor endpoints must be byte
+boundaries or both -1. It does not change the committed value or semantic
+text, and stale drafts are not painted. Set an empty draft to clear it. The
+host must submit a new frame after updating it. After that frame,
+`nx_text_field_host_ime_caret` supplies the visible caret rectangle in logical
+surface coordinates, or clears its output and reports an error if unavailable.
+Re-query after every input, focus, geometry or scale change and transform to
+the host surface as needed. Updating preedit invalidates the previous rectangle.
+
+This is a text-field seam, not a native IME adapter: the host remains
 responsible for protocol serials, provider admission, focus and input-context
-lifetime, cancellation, preedit, candidate geometry and rejecting old or
-duplicate replies. No preedit is rendered or candidate rectangle published by
-this mode. Password fields are unsupported. Disabling the mode invalidates
+lifetime, cancellation, protocol preedit state, candidate positioning and
+rejecting old or duplicate replies. Password fields are unsupported. Disabling the mode invalidates
 prior tokens; ordinary `ime_window` behavior is unchanged. A consumer must
 require the newer SDK and ensure the matching shared library is loaded.

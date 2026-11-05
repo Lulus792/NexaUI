@@ -67,6 +67,27 @@ static int test_host_ime_tokens(nx_font_collection *fonts) {
     CHECK(nx_text_field_set_selection(field,2,2)==NX_OK && host_ime_frame(ctx,&desc,field));
     token=0;
     CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK && token);
+    nx_rect before={0},during={0};
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&before)==NX_OK && before.height>0);
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,"\xc3\xa9",2,1,2)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,"\xff",1,0,1)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,"x",1,1,1)==NX_OK);
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&during)==NX_ERROR_STATE && during.height==0);
+    CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AB"));
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&during)==NX_OK && during.x>before.x);
+    uint32_t semantic_index=0;nx_semantic_view semantic;
+    CHECK(nx_semantics_find(ctx,1,&semantic_index)==NX_OK &&
+          nx_semantics_get(ctx,semantic_index,&semantic)==NX_OK &&
+          semantic.value.length==2 && !memcmp(semantic.value.data,"AB",2));
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,NULL,4097,0,0)==NX_ERROR_LIMIT);
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,NULL,0,0,0)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&during)==NX_OK && during.x==before.x);
+    char copied[]="x";
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,copied,1,1,1)==NX_OK);
+    copied[0]='\0';
+    CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&during)==NX_OK && during.x>before.x);
     nx_event event={0};event.type=NX_EVENT_IME_DELETE_SURROUNDING;
     event.ime_target=1;event.ime_revision=token;event.ime_before=1;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
@@ -74,6 +95,13 @@ static int test_host_ime_tokens(nx_font_collection *fonts) {
     event.ime_revision=token;event.scalar='Z';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     event.scalar='X';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,token,"y",1,1,1)==NX_ERROR_STATE);
+    uint64_t fresh=0;
+    CHECK(nx_text_field_host_ime_revision(ctx,1,field,&fresh)==NX_OK && fresh!=token);
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&before)==NX_OK);
+    CHECK(nx_text_field_host_ime_preedit(ctx,1,field,fresh,NULL,0,0,0)==NX_OK);
+    CHECK(host_ime_frame(ctx,&desc,field));
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&during)==NX_OK && during.x==before.x);
     event.scalar='Q';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(host_ime_frame(ctx,&desc,field) && expect_text(field,"AZX"));
     CHECK(nx_text_field_host_ime_revision(ctx,1,field,&token)==NX_OK);

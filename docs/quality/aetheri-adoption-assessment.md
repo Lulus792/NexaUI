@@ -2698,3 +2698,23 @@ font path and failed; the corrected path passed. A broad test-name filter also
 selected an unbuilt unrelated timeout test; after building that target it
 passed separately. Neither is evidence for native host preedit, physical input,
 an actual input-method provider or accessibility acceptance.
+
+## External-host preedit and caret — 5 November 2026
+
+Candidate based on `2fd65e128a3f0b746c6e56114e65824192f9b13f` adds
+0.1.13 host-preedit and drawn-caret queries for ordinary text fields (T04,
+T06, I02 and D05). The copied draft is associated with a current field token,
+validated and limited to 4096 bytes. Painting is separate from the committed
+model and semantic value; text, selection, focus or policy changes prevent stale painting. The
+host still owns native context activation, provider and event sequencing,
+candidate placement and cancellation. There is no native host connection in
+this candidate and no password-field support.
+
+Alpine/WSL2 GCC static/shared and Clang ASan/UBSan with leak detection passed
+the text-field test, including changed caret geometry, clear, caller-buffer
+ownership, invalid UTF-8/offsets, stale token and unchanged semantic value.
+The desktop consumer built against the installed static SDK and passed a
+synthetic preedit and commit test. Four rebuilt controlled Wayland v1/v3 input
+tests passed. In a separate test-only source copy, disabling host-preedit
+painting made the caret movement assertion fail. These are not installed IME,
+physical input, Aetheri host-protocol or human accessibility acceptance.

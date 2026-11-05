@@ -47,6 +47,15 @@ nx_result aetheri_desktop_view_host_ime_revision(aetheri_desktop_view *v,uint64_
     if(!v){if(out_revision)*out_revision=0;return NX_ERROR_ARGUMENT;}
     return nx_text_field_host_ime_revision(v->context,20,v->query,out_revision);
 }
+nx_result aetheri_desktop_view_host_ime_preedit(aetheri_desktop_view *v,uint64_t revision,
+    const char *text,size_t length,int32_t begin,int32_t end) {
+    if(!v)return NX_ERROR_ARGUMENT;
+    return nx_text_field_host_ime_preedit(v->context,20,v->query,revision,text,length,begin,end);
+}
+nx_result aetheri_desktop_view_host_ime_caret(aetheri_desktop_view *v,nx_rect *out_rect) {
+    if(!v){if(out_rect)*out_rect=(nx_rect){0};return NX_ERROR_ARGUMENT;}
+    return nx_text_field_host_ime_caret(v->context,20,v->query,out_rect);
+}
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *v,const nx_event *event) {
     if(!v || !event)return NX_ERROR_ARGUMENT;
     nx_event mapped=*event;

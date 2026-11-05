@@ -145,6 +145,10 @@ int main(int argc,char **argv) {
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     uint64_t ime_revision=0;CHECK(aetheri_desktop_view_host_ime_revision(view,&ime_revision)==NX_OK && ime_revision);
+    nx_rect ime_caret={0};
+    CHECK(aetheri_desktop_view_host_ime_preedit(view,ime_revision,"d",1,1,1)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(aetheri_desktop_view_host_ime_caret(view,&ime_caret)==NX_OK && ime_caret.height>0);
     text=(nx_event){0};text.type=NX_EVENT_TEXT;text.scalar='D';text.ime_target=20;text.ime_revision=ime_revision;
     CHECK(aetheri_desktop_view_queue_event(view,&text)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_QUERY && !strcmp(intent.query,"ACDB"));

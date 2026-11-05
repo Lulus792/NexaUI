@@ -319,6 +319,11 @@ struct nx_text_field {
     nx_field_pointer pointer;
     uint64_t host_ime_id, host_ime_context_id, host_ime_generation;
     int host_ime_enabled, host_ime_accepting;
+    char *host_preedit;
+    size_t host_preedit_length;
+    int32_t host_preedit_begin, host_preedit_end;
+    uint64_t host_preedit_revision, host_caret_revision;
+    nx_rect host_caret;
 #if defined(__linux__)
     uint64_t paste_token, paste_context, paste_id, paste_focus_serial;
     uint64_t paste_model_revision, paste_buffer_serial;
@@ -6973,6 +6978,7 @@ nx_result nx_text_field_create_password(const char *initial, size_t length,
 
 void nx_text_field_destroy(nx_text_field *field) {
     if (!field) return;
+    free(field->host_preedit);
     nx_text_buffer_destroy(field->buffer);
     if (field->sensitive) nx_private_secure_zero(field, sizeof(*field));
     free(field);
@@ -7089,6 +7095,48 @@ nx_result nx_text_field_host_ime_revision(const nx_context *ctx, uint64_t id,
         !field->host_ime_accepting || field->read_only)
         return NX_ERROR_STATE;
     *out_revision=nx_field_host_ime_revision(ctx,field);
+    return NX_OK;
+}
+
+nx_result nx_text_field_host_ime_preedit(nx_context *ctx, uint64_t id,
+    nx_text_field *field, uint64_t revision, const char *text, size_t length,
+    int32_t begin, int32_t end) {
+    uint64_t current = 0;
+    nx_result result = nx_text_field_host_ime_revision(ctx,id,field,&current);
+    if (result != NX_OK) return result;
+    if (!revision || revision != current) return NX_ERROR_STATE;
+    if (length > 4096u) return NX_ERROR_LIMIT;
+    if ((!text && length) || (length && memchr(text,0,length)) ||
+        nx_utf8_validate(text ? text : "",length,NULL)!=NX_OK ||
+        !((begin == -1 && end == -1) ||
+          (begin >= 0 && end >= 0 && (size_t)begin <= length && (size_t)end <= length &&
+           ((size_t)begin == length || ((unsigned char)text[begin] & 0xc0u) != 0x80u) &&
+           ((size_t)end == length || ((unsigned char)text[end] & 0xc0u) != 0x80u))))
+        return NX_ERROR_ARGUMENT;
+    char *copy = NULL;
+    if (length) {
+        copy = malloc(length);
+        if (!copy) return NX_ERROR_MEMORY;
+        memcpy(copy,text,length);
+    }
+    free(field->host_preedit);
+    field->host_preedit=copy;field->host_preedit_length=length;
+    field->host_preedit_begin=begin;field->host_preedit_end=end;
+    field->host_preedit_revision=revision;
+    field->host_caret_revision=0;
+    return NX_OK;
+}
+
+nx_result nx_text_field_host_ime_caret(const nx_context *ctx, uint64_t id,
+    const nx_text_field *field, nx_rect *out_rect) {
+    if (!out_rect) return NX_ERROR_ARGUMENT;
+    *out_rect=(nx_rect){0};
+    uint64_t revision=0;
+    nx_result result=nx_text_field_host_ime_revision(ctx,id,field,&revision);
+    if (result!=NX_OK) return result;
+    if (!field->host_caret_revision || field->host_caret_revision!=revision)
+        return NX_ERROR_STATE;
+    *out_rect=field->host_caret;
     return NX_OK;
 }
 
@@ -7905,6 +7953,14 @@ nx_result nx_text_field_widget(nx_context *ctx,
             ime_preedit.data = ime_preedit_copy;
         }
     }
+    if (field->host_ime_enabled && field->host_ime_accepting &&
+        ctx->input.focused && state.focused && !desc->disabled && !field->read_only &&
+        field->host_ime_id==desc->id && field->host_ime_context_id==ctx->native_identity &&
+        field->host_preedit_revision &&
+        field->host_preedit_revision==nx_field_host_ime_revision(ctx,field)) {
+        ime_preedit=(nx_utf8_span){field->host_preedit,field->host_preedit_length};
+        ime_begin=field->host_preedit_begin;ime_end=field->host_preedit_end;
+    }
     nx_rect caret_rect = {0};
     int caret_visible = 0;
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
@@ -7953,6 +8009,9 @@ nx_result nx_text_field_widget(nx_context *ctx,
     }
     field->host_ime_id=desc->id;field->host_ime_context_id=ctx->native_identity;
     field->host_ime_accepting=host_accepting;
+    field->host_caret_revision=host_accepting && caret_visible ?
+        nx_field_host_ime_revision(ctx,field) : 0;
+    field->host_caret=caret_rect;
     if (desc->password && ime_preedit_copy)
         nx_private_secure_zero(ime_preedit_copy, ime_preedit_capacity);
     free(ime_preedit_copy);

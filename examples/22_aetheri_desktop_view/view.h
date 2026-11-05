@@ -20,10 +20,12 @@ nx_context *aetheri_desktop_view_context(aetheri_desktop_view *view);
 /* Optional ordinary NexaUI window for IME and clipboard. The caller keeps it
    alive until this is cleared and the view completes another frame. */
 nx_result aetheri_desktop_view_set_window(aetheri_desktop_view *view,nx_window *window);
-/* External IME and ordinary-window IME are mutually exclusive. Host mode
-   currently covers revision-checked commit/delete events, not preedit. */
+/* External IME and ordinary-window IME are mutually exclusive. */
 nx_result aetheri_desktop_view_set_host_ime(aetheri_desktop_view *view,int enabled);
 nx_result aetheri_desktop_view_host_ime_revision(aetheri_desktop_view *view,uint64_t *out_revision);
+nx_result aetheri_desktop_view_host_ime_preedit(aetheri_desktop_view *view,uint64_t revision,
+    const char *text,size_t length,int32_t begin,int32_t end);
+nx_result aetheri_desktop_view_host_ime_caret(aetheri_desktop_view *view,nx_rect *out_rect);
 /* Queue host-translated events here. Tab/Shift-Tab in the search field map to
    next/previous result; native-consumed and modified keys pass through. */
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *view,const nx_event *event);
