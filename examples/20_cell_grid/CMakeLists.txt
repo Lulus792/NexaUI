@@ -21,6 +21,15 @@ if(NEXAUI_BUILD_TESTS AND Python3_Interpreter_FOUND)
                 COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py"
                         $<TARGET_FILE:nexaui_cell_grid_example> "${_grid_font}" "${NEXAUI_XDOTOOL_EXECUTABLE}")
             set_tests_properties(nexaui_cell_grid_native_keyboard PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            find_program(NEXAUI_WL_COPY_EXECUTABLE wl-copy)
+            find_program(NEXAUI_WL_PASTE_EXECUTABLE wl-paste)
+            if(NEXAUI_WL_COPY_EXECUTABLE AND NEXAUI_WL_PASTE_EXECUTABLE)
+                add_test(NAME nexaui_cell_grid_native_paste
+                    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_paste.py"
+                        $<TARGET_FILE:nexaui_cell_grid_example> "${_grid_font}" "${NEXAUI_XDOTOOL_EXECUTABLE}"
+                        "${NEXAUI_WL_COPY_EXECUTABLE}" "${NEXAUI_WL_PASTE_EXECUTABLE}")
+                set_tests_properties(nexaui_cell_grid_native_paste PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            endif()
         endif()
         if(TARGET PkgConfig::NEXAUI_ATSPI AND NEXAUI_ATSPI_REGISTRY)
             add_executable(nexaui_cell_grid_atspi_client atspi_client.c)
