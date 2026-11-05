@@ -22,6 +22,11 @@ editable filter with rejected-query latching, independent AT-SPI editing and
 one private simple-IME preedit/commit check. A conservative same-frame scalar
 guard can reject valid near-limit replacements; complex input batching,
 active-IME shortcuts and real Aetheri acceptance remain open.
+On base `992c31f67bea9d6b4ccb857705c24f9b0218a9c3`, restricted focused
+text/deletion batches are replayed through the existing text buffer: tested
+valid replacements at the byte limit are accepted, while a transient overflow
+remains rejected. Complex clipboard, IME, accessibility mutation and arbitrary
+event ordering remain separate evidence gaps.
 
 W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
 adds optional writable interest to Linux single-window and Wayland group

@@ -139,28 +139,51 @@ nx_result files_scene_scroll(files_scene *s,double pixels) {
     if(r==NX_OK)s->offset=range.effective_offset;
     return r;
 }
-static int query_valid(nx_utf8_span text,void *user) {
-    files_scene *s=user;if(text.length>AE_FILES_QUERY || (s->query_rejected && text.length))return 0;
+static int query_bytes_valid(nx_utf8_span text) {
+    if(text.length>AE_FILES_QUERY)return 0;
     size_t at=0;while(at<text.length){uint32_t scalar;if(nx_utf8_decode(text.data,text.length,&at,&scalar)!=NX_OK ||
         scalar<32 || (scalar>=0x7f && scalar<=0x9f))return 0;}
     return 1;
 }
-/* The widget validates the draft before and after a frame, not after each
-   queued scalar. Retain a conservative byte upper bound so an overlong burst
-   cannot become accepted merely because a later deletion shares that frame.
-   This can reject a valid replacement near the limit; clearing is explicit. */
-static nx_result guard_text_burst(files_scene *s) {
+static int query_valid(nx_utf8_span text,void *user) {
+    files_scene *s=user;return !(s->query_rejected && text.length) && query_bytes_valid(text);
+}
+/* Replay only an unambiguous subset on the same public text buffer. Complex
+   event routing, IME and clipboard operations retain the conservative bound. */
+static nx_result guard_text_burst(files_scene *s,uint64_t previous_focus,
+    nx_text_buffer **simulation,int *fallback_high) {
+    *simulation=NULL;*fallback_high=0;
     if(nx_focus_id(s->ctx)!=FILTER_ID)return NX_OK;
     nx_utf8_span before={0};nx_result r=nx_text_field_text(s->query,&before);if(r!=NX_OK)return r;
     const nx_event *events=NULL;size_t count=0;r=nx_frame_events(s->ctx,&events,&count);if(r!=NX_OK)return r;
-    size_t upper=before.length;
+    size_t upper=before.length;int simple=previous_focus==FILTER_ID,has_text=0;
     for(size_t i=0;i<count;++i) {
         const nx_event *e=&events[i];
-        if(e->type!=NX_EVENT_TEXT || (e->ime_target && e->ime_target!=FILTER_ID))continue;
-        uint32_t scalar=e->scalar;
-        size_t bytes=scalar<=0x7f?1:scalar<=0x7ff?2:scalar<=0xffff?3:4;
-        if(upper>AE_FILES_QUERY || bytes>AE_FILES_QUERY-upper){s->query_rejected=1;s->query_valid=0;break;}
-        upper+=bytes;
+        if(e->type==NX_EVENT_TEXT && (!e->ime_target || e->ime_target==FILTER_ID)) {
+            uint32_t scalar=e->scalar;size_t bytes=scalar<=0x7f?1:scalar<=0x7ff?2:scalar<=0xffff?3:4;
+            has_text=1;if(e->ime_target)simple=0;
+            if(upper>AE_FILES_QUERY || bytes>AE_FILES_QUERY-upper)*fallback_high=1;
+            else upper+=bytes;
+        } else if(e->type==NX_EVENT_KEY_DOWN) {
+            if((e->key==NX_KEY_BACKSPACE || e->key==NX_KEY_DELETE) && !e->modifiers)continue;
+            if(e->key>=NX_KEY_A && e->key<=NX_KEY_Z && !e->modifiers)continue;
+            if(e->key>=NX_KEY_0 && e->key<=NX_KEY_9 && !e->modifiers)continue;
+            simple=0;
+        } else if(e->type!=NX_EVENT_KEY_UP && e->type!=NX_EVENT_POINTER_MOVE) simple=0;
+    }
+    if(!has_text)return NX_OK;
+    if(!simple){if(*fallback_high){s->query_rejected=1;s->query_valid=0;}return NX_OK;}
+    size_t anchor=0,cursor=0;r=nx_text_field_selection(s->query,&anchor,&cursor);if(r!=NX_OK)return r;
+    r=nx_text_buffer_create(before.data,before.length,0,simulation);if(r!=NX_OK)return r;
+    r=nx_text_buffer_set_selection(*simulation,anchor,cursor);if(r!=NX_OK)return r;
+    for(size_t i=0;i<count;++i) {
+        const nx_event *e=&events[i];int handled=0;
+        if(e->type==NX_EVENT_TEXT || (e->type==NX_EVENT_KEY_DOWN &&
+           (e->key==NX_KEY_BACKSPACE || e->key==NX_KEY_DELETE))) {
+            r=nx_text_buffer_apply_event(*simulation,e,&handled);if(r!=NX_OK)return r;
+            const char *bytes=NULL;size_t length=0;r=nx_text_buffer_text(*simulation,&bytes,&length);if(r!=NX_OK)return r;
+            if(handled && !query_bytes_valid((nx_utf8_span){bytes,length})){s->query_rejected=1;s->query_valid=0;}
+        }
     }
     return NX_OK;
 }
@@ -170,10 +193,11 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         return NX_ERROR_ARGUMENT;
     if(!s->ready)return NX_ERROR_STATE;
     s->viewport_height=height-header;nx_virtual_range range;
-    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL;size_t made=0;
+    nx_text_layout *layouts[MAX_ROWS]={0},*hint=NULL;nx_text_buffer *simulation=NULL;size_t made=0;int fallback_high=0;
+    uint64_t previous_focus=nx_focus_id(s->ctx);
     nx_result r=nx_begin_frame(s->ctx,width,height,0);if(r!=NX_OK)return r;
     if(s->query) {
-        r=guard_text_burst(s);
+        r=guard_text_burst(s,previous_focus,&simulation,&fallback_high);
         nx_text_field_desc field={0};field.id=FILTER_ID;field.bounds=(nx_rect){0,0,width,FILTER_HEIGHT};
         field.name=(nx_utf8_span){"Filter files",12};field.fonts=s->fonts;field.pixels_per_em=15;
         field.glyph_cache_bytes=1024*1024;field.validate=query_valid;field.validate_user=s;field.ime_window=s->window;
@@ -181,6 +205,12 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         nx_interaction_state state;int valid=0,submitted=0;
         if(r==NX_OK)r=nx_text_field_widget(s->ctx,&field,s->query,&state,&valid,&submitted);
         nx_utf8_span draft={0};if(r==NX_OK)r=nx_text_field_text(s->query,&draft);
+        if(r==NX_OK && simulation) {
+            const char *bytes=NULL;size_t length=0;r=nx_text_buffer_text(simulation,&bytes,&length);
+            if(r==NX_OK && (length!=draft.length || (length && memcmp(bytes,draft.data,length))) && fallback_high) {
+                s->query_rejected=1;s->query_valid=0;valid=0;
+            }
+        }
         if(r==NX_OK && !draft.length && !state.focused) {
             nx_color muted;
             r=nx_theme_color(s->ctx,NX_COLOR_TEXT_MUTED,&muted);
@@ -224,6 +254,7 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         }
     }
     {nx_result end=nx_end_frame(s->ctx);if(r==NX_OK)r=end;}
+    nx_text_buffer_destroy(simulation);
     if(hint)nx_text_layout_destroy(hint);
     for(size_t i=0;i<made;++i)nx_text_layout_destroy(layouts[i]);
     return r;

@@ -197,3 +197,23 @@ The native window now reserves 36 logical pixels for the filter and caps the
 list viewport at 1,764 pixels. Empty/error explanations, complete paste
 semantics, file actions, native Aetheri integration, offscreen accessibility,
 localization and human review remain separate work.
+
+## Bounded simple input replay
+
+On NexaUI base `992c31f67bea9d6b4ccb857705c24f9b0218a9c3`, the probe
+replays a restricted, unambiguously focused set of text and unmodified deletion
+events against a copy of the public grapheme-aware text buffer. It checks each
+intermediate draft and compares the result with the actual widget. A valid
+same-frame replacement at the 255-byte limit is accepted; an intermediate
+overflow remains rejected even if deleted before the frame ends. The scene test
+also covers replacing a two-byte character and inserting then deleting a
+four-byte character. The original model query remains protected while rejected.
+
+Static, shared and ASan/UBSan scene tests passed, along with private Weston
+keyboard/pointer, independent AT-SPI and simple-IME probes in each variant.
+Removing the burst guard failed the transient-overflow test; forcing the old
+upper-bound path failed the valid replacement test. These tests use the
+original Aetheri Files model snapshot specified above, not a migrated app.
+Complex input retains the prior scalar upper bound. Clipboard contents, IME,
+accessibility mutations and arbitrary combined event ordering are not proved by
+this replay; the earlier active-IME shortcut finding also remains open.

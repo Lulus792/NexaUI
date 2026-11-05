@@ -118,7 +118,24 @@ int main(int argc,char **argv) {
     event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='y';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && files_scene_query_accepted(scene));
+    CHECK(strlen(ae_files_query(model))==AE_FILES_QUERY && ae_files_query(model)[AE_FILES_QUERY-1]=='y');
+    maximum[AE_FILES_QUERY-2]=(char)0xc3;maximum[AE_FILES_QUERY-1]=(char)0xa9;
+    CHECK(files_scene_filter(scene,maximum,sizeof(maximum))==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar='y';CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(files_scene_frame(scene,240,120)==NX_OK && files_scene_query_accepted(scene));
+    CHECK(strlen(ae_files_query(model))==AE_FILES_QUERY-1 && ae_files_query(model)[AE_FILES_QUERY-2]=='y');
+    CHECK(files_scene_filter(scene,maximum,sizeof(maximum))==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT;event.scalar=0x1f600;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_BACKSPACE;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(files_scene_frame(scene,240,120)==NX_OK && !files_scene_query_accepted(scene));
+    CHECK(nx_semantics_find(ctx,2,&field_index)==NX_OK && nx_semantics_get(ctx,field_index,&field)==NX_OK && (field.state&NX_SEM_INVALID));
+    CHECK(files_scene_stage(scene,&intent)==AE_FILES_INVALID);
     okay=1;
 cleanup:
     files_intent_clear(&intent);if(scene)files_scene_destroy(scene);
