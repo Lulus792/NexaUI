@@ -19,6 +19,7 @@ typedef struct host_server {
     atomic_int acknowledged, captures, role_creations, capture_enabled, disconnect;
     atomic_uint pixels[3];
     atomic_uint outside[3];
+    atomic_uint scale_probe[3];
     struct wl_resource *held[3];
 } host_server;
 static void committed(test_server *base,struct wl_client *client) {
@@ -67,13 +68,16 @@ static void capture(test_server *base,struct wl_resource *buffer) {
     CHECK(atomic_load(&server->acknowledged) && index<3);
     struct wl_shm_buffer *shm=wl_shm_buffer_get(buffer); CHECK(shm);
     CHECK(wl_shm_buffer_get_format(shm)==WL_SHM_FORMAT_ARGB8888);
-    CHECK(wl_shm_buffer_get_width(shm)==40 && wl_shm_buffer_get_height(shm)==20);
+    CHECK(wl_shm_buffer_get_width(shm)==(index==1?80:40) &&
+          wl_shm_buffer_get_height(shm)==(index==1?40:20));
     wl_shm_buffer_begin_access(shm);
     uint32_t pixel; memcpy(&pixel,wl_shm_buffer_get_data(shm),sizeof(pixel));
     uint32_t outside; memcpy(&outside,(const char *)wl_shm_buffer_get_data(shm)+5*4,sizeof(outside));
+    uint32_t scale_probe; memcpy(&scale_probe,(const char *)wl_shm_buffer_get_data(shm)+3*4,sizeof(scale_probe));
     wl_shm_buffer_end_access(shm);
     atomic_store(&server->pixels[index],pixel);
     atomic_store(&server->outside[index],outside);
+    atomic_store(&server->scale_probe[index],scale_probe);
     server->held[index]=buffer; atomic_store(&server->captures,index+1);
 }
 typedef struct client_globals {
@@ -197,11 +201,17 @@ int main(void) {
     atomic_store(&server.capture_enabled,1);
     const nx_color clears[]={{0,0,0,0},{1,.5f,.25f,.5f},{0,0,0,0}};
     nx_command square={.type=NX_COMMAND_FILL_RECT,.rect={0,0,2,2},.color={0,0,1,1}};
-    for (int i=0;i<3;++i)
-        CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){40,20},1,i==2?&square:NULL,i==2?1u:0u,clears[i],&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_READY);
+    /* Resize to 2x and back while all three submitted buffers are held by the
+       host's compositor; each release remains tied to its original buffer. */
+    for (int i=0;i<3;++i) {
+        nx_pixel_size size=i==1?(nx_pixel_size){80,40}:(nx_pixel_size){40,20};
+        CHECK(nx_wayland_shm_host_present(host,size,i==1?2:1,i?&square:NULL,i?1u:0u,clears[i],&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_READY);
+    }
     CHECK(nx_wayland_shm_host_present(host,(nx_pixel_size){40,20},1,NULL,0,clears[0],&outcome)==NX_OK && outcome==NX_WAYLAND_SHM_BUSY);
     CHECK(wl_display_roundtrip_queue(display,queue)>=0 && atomic_load(&server.captures)==3);
-    CHECK(atomic_load(&server.pixels[0])==0 && atomic_load(&server.pixels[1])==0x80804020u && atomic_load(&server.pixels[2])==0xff0000ffu && atomic_load(&server.outside[2])==0);
+    CHECK(atomic_load(&server.pixels[0])==0 && atomic_load(&server.pixels[1])==0xff0000ffu && atomic_load(&server.pixels[2])==0xff0000ffu);
+    CHECK(atomic_load(&server.outside[1])==0x80804020u && atomic_load(&server.outside[2])==0);
+    CHECK(atomic_load(&server.scale_probe[1])==0xff0000ffu && atomic_load(&server.scale_probe[2])==0);
     atomic_store(&server.capture_enabled,0);
     wl_proxy_marshal_flags(role,2,NULL,1,0);
     CHECK(wl_display_roundtrip(display)>=0);
