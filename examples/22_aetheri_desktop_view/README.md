@@ -33,7 +33,7 @@ search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
 revision. Native selection-owner actions, Tab behavior outside the search field, real window activation,
-private-surface input and IME, actual Aetheri shell-surface presentation,
+private-surface input and IME, production Aetheri shell integration,
 multi-output ownership and the original process owner integration remain open.
 The Linux preview uses an ordinary NexaUI window, the software presenter,
 native input/clipboard/IME binding and optional window AT-SPI publication; it
@@ -115,3 +115,36 @@ Wayland-only SDK and original model snapshot identified above. Fixture records:
 establish configure, submission, worker wakeup and teardown in this ordinary
 host fixture; they do not establish display pixels, a private layer role,
 multi-output operation, real Aetheri compositor integration or human acceptance.
+
+Source `06b8f2800462d4bb7ff282cfdee1cc344e08c45a` adds a test-only
+development-shell host, adapted from Aetheri's MIT-licensed
+`tests/test_desktop_client.c` (blob `e21c47875668ef677271dfda0bc54ad5aab000e3`).
+The host uses the original Aetheri protocol XML supplied in
+`AETHERI_SOURCE_DIR/protocols`; their Git blob IDs were
+`e9f27e4fdbe605f0a7014ec6194cf5dbc50d2b65` for layer shell and
+`d8ae3955153413299071ac0ec20c56870fbf4f75` for desktop control. Aetheri
+HEAD was `2790db68b6e6c4057f4d69b38cc39573df7de319` and the desktop model
+blobs matched those recorded above. The external checkout was not modified.
+
+The driver `tests/run_aetheri_layer_view.py` starts a separate Aetheri
+headless test compositor and passes a private socket to the host. The host
+creates the original layer roles and a separate NexaUI view and software
+presenter for each of three virtual outputs. It opens and collapses search
+through the test command channel, retires the shell connection and waits for
+the compositor to exit. The driver checks dock pixels on all three outputs,
+search-field pixels on the first output, transparent background there and
+both process exit codes. It does not inject native input into the view.
+
+The final run used Fedora GCC 16.2.1, Wayland 1.26.0, the installed static
+Wayland-only SDK built from `a7a3df4b8f803cc15f876b4623c9008834c590e9`
+with AT-SPI and Vulkan disabled, and the Aetheri test compositor built from
+`d621c9bba1df8ffd1083999300bcff742022b9dc`. Compositor SHA-256 was
+`da09d434747dafc3400fb8da4f426b3cc8713452515d61e2dd9d3dbf693ed164`;
+desktop test binary SHA-256 was
+`a198535479ef6c12388b5f92fd3e6ccf86559d5a1b4a36c2327b89c9e8532e56`.
+Logs, result and selected captures are retained in
+`D:/NexaUI/out/aetheri-layer-desktop-evidence-final-20261105.tar.gz`,
+SHA-256 `0793ba897f5d14b93f01325d8bccce2ded9a6d4f39a5bc9e928ea5090f12477f`.
+This is a private headless fixture, not the production shell adapter. Input,
+IME, AT-SPI, actual launcher ownership, hotplug, physical outputs and human
+acceptance remain open.
