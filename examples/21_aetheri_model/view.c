@@ -222,6 +222,33 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     if(compact && nx_draw_text_layout(v->context,v->labels[0],
         (nx_point){content_x,scroll.viewport.y-v->scroll_y},fg,CACHE)!=NX_OK) return 0;
     uint64_t *groups[]={&theme_id,&lang_id,&size_id};
+    uint32_t chosen_display=0;
+    /* Route the separated label regions before constructing radios so every
+       semantic node and painted mark sees the final group selection. */
+    if(small) {
+        float y=scroll.viewport.y-v->scroll_y;
+        for(int row=0;row<3;++row) for(int i=0;i<counts[row];++i) {
+            uint64_t id=(uint64_t)(10+row*3+i);
+            nx_rect bounds={content_x,y+items[row][i].y+46,content_width,
+                            (float)nx_text_layout_height(v->labels[starts[row]+i])};
+            nx_interaction_state state;
+            if(nx_interact_region(v->context,UINT64_C(0x300000000)+id,bounds,0,&state)!=NX_OK) return 0;
+            if(state.pointer_pressed || state.clicked)
+                if(nx_focus_set(v->context,id)!=NX_OK) return 0;
+            if(state.clicked) *groups[row]=(uint64_t)i+1;
+        }
+        for(size_t i=0;i<m->count;++i) {
+            uint64_t id=UINT64_C(0x100000000)+m->displays[i].id;
+            nx_rect bounds={content_x,y+display_rects[i].y+46,content_width,
+                            (float)nx_text_layout_height(v->displays[i])};
+            nx_interaction_state state;
+            if(nx_interact_region(v->context,UINT64_C(0x400000000)+m->displays[i].id,
+                                  bounds,m->stale?NX_REGION_DISABLED:0,&state)!=NX_OK) return 0;
+            if(state.pointer_pressed || state.clicked)
+                if(nx_focus_set(v->context,id)!=NX_OK) return 0;
+            if(state.clicked) chosen_display=m->displays[i].id;
+        }
+    }
     for(int row=0;row<3;++row) {
         float y=scroll.viewport.y-v->scroll_y;
         nx_rect g=groups_rect[row]; g.x+=content_x; g.y+=y;
@@ -254,7 +281,6 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
        nx_semantics_add(v->context,&display_status,NULL)!=NX_OK ||
        nx_draw_text_layout(v->context,v->labels[13],(nx_point){content_x,dy+displays_y},fg,CACHE)!=NX_OK ||
        nx_draw_text_layout(v->context,v->labels[14],(nx_point){content_x,dy+status_y},fg,CACHE)!=NX_OK) return 0;
-    uint32_t chosen_display=0;
     for(size_t i=0;i<m->count;++i) {
         nx_control_desc control={0}; control.id=UINT64_C(0x100000000)+m->displays[i].id; control.parent_id=6;
         control.bounds=display_rects[i]; control.bounds.x+=content_x; control.bounds.y+=dy;

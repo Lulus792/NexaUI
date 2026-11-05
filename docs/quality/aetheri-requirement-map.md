@@ -12,8 +12,10 @@ physical input, smaller windows, other fonts/locales and human acceptance remain
 On base `e71ee304f1e6c23fa562d9e4b11f7e8e12152079`, the small layout extends
 to 128x150 with grapheme-boundary emergency wrapping and scrollable controls.
 Independent AT-SPI and virtual keyboard resize checks passed at that size on
-private Sway. Still smaller sizes, long-content performance, full pointer-label
-interaction, real IMEs and human review remain open.
+private Sway. On base `5114c345c7833b303087b7d3754b0e63f5c23b5f`, separated
+radio and display labels also forward pointer clicks without extra tab stops;
+the radio label was exercised using a private Sway virtual pointer. Still
+smaller sizes, long-content performance, real IMEs and human review remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's

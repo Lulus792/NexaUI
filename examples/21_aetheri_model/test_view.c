@@ -8,6 +8,14 @@ static int press(nx_context *ui, nx_key key) {
     if(nx_context_queue_event(ui,&event)!=NX_OK) return 0;
     event.type=NX_EVENT_KEY_UP; return nx_context_queue_event(ui,&event)==NX_OK;
 }
+static int pointer(nx_context *ui,nx_event_type type,float x,float y) {
+    nx_event event={0}; event.type=type; event.button=NX_BUTTON_LEFT;
+    event.x=x; event.y=y;
+    return nx_context_queue_event(ui,&event)==NX_OK;
+}
+static int click(nx_context *ui,float x,float y) {
+    return pointer(ui,NX_EVENT_POINTER_DOWN,x,y) && pointer(ui,NX_EVENT_POINTER_UP,x,y);
+}
 static int checked(nx_context *ui,uint64_t id) {
     uint32_t index; nx_semantic_view view;
     return nx_semantics_find(ui,id,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
@@ -108,6 +116,23 @@ int main(int argc,char **argv) {
     CHECK(press(ui,NX_KEY_PAGE_UP) && aetheri_view_frame(view,128,150,&changed));
     CHECK(nx_semantics_find(ui,12,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK &&
           page_item.bounds.y==page_start);
+    /* Pointer activation on the separately drawn label has the same target
+       and focus as clicking its radio mark. */
+    CHECK(nx_focus_set(ui,11)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,11,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    CHECK(click(ui,page_item.bounds.x+8,page_item.bounds.y+50) &&
+          aetheri_view_frame(view,128,150,&changed) && changed && model.theme==AE_SETTINGS_LIGHT && nx_focus_id(ui)==11);
+    CHECK(checked(ui,11) && !checked(ui,12));
+    CHECK(nx_focus_set(ui,12)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,12,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    CHECK(click(ui,page_item.bounds.x+8,page_item.bounds.y+50) && aetheri_view_frame(view,128,150,&changed));
+    CHECK(changed && model.theme==AE_SETTINGS_CONTRAST && checked(ui,12) && !checked(ui,11) && nx_focus_id(ui)==12);
+    CHECK(nx_focus_set(ui,11)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,11,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    CHECK(pointer(ui,NX_EVENT_POINTER_DOWN,page_item.bounds.x+8,page_item.bounds.y+50) &&
+          aetheri_view_frame(view,128,150,&changed) && !changed && nx_focus_id(ui)==11);
+    CHECK(pointer(ui,NX_EVENT_POINTER_UP,0,0) && aetheri_view_frame(view,128,150,&changed) &&
+          !changed && model.theme==AE_SETTINGS_CONTRAST);
     CHECK(aetheri_view_frame(view,480,380,&changed));
     /* At 200% the longest option retains its 28px layout, rather than being
        squeezed into a third of the window. */
@@ -128,8 +153,16 @@ int main(int argc,char **argv) {
     CHECK(aetheri_view_frame(view,128,150,&changed));
     CHECK(nx_focus_set(ui,UINT64_C(0x100000000)+91)==NX_OK && aetheri_view_frame(view,128,150,&changed));
     CHECK(visible(ui,UINT64_C(0x100000000)+91,128,150) && inside_scroll(ui,UINT64_C(0x100000000)+91));
-    CHECK(nx_semantics_request_action(ui,UINT64_C(0x100000000)+91,NX_ACTION_PRESS)==NX_OK &&
-          aetheri_view_frame(view,128,150,&changed) && changed && model.displays[model.selected].id==91);
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    CHECK(click(ui,page_item.bounds.x+8,page_item.bounds.y+50));
+    model.stale=true;
+    CHECK(aetheri_view_frame(view,128,150,&changed) && !changed && model.displays[model.selected].id==42);
+    model.stale=false;
+    CHECK(aetheri_view_frame(view,128,150,&changed) && !changed && model.displays[model.selected].id==42);
+    CHECK(nx_focus_set(ui,UINT64_C(0x100000000)+91)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    CHECK(click(ui,page_item.bounds.x+8,page_item.bounds.y+50) && aetheri_view_frame(view,128,150,&changed) &&
+          changed && model.displays[model.selected].id==91 && nx_focus_id(ui)==UINT64_C(0x100000000)+91);
     CHECK(ae_settings_select(&model,42));
     CHECK(aetheri_view_frame(view,800,800,&changed));
     CHECK(named(ui,7,"Beobachtete Anzeigen",0));

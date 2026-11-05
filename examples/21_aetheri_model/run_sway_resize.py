@@ -23,6 +23,7 @@ def main():
     parser.add_argument('--atspi-client', type=Path)
     parser.add_argument('--atspi-registry', type=Path)
     parser.add_argument('--wtype', type=Path, help='Exercise a private virtual keyboard')
+    parser.add_argument('--pointer-driver', type=Path, help='Click the small label using a private virtual pointer')
     parser.add_argument('--small-width', type=int, default=320)
     parser.add_argument('--small-height', type=int, default=240)
     args = parser.parse_args()
@@ -30,9 +31,14 @@ def main():
         parser.error('--atspi-client and --atspi-registry must be supplied together')
     if args.wtype and args.atspi_client:
         parser.error('--wtype and --atspi-client are separate test modes')
+    if args.pointer_driver and not args.wtype:
+        parser.error('--pointer-driver requires --wtype')
     if not (128 <= args.small_width <= 320 and 150 <= args.small_height <= 240):
         parser.error('small size must be between 128x150 and 320x240')
+    if args.pointer_driver and args.small_width>=320 and args.small_height>=240:
+        parser.error('--pointer-driver requires the separate-label layout below 320x240')
     wtype = args.wtype.resolve(strict=True) if args.wtype else None
+    pointer_driver = args.pointer_driver.resolve(strict=True) if args.pointer_driver else None
     sway, swaymsg, host, font = (p.resolve(strict=True) for p in
                                  (args.sway, args.swaymsg, args.host, args.font))
     work = args.work_dir.resolve()
@@ -46,7 +52,7 @@ def main():
         runtime = Path(tmp)
         env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WLR_BACKENDS='headless',
                    WLR_RENDERER='pixman', WLR_LIBINPUT_NO_DEVICES='1',
-                   NEXAUI_PLATFORM='wayland', NO_AT_BRIDGE='1')
+                   NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_SWAY='1', NO_AT_BRIDGE='1')
         for key in ('WAYLAND_DISPLAY', 'WAYLAND_SOCKET', 'SWAYSOCK', 'DISPLAY'):
             env.pop(key, None)
         server = subprocess.Popen([str(sway), '--config', str(config)], env=env,
@@ -148,9 +154,20 @@ def main():
                         subprocess.run([str(wtype), '-s', '100', '-k', 'Tab'], env=env, check=True, timeout=5)
                         wait(lambda: f'FOCUS {focus}' in lines()[before_key:], f'keyboard focus {focus}')
                     before_key = len(lines())
-                    subprocess.run([str(wtype), '-s', '100', '-k', 'space'], env=env, check=True, timeout=5)
+                    if pointer_driver:
+                        rects=[line.split() for line in lines() if line.startswith('FOCUS_RECT 11 ')]
+                        if not rects:
+                            raise RuntimeError('Missing focused radio geometry')
+                        rect=rects[-1]; x=float(rect[2])+8; y=float(rect[3])+50
+                        if not (0<=x<width and 0<=y<height):
+                            raise RuntimeError(f'Label is outside the small window: {rect}')
+                        native=window()['rect']; x+=native['x']; y+=native['y']
+                        subprocess.run([str(pointer_driver),str(round(x)),str(round(y)),'1280','720'],
+                                       env=env,check=True,timeout=5)
+                    else:
+                        subprocess.run([str(wtype), '-s', '100', '-k', 'space'], env=env, check=True, timeout=5)
                     model='MODEL theme=1 german=0 text=100'
-                    wait(lambda: ready(width, height, before_key, model), 'keyboard model change at small size')
+                    wait(lambda: ready(width, height, before_key, model), 'input model change at small size')
                 elif wtype:
                     if 'FOCUS 11' not in lines()[before:]:
                         raise RuntimeError('Focus was not retained through resize')
@@ -170,7 +187,7 @@ def main():
             if args.atspi_client:
                 print(f'Private Sway: AT-SPI changed Settings at {args.small_width}x{args.small_height}, verified the restored size and closed.')
             elif wtype:
-                print('Private Sway: virtual keyboard changed Settings before and after resize, retained focus and closed.')
+                print('Private Sway: virtual input changed Settings before and after resize, retained focus and closed.')
             else:
                 print(f'Private Sway: Settings rendered at {args.small_width}x{args.small_height} and 800x480, retained model and closed.')
             return 0

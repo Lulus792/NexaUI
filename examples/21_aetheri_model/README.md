@@ -65,3 +65,16 @@ pkg-config modules; run `run_sway_resize.py --help` for fixture inputs. The broa
 provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.
+
+For the optional virtual-pointer check, generate the helper from the installed
+`wlr-protocols` XML in a temporary directory, then pass its binary as
+`--pointer-driver` together with `--wtype` and a size below 320x240:
+
+```sh
+wayland-scanner client-header /usr/share/wlr-protocols/unstable/wlr-virtual-pointer-unstable-v1.xml /tmp/virtual-pointer-client.h
+wayland-scanner private-code /usr/share/wlr-protocols/unstable/wlr-virtual-pointer-unstable-v1.xml /tmp/virtual-pointer-protocol.c
+cc -std=c17 -I/tmp examples/21_aetheri_model/virtual_pointer.c /tmp/virtual-pointer-protocol.c -lwayland-client -o /tmp/nexaui-virtual-pointer
+```
+
+The helper requires the fixture's private-Sway guard and is not linked into
+the SDK or the application.

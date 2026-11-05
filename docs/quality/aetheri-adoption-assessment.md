@@ -1,5 +1,35 @@
 # Aetheri adoption: initial source assessment
 
+## Pointer interaction on small Settings labels (2026-11-05)
+
+The consumer candidate based on `5114c345c7833b303087b7d3754b0e63f5c23b5f`
+registers clipped, non-focusable hit regions for the separately painted radio
+and display labels at small sizes. Pointer presses transfer focus to the
+existing control, and label clicks update its original model. Radios are built
+after label input is resolved so checked semantics and marks agree in the same
+frame; stale display labels are disabled. The ordinary controls and tab order
+are retained, and no new accessibility nodes are added.
+
+Controlled tests select labels in both directions and check same-frame checked
+states, focus, cancellation when released outside, a display becoming stale
+after input is queued, and no later replay. These scene tests passed with three
+DejaVu fonts in static, shared and Clang ASan/UBSan consumers (nine runs).
+On private Sway at 128x150, a virtual pointer clicked the Light label, after
+which the existing keyboard resize/close flow succeeded for all three builds.
+An old `5114c345c7833b303087b7d3754b0e63f5c23b5f` view, with only the focused
+rectangle diagnostic backported to its host, failed the same native check:
+the Wayland trace shows pointer enter at (24,130), button press and release,
+and the original model remained unchanged. A separate AT-SPI resize regression
+passed with the candidate's static consumer. Real physical input, native display
+label clicking, screenreader review and actual Aetheri acceptance remain open.
+
+The first virtual-pointer setup used three short-lived wlrctl devices; the
+target saw pointer enter but the click device disappeared before the target
+bound it, so those failures do not count as product evidence. The passing test
+uses one guarded test helper retaining its device across motion and click;
+the `wlr-protocols` 0_git20250702-r0 package was privately extracted and its
+SHA-256 was `6017705dfd18698ea4b24c1adce8541747eb002f59307758b752f3804a2f205f`.
+
 ## Original-model Settings at 128x150 (2026-11-05)
 
 The consumer candidate based on `e71ee304f1e6c23fa562d9e4b11f7e8e12152079`

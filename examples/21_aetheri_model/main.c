@@ -170,8 +170,14 @@ int main(int argc, char **argv) {
             double now=monotonic_seconds(); if(now<0) {okay=0;break;}
             next_ax_retry=now+1;
         }
-        if(diagnostics) {printf("FRAME %.0f %.0f %.2f\n",info.width,info.height,info.scale);
-            printf("FOCUS %llu\n",(unsigned long long)nx_focus_id(aetheri_view_context(view)));fflush(stdout);}
+        if(diagnostics) {nx_context *ui=aetheri_view_context(view); uint64_t focused=nx_focus_id(ui);
+            printf("FRAME %.0f %.0f %.2f\n",info.width,info.height,info.scale);
+            printf("FOCUS %llu\n",(unsigned long long)focused);
+            uint32_t index; nx_semantic_view node;
+            if(focused && nx_semantics_find(ui,focused,&index)==NX_OK && nx_semantics_get(ui,index,&node)==NX_OK)
+                printf("FOCUS_RECT %llu %.1f %.1f %.1f %.1f\n",(unsigned long long)focused,
+                       node.bounds.x,node.bounds.y,node.bounds.width,node.bounds.height);
+            fflush(stdout);}
         if(verify || diagnostics) {printf("MODEL theme=%d german=%d text=%u\n",(int)model.theme,model.german,model.text_percent);fflush(stdout);}
         if(diagnostics && !fixture_displays) {
             printf("SELECTED_OUTPUT %u\n",model.count?model.displays[model.selected].id:0);fflush(stdout);
