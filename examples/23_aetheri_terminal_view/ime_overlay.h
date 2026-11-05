@@ -17,6 +17,12 @@ typedef struct terminal_ime_overlay {
    The host must re-query after composition, caret, size, focus or scale changes. */
 nx_result terminal_ime_overlay_caret(const terminal_ime_overlay *overlay,
     const aetheri_terminal_view_desc *desc,nx_rect *caret);
+/* Translate grid-local geometry into logical window coordinates and publish it
+   on the owner's native window. No device-scale multiplication. Call only for
+   the focused current terminal after its latest layout; the host owns focus,
+   window and surface lifetime and must republish when the geometry changes. */
+nx_result terminal_ime_overlay_publish_caret(const terminal_ime_overlay *overlay,
+    const aetheri_terminal_view_desc *desc,nx_window *window,nx_point grid_origin);
 /* Callback for aetheri_terminal_view_frame_with_overlay. Transient preedit is
    painted over the grid and never inserted into the read-only text snapshot. */
 nx_result terminal_ime_overlay_draw(void *overlay,nx_context *context,

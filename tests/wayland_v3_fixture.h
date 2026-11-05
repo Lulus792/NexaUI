@@ -52,6 +52,7 @@ typedef struct test_server {
     size_t surrounding_length;
     int32_t surrounding_cursor, surrounding_anchor;
     atomic_int enable_commits, disable_commits, caret_ok, surrounding_ok;
+    atomic_int caret_x,caret_y,caret_width,caret_height,caret_updates;
     atomic_int field_surrounding_ok, numeric_commit, commit_control_test, commit_pty_test;
     atomic_int normal_content, password_content;
 } test_server;
@@ -407,6 +408,9 @@ static void text_cursor_rectangle(struct wl_client *client,
     int32_t width, int32_t height) {
     test_server *server = wl_resource_get_user_data(resource);
     (void)client;
+    atomic_store(&server->caret_x,x);atomic_store(&server->caret_y,y);
+    atomic_store(&server->caret_width,width);atomic_store(&server->caret_height,height);
+    atomic_fetch_add(&server->caret_updates,1);
     if (x == 12 && y == 34 && width == 2 && height == 18)
         atomic_store(&server->caret_ok, 1);
 }

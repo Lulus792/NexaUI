@@ -2884,6 +2884,22 @@ Publication is opt-in and must be disabled by the owner for sensitive input.
 Real native focus, automatic announcement, installed IMEs, production privacy
 handling and human screenreader acceptance are not demonstrated by this host.
 
+## Controlled terminal IME candidate placement — 5 November 2026
+
+On NexaUI base `d09c971ce6cc3b6fa19d434c4a8d4ff5c5e32fff`, the optional
+[terminal candidate-placement test](../../examples/23_aetheri_terminal_view/README.md#candidate-position-through-the-native-window)
+translates Aetheri composition-caret geometry by the grid's logical window
+origin and forwards it through the existing native IME rectangle API. The
+controlled Wayland v3 server observed the rectangle after draft updates,
+terminal movement, resize and negative-origin rounding. A stale epoch and a
+non-finite origin caused no update. Static/shared and Clang ASan/UBSan tests
+passed, as did the existing v3 regressions; a mutant dropping the window origin
+failed the coordinate check. Render scales 1, 1.5 and 2 were exercised without
+claiming an actual native fractional-scale output.
+
+Installed IME candidate presentation, real Aetheri chrome and focus, physical
+output changes and human visual acceptance remain open.
+
 ## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
 
 On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional

@@ -450,8 +450,9 @@ CJK glyph, so its glyph appeared as a missing-glyph box in the inspected
 image. The later fallback experiment below addresses that specific missing
 glyph; complete Unicode shaping remains open.
 
-This is not an installed-IME or real-Aetheri visual pass. Candidate placement
-still needs connection to the live native window. The original overlay did not
+This is not an installed-IME or real-Aetheri visual pass. At this base candidate
+placement still needed a native-window connection; the later controlled test
+below exercises it. The original overlay did not
 publish preedit text separately; the later accessibility experiment below adds
 a scoped read-only snapshot, not full screenreader acceptance.
 
@@ -514,3 +515,28 @@ hidden-caret case. The example must be built with
 This is a queryable read-only snapshot in a simulated accessibility host. It
 does not establish automatic announcement, real native focus, an installed IME,
 production sensitive-input handling or human screenreader acceptance.
+
+### Candidate position through the native window
+
+On NexaUI base `d09c971ce6cc3b6fa19d434c4a8d4ff5c5e32fff`, the terminal
+example can pass its computed composition caret to the existing
+`nx_window_set_ime_rect` using `terminal_ime_overlay_publish_caret`. The
+application supplies the grid's logical origin within the window and must
+republish after cursor, draft, layout or scale changes. The helper translates
+coordinates without multiplying by device scale and rejects a stale owner
+guard or non-finite origin before making a native call.
+
+With the controlled Wayland v3 fixture enabled, run
+`aetheri_terminal_ime_wayland_test --candidate /path/to/monospace.ttf`. The
+server observed the expected rounded rectangle after preedit, clearing the
+draft, terminal cursor movement and a resize that switches the composition
+to the whole-row viewport. It also checked a negative origin and no update
+for a stale guard or invalid origin. The view was rendered with raster scales
+1, 1.5 and 2, while the native rectangle remained in logical coordinates.
+Static/shared and Clang ASan/UBSan runs passed; the existing v3 tests passed.
+A mutant that omitted the grid origin failed the server's coordinate check.
+
+This uses a deterministic in-process test compositor. It does not verify an
+installed IME's candidate popup, native fractional-output scale transitions,
+real Aetheri window/chrome geometry or human visual acceptance. The owner
+still controls focus and native-window lifetime.

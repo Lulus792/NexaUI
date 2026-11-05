@@ -32,6 +32,14 @@ nx_result terminal_ime_overlay_caret(const terminal_ime_overlay *overlay,
     if(x>=g.columns)x=g.columns-1;
     *caret=(nx_rect){g.x+(float)x*d->cell_width,g.y,d->cell_width,d->cell_height};return NX_OK;
 }
+nx_result terminal_ime_overlay_publish_caret(const terminal_ime_overlay *overlay,
+    const aetheri_terminal_view_desc *desc,nx_window *window,nx_point grid_origin) {
+    if(!window || !isfinite(grid_origin.x) || !isfinite(grid_origin.y))return NX_ERROR_ARGUMENT;
+    nx_rect caret;nx_result r=terminal_ime_overlay_caret(overlay,desc,&caret);if(r!=NX_OK)return r;
+    caret.x+=grid_origin.x;caret.y+=grid_origin.y;
+    if(!isfinite(caret.x) || !isfinite(caret.y))return NX_ERROR_LIMIT;
+    return nx_window_set_ime_rect(window,caret);
+}
 nx_result terminal_ime_overlay_draw(void *user,nx_context *context,const aetheri_terminal_view_desc *d) {
     terminal_ime_overlay *overlay=user;geometry g;
     if(!context)return NX_ERROR_ARGUMENT;

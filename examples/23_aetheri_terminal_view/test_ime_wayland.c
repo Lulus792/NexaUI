@@ -1,9 +1,64 @@
 #include "wayland_v3_fixture.h"
 #include "ime_adapter.h"
+#include "ime_overlay.h"
+#include <math.h>
+
+static int width(uint32_t scalar){(void)scalar;return 1;}
+static unsigned char *read_font(const char *path,size_t *size) {
+    FILE *f=fopen(path,"rb");if(!f)return NULL;if(fseek(f,0,SEEK_END)){fclose(f);return NULL;}
+    long n=ftell(f);if(n<=0 || n>64*1024*1024 || fseek(f,0,SEEK_SET)){fclose(f);return NULL;}
+    unsigned char *p=malloc((size_t)n);if(!p){fclose(f);return NULL;}
+    if(fread(p,1,(size_t)n,f)!=(size_t)n){free(p);fclose(f);return NULL;}fclose(f);*size=(size_t)n;return p;
+}
+static void candidate(nx_window *window,test_server *server,terminal_ime_adapter *ime,
+    terminal_ime_guard guard,const char *font_path) {
+    size_t size=0;unsigned char *bytes=read_font(font_path,&size);CHECK(bytes);
+    nx_font *font=NULL;CHECK(nx_font_open(bytes,size,NULL,&font)==NX_OK);
+    struct ae_terminal *model=malloc(sizeof(*model));CHECK(model);ae_terminal_init(model,24,3,width);
+    ae_terminal_feed(model,"base",4);
+    aetheri_terminal_view_desc d={.model=model,.regular=font,.bold=font,.text_identity=41,
+        .cell_width=10,.cell_height=20,.baseline=15,.pixels_per_em=14};
+    aetheri_terminal_view *view=NULL;CHECK(aetheri_terminal_view_create(&d,&view)==NX_OK);
+    terminal_ime_overlay overlay={.ime=ime,.current=guard};nx_point origin={7.25f,36.5f};
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,origin)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_x)==67 && atomic_load(&server->caret_y)==37 &&
+          atomic_load(&server->caret_width)==10 && atomic_load(&server->caret_height)==20);
+    CHECK(terminal_ime_preedit(ime,guard,NULL,0,0,0)==NX_OK);
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1.5f,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,origin)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_x)==47 && atomic_load(&server->caret_y)==37);
+    CHECK(terminal_ime_preedit(ime,guard,"na\xc3\xaf",4,2,2)==NX_OK);
+    ae_terminal_feed(model,"X",1);
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,2,2,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,origin)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_x)==77 && atomic_load(&server->caret_y)==37);
+    CHECK(ae_terminal_resize(model,10,2));
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,3,2,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,origin)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_x)==27 && atomic_load(&server->caret_y)==37 &&
+          atomic_load(&server->caret_width)==10 && atomic_load(&server->caret_height)==20);
+    nx_point negative={-1.75f,-2.5f};
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,negative)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_x)==18 && atomic_load(&server->caret_y)==-3);
+    int old_count=atomic_load(&server->caret_updates);overlay.current.epoch++;
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,origin)==NX_ERROR_STATE);
+    overlay.current=guard;
+    CHECK(terminal_ime_overlay_publish_caret(&overlay,&d,window,(nx_point){INFINITY,0})==NX_ERROR_ARGUMENT);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(atomic_load(&server->caret_updates)==old_count);
+    aetheri_terminal_view_destroy(view);free(model);nx_font_close(font);free(bytes);
+}
 
 int main(int argc,char **argv) {
     test_server server={0};char runtime[]="/tmp/nexaui-terminal-ime-XXXXXX";
-    int filtered=argc==2 && !strcmp(argv[1],"--filtered");CHECK(argc==1 || filtered);
+    int filtered=argc==2 && !strcmp(argv[1],"--filtered");
+    int with_candidate=argc==3 && !strcmp(argv[1],"--candidate");CHECK(argc==1 || filtered || with_candidate);
     atomic_store(&server.commit_control_test,filtered);
     CHECK(mkdtemp(runtime));CHECK(setenv("XDG_RUNTIME_DIR",runtime,1)==0);
     CHECK(setenv("NEXAUI_PLATFORM","wayland",1)==0);
@@ -51,6 +106,7 @@ int main(int argc,char **argv) {
     CHECK(terminal_ime_native_preedit(&ime,guard,window,&old_preedit)==NX_OK);
     CHECK(ime.composition.size==4 && ime.composition.count==3 &&
           ime.composition.cursor==2 && ime.composition.anchor==2);
+    if(with_candidate)candidate(window,&server,&ime,guard,argv[2]);
     CHECK(nx_window_set_ime_surrounding_text(window,41,8,"",0,0,0)==NX_OK);
     length=123;begin=end=123;
     CHECK(nx_window_get_ime_preedit_for(window,41,7,draft,sizeof(draft),&length,&begin,&end)==NX_ERROR_STATE &&
@@ -75,6 +131,7 @@ int main(int argc,char **argv) {
     wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);
     wl_display_destroy_clients(server.display);wl_display_destroy(server.display);
     CHECK(unlink(socket_path)==0 || access(socket_path,F_OK)!=0);CHECK(rmdir(runtime)==0);
-    puts("Controlled Wayland preedit and whole commit reached original Aetheri models");
+    puts(with_candidate?"Controlled Wayland candidate geometry and preedit passed":
+         "Controlled Wayland preedit and whole commit reached original Aetheri models");
     return 0;
 }
