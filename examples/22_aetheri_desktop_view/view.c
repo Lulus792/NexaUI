@@ -56,6 +56,11 @@ nx_result aetheri_desktop_view_host_ime_caret(aetheri_desktop_view *v,nx_rect *o
     if(!v){if(out_rect)*out_rect=(nx_rect){0};return NX_ERROR_ARGUMENT;}
     return nx_text_field_host_ime_caret(v->context,20,v->query,out_rect);
 }
+nx_result aetheri_desktop_view_surface_focus(aetheri_desktop_view *v,int focused) {
+    if(!v || (focused!=0 && focused!=1))return NX_ERROR_ARGUMENT;
+    nx_event event={0};event.type=NX_EVENT_FOCUS;event.focused=focused;
+    return nx_context_queue_event(v->context,&event);
+}
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *v,const nx_event *event) {
     if(!v || !event)return NX_ERROR_ARGUMENT;
     nx_event mapped=*event;

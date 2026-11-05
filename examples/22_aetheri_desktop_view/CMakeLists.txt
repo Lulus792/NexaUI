@@ -65,6 +65,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 target_include_directories(aetheri_desktop_layer_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
                 target_link_libraries(aetheri_desktop_layer_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
                 set_target_properties(aetheri_desktop_layer_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+                add_executable(aetheri_desktop_layer_focus_test test_layer_focus.c
+                    "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-unstable-v1.c"
+                    "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1-client.h"
+                    "${CMAKE_CURRENT_BINARY_DIR}/aetheri-development-desktop-v1.c")
+                target_include_directories(aetheri_desktop_layer_focus_test PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+                target_link_libraries(aetheri_desktop_layer_focus_test PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol PkgConfig::XKBCOMMON)
+                set_target_properties(aetheri_desktop_layer_focus_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
             endif()
         endif()
     endif()

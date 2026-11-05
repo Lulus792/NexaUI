@@ -26,6 +26,8 @@ nx_result aetheri_desktop_view_host_ime_revision(aetheri_desktop_view *view,uint
 nx_result aetheri_desktop_view_host_ime_preedit(aetheri_desktop_view *view,uint64_t revision,
     const char *text,size_t length,int32_t begin,int32_t end);
 nx_result aetheri_desktop_view_host_ime_caret(aetheri_desktop_view *view,nx_rect *out_rect);
+/* Queue real surface keyboard focus changes before processing input. */
+nx_result aetheri_desktop_view_surface_focus(aetheri_desktop_view *view,int focused);
 /* Queue host-translated events here. Tab/Shift-Tab in the search field map to
    next/previous result; native-consumed and modified keys pass through. */
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *view,const nx_event *event);

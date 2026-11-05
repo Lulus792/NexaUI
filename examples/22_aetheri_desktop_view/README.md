@@ -28,6 +28,12 @@ report the drawn caret. Its synthetic test exercises preedit and one committed
 scalar. It does not connect a native input method: protocol state, serials,
 candidate placement and cancellation remain the host's responsibility. The
 ordinary preview continues to use its window IME.
+The private layer test host forwards native keyboard enter, leave and keyboard
+removal to the view's surface-focus queue. Its callback-level focus test can be
+run as `./build/aetheri_desktop_layer_focus_test /path/to/font.ttf` when the
+layer-shell and Aetheri test protocol headers are available. It invokes host
+callbacks without a compositor: the real host still has no text-input-v3
+binding and the test is not native IME or device-removal acceptance.
 Search edits return bounded whole-query proposals; the host applies or rejects
 them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text
@@ -383,3 +389,13 @@ positive and negative logs are in
 `8e7eaed9cc59281cdc8a09e8be64fa915991da3519faef122581a3cd63ed27b5`.
 This supersedes the earlier fixture's lack of observed-window activation, not
 the remaining production, IME, AT-SPI, held-pointer or human/physical gates.
+
+The focus-forwarding candidate based on
+`b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
+0.1.13 static SDK on Alpine/WSL2. Its callback test and the desktop view test
+passed with GCC and with Clang ASan/UBSan and leak detection. The callback test
+checks enter, an unrelated leave, actual leave and re-entry; an old tagged
+commit is rejected and a fresh commit changes the Aetheri model. A separate
+test-only source copy with focus-loss forwarding removed failed the expected
+loss assertion. This does not exercise a real Wayland keyboard, device
+removal, compositor, native preedit or the held-pointer removal issue.

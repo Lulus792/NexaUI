@@ -159,7 +159,10 @@ static void launcher_reply(struct app *a) {
 }
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
-    if(!v->view) CHECK(aetheri_desktop_view_create(&v->model,a->font,a->font_size,&v->view));
+    if(!v->view) {
+        CHECK(aetheri_desktop_view_create(&v->model,a->font,a->font_size,&v->view));
+        if(a->focused==v) CHECK(aetheri_desktop_view_surface_focus(v->view,1)==NX_OK);
+    }
     if(!v->presenter) CHECK(nx_wayland_shm_host_create(a->display,a->shm,v->surface,NULL,&v->presenter)==NX_OK);
     const nx_command *commands=NULL; size_t count=0;
     nx_wayland_shm_outcome outcome;
@@ -280,13 +283,24 @@ static void enter(void *data, struct wl_keyboard *keyboard, uint32_t serial, str
     (void)keyboard; (void)serial; (void)keys; struct app *a = data;
     for (unsigned i = 0; i < 3; ++i) if (a->views[i].surface == surface) {
         a->focused=&a->views[i];
-        if(a->focused->expanded && a->focused->view) CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
+        if(a->focused->view) {
+            CHECK(aetheri_desktop_view_surface_focus(a->focused->view,1)==NX_OK);
+            if(a->focused->expanded) CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
+            if(a->focused->configured)advance(a->focused);
+        }
         printf("ENTER %u\n", i);
     }
 }
 static void leave(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface) {
     struct app *a=data;(void)keyboard;(void)serial;
-    if(a->focused && a->focused->surface==surface)a->focused=NULL;
+    if(a->focused && a->focused->surface==surface) {
+        struct view *v=a->focused;
+        if(v->view) {
+            CHECK(aetheri_desktop_view_surface_focus(v->view,0)==NX_OK);
+            if(v->configured)advance(v);
+        }
+        a->focused=NULL;
+    }
     puts("LEAVE");
 }
 static nx_key logical_key(xkb_keysym_t sym) {
@@ -406,6 +420,10 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
         CHECK(wl_keyboard_add_listener(a->keyboard, &keyboard_listener, a) == 0);
     }
     if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && a->keyboard) {
+        if(a->focused && a->focused->view) {
+            CHECK(aetheri_desktop_view_surface_focus(a->focused->view,0)==NX_OK);
+            if(a->focused->configured)advance(a->focused);
+        }
         wl_keyboard_release(a->keyboard);a->keyboard=NULL;a->focused=NULL;puts("KEYBOARD REMOVED");
     }
     if((caps & WL_SEAT_CAPABILITY_POINTER) && !a->pointer) {
