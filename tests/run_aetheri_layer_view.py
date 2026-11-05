@@ -14,6 +14,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("server", "desktop", "font", "work-dir"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--test-held-removal", action="store_true",
+                        help="expose the currently unresolved pressed-device removal case")
     args = parser.parse_args()
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
     root = args.work_dir.resolve()
@@ -109,11 +111,13 @@ def main():
             raise RuntimeError("search field pixels missing")
         wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
         controller.settimeout(5)
+        def event(value):
+            controller.sendall(value.encode("ascii"))
+            if controller.recv(32) != b"OK":
+                raise RuntimeError("input rejected")
         def key(code):
             for down in (1, 0):
-                controller.sendall(f"K {code} {down}".encode("ascii"))
-                if controller.recv(32) != b"OK":
-                    raise RuntimeError("input rejected")
+                event(f"K {code} {down}")
         for code in (20, 18, 19, 50, 23, 49, 30, 38):
             key(code)
         wait(lambda: "QUERY 0 terminal\n" in log("desktop"), "typed search")
@@ -123,6 +127,34 @@ def main():
         wait(lambda: log("desktop").count("QUERY 0 terminal\n") >= 2, "corrected search")
         key(28)
         wait(lambda: "INTENT 0 2 2 0\n" in log("desktop"), "terminal launch intent")
+        event("M 60 90")
+        event("B 272 1")
+        event("B 272 0")
+        wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 2, "terminal pointer intent")
+        event("M 10 200")
+        event("B 272 1")
+        event("M 60 90")
+        event("B 272 0")
+        command(client, "p")
+        wait(lambda: "SYNC p\n" in log("desktop"), "outside press processed")
+        if log("desktop").count("INTENT 0 2 2 0\n") != 2:
+            raise RuntimeError("outside press unexpectedly activated a result")
+        if args.test_held_removal:
+            event("M 60 90")
+            event("B 272 1")
+        event("D")
+        wait(lambda: "POINTER REMOVED\n" in log("desktop") and "KEYBOARD REMOVED\n" in log("desktop"),
+             "input devices removed")
+        event("A")
+        wait(lambda: log("desktop").count("ENTER 0\n") >= 2, "search focus after device replacement")
+        event("M 60 90")
+        command(client, "p")
+        wait(lambda: log("desktop").count("SYNC p\n") >= 2, "replacement pointer processed")
+        if log("desktop").count("INTENT 0 2 2 0\n") != 2:
+            raise RuntimeError("device replacement unexpectedly activated a result")
+        event("B 272 1")
+        event("B 272 0")
+        wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 3, "replacement pointer click")
         command(client, "n")
         wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapsed dock")
         command(client, "q")
