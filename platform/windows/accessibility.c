@@ -33,6 +33,7 @@ typedef struct nx_uia_node {
     uint32_t selected_last, selected_count, selection_next;
     nx_semantic_role role;
     uint32_t state, actions;
+    int intrinsic_disabled;
     nx_text_value_target text_value;
     nx_selection_target selection_target;
     uint64_t selection_membership;
@@ -840,6 +841,7 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
         nx_semantic_view v; if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK) return NX_ERROR_STATE;
         nx_uia_node *n=&s->nodes[i]; memset(n,0,sizeof(*n));
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+        n->intrinsic_disabled=nx_context_semantic_intrinsically_disabled(context,v.id);
         n->text_value=nx_context_text_value_target(context,v.id);
         n->selection_target=nx_context_selection_target(context,v.id);
         n->selection_membership=nx_context_selection_membership(context,v.id);
@@ -850,7 +852,9 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
         if (n->parent!=NX_UIA_NONE) {
             nx_uia_node *parent=&s->nodes[n->parent];
             n->selection_owner=(parent->state&NX_UIA_SELECTION_FLAGS) ? n->parent : parent->selection_owner;
-            n->state |= parent->state&(NX_SEM_DISABLED|NX_SEM_OFFSCREEN);
+            n->intrinsic_disabled|=parent->intrinsic_disabled;
+            if(n->intrinsic_disabled)n->state|=NX_SEM_DISABLED;
+            n->state |= parent->state&NX_SEM_OFFSCREEN;
         }
         if (can_select(s,n)) {
             nx_uia_node *owner=&s->nodes[n->selection_owner];

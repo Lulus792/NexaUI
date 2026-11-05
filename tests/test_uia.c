@@ -28,6 +28,8 @@ typedef struct scene {
     uint64_t required_choice, optional_choice, radio_choice, other_choice;
     int selection_moved;
     int design_mode;
+    int overlay_stage;
+    unsigned nested_clicks;
     design_a_scene design;
 } scene;
 static nx_control_desc control(uint64_t id,uint64_t parent,const char *name,nx_rect bounds) {
@@ -104,6 +106,30 @@ static int frame(scene *s) {
     for (uint64_t id=100;id<=164;++id) {
         d=control(id,1,"Queued",(nx_rect){120,60,100,30});
         CHECK(nx_button(s->ctx,&d,&state)==NX_OK); s->fill_clicks+=state.clicked;
+    }
+    nx_semantic_desc disabled_group={0};disabled_group.id=2030;disabled_group.parent_id=1;
+    disabled_group.role=NX_ROLE_GROUP;disabled_group.name=(nx_utf8_span){"Disabled group",14};
+    disabled_group.bounds=(nx_rect){10,260,120,30};disabled_group.state=NX_SEM_DISABLED;
+    CHECK(nx_semantics_add(s->ctx,&disabled_group,NULL)==NX_OK);
+    d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
+    CHECK(nx_button(s->ctx,&d,&state)==NX_OK);
+    if(s->overlay_stage) {
+        nx_overlay_desc outer={0};outer.panel.id=2000;outer.panel.parent_id=1;
+        outer.panel.bounds=(nx_rect){200,200,300,200};outer.panel.name=(nx_utf8_span){"Dialog",6};
+        outer.backdrop_id=2001;int dismissed=0;
+        CHECK(nx_modal_begin(s->ctx,&outer,&dismissed)==NX_OK && !dismissed);
+        d=control(2002,2000,"Dialog trigger",(nx_rect){220,220,120,30});
+        CHECK(nx_button(s->ctx,&d,&state)==NX_OK);
+        if(s->overlay_stage==2) {
+            nx_overlay_desc inner={0};inner.panel.id=2010;inner.panel.parent_id=2002;
+            inner.panel.bounds=(nx_rect){250,260,180,90};inner.panel.name=(nx_utf8_span){"Menu",4};
+            inner.backdrop_id=2011;
+            CHECK(nx_popup_begin(s->ctx,&inner,&dismissed)==NX_OK && !dismissed);
+            d=control(2012,2010,"Nested action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ctx,&d,&state)==NX_OK);s->nested_clicks+=(unsigned)state.clicked;
+            CHECK(nx_overlay_end(s->ctx)==NX_OK);
+        }
+        CHECK(nx_overlay_end(s->ctx)==NX_OK);
     }
     CHECK(nx_end_frame(s->ctx)==NX_OK); return 0;
 }
@@ -230,6 +256,13 @@ static int run(const WCHAR *client,int design_only) {
                 s.selection_moved=request!=UIA_TEST_RESTORE_SELECTION; s.other_choice=0;
                 CHECK(frame(&s)==0);
                 if (request!=UIA_TEST_MOVE_UNPUBLISHED) CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+            } else if (request>=UIA_TEST_NESTED_OPEN && request<=UIA_TEST_NESTED_CLOSE_ALL) {
+                if(request==UIA_TEST_NESTED_OPEN)s.overlay_stage=2;
+                if(request==UIA_TEST_NESTED_CLOSE_CHILD) {CHECK(nx_overlay_close(s.ctx)==NX_OK);s.overlay_stage=1;}
+                if(request==UIA_TEST_NESTED_CLOSE_ALL) {CHECK(nx_overlay_close(s.ctx)==NX_OK);s.overlay_stage=0;}
+                size_t actions=0;CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
+                CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                reply=request==UIA_TEST_NESTED_APPLY?s.nested_clicks:(unsigned)nx_focus_id(s.ctx);
             } else if (request==UIA_TEST_ROUTE_SELECTION) {
                 size_t actions=0; CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
                 CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK); reply=(unsigned)actions;

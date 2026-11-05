@@ -334,6 +334,17 @@ static int run(HWND hwnd) {
     CONTROLTYPEID type=0; OK(IUIAutomationElement_get_CurrentControlType(button,&type)); CHECK(type==UIA_ButtonControlTypeId);
     BOOL value=FALSE; OK(IUIAutomationElement_get_CurrentIsEnabled(disabled,&value)); CHECK(!value);
     CHECK(invoke(disabled,0));
+    IUIAutomationElement *disabled_child=find(uia,root,2031);CHECK(disabled_child);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(disabled_child,&value));CHECK(!value && invoke(disabled_child,0));
+    unsigned nested_reply=0;CHECK(!host(UIA_TEST_NESTED_OPEN,&nested_reply) && nested_reply==2012);
+    IUIAutomationElement *trigger=find(uia,root,2002),*nested=find(uia,root,2012);CHECK(trigger && nested);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(trigger,&value));CHECK(!value && invoke(trigger,0));
+    OK(IUIAutomationElement_get_CurrentIsEnabled(nested,&value));CHECK(value && invoke(nested,1));
+    CHECK(!host(UIA_TEST_NESTED_APPLY,&nested_reply) && nested_reply==1);
+    CHECK(!host(UIA_TEST_NESTED_CLOSE_CHILD,&nested_reply) && nested_reply==2002);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(trigger,&value));CHECK(value);
+    CHECK(!host(UIA_TEST_NESTED_CLOSE_ALL,&nested_reply));
+    IUIAutomationElement_Release(nested);IUIAutomationElement_Release(trigger);IUIAutomationElement_Release(disabled_child);
     OK(IUIAutomationElement_get_CurrentIsPassword(secret,&value)); CHECK(value);
     VARIANT property; VariantInit(&property);
     HRESULT protected_hr=IUIAutomationElement_GetCurrentPropertyValueEx(secret,UIA_ValueValuePropertyId,TRUE,&property);
