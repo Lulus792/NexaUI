@@ -1,5 +1,38 @@
 # Aetheri adoption: initial source assessment
 
+## Multi-window wait failure and lifetime probes (2026-11-05)
+
+Source `0265f37e1287edb9e4100866edb5e26c53ba991a` adds controlled tests for
+the Wayland group wait. Test-build-only hooks inject a pending-read retry and a
+preparation error after the first display's real read reservation, and a poll
+error after all displays have been prepared. After each case, a real Wayland
+sync reply verifies that both displays remain usable. A software-buffer release
+invokes a caller allocator during group dispatch: nested group polling must be
+rejected, and a second variant destroys the other window and changes the
+caller's window array. The outer call reports the retired window and the
+survivor remains usable; the tracked allocator returns to zero live blocks.
+
+A separate pair of controlled Wayland servers stalls a clipboard transfer on
+the *second* group member; its 200 ms deadline wakes the group despite a 2 s
+requested wait. Four cases passed three consecutive GCC runs and one ASan/UBSan
+run (`/tmp/nexaui-many-proof-final/result.json`,
+`/tmp/nexaui-many-proof-asan/result.json`); the same four passed with a shared
+SDK (`/tmp/nexaui-many-fault-shared-run/result.json`). Five neighboring native
+wait, AT-SPI and clipboard cases passed (`/tmp/nexaui-many-fault-neighbors/result.json`);
+the dual-backend build passed the transfer and X11-unsupported checks. A
+tests-disabled shared build did not export the test fault hooks.
+
+In isolated negative copies, removing read cancellation timed out for each
+of the three injected paths after a forced real sync, ignoring the second
+window's deadline failed the bounded-time check, and using the caller's mutated
+array instead of the retained snapshot caused a segmentation fault. An earlier
+version of the cancellation test did not detect the second fault without the
+forced sync; that weak result is not counted. The first shared-build run used
+an already existing output directory and was rerun in a fresh one. These are
+selected fault-injection and private-compositor checks, not exhaustive
+reentrancy, all clipboard/drop interleavings, physical input or Aetheri
+acceptance.
+
 ## Wayland multi-window wait (2026-11-05)
 
 Source `c254f0a0bbf826dfdbc94412311d7bb1e1586ffb` adds Linux
