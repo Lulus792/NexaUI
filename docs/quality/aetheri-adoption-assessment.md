@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Original-model Settings at 128x150 (2026-11-05)
+
+The consumer candidate based on `e71ee304f1e6c23fa562d9e4b11f7e8e12152079`
+uses a fully scrollable small layout below 320x240. Radio marks and display
+buttons have separate wrapped labels; Page Up/Down can reveal labels taller
+than the viewport. When an unbreakable word exceeds the available width, the
+example inserts visible line breaks at existing grapheme boundaries, retaining
+the original bytes in the semantic name. The minimum rendered size is now
+128x150; smaller windows still do not receive a new frame. A selected mark's
+click target is its row, not the separately drawn text below it.
+
+Controlled scene tests cover German at 200% through 128/160/240/319x150,
+keyboard focus visibility, paging, semantic selection of a display, and an
+unbroken display name containing 40 combining-character graphemes whose
+accessible name retains the original bytes. Static, shared and Clang
+ASan/UBSan consumers each passed with DejaVu Sans, Serif and Sans Mono (nine
+runs). Private Sway virtual-keyboard and independent AT-SPI resize workflows
+passed at 128x150 for each of those three builds (six runs). The pre-change
+`e71ee304f1e6c23fa562d9e4b11f7e8e12152079` host with the same installed SDK
+timed out waiting for its 128x150 frame. A 128x150 high-contrast headless
+image was inspected; it showed partial long text before the emergency wrap
+and the split label afterwards. Human readability, other fonts/IME/layouts,
+physical input, the cost of many long labels, and Aetheri adoption remain open.
+
 ## Virtual keyboard across a native Settings resize (2026-11-05)
 
 On the consumer based on `7ab4c7fc4fb83801a38e67e1adade1695766d847`, a

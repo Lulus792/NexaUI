@@ -23,11 +23,15 @@ def main():
     parser.add_argument('--atspi-client', type=Path)
     parser.add_argument('--atspi-registry', type=Path)
     parser.add_argument('--wtype', type=Path, help='Exercise a private virtual keyboard')
+    parser.add_argument('--small-width', type=int, default=320)
+    parser.add_argument('--small-height', type=int, default=240)
     args = parser.parse_args()
     if bool(args.atspi_client) != bool(args.atspi_registry):
         parser.error('--atspi-client and --atspi-registry must be supplied together')
     if args.wtype and args.atspi_client:
         parser.error('--wtype and --atspi-client are separate test modes')
+    if not (128 <= args.small_width <= 320 and 150 <= args.small_height <= 240):
+        parser.error('small size must be between 128x150 and 320x240')
     wtype = args.wtype.resolve(strict=True) if args.wtype else None
     sway, swaymsg, host, font = (p.resolve(strict=True) for p in
                                  (args.sway, args.swaymsg, args.host, args.font))
@@ -71,6 +75,7 @@ def main():
             if args.atspi_client:
                 env.update(NEXAUI_SETTINGS_FONT=str(font), NEXAUI_MODEL_DISPLAY_FIXTURE='1',
                            NEXAUI_MODEL_RESIZE_READY=str(work/'client-ready'),
+                           NEXAUI_MODEL_RESIZE_SIZE=f'{args.small_width}x{args.small_height}',
                            NEXAUI_MODEL_RESIZE_SMALL=str(work/'resize-small'),
                            NEXAUI_MODEL_RESIZE_CHANGED=str(work/'client-changed'),
                            NEXAUI_MODEL_RESIZE_LARGE=str(work/'resize-large'))
@@ -120,7 +125,7 @@ def main():
                 raise RuntimeError(f'Sway rejected floating mode: {result}')
             wait(lambda: window() and window().get('floating') == 'user_on', 'floating window')
             wait(lambda: ready(800, 480, before, model), 'initial floating frame')
-            for width, height in ((320, 240), (800, 480)):
+            for width, height in ((args.small_width, args.small_height), (800, 480)):
                 before = len(lines())
                 result = command(f'{target} resize set width {width} px height {height} px')
                 if not result or not all(item.get('success') for item in result):
@@ -131,13 +136,13 @@ def main():
                 current = window()
                 if not current or current['rect']['width'] != width or current['rect']['height'] != height:
                     raise RuntimeError(f'Unexpected Sway geometry: {current}')
-                if args.atspi_client and width==320:
+                if args.atspi_client and width==args.small_width:
                     (work/'resize-small').write_text('ready\n',encoding='ascii')
                     wait(lambda: (work/'client-changed').exists(), 'AT-SPI action at small size')
                     model='MODEL theme=2 german=1 text=150'
                 elif args.atspi_client:
                     (work/'resize-large').write_text('ready\n',encoding='ascii')
-                elif wtype and width==320:
+                elif wtype and width==args.small_width:
                     for focus in (10, 11):
                         before_key = len(lines())
                         subprocess.run([str(wtype), '-s', '100', '-k', 'Tab'], env=env, check=True, timeout=5)
@@ -145,7 +150,7 @@ def main():
                     before_key = len(lines())
                     subprocess.run([str(wtype), '-s', '100', '-k', 'space'], env=env, check=True, timeout=5)
                     model='MODEL theme=1 german=0 text=100'
-                    wait(lambda: ready(320, 240, before_key, model), 'keyboard model change at 320x240')
+                    wait(lambda: ready(width, height, before_key, model), 'keyboard model change at small size')
                 elif wtype:
                     if 'FOCUS 11' not in lines()[before:]:
                         raise RuntimeError('Focus was not retained through resize')
@@ -163,11 +168,11 @@ def main():
                 raise RuntimeError('Settings did not close cleanly')
             app = None
             if args.atspi_client:
-                print('Private Sway: AT-SPI changed Settings at 320x240, verified the restored size and closed.')
+                print(f'Private Sway: AT-SPI changed Settings at {args.small_width}x{args.small_height}, verified the restored size and closed.')
             elif wtype:
                 print('Private Sway: virtual keyboard changed Settings before and after resize, retained focus and closed.')
             else:
-                print('Private Sway: Settings rendered at 320x240 and 800x480, retained model and closed.')
+                print(f'Private Sway: Settings rendered at {args.small_width}x{args.small_height} and 800x480, retained model and closed.')
             return 0
         finally:
             if app and app.poll() is None:

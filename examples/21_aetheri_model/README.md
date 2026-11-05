@@ -23,7 +23,7 @@ build-aetheri-model/aetheri_model_view /path/to/font.ttf
 ```
 
 The process requires a working Wayland session and a TrueType font. The
-software renderer supports logical window sizes down to 320 by 240. Below that
+software renderer supports logical window sizes down to 128 by 150. Below that
 size this example does not render a new frame; it needs a smaller-layout design.
 Native
 accessibility requires a NexaUI build with AT-SPI and an available service;
@@ -50,7 +50,10 @@ of physical monitors or display control.
 Its measured control wrapping and focus-following scroll area retain the chosen
 text size, but need broader font, viewport and human accessibility review. The
 layout remains provisional. At narrow widths its title scrolls with the content;
-controlled keyboard tests cover German at 200% and 320–480 pixels wide. A
+below 320x240 radio marks and display buttons have a separate text line, and
+Page Up/Down scrolls through labels longer than the viewport. The visible
+labels may break at grapheme boundaries while accessible names remain intact.
+Controlled keyboard tests cover German at 200% down to 128x150. A
 private headless Sway test drives a native 320x240 resize and restores 800x480.
 With `--atspi-client` and `--atspi-registry`, an independent client changes
 the model before and during that resize and checks the semantic window sizes.

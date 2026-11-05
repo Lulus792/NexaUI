@@ -124,8 +124,12 @@ int main(int argc, char **argv) {
     CHECK(checked(contrast) && checked(german) && checked(size));
     AtspiAccessible *medium=NULL,*root=NULL;
     if(getenv("NEXAUI_MODEL_RESIZE_READY")) {
+        int small_width=0,small_height=0; char tail=0;
+        const char *geometry=getenv("NEXAUI_MODEL_RESIZE_SIZE");
+        CHECK(geometry && sscanf(geometry,"%dx%d%c",&small_width,&small_height,&tail)==2 &&
+              small_width>=128 && small_width<=320 && small_height>=150 && small_height<=240);
         CHECK(signal_file("NEXAUI_MODEL_RESIZE_READY") && await_file("NEXAUI_MODEL_RESIZE_SMALL"));
-        root=find(app,"Aetheri Einstellungen",0); CHECK(root && await_size(root,320,240));
+        root=find(app,"Aetheri Einstellungen",0); CHECK(root && await_size(root,small_width,small_height));
         CHECK(checked(contrast) && checked(german) && checked(size));
         medium=find(app,"150%",0); CHECK(medium && activate(medium) && await_checked(medium));
         CHECK(!checked(size));

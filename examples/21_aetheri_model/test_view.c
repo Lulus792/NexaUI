@@ -85,6 +85,29 @@ int main(int argc,char **argv) {
                 CHECK(press(ui,NX_KEY_TAB) && aetheri_view_frame(view,width,240,&changed));
         }
     }
+    const float small_widths[]={128,160,240,319};
+    for(size_t w=0;w<sizeof(small_widths)/sizeof(small_widths[0]);++w) {
+        float width=small_widths[w];
+        CHECK(aetheri_view_frame(view,width,150,&changed));
+        CHECK(nx_focus_set(ui,10)==NX_OK && aetheri_view_frame(view,width,150,&changed));
+        for(size_t i=0;i<sizeof(order)/sizeof(order[0]);++i) {
+            CHECK(nx_focus_id(ui)==order[i]);
+            CHECK(visible(ui,order[i],width,150) && inside_scroll(ui,order[i]));
+            if(i+1<sizeof(order)/sizeof(order[0]))
+                CHECK(press(ui,NX_KEY_TAB) && aetheri_view_frame(view,width,150,&changed));
+        }
+    }
+    CHECK(aetheri_view_frame(view,128,150,&changed) && nx_focus_set(ui,12)==NX_OK &&
+          aetheri_view_frame(view,128,150,&changed));
+    uint32_t page_index; nx_semantic_view page_item;
+    CHECK(nx_semantics_find(ui,12,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK);
+    float page_start=page_item.bounds.y;
+    CHECK(press(ui,NX_KEY_PAGE_DOWN) && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,12,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK &&
+          page_item.bounds.y<page_start);
+    CHECK(press(ui,NX_KEY_PAGE_UP) && aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_semantics_find(ui,12,&page_index)==NX_OK && nx_semantics_get(ui,page_index,&page_item)==NX_OK &&
+          page_item.bounds.y==page_start);
     CHECK(aetheri_view_frame(view,480,380,&changed));
     /* At 200% the longest option retains its 28px layout, rather than being
        squeezed into a third of the window. */
@@ -102,6 +125,12 @@ int main(int argc,char **argv) {
         {.id=42,.name="Monitor A",.width=1920,.height=1080,.scale=1,.refresh=60,.mode_known=1},
         {.id=91,.name="Monitor B",.scale=1,.refresh=0,.mode_known=0}};
     CHECK(ae_settings_snapshot(&model,observations,2));
+    CHECK(aetheri_view_frame(view,128,150,&changed));
+    CHECK(nx_focus_set(ui,UINT64_C(0x100000000)+91)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(visible(ui,UINT64_C(0x100000000)+91,128,150) && inside_scroll(ui,UINT64_C(0x100000000)+91));
+    CHECK(nx_semantics_request_action(ui,UINT64_C(0x100000000)+91,NX_ACTION_PRESS)==NX_OK &&
+          aetheri_view_frame(view,128,150,&changed) && changed && model.displays[model.selected].id==91);
+    CHECK(ae_settings_select(&model,42));
     CHECK(aetheri_view_frame(view,800,800,&changed));
     CHECK(named(ui,7,"Beobachtete Anzeigen",0));
     CHECK(named(ui,UINT64_C(0x100000000)+42,"Monitor A (1920 x 1080) (ausgew\xc3\xa4hlt)",0));
@@ -121,6 +150,16 @@ int main(int argc,char **argv) {
     CHECK(model.displays[model.selected].id==91);
     CHECK(ae_settings_snapshot(&model,NULL,0) && aetheri_view_frame(view,800,800,&changed));
     CHECK(named(ui,7,"Keine Anzeigen beobachtet",0));
+    /* A long combining-character name remains byte-identical in semantics
+       while the visible layout inserts emergency grapheme-safe line breaks. */
+    struct ae_settings_display long_display={.id=91,.scale=1};
+    for(size_t i=0;i<40;++i) memcpy(long_display.name+i*3,"e\xcc\x81",3);
+    char expected_name[192];
+    CHECK(snprintf(expected_name,sizeof(expected_name),"%s (ausgew\xc3\xa4hlt)",long_display.name)>0);
+    CHECK(ae_settings_snapshot(&model,&long_display,1) && aetheri_view_frame(view,128,150,&changed));
+    CHECK(named(ui,UINT64_C(0x100000000)+91,expected_name,0));
+    CHECK(nx_focus_set(ui,UINT64_C(0x100000000)+91)==NX_OK && aetheri_view_frame(view,128,150,&changed));
+    CHECK(visible(ui,UINT64_C(0x100000000)+91,128,150) && inside_scroll(ui,UINT64_C(0x100000000)+91));
     aetheri_view_destroy(view); free(font);
     puts("Original Aetheri model retains theme, language and scale across NexaUI view replacement"); return 0;
 fail:

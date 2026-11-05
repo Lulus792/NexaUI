@@ -9,6 +9,11 @@ which changes and verifies the German high-contrast model at 200%/150%.
 At 100% text a private Sway virtual keyboard also changed settings at 320x240,
 retained focus through restore and closed with Escape. Other keyboard layouts,
 physical input, smaller windows, other fonts/locales and human acceptance remain open.
+On base `e71ee304f1e6c23fa562d9e4b11f7e8e12152079`, the small layout extends
+to 128x150 with grapheme-boundary emergency wrapping and scrollable controls.
+Independent AT-SPI and virtual keyboard resize checks passed at that size on
+private Sway. Still smaller sizes, long-content performance, full pointer-label
+interaction, real IMEs and human review remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's
