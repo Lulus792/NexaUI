@@ -45,6 +45,9 @@ def main():
         if len(windows) != 1:
             raise RuntimeError(f'expected one Weston window, found {windows}')
         subprocess.run([xdotool, 'windowfocus', windows[0]], check=True, timeout=5)
+        subprocess.run([xdotool, 'key', '--delay', '60', 'ctrl+shift+Tab', 'Return'], check=True, timeout=5)
+        wait('INTENT kind=2 app=3 window=0')
+        subprocess.run([xdotool, 'key', '--delay', '60', 'ctrl+Tab'], check=True, timeout=5)
         subprocess.run([xdotool, 'type', '--clearmodifiers', '--delay', '30', 'Terminal'], check=True, timeout=8)
         wait('QUERY Terminal')
         subprocess.run([xdotool, 'key', 'Return'], check=True, timeout=5)

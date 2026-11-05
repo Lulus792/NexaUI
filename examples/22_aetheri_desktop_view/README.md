@@ -95,6 +95,15 @@ private-role shell adapter. Native input-method and human assistive-technology
 acceptance remain open. The core view test uses synthetic context events and
 semantic requests; neither test establishes physical or human acceptance.
 
+In the preview and layer test host, Ctrl-Shift-Tab moves focus from Search to
+the preceding dock control (Files when enabled); Ctrl-Tab moves forward back
+to Search. Enter on the focused Files button requests Files. Plain Tab and
+Shift-Tab retain the existing search-result navigation. On base
+`30e05549b17329d2d8007e57069026cc938fbecb`, the scene and layer keyboard
+callback checks and a private Weston virtual-keyboard preview passed with GCC
+static/shared and Clang ASan/UBSan. This does not establish the shortcut in
+the actual Aetheri private shell, a physical keyboard or a human screenreader.
+
 On base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, search results expose a
 single-selection owner and native selection actions. Selecting a result emits
 `AETHERI_DESKTOP_SELECT`; it does not launch or activate it. The semantic

@@ -33,7 +33,8 @@ nx_result aetheri_desktop_view_host_ime_surrounding(aetheri_desktop_view *view,u
 /* Queue real surface keyboard focus changes before processing input. */
 nx_result aetheri_desktop_view_surface_focus(aetheri_desktop_view *view,int focused);
 /* Queue host-translated events here. Tab/Shift-Tab in the search field map to
-   next/previous result; native-consumed and modified keys pass through. */
+   next/previous result; native-consumed and modified keys pass through.
+   Ctrl-Tab/Ctrl-Shift-Tab traverse focus between search and dock controls. */
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *view,const nx_event *event);
 /* revision must increase whenever the caller mutates the model, even if an ID
    or value is later reused. Events from an older revision are discarded. */

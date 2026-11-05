@@ -50,6 +50,18 @@ int main(int argc,char **argv) {
     CHECK(ae_desktop_model_window(&model,42,"Editor","org.example.Editor",false));++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     CHECK(nx_focus_set(ctx,20)==NX_OK);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_TAB;key.modifiers=NX_MOD_CONTROL|NX_MOD_SHIFT;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE && nx_focus_id(ctx)==13);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_ENTER;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_FILES);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_TAB;key.modifiers=NX_MOD_CONTROL;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;
+    CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE && nx_focus_id(ctx)==20);
     key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN_CONSUMED;key.key=NX_KEY_TAB;
     CHECK(aetheri_desktop_view_queue_event(view,&key)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE && nx_focus_id(ctx)==20);

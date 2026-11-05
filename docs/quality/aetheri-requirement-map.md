@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/I01/A02: on base `30e05549b17329d2d8007e57069026cc938fbecb`, the
+desktop preview and layer keyboard callback exercise Ctrl-Tab focus traversal
+between Search and the Files dock action while retaining plain-Tab result
+navigation. Actual Aetheri private input, discoverability and human acceptance
+remain open; see [candidate evidence](aetheri-adoption-assessment.md#keyboard-focus-between-desktop-search-and-files-2026-11-06).
+
 D05/A02/W05: on base `101507414e0e7c3806e0c1e93ce08dee83b20e9a`, an
 independent AT-SPI client exercises Files actions and search through the layer
 test host with three simulated views and a removed accessible. Actual Aetheri

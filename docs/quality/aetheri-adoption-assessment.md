@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Keyboard focus between desktop search and Files (2026-11-06)
+
+On candidate base `30e05549b17329d2d8007e57069026cc938fbecb`, the existing
+view preserves Aetheri's plain Tab/Shift-Tab search-result navigation while
+passing Ctrl-Tab/Ctrl-Shift-Tab to the existing NexaUI focus traversal. The
+scene test moves from search to the enabled Files dock button, activates it,
+returns to search and confirms ordinary Tab still changes the search result.
+The private layer host's XKB keyboard callback is exercised with the same
+focus transitions and emits the Files intent. An ordinary-window preview under
+private Weston/Xvfb receives virtual Ctrl-Shift-Tab, Enter and Ctrl-Tab, then
+accepts a Terminal search and closes. GCC static/shared and Clang ASan/UBSan
+profiles passed against the Aetheri `7374f381719397abc100dcb784becf59c86d1462`
+desktop model snapshot; leak detection was enabled for the sanitizer run.
+
+This establishes the tested shortcut, not automatic discoverability, every
+modifier/input-method combination, real private Aetheri compositor input,
+physical keyboard or human assistive acceptance. No SDK implementation or
+Aetheri source was changed.
+
 ## Files actions through the layer test host's accessibility loop (2026-11-06)
 
 On candidate base `101507414e0e7c3806e0c1e93ce08dee83b20e9a`, an

@@ -16,6 +16,24 @@ int main(int argc, char **argv) {
     advance(v);
     struct wl_array keys={0};
     enter(&a,NULL,0,v->surface,&keys);
+    a.xkb=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(a.xkb);
+    a.keymap=xkb_keymap_new_from_names(a.xkb,NULL,XKB_KEYMAP_COMPILE_NO_FLAGS);CHECK(a.keymap);
+    a.key_state=xkb_state_new(a.keymap);CHECK(a.key_state);
+    xkb_mod_index_t control=xkb_keymap_mod_get_index(a.keymap,XKB_MOD_NAME_CTRL);
+    xkb_mod_index_t shift=xkb_keymap_mod_get_index(a.keymap,XKB_MOD_NAME_SHIFT);
+    CHECK(control<32 && shift<32);
+    modifiers(&a,NULL,0,(1u<<control)|(1u<<shift),0,0,0);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_PRESSED);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_RELEASED);
+    CHECK(nx_focus_id(aetheri_desktop_view_context(v->view))==13);
+    modifiers(&a,NULL,0,0,0,0,0);
+    key(&a,NULL,0,0,KEY_ENTER,WL_KEYBOARD_KEY_STATE_PRESSED);
+    key(&a,NULL,0,0,KEY_ENTER,WL_KEYBOARD_KEY_STATE_RELEASED);
+    modifiers(&a,NULL,0,1u<<control,0,0,0);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_PRESSED);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_RELEASED);
+    CHECK(nx_focus_id(aetheri_desktop_view_context(v->view))==20);
+    modifiers(&a,NULL,0,0,0,0,0);
     uint64_t old=0,current=0;
     CHECK(aetheri_desktop_view_host_ime_revision(v->view,&old)==NX_OK && old);
     leave(&a,NULL,0,(struct wl_surface *)(uintptr_t)2);
@@ -72,5 +90,6 @@ int main(int argc, char **argv) {
     v->surface=NULL;a.ime_surface=NULL;a.output_names[0]=77;
     global_remove(&a,NULL,77);CHECK(v->remove_pending && a.focused==v && v->view);
     retire_output(&a,0);CHECK(!v->view && !a.focused && !v->configured && !a.output_names[0]);
+    xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     free(a.font);return 0;
 }
