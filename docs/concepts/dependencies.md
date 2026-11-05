@@ -1,5 +1,36 @@
 # Core dependency boundary
 
+## Minimal Wayland software build for offline hosts
+
+A graphical recovery host can choose a small local build without the X11 or
+Vulkan adapters, and can explicitly omit the optional AT-SPI transport:
+
+```sh
+cmake -S /path/to/NexaUI -B build-recovery \
+  -DNEXAUI_ENABLE_X11=OFF -DNEXAUI_BUILD_VULKAN=OFF \
+  -DNEXAUI_ENABLE_ATSPI=OFF -DCMAKE_INSTALL_PREFIX=/path/to/local-sdk
+cmake --build build-recovery
+cmake --install build-recovery
+```
+
+Select `NEXAUI_SETTINGS_SOFTWARE=ON` when building the standalone Settings
+example against this SDK. `BUILD_SHARED_LIBS` selects shared or static core.
+The application must provide its own local font and a working Wayland
+compositor/session. Build prerequisites include a C17 toolchain, CMake,
+pkg-config, Wayland client and protocol development files, wayland-scanner and
+xkbcommon. Runtime dependencies include the system C library, Wayland client
+and xkbcommon and their platform-specific dependencies. Inspect the actual
+artifacts and platform licenses for the target image; this is not a complete
+distribution manifest. No network service is required by the Settings model.
+
+With `NEXAUI_ENABLE_ATSPI=OFF` the native accessibility transport is unavailable;
+this profile cannot provide screenreader access. Keep AT-SPI enabled where the
+host can provide it, and provide a separate usable recovery path when required
+accessibility or the graphical session is unavailable. The application owns
+all recovery operations and must not infer completion from UI state. The Settings
+example demonstrates local choices and an in-memory operation, not installer
+target selection, persistent progress, recovery authorization or disk changes.
+
 NexaUI's core runtime uses its own C17 code and the C standard library.
 Platform adapters may link OS or GPU-driver libraries behind the public C API.
 Windows window/input adapters use the OS `user32`, `shell32` and `imm32` libraries.

@@ -32,6 +32,11 @@ def main():
     env['LD_LIBRARY_PATH'] = os.pathsep.join([str(prefix / 'lib'), str(prefix / 'lib64'),
                                               env.get('LD_LIBRARY_PATH', '')])
     env['NEXAUI_PLATFORM'] = 'wayland'
+    no_atspi = env.get('NEXAUI_TEST_SETTINGS_NO_ATSPI') == '1'
+    if no_atspi:
+        # Fail closed even if the host session happens to provide a bus.
+        env['AT_SPI_BUS_ADDRESS'] = 'unix:path=/nonexistent/nexaui-atspi-bus'
+        env['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path=/nonexistent/nexaui-session-bus'
     with tempfile.TemporaryDirectory(prefix='nexaui-external-settings-') as tmp:
         root = Path(tmp)
         configs = list(prefix.glob('lib*/cmake/NexaUI/NexaUIConfig.cmake'))
@@ -43,7 +48,7 @@ def main():
         run(['cmake', '-S', ROOT / 'tests/package_consumer', '-B', consumer_build,
              '-DCMAKE_DISABLE_FIND_PACKAGE_X11=ON', '-DCMAKE_PREFIX_PATH=' + str(prefix)], env)
         run(['cmake', '--build', consumer_build, '--parallel', '4'], env)
-        run([consumer_build / 'consumer', '--expect-wayland-only'], env)
+        run([consumer_build / 'consumer', '--expect-wayland-only-no-atspi' if no_atspi else '--expect-wayland-only'], env)
         source, build, install = root / 'source', root / 'build', root / 'app'
         source.mkdir()
         for name in ('CMakeLists.txt', 'main_linux.c', 'renderer.c', 'renderer.h', 'scene.c', 'scene.h'):
@@ -76,14 +81,22 @@ def main():
             raise RuntimeError('Static consumer unexpectedly loaded a shared SDK')
         if (software or no_vulkan) and re.search(r'^\s*libvulkan\.so', libraries, re.MULTILINE):
             raise RuntimeError('Software consumer unexpectedly depends on Vulkan')
+        if no_atspi and re.search(r'^\s*(libdbus|libatspi|libglib|libgobject)\S*\s+=>', libraries, re.MULTILINE):
+            raise RuntimeError('Accessibility-disabled consumer unexpectedly links a desktop accessibility library')
+        if no_atspi and re.search(r'^\s*(libX11|libXext)\S*\s+=>', libraries, re.MULTILINE):
+            raise RuntimeError('Wayland-only consumer unexpectedly links an X11 library')
         if env.get('NEXAUI_TEST_SIMPLE_IME') == '1':
             run([sys.executable, ROOT / 'examples/18_settings/run_simple_ime.py', app, font, xdotool], env)
             print('Copied installed Settings consumer passed native IME composition.')
             return 0
         run([sys.executable, ROOT / 'examples/18_settings/run_keyboard.py', app, font, xdotool, '--small'], env)
-        ax_env = dict(env, NEXAUI_SETTINGS_FONT=str(font), NEXAUI_SETTINGS_TEST_APPLY_ERROR='1')
-        run([sys.executable, ROOT / 'tests/run_atspi_multiselection_wayland.py', registry, client, app], ax_env)
-    print('Copied installed Settings consumer passed native keyboard and AT-SPI retry.')
+        if not no_atspi:
+            ax_env = dict(env, NEXAUI_SETTINGS_FONT=str(font), NEXAUI_SETTINGS_TEST_APPLY_ERROR='1')
+            run([sys.executable, ROOT / 'tests/run_atspi_multiselection_wayland.py', registry, client, app], ax_env)
+    if no_atspi:
+        print('Copied installed Settings consumer passed native keyboard with AT-SPI explicitly disabled; no accessibility support claimed.')
+    else:
+        print('Copied installed Settings consumer passed native keyboard and AT-SPI retry.')
     return 0
 
 

@@ -65,6 +65,10 @@ choose the software build when the loader itself is absent. The software view
 is Wayland-only. Its shared-memory limits and lifetime are described in the
 [rendering contract](../../docs/concepts/rendering.md).
 
+The [minimal offline host profile](../../docs/concepts/dependencies.md#minimal-wayland-software-build-for-offline-hosts)
+documents software-only dependencies and the consequences of disabling
+AT-SPI. It does not turn this example into an installer or recovery service.
+
 `tests/check_installed_settings.py` exercises a copied, installed example inside
 the private Weston fixture, checking the installed SDK revision and Wayland-only
 build features with the package consumer. It verifies keyboard operation and an

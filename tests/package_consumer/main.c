@@ -63,9 +63,12 @@ int main(int argc, char **argv) {
     if (nx_get_build_features(NULL) != NX_ERROR_ARGUMENT ||
         nx_get_build_features(&features) != NX_OK)
         return 17;
-    if (argc == 2 && !strcmp(argv[1], "--expect-wayland-only") &&
+    if (argc == 2 && (!strcmp(argv[1], "--expect-wayland-only") ||
+                      !strcmp(argv[1], "--expect-wayland-only-no-atspi")) &&
         (!(features & NX_BUILD_WINDOW_WAYLAND) || !(features & NX_BUILD_LINUX_POLL_FD) || (features & NX_BUILD_WINDOW_X11)))
         return 18;
+    if (argc == 2 && !strcmp(argv[1], "--expect-wayland-only-no-atspi") &&
+        (features & NX_BUILD_LINUX_ATSPI_TRANSPORT)) return 24;
     nx_version version = {99, 99, 99};
     if (nx_get_version(NULL) != NX_ERROR_ARGUMENT ||
         nx_get_version(&version) != NX_OK ||

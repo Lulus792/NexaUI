@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Minimal offline software profile (2026-11-05)
+
+Static and shared Wayland-only SDKs built from Git archive source
+`d97c9495b50963cf25c6d06a1994a5240260e1fc` with Vulkan, X11 and AT-SPI
+disabled. Separately copied Settings consumers built against each installation,
+identified the linked source revision and disabled AT-SPI bit, used software
+rendering and passed the private Weston/Xvfb virtual-keyboard workflow and
+normal close with inaccessible D-Bus addresses. `ldd` checks excluded Vulkan
+and linked D-Bus/AT-SPI/GLib; the shared core resolved from the selected prefix.
+An AT-SPI-enabled SDK was rejected by the disabled-profile probe (exit 24).
+Final fixture results: `/tmp/nexaui-offline-d97-final-ON/result.json` and
+`/tmp/nexaui-offline-d97-final-OFF/result.json`. The existing enabled-AT-SPI
+path was rerun against shared source `a91b30377209f57854fcfc44c171d792c1f22195`;
+its keyboard and independent AT-SPI Apply/retry checks passed
+(`/tmp/nexaui-enabled-a91-regression/result.json`).
+
+This does not prove an X11-free filesystem, installed-IME operation, human
+accessibility, or an actual installer/recovery workflow. The disabled profile
+has no screenreader bridge. The [dependency profile](../concepts/dependencies.md#minimal-wayland-software-build-for-offline-hosts)
+states host, font, operation ownership and fallback requirements.
+
 ## Application-owned accessible text snapshot (2026-11-05)
 
 Source `d11786f68358d75488534623f729a94a298251c0` adds an explicit,
