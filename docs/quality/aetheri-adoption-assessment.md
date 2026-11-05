@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Pending macOS selection notification comparison (2026-11-05)
+
+The native macOS static and shared CI jobs for source
+`8da965030f62b990ceac3e1d7aea120ca3a52a64` completed successfully
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42015529187)).
+After the additional prefix-change scenario, the static job for test-only
+source `430fcfb8fdfbf13a6f0f5ba58098cb2512c1619c` failed in the independent
+AX client at `text_selection_events==before_invalid`
+([job](https://github.com/Lulus792/NexaUI/actions/runs/42017235646/job/127210696808)).
+That failure occurred before the new prefix assertion, so it does not by
+itself prove the cause of an unwanted notification or validate the prefix fix.
+The native jobs for the subsequent implementation
+`1bb0c11c4401b0f248115d0346be4e3f4f21f2fd` are still queued
+([run](https://github.com/Lulus792/NexaUI/actions/runs/42017296511)); this
+candidate must not be treated as passing based on the older successful run.
+
 ## Windows numeric IME result identity (2026-11-05)
 
 Source `c0aeaada667f3e6644851636ec795f6e650e7486` associates a controlled
