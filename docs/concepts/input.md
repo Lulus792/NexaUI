@@ -56,6 +56,19 @@ Keyboard events identify logical keys. Text input is separate and carries Unicod
 
 On Linux Wayland, a general text field using `nx_text_clipboard_for_window` requests keyboard and AT-SPI paste asynchronously. A native keyboard focus loss invalidates the previous selection offer and cancels a pending native clipboard read; the compositor supplies a fresh offer after focus returns. File-drop data is also read while polling, independently of clipboard reads. For data-device version 3, the adapter negotiates only the copy action and completes the offer after a successful transfer containing at least one accepted local file. The drop becomes available after its completion request has been flushed; if the compositor socket is full, polling waits for write readiness. Versions 1 and 2 use their legacy behavior. Continue polling and route every native event to the context; `NX_EVENT_WAKE` is a no-input notification that lets an event-driven host build a frame when native work finishes. After a wake, the host can also drain `nx_window_next_file_drop`. The Wayland adapter keeps one active and one pending drop; a later pending offer replaces the previous pending offer. A drop read exceeding five seconds reports a platform error through poll. A pending keyboard paste is discarded if focus, edit policy, model, text or selection changes. Successive keyboard paste commands are queued within a bound of 64; a failed or invalidated transfer cancels its remaining queued commands. AT-SPI paste retains its original two-second request deadline and is rejected if the target or its text changes while pending; a busy transfer also fails. The public `nx_window_clipboard_get_text` function, custom clipboard callbacks and X11 paste remain synchronous. The window must outlive widget calls, as before.
 
+An application-owned Wayland editor or terminal may instead use
+`<nexaui/wayland_clipboard.h>` to begin, poll/take and cancel a bounded native
+text read. Its token shares the one-read-per-window slot with text fields and
+AT-SPI, but a text field cannot displace an application-owned read. `NX_EVENT_WAKE`
+is shared with other work: query the token rather than treating a wake as a
+successful paste. Release the returned buffer with the matching release API.
+The application must check that its target, focus, model revision and selection
+still match before using the bytes; it owns paste confirmation, terminal
+encoding and any process I/O. A lost focus or stale/expired token is not a
+successful paste. This initial API has Linux Wayland symbols only; an X11
+window returns unsupported from begin, and the synchronous portable getter is
+unchanged.
+
 Removal of the selected Wayland seat cancels native input, pending clipboard reads and active file-drop reads, and makes window polling return `NX_ERROR_PLATFORM`. The application can drain queued cancellation events and must destroy the affected window; automatic binding to a replacement seat is not implemented. File-drop retrieval also reports the terminal error rather than exposing a transfer completed during removal.
 
 If polling detects a lost Wayland connection, it likewise cancels input and pending reads and retains the platform error for subsequent polls and window status/info requests. Native accessibility geometry reports the affected window as no longer visible or focused. The application can drain cancellation events and destroy the window; it must create a new window after a compositor becomes available. No automatic restoration is claimed.

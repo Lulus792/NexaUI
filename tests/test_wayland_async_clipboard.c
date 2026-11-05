@@ -1,6 +1,7 @@
 #include "wayland_v3_fixture.h"
 #include "text_value.h"
 #include "accessibility.h"
+#include "nexaui/wayland_clipboard.h"
 #include <time.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -26,6 +27,19 @@ static void publish_offer(test_server *server, nx_window *window) {
 static void close_peer(test_server *server) {
     int fd = atomic_exchange(&server->stalled_fd, 0);
     CHECK(fd > 0 && close(fd - 1) == 0);
+}
+
+typedef struct public_wrong_thread {
+    nx_window *window; uint64_t token; nx_result begin, take, cancel;
+    uint64_t output_token; char *bytes; size_t length; int ready;
+} public_wrong_thread;
+static void *probe_public_wrong_thread(void *arg) {
+    public_wrong_thread *probe=arg;
+    probe->output_token=1; probe->bytes=(char *)1; probe->length=1; probe->ready=1;
+    probe->begin=nx_wayland_clipboard_read_begin(probe->window,1024,1000,0,&probe->output_token);
+    probe->take=nx_wayland_clipboard_read_take(probe->window,probe->token,&probe->bytes,&probe->length,&probe->ready);
+    probe->cancel=nx_wayland_clipboard_read_cancel(probe->window,probe->token);
+    return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -64,12 +78,12 @@ int main(int argc, char **argv) {
         wl_surface_commit(nx_window_wayland_surface(window));
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
         uint64_t token=0;size_t length=0;
-        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_ERROR_STATE);
+        CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_ERROR_STATE);
         CHECK(nx_window_clipboard_get_text(window,NULL,0,&length)==NX_ERROR_STATE);
         CHECK(atomic_load(&server.offer_reads)==0);
         atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
         atomic_store(&server.offer_stall,1);
-        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_OK);
+        CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_OK);
         for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(nx_window_poll(window,100)==NX_OK);
         CHECK(atomic_load(&server.stalled_fd));
         nx_event event;int event_available=0;
@@ -139,9 +153,9 @@ int main(int argc, char **argv) {
             char *bytes=NULL;int ready=0;
             for(unsigned i=0;i<20 && !ready;++i) {
                 CHECK(nx_window_poll(window,100)==NX_OK);
-                CHECK(nx_linux_window_clipboard_async_take(window,token,&bytes,&length,&ready)==NX_OK);
+                CHECK(nx_wayland_clipboard_read_take(window,token,&bytes,&length,&ready)==NX_OK);
             }
-            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));free(bytes);
+            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));nx_wayland_clipboard_read_release(bytes,length);
             CHECK(nx_window_clipboard_set_text(window,"Owned",5)==(pointer_serial?NX_ERROR_STATE:NX_OK));
             CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
             CHECK(atomic_load(&server.selection_serial_seen)==(pointer_serial?0:7));
@@ -156,7 +170,10 @@ int main(int argc, char **argv) {
         wl_surface_commit(nx_window_wayland_surface(window));
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
         CHECK(!nx_linux_window_clipboard_async_current(window,token));
-        CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_ERROR_STATE);
+        char *stale=(char *)1; size_t stale_length=1; int stale_ready=1;
+        CHECK(nx_wayland_clipboard_read_take(window,token,&stale,&stale_length,&stale_ready)==NX_ERROR_STATE &&
+              !stale && !stale_length && !stale_ready);
+        CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_ERROR_STATE);
         if(seat_removed)CHECK(nx_window_poll(window,0)==NX_ERROR_PLATFORM);
         int saw_focus_loss=0;
         do {CHECK(nx_window_next_event(window,&event,&event_available)==NX_OK);
@@ -166,13 +183,13 @@ int main(int argc, char **argv) {
         close_peer(&server);
         if(!keyboard_removed && !seat_removed) {
             atomic_store(&server.offer_stall,0);atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
-            CHECK(nx_linux_window_clipboard_async_start(window,1024,2000,0,&token)==NX_OK);
+            CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&token)==NX_OK);
             char *bytes=NULL;int ready=0;
             for(unsigned i=0;i<20 && !ready;++i) {
                 CHECK(nx_window_poll(window,100)==NX_OK);
-                CHECK(nx_linux_window_clipboard_async_take(window,token,&bytes,&length,&ready)==NX_OK);
+                CHECK(nx_wayland_clipboard_read_take(window,token,&bytes,&length,&ready)==NX_OK);
             }
-            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));free(bytes);
+            CHECK(ready && length==4 && !memcmp(bytes,"Once",4));nx_wayland_clipboard_read_release(bytes,length);
         }
         nx_window_destroy(window);CHECK(allocations.live==0);
         wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(server.display);
@@ -181,14 +198,24 @@ int main(int argc, char **argv) {
     }
     atomic_store(&server.offer_stall, 1); publish_offer(&server, window);
     uint64_t first = 0, other = 0; char *bytes = NULL; size_t length = 0; int ready = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 0, &first) == NX_OK && first);
+    CHECK(nx_wayland_clipboard_read_begin(window, NX_WAYLAND_CLIPBOARD_READ_MAX_BYTES+1u, 2000, 0, &other)==NX_ERROR_ARGUMENT && !other);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 0, 0, &other)==NX_ERROR_ARGUMENT && !other);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 2000, 2, &other) == NX_ERROR_ARGUMENT && !other);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 2000, 0, &first) == NX_OK && first);
+    public_wrong_thread probe={.window=window,.token=first}; pthread_t other_thread;
+    CHECK(!pthread_create(&other_thread,NULL,probe_public_wrong_thread,&probe));
+    CHECK(!pthread_join(other_thread,NULL));
+    CHECK(probe.begin==NX_ERROR_STATE && probe.take==NX_ERROR_STATE && probe.cancel==NX_ERROR_STATE &&
+          !probe.output_token && !probe.bytes && !probe.length && !probe.ready);
+    CHECK(nx_linux_window_clipboard_async_cancel_active(window) == NX_ERROR_STATE);
     CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 0, &other) == NX_ERROR_LIMIT);
-    CHECK(nx_linux_window_clipboard_async_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
+    CHECK(nx_wayland_clipboard_read_take(window, first+1, &bytes, &length, &ready) == NX_ERROR_STATE && !bytes && !length && !ready);
+    CHECK(nx_wayland_clipboard_read_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
     double begin = now_seconds();
     for (unsigned i = 0; i < 20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd) && now_seconds() - begin < 1.5);
-    CHECK(nx_linux_window_clipboard_async_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
+    CHECK(nx_wayland_clipboard_read_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
     /* Native protocol work still progresses while the clipboard owner stalls. */
     CHECK(nx_window_set_ime_rect(window, (nx_rect){12, 34, 2, 18}) == NX_OK);
     CHECK(nx_window_set_ime_enabled(window, 1) == NX_OK);
@@ -201,53 +228,54 @@ int main(int argc, char **argv) {
                                                 &preedit_begin, &preedit_end) == NX_OK);
     }
     CHECK(preedit_length == 4 && preedit_begin == 2 && preedit_end == 2);
-    CHECK(nx_linux_window_clipboard_async_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
+    CHECK(nx_wayland_clipboard_read_take(window, first, &bytes, &length, &ready) == NX_OK && !ready);
     /* Replacing the selection must not free the in-flight offer. */
     publish_offer(&server, window);
     close_peer(&server);
     for (unsigned i = 0; i < 20 && !ready; ++i) {
         CHECK(nx_window_poll(window, 100) == NX_OK);
-        CHECK(nx_linux_window_clipboard_async_take(window, first, &bytes, &length, &ready) == NX_OK);
+        CHECK(nx_wayland_clipboard_read_take(window, first, &bytes, &length, &ready) == NX_OK);
     }
-    CHECK(ready && length == 4 && !memcmp(bytes, "Once", 4)); free(bytes);
-    CHECK(nx_linux_window_clipboard_async_take(window, first, &bytes, &length, &ready) == NX_ERROR_STATE);
+    CHECK(ready && length == 4 && !memcmp(bytes, "Once", 4)); nx_wayland_clipboard_read_release(bytes,length);
+    CHECK(nx_wayland_clipboard_read_take(window, first, &bytes, &length, &ready) == NX_ERROR_STATE);
 
     publish_offer(&server, window); uint64_t second = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 1024, 100, 1, &second) == NX_OK && second != first);
-    CHECK(nx_linux_window_clipboard_async_cancel(window, first) == NX_ERROR_STATE);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 100, 1, &second) == NX_OK && second != first);
+    CHECK(nx_wayland_clipboard_read_cancel(window, first) == NX_ERROR_STATE);
     nx_result result = NX_OK; ready = 0; begin = now_seconds();
     for (unsigned i = 0; i < 30 && !ready; ++i) {
         CHECK(nx_window_poll(window, 300) == NX_OK);
-        result = nx_linux_window_clipboard_async_take(window, second, &bytes, &length, &ready);
+        result = nx_wayland_clipboard_read_take(window, second, &bytes, &length, &ready);
     }
     CHECK(ready && result == NX_ERROR_PLATFORM && now_seconds() - begin < 1.5);
     close_peer(&server);
     atomic_store(&server.offer_stall, 0); publish_offer(&server, window);
     uint64_t small = 0; ready = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 3, 2000, 1, &small) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_begin(window, 3, 2000, 1, &small) == NX_OK);
     for (unsigned i = 0; i < 20 && !ready; ++i) {
         CHECK(nx_window_poll(window, 100) == NX_OK);
-        result = nx_linux_window_clipboard_async_take(window, small, &bytes, &length, &ready);
+        result = nx_wayland_clipboard_read_take(window, small, &bytes, &length, &ready);
     }
     CHECK(ready && result == NX_ERROR_LIMIT && !bytes);
     atomic_store(&server.offer_invalid, 1); publish_offer(&server, window);
     uint64_t invalid = 0; ready = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 1, &invalid) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 2000, 1, &invalid) == NX_OK);
     for (unsigned i = 0; i < 20 && !ready; ++i) {
         CHECK(nx_window_poll(window, 100) == NX_OK);
-        result = nx_linux_window_clipboard_async_take(window, invalid, &bytes, &length, &ready);
+        result = nx_wayland_clipboard_read_take(window, invalid, &bytes, &length, &ready);
     }
     CHECK(ready && result == NX_ERROR_STATE && !bytes);
     atomic_store(&server.offer_invalid, 0); atomic_store(&server.offer_stall, 1);
     publish_offer(&server, window); uint64_t third = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 1, &third) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 2000, 1, &third) == NX_OK);
     for (unsigned i = 0; i < 20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd));
-    CHECK(nx_linux_window_clipboard_async_cancel(window, third) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_cancel(window, third) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_cancel(window, third) == NX_ERROR_STATE);
     close_peer(&server);
     publish_offer(&server, window); uint64_t last = 0;
-    CHECK(nx_linux_window_clipboard_async_start(window, 1024, 2000, 1, &last) == NX_OK);
+    CHECK(nx_wayland_clipboard_read_begin(window, 1024, 2000, 1, &last) == NX_OK);
     for (unsigned i = 0; i < 20 && !atomic_load(&server.stalled_fd); ++i)
         CHECK(nx_window_poll(window, 100) == NX_OK);
     CHECK(atomic_load(&server.stalled_fd)); nx_window_destroy(window); CHECK(allocations.live == 0); close_peer(&server);

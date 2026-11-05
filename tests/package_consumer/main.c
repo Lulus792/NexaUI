@@ -2,6 +2,7 @@
 #include <nexaui/cell_grid.h>
 #if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
 #include <nexaui/wayland_host.h>
+#include <nexaui/wayland_clipboard.h>
 #endif
 #include <string.h>
 
@@ -40,6 +41,13 @@ int main(int argc, char **argv) {
     if (nx_wayland_shm_host_create(NULL,NULL,NULL,NULL,&host)!=NX_ERROR_ARGUMENT || host) return 22;
     uint32_t host_events=99;
     if (nx_wayland_shm_host_poll(NULL,0,-1,&host_events)!=NX_ERROR_ARGUMENT || host_events) return 23;
+    uint64_t clipboard_token=1;
+    if (nx_wayland_clipboard_read_begin(NULL,1024,1000,0,&clipboard_token)!=NX_ERROR_ARGUMENT || clipboard_token) return 25;
+    char *clipboard_bytes=(char *)1; size_t clipboard_length=1; int clipboard_ready=1;
+    if (nx_wayland_clipboard_read_take(NULL,1,&clipboard_bytes,&clipboard_length,&clipboard_ready)!=NX_ERROR_ARGUMENT ||
+        clipboard_bytes || clipboard_length || clipboard_ready) return 26;
+    if (nx_wayland_clipboard_read_cancel(NULL,1)!=NX_ERROR_ARGUMENT) return 27;
+    nx_wayland_clipboard_read_release(NULL,0);
 #endif
     uint8_t scaled_pixels[4 * 4 * 4];
     nx_command scaled_box = {.type=NX_COMMAND_FILL_RECT, .rect={0,0,1,1},

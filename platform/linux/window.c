@@ -1,5 +1,6 @@
 #include "nexaui/nexaui.h"
 #include "nexaui/software.h"
+#include "nexaui/wayland_clipboard.h"
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/backend.h"
 #include "x11/window_internal.h"
@@ -36,6 +37,7 @@ struct nx_window {
     nx_linux_ax *accessibility;
     size_t operations;
     uint64_t ax_revision;
+    uint64_t public_clipboard_token;
     int retired, ax_publishing, ax_cancelled;
     union {
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
@@ -540,6 +542,9 @@ nx_result nx_linux_window_clipboard_async_cancel_active(nx_window *window) {
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
     if (window->backend != NX_LINUX_WAYLAND) return NX_ERROR_UNSUPPORTED;
 #endif
+    if (window->public_clipboard_token &&
+        nx_wayland_window_clipboard_async_current(window->native.wayland, window->public_clipboard_token))
+        return NX_ERROR_STATE;
     ++window->operations;
     nx_result result = nx_wayland_window_clipboard_async_cancel_active(window->native.wayland);
     if (window->retired) result = NX_ERROR_STATE;
@@ -554,6 +559,47 @@ int nx_linux_window_clipboard_async_supported(nx_window *window) {
     if (window->backend != NX_LINUX_WAYLAND) return 0;
 #endif
     return 1;
+}
+
+nx_result nx_wayland_clipboard_read_begin(nx_window *window, size_t limit,
+    uint32_t timeout_ms, int sensitive, uint64_t *out_token) {
+    if (out_token) *out_token = 0;
+    if (!window || !out_token || (sensitive != 0 && sensitive != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_window_hold(window)) return NX_ERROR_STATE;
+    nx_result result = nx_linux_window_clipboard_async_start(window, limit, timeout_ms, sensitive, out_token);
+    if (result == NX_OK) window->public_clipboard_token = *out_token;
+    nx_linux_window_unhold(window);
+    return result;
+}
+
+nx_result nx_wayland_clipboard_read_take(nx_window *window, uint64_t token,
+    char **bytes, size_t *length, int *ready) {
+    if (bytes) *bytes = NULL;
+    if (length) *length = 0;
+    if (ready) *ready = 0;
+    if (!window || !bytes || !length || !ready || !token) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired || window->public_clipboard_token != token)
+        return NX_ERROR_STATE;
+    if (!nx_linux_window_hold(window)) return NX_ERROR_STATE;
+    nx_result result = nx_linux_window_clipboard_async_take(window, token, bytes, length, ready);
+    if (*ready || result == NX_ERROR_STATE) window->public_clipboard_token = 0;
+    nx_linux_window_unhold(window);
+    return result;
+}
+
+nx_result nx_wayland_clipboard_read_cancel(nx_window *window, uint64_t token) {
+    if (!window || !token) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired || window->public_clipboard_token != token)
+        return NX_ERROR_STATE;
+    if (!nx_linux_window_hold(window)) return NX_ERROR_STATE;
+    nx_result result = nx_linux_window_clipboard_async_cancel(window, token);
+    if (result == NX_OK || result == NX_ERROR_STATE) window->public_clipboard_token = 0;
+    nx_linux_window_unhold(window);
+    return result;
+}
+
+void nx_wayland_clipboard_read_release(char *bytes, size_t length) {
+    if (bytes) { nx_private_secure_zero(bytes, length); free(bytes); }
 }
 
 void nx_window_destroy(nx_window *window) {

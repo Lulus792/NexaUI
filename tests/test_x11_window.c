@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nexaui/nexaui.h"
+#include "nexaui/wayland_clipboard.h"
 #include "window_internal.h"
 
 #include <X11/Xatom.h>
@@ -727,6 +728,8 @@ int main(void) {
     desc.flags = 0;
     desc.title_utf8 = "NexaUI X11 second";
     CHECK(nx_window_create(&desc, &second) == NX_OK);
+    uint64_t async_token=1;
+    CHECK(nx_wayland_clipboard_read_begin(first,1024,1000,0,&async_token)==NX_ERROR_UNSUPPORTED && !async_token);
     Display *display = nx_window_x11_display(first);
     Window xid = nx_window_x11_id(first);
     Display *second_display = nx_window_x11_display(second);
