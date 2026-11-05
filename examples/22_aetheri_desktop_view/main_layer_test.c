@@ -2,6 +2,7 @@
 /* Adapted from Aetheri tests/test_desktop_client.c (MIT); host owns all Wayland objects. */
 #include "view.h"
 #include <nexaui/wayland_host.h>
+#include <nexaui/linux_accessibility_host.h>
 #include "aetheri-development-desktop-v1-client.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "text-input-v3-client.h"
@@ -34,6 +35,7 @@ struct view {
     bool expanded;
     struct ae_desktop_model model; uint64_t revision;
     aetheri_desktop_view *view; nx_wayland_shm_host *presenter;
+    nx_linux_accessibility_host *accessibility;
     bool dirty, configured;
 };
 struct app {
@@ -66,7 +68,7 @@ struct app {
     unsigned char *font; size_t font_size;
     unsigned output_count;
     uint32_t control_name, layer_name, first_id;
-    bool ordinary, retired, owner_fixture, ready_reported, close_search;
+    bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested;
     int toggle_output;
     struct xkb_context *xkb;
     struct xkb_keymap *keymap;
@@ -304,6 +306,7 @@ static void paint(struct view *v) {
     if(!v->view) {
         CHECK(aetheri_desktop_view_create(&v->model,a->font,a->font_size,&v->view));
         if(a->ime_requested)CHECK(aetheri_desktop_view_set_host_ime(v->view,1)==NX_OK);
+        if(a->ax_requested)CHECK(nx_linux_accessibility_host_create(&v->accessibility)==NX_OK);
         if(a->focused==v) CHECK(aetheri_desktop_view_surface_focus(v->view,1)==NX_OK);
     }
     if(!v->presenter) CHECK(nx_wayland_shm_host_create(a->display,a->shm,v->surface,NULL,&v->presenter)==NX_OK);
@@ -320,6 +323,12 @@ static void paint(struct view *v) {
                                       (nx_color){0,0,0,0},&outcome)==NX_OK);
     if(outcome==NX_WAYLAND_SHM_BUSY){v->dirty=true;return;}
     CHECK(outcome==NX_WAYLAND_SHM_READY);
+    if(v->accessibility) {
+        nx_linux_accessibility_geometry geometry={0,0,v->width,v->height,0,1,a->focused==v && a->keyboard!=NULL};
+        nx_result result=nx_linux_accessibility_host_publish(v->accessibility,
+            aetheri_desktop_view_context(v->view),&geometry);
+        CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
+    }
     v->dirty=false;
     printf("PAINT %u %u %u\n",v->index,v->width,v->height);
 }
@@ -659,6 +668,7 @@ int main(int argc, char **argv) {
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
                     .ime_requested=getenv("NEXAUI_TEST_IME")!=NULL,
+                    .ax_requested=getenv("NEXAUI_TEST_ATSPI")!=NULL,
                     .ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
     const char *font=getenv("NEXAUI_DESKTOP_FONT");
     const char *launcher=getenv("NEXAUI_TEST_LAUNCH_FD");
@@ -756,10 +766,27 @@ int main(int argc, char **argv) {
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
             ime_sync(&a);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
-            struct pollfd fds[4] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
-            int ready; do { ready = poll(fds, 4, owner_fixture?-1:10000); } while (ready < 0 && errno == EINTR && !stop_requested);
+            struct pollfd fds[7] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
+            uint32_t wait_ms=owner_fixture?UINT32_MAX:10000u;
+            for(unsigned i=0;i<3;++i) {
+                struct view *v=&a.views[i];fds[4+i].fd=-1;
+                if(!v->accessibility || !v->configured)continue;
+                int fd=-1,writable=0;uint32_t timeout=wait_ms;
+                nx_result result=nx_linux_accessibility_host_prepare(v->accessibility,&fd,&writable,&timeout);
+                CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
+                if(result==NX_OK) {
+                    fds[4+i].fd=fd;fds[4+i].events=(short)(POLLIN|(writable?POLLOUT:0));
+                    if(timeout<wait_ms)wait_ms=timeout;
+                    size_t routed=0;int focus_requested=0;
+                    CHECK(nx_linux_accessibility_host_route(v->accessibility,aetheri_desktop_view_context(v->view),
+                                                             &routed,&focus_requested)==NX_OK);
+                    if(routed) {advance(v);wait_ms=0;}
+                }
+            }
+            int wait=wait_ms>(uint32_t)INT32_MAX?-1:(int)wait_ms;
+            int ready; do { ready = poll(fds, 7, wait); } while (ready < 0 && errno == EINTR && !stop_requested);
             if(stop_requested)continue;
-            CHECK(ready > 0);
+            CHECK(ready >= 0);
             if (fds[0].revents) CHECK(wl_display_dispatch(a.display) >= 0);
             if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
             if (fds[1].revents) {
@@ -820,6 +847,7 @@ int main(int argc, char **argv) {
     if(a.ime_input)zwp_text_input_v3_destroy(a.ime_input);
     if(a.ime_manager)zwp_text_input_manager_v3_destroy(a.ime_manager);
     for (unsigned i = 0; i < 3; ++i) {
+        if(a.views[i].accessibility)CHECK(nx_linux_accessibility_host_destroy(&a.views[i].accessibility)==NX_OK);
         if (a.views[i].presenter) CHECK(nx_wayland_shm_host_destroy(&a.views[i].presenter)==NX_OK);
         aetheri_desktop_view_destroy(a.views[i].view);
         if (a.views[i].layer) zwlr_layer_surface_v1_destroy(a.views[i].layer);

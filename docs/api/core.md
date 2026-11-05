@@ -1,4 +1,4 @@
-# Core API (0.1.13)
+# Core API (0.1.14)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -228,3 +228,25 @@ lifetime, cancellation, protocol preedit state, candidate positioning and
 rejecting old or duplicate replies. Password fields are unsupported. Disabling the mode invalidates
 prior tokens; ordinary `ime_window` behavior is unchanged. A consumer must
 require the newer SDK and ensure the matching shared library is loaded.
+
+## Linux accessibility for host-owned surfaces
+
+Since 0.1.14, `<nexaui/linux_accessibility_host.h>` exposes the existing
+runtime-optional AT-SPI transport without creating a native window or Wayland
+connection. Create one host per independently published surface, publish a
+completed context and the host-observed logical geometry, then integrate
+`nx_linux_accessibility_host_prepare` into the owner's poll loop. Its borrowed
+D-Bus descriptor may change after every call. Call prepare again after readiness
+or the returned timeout, route admitted requests to the same context, build a
+new frame and publish it. Never close the borrowed descriptor. Separate hosts
+on the same UI thread may share the internal bus connection.
+
+`focus_requested` reports an accessibility request to the native owner; it
+does not claim a compositor granted focus. Publish actual keyboard focus and
+visibility from the owner, and set `screen_position` only when the compositor
+provides trustworthy screen coordinates. `clear` retires published objects and
+pending requests; destroy the bridge before its host-owned surface and context.
+All operations use the creating thread. A missing optional transport returns
+`NX_ERROR_UNSUPPORTED`; a previously created snapshot may remain available for
+reconnection. The API cannot provide a screenreader or physical-device
+acceptance by itself.

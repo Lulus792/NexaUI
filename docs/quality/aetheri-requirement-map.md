@@ -14,6 +14,14 @@ controlled server and callback evidence in the desktop example does not rerun
 the earlier Aetheri held-device failure and cannot distinguish a real release
 from a synthesized release followed by a later removal. The gate remains open.
 
+A01-A05/D05: the candidate based on
+`3c5eb737e0432ff4dff4800b295f40365b110dbb` adds a Linux AT-SPI bridge for
+host-owned surfaces, reusing the window adapter's snapshots and guarded action
+queue. The separate desktop model consumer can be operated by an independent
+AT-SPI client using simulated focus/geometry. Actual private Aetheri surfaces,
+native focus, screen coordinates, other accessibility workflows and human
+screenreader acceptance remain open.
+
 The T05 and A04 rows below were reconciled on 2026-11-05 against published
 source `28b60f2fcad76374d5f2a91c722e8a2c27aa5829`. Their individual test results
 and earlier source revisions remain attributed in the adoption assessment;

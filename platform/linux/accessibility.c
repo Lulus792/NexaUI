@@ -29,6 +29,10 @@ nx_result nx_linux_ax_publish(nx_linux_ax **b, nx_window *w, nx_allocator a,
                              const nx_context *c) {
     (void)b; (void)w; (void)a; (void)c; return NX_ERROR_UNSUPPORTED;
 }
+nx_result nx_linux_ax_publish_owner(nx_linux_ax **b,nx_linux_ax_owner owner,nx_allocator a,
+                                    const nx_context *c) {
+    (void)b;(void)owner;(void)a;(void)c;return NX_ERROR_UNSUPPORTED;
+}
 void nx_linux_ax_destroy(nx_linux_ax *b) { (void)b; }
 int nx_linux_ax_matches(nx_linux_ax *b, const nx_context *c) { (void)b; (void)c; return 1; }
 nx_result nx_linux_ax_route(nx_linux_ax *b, nx_context *c, size_t *n) {
@@ -132,7 +136,7 @@ typedef struct nx_ax_hub nx_ax_hub;
 struct nx_linux_ax {
     nx_allocator allocator;
     pthread_t thread;
-    nx_window *window;
+    nx_linux_ax_owner owner;
     nx_ax_hub *hub;
     nx_linux_ax *next;
     uint64_t epoch, binding, frame, incarnation;
@@ -493,8 +497,8 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         /* Every context read and all ancestry/member copying precede the
            application allocator. A callback can retire the window/context. */
         nx_ax_snapshot *native=b->allocator.allocate(b->allocator.user,s->capacity);
-        if(!native){free(s);return b->retired || !nx_linux_window_ax_current(b->window,revision)?NX_ERROR_STATE:NX_ERROR_MEMORY;}
-        if(b->retired || !nx_linux_window_ax_current(b->window,revision)) {
+        if(!native){free(s);return b->retired || !b->owner.current(b->owner.object,revision)?NX_ERROR_STATE:NX_ERROR_MEMORY;}
+        if(b->retired || !b->owner.current(b->owner.object,revision)) {
             size_t capacity=s->capacity;free(s);b->allocator.deallocate(b->allocator.user,native,capacity);return NX_ERROR_STATE;
         }
         memcpy(native,s,bytes);
@@ -506,7 +510,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         }
         free(s);nx_ax_snapshot *previous=b->spare;b->spare=native;
         if(previous)b->allocator.deallocate(b->allocator.user,previous,previous->capacity);
-        if(b->retired || !nx_linux_window_ax_current(b->window,revision))return NX_ERROR_STATE;
+        if(b->retired || !b->owner.current(b->owner.object,revision))return NX_ERROR_STATE;
     }
     return NX_OK;
 }
@@ -1635,7 +1639,7 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         if(valid && live && (result==NX_OK || result==NX_ERROR_LIMIT || result==NX_ERROR_MEMORY)) {
             if(result==NX_OK) {
                 ++*count;
-                if(q.action==NX_ACTION_FOCUS && b->window)nx_linux_window_ax_focus(b->window);
+                if(q.action==NX_ACTION_FOCUS && b->owner.focus)b->owner.focus(b->owner.object);
             }
             if(q.text || q.owner_id || result!=NX_OK) {
                 q.forwarded=result==NX_OK;q.frame=b->frame;
@@ -1658,7 +1662,7 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
 
 static void nx_ax_update_geometry(nx_linux_ax *b) {
     nx_linux_ax_geometry old=b->geometry;
-    nx_linux_window_ax_geometry(b->window,&b->geometry);
+    b->owner.geometry(b->owner.object,&b->geometry);
     nx_linux_ax_geometry current=b->geometry;
     if (!b->hub->connection || !b->snapshot) return;
     int before_focus=old.focused && old.visible, after_focus=current.focused && current.visible;
@@ -1789,9 +1793,11 @@ static void nx_ax_staging_cleanup(nx_linux_ax *b) {
     if(spare)b->allocator.deallocate(b->allocator.user,spare,spare->capacity);
     lease_release(b->lease);b->lease=NULL;
 }
-nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocator allocator,const nx_context *context) {
+nx_result nx_linux_ax_publish_owner(nx_linux_ax **address,nx_linux_ax_owner owner,nx_allocator allocator,const nx_context *context) {
+    if(!address || !owner.object || !owner.geometry || !owner.revision || !owner.current || !context)
+        return NX_ERROR_ARGUMENT;
     nx_linux_ax *b=*address,staging={0};int created=!b;
-    uint64_t revision=nx_linux_window_ax_revision(window);
+    uint64_t revision=owner.revision(owner.object);
     uint64_t binding=nx_context_identity(context),frame=nx_context_frame_serial(context);
     if(created) {
         const char *disabled=getenv("NO_AT_BRIDGE");
@@ -1802,12 +1808,14 @@ nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocat
         pthread_once(&nx_ax_loader_once,nx_ax_load);if(!nx_ax_loaded)return NX_ERROR_UNSUPPORTED;
         /* Stage all borrowed context data before the first application
            allocation, including the bridge allocation itself. */
-        b=&staging;b->allocator=allocator;b->thread=pthread_self();b->window=window;b->references=1;
+        b=&staging;b->allocator=allocator;b->thread=pthread_self();b->owner=owner;b->references=1;
         b->epoch=nx_native_next_identity();if(!b->epoch)return NX_ERROR_LIMIT;
         b->lease=calloc(1,sizeof(*b->lease));if(!b->lease)return NX_ERROR_MEMORY;
         atomic_init(&b->lease->references,1);b->lease->thread=pthread_self();b->lease->generation=1;b->lease->live=1;
     } else {
-        if(!pthread_equal(pthread_self(),b->thread) || b->retired)return NX_ERROR_STATE;
+        if(!pthread_equal(pthread_self(),b->thread) || b->retired || b->owner.object!=owner.object ||
+           b->owner.geometry!=owner.geometry || b->owner.focus!=owner.focus ||
+           b->owner.revision!=owner.revision || b->owner.current!=owner.current)return NX_ERROR_STATE;
         if(b->lease->generation==UINT64_MAX)return NX_ERROR_LIMIT;
         ++b->references;
     }
@@ -1819,7 +1827,7 @@ nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocat
     if(created) {
         nx_linux_ax *allocated=allocator.allocate(allocator.user,sizeof(*allocated));
         if(!allocated){nx_ax_staging_cleanup(b);return NX_ERROR_MEMORY;}
-        if(!nx_linux_window_ax_current(window,revision) || *address) {
+        if(!owner.current(owner.object,revision) || *address) {
             allocator.deallocate(allocator.user,allocated,sizeof(*allocated));nx_ax_staging_cleanup(b);return NX_ERROR_STATE;
         }
         *allocated=staging;b=allocated;
@@ -1859,6 +1867,19 @@ nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocat
     if(!created)nx_ax_bridge_release(b);
     return result;
 }
+static void nx_ax_window_geometry(void *object,nx_linux_ax_geometry *out) {
+    nx_linux_window_ax_geometry(object,out);
+}
+static int nx_ax_window_focus(void *object) {return nx_linux_window_ax_focus(object);}
+static uint64_t nx_ax_window_revision(void *object) {return nx_linux_window_ax_revision(object);}
+static int nx_ax_window_current(void *object,uint64_t revision) {
+    return nx_linux_window_ax_current(object,revision);
+}
+nx_result nx_linux_ax_publish(nx_linux_ax **address,nx_window *window,nx_allocator allocator,const nx_context *context) {
+    nx_linux_ax_owner owner={window,nx_ax_window_geometry,nx_ax_window_focus,
+                             nx_ax_window_revision,nx_ax_window_current};
+    return nx_linux_ax_publish_owner(address,owner,allocator,context);
+}
 void nx_linux_ax_destroy(nx_linux_ax *b) {
     if(!b || !pthread_equal(pthread_self(),b->thread) || b->retired)return;
     b->retired=1;b->lease->live=0;b->lease->snapshot=NULL;b->lease->context=0;
@@ -1879,7 +1900,7 @@ void nx_linux_ax_destroy(nx_linux_ax *b) {
     /* A detach may retire the last window on this connection. Give already
        queued negative replies a nonblocking write before closing that bus. */
     if(h->connection && !h->failed)d.connection_read_write(h->connection,0);
-    b->hub=NULL;b->window=NULL;
+    b->hub=NULL;b->owner.object=NULL;
     /* Reset hub ownership before any application deallocator: a callback may
        create a fresh window and connection in the same thread-local storage. */
     if(!h->windows){nx_ax_disconnect(h);nx_ax_thread_hub=NULL;*h=(nx_ax_hub){0};}

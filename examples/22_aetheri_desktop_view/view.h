@@ -16,6 +16,8 @@ typedef struct aetheri_desktop_intent {
 } aetheri_desktop_intent;
 /* Model and font bytes are borrowed until destroy. No process or role is owned. */
 int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out);
+int aetheri_desktop_view_create_with_context(struct ae_desktop_model *model,const void *font,size_t length,
+    const nx_context_desc *context_desc,aetheri_desktop_view **out);
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *view);
 /* Optional ordinary NexaUI window for IME and clipboard. The caller keeps it
    alive until this is cleared and the view completes another frame. */

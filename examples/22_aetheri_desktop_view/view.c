@@ -18,17 +18,21 @@ void aetheri_desktop_view_destroy(aetheri_desktop_view *v) {
     if(!v)return;
     nx_context_destroy(v->context);nx_text_field_destroy(v->query);nx_font_collection_destroy(v->fonts);nx_font_close(v->font);free(v);
 }
-int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out) {
+int aetheri_desktop_view_create_with_context(struct ae_desktop_model *model,const void *font,size_t length,
+    const nx_context_desc *context_desc,aetheri_desktop_view **out) {
     if(!out)return 0;
     *out=NULL;
     if(!model || !font || !length)return 0;
     aetheri_desktop_view *v=calloc(1,sizeof(*v));if(!v)return 0;v->model=model;
-    if(nx_context_create(NULL,&v->context)!=NX_OK || nx_font_open(font,length,NULL,&v->font)!=NX_OK ||
+    if(nx_context_create(context_desc,&v->context)!=NX_OK || nx_font_open(font,length,NULL,&v->font)!=NX_OK ||
        nx_font_collection_create(NULL,&v->fonts)!=NX_OK || nx_font_collection_add(v->fonts,v->font)!=NX_OK ||
        nx_text_field_create("",0,4096,&v->query)!=NX_OK) {
         aetheri_desktop_view_destroy(v);return 0;
     }
     *out=v;return 1;
+}
+int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out) {
+    return aetheri_desktop_view_create_with_context(model,font,length,NULL,out);
 }
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *v) {return v?v->context:NULL;}
 nx_result aetheri_desktop_view_set_window(aetheri_desktop_view *v,nx_window *window) {

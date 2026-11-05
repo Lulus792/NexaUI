@@ -72,6 +72,7 @@ int main(int argc,char **argv) {
     GError *error=NULL;CHECK(atspi_editable_text_set_text_contents(editable,"Terminal",&error) && !error);
     char buffer[4096]={0};size_t used=0;
     CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"QUERY Terminal\n"));
+    if(getenv("NEXAUI_AX_REENTER"))CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"REENTER_BLOCKED\n"));
     int writable=0;
     for(unsigned n=0;n<300 && !writable;++n) {
         pump(10);atspi_accessible_clear_cache(app);
@@ -97,6 +98,16 @@ int main(int argc,char **argv) {
     CHECK(terminal);AtspiAction *action=atspi_accessible_get_action_iface(terminal);CHECK(action);
     CHECK(atspi_action_do_action(action,0,&error) && !error);
     CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"INTENT kind=2 app=2 window=0"));
+    if(getenv("NEXAUI_AX_REBIND")) {
+        CHECK(!kill(child,SIGUSR1));CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"REBOUND\n"));
+        atspi_accessible_clear_cache(field);error=NULL;
+        char *old_name=atspi_accessible_get_name(field,&error);
+        CHECK(error!=NULL);g_error_free(error);g_free(old_name);
+        AtspiAccessible *replacement=app_for_pid(desktop);CHECK(replacement);
+        AtspiAccessible *new_field=NULL;
+        for(unsigned n=0;n<200 && !new_field;++n){atspi_accessible_clear_cache(replacement);new_field=find(replacement,"Search",ATSPI_ROLE_ENTRY,0);if(!new_field)pump(10);}
+        CHECK(new_field);g_object_unref(new_field);g_object_unref(replacement);
+    }
     g_object_unref(action);g_object_unref(terminal);g_object_unref(editable);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);
     CHECK(kill(child,SIGTERM)==0);int status=0;CHECK(waitpid(child,&status,0)==child);child=-1;
     CHECK(WIFEXITED(status) && WEXITSTATUS(status)==0);close(pipes[0]);atspi_exit();

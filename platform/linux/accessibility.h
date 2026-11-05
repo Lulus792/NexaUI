@@ -9,8 +9,19 @@ typedef struct nx_linux_ax_geometry {
     double x, y, width, height;
     int screen_position, visible, focused;
 } nx_linux_ax_geometry;
+/* Internal owner contract. The owner and callbacks remain valid until the
+   bridge is destroyed, including during reentrant publication cleanup. */
+typedef struct nx_linux_ax_owner {
+    void *object;
+    void (*geometry)(void *object,nx_linux_ax_geometry *out);
+    int (*focus)(void *object);
+    uint64_t (*revision)(void *object);
+    int (*current)(void *object,uint64_t revision);
+} nx_linux_ax_owner;
 nx_result nx_linux_ax_publish(nx_linux_ax **bridge, nx_window *window,
                              nx_allocator allocator, const nx_context *context);
+nx_result nx_linux_ax_publish_owner(nx_linux_ax **bridge,nx_linux_ax_owner owner,
+                                    nx_allocator allocator,const nx_context *context);
 void nx_linux_ax_destroy(nx_linux_ax *bridge);
 int nx_linux_ax_matches(nx_linux_ax *bridge, const nx_context *context);
 nx_result nx_linux_ax_route(nx_linux_ax *bridge, nx_context *context, size_t *count);

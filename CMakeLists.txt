@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.13 LANGUAGES C)
+project(NexaUI VERSION 0.1.14 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -143,7 +143,7 @@ elseif(UNIX AND NOT APPLE)
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c
         DEPENDS ${NEXAUI_TEXT_INPUT_V3_XML}
         VERBATIM)
-    target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c
+    target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c platform/linux/accessibility_host.c
         platform/linux/wayland/window.c platform/linux/wayland/host.c
         platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c platform/linux/wayland/transfer.c platform/linux/wayland/scale.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -290,6 +290,12 @@ nexaui_audit_core_target(nexaui)
 
 if(NEXAUI_BUILD_TESTS)
     enable_testing()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_executable(nexaui_linux_accessibility_host_tests tests/test_linux_accessibility_host.c)
+        target_link_libraries(nexaui_linux_accessibility_host_tests PRIVATE NexaUI::NexaUI Threads::Threads)
+        target_compile_features(nexaui_linux_accessibility_host_tests PRIVATE c_std_17)
+        add_test(NAME nexaui_linux_accessibility_host COMMAND nexaui_linux_accessibility_host_tests)
+    endif()
     add_executable(nexaui_source_revision_tests tests/test_source_revision.c)
     target_link_libraries(nexaui_source_revision_tests PRIVATE NexaUI::NexaUI)
     if(NEXAUI_SOURCE_REVISION_NORMALIZED STREQUAL "")

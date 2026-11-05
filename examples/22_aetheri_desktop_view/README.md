@@ -34,6 +34,14 @@ removal to the view's surface-focus queue. Its callback-level focus test can be
 run as `./build/aetheri_desktop_layer_focus_test /path/to/font.ttf` when the
 layer-shell and Aetheri test protocol headers are available. It invokes host
 callbacks without a compositor and is not native device-removal acceptance.
+`NEXAUI_TEST_ATSPI=1` enables the 0.1.14 host-owned accessibility bridge in
+the private layer test host. It publishes one semantic snapshot per configured
+view and polls the bridge alongside the existing connection. Native focus is
+reported only when the host has observed it; accessibility focus requests do
+not grant a private Wayland role or establish compositor focus. Screen
+coordinates remain unavailable. The separate `aetheri_desktop_ax_host_test`
+is a headless fixture with simulated visibility and focus for independent
+AT-SPI testing, not a running Aetheri shell.
 The private `ime_transaction` helper stages bounded UTF-8 preedit, commit and
 deletion events until a protocol `done`. The layer test host can opt into its
 text-input-v3 binding with `NEXAUI_TEST_IME=1` when the compositor offers the
@@ -452,6 +460,40 @@ after the callback. Fast pointer input before the callback conservatively
 cancels the pending click. The earlier `--test-held-removal` failure remains
 open until rerun against that compositor, and a later removal is not covered by
 this mitigation. This private host is still not a production activation policy.
+
+The accessibility-host candidate based on
+`3c5eb737e0432ff4dff4800b295f40365b110dbb` was built with an installed 0.1.14
+Wayland-only, AT-SPI-enabled, Vulkan-off SDK on Alpine/WSL2. A separate
+libatspi client found the headless Aetheri model view, replaced its search text
+with `Terminal` and activated the Terminal result. GCC static/shared and Clang
+ASan/UBSan with leak detection passed; a test-only consumer that stopped applying routed
+requests caused the independent editable-text request to fail. The host API
+also passed absent-transport, invalid geometry, wrong-thread and teardown tests
+with AT-SPI enabled and disabled. The existing independent multi-selection test
+for ordinary windows passed in a private Weston/Xvfb session. An initial run
+outside the required Weston fixture skipped, and two Weston setup attempts
+failed due to missing process-local library/module paths; neither counts as a
+pass. The private-layer poll integration was built but has not been exercised
+on the Aetheri compositor. Human screenreader, native focus, three outputs and
+production acceptance remain open.
+
+In a second independent-client run, the view's context allocator attempted to
+clear and destroy its accessibility host while a text request was being routed.
+Both calls returned `NX_ERROR_STATE`, and the original text edit and Terminal
+action completed. GCC static/shared and Clang ASan/UBSan with leak detection
+passed. An isolated SDK mutant that removed the operation guard failed the same
+client request and reported the guard assertion. A separate detach/republish
+test confirmed that an old accessible object fails and the new tree is
+discoverable; a mutant omitting detach failed that old-object assertion.
+Unfinished-frame publication and routing to a different context were rejected.
+To repeat using an installed 0.1.14 SDK and the separately built client and
+fixture:
+
+```sh
+NEXAUI_AX_REENTER=1 NEXAUI_AX_REBIND=1 NEXAUI_DESKTOP_FONT=/path/to/font.ttf \
+  python3 /path/to/NexaUI/tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  ./build/aetheri_desktop_atspi_client ./build/aetheri_desktop_ax_host_test
+```
 
 The focus-forwarding candidate based on
 `b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
