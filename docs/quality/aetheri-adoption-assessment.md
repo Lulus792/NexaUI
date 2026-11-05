@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Settings renderer selection candidate (2026-11-05)
+
+Candidate based on `66fdd9aaa7729221db54c616fceb3aacae9db2ac` uses the
+existing public views: Settings attempts Vulkan first when available and falls
+back to software only for `NX_ERROR_UNSUPPORTED`, including during rendering
+after Vulkan has safely closed. Other errors are preserved. A Vulkan-linked
+binary still requires its loader at process startup; an SDK without Vulkan or
+an explicit software build does not. Selection belongs to this example, not
+an automatic toolkit-wide policy.
+
+On Alpine-Dev/WSL2, fake-backend tests checked selection, memory errors,
+unsupported rendering, failure to retire, software-open failure and device
+loss; GCC and Clang ASan/UBSan passed. Private Weston/Xvfb with Vulkan ICDs
+disabled ran the same Vulkan-linked Settings binary through software fallback,
+keyboard, AT-SPI failure/retry and simple-IME composition. The keyboard case
+also passed with Clang ASan/UBSan. A normal Vulkan virtual-keyboard run passed
+separately. An installed SDK without the Vulkan component built the copied
+consumer with Vulkan discovery disabled and passed keyboard and AT-SPI checks.
+These are virtual-input tests, not physical, Aetheri-compositor or human
+acceptance; production input methods and performance remain open.
+
 ## Wayland software Settings candidate (2026-11-05)
 
 Candidate based on `94c3074ea50a247a04270d32170965c7cb40d7ec` adds the

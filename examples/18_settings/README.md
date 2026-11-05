@@ -34,8 +34,8 @@ The example joins the simulated 250 ms worker on exit; applications with
 long-running work need their own cancellation or independent service lifetime.
 
 The example can also be built outside the NexaUI source tree against an installed
-Linux SDK containing the optional Vulkan component. Copy `CMakeLists.txt`,
-`main_linux.c`, `scene.c` and `scene.h` into a directory, then run:
+Linux SDK. Copy `CMakeLists.txt`, `main_linux.c`, `renderer.c`, `renderer.h`,
+`scene.c` and `scene.h` into a directory, then run:
 
 ```sh
 cmake -S /path/to/copied-settings -B settings-build \
@@ -47,18 +47,22 @@ LD_LIBRARY_PATH=/path/to/nexaui-sdk/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
 ```
 
 The library path is needed for a shared SDK when its library directory is not
-already configured in the system loader. A Wayland compositor, Vulkan device
-with the presentation-fence support required by the public Vulkan adapter, and
-a font are needed at runtime. This command does not install a font or provide a
-fallback for devices without that Vulkan support.
+already configured in the system loader. A Wayland compositor and a font are
+needed at runtime. When the installed SDK includes Vulkan, the runner tries it
+first and falls back to software if Vulkan reports unsupported, including when
+the required presentation fences are unavailable. Other errors remain errors.
+After a rendering-time unsupported result, Vulkan must close successfully before
+the software renderer acquires the window. The choice is printed on standard
+error; a submitted frame is not proof of physical presentation.
 
 For the Wayland software runner, add `-DNEXAUI_SETTINGS_SOFTWARE=ON` to the
 standalone configure command above. The SDK may itself be built with
 `-DNEXAUI_BUILD_VULKAN=OFF`; no Vulkan library or GPU is required by that
 runner. In a source-tree Linux build, disabling the Vulkan target also selects
 the software runner; otherwise set `NEXAUI_SETTINGS_SOFTWARE=ON` explicitly.
-Selection happens at build time, not as an automatic runtime fallback. The
-software view's shared-memory limits and lifetime are described in the
+A Vulkan-enabled binary still requires the Vulkan loader at process startup;
+choose the software build when the loader itself is absent. The software view
+is Wayland-only. Its shared-memory limits and lifetime are described in the
 [rendering contract](../../docs/concepts/rendering.md).
 
 `tests/check_installed_settings.py` exercises a copied, installed example inside
@@ -73,6 +77,8 @@ AT-SPI passed with both; simple-IME passed with the shared SDK. These automated
 checks do not replace physical-device and human accessibility acceptance.
 Set `NEXAUI_TEST_SETTINGS_SOFTWARE=1` to run the same installed-consumer checks
 with Vulkan discovery disabled and verify the executable does not link Vulkan.
+`NEXAUI_TEST_SETTINGS_NO_VULKAN_PACKAGE=1` checks automatic software selection
+at build time when the installed SDK has no Vulkan component.
 
 An independent libatspi test discovers this actual native example, activates
 Reduce motion and Apply, and requires the application to observe the applied

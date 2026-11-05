@@ -1,33 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "scene.h"
-#ifdef NEXAUI_SETTINGS_SOFTWARE
-#include "nexaui/software.h"
-typedef nx_software_view settings_renderer;
-typedef nx_software_view_outcome settings_renderer_outcome;
-#define SETTINGS_RENDER_READY NX_SOFTWARE_VIEW_READY
-#define SETTINGS_RENDER_DEVICE_LOST 0
-#define settings_renderer_open nx_software_view_open
-#define settings_renderer_close nx_software_view_close
-static nx_result settings_renderer_render(settings_renderer *renderer, nx_pixel_size pixels,
-    double scale, const nx_command *commands, size_t count, nx_color clear,
-    settings_renderer_outcome *outcome) {
-    (void)pixels; (void)scale;
-    return nx_software_view_render(renderer,commands,count,clear,outcome);
-}
-static nx_result settings_renderer_recover(settings_renderer *renderer) {
-    (void)renderer; return NX_ERROR_UNSUPPORTED;
-}
-#else
-#include "nexaui/vulkan.h"
-typedef nx_vulkan_view settings_renderer;
-typedef nx_vulkan_view_outcome settings_renderer_outcome;
-#define SETTINGS_RENDER_READY NX_VULKAN_VIEW_READY
-#define SETTINGS_RENDER_DEVICE_LOST NX_VULKAN_VIEW_DEVICE_LOST
-#define settings_renderer_open nx_vulkan_view_open
-#define settings_renderer_render nx_vulkan_view_render
-#define settings_renderer_recover nx_vulkan_view_recover
-#define settings_renderer_close nx_vulkan_view_close
-#endif
+#include "renderer.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
@@ -117,8 +90,12 @@ int main(int argc, char **argv) {
     nx_window_desc desc={german?"Einstellungsbeispiel":"Settings example",640,360,0,{0}};
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
-        !settings_create(font,font_size,window,&scene) ||
-        settings_renderer_open(window,&renderer)!=NX_OK) goto cleanup;
+        !settings_create(font,font_size,window,&scene)) goto cleanup;
+    nx_result renderer_open_result=settings_renderer_open(window,&renderer);
+    if (renderer_open_result!=NX_OK) {
+        fprintf(stderr,"Could not initialize a Settings renderer: %d\n",(int)renderer_open_result);
+        goto cleanup;
+    }
     opened=1; okay=1;
     if (german && !settings_set_language(scene,"de")) okay=0;
     if (verify_ax && (!settings_set_draft_name(scene,"A\xc3\xa9\xf0\x9f\x8c\x8d",7) ||
@@ -216,9 +193,7 @@ int main(int argc, char **argv) {
         if (nx_theme_color(settings_context(scene),NX_COLOR_BACKGROUND,&bg)!=NX_OK ||
             settings_renderer_render(renderer,pixels,info.scale,commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
         if (outcome==SETTINGS_RENDER_DEVICE_LOST && settings_renderer_recover(renderer)!=NX_OK) { okay=0; break; }
-#ifdef NEXAUI_SETTINGS_SOFTWARE
-        renderer_waiting=outcome==NX_SOFTWARE_VIEW_BUSY;
-#endif
+        renderer_waiting=outcome==SETTINGS_RENDER_BUSY;
         if (verify_keyboard_small && outcome==SETTINGS_RENDER_READY && (info.width!=(verify_keyboard_minimum?128:240) || info.height!=150)) {
             fprintf(stderr,"Unexpected small-window size %.0fx%.0f\n",info.width,info.height);
             okay=0; break;
@@ -318,7 +293,11 @@ cleanup:
             if (nx_window_poll(window,16)!=NX_OK) break;
             r=settings_renderer_close(&renderer);
         }
-        if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
+        if (r!=NX_OK) {
+            fputs("Renderer retirement incomplete\n",stderr);
+            if (renderer) return 1;
+            okay=0;
+        }
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
     if (verify_pending_close) {

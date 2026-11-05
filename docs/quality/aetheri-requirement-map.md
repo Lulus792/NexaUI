@@ -63,8 +63,10 @@ C17 package consumer also exercises the new symbol. The Linux Wayland
 `nx_software_view_*` API now adds bounded native shared-memory presentation;
 the Settings example can select it at build time without Vulkan. Controlled
 buffer/scale tests and private-Weston keyboard, AT-SPI and simple-IME checks
-cover this candidate. Automatic fallback, mixed-output acceptance and complete
-CPU/GPU parity remain open.
+cover this candidate. The Settings host now falls back on an explicit Vulkan
+unsupported result after safe retirement. A Vulkan-linked executable still
+requires its loader at startup; mixed-output and complete CPU/GPU parity remain
+open.
 
 The version-query candidate based on `e0d9b143a7f6e05b7cea4b07a3e84c679f8dd766`
 was checked on Alpine/WSL2 using fresh Wayland-only C17 consumers. Static and

@@ -120,6 +120,12 @@ def main():
         stderr_thread.join(timeout=5)
         if host.returncode:
             raise RuntimeError(f'Settings exit {host.returncode}: {"".join(stdout_lines)} {"".join(stderr_lines)}')
+        expected_renderer = os.environ.get('NEXAUI_TEST_EXPECT_RENDERER')
+        if expected_renderer:
+            expected_line = 'Settings renderer: ' + expected_renderer
+            if not any(line.strip() == expected_line for line in stderr_lines):
+                raise RuntimeError(f'Missing {expected_line}: {"".join(stderr_lines)}')
+            print(expected_line)
         if close_pending and not any(line.strip() == 'SETTINGS_PENDING_CLOSED' for line in stdout_lines):
             raise RuntimeError('Pending worker did not close through normal cleanup')
         if small:
