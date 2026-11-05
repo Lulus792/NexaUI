@@ -29,10 +29,12 @@ int main(int argc, char **argv) {
     int verify_keyboard_controls=argc==3 && !strcmp(argv[2],"--verify-keyboard-controls");
     int verify_keyboard_small=argc==3 && !strcmp(argv[2],"--verify-keyboard-small");
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
+    int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
+    int verify_ime=verify_ime_compose || verify_ime_cancel;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime_compose && !idle_probe) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
@@ -129,10 +131,10 @@ int main(int argc, char **argv) {
         if (verify_keyboard && outcome==NX_RENDER_READY && !keyboard_ready) {
             puts("SETTINGS_KEYBOARD_READY"); fflush(stdout); keyboard_ready=1;
         }
-        if (verify_ime_compose && outcome==NX_RENDER_READY && !keyboard_ready) {
+        if (verify_ime && outcome==NX_RENDER_READY && !keyboard_ready) {
             puts("SETTINGS_IME_READY"); fflush(stdout); keyboard_ready=1;
         }
-        if (verify_ime_compose && outcome==NX_RENDER_READY && nx_focus_id(settings_context(scene))==3) {
+        if (verify_ime && outcome==NX_RENDER_READY && nx_focus_id(settings_context(scene))==3) {
             if (!ime_focus_reported) { puts("SETTINGS_IME_FOCUSED"); fflush(stdout); ime_focus_reported=1; }
             uint32_t index; nx_semantic_view view; nx_utf8_span applied; int motion=0;
             char preedit[16]; size_t preedit_length=0; int32_t begin=0,end=0;
@@ -144,7 +146,13 @@ int main(int argc, char **argv) {
             if (!ime_stage && preedit_length==1 && preedit[0]=='\'') {
                 if (view.value.length!=7 || memcmp(view.value.data,"Aetheri",7)) { okay=0; break; }
                 puts("SETTINGS_IME_PREEDIT"); fflush(stdout); ime_stage=1;
-            } else if (ime_stage==1 && !preedit_length && view.value.length==9 &&
+            } else if (verify_ime_cancel && ime_stage==1 && !preedit_length &&
+                       view.value.length==7 && !memcmp(view.value.data,"Aetheri",7)) {
+                puts("SETTINGS_IME_CANCELLED"); fflush(stdout); ime_stage=2;
+            } else if (verify_ime_cancel && ime_stage==2 && !preedit_length &&
+                       view.value.length==8 && !memcmp(view.value.data,"Aetheria",8)) {
+                puts("SETTINGS_IME_AFTER_RETURN"); fflush(stdout); ime_stage=3; break;
+            } else if (verify_ime_compose && ime_stage==1 && !preedit_length && view.value.length==9 &&
                        !memcmp(view.value.data,"Aetheri\xc3\xa1",9)) {
                 puts("SETTINGS_IME_COMMITTED"); fflush(stdout); ime_stage=2; break;
             }
@@ -201,8 +209,9 @@ cleanup:
         if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
-    if (verify_ime_compose && okay && ime_stage==2) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
-    else if (verify_ime_compose) okay=0;
+    if (verify_ime && okay && ((verify_ime_compose && ime_stage==2) ||
+                               (verify_ime_cancel && ime_stage==3))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
+    else if (verify_ime) okay=0;
     if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits);
     if (!okay) fputs("Settings example failed\n",stderr);
     return okay ? 0 : 1;

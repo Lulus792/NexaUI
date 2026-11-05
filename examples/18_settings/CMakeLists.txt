@@ -73,6 +73,11 @@ if(NEXAUI_BUILD_TESTS)
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE})
                 set_tests_properties(nexaui_settings_wayland_simple_ime PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_simple_ime_focus_cancel
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_simple_ime.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --cancel)
+                set_tests_properties(nexaui_settings_wayland_simple_ime_focus_cancel PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
+                    RESOURCE_LOCK native_display)
                 add_test(NAME nexaui_settings_wayland_keyboard
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE})

@@ -515,3 +515,29 @@ installation. This narrow virtual-input check does not resolve the separate
 cancellation, production IMEs, visual sharpness or human accessibility.
 The [Weston 14.0.2 simple-IME source](https://github.com/wayland-mirror/weston/blob/14.0.2/clients/simple-im.c)
 documents the test input method's compose table and event handling.
+
+## Simple-IME cancellation on window focus loss (2026-11-05)
+
+Candidate based on `30a922b20196a451ebc9d5e5947c67da18530f1d` adds an
+opt-in real-input focus-loss case alongside the compose test. Once the
+apostrophe preedit is active, a separate, disposable X11 window on the private
+Xvfb server takes focus. Settings must observe the preedit clear with its
+`Aetheri` draft and applied model unchanged. After focus returns, the test
+waits for a new Wayland keyboard enter and text-input enter, types `a`, and
+requires draft `Aetheria`, no stale `á` commit, unchanged applied model and
+normal cleanup. The saved trace confirms preedit, keyboard leave, text-input
+deactivation, keyboard and text-input re-entry, and the plain `a` commit in
+that order. This tests focus loss between windows, not between controls.
+
+Both real-IME tests passed on private Weston 14/Xvfb in the GCC shared and
+Clang ASan/UBSan static builds; the four ordinary Settings keyboard tests also
+passed with Weston's default test input method. In a private negative-control copy, focusing
+Weston again instead of the peer made the cancellation expectation time out.
+The negative log is `/tmp/nexaui-ime-cancel-negative.log` (SHA-256
+`487166efb9f5213ac374093a5a3b7cc06a6868b4b60563603f8dde65c834de96`);
+the deliberately interrupted test fixture logged a broken pipe on teardown.
+The final GCC trace is retained in ignored local artifact
+`out/aetheri-ime-focus-cancel-20261105-trace.txt` (SHA-256
+`ee9bcad8cbfaa6119cfc965350c74ad64b816ec021d8250c53f3d23436aa813f`).
+The previously documented `weston-simple-im` keyboard workflow, production
+IME variants, mixed-scale focus changes and human acceptance remain open.

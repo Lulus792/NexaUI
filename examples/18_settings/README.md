@@ -90,3 +90,13 @@ exits. The test uses evdev X11 keycode 108 for right Alt; a different XKB map
 must be adapted rather than counted as a pass. Set `NEXAUI_TEST_IME_TRACE` to
 an output path to retain the test process's Wayland trace; it includes the
 example's fixed draft text and is not intended for real private data.
+
+The same opt-in selection also runs
+`nexaui_settings_wayland_simple_ime_focus_cancel`. Once the preedit is visible
+to the application, a second X11 window on that private Xvfb takes keyboard
+focus. The test requires Wayland keyboard leave and text-input deactivation,
+checks that the draft and applied model stayed unchanged, restores focus, and
+verifies that typing `a` inserts only `a` rather than the abandoned composition.
+The peer is destroyed before the private X server exits. This checks window
+focus loss in the virtual fixture, not focus changes between individual controls
+or physical/human interaction.
