@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L10/A02/I01: on base `504943f7be51d9b5d0d4ec869f2ccc4162d04e6f`, the
+native nested-keyboard fixture draws font-backed labels and an independent
+AT-SPI client checks blocked/enabled/focused states during the same workflow.
+Human visual and assistive review and real Aetheri acceptance remain open;
+see the [candidate evidence](aetheri-adoption-assessment.md#labeled-nested-dialog-with-independent-at-spi-2026-11-05).
+
 L10/I01: on base `9228a2306f46c91bc7eb97dbdfb0593ba8c709ee`, virtual
 keyboard input opened a modal and nested menu, activated a menu item and
 restored focus through both levels on private Weston. The fixture lacks drawn

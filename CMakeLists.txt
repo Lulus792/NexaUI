@@ -855,11 +855,16 @@ if(NEXAUI_BUILD_TESTS)
             add_executable(nexaui_wayland_nested_keyboard_host tests/wayland_nested_keyboard_host.c)
             target_link_libraries(nexaui_wayland_nested_keyboard_host PRIVATE NexaUI::NexaUI)
             target_compile_features(nexaui_wayland_nested_keyboard_host PRIVATE c_std_17)
-            add_test(NAME nexaui_wayland_nested_keyboard
-                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_nested_keyboard.py
-                    $<TARGET_FILE:nexaui_wayland_nested_keyboard_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL})
-            set_tests_properties(nexaui_wayland_nested_keyboard PROPERTIES
-                TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            target_compile_options(nexaui_wayland_nested_keyboard_host PRIVATE -Wall -Wextra -Wpedantic)
+            include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/NexaUIExampleFont.cmake)
+            nexaui_find_example_font(_nested_keyboard_font)
+            if(_nested_keyboard_font)
+                add_test(NAME nexaui_wayland_nested_keyboard
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_nested_keyboard.py
+                        $<TARGET_FILE:nexaui_wayland_nested_keyboard_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL} ${_nested_keyboard_font})
+                set_tests_properties(nexaui_wayland_nested_keyboard PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            endif()
             add_executable(nexaui_wayland_numeric_peer_host tests/wayland_numeric_peer_host.c)
             target_link_libraries(nexaui_wayland_numeric_peer_host PRIVATE NexaUI::NexaUI)
             target_compile_features(nexaui_wayland_numeric_peer_host PRIVATE c_std_17)
@@ -899,6 +904,20 @@ if(NEXAUI_BUILD_TESTS)
             PATHS /usr/libexec /usr/lib/at-spi2-core)
         if(NEXAUI_DBUS_FOUND AND NEXAUI_ATSPI_FOUND AND NEXAUI_ATSPI_REGISTRY
                 AND NEXAUI_DBUS_DAEMON AND NEXAUI_DBUS_SEND AND Python3_Interpreter_FOUND)
+            find_program(NEXAUI_NESTED_DBUS_SESSION dbus-run-session)
+            if(TARGET nexaui_wayland_nested_keyboard_host AND _nested_keyboard_font AND NEXAUI_NESTED_DBUS_SESSION)
+                add_executable(nexaui_wayland_nested_atspi_probe tests/wayland_nested_atspi_probe.c)
+                target_link_libraries(nexaui_wayland_nested_atspi_probe PRIVATE PkgConfig::NEXAUI_ATSPI)
+                target_compile_features(nexaui_wayland_nested_atspi_probe PRIVATE c_std_17)
+                target_compile_options(nexaui_wayland_nested_atspi_probe PRIVATE -Wall -Wextra -Wpedantic)
+                add_test(NAME nexaui_wayland_nested_keyboard_atspi
+                    COMMAND ${NEXAUI_NESTED_DBUS_SESSION} -- ${Python3_EXECUTABLE}
+                        ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_nested_keyboard.py
+                        $<TARGET_FILE:nexaui_wayland_nested_keyboard_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL}
+                        ${_nested_keyboard_font} $<TARGET_FILE:nexaui_wayland_nested_atspi_probe>)
+                set_tests_properties(nexaui_wayland_nested_keyboard_atspi PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            endif()
             add_executable(nexaui_linux_atspi_client tests/linux_atspi_client.c)
             target_link_libraries(nexaui_linux_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)
             target_compile_definitions(nexaui_linux_atspi_client PRIVATE NEXAUI_EXPECTED_VERSION="${PROJECT_VERSION}")

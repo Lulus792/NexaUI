@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Labeled nested dialog with independent AT-SPI (2026-11-05)
+
+On the candidate based on `504943f7be51d9b5d0d4ec869f2ccc4162d04e6f`,
+the native nested-dialog fixture shapes and paints its four control labels with
+the selected example font, and rejects frames without glyph bitmap commands.
+It publishes the same frame's semantics. In a private Weston/D-Bus session,
+the original virtual-keyboard flow now runs alongside an independent libatspi
+client: the client finds the dialog trigger enabled and focused, observes it
+disabled while the first menu action is enabled and focused, and sees the
+trigger enabled and focused again after Escape. The action itself remains
+keyboard-driven and is verified by the host's counter.
+
+Both keyboard-only and keyboard-plus-AT-SPI cases passed using DejaVu Sans in
+GCC static and shared Debug and Clang ASan/UBSan Debug with leak detection
+(two cases per profile). An intentional probe expecting the covered trigger to
+be enabled failed at the menu state check; the result is
+`/tmp/nexaui-nested-accessible-negative-20261105-a/result.json`. The static
+tests were rerun after restoring the probe and enabling compiler warnings.
+The registered tests require a discoverable example font; the AT-SPI case
+additionally requires the libatspi and private D-Bus tools.
+
+These checks establish glyph command emission and native semantic states, not
+human inspection of pixels, a screenreader task, physical input, other
+compositors or actual Aetheri adoption. No SDK API or implementation changed;
+L10 and A02 remain open for their full acceptance.
+
 ## Native keyboard for a nested modal and menu (2026-11-05)
 
 On the candidate based on `9228a2306f46c91bc7eb97dbdfb0593ba8c709ee`,
