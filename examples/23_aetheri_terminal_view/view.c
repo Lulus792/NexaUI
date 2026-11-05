@@ -66,7 +66,8 @@ static nx_cell_grid_desc grid(const aetheri_terminal_view *v) {
         .row_stride=v->columns,.cell_capacity=v->rows*v->columns,.glyph_cache_bytes=65536,
         .mask_budget_bytes=NX_CELL_GRID_MAX_MASK_BYTES,.cursor_color={.64f,.78f,1,1}};
 }
-nx_result aetheri_terminal_view_frame(aetheri_terminal_view *v,uint64_t revision,float scale) {
+nx_result aetheri_terminal_view_frame_with_overlay(aetheri_terminal_view *v,uint64_t revision,float scale,
+    aetheri_terminal_overlay overlay,void *user) {
     if(!v || !revision || !isfinite(scale) || scale<=0)return NX_ERROR_ARGUMENT;
     if(v->last_revision && revision<v->last_revision)return NX_ERROR_STATE;
     struct ae_terminal *m=v->desc.model;
@@ -132,12 +133,16 @@ nx_result aetheri_terminal_view_frame(aetheri_terminal_view *v,uint64_t revision
     nx_semantic_desc text={.id=2,.parent_id=1,.role=NX_ROLE_TEXT,.bounds=d.bounds,
         .name={"Visible terminal text",21},.value={v->text,v->text_length},.state=NX_SEM_READONLY};
     r=nx_draw_cell_grid(v->context,&d);
+    if(r==NX_OK && overlay)r=overlay(user,v->context,&v->desc);
     if(r==NX_OK)r=nx_semantics_add(v->context,&root,NULL);
     if(r==NX_OK)r=v->has_caret?
         nx_semantics_add_readonly_text_snapshot(v->context,&text,v->desc.text_identity,v->anchor,v->cursor,NULL):
         nx_semantics_add_readonly_text_snapshot_without_caret(v->context,&text,v->desc.text_identity,NULL);
     nx_result end=nx_end_frame(v->context);if(r!=NX_OK)return r;if(end!=NX_OK)return end;
     v->revision=revision;return NX_OK;
+}
+nx_result aetheri_terminal_view_frame(aetheri_terminal_view *v,uint64_t revision,float scale) {
+    return aetheri_terminal_view_frame_with_overlay(v,revision,scale,NULL,NULL);
 }
 nx_result aetheri_terminal_view_cells(const aetheri_terminal_view *v,uint64_t revision,
     const nx_cell_view **cells,size_t *rows,size_t *columns) {

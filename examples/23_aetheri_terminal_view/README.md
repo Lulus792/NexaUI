@@ -360,9 +360,10 @@ the multibyte test.
 This is an adapter experiment, not an IME-complete terminal. On the original
 `47d7436` base, Wayland preedit notifications were not tagged with an
 application epoch; the later guarded snapshot below addresses that case.
-The example does not draw the composition or forward commits to a PTY. Actual
-Aetheri, installed IME, scale, focus, physical input and human accessibility
-acceptance remain open.
+At that base the example did not draw the composition or forward commits to a
+PTY; later experiments below address those pieces under controlled conditions.
+Actual Aetheri, installed IME, scale, focus, physical input and human
+accessibility acceptance remain open.
 
 On NexaUI base `006cc663cf38111e8fcdebc18718ac79a64e89cb`, version 0.1.16
 adds Wayland v1/v3 commit-boundary and filtered-input flags to existing scalar
@@ -419,3 +420,32 @@ are bounded synchronous fixture helpers: an app must integrate a nonblocking
 write queue, focus/foreground ownership and process shutdown itself. Preedit
 painting, real focus changes, real-session and human acceptance remain open.
 An isolated mutant that discarded the approved commit failed the marker check.
+
+### Composition overlay on the terminal grid
+
+On NexaUI base `99c2787b2f1d6855900265220d6f3b57bc4365f6`, the optional
+IME example paints Aetheri's original composition viewport as a temporary
+overlay using the existing cell-grid API. It follows the draft cursor, uses
+the full row near the right edge, shows the composition selection and clipping
+indicators, and exposes logical candidate-caret geometry to the owner. The
+owner supplies the original width and combining-mark policies; missing mark
+positioning, excessive marks, invalid state and scrolled-back views are
+rejected rather than silently changing the model. The confirmed terminal text
+and its read-only semantic snapshot remain unchanged. A view's optional
+overlay callback is owner-thread, must not reenter or mutate the view/model,
+and leaves unmodified existing callers on the original frame path.
+
+`aetheri_terminal_ime_overlay_test /path/to/monospace.ttf` exercises wide and
+combining cells, selection, visible/hidden caret, long draft scrolling, edge
+fallback, stale owner guard and unchanged semantic text. It passed against
+static/shared and Clang ASan/UBSan installed SDKs on Alpine/WSL at raster
+scales 1, 1.5 and 2. An optional `NEXAUI_IME_OVERLAY_PPM=/tmp/frame.ppm`
+writes the synthetic first frame; a mutant that omitted the overlay failed the
+pixel and mark checks. The DejaVu Mono test font did not contain the selected
+CJK glyph, so its glyph appeared as a missing-glyph box in the inspected
+image: font fallback and complete Unicode shaping remain open.
+
+This is not an installed-IME or real-Aetheri visual pass. Candidate placement
+still needs connection to the live native window, and preedit text is not yet
+published as a separate accessible composition; the unchanged read-only
+terminal snapshot must not be mistaken for full screenreader acceptance.

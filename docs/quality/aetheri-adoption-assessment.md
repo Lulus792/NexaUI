@@ -2833,6 +2833,23 @@ Real Aetheri focus transitions, installed IMEs, preedit rendering, PTY input,
 physical interaction and human assistive acceptance are not established by
 these controlled tests.
 
+## Aetheri terminal composition overlay — 5 November 2026
+
+On NexaUI base `99c2787b2f1d6855900265220d6f3b57bc4365f6`, the optional
+[composition overlay](../../examples/23_aetheri_terminal_view/README.md#composition-overlay-on-the-terminal-grid)
+paints the original Aetheri composition viewport through the existing cell
+grid and returns logical candidate-caret geometry. The confirmed terminal
+snapshot remains unchanged. Static/shared and Clang ASan/UBSan tests covered
+selection, wide and combining cell placement, caret visibility, long-draft
+scrolling, stale guards and raster scales 1, 1.5 and 2. A mutant omitting the
+overlay failed. A synthetic headless frame was inspected; its test font lacked
+the CJK glyph, so the missing-glyph box remains a documented font-fallback
+gap, not successful script coverage.
+
+Accessible preedit publication, actual native candidate placement, installed
+IME, production Aetheri integration, physical input and human visual and
+screenreader acceptance remain open.
+
 ## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
 
 On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional

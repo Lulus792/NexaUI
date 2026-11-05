@@ -17,11 +17,17 @@ typedef struct aetheri_terminal_view_desc {
     aetheri_terminal_mark_position mark_position;
     void *mark_user;
 } aetheri_terminal_view_desc;
+/* Optional app-owned overlay, called inside the frame after the terminal grid.
+   It must not mutate the model, destroy/reenter the view or retain the context. */
+typedef nx_result (*aetheri_terminal_overlay)(void *user,nx_context *context,
+    const aetheri_terminal_view_desc *desc);
 nx_result aetheri_terminal_view_create(const aetheri_terminal_view_desc *desc,aetheri_terminal_view **out);
 void aetheri_terminal_view_destroy(aetheri_terminal_view *view);
 /* revision increases on every owner model mutation, including selection clear
    and resize. Snapshot content is visible cells only; no history is copied. */
 nx_result aetheri_terminal_view_frame(aetheri_terminal_view *view,uint64_t revision,float raster_scale);
+nx_result aetheri_terminal_view_frame_with_overlay(aetheri_terminal_view *view,uint64_t revision,
+    float raster_scale,aetheri_terminal_overlay overlay,void *user);
 nx_context *aetheri_terminal_view_context(aetheri_terminal_view *view);
 /* Borrowed until next frame/destroy; helpers reject a changed owner revision. */
 nx_result aetheri_terminal_view_cells(const aetheri_terminal_view *view,uint64_t revision,
