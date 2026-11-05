@@ -59,7 +59,11 @@ and range reads, and character-granularity `GetStringAtOffset`. Offsets count
 Unicode scalar values rather than UTF-8 bytes. A single text reply is limited to
 1 MiB; invalid ranges and oversized replies return errors. Unsupported text
 operations return `NotSupported`, including text geometry, attributes and
-non-character granularities. Caret and a single text selection can be moved
+non-character granularities. An application can also publish its own bounded,
+read-only text snapshot with `nx_semantics_add_readonly_text_snapshot`; its
+UTF-8 byte positions are translated to AT-SPI scalar offsets. This snapshot
+rejects native caret, selection and editing requests, because its model belongs
+to the application. Caret and a single text selection in built-in fields can be moved
 through deferred AT-SPI requests, including on read-only fields. Offsets must
 correspond to text-buffer grapheme boundaries; a position inside a grapheme is
 rejected. Disabled, protected and stale targets are rejected. On changed published

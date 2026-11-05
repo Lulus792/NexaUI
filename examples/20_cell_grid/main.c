@@ -48,6 +48,32 @@ static int snapshot(const app_model *model,const nx_font *font,nx_cell_view *vie
     }
     return 1;
 }
+/* This mapping belongs to the application, which knows cell spans and marks.
+   A wide cell contributes one scalar and a combining mark contributes another. */
+static int append_utf8(char *text,size_t capacity,size_t *length,uint32_t scalar) {
+    unsigned n=scalar<0x80?1:scalar<0x800?2:scalar<0x10000?3:4;
+    if(scalar>0x10ffff || (scalar>=0xd800 && scalar<=0xdfff) || capacity-*length<n)return 0;
+    if(n==1)text[(*length)++]=(char)scalar;
+    else {
+        for(unsigned i=n-1;i>0;--i)text[*length+i]=(char)(0x80|(scalar&0x3f)),scalar>>=6;
+        text[*length]=(char)((n==2?0xc0:n==3?0xe0:0xf0)|scalar); *length+=n;
+    }
+    return 1;
+}
+static int text_snapshot(const app_model *model,char *text,size_t capacity,size_t *length,size_t *cursor) {
+    *length=0; *cursor=0;
+    for(unsigned r=0;r<ROWS;++r) {
+        for(unsigned c=0;c<COLS;++c) {
+            const app_cell *cell=&model->cells[r][c];
+            if(!r && c==model->cursor)*cursor=*length;
+            if(!cell->span)continue;
+            if(!append_utf8(text,capacity,length,cell->scalar) ||
+               (cell->mark && !append_utf8(text,capacity,length,cell->mark)))return 0;
+        }
+        if(r+1<ROWS && !append_utf8(text,capacity,length,'\n'))return 0;
+    }
+    return 1;
+}
 int main(int argc,char **argv) {
     int verify=argc==3 && !strcmp(argv[2],"--verify");
     if(argc!=2 && !verify){fputs("usage: nexaui_cell_grid_example FONT [--verify]\n",stderr);return 2;}
@@ -79,15 +105,25 @@ int main(int argc,char **argv) {
         } while(available);
         if(!okay || !dirty)continue;
         nx_cell_view cells[ROWS*COLS]; if(!snapshot(&model,font,cells)){okay=0;break;}
+        char visible_text[ROWS*COLS*8+ROWS]; size_t text_length=0,text_cursor=0;
+        if(!text_snapshot(&model,visible_text,sizeof(visible_text),&text_length,&text_cursor)){okay=0;break;}
+        nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
+            .name={"Cell grid example",17}};
+        nx_semantic_desc text={.id=2,.parent_id=1,.role=NX_ROLE_TEXT,.bounds={0,0,info.width,info.height},
+            .name={"Visible terminal cells",22},.value={visible_text,text_length},.state=NX_SEM_READONLY};
         nx_cell_grid_desc desc={.bounds={0,0,info.width,info.height},.cell_width=20,.cell_height=30,
             .baseline=23,.pixels_per_em=20,.cells=cells,.rows=ROWS,.columns=COLS,.row_stride=COLS,
             .cell_capacity=ROWS*COLS,
             .glyph_cache_bytes=65536,.mask_budget_bytes=1024*1024,.cursor_color={1,.75f,.15f,1}};
         const nx_command *commands=NULL; size_t count=0; nx_software_view_outcome outcome;
         if(nx_context_set_text_raster_scale(ctx,info.scale)!=NX_OK || nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK ||
-           nx_draw_cell_grid(ctx,&desc)!=NX_OK || nx_end_frame(ctx)!=NX_OK ||
+           nx_draw_cell_grid(ctx,&desc)!=NX_OK || nx_semantics_add(ctx,&root,NULL)!=NX_OK ||
+           nx_semantics_add_readonly_text_snapshot(ctx,&text,1,text_cursor,text_cursor,NULL)!=NX_OK ||
+           nx_end_frame(ctx)!=NX_OK ||
            nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
            nx_software_view_render(renderer,commands,count,(nx_color){0,0,0,1},&outcome)!=NX_OK) {okay=0;break;}
+        nx_result ax=nx_window_publish_semantics(window,ctx);
+        if(ax!=NX_OK && ax!=NX_ERROR_UNSUPPORTED){okay=0;break;}
         waiting=outcome==NX_SOFTWARE_VIEW_BUSY; dirty=outcome!=NX_SOFTWARE_VIEW_READY;
         if(outcome!=NX_SOFTWARE_VIEW_READY)continue;
         if(verify && !ready){puts("CELL_GRID_READY");fflush(stdout);ready=1;}

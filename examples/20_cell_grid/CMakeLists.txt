@@ -12,13 +12,26 @@ target_link_libraries(nexaui_cell_grid_example PRIVATE NexaUI::NexaUI)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     install(TARGETS nexaui_cell_grid_example RUNTIME DESTINATION bin)
 endif()
-if(NEXAUI_BUILD_TESTS AND Python3_Interpreter_FOUND AND NEXAUI_XDOTOOL_EXECUTABLE)
+if(NEXAUI_BUILD_TESTS AND Python3_Interpreter_FOUND)
     include("${PROJECT_SOURCE_DIR}/cmake/NexaUIExampleFont.cmake")
     nexaui_find_example_font(_grid_font)
     if(EXISTS "${_grid_font}")
-        add_test(NAME nexaui_cell_grid_native_keyboard
-            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py"
-                    $<TARGET_FILE:nexaui_cell_grid_example> "${_grid_font}" "${NEXAUI_XDOTOOL_EXECUTABLE}")
-        set_tests_properties(nexaui_cell_grid_native_keyboard PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        if(NEXAUI_XDOTOOL_EXECUTABLE)
+            add_test(NAME nexaui_cell_grid_native_keyboard
+                COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py"
+                        $<TARGET_FILE:nexaui_cell_grid_example> "${_grid_font}" "${NEXAUI_XDOTOOL_EXECUTABLE}")
+            set_tests_properties(nexaui_cell_grid_native_keyboard PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        endif()
+        if(TARGET PkgConfig::NEXAUI_ATSPI AND NEXAUI_ATSPI_REGISTRY)
+            add_executable(nexaui_cell_grid_atspi_client atspi_client.c)
+            target_link_libraries(nexaui_cell_grid_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            target_compile_features(nexaui_cell_grid_atspi_client PRIVATE c_std_17)
+            add_test(NAME nexaui_cell_grid_native_atspi
+                COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py"
+                    "${NEXAUI_ATSPI_REGISTRY}" $<TARGET_FILE:nexaui_cell_grid_atspi_client>
+                    $<TARGET_FILE:nexaui_cell_grid_example>)
+            set_tests_properties(nexaui_cell_grid_native_atspi PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_CELL_GRID_FONT=${_grid_font}" RESOURCE_LOCK native_display)
+        endif()
     endif()
 endif()

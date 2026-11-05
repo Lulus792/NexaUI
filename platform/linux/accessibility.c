@@ -77,7 +77,7 @@ typedef struct nx_ax_node {
     nx_text_selection_snapshot text_selection;
     size_t text_bytes;
     int32_t text_count, text_anchor, text_cursor;
-    int text_ready;
+    int text_ready, text_snapshot_only;
     int owner_multiple;
     char *name, *description, *value;
 } nx_ax_node;
@@ -416,6 +416,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
         n->text_selection=nx_context_text_selection_snapshot(context,v.id);
         n->text_target=nx_context_text_value_target(context,v.id);
+        n->text_snapshot_only=nx_context_text_snapshot_only(context,v.id);
         n->raw_parent=n->parent=nx_ax_find(s,v.parent_id);
         n->first=n->last=n->next=n->owner=n->selected=n->selected_last=n->next_selected=NX_AX_NONE;
         n->target=nx_context_selection_target(context,n->id);
@@ -449,6 +450,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
             b->snapshot->nodes[old].text_ready==n->text_ready &&
+            b->snapshot->nodes[old].text_snapshot_only==n->text_snapshot_only &&
             nx_ax_editable(&b->snapshot->nodes[old])==nx_ax_editable(n) &&
             !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED);
         if (same && n->text_ready) {
@@ -787,7 +789,7 @@ static int nx_ax_queue(nx_ax_ref r,uint32_t action) {
 static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ranged,
                             size_t start,size_t end,int selection,int clipboard,DBusMessage *call,DBusMessage *reply) {
     nx_linux_ax *b=ref.window;nx_ax_node *n=nx_ax_node_at(ref);
-    if(!b || !n || b->retired || !b->lease->live || !n->text_ready ||
+    if(!b || !n || b->retired || !b->lease->live || !n->text_ready || n->text_snapshot_only ||
        (n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) ||
        (!selection && ((n->state&NX_SEM_READONLY) || !(n->actions&NX_ACTION_SET_VALUE))))return 0;
     if(length>NX_TEXT_VALUE_MAX_BYTES || nx_utf8_validate(value,length,NULL)!=NX_OK)return 0;

@@ -1794,6 +1794,17 @@ NX_API uint64_t nx_focus_id(const nx_context *context);
    expire at the next begin_frame or context destruction. */
 NX_API nx_result nx_semantics_add(nx_context *context,
                                   const nx_semantic_desc *desc, uint32_t *out_index);
+/* Publish an application-owned, non-protected, read-only text snapshot.
+   desc must have role NX_ROLE_TEXT, state NX_SEM_READONLY, and no SET_VALUE
+   action. value is copied; it may contain at most 65536 UTF-8 bytes. Anchor
+   and cursor are UTF-8 byte offsets at scalar boundaries in that value. The
+   nonzero identity must remain stable for the lifetime of the text object and
+   change when that object is replaced. The application owns all selection and
+   text changes; native requests to change this snapshot are rejected. Linux
+   exposes the snapshot through its supported AT-SPI Text operations. */
+NX_API nx_result nx_semantics_add_readonly_text_snapshot(nx_context *context,
+    const nx_semantic_desc *desc, uint64_t identity, size_t anchor_byte,
+    size_t cursor_byte, uint32_t *out_index);
 NX_API nx_result nx_semantics_count(const nx_context *context, size_t *out_count);
 NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);

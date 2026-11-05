@@ -109,6 +109,7 @@ typedef struct nx_semantic_record {
     uint32_t state, actions;
     nx_text_value_target text_value;
     nx_text_selection_snapshot text_selection;
+    int text_snapshot_only;
     nx_selection_target selection_target;
     uint64_t selection_membership;
     nx_selection_model *selection_model; /* Building frame only. */
@@ -1616,6 +1617,31 @@ nx_result nx_semantics_add(nx_context *ctx, const nx_semantic_desc *desc, uint32
     return nx_semantics_add_impl(ctx, desc, out_index, 0);
 }
 
+nx_result nx_semantics_add_readonly_text_snapshot(nx_context *ctx,
+    const nx_semantic_desc *desc, uint64_t identity, size_t anchor, size_t cursor,
+    uint32_t *out_index) {
+    if (out_index) *out_index = UINT32_MAX;
+    if (!ctx || !desc || !identity || desc->role != NX_ROLE_TEXT ||
+        !(desc->state & NX_SEM_READONLY) || (desc->state & NX_SEM_PROTECTED) ||
+        (desc->actions & NX_ACTION_SET_VALUE))
+        return NX_ERROR_ARGUMENT;
+    if (desc->value.length > NX_TEXT_VALUE_MAX_BYTES) return NX_ERROR_LIMIT;
+    if (!nx_valid_span(desc->value)) return NX_ERROR_ARGUMENT;
+    if (anchor > desc->value.length || cursor > desc->value.length ||
+        (anchor < desc->value.length && ((unsigned char)desc->value.data[anchor] & 0xc0u) == 0x80u) ||
+        (cursor < desc->value.length && ((unsigned char)desc->value.data[cursor] & 0xc0u) == 0x80u))
+        return NX_ERROR_ARGUMENT;
+    uint32_t index;
+    nx_result result = nx_semantics_add_impl(ctx, desc, &index, 0);
+    if (result != NX_OK) return result;
+    nx_semantic_record *node = &ctx->semantics.nodes[index];
+    node->text_value = (nx_text_value_target){identity, 0, 1};
+    node->text_selection = (nx_text_selection_snapshot){anchor, cursor, 1};
+    node->text_snapshot_only = 1;
+    if (out_index) *out_index = index;
+    return NX_OK;
+}
+
 nx_result nx_selection_apply(nx_context *ctx, uint64_t group_id, int required, uint64_t *selected_id) {
     if (!ctx || !group_id || !selected_id || (required != 0 && required != 1)) return NX_ERROR_ARGUMENT;
     if (ctx->state != 1u) return NX_ERROR_STATE;
@@ -2219,6 +2245,12 @@ nx_text_selection_snapshot nx_context_text_selection_snapshot(const nx_context *
     if (!ctx || ctx->state != 2u) return (nx_text_selection_snapshot){0};
     uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
     return i == UINT32_MAX ? (nx_text_selection_snapshot){0} : ctx->semantics.nodes[i].text_selection;
+}
+
+int nx_context_text_snapshot_only(const nx_context *ctx, uint64_t id) {
+    if (!ctx || ctx->state != 2u) return 0;
+    uint32_t i = nx_semantic_find_index(&ctx->semantics, id);
+    return i != UINT32_MAX && ctx->semantics.nodes[i].text_snapshot_only;
 }
 
 static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_record *node) {
