@@ -46,7 +46,8 @@ int settings_complete_apply(settings_scene *scene, uint64_t token, int success);
    before detaching and publish the new scene after its first frame. The example
    restores its control focus and scroll offset when possible; a disabled Apply
    falls back to the checkbox. New input takes precedence. The focused control
-   is revealed on a follow-up frame. Undo and text selection are not transferred.
+   is revealed on a follow-up frame. Text selection is restored at grapheme
+   boundaries; undo history and active IME composition are not transferred.
    This is not disk persistence, cross-process restoration or authorization. */
 int settings_detach(settings_scene **scene, settings_session **out_session);
 void settings_session_destroy(settings_session *session);

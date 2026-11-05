@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 1
+#define NX_VERSION_PATCH 2
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2240,6 +2240,13 @@ NX_API nx_result nx_text_field_text(const nx_text_field *field,
                                    nx_utf8_span *out_text);
 NX_API nx_result nx_text_field_selection(const nx_text_field *field,
                                         size_t *out_anchor, size_t *out_cursor);
+/* Owner thread, between widget submissions. Set anchor and cursor as UTF-8
+   byte offsets at extended grapheme boundaries. Invalid offsets preserve the
+   selection. An unchanged selection is a no-op; a change cancels pointer
+   selection, invalidates pending asynchronous edits and preserves undo history.
+   Submit another frame to publish the selection and update native IME state. */
+NX_API nx_result nx_text_field_set_selection(nx_text_field *field,
+                                             size_t anchor, size_t cursor);
 NX_API nx_result nx_text_field_widget(nx_context *context,
                                       const nx_text_field_desc *desc,
                                       nx_text_field *field,

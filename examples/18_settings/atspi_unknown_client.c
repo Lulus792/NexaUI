@@ -73,6 +73,9 @@ int main(int argc,char **argv) {
         AtspiEditableText *editor=atspi_accessible_get_editable_text_iface(name);CHECK(editor);
         CHECK(atspi_editable_text_set_text_contents(editor,"Reopened draft",&error) && !error);
         g_object_unref(editor);
+        AtspiText *selected=atspi_accessible_get_text_iface(name);CHECK(selected);
+        CHECK(atspi_text_add_selection(selected,2,8,&error) && !error);
+        g_object_unref(selected);
         AtspiAccessible *motion=find(root,"Reduce motion",0);CHECK(motion);
         AtspiComponent *component=atspi_accessible_get_component_iface(motion);CHECK(component);
         CHECK(atspi_component_grab_focus(component,&error) && !error);
@@ -99,7 +102,10 @@ int main(int argc,char **argv) {
         g_object_unref(states);g_object_unref(motion);
         AtspiText *text=atspi_accessible_get_text_iface(name);CHECK(text);
         char *draft=atspi_text_get_text(text,0,-1,&error);
-        CHECK(!error && draft && !strcmp(draft,"Reopened draft"));g_free(draft);g_object_unref(text);
+        CHECK(!error && draft && !strcmp(draft,"Reopened draft"));g_free(draft);
+        AtspiRange *selection=atspi_text_get_selection(text,0,&error);
+        CHECK(!error && selection && selection->start_offset==2 && selection->end_offset==8);
+        g_free(selection);g_object_unref(text);
         pump(600);CHECK(status_is(status,"Applied to this example"));
         g_object_unref(action);g_object_unref(apply);g_object_unref(status);g_object_unref(name);g_object_unref(root);g_object_unref(desktop);
         atspi_exit();cleanup();puts("Backend completion survived view replacement without redispatch.");return 0;

@@ -45,7 +45,7 @@ struct settings_scene {
 /* This belongs to the example application, not the toolkit or a backend. */
 struct settings_session {
     char applied_name[NAME_CAP], submitted_name[NAME_CAP];
-    size_t applied_length, submitted_length, draft_length;
+    size_t applied_length, submitted_length, draft_length, anchor, cursor;
     uint64_t next_submission, pending_submission, focus;
     int submitted_motion, apply_error, outcome_unknown, dispatch_pending;
     int motion, applied_motion, applied;
@@ -215,7 +215,9 @@ int settings_detach(settings_scene **scene, settings_session **out) {
     if(out)*out=NULL;
     if(!scene || !*scene || !out)return 0;
     settings_scene *s=*scene; nx_utf8_span draft={0};
-    if(nx_text_field_text(s->name,&draft)!=NX_OK || draft.length>65536u)return 0;
+    size_t anchor=0,cursor=0;
+    if(nx_text_field_text(s->name,&draft)!=NX_OK || draft.length>65536u ||
+       nx_text_field_selection(s->name,&anchor,&cursor)!=NX_OK)return 0;
     settings_session *state=malloc(sizeof(*state)+draft.length);
     if(!state)return 0;
     memset(state,0,sizeof(*state));
@@ -228,6 +230,7 @@ int settings_detach(settings_scene **scene, settings_session **out) {
     state->outcome_unknown=s->outcome_unknown || (s->pending_submission && !s->dispatch_pending);
     state->motion=s->motion;state->applied_motion=s->applied_motion;state->applied=s->applied;
     state->language=s->language;state->draft_length=draft.length;
+    state->anchor=anchor;state->cursor=cursor;
     state->focus=nx_focus_id(s->ui);state->scroll_x=s->scroll_x;state->scroll_y=s->scroll_y;
     if(draft.length)memcpy(state->draft,draft.data,draft.length);
     settings_destroy(s);*scene=NULL;*out=state;return 1;
@@ -263,7 +266,8 @@ int settings_resume(const unsigned char *bytes,size_t length,nx_window *window,
     if(!session || !*session || !out)return 0;
     settings_session *state=*session;settings_scene *s=NULL;
     if(!settings_create(bytes,length,window,&s))return 0;
-    if(nx_text_field_set_text(s->name,state->draft,state->draft_length)!=NX_OK) {settings_destroy(s);return 0;}
+    if(nx_text_field_set_text(s->name,state->draft,state->draft_length)!=NX_OK ||
+       nx_text_field_set_selection(s->name,state->anchor,state->cursor)!=NX_OK) {settings_destroy(s);return 0;}
     memcpy(s->applied_name,state->applied_name,sizeof(s->applied_name));
     memcpy(s->submitted_name,state->submitted_name,sizeof(s->submitted_name));
     s->applied_length=state->applied_length;s->submitted_length=state->submitted_length;

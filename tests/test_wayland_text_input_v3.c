@@ -1,6 +1,8 @@
 #include "wayland_v3_fixture.h"
 
-int main(void) {
+int main(int argc, char **argv) {
+    int revert = argc == 2 && !strcmp(argv[1], "--selection-revert");
+    CHECK(argc == 1 || revert);
     test_server server = {0};
     char runtime[] = "/tmp/nexaui-wayland-v3-XXXXXX";
     CHECK(mkdtemp(runtime));
@@ -153,11 +155,16 @@ int main(void) {
             stale_commit = frame_events[i];
     }
     CHECK(stale_delete.ime_target == 81 && stale_commit.ime_target == 81);
+    if (revert) {
+        CHECK(nx_text_field_set_selection(field,0,0)==NX_OK);
+        CHECK(nx_text_field_set_selection(field,4,4)==NX_OK);
+    }
     CHECK(nx_text_field_widget(context, &field_desc, field, &interaction,
         &valid, &submitted) == NX_OK && interaction.focused);
     CHECK(nx_end_frame(context) == NX_OK);
     CHECK(nx_text_field_text(field, &draft) == NX_OK);
-    CHECK(draft.length == 4 && memcmp(draft.data, "abc!", 4) == 0);
+    CHECK(draft.length == 4 && memcmp(draft.data, revert?"abcd":"abc!", 4) == 0);
+    if (revert) CHECK(nx_text_field_set_text(field,"abc!",4)==NX_OK);
     CHECK(nx_context_queue_event(context, &stale_delete) == NX_OK);
     CHECK(nx_context_queue_event(context, &stale_commit) == NX_OK);
     CHECK(nx_begin_frame(context, 160, 60, 0) == NX_OK);

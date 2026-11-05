@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.1 LANGUAGES C)
+project(NexaUI VERSION 0.1.2 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -669,6 +669,9 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_text_input_v3
                 COMMAND nexaui_wayland_text_input_v3_tests)
             set_tests_properties(nexaui_wayland_text_input_v3 PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_text_input_v3_selection_revert
+                COMMAND nexaui_wayland_text_input_v3_tests --selection-revert)
+            set_tests_properties(nexaui_wayland_text_input_v3_selection_revert PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_clipboard_tests
                 tests/test_wayland_async_clipboard.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c

@@ -265,6 +265,14 @@ int main(int argc,char **argv) {
     ui=settings_context(s);CHECK(settings_frame(s,128,150) && !nx_focus_id(ui));
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.bounds.y==saved_status_y);
+    CHECK(settings_set_draft_name(s,"A\xc3\xa9Z",4) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,3)==NX_OK && key(ui,NX_KEY_END,0) &&
+          key(ui,NX_KEY_LEFT,NX_MOD_SHIFT) && key(ui,NX_KEY_LEFT,NX_MOD_SHIFT) && settings_frame(s,640,360));
+    CHECK(settings_detach(&s,&session) && settings_resume(bytes,(size_t)length,NULL,&session,&s));
+    ui=settings_context(s);CHECK(settings_frame(s,640,360) && nx_focus_id(ui)==3);
+    CHECK(type(ui,"X") && settings_frame(s,640,360));
+    CHECK(nx_semantics_find(ui,3,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==2 && !memcmp(view.value.data,"AX",2));
     char *large=malloc(65537u);CHECK(large);memset(large,'x',65537u);
     CHECK(settings_set_draft_name(s,large,65537u));free(large);large=NULL;
     CHECK(!settings_detach(&s,&session) && s && !session);

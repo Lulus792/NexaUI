@@ -40,6 +40,27 @@ static int semantic(nx_context *ctx,uint64_t id,const char *s,uint32_t flags) {
     CHECK((v.state&flags)==flags);return 0;
 }
 
+static int field_selection_contract(nx_font_collection *fonts) {
+    nx_context *ctx=NULL;nx_text_field *f=NULL;nx_text_field_desc d=descriptor(fonts,1);
+    const char value[]="A\x65\xcc\x81\xf0\x9f\x8c\x8dZ";
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create(value,sizeof(value)-1,4096,&f)==NX_OK);
+    size_t a=0,c=0;
+    CHECK(nx_text_field_set_selection(NULL,0,0)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_set_selection(f,8,1)==NX_OK && nx_text_field_selection(f,&a,&c)==NX_OK && a==8 && c==1);
+    CHECK(nx_text_field_set_selection(f,2,8)==NX_ERROR_ARGUMENT && nx_text_field_set_selection(f,5,8)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_set_selection(f,99,0)==NX_ERROR_ARGUMENT && nx_text_field_selection(f,&a,&c)==NX_OK && a==8 && c==1);
+    CHECK(frame(ctx,f,&d)==0 && nx_semantics_request_text_value(ctx,1,(nx_utf8_span){"accepted",8})==NX_OK);
+    CHECK(nx_text_field_set_selection(f,8,1)==NX_OK && frame(ctx,f,&d)==0 && text(f,"accepted")==0);
+    CHECK(nx_focus_set(ctx,1)==NX_OK && nx_text_field_set_selection(f,0,0)==NX_OK);
+    CHECK(command(ctx,NX_TEXT_COMMAND_UNDO)==0 && frame(ctx,f,&d)==0 && text(f,value)==0);
+    CHECK(command(ctx,NX_TEXT_COMMAND_REDO)==0 && frame(ctx,f,&d)==0 && text(f,"accepted")==0);
+    CHECK(nx_text_field_set_text(f,value,sizeof(value)-1)==NX_OK && frame(ctx,f,&d)==0);
+    CHECK(nx_semantics_request_text_value(ctx,1,(nx_utf8_span){"stale",5})==NX_OK);
+    CHECK(nx_text_field_set_selection(f,1,8)==NX_OK && nx_text_field_set_selection(f,9,9)==NX_OK);
+    CHECK(frame(ctx,f,&d)==0 && text(f,value)==0);
+    nx_text_field_destroy(f);nx_context_destroy(ctx);return 0;
+}
+
 static int value_and_undo(nx_font_collection *fonts) {
     nx_context *ctx=NULL; nx_text_field *f=NULL,*other=NULL;
     nx_text_field_desc d=descriptor(fonts,1),o=descriptor(fonts,2);
@@ -246,7 +267,7 @@ int main(void) {
     uint8_t bytes[512];font_fixture(bytes);nx_font *font=NULL;nx_font_collection *fonts=NULL;
     CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK && nx_font_collection_create(NULL,&fonts)==NX_OK);
     CHECK(nx_font_collection_add(fonts,font)==NX_OK);
-    if(reentrant_admission(fonts)||value_and_undo(fonts)||policy_and_identity(fonts)||modal_and_validation(fonts)||bounds_and_allocation(fonts))return 1;
+    if(field_selection_contract(fonts)||reentrant_admission(fonts)||value_and_undo(fonts)||policy_and_identity(fonts)||modal_and_validation(fonts)||bounds_and_allocation(fonts))return 1;
     nx_font_collection_destroy(fonts);nx_font_close(font);
     puts("owned text-value admission, identity/policy/modal revalidation, bounds, undo and OOM passed");return 0;
 }

@@ -6656,6 +6656,23 @@ nx_result nx_text_field_selection(const nx_text_field *field,
     return nx_text_buffer_selection(field->buffer, out_anchor, out_cursor);
 }
 
+nx_result nx_text_field_set_selection(nx_text_field *field,
+                                      size_t anchor, size_t cursor) {
+    if (!field) return NX_ERROR_ARGUMENT;
+    size_t old_anchor, old_cursor;
+    nx_result result = nx_text_buffer_selection(field->buffer, &old_anchor, &old_cursor);
+    if (result != NX_OK) return result;
+    if (anchor == old_anchor && cursor == old_cursor) return NX_OK;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
+    result = nx_text_buffer_set_selection(field->buffer, anchor, cursor);
+    if (result != NX_OK) return result;
+    ++field->text_value.revision;
+    field->pointer.active = 0;
+    field->vertical_x_valid = field->command_caret_valid = 0;
+    field->suppress_caret_reveal = 0;
+    return NX_OK;
+}
+
 static nx_result nx_window_clipboard_read_adapter(void *user, char *bytes,
                                                    size_t capacity,
                                                    size_t *out_length) {
@@ -6934,7 +6951,9 @@ static uint64_t nx_field_ime_revision(const nx_text_field *field) {
     for (size_t i = 0; i < length; ++i)
         hash = (hash ^ (unsigned char)bytes[i]) * UINT64_C(1099511628211);
     uint64_t values[] = {(uint64_t)length, (uint64_t)anchor,
-                         (uint64_t)cursor, (uint64_t)(uintptr_t)field};
+                         (uint64_t)cursor, (uint64_t)(uintptr_t)field,
+                         field->text_value.revision,
+                         nx_text_buffer_change_serial(field->buffer)};
     for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
         for (unsigned byte = 0; byte < 8; ++byte)
             hash = (hash ^ (uint8_t)(values[i] >> (byte * 8u))) *
