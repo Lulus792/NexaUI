@@ -29,6 +29,7 @@ typedef struct test_server {
     uint32_t serial;
     atomic_int activation_count, deactivation_count, caret_ok;
     atomic_int send_keysyms;
+    atomic_int send_old_commit;
     atomic_int normal_content, password_content;
     char surrounding[64];
     uint32_t surrounding_cursor, surrounding_anchor;
@@ -258,6 +259,11 @@ static void text_commit_state(struct wl_client *client,
     (void)client;
     CHECK(server->enabled);
     server->serial = serial;
+    if (atomic_exchange(&server->send_old_commit, 0)) {
+        zwp_text_input_v1_send_delete_surrounding_text(resource, -1, 1);
+        zwp_text_input_v1_send_commit_string(resource, serial, "p");
+        return;
+    }
     int keysym_case = atomic_exchange(&server->send_keysyms, 0);
     if (keysym_case) {
         static const char names[] = "Mod4\0Control\0Shift\0Mod1";
@@ -517,6 +523,31 @@ int main(void) {
     CHECK(atomic_load(&server.surrounding_count) == 4);
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK &&
           !available);
+    /* A caret-only update can overtake an IME commit without changing its
+       editor or text revision. A newer surrounding snapshot must still veto
+       an old commit, even when both were queued before dispatch. */
+    atomic_store(&server.send_old_commit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 10, "safe", 4, 4, 4) == NX_OK);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){22, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_IME_DELETE_RANGE && event.ime_index == -1 &&
+          event.ime_length == 1 && event.ime_target == 91 && event.ime_revision == 10);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_TEXT && event.scalar == 'p' &&
+          event.ime_target == 91 && event.ime_revision == 10);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_old_commit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 11, "old", 3, 3, 3) == NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 12, "new", 3, 3, 3) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_old_commit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 13, "old", 3, 3, 3) == NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window, 92, 1, "new", 3, 3, 3) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    int surrounding_before = atomic_load(&server.surrounding_count);
     uint8_t font_bytes[512];
     font_fixture(font_bytes);
     nx_font *font = NULL;
@@ -548,7 +579,7 @@ int main(void) {
         &valid, &submitted) == NX_OK && interaction.focused);
     CHECK(nx_end_frame(context) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
-    CHECK(atomic_load(&server.surrounding_count) == 5);
+    CHECK(atomic_load(&server.surrounding_count) == surrounding_before + 1);
     size_t routed = 0;
     CHECK(nx_window_route_events(window, context, &routed) == NX_OK);
     CHECK(routed == 2);

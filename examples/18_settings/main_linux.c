@@ -30,7 +30,8 @@ int main(int argc, char **argv) {
     int verify_keyboard_small=argc==3 && !strcmp(argv[2],"--verify-keyboard-small");
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
     int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
-    int verify_ime=verify_ime_compose || verify_ime_cancel;
+    int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
+    int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
@@ -134,8 +135,9 @@ int main(int argc, char **argv) {
         if (verify_ime && outcome==NX_RENDER_READY && !keyboard_ready) {
             puts("SETTINGS_IME_READY"); fflush(stdout); keyboard_ready=1;
         }
-        if (verify_ime && outcome==NX_RENDER_READY && nx_focus_id(settings_context(scene))==3) {
-            if (!ime_focus_reported) { puts("SETTINGS_IME_FOCUSED"); fflush(stdout); ime_focus_reported=1; }
+        if (verify_ime && outcome==NX_RENDER_READY) {
+            uint64_t ime_focus=nx_focus_id(settings_context(scene));
+            if (ime_focus==3 && !ime_focus_reported) { puts("SETTINGS_IME_FOCUSED"); fflush(stdout); ime_focus_reported=1; }
             uint32_t index; nx_semantic_view view; nx_utf8_span applied; int motion=0;
             char preedit[16]; size_t preedit_length=0; int32_t begin=0,end=0;
             if (nx_semantics_find(settings_context(scene),3,&index)!=NX_OK ||
@@ -143,15 +145,19 @@ int main(int argc, char **argv) {
                 !settings_applied(scene,&applied,&motion) ||
                 nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)!=NX_OK ||
                 applied.length!=7 || memcmp(applied.data,"Aetheri",7) || motion) { okay=0; break; }
-            if (!ime_stage && preedit_length==1 && preedit[0]=='\'') {
+            if (!ime_stage && ime_focus==3 && preedit_length==1 && preedit[0]=='\'') {
                 if (view.value.length!=7 || memcmp(view.value.data,"Aetheri",7)) { okay=0; break; }
                 puts("SETTINGS_IME_PREEDIT"); fflush(stdout); ime_stage=1;
-            } else if (verify_ime_cancel && ime_stage==1 && !preedit_length &&
+            } else if ((verify_ime_cancel || (verify_ime_control && ime_focus==4)) && ime_stage==1 && !preedit_length &&
                        view.value.length==7 && !memcmp(view.value.data,"Aetheri",7)) {
                 puts("SETTINGS_IME_CANCELLED"); fflush(stdout); ime_stage=2;
-            } else if (verify_ime_cancel && ime_stage==2 && !preedit_length &&
+            } else if (verify_ime_control && ime_stage==2 && ime_focus==3 && !preedit_length) {
+                puts("SETTINGS_IME_REFOCUSED"); fflush(stdout); ime_stage=3;
+            } else if ((verify_ime_cancel && ime_stage==2) || (verify_ime_control && ime_stage==3)) {
+                if (!preedit_length && ime_focus==3 &&
                        view.value.length==8 && !memcmp(view.value.data,"Aetheria",8)) {
-                puts("SETTINGS_IME_AFTER_RETURN"); fflush(stdout); ime_stage=3; break;
+                    puts("SETTINGS_IME_AFTER_RETURN"); fflush(stdout); ime_stage=verify_ime_control?4:3; break;
+                }
             } else if (verify_ime_compose && ime_stage==1 && !preedit_length && view.value.length==9 &&
                        !memcmp(view.value.data,"Aetheri\xc3\xa1",9)) {
                 puts("SETTINGS_IME_COMMITTED"); fflush(stdout); ime_stage=2; break;
@@ -210,7 +216,8 @@ cleanup:
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
     if (verify_ime && okay && ((verify_ime_compose && ime_stage==2) ||
-                               (verify_ime_cancel && ime_stage==3))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
+                               (verify_ime_cancel && ime_stage==3) ||
+                               (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
     else if (verify_ime) okay=0;
     if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits);
     if (!okay) fputs("Settings example failed\n",stderr);

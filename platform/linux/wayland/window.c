@@ -1217,12 +1217,17 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
                                    uint32_t serial, const char *text) {
     nx_wayland_window *window = data;
     (void)input;
-    int valid = nx_wayland_ime_v1_serial_valid(window, serial) && text &&
-                !window->ime_surrounding_withdrawn;
     int snapshot_current = window->ime_surrounding_target &&
         window->ime_surrounding_sent &&
         (uint32_t)(serial - window->ime_surrounding_serial) <=
         (uint32_t)(window->ime_serial - window->ime_surrounding_serial);
+    /* Cursor-rectangle commits advance the protocol serial without changing
+       the text snapshot. Permit an older in-flight commit only when it still
+       refers to the currently advertised editor revision; otherwise retain
+       the strict serial check, including for untagged/password input. */
+    int valid = nx_wayland_ime_serial_valid(window, serial) && text &&
+        !window->ime_surrounding_withdrawn &&
+        (serial == window->ime_serial || snapshot_current);
     if (window->ime_surrounding_target && !snapshot_current) valid = 0;
     if (window->ime_v1_delete_invalid) valid = 0;
     if (!valid) {

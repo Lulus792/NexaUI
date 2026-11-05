@@ -11,7 +11,9 @@ import time
 
 
 def main():
-    if len(sys.argv) not in (4, 5) or (len(sys.argv) == 5 and sys.argv[4] != '--cancel'):
+    if (len(sys.argv) not in (4, 5, 6) or
+            (len(sys.argv) == 5 and sys.argv[4] != '--cancel') or
+            (len(sys.argv) == 6 and sys.argv[4] != '--control-cancel')):
         return 2
     if (os.environ.get('NEXAUI_TEST_PRIVATE_WAYLAND') != '1' or
             os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test' or
@@ -20,8 +22,11 @@ def main():
         return 77
     app, font, xdotool = sys.argv[1:4]
     cancel = len(sys.argv) == 5
+    control_cancel = len(sys.argv) == 6
+    focus_client = sys.argv[5] if control_cancel else None
     env = dict(os.environ, NEXAUI_PLATFORM='wayland', WAYLAND_DEBUG='1')
-    host = subprocess.Popen([app, font, '--verify-ime-focus-cancel' if cancel else '--verify-ime-compose'], env=env,
+    mode = '--verify-ime-control-cancel' if control_cancel else '--verify-ime-focus-cancel' if cancel else '--verify-ime-compose'
+    host = subprocess.Popen([app, font, mode], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     x11 = display = None
     peer = 0
@@ -111,6 +116,18 @@ def main():
             wait_trace(r'zwp_text_input_v1#\d+\.enter\(', enter_end)
             subprocess.run([xdotool, 'key', 'a'], env=env, check=True)
             wait_for('SETTINGS_IME_AFTER_RETURN')
+        elif control_cancel:
+            preedit_end = wait_trace(r'preedit_string\(\d+, "\'", "\'"\)')
+            subprocess.run([focus_client, str(host.pid), 'Reduce motion'], env=env, check=True)
+            wait_for('SETTINGS_IME_CANCELLED')
+            deactivate_end = wait_trace(r'zwp_text_input_v1#\d+\.deactivate\(', preedit_end)
+            if re.search(r'wl_keyboard#\d+\.leave\(', ''.join(errors)[preedit_end:deactivate_end]):
+                raise RuntimeError('The window lost keyboard focus during the control focus test')
+            subprocess.run([focus_client, str(host.pid), 'Display name'], env=env, check=True)
+            wait_for('SETTINGS_IME_REFOCUSED')
+            wait_trace(r'zwp_text_input_v1#\d+\.enter\(', deactivate_end)
+            subprocess.run([xdotool, 'key', 'a'], env=env, check=True)
+            wait_for('SETTINGS_IME_AFTER_RETURN')
         else:
             subprocess.run([xdotool, 'key', 'a'], env=env, check=True)
             wait_for('SETTINGS_IME_COMMITTED')
@@ -128,10 +145,14 @@ def main():
                    re.search(r'zwp_text_input_v1#\d+\.deactivate\(', after) and
                    re.search(r'commit_string\(\d+, "a"\)', after) and
                    not re.search(r'commit_string\(\d+, "á"\)', after)
-                   if cancel else re.search(r'commit_string\(\d+, "á"\)', after))
+                   if cancel else
+                   re.search(r'zwp_text_input_v1#\d+\.deactivate\(', after) and
+                   re.search(r'commit_string\(\d+, "a"\)', after) and
+                   not re.search(r'commit_string\(\d+, "á"\)', after)
+                   if control_cancel else re.search(r'commit_string\(\d+, "á"\)', after))
         if host.returncode or 'Validation Error' in trace or 'VUID-' in trace or not preedit or not outcome:
             raise RuntimeError(f'Invalid exit/IME wire trace: {host.returncode}\n{trace}')
-        print('Real simple-IME preedit and ' + ('focus cancellation' if cancel else 'Unicode commit') +
+        print('Real simple-IME preedit and ' + ('focus cancellation' if cancel or control_cancel else 'Unicode commit') +
               ' reached Settings; model stayed unapplied and host closed.')
         return 0
     except (RuntimeError, subprocess.SubprocessError) as problem:

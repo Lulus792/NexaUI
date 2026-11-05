@@ -10,6 +10,14 @@ map, is ignored. A valid replacement map restores handling. Unknown modifier
 names do not create NexaUI modifier bits. Keysyms are for key actions;
 committed text is handled through the text-input commit path.
 
+For a text-input-v1 commit, a later cursor-rectangle update may advance the
+protocol serial while the input method is still responding to the preceding
+state. NexaUI accepts that older commit only within the current activation and
+when its serial still refers to the currently advertised editor and surrounding
+text revision. A changed or withdrawn snapshot, old activation or untagged
+input retains the stricter rejection behavior. The editor also checks its target
+and revision when applying queued IME text and deletion events.
+
 Applications call `nx_window_poll` on a window's creation thread. On Win32, one poll dispatches messages for every window on that thread into each window's own queue. Call `nx_window_route_events(window, context, &count)` for each window/context pair before its next frame; use one independent context per window. The transfer keeps an event queued if the context cannot accept it, so the same pair can retry after a context allocation failure. `count` reports events already transferred, and the caller must avoid routing the remainder into a different context if ordering matters. For manual dispatch, repeatedly call `nx_window_next_event` until `available` is zero and queue each event with `nx_context_queue_event`; unlike the route function, a popped event is then the caller's responsibility. The next `nx_begin_frame` swaps the pending queue into a frame-local stream and updates the input snapshot. Events queued during an active frame belong to the next frame. The borrowed array from `nx_frame_events` stays valid until the next begin or context destruction.
 
 The context privately retains the pointer capture owner and focus owner at each

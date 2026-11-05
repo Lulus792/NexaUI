@@ -107,6 +107,17 @@ if(NEXAUI_BUILD_TESTS)
             endforeach()
             if(NEXAUI_DBUS_FOUND AND NEXAUI_ATSPI_FOUND AND NEXAUI_ATSPI_REGISTRY
                     AND NEXAUI_DBUS_DAEMON AND NEXAUI_DBUS_SEND AND Python3_Interpreter_FOUND)
+                if(NEXAUI_XDOTOOL_EXECUTABLE)
+                    add_executable(nexaui_settings_atspi_focus_client atspi_focus_client.c)
+                    target_link_libraries(nexaui_settings_atspi_focus_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+                    target_compile_features(nexaui_settings_atspi_focus_client PRIVATE c_std_17)
+                    add_test(NAME nexaui_settings_wayland_simple_ime_control_cancel
+                        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_simple_ime.py
+                            $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE}
+                            --control-cancel $<TARGET_FILE:nexaui_settings_atspi_focus_client>)
+                    set_tests_properties(nexaui_settings_wayland_simple_ime_control_cancel PROPERTIES
+                        TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+                endif()
                 add_executable(nexaui_settings_atspi_client atspi_client.c)
                 target_link_libraries(nexaui_settings_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)
                 target_compile_features(nexaui_settings_atspi_client PRIVATE c_std_17)

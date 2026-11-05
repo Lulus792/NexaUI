@@ -100,3 +100,9 @@ verifies that typing `a` inserts only `a` rather than the abandoned composition.
 The peer is destroyed before the private X server exits. This checks window
 focus loss in the virtual fixture, not focus changes between individual controls
 or physical/human interaction.
+
+When the independent libatspi test dependencies are available, a third opt-in
+test moves focus from the field to the checkbox and back using real AT-SPI
+`GrabFocus` requests while the same native IME is active. It verifies preedit
+cancellation without a window-level keyboard leave and that subsequent text
+reaches the original draft. The helper links to libatspi, not NexaUI.

@@ -541,3 +541,40 @@ The final GCC trace is retained in ignored local artifact
 `ee9bcad8cbfaa6119cfc965350c74ad64b816ec021d8250c53f3d23436aa813f`).
 The previously documented `weston-simple-im` keyboard workflow, production
 IME variants, mixed-scale focus changes and human acceptance remain open.
+
+## Text-input-v1 commit after control focus change (2026-11-05)
+
+Candidate based on `e6baeb4674cfa6c52339f94e908b28b6a19b497a` adds a real
+`weston-simple-im` test that changes focus from the Settings text field to its
+checkbox and back through a separate libatspi `GrabFocus` client. It checks
+preedit cancellation, unchanged draft/applied model, no window keyboard leave,
+and a subsequent plain `a` inserted into the correct field. Its first run
+failed: the input method responded to state serial 5 after a cursor-rectangle
+update had advanced the client to serial 6, so the existing strict equality
+check silently discarded the text. This trace is retained in
+`/tmp/nexaui-ime-control-first.log` (SHA-256
+`e7a125b593a6d092b55b972f60b3924b1648eaba9f947efeb9a32ce6d34f9d38`).
+
+The v1 commit handler now accepts an older serial only within the current
+activation and while it still refers to the currently advertised editor and
+surrounding-text revision. Changed or missing snapshots do not bypass their
+existing checks. A controlled server reproduces the caret-only race; it failed
+on the previous code and passed after the fix. The final test includes a
+delete-and-commit pair and confirms that a later changed revision or different
+editor still rejects both events. The
+final real-client trace records the serial-5 commit after the serial-6 caret
+update, followed by the correct `Aetheria` surrounding text. It is retained in
+ignored local artifact `out/aetheri-ime-control-20261105-trace.txt`, SHA-256
+`e4d10dffa359801a7fc1752ebe39419c0f6539bcb97b2c1c6b8a3a12b250ad87`.
+
+All three opt-in real simple-IME cases passed with GCC shared and Clang
+ASan/UBSan static. Controlled v1/v3 tests and three Settings v3 tests passed
+in both builds; the v1/v3 pair also passed in the dual-backend build. The
+separate simple-IME keyboard workflow documented above still has failures;
+other input methods, mixed-scale focus changes and human acceptance remain open.
+The full GCC private-Weston run passed 200 executed tests; the three opt-in
+simple-IME cases were skipped in that run and passed separately as above. That
+full run preceded the final test-only delete-pair extension; the extended v1
+test then passed independently in GCC shared, Clang ASan/UBSan static and the
+dual-backend build. Full-run log `/tmp/nexaui-ime-control-full.log` has SHA-256
+`d99c1f1619b2bc5772822ee19014b12af0ede1cf4ef9c6af7b5edba2b01a6d1c`.
