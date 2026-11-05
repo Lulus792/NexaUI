@@ -72,7 +72,13 @@ static int observe_displays(nx_window *window, struct ae_settings *model,
     }
     if(!ae_settings_snapshot(model,records,count)) {model->stale=true;*dirty=1;return 1;}
     *seen=revision; *dirty=1;
-    if(diagnostics) {printf("OUTPUTS count=%zu revision=%llu\n",count,(unsigned long long)revision);fflush(stdout);}
+    if(diagnostics) {
+        printf("OUTPUTS count=%zu revision=%llu\n",count,(unsigned long long)revision);
+        for(size_t i=0;i<count;++i)
+            printf("OUTPUT %u %d %d %d %d %d\n",outputs[i].id,outputs[i].width,outputs[i].height,
+                   outputs[i].refresh_millihz,outputs[i].scale,outputs[i].mode_known);
+        fflush(stdout);
+    }
     return 1;
 }
 int main(int argc, char **argv) {
@@ -165,6 +171,9 @@ int main(int argc, char **argv) {
             next_ax_retry=now+1;
         }
         if(verify || diagnostics) {printf("MODEL theme=%d german=%d text=%u\n",(int)model.theme,model.german,model.text_percent);fflush(stdout);}
+        if(diagnostics && !fixture_displays) {
+            printf("SELECTED_OUTPUT %u\n",model.count?model.displays[model.selected].id:0);fflush(stdout);
+        }
         if(fixture_displays && (verify || diagnostics)) {
             printf("FIXTURE_DISPLAYS count=%zu selected=%u stale=%d\n",model.count,
                    model.count?model.displays[model.selected].id:0,model.stale);fflush(stdout);

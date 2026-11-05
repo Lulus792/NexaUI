@@ -24,6 +24,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('fixture', 'owner', 'server', 'desktop', 'view', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--expect-test-outputs', action='store_true',
+                        help='require the headless compositor\'s three advertised output modes')
     args = parser.parse_args()
     fixture, owner_source, server, desktop, view = [p.resolve(strict=True) for p in
         (args.fixture, args.owner, args.server, args.desktop, args.view)]
@@ -71,6 +73,12 @@ def main():
             wait(lambda: len(re.findall(r'^SPAWN settings \d+$', log(), re.M)) == 1 and
                  'settings: MODEL theme=0 german=0 text=100' in log(), 'owner-launched Settings')
             first = int(re.findall(r'^SPAWN settings (\d+)$', log(), re.M)[0])
+            if args.expect_test_outputs:
+                wait(lambda: 'settings: OUTPUTS count=3 ' in log(), 'three output observations')
+                modes={(int(w),int(h)) for _,w,h,_,_,known in re.findall(
+                    r'^settings: OUTPUT (\d+) (\d+) (\d+) (\d+) (\d+) ([01])$',log(),re.M) if known=='1'}
+                if modes!={(1920,1080),(2560,1440),(3840,2160)}:
+                    raise RuntimeError('unexpected compositor output modes: '+str(modes))
             wait(lambda: bool(re.search(r'desktop: VIEW .*output=0 .*windows=1 ', log())), 'desktop observes Settings')
             # Clicking the Settings dock entry again must activate the observed
             # original window, not merely receive a successful launch reply.
@@ -83,6 +91,12 @@ def main():
             wait(lambda: len(re.findall(r'desktop: ACTIVATED \d+ 1',log()))>activated,'existing Settings activation')
             if len(re.findall(r'^SPAWN settings \d+$',log(),re.M))!=1:
                 raise RuntimeError('existing Settings was duplicated')
+            if args.expect_test_outputs:
+                ids=re.findall(r'^settings: OUTPUT (\d+) \d+ \d+ \d+ \d+ 1$',log(),re.M)
+                if len(ids)<3 or len(set(ids[:3]))!=3: raise RuntimeError('output IDs not unique')
+                for _ in range(10): tap(15);time.sleep(.04)
+                tap(57)
+                wait(lambda: 'settings: SELECTED_OUTPUT '+ids[1]+'\n' in log(), 'select observed second output')
             key(29, True); tap(16); key(29, False)
             wait(lambda: 'desktop: LAUNCH_REPLY X S' in log(), 'first child and pipe drained')
             launch()
