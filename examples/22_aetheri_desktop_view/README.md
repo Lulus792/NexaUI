@@ -18,6 +18,7 @@ cmake -S /path/to/copied-example -B build \
   -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot
 cmake --build build
 ./build/aetheri_desktop_view_test /path/to/font.ttf
+./build/aetheri_desktop_ime_transaction_test
 ./build/aetheri_desktop_preview /path/to/font.ttf
 ```
 
@@ -34,6 +35,12 @@ run as `./build/aetheri_desktop_layer_focus_test /path/to/font.ttf` when the
 layer-shell and Aetheri test protocol headers are available. It invokes host
 callbacks without a compositor: the real host still has no text-input-v3
 binding and the test is not native IME or device-removal acceptance.
+The private `ime_transaction` helper stages bounded UTF-8 preedit, commit and
+deletion events until a protocol `done`. It is tested but not yet connected to
+the host or to Wayland. It admits an older serial only while it still refers to
+the same field revision; for such a `done`, the caller must defer protocol state
+requests until a matching serial arrives. The caller must additionally validate
+focus, surrounding bytes, selection, native lifecycle and atomic application.
 Search edits return bounded whole-query proposals; the host applies or rejects
 them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text
@@ -399,3 +406,12 @@ commit is rejected and a fresh commit changes the Aetheri model. A separate
 test-only source copy with focus-loss forwarding removed failed the expected
 loss assertion. This does not exercise a real Wayland keyboard, device
 removal, compositor, native preedit or the held-pointer removal issue.
+
+The transaction-helper candidate based on
+`062c23b6dbccab38671ddf978110308b99d67b60` passed its isolated unit test on
+Alpine/WSL2 with GCC and with Clang ASan/UBSan and leak detection. The test
+checks older same-revision serials, revision changes, focus retirement,
+malformed and oversized input, a multi-scalar commit, deletion metadata and
+serial exhaustion. A test-only copy without the lower serial bound failed the
+old-revision assertion. This is a state-machine test with no Wayland objects or
+compositor, not native text-input evidence.
