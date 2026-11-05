@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Settings AT-SPI alongside Aetheri's SDL desktop (2026-11-05)
+
+Driver source `82ca6abf155dd4c9a3c30724a669a7e372b6f904` combines the
+previously recorded private Fedora AT-SPI registry, independent libatspi client
+and installed Settings consumer with the actual SDL desktop on Aetheri's
+headless test compositor. The independently archived Aetheri source remains
+`d621c9bba1df8ffd1083999300bcff742022b9dc` and the installed NexaUI SDK
+remains `d4c9aab9354feb4c9e045b960f4985468bec3253`; the running Aetheri
+checkout and original session were not modified.
+
+The client discovered the Settings app, exercised its Text/EditableText,
+caret/selection, checkbox and Apply model paths, and observed a clean host
+exit. The SDL desktop observed one window and its later removal; desktop,
+test runner and compositor exited 0. An otherwise identical run using the
+AT-SPI-disabled Settings binary failed discovery, as expected. The launcher
+channel was held open by the driver: Settings was started by the independent
+client, not by Aetheri's process owner. No Aetheri Settings model is used.
+
+The exact host, client, registry and compositor hashes are the same as the
+preceding AT-SPI record; the SDL desktop SHA-256 is
+`68814d3f4c03bd1285e3a1ea77dee27ae229d60989ee3c751fecaa57ef8edac9`.
+The positive and negative logs are retained in
+`D:/NexaUI/out/aetheri-desktop-atspi-2026-11-05/results.tar.gz`, SHA-256
+`458cf25a937d4f57fd8494f2b6bbd8672198bb808528173bef81fe312373853b`.
+The registry and D-Bus dependencies are the isolated, signature-checked
+Fedora prefix described below. This test does not establish Aetheri target
+image services, shared desktop accessibility, IME, physical operation or
+human screenreader acceptance.
+
 ## Independent AT-SPI on the Aetheri compositor (2026-11-05)
 
 Driver `tests/run_aetheri_atspi.py`, source
