@@ -22,6 +22,12 @@ AT-SPI client using simulated focus/geometry. Actual private Aetheri surfaces,
 native focus, screen coordinates, other accessibility workflows and human
 screenreader acceptance remain open.
 
+A01-A04/D05: a later candidate based on
+`dd455a82b6306940d28823c89b9d8d7d8fbca625` exercises the actual private host's
+accessibility polling with three simulated views, distinct focus and removal;
+the independent client and negative controls are documented in the desktop
+example. This does not prove native output removal or an Aetheri session.
+
 The T05 and A04 rows below were reconciled on 2026-11-05 against published
 source `28b60f2fcad76374d5f2a91c722e8a2c27aa5829`. Their individual test results
 and earlier source revisions remain attributed in the adoption assessment;

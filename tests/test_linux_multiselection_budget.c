@@ -41,7 +41,8 @@ static int frame(budget_case *c,size_t at) {
     return 0;
 }
 static nx_linux_ax *bridge(budget_case *c) {
-    for(nx_linux_ax *b=nx_ax_thread_hub->windows;b;b=b->next)if(b->window==c->window)return b;
+    for(nx_linux_ax *b=nx_ax_thread_hub->windows;b;b=b->next)
+        if(b->owner.object==c->window && b->owner.geometry==nx_ax_window_geometry)return b;
     return NULL;
 }
 static int select_all(budget_case *c,int *accepted) {

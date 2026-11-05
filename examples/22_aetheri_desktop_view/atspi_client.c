@@ -69,9 +69,22 @@ int main(int argc,char **argv) {
     AtspiAccessible *field=NULL;
     for(unsigned n=0;n<200 && !field;++n){atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);if(!field)field=find(app,"Suche",ATSPI_ROLE_ENTRY,0);if(!field)pump(10);}
     CHECK(field);AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
+    if(getenv("NEXAUI_AX_LAYER_MULTI")) {
+        GError *multi_error=NULL;CHECK(atspi_accessible_get_child_count(app,&multi_error)==3 && !multi_error);
+        AtspiAccessible *other=find(app,"Suche",ATSPI_ROLE_ENTRY,0);CHECK(other);
+        AtspiStateSet *first_states=atspi_accessible_get_state_set(field),*other_states=atspi_accessible_get_state_set(other);
+        CHECK(first_states && other_states && atspi_state_set_contains(first_states,ATSPI_STATE_FOCUSED) &&
+              !atspi_state_set_contains(other_states,ATSPI_STATE_FOCUSED));
+        g_object_unref(first_states);g_object_unref(other_states);
+        CHECK(!kill(child,SIGUSR1));char removed[1024]={0};size_t removed_size=0;
+        CHECK(wait_output(pipes[0],removed,sizeof(removed),&removed_size,"REMOVED 2\n"));
+        atspi_accessible_clear_cache(other);multi_error=NULL;
+        char *old_name=atspi_accessible_get_name(other,&multi_error);
+        CHECK(multi_error!=NULL);g_error_free(multi_error);g_free(old_name);g_object_unref(other);
+    }
     GError *error=NULL;CHECK(atspi_editable_text_set_text_contents(editable,"Terminal",&error) && !error);
     char buffer[4096]={0};size_t used=0;
-    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"QUERY Terminal\n"));
+    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,getenv("NEXAUI_AX_LAYER")?"QUERY 0 Terminal\n":"QUERY Terminal\n"));
     if(getenv("NEXAUI_AX_REENTER"))CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"REENTER_BLOCKED\n"));
     int writable=0;
     for(unsigned n=0;n<300 && !writable;++n) {
@@ -92,12 +105,12 @@ int main(int argc,char **argv) {
     CHECK(writable);
     g_object_unref(editable);editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
     CHECK(atspi_editable_text_set_text_contents(editable,"Termina",&error) && !error);
-    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"QUERY Termina\n"));
+    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,getenv("NEXAUI_AX_LAYER")?"QUERY 0 Termina\n":"QUERY Termina\n"));
     AtspiAccessible *terminal=NULL;
     for(unsigned n=0;n<300 && !terminal;++n){pump(10);atspi_accessible_clear_cache(app);terminal=find(app,"Terminal",ATSPI_ROLE_LIST_ITEM,0);}
     CHECK(terminal);AtspiAction *action=atspi_accessible_get_action_iface(terminal);CHECK(action);
     CHECK(atspi_action_do_action(action,0,&error) && !error);
-    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"INTENT kind=2 app=2 window=0"));
+    CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,getenv("NEXAUI_AX_LAYER")?"INTENT 0 2 2 0":"INTENT kind=2 app=2 window=0"));
     if(getenv("NEXAUI_AX_REBIND")) {
         CHECK(!kill(child,SIGUSR1));CHECK(wait_output(pipes[0],buffer,sizeof(buffer),&used,"REBOUND\n"));
         atspi_accessible_clear_cache(field);error=NULL;

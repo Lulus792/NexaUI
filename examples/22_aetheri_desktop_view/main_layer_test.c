@@ -301,6 +301,33 @@ static void launcher_reply(struct app *a) {
         if(!a->activation_phase)a->close_search=true;
     }
 }
+static void accessibility_publish(struct view *v) {
+    struct app *a=v->app;
+    if(v->accessibility) {
+        nx_linux_accessibility_geometry geometry={0,0,v->width,v->height,0,1,a->focused==v && a->keyboard!=NULL};
+        nx_result result=nx_linux_accessibility_host_publish(v->accessibility,
+            aetheri_desktop_view_context(v->view),&geometry);
+        CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
+    }
+}
+static uint32_t accessibility_prepare(struct app *a,struct pollfd *fds,uint32_t wait_ms) {
+    for(unsigned i=0;i<3;++i) {
+        struct view *v=&a->views[i];fds[i].fd=-1;fds[i].events=fds[i].revents=0;
+        if(!v->accessibility || !v->configured)continue;
+        int fd=-1,writable=0;uint32_t timeout=wait_ms;
+        nx_result result=nx_linux_accessibility_host_prepare(v->accessibility,&fd,&writable,&timeout);
+        CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
+        if(result==NX_OK) {
+            fds[i].fd=fd;fds[i].events=(short)(POLLIN|(writable?POLLOUT:0));
+            if(timeout<wait_ms)wait_ms=timeout;
+            size_t routed=0;int focus_requested=0;
+            CHECK(nx_linux_accessibility_host_route(v->accessibility,aetheri_desktop_view_context(v->view),
+                                                     &routed,&focus_requested)==NX_OK);
+            if(routed) {advance(v);wait_ms=0;}
+        }
+    }
+    return wait_ms;
+}
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
     if(!v->view) {
@@ -323,12 +350,7 @@ static void paint(struct view *v) {
                                       (nx_color){0,0,0,0},&outcome)==NX_OK);
     if(outcome==NX_WAYLAND_SHM_BUSY){v->dirty=true;return;}
     CHECK(outcome==NX_WAYLAND_SHM_READY);
-    if(v->accessibility) {
-        nx_linux_accessibility_geometry geometry={0,0,v->width,v->height,0,1,a->focused==v && a->keyboard!=NULL};
-        nx_result result=nx_linux_accessibility_host_publish(v->accessibility,
-            aetheri_desktop_view_context(v->view),&geometry);
-        CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
-    }
+    accessibility_publish(v);
     v->dirty=false;
     printf("PAINT %u %u %u\n",v->index,v->width,v->height);
 }
@@ -767,22 +789,7 @@ int main(int argc, char **argv) {
             ime_sync(&a);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
             struct pollfd fds[7] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
-            uint32_t wait_ms=owner_fixture?UINT32_MAX:10000u;
-            for(unsigned i=0;i<3;++i) {
-                struct view *v=&a.views[i];fds[4+i].fd=-1;
-                if(!v->accessibility || !v->configured)continue;
-                int fd=-1,writable=0;uint32_t timeout=wait_ms;
-                nx_result result=nx_linux_accessibility_host_prepare(v->accessibility,&fd,&writable,&timeout);
-                CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
-                if(result==NX_OK) {
-                    fds[4+i].fd=fd;fds[4+i].events=(short)(POLLIN|(writable?POLLOUT:0));
-                    if(timeout<wait_ms)wait_ms=timeout;
-                    size_t routed=0;int focus_requested=0;
-                    CHECK(nx_linux_accessibility_host_route(v->accessibility,aetheri_desktop_view_context(v->view),
-                                                             &routed,&focus_requested)==NX_OK);
-                    if(routed) {advance(v);wait_ms=0;}
-                }
-            }
+            uint32_t wait_ms=accessibility_prepare(&a,&fds[4],owner_fixture?UINT32_MAX:10000u);
             int wait=wait_ms>(uint32_t)INT32_MAX?-1:(int)wait_ms;
             int ready; do { ready = poll(fds, 7, wait); } while (ready < 0 && errno == EINTR && !stop_requested);
             if(stop_requested)continue;

@@ -495,6 +495,37 @@ NEXAUI_AX_REENTER=1 NEXAUI_AX_REBIND=1 NEXAUI_DESKTOP_FONT=/path/to/font.ttf \
   ./build/aetheri_desktop_atspi_client ./build/aetheri_desktop_ax_host_test
 ```
 
+The follow-up candidate based on
+`dd455a82b6306940d28823c89b9d8d7d8fbca625` exercises the private layer host's
+actual accessibility publication and poll/routing functions with three
+simulated configured views and a real independent libatspi client. The client
+observed three separately published surfaces, checked that a retained logical
+focus on another view did not become native focus, removed that view, verified
+its old object was defunct, and then edited and activated the first view. GCC
+static/shared and Clang ASan/UBSan with leak detection passed. Separate mutants
+that fabricated focus or skipped removal failed the corresponding independent
+client checks. One initial sanitizer CMake invocation failed because its flags
+were quoted incorrectly; the corrected build and run passed. These are simulated
+views and focus, without a presenter or Aetheri compositor. Actual output removal,
+native focus, compositor integration and human assistive acceptance stay open.
+
+GitHub Actions run `42054679539` for source
+`dd455a82b6306940d28823c89b9d8d7d8fbca625` failed to build the static Linux
+and sanitizer jobs: the internal multi-selection budget test still referenced
+the adapter's removed `window` member. This candidate updates that test to
+identify the same window owner through the new owner contract. On Alpine/WSL2,
+complete static, shared and Clang sanitizer builds passed; a separate full
+dual-backend Debug build included Vulkan, examples and benchmarks. The actual
+65,533-member budget test passed on Xvfb, private Weston and private Weston
+with ASan/UBSan and leak detection. The originally failing GitHub run remains
+historical evidence, not a pass for this candidate.
+
+```sh
+NEXAUI_AX_LAYER=1 NEXAUI_AX_LAYER_MULTI=1 NEXAUI_DESKTOP_FONT=/path/to/font.ttf \
+  python3 /path/to/NexaUI/tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  ./build/aetheri_desktop_atspi_client ./build/aetheri_desktop_layer_ax_host_test
+```
+
 The focus-forwarding candidate based on
 `b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
 0.1.13 static SDK on Alpine/WSL2. Its callback test and the desktop view test
