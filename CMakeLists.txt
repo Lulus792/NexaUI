@@ -110,7 +110,7 @@ elseif(UNIX AND NOT APPLE)
         VERBATIM)
     target_sources(nexaui PRIVATE platform/linux/window.c platform/linux/accessibility.c
         platform/linux/wayland/window.c
-        platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c platform/linux/wayland/transfer.c
+        platform/linux/wayland/repeat.c platform/linux/wayland/cursor.c platform/linux/wayland/transfer.c platform/linux/wayland/scale.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
         ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-protocol.c
@@ -442,6 +442,11 @@ if(NEXAUI_BUILD_TESTS)
         add_test(NAME nexaui_wayland_repeat
             COMMAND nexaui_wayland_repeat_tests)
         set_tests_properties(nexaui_wayland_repeat PROPERTIES TIMEOUT 15)
+        add_executable(nexaui_wayland_scale_tests tests/test_wayland_scale.c platform/linux/wayland/scale.c)
+        target_include_directories(nexaui_wayland_scale_tests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/wayland)
+        add_test(NAME nexaui_wayland_scale COMMAND nexaui_wayland_scale_tests)
+        set_tests_properties(nexaui_wayland_scale PROPERTIES TIMEOUT 15)
         add_executable(nexaui_wayland_transfer_tests
             tests/test_wayland_transfer.c platform/linux/wayland/transfer.c)
         target_include_directories(nexaui_wayland_transfer_tests PRIVATE

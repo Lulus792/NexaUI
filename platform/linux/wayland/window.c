@@ -4,6 +4,7 @@
 #include "drop_queue.h"
 #include "event_queue.h"
 #include "repeat.h"
+#include "scale.h"
 #include "transfer.h"
 #include "uri_list.h"
 #include "../window_internal.h"
@@ -232,9 +233,10 @@ static void nx_wayland_refresh_scale(nx_wayland_window *window) {
     if (window->surface && wl_surface_get_version(window->surface) < 3)
         scale = 1;
     if (scale == window->scale) return;
-    if (scale > INT_MAX / window->width ||
-        scale > INT_MAX / window->height ||
-        window->width * scale > INT_MAX / 4 / (window->height * scale)) {
+    int pixel_width=0,pixel_height=0;
+    if ((uint64_t)scale * 120u > UINT32_MAX ||
+        nx_wayland_scale_extent(window->width,window->height,(uint32_t)scale*120u,
+                                &pixel_width,&pixel_height)!=NX_OK) {
         window->error = NX_ERROR_LIMIT;
         return;
     }
@@ -1916,10 +1918,11 @@ static nx_result nx_wayland_attach_background(nx_wayland_window *window) {
         return NX_OK;
     }
     nx_wayland_buffer *buffer = NULL;
-    if (window->scale > INT_MAX / window->width ||
-        window->scale > INT_MAX / window->height) return NX_ERROR_LIMIT;
-    int width = window->width * window->scale;
-    int height = window->height * window->scale;
+    if ((uint64_t)window->scale * 120u > UINT32_MAX) return NX_ERROR_LIMIT;
+    int width=0,height=0;
+    nx_result scaled=nx_wayland_scale_extent(window->width,window->height,
+        (uint32_t)window->scale*120u,&width,&height);
+    if (scaled!=NX_OK) return scaled;
     nx_result result = nx_wayland_create_buffer(window, width,
                         height, WL_SHM_FORMAT_XRGB8888, &buffer);
     if (result != NX_OK) return result;

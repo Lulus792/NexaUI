@@ -33,6 +33,9 @@ Wayland; custom callbacks and X11 paste still have synchronous paths. The
 subsequent Wayland file-drop reader is also poll-driven, with a separate-source
 copy-drag test on private Weston. Actual file-manager and additional compositor
 acceptance, as well as the bounded-queue behavior, still need assessment.
+The [W04 scaling assessment](aetheri-wayland-scaling-assessment.md) records the
+checked extent calculation and the still-missing fractional protocol, renderer
+extent contract and compositor/monitor acceptance.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |
