@@ -166,3 +166,27 @@ This fixture does not start the app and is not a complete native input
 adapter: IME/composition, key repeat, clipboard, pointer, full key mapping,
 selection and focus restoration, accessibility and human/physical validation
 remain open. The test diagnostics intentionally include the non-secret query.
+
+Source `08eba45e7446f69c7e8e0380402ca52329655020` extends the test host
+with left-button pointer routing, cancellation on known pointer loss and a
+configure gate. With the same test compositor and SDK, a result click emitted
+the expected intent; pressing outside the result and releasing inside emitted
+none. Removing and replacing idle input devices restored search keyboard focus
+and a subsequent new click worked. This does not implement wheel scrolling,
+other buttons, full capture behavior or actual application launch.
+
+An explicit `--test-held-removal` case currently **fails**: when the virtual
+pointer is removed while its button is held on a result, this compositor sends
+a button release before it reports pointer removal, and the test host emits the
+launch intent. The later cancellation cannot undo that intent. The normal
+passing case removes an idle pointer and must not be read as evidence that
+held-device removal is safe. The flagged failing case is retained for further
+host/compositor contract work; this test host is not a production shell.
+The final test binary SHA-256 was
+`e7c729ba6b3b3d16d6ffbcab50c940b4d36daf87d5e456fe620c8db2949ec937`.
+Positive and negative logs plus two failed screenshot runs are archived in
+`D:/NexaUI/out/aetheri-layer-pointer-final-20261105.tar.gz`, SHA-256
+`e0caa7e34e39bfd4021567bd526f1403cddcd6f5ca53ca4915446355ee7685de`.
+The screenshot failures reported a compositor capture/write failure; after
+compressing this task's accumulated temporary captures, the final run passed.
+No specific underlying write error was recorded.
