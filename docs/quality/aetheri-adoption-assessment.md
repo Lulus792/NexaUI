@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## App-owned Wayland paste demonstration (2026-11-05)
+
+Example source `07bbbcae31358dcd5f47a3db817c99329b812349` uses the public
+asynchronous Wayland read for Ctrl+Shift+V. It copies at most 4096 bytes into
+an application-owned in-memory buffer, reports status visually and in a
+semantic status node, and never sends bytes to a PTY or interprets them. A
+pending request is cancelled on focus loss, relevant model/selection changes or
+close; application-owned focus and revision are checked before committing a
+result. Clipboard data is cleared from this demonstration buffer at shutdown.
+
+Private Weston/Xvfb and independent `wl-copy`/`wl-paste` peers exercised
+multiline UTF-8, a combining mark and escape bytes; a test-only checksum checked
+the received bytes without logging them. The clipboard owner was paused while
+the app changed its model or lost focus; both pending reads were cancelled and
+no late completion was observed during the follow-up waits. The paste case passed three consecutive runs
+(`/tmp/nexaui-cell-paste-repeat/result.json`) and all five existing/new native
+grid tests passed (`/tmp/nexaui-cell-paste-regressions/result.json`). An
+independently copied example from this source passed the same paste and
+cancellation test against static and shared installed SDKs from
+`4e6c240bda94d8bc537851cdbb89846003eb86e3`
+(`/tmp/nexaui-cell-paste-07b-external-OFF/result.json`,
+`/tmp/nexaui-cell-paste-07b-external-ON/result.json`).
+
+During test setup, an additional forced X11 focus cycle after a `wl-paste`
+peer closed produced a Weston keyboard leave/enter without a renewed selection
+offer; the adapter discarded the previous offer and the next paste reported
+unavailable (`/tmp/nexaui-cell-paste-debug.log`). The successful fixture avoids
+that redundant focus cycle; it does not resolve the observed recovery case.
+This demonstration is not a terminal emulator, PTY integration, full paste
+policy, installed-IME acceptance or human visual/screenreader acceptance.
+
 ## Application-owned asynchronous Wayland clipboard read (2026-11-05)
 
 Source `4e6c240bda94d8bc537851cdbb89846003eb86e3` exposes the existing
