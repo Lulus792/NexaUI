@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+P02/L05: on base `735031712ce53bb3ca4e41e969679337ff9adccc`, the synthetic
+workload additionally scans 100,000 actual in-memory names, rebuilds the
+50,000 matches and retains the anchor's exact semantic name. Filesystem I/O,
+native accessibility and Aetheri's model limit remain open; see
+[candidate evidence](aetheri-adoption-assessment.md#named-100000-row-filter-workload-2026-11-05).
+
 P02/L05: a synthetic 100,000-key virtual-list workload on base
 `f9ec0de9f98374077e4a1d1fdec3267ebbcef23d` measures index refresh, reorder,
 filtered rebuild and bounded visible semantics. Real model filtering, native

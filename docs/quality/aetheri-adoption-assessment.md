@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Named 100,000-row filter workload (2026-11-05)
+
+On candidate base `735031712ce53bb3ca4e41e969679337ff9adccc`, the synthetic
+virtual-list workload owns 100,000 named entries and a separate index array.
+It scans every name for the substring `report`, rebuilds the 50,000 matching
+keys and verifies that the preserved anchor's full semantic name remains
+`report-050000.txt`. Visible and overscan rows use the actual model names.
+A test-only variant bypassing the filter failed the expected match count.
+The workload completed with GCC shared and Clang ASan/UBSan builds, including
+tracked allocator balance and leak detection.
+
+Three GCC 15.2.0 static Release runs on Alpine/WSL2 x86-64 measured 2.98–3.07 ms
+for the 100,000-name scan and 2.58–4.01 ms for the subsequent filtered-index
+rebuild. The 1,000 scrolled frame constructions averaged 0.0043–0.0062 ms
+per frame. The allocator covering corpus, index and NexaUI objects peaked at
+11,883,776 bytes; after warmup its measured scroll loop made no allocations.
+The measurements use the C wall clock, are machine/load-specific and have no
+agreed target budget. Reversal changes traversal order rather than measuring a
+general sorting algorithm.
+
+This still is not a 100,000-file filesystem or Aetheri model: the snapshot's
+4,096-entry cap, file I/O, localization, native AT-SPI publication and
+presentation remain separate requirements. No SDK implementation changed.
+
 ## Synthetic 100,000-row virtual-list workload (2026-11-05)
 
 On candidate base `f9ec0de9f98374077e4a1d1fdec3267ebbcef23d`, the new

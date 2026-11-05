@@ -44,14 +44,15 @@ hashes, flags and host load with any timing claim.
 
 ## Other focused workloads
 
-`nexaui_virtual_list_bench` creates 100,000 synthetic keyed rows, rebuilds
-them in reverse, retains a visible anchor, rebuilds a 50,000-row even subset,
+`nexaui_virtual_list_bench` creates 100,000 synthetic named, keyed rows, rebuilds
+them in reverse, retains a visible anchor, scans every name for `report` and
+rebuilds the 50,000 matching rows,
 and builds 1,000 scrolled frames with only visible/overscan button semantics.
 It checks the anchor and semantic-node budget and reports wall-clock times and
 the allocator's peak/live balance and post-warmup allocation calls. The
-synthetic row callback computes the filtered set directly: this measures its
-index rebuild, not application filtering, filesystem I/O, native accessibility
-publication or presentation. Run with:
+instrumented peak includes this synthetic corpus, index and NexaUI objects.
+The filter is an in-memory case-sensitive substring scan; filesystem I/O,
+native accessibility publication and presentation are not measured. Run with:
 
 ```sh
 cmake -S . -B out/virtual-bench -DNEXAUI_BUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
