@@ -333,6 +333,11 @@ static int test_sibling_close_during_build(void) {
     CHECK(nx_overlay_close(ctx)==NX_ERROR_STATE);
     CHECK(nx_overlay_end(ctx)==NX_OK && nx_overlay_close(ctx)==NX_OK);
     CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==10);
+    CHECK(key(ctx,NX_KEY_ESCAPE,0));
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&first,&dismissed)==NX_OK && dismissed);
+    CHECK(nx_overlay_close(ctx)==NX_ERROR_STATE);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK);
     nx_context_destroy(ctx);return 0;
 }
 
