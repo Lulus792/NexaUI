@@ -1,4 +1,4 @@
-"""Run and require the Settings simple-IME cases on an owned Xvfb/Weston seat.
+"""Run and require Settings or numeric simple-IME cases on an owned Xvfb/Weston seat.
 
 Requires Xvfb, xauth, setxkbmap, dbus-run-session and a Weston installation
 with weston-simple-im. NEXAUI_SETXKBMAP can select a private setxkbmap binary;
@@ -26,6 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--numeric', action='store_true', help='Run the numeric-field IME case')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
     build, work = args.build_dir.resolve(), args.work_dir.resolve()
@@ -33,9 +34,11 @@ def main():
         if work.exists():
             parser.error('work directory must not already exist')
         env = dict(os.environ, NEXAUI_TEST_PRIVATE_X11='1')
-        return subprocess.run(['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24',
-                               sys.executable, __file__, '--inside', '--build-dir', str(build),
-                               '--work-dir', str(work)], env=env, check=False, timeout=60).returncode
+        command = ['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24',
+                   sys.executable, __file__, '--inside', '--build-dir', str(build), '--work-dir', str(work)]
+        if args.numeric:
+            command.append('--numeric')
+        return subprocess.run(command, env=env, check=False, timeout=60).returncode
     if os.environ.get('NEXAUI_TEST_PRIVATE_X11') != '1' or not os.environ.get('DISPLAY'):
         parser.error('internal invocation requires the owned Xvfb fixture')
     if not os.environ.get('NEXAUI_WESTON_LIBEXEC'):
@@ -45,20 +48,22 @@ def main():
     env = dict(os.environ, NEXAUI_WESTON_INPUT_METHOD='weston-simple-im',
                NEXAUI_TEST_SIMPLE_IME='1', XKB_DEFAULT_OPTIONS='compose:ralt')
     junit = work / 'simple-ime.xml'
+    pattern = '^nexaui_wayland_numeric_simple_ime$' if args.numeric else '^nexaui_settings_wayland_simple_ime'
+    expected = {'nexaui_wayland_numeric_simple_ime'} if args.numeric else CASES
     command = [sys.executable, str(ROOT / 'tests/run_weston_native.py'), '--work-dir', str(work),
                '--', 'dbus-run-session', '--', 'ctest', '--test-dir', str(build),
-               '-R', '^nexaui_settings_wayland_simple_ime', '--no-tests=error',
+               '-R', pattern, '--no-tests=error',
                '--output-on-failure', '--output-junit', str(junit)]
     result = subprocess.run(command, env=env, check=False, timeout=55)
     if result.returncode:
         return result.returncode
     cases = {case.get('name'): case for case in ET.parse(junit).iter('testcase')}
-    if set(cases) != CASES or any(case.find('skipped') is not None or
+    if set(cases) != expected or any(case.find('skipped') is not None or
                                    case.find('failure') is not None or
                                    case.find('error') is not None for case in cases.values()):
-        print('Expected four executed, passing simple-IME cases.', file=sys.stderr)
+        print('Expected all selected simple-IME cases to execute and pass.', file=sys.stderr)
         return 1
-    print('All four simple-IME cases executed and passed.')
+    print('All selected simple-IME cases executed and passed.')
     return 0
 
 

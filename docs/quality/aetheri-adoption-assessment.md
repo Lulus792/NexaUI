@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric field with Weston simple-IME (2026-11-05)
+
+On the candidate based on `b2a29e28823478789693b896f87c9f89b52be988`,
+the visible numeric test host opts into the existing borrowed-window IME API.
+An independently running Weston 14 `weston-simple-im` supplies apostrophe
+preedit and commits `á`; the draft becomes invalid while the committed numeric
+value remains 1234. The driver verifies both the model and native v1 wire
+events. The host now redraws only when routed events, geometry or a pending
+presentation require it; the first continuously redrawing attempt did not
+observe preedit and is not counted.
+
+With this provider, Ctrl+Z then produced a native `commit_string` containing
+`z`, yielding `1234áz` rather than undoing the draft. This happened in GCC
+static and shared Debug and Clang ASan/UBSan Debug with leak detection; the
+test explicitly reports that outcome and would also accept a correctly routed
+undo. The earlier strict undo run failed and is preserved in
+`/tmp/nexaui-numeric-real-ime-20261105-b/simple-ime.xml`. The four prior
+Settings simple-IME cases and numeric independent-peer clipboard regression
+also passed after the host change. No SDK API or behavior changed.
+
+This is one virtual Weston simple-IME and keyboard map, not evidence that all
+IMEs consume the shortcut. Undo with this provider, other installed IMEs,
+physical input, human accessibility and actual Aetheri acceptance remain open.
+
 ## Numeric clipboard with independent Wayland peers (2026-11-05)
 
 On the candidate based on `70380daf3e73ffdaa89a5ab34434236ca54d8b24`, a
@@ -8,8 +32,8 @@ numeric clipboard callbacks. Under private Weston 14/Xvfb, virtual keyboard
 input copies `1234` to an independent `wl-paste` process. Separate `wl-copy`
 owners then supply `bad` and `42`: the host observes the invalid draft without
 changing its committed 1234, then the valid draft before and after Enter commits
-42. Escape performs normal host cleanup. The fixture uses a 50 ms poll and is
-not an idle-performance example.
+42. Escape performs normal host cleanup. At this candidate the fixture used a
+50 ms poll with continuous redraw and was not an idle-performance example.
 
 The registered CTest case executed three consecutive times in GCC static
 Debug. The same driver passed once each with GCC shared Debug and Clang

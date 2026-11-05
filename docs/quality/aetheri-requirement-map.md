@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I02: on base `b2a29e28823478789693b896f87c9f89b52be988`, private
+Weston simple-IME preedit and invalid Unicode commit reached the real numeric
+widget without changing its committed value. In that fixture Ctrl+Z arrived as
+text `z` rather than undo; other providers and actual Aetheri remain open. See
+the [candidate evidence](aetheri-adoption-assessment.md#numeric-field-with-weston-simple-ime-2026-11-05).
+
 T05/I05: on base `70380daf3e73ffdaa89a5ab34434236ca54d8b24`, an actual
 numeric widget exchanged clipboard data with independent wl-clipboard processes
 under private Weston and committed only the valid draft. Real Aetheri peers and
