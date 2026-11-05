@@ -309,6 +309,20 @@ static int test_sibling_overlays(void) {
     CHECK(nx_popup_begin(ctx,&remaining,&second)==NX_OK && !second && nx_button(ctx,&item,&state)==NX_OK);
     CHECK(nx_overlay_end(ctx)==NX_OK && nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==22);
     CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==1);
+    /* Reordering the same popups changes which one receives focus and which
+       one must become active when the topmost scope closes. */
+    CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
+    nx_overlay_desc reordered=overlay(10,11);
+    nx_control_desc first_item=button(12,(nx_rect){50,30,40,20});first_item.parent_id=10;
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK && nx_button(ctx,&background,&state)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&remaining,&second)==NX_OK && nx_button(ctx,&item,&state)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&reordered,&first)==NX_OK && nx_button(ctx,&first_item,&state)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==12);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==22);
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK && nx_button(ctx,&background,&state)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&remaining,&second)==NX_OK && nx_button(ctx,&item,&state)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==22);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==1);
     nx_context_destroy(ctx);return 0;
 }
 
