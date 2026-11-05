@@ -1,8 +1,21 @@
+#define _XOPEN_SOURCE 700
 #include "wayland_v3_fixture.h"
 #include "nexaui/wayland_clipboard.h"
 #include <errno.h>
+static size_t queue_write_limit;
+static int queue_write_error;
+static ssize_t test_queue_write(int fd, const void *bytes, size_t length) {
+    if(queue_write_error){errno=queue_write_error;queue_write_error=0;return -1;}
+    if(queue_write_limit && length>queue_write_limit)length=queue_write_limit;
+    return write(fd,bytes,length);
+}
+#define write test_queue_write
+#include "../examples/23_aetheri_terminal_view/pty_queue.h"
+#undef write
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <poll.h>
+#include <termios.h>
 #include <time.h>
 
 static double now_seconds(void) {
@@ -33,6 +46,94 @@ static const char *start_server(test_server *s,pthread_t *thread) {
 static void drain(nx_window *w) {
     nx_event event;int available;
     do {CHECK(nx_window_next_event(w,&event,&available)==NX_OK);} while(available);
+}
+
+typedef struct pty_reader {
+    int fd, error;
+    size_t filler, received;
+    const char *payload;
+    size_t payload_length;
+} pty_reader;
+static void *read_pty(void *user) {
+    pty_reader *r=user;struct timespec delay={0,150000000};
+    while(nanosleep(&delay,&delay)<0 && errno==EINTR){}
+    double deadline=now_seconds()+5;
+    while(r->received<r->filler+r->payload_length && now_seconds()<deadline) {
+        struct pollfd p={r->fd,POLLIN,0};int ready=poll(&p,1,100);
+        if(ready<0 && errno==EINTR)continue;
+        if(ready<0 || (p.revents&(POLLERR|POLLNVAL|POLLHUP))){r->error=1;return NULL;}
+        if(!ready)continue;
+        char bytes[2048];ssize_t n=read(r->fd,bytes,sizeof(bytes));
+        if(n<0 && (errno==EAGAIN || errno==EWOULDBLOCK || errno==EINTR))continue;
+        if(n<=0){r->error=1;return NULL;}
+        for(ssize_t i=0;i<n;++i) {
+            size_t index=r->received++;
+            char expected=index<r->filler?'F':
+                index-r->filler<r->payload_length?r->payload[index-r->filler]:0;
+            if(index>=r->filler+r->payload_length || bytes[i]!=expected)r->error=1;
+        }
+        if(r->error)return NULL;
+    }
+    if(r->received!=r->filler+r->payload_length)r->error=1;
+    return NULL;
+}
+static void check_pty_backpressure(nx_window **windows) {
+    int master=posix_openpt(O_RDWR|O_NOCTTY|O_NONBLOCK);
+    CHECK(master>=0 && !grantpt(master) && !unlockpt(master));
+    char *name=ptsname(master);CHECK(name);
+    int slave=open(name,O_RDWR|O_NOCTTY|O_NONBLOCK);CHECK(slave>=0);
+    struct termios attrs;CHECK(!tcgetattr(slave,&attrs));
+    attrs.c_iflag=0;attrs.c_oflag=0;attrs.c_lflag=0;
+    attrs.c_cflag=(attrs.c_cflag&~(CSIZE|PARENB))|CS8|CREAD;
+    attrs.c_cc[VMIN]=1;attrs.c_cc[VTIME]=0;CHECK(!tcsetattr(slave,TCSANOW,&attrs));
+    char filler[4096];memset(filler,'F',sizeof(filler));size_t total=0;double deadline=now_seconds()+3;
+    uint32_t flags=0;
+    for(;;) {
+        ssize_t n=write(master,filler,sizeof(filler));
+        if(n>0){total+=(size_t)n;CHECK(total<4*1024*1024);continue;}
+        if(n<0 && errno==EINTR)continue;
+        CHECK(n<0 && (errno==EAGAIN || errno==EWOULDBLOCK));
+        CHECK(nx_window_poll_many_with_fd_events(windows,2,0,master,NX_WINDOW_FD_WRITABLE,&flags)==NX_OK);
+        if(!(flags&NX_WINDOW_FD_WRITABLE))break;
+        CHECK(now_seconds()<deadline);
+    }
+    CHECK(total>0);
+    terminal_pty_queue q={0};
+    const char first[]="first-commit/",second[]="second-commit";
+    const char expected[]="first-commit/second-commit";
+    CHECK(terminal_pty_queue_push(&q,first,sizeof(first)-1));
+    CHECK(terminal_pty_queue_push(&q,second,sizeof(second)-1));
+    CHECK(q.length==sizeof(expected)-1);
+    CHECK(!terminal_pty_queue_push(&q,filler,sizeof(filler)) && q.length==sizeof(expected)-1);
+    queue_write_error=EINTR;CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
+    queue_write_error=EAGAIN;CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
+    queue_write_error=EIO;CHECK(terminal_pty_queue_write(&q,master)==-1 && q.length==sizeof(expected)-1);
+    CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
+    pty_reader reader={.fd=slave,.filler=total,.payload=expected,.payload_length=sizeof(expected)-1};
+    pthread_t thread;CHECK(!pthread_create(&thread,NULL,read_pty,&reader));
+    double start=now_seconds();queue_write_limit=3;unsigned writes=0;
+    while(q.length && now_seconds()-start<5) {
+        CHECK(nx_window_poll_many_with_fd_events(windows,2,1000,master,NX_WINDOW_FD_WRITABLE,&flags)==NX_OK);
+        drain(windows[0]);drain(windows[1]);
+        if(flags&NX_WINDOW_FD_WRITABLE){int result=terminal_pty_queue_write(&q,master);CHECK(result>=0);writes+=(unsigned)result;}
+    }
+    CHECK(!pthread_join(thread,NULL));
+    queue_write_limit=0;
+    CHECK(!q.length && writes>1 && !reader.error && reader.received==total+sizeof(expected)-1);
+    CHECK(now_seconds()-start>=.08 && now_seconds()-start<5);
+    CHECK(terminal_pty_queue_push(&q,first,sizeof(first)-1));terminal_pty_queue_clear(&q);
+    CHECK(!q.length && !q.offset);
+    for(size_t i=0;i<sizeof(q.bytes);++i)CHECK(!q.bytes[i]);
+    int pipe_fds[2];CHECK(!pipe(pipe_fds));
+    CHECK(terminal_pty_queue_push(&q,filler,sizeof(filler)));
+    queue_write_limit=7;CHECK(terminal_pty_queue_write(&q,pipe_fds[1])==1);queue_write_limit=0;
+    CHECK(q.offset==7 && q.length==sizeof(filler)-7);
+    CHECK(terminal_pty_queue_push(&q,"1234567",7));
+    CHECK(q.offset==0 && q.length==sizeof(filler));
+    CHECK(!memcmp(q.bytes+sizeof(filler)-7,"1234567",7));
+    terminal_pty_queue_clear(&q);
+    CHECK(!close(pipe_fds[0]) && !close(pipe_fds[1]));
+    CHECK(!close(slave) && !close(master));
 }
 int main(void) {
     char runtime[]="/tmp/nexaui-many-transfer-XXXXXX";CHECK(mkdtemp(runtime));
@@ -93,6 +194,7 @@ int main(void) {
     CHECK(read(pair[0],buffer,1)==1 && buffer[0]=='q');CHECK(close(pair[1])==0);
     CHECK(nx_window_poll_many_with_fd_events(windows,2,0,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && (flags&NX_WINDOW_FD_HANGUP));
     CHECK(close(pair[0])==0);
+    check_pty_backpressure(windows);
     for(unsigned i=0;i<2;++i)nx_window_destroy(windows[i]);
     for(unsigned i=0;i<2;++i) {
         wl_display_terminate(servers[i].display);CHECK(!pthread_join(threads[i],NULL));

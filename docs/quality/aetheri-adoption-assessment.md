@@ -2900,6 +2900,22 @@ claiming an actual native fractional-scale output.
 Installed IME candidate presentation, real Aetheri chrome and focus, physical
 output changes and human visual acceptance remain open.
 
+## Controlled PTY backpressure — 5 November 2026
+
+On base `00649d379c10bc4565daaf63e6faad8db275e2f2`, the native IME test
+consumer uses its bounded example-owned PTY queue. The existing controlled
+Wayland group-wait test fills a Linux PTY master to `EAGAIN` with a raw-mode
+slave that initially does not read. It queues two items, verifies no write
+progress while blocked, and checks every byte after the slave starts reading.
+It also forces short writes and `EINTR`, `EAGAIN`, and `EIO`, exercises atomic
+overflow rejection, compaction and clearing. Static, shared, and Clang
+ASan/UBSan runs passed. An isolated mutant that failed to advance the queue
+offset exited 1 at the byte-order check. The real private Weston IME commit and
+focus-cancellation tests with the original Aetheri shell passed again in all
+three configurations; those short commits did not fill the PTY. The delayed
+raw-mode reader is a controlled peer, not an Aetheri shell, and full owner
+session-switch and shutdown policy remain open.
+
 ## Linux descriptor write readiness — 5 November 2026
 
 On base `1b8020e694236d3a2151345ea07064040b9e87fa`, the 0.1.18 candidate

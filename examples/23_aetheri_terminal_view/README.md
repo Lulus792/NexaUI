@@ -592,6 +592,17 @@ ASan/UBSan private-Weston commit and focus-cancellation cases passed again.
 Those short commits do not establish behavior under actual PTY backpressure;
 the fixture's separate shutdown helper still uses bounded synchronous writes.
 
+On NexaUI base `00649d379c10bc4565daaf63e6faad8db275e2f2`, this example uses
+the bounded `pty_queue.h` helper. A controlled Wayland group-wait test fills a
+real Linux PTY until it blocks, then a delayed raw-mode slave reader verifies
+two queued items byte-for-byte after write readiness. The same test injects
+short writes, `EINTR`, `EAGAIN` and an I/O failure, checks whole-item overflow
+rejection and queue compaction, and clears pending bytes. Static, shared and
+ASan/UBSan runs passed; an isolated queue-offset mutant failed the byte-order
+check. The native private-Weston IME commit and focus-cancellation tests passed
+again in all three configurations. The controlled PTY reader is not Aetheri's
+shell, and the native IME test still commits only one short input.
+
 The setup uses a real separate Weston input-method process and virtual input,
 not a selected production IME, real Aetheri session, physical input/output or
 human assistive/visual acceptance. The app still owns session focus, security,
