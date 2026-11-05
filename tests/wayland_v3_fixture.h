@@ -32,6 +32,8 @@ typedef struct test_server {
     atomic_int seat_remove_sent;
     atomic_int pointer_press_requested, pointer_remove_requested;
     atomic_int disconnect_requested, disconnect_sent;
+    atomic_int attached_width, attached_height, buffer_scale;
+    void (*surface_committed)(struct test_server *server,struct wl_client *client);
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
     atomic_int send_offer, send_drop, offer_sent;
@@ -99,6 +101,7 @@ static void surface_commit(struct wl_client *client,
                            struct wl_resource *resource) {
     test_server *server = wl_resource_get_user_data(resource);
     if (resource != server->surface) return;
+    if (server->surface_committed) server->surface_committed(server,client);
     if (atomic_exchange(&server->disconnect_requested,0)) {
         wl_client_destroy(client);
         atomic_store(&server->disconnect_sent,1);
@@ -187,20 +190,31 @@ static void surface_damage(struct wl_client *client,struct wl_resource *resource
 }
 static void surface_attach(struct wl_client *client,struct wl_resource *resource,
                            struct wl_resource *buffer,int32_t x,int32_t y) {
-    (void)client;(void)resource;(void)buffer;(void)x;(void)y;
+    (void)client;(void)x;(void)y;
+    test_server *server=wl_resource_get_user_data(resource);
+    if (resource==server->surface && buffer) {
+        struct wl_shm_buffer *shm=wl_shm_buffer_get(buffer);
+        if(shm) {atomic_store(&server->attached_width,wl_shm_buffer_get_width(shm));
+                 atomic_store(&server->attached_height,wl_shm_buffer_get_height(shm));}
+    }
+}
+static void surface_set_buffer_scale(struct wl_client *client,struct wl_resource *resource,int32_t scale) {
+    (void)client;test_server *server=wl_resource_get_user_data(resource);
+    if(resource==server->surface)atomic_store(&server->buffer_scale,scale);
 }
 
 static const struct wl_surface_interface surface_implementation = {
     .destroy = resource_destroy,
     .attach = surface_attach,
     .damage = surface_damage,
+    .set_buffer_scale = surface_set_buffer_scale,
     .commit = surface_commit
 };
 
 static void create_surface(struct wl_client *client,
                            struct wl_resource *resource, uint32_t id) {
     test_server *server = wl_resource_get_user_data(resource);
-    struct wl_resource *surface = wl_resource_create(client, &wl_surface_interface, 1, id);
+    struct wl_resource *surface = wl_resource_create(client, &wl_surface_interface, wl_resource_get_version(resource), id);
     CHECK(surface);
     if (!server->surface) server->surface = surface;
     wl_resource_set_implementation(surface,

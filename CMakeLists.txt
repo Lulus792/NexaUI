@@ -65,6 +65,28 @@ elseif(UNIX AND NOT APPLE)
         ${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v3.xml)
     set(NEXAUI_DECORATION_XML
         ${WAYLAND_PROTOCOLS_DIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml)
+    set(NEXAUI_FRACTIONAL_XML ${WAYLAND_PROTOCOLS_DIR}/staging/fractional-scale/fractional-scale-v1.xml)
+    set(NEXAUI_VIEWPORTER_XML ${WAYLAND_PROTOCOLS_DIR}/stable/viewporter/viewporter.xml)
+    set(NEXAUI_WAYLAND_FRACTIONAL_AVAILABLE OFF)
+    if(EXISTS "${NEXAUI_FRACTIONAL_XML}" AND EXISTS "${NEXAUI_VIEWPORTER_XML}")
+        foreach(_protocol IN ITEMS fractional-scale-v1 viewporter)
+            if(_protocol STREQUAL "fractional-scale-v1")
+                set(_xml "${NEXAUI_FRACTIONAL_XML}")
+            else()
+                set(_xml "${NEXAUI_VIEWPORTER_XML}")
+            endif()
+            add_custom_command(
+                OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/${_protocol}-client-protocol.h
+                       ${NEXAUI_WAYLAND_PROTOCOL_DIR}/${_protocol}-protocol.c
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${NEXAUI_WAYLAND_PROTOCOL_DIR}
+                COMMAND ${WAYLAND_SCANNER} client-header ${_xml} ${NEXAUI_WAYLAND_PROTOCOL_DIR}/${_protocol}-client-protocol.h
+                COMMAND ${WAYLAND_SCANNER} private-code ${_xml} ${NEXAUI_WAYLAND_PROTOCOL_DIR}/${_protocol}-protocol.c
+                DEPENDS ${_xml} VERBATIM)
+            target_sources(nexaui PRIVATE ${NEXAUI_WAYLAND_PROTOCOL_DIR}/${_protocol}-protocol.c)
+        endforeach()
+        target_compile_definitions(nexaui PRIVATE NEXAUI_WAYLAND_FRACTIONAL_SCALE=1)
+        set(NEXAUI_WAYLAND_FRACTIONAL_AVAILABLE ON)
+    endif()
     add_custom_command(
         OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-client-protocol.h
                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c
@@ -506,6 +528,30 @@ if(NEXAUI_BUILD_TESTS)
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-unstable-v1-server-protocol.h
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v1-server-protocol.h
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-server-protocol.h)
+            if(NEXAUI_WAYLAND_FRACTIONAL_AVAILABLE)
+                add_custom_command(
+                    OUTPUT ${NEXAUI_WAYLAND_PROTOCOL_DIR}/fractional-scale-v1-server-protocol.h
+                           ${NEXAUI_WAYLAND_PROTOCOL_DIR}/viewporter-server-protocol.h
+                    COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_FRACTIONAL_XML} ${NEXAUI_WAYLAND_PROTOCOL_DIR}/fractional-scale-v1-server-protocol.h
+                    COMMAND ${WAYLAND_SCANNER} server-header ${NEXAUI_VIEWPORTER_XML} ${NEXAUI_WAYLAND_PROTOCOL_DIR}/viewporter-server-protocol.h
+                    DEPENDS ${NEXAUI_FRACTIONAL_XML} ${NEXAUI_VIEWPORTER_XML} VERBATIM)
+                add_executable(nexaui_wayland_fractional_tests tests/test_wayland_fractional.c
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/fractional-scale-v1-server-protocol.h
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/viewporter-server-protocol.h
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/fractional-scale-v1-protocol.c
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/viewporter-protocol.c
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+                add_dependencies(nexaui_wayland_fractional_tests nexaui_wayland_test_protocols)
+                target_include_directories(nexaui_wayland_fractional_tests PRIVATE
+                    ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+                target_link_libraries(nexaui_wayland_fractional_tests PRIVATE
+                    NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+                foreach(_mode IN ITEMS both both-integer delayed invalid fractional-only viewport-only neither)
+                    add_test(NAME nexaui_wayland_fractional_${_mode} COMMAND nexaui_wayland_fractional_tests ${_mode})
+                    set_tests_properties(nexaui_wayland_fractional_${_mode} PROPERTIES TIMEOUT 15)
+                endforeach()
+            endif()
             add_executable(nexaui_wayland_management_tests tests/test_wayland_management.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c)

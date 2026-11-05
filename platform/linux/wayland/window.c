@@ -15,6 +15,10 @@
 #include "window_management.h"
 #include "text-input-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+#include "fractional-scale-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -126,6 +130,14 @@ struct nx_wayland_window {
     struct xdg_wm_base *wm_base;
     struct wl_surface *surface;
     struct wl_surface *cursor_surface;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    struct wp_fractional_scale_manager_v1 *fractional_manager;
+    struct wp_fractional_scale_v1 *fractional;
+    struct wp_viewporter *viewporter;
+    struct wp_viewport *viewport;
+    uint32_t preferred_scale_120;
+    int fractional_active, viewport_configured;
+#endif
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *toplevel;
     struct zxdg_decoration_manager_v1 *decoration_manager;
@@ -152,6 +164,7 @@ struct nx_wayland_window {
     int selection_serial_from_pointer;
     nx_platform_event_queue event_queue;
     int width, height, scale;
+    uint32_t scale_120;
     int background_width, background_height, cursor_width, cursor_height;
     int pending_width, pending_height;
     int normal_width, normal_height;
@@ -232,26 +245,59 @@ static void nx_wayland_refresh_scale(nx_wayland_window *window) {
             scale = output->scale;
     if (window->surface && wl_surface_get_version(window->surface) < 3)
         scale = 1;
-    if (scale == window->scale) return;
+    uint64_t numerator=(uint64_t)scale*120u;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->fractional_active) {
+        numerator=window->preferred_scale_120;
+        scale=(int)((numerator+119u)/120u);
+    }
+#endif
+    if (numerator>UINT32_MAX) { window->error=NX_ERROR_LIMIT; return; }
+    int force=0;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    force=window->fractional_active && !window->viewport_configured;
+#endif
+    if (numerator == window->scale_120 && scale == window->scale && !force) return;
     int pixel_width=0,pixel_height=0;
-    if ((uint64_t)scale * 120u > UINT32_MAX ||
-        nx_wayland_scale_extent(window->width,window->height,(uint32_t)scale*120u,
+    if (nx_wayland_scale_extent(window->width,window->height,(uint32_t)numerator,
                                 &pixel_width,&pixel_height)!=NX_OK) {
         window->error = NX_ERROR_LIMIT;
         return;
     }
     window->scale = scale;
+    window->scale_120=(uint32_t)numerator;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->fractional_active) {
+        wp_viewport_set_destination(window->viewport,window->width,window->height);
+        window->viewport_configured=1;
+    }
+#endif
     nx_event event = {0};
     event.type = NX_EVENT_RESIZE;
     event.width = (float)window->width;
     event.height = (float)window->height;
-    event.scale = (float)scale;
+    event.scale = (float)((double)numerator/120.0);
     nx_platform_event_queue_push(&window->event_queue, event);
     if (window->error == NX_OK && window->configured && !window->hidden)
         window->error = nx_wayland_attach_background(window);
     if (window->error == NX_OK)
         window->error = nx_wayland_apply_cursor(window);
 }
+
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+static void nx_wayland_preferred_scale(void *data, struct wp_fractional_scale_v1 *fractional,
+                                        uint32_t scale) {
+    nx_wayland_window *window=data;
+    (void)fractional;
+    if (!scale) { window->error=NX_ERROR_PLATFORM; return; }
+    window->preferred_scale_120=scale;
+    window->fractional_active=1;
+    nx_wayland_refresh_scale(window);
+}
+static const struct wp_fractional_scale_v1_listener nx_wayland_fractional_listener = {
+    .preferred_scale=nx_wayland_preferred_scale
+};
+#endif
 
 static void nx_wayland_output_geometry(void *data, struct wl_output *native,
                                        int32_t x, int32_t y, int32_t mm_width,
@@ -657,6 +703,12 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
             &zxdg_decoration_manager_v1_interface, 1);
     else if (!strcmp(interface, wl_shm_interface.name) && !window->shm)
         window->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    else if (!strcmp(interface, wp_fractional_scale_manager_v1_interface.name) && !window->fractional_manager)
+        window->fractional_manager=wl_registry_bind(registry,name,&wp_fractional_scale_manager_v1_interface,1);
+    else if (!strcmp(interface, wp_viewporter_interface.name) && !window->viewporter)
+        window->viewporter=wl_registry_bind(registry,name,&wp_viewporter_interface,1);
+#endif
     else if (!strcmp(interface, wl_seat_interface.name) && !window->seat &&
              window->error == NX_OK && version >= 5) {
         window->seat = wl_registry_bind(registry, name, &wl_seat_interface, 5);
@@ -1912,16 +1964,22 @@ platform_fail:
 }
 
 static nx_result nx_wayland_attach_background(nx_wayland_window *window) {
+    int buffer_scale=window->scale;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->fractional_active) {
+        buffer_scale=1;
+        wp_viewport_set_destination(window->viewport,window->width,window->height);
+    }
+#endif
     if (window->external_renderer) {
         if (wl_surface_get_version(window->surface) >= 3)
-            wl_surface_set_buffer_scale(window->surface, window->scale);
+            wl_surface_set_buffer_scale(window->surface, buffer_scale);
         return NX_OK;
     }
     nx_wayland_buffer *buffer = NULL;
-    if ((uint64_t)window->scale * 120u > UINT32_MAX) return NX_ERROR_LIMIT;
     int width=0,height=0;
     nx_result scaled=nx_wayland_scale_extent(window->width,window->height,
-        (uint32_t)window->scale*120u,&width,&height);
+        window->scale_120,&width,&height);
     if (scaled!=NX_OK) return scaled;
     nx_result result = nx_wayland_create_buffer(window, width,
                         height, WL_SHM_FORMAT_XRGB8888, &buffer);
@@ -1930,7 +1988,7 @@ static nx_result nx_wayland_attach_background(nx_wayland_window *window) {
     for (size_t i = 0; i < buffer->size / 4u; ++i)
         pixels[i] = 0xfff6f7f9u;
     if (wl_surface_get_version(window->surface) >= 3)
-        wl_surface_set_buffer_scale(window->surface, window->scale);
+        wl_surface_set_buffer_scale(window->surface, buffer_scale);
     wl_surface_attach(window->surface, buffer->native, 0, 0);
     wl_surface_damage(window->surface, 0, 0, window->width, window->height);
     wl_surface_commit(window->surface);
@@ -2065,13 +2123,17 @@ static void nx_wayland_surface_configure(void *data,
     if (resized) {
         window->width = width;
         window->height = height;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+        if (window->fractional_active)
+            wp_viewport_set_destination(window->viewport,width,height);
+#endif
         xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
                                          width, height);
         nx_event event = {0};
         event.type = NX_EVENT_RESIZE;
         event.width = (float)width;
         event.height = (float)height;
-        event.scale = (float)window->scale;
+        event.scale = (float)((double)window->scale_120/120.0);
         nx_platform_event_queue_push(&window->event_queue, event);
     }
     window->configured = 1;
@@ -2121,6 +2183,7 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
     window->normal_width = window->width;
     window->normal_height = window->height;
     window->scale = 1;
+    window->scale_120=120;
     window->hidden = (desc->flags & NX_WINDOW_HIDDEN) != 0;
     window->flags = desc->flags;
     nx_result result = nx_platform_event_queue_init(&window->event_queue,
@@ -2161,6 +2224,17 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
         result = NX_ERROR_PLATFORM;
         goto fail;
     }
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->surface && window->fractional_manager && window->viewporter) {
+        window->viewport=wp_viewporter_get_viewport(window->viewporter,window->surface);
+        window->fractional=wp_fractional_scale_manager_v1_get_fractional_scale(
+            window->fractional_manager,window->surface);
+        if (!window->viewport || !window->fractional ||
+            wp_fractional_scale_v1_add_listener(window->fractional,&nx_wayland_fractional_listener,window)!=0) {
+            result=NX_ERROR_PLATFORM;goto fail;
+        }
+    }
+#endif
     if (window->text_input_manager_v3 && window->seat) {
         window->text_input_v3 = zwp_text_input_manager_v3_get_text_input(
             window->text_input_manager_v3, window->seat);
@@ -2326,7 +2400,7 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->connection_failed) return NX_ERROR_PLATFORM;
     *out_info = (nx_window_info){(float)window->width,
-                                 (float)window->height, (float)window->scale,
+                                 (float)window->height, (float)((double)window->scale_120/120.0),
                                  window->should_close};
     return NX_OK;
 }
@@ -2337,10 +2411,9 @@ nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_s
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->connection_failed) return NX_ERROR_PLATFORM;
-    if ((uint64_t)window->scale*120u>UINT32_MAX) return NX_ERROR_LIMIT;
     int width=0,height=0;
     nx_result result=nx_wayland_scale_extent(window->width,window->height,
-        (uint32_t)window->scale*120u,&width,&height);
+        window->scale_120,&width,&height);
     if (result==NX_OK) *out_size=(nx_pixel_size){(uint32_t)width,(uint32_t)height};
     return result;
 }
@@ -3190,6 +3263,12 @@ void nx_wayland_window_destroy(nx_wayland_window *window) {
     if (window->text_input) zwp_text_input_v1_destroy(window->text_input);
     if (window->text_input_manager)
         zwp_text_input_manager_v1_destroy(window->text_input_manager);
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->fractional) wp_fractional_scale_v1_destroy(window->fractional);
+    if (window->viewport) wp_viewport_destroy(window->viewport);
+    if (window->fractional_manager) wp_fractional_scale_manager_v1_destroy(window->fractional_manager);
+    if (window->viewporter) wp_viewporter_destroy(window->viewporter);
+#endif
     if (window->surface) wl_surface_destroy(window->surface);
     if (window->cursor_surface) wl_surface_destroy(window->cursor_surface);
     if (window->wm_base) xdg_wm_base_destroy(window->wm_base);

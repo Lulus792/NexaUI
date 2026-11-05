@@ -54,3 +54,48 @@ Wayland-only static and shared packages. A Windows MSVC Debug multi-window test
 compared the API against `GetClientRect`, and the dual-backend X11 window test
 compared it against the native resized window. The AppKit implementation and
 its native oracle test were not built or run on this host.
+
+## Fractional-scale and viewporter negotiation (2026-11-05)
+
+Candidate based on `2f271a6cc1784c0ce9380508e769342148f89ea1`. When both
+protocol XML files are installed, NexaUI builds support for
+`wp_fractional_scale_v1` and `wp_viewporter`. It enables the fractional path
+only when the compositor advertises both and sends a preferred scale. Until
+then, and when either protocol is absent, the largest entered integer output
+scale remains in use. Older protocol data without the staging XML still builds
+and uses the integer path.
+
+The adapter keeps the received numerator in 120ths, reports the corresponding
+logical scale, calculates the pixel extent with integer arithmetic and uses a
+logical viewport with surface buffer scale 1. Cursor buffers use the next
+integer scale. Settings and NexaCloud obtain render dimensions through
+`nx_window_get_pixel_size`; no float-to-pixel reconstruction is required.
+
+A controlled server checks 1.0, 1.25, 1.5, 2.0 and 123/120 scales, odd-size
+rounding, resize and output changes, late preferred-scale delivery, logical
+pointer and IME coordinates, accessibility geometry, external-renderer lease,
+invalid scale, and each missing-protocol combination. It verifies the actual
+Wayland viewport, buffer scale and shared-memory buffer dimensions. These tests
+do not prove Vulkan presentation or visual sharpness at fractional scale on a
+real compositor. A private Weston trace advertised viewporter but not
+fractional-scale-v1; the Settings Vulkan smoke passed there using integer
+fallback. Mixed-monitor transitions, physical devices, actual screenreader and
+installed-IME behavior, and real fractional-scale compositor/Vulkan visual
+acceptance remain open.
+As a negative control, temporarily suppressing the preferred-scale callback
+made the controlled fractional and integer-preference cases fail; after
+restoring it, all seven passed again with sanitizers.
+
+The private Weston trace is `%TEMP%/nexaui-fractional-weston-trace.txt`
+(SHA-256 `50bc23da6e2fed6a032e195a94683973d5a9c0a29c03ef01355afe35f70eb907`).
+Wayland-only static/shared installed C17 consumers passed, as did a fresh build
+and controlled clipboard test with the staging fractional XML deliberately
+absent. The dual-backend X11 window test and all seven controlled fractional
+cases passed. The full Clang ASan/UBSan run passed 199/199 before the final
+test-only 2.0-scale extension; all seven fractional cases subsequently passed
+again under sanitizers. The first GCC full run passed 197/198: the unrelated
+`nexaui_settings_ax_async_short` asserted its request was still pending but
+observed completion after 0.125 seconds with a 100 ms deadline while other
+builds were active. Ten isolated repetitions passed; scheduler contention is a
+plausible explanation, not a proven cause. No deadline or assertion changed.
+A subsequent GCC full run without the parallel sanitizer run passed 198/198.
