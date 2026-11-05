@@ -373,11 +373,63 @@ static int test_visual_text_commands(void) {
     return 0;
 }
 
+typedef struct numeric_clipboard {
+    nx_numeric_field *field;
+    char bytes[32]; size_t length; int replace_on_read,replace_on_write;
+    unsigned reads,writes;
+} numeric_clipboard;
+static nx_result numeric_clip_read(void *user,char *bytes,size_t capacity,size_t *length) {
+    numeric_clipboard *cb=user; ++cb->reads; *length=cb->length;
+    if (!bytes) {
+        if (cb->replace_on_read && nx_numeric_field_set_value(cb->field,5)!=NX_OK) return NX_ERROR_STATE;
+        return NX_OK;
+    }
+    if (capacity<=cb->length) return NX_ERROR_LIMIT;
+    memcpy(bytes,cb->bytes,cb->length); bytes[cb->length]=0; return NX_OK;
+}
+static nx_result numeric_clip_write(void *user,const char *bytes,size_t length) {
+    numeric_clipboard *cb=user; ++cb->writes;
+    if (length>=sizeof(cb->bytes)) return NX_ERROR_LIMIT;
+    if (cb->replace_on_write && nx_numeric_field_set_value(cb->field,1)!=NX_OK) return NX_ERROR_STATE;
+    memcpy(cb->bytes,bytes,length); cb->bytes[length]=0; cb->length=length; return NX_OK;
+}
+static int test_numeric_clipboard(void) {
+    uint8_t bytes[512]; font_fixture(bytes); nx_font *font=NULL; nx_font_collection *fonts=NULL;
+    nx_numeric_field *field=NULL; nx_context *ctx=NULL;
+    CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    CHECK(nx_numeric_field_create(15,4096,&field)==NX_OK && nx_context_create(NULL,&ctx)==NX_OK);
+    numeric_clipboard cb={.field=field}; nx_text_clipboard clip={&cb,numeric_clip_read,numeric_clip_write};
+    CHECK(nx_numeric_field_set_clipboard(field,&clip)==NX_OK);
+    nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){0,0,80,24};desc.name=(nx_utf8_span){"Number",6};
+    desc.fonts=fonts;desc.pixels_per_em=20;desc.glyph_cache_bytes=65536;desc.minimum=-100;desc.maximum=100;
+    CHECK(numeric_frame(ctx,field,&desc,1) && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_command(ctx,NX_TEXT_COMMAND_COPY));
+    CHECK(numeric_frame(ctx,field,&desc,1) && cb.writes==1 && !strcmp(cb.bytes,"15"));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_CUT) && numeric_frame(ctx,field,&desc,0));
+    CHECK(cb.writes==2 && expect_field(field,"",15));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_PASTE) && numeric_frame(ctx,field,&desc,1));
+    CHECK(cb.reads==2 && expect_field(field,"15",15));
+    memcpy(cb.bytes,"5\n1",3);cb.length=3;
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_command(ctx,NX_TEXT_COMMAND_PASTE));
+    CHECK(numeric_frame(ctx,field,&desc,0) && expect_field(field,"5 1",15) && semantic_draft(ctx,"5 1",1));
+    CHECK(nx_numeric_field_set_value(field,15)==NX_OK); cb.replace_on_write=1;
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_command(ctx,NX_TEXT_COMMAND_CUT));
+    CHECK(numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1) && !strcmp(cb.bytes,"15"));
+    cb.replace_on_write=0;cb.replace_on_read=1;cb.reads=0;
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_command(ctx,NX_TEXT_COMMAND_PASTE));
+    CHECK(numeric_frame(ctx,field,&desc,1) && expect_field(field,"5",5) && cb.reads==1);
+    CHECK(nx_numeric_field_set_clipboard(field,NULL)==NX_OK);
+    nx_context_destroy(ctx);nx_numeric_field_destroy(field);nx_font_collection_destroy(fonts);nx_font_close(font);
+    return 0;
+}
+
 int main(void) {
     if (test_numeric_field()) return 1;
     if (test_retry_after_paint_failure()) return 1;
     if (test_native_text_commands()) return 1;
     if (test_visual_text_commands()) return 1;
+    if (test_numeric_clipboard()) return 1;
     puts("numeric field tests passed");
     return 0;
 }

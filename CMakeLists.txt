@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.6 LANGUAGES C)
+project(NexaUI VERSION 0.1.7 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -706,6 +706,8 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
             add_test(NAME nexaui_wayland_async_clipboard COMMAND nexaui_wayland_async_clipboard_tests)
+            add_test(NAME nexaui_wayland_numeric_clipboard COMMAND nexaui_wayland_async_clipboard_tests --numeric)
+            set_tests_properties(nexaui_wayland_numeric_clipboard PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_clipboard_focus_loss COMMAND nexaui_wayland_async_clipboard_tests --focus-loss)
             add_test(NAME nexaui_wayland_clipboard_keyboard_removed COMMAND nexaui_wayland_async_clipboard_tests --keyboard-removed)
             add_test(NAME nexaui_wayland_clipboard_seat_removed COMMAND nexaui_wayland_async_clipboard_tests --seat-removed)

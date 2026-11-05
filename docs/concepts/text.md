@@ -50,7 +50,11 @@ replacement then use the same transport and painting as general fields. IME
 commits may produce an invalid visible draft, which never updates the committed
 number until a valid Enter. Numeric fields reuse the general-field visual
 navigation and selection logic, including caret affinity for bidirectional
-drafts. Clipboard callbacks remain separate work. Other native IME
+drafts. `nx_numeric_field_set_clipboard` copies optional clipboard callbacks;
+numeric fields use the same bounded asynchronous native Wayland paste as text
+fields. Invalid pasted text remains a visible draft without committing a value.
+The callback data and any borrowed native window must remain alive until the
+field is destroyed or the callbacks are removed. Other native IME
 implementations and interactive acceptance need their own checks.
 See the [native command report](../quality/macos-input-commands-report.md).
 

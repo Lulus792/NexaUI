@@ -43,7 +43,7 @@ typedef struct test_server {
     atomic_int send_offer, send_drop, offer_sent;
     atomic_int data_version, drop_actions, drop_finishes, drop_reject, drop_invalid;
     atomic_int pause_server, server_paused, stop_server;
-    atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid;
+    atomic_int offer_reads, offer_once, offer_stall, stalled_fd, offer_invalid, offer_numeric;
     atomic_int disconnect_on_receive;
     int configured, enabled, pending_done, width, height;
     uint32_t commit_serial;
@@ -85,7 +85,7 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
     if(!atomic_load(&server->offer_once) || previous==0) {
         const char *payload=!strcmp(mime,"text/uri-list")?
             (atomic_load(&server->drop_invalid)?"https://example.invalid/file\r\n":"file:///tmp/one%20file\r\n"):
-            atomic_load(&server->offer_invalid)?"\xc0":"Once";
+            atomic_load(&server->offer_invalid)?"\xc0":atomic_load(&server->offer_numeric)?"51":"Once";
         size_t length=strlen(payload);
         if(write(fd,payload,length)!=(ssize_t)length)abort();
     }

@@ -28,6 +28,17 @@ static void close_peer(test_server *server) {
     int fd = atomic_exchange(&server->stalled_fd, 0);
     CHECK(fd > 0 && close(fd - 1) == 0);
 }
+static void draw_numeric(nx_context *ctx,nx_numeric_field *field,nx_numeric_field_desc *desc,int valid_expected) {
+    nx_interaction_state state; int valid=0;
+    CHECK(nx_begin_frame(ctx,240,120,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,desc,field,&state,&valid)==NX_OK && valid==valid_expected);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+}
+static int numeric_is(nx_numeric_field *field,const char *expected,double value) {
+    nx_utf8_span text; double actual=0;
+    return nx_numeric_field_text(field,&text)==NX_OK && text.length==strlen(expected) &&
+        !memcmp(text.data,expected,text.length) && nx_numeric_field_value(field,&actual)==NX_OK && actual==value;
+}
 
 typedef struct public_wrong_thread {
     nx_window *window; uint64_t token; nx_result begin, take, cancel;
@@ -43,8 +54,9 @@ static void *probe_public_wrong_thread(void *arg) {
 }
 
 int main(int argc, char **argv) {
-    CHECK(argc==1 || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--pointer-removed") || !strcmp(argv[1],"--pointer-serial") || !strcmp(argv[1],"--disconnect"))));
-    int focus_loss=argc==2;
+    int numeric=argc==2 && !strcmp(argv[1],"--numeric");
+    CHECK(argc==1 || numeric || (argc==2 && (!strcmp(argv[1],"--focus-loss") || !strcmp(argv[1],"--keyboard-removed") || !strcmp(argv[1],"--seat-removed") || !strcmp(argv[1],"--pointer-removed") || !strcmp(argv[1],"--pointer-serial") || !strcmp(argv[1],"--disconnect"))));
+    int focus_loss=argc==2 && !numeric;
     int keyboard_removed=argc==2 && !strcmp(argv[1],"--keyboard-removed");
     int seat_removed=argc==2 && !strcmp(argv[1],"--seat-removed");
     int pointer_serial=argc==2 && !strcmp(argv[1],"--pointer-serial");
@@ -73,6 +85,64 @@ int main(int argc, char **argv) {
     nx_window_desc desc = {"async clipboard", 240, 120, disconnect?0:NX_WINDOW_HIDDEN,
                            {&allocations, window_allocate, window_free}};
     nx_window *window = NULL; CHECK(nx_window_create(&desc, &window) == NX_OK);
+    if (numeric) {
+        atomic_store(&server.offer_numeric,1); publish_offer(&server,window);
+        nx_context *ctx=NULL; nx_numeric_field *field=NULL; nx_font *font=NULL; nx_font_collection *fonts=NULL;
+        uint8_t font_bytes[512]; font_fixture(font_bytes);
+        CHECK(nx_font_open(font_bytes,sizeof(font_bytes),NULL,&font)==NX_OK);
+        CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+        CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_numeric_field_create(15,1024,&field)==NX_OK);
+        nx_text_clipboard clip={0}; CHECK(nx_text_clipboard_for_window(window,&clip)==NX_OK);
+        CHECK(nx_numeric_field_set_clipboard(field,&clip)==NX_OK);
+        size_t routed=0; CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK);
+        nx_numeric_field_desc nd={0}; nd.id=81; nd.bounds=(nx_rect){0,0,120,28};
+        nd.name=(nx_utf8_span){"Number",6}; nd.fonts=fonts;nd.pixels_per_em=16;
+        nd.glyph_cache_bytes=4096;nd.minimum=-1000;nd.maximum=1000;
+        draw_numeric(ctx,field,&nd,1);CHECK(nx_focus_set(ctx,81)==NX_OK);
+        nx_event event={0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_SELECT_ALL;
+        CHECK(nx_context_queue_event(ctx,&event)==NX_OK);event.text_command=NX_TEXT_COMMAND_PASTE;
+        CHECK(nx_context_queue_event(ctx,&event)==NX_OK);draw_numeric(ctx,field,&nd,1);
+        CHECK(numeric_is(field,"15",15)); /* no synchronous read */
+        for(unsigned i=0;i<30 && !numeric_is(field,"51",15);++i) {
+            CHECK(nx_window_poll(window,100)==NX_OK); CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK);
+            draw_numeric(ctx,field,&nd,1);
+        }
+        CHECK(numeric_is(field,"51",15));
+        event.text_command=NX_TEXT_COMMAND_NEWLINE;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);CHECK(numeric_is(field,"51",51));
+        atomic_store(&server.offer_stall,1);publish_offer(&server,window);
+        event.text_command=NX_TEXT_COMMAND_SELECT_ALL;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        event.text_command=NX_TEXT_COMMAND_PASTE;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);
+        for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i) CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(atomic_load(&server.stalled_fd));
+        CHECK(nx_numeric_field_set_value(field,1)==NX_OK);draw_numeric(ctx,field,&nd,1);
+        close_peer(&server);CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK);draw_numeric(ctx,field,&nd,1);
+        CHECK(numeric_is(field,"1",1));
+        publish_offer(&server,window);
+        event.text_command=NX_TEXT_COMMAND_PASTE;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);
+        for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i) CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(atomic_load(&server.stalled_fd));
+        CHECK(nx_focus_set(ctx,0)==NX_OK && nx_focus_set(ctx,81)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);close_peer(&server);
+        CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);CHECK(numeric_is(field,"1",1));
+        publish_offer(&server,window);CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);
+        for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i) CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(atomic_load(&server.stalled_fd));
+        nx_context_destroy(ctx);nx_numeric_field_destroy(field);close_peer(&server);
+        uint64_t after_close=0;
+        CHECK(nx_wayland_clipboard_read_begin(window,1024,2000,0,&after_close)==NX_OK && after_close);
+        CHECK(nx_wayland_clipboard_read_cancel(window,after_close)==NX_OK);
+        nx_font_collection_destroy(fonts);nx_font_close(font);
+        nx_window_destroy(window);CHECK(allocations.live==0);
+        wl_display_terminate(server.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(server.display);
+        CHECK(unlink(path)==0 || access(path,F_OK)!=0);CHECK(rmdir(runtime)==0);
+        puts("Numeric Wayland clipboard completion and model replacement verified");return 0;
+    }
     if(focus_loss) {
         atomic_store(&server.keyboard_enter_requested,1);publish_offer(&server,window);
         atomic_store(&server.keyboard_leave_requested,1);

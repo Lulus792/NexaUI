@@ -37,6 +37,7 @@ static void consumer_release(void *user) { (void)user; }
 
 int main(int argc, char **argv) {
     if (nx_numeric_field_set_ime_window(NULL, NULL) != NX_ERROR_ARGUMENT) return 28;
+    if (nx_numeric_field_set_clipboard(NULL, NULL) != NX_ERROR_ARGUMENT) return 29;
 #if defined(NEXAUI_PACKAGE_LINUX_WAYLAND)
     nx_wayland_shm_host *host=(nx_wayland_shm_host *)1;
     if (nx_wayland_shm_host_create(NULL,NULL,NULL,NULL,&host)!=NX_ERROR_ARGUMENT || host) return 22;
