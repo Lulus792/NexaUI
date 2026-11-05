@@ -44,6 +44,11 @@ struct app {
     struct wl_seat *seat;
     struct wl_keyboard *keyboard;
     struct wl_pointer *pointer;
+    struct wl_callback *pointer_release_barrier;
+    struct wl_pointer *pointer_release_device;
+    struct view *pointer_release_view;
+    nx_event pointer_release_event;
+    uint64_t pointer_release_revision;
     struct zwp_text_input_manager_v3 *ime_manager;
     struct zwp_text_input_v3 *ime_input;
     struct wl_surface *ime_surface;
@@ -79,6 +84,7 @@ struct app {
 static volatile sig_atomic_t stop_requested,signal_writer=-1;
 static void ime_stop(struct app *a);
 static void ime_sync(struct app *a);
+static void pointer_cancel_pending(struct app *a);
 static void stop_signal(int sig) {
     (void)sig;int saved=errno;stop_requested=1;
     if(signal_writer>=0){char byte=1;(void)write((int)signal_writer,&byte,1);}
@@ -331,6 +337,7 @@ static void closed(void *data, struct zwlr_layer_surface_v1 *layer) { (void)data
 static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure = configured, .closed = closed};
 static void pointer_event(struct app *a,nx_event_type type,uint32_t button);
 static void view_state(struct view *v, bool expanded) {
+    if(v->app->pointer_release_view==v)pointer_cancel_pending(v->app);
     if(!expanded && v->app->focused==v)ime_stop(v->app);
     if(v->app->pointer_view==v)pointer_event(v->app,NX_EVENT_POINTER_CANCEL,0);
     CHECK(v->revision<UINT64_MAX);
@@ -497,9 +504,33 @@ static void pointer_event(struct app *a,nx_event_type type,uint32_t button) {
     nx_event event={0};event.type=type;event.x=a->pointer_x;event.y=a->pointer_y;event.button=button;
     CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
 }
+static void pointer_cancel_pending(struct app *a) {
+    if(!a->pointer_release_barrier)return;
+    struct view *v=a->pointer_release_view;
+    wl_callback_destroy(a->pointer_release_barrier);a->pointer_release_barrier=NULL;
+    a->pointer_release_view=NULL;a->pointer_release_device=NULL;
+    if(v && v->view && v->configured) {
+        nx_event event={0};event.type=NX_EVENT_POINTER_CANCEL;
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+    }
+}
+static void pointer_release_ready(void *data,struct wl_callback *callback,uint32_t serial) {
+    struct app *a=data;(void)serial;CHECK(callback==a->pointer_release_barrier);
+    struct view *v=a->pointer_release_view;struct wl_pointer *device=a->pointer_release_device;
+    nx_event event=a->pointer_release_event;uint64_t revision=a->pointer_release_revision;
+    wl_callback_destroy(callback);a->pointer_release_barrier=NULL;
+    a->pointer_release_view=NULL;a->pointer_release_device=NULL;
+    if(v && v->view && v->configured && a->pointer==device && a->pointer_view==v && v->revision==revision) {
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+    } else if(v && v->view && v->configured) {
+        event=(nx_event){0};event.type=NX_EVENT_POINTER_CANCEL;
+        CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
+    }
+}
+static const struct wl_callback_listener pointer_release_listener={.done=pointer_release_ready};
 static void pointer_enter(void *data,struct wl_pointer *pointer,uint32_t serial,
                           struct wl_surface *surface,wl_fixed_t x,wl_fixed_t y) {
-    struct app *a=data;(void)pointer;(void)serial;a->pointer_view=NULL;
+    struct app *a=data;(void)pointer;(void)serial;pointer_cancel_pending(a);a->pointer_view=NULL;
     for(unsigned i=0;i<3;++i)if(a->views[i].surface==surface)a->pointer_view=&a->views[i];
     a->pointer_x=(float)wl_fixed_to_double(x);a->pointer_y=(float)wl_fixed_to_double(y);
     pointer_event(a,NX_EVENT_POINTER_MOVE,0);
@@ -507,12 +538,14 @@ static void pointer_enter(void *data,struct wl_pointer *pointer,uint32_t serial,
 static void pointer_leave(void *data,struct wl_pointer *pointer,uint32_t serial,struct wl_surface *surface) {
     struct app *a=data;(void)pointer;(void)serial;
     if(a->pointer_view && a->pointer_view->surface==surface) {
+        pointer_cancel_pending(a);
         pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
         a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;
     }
 }
 static void pointer_motion(void *data,struct wl_pointer *pointer,uint32_t time,wl_fixed_t x,wl_fixed_t y) {
     struct app *a=data;(void)pointer;(void)time;
+    pointer_cancel_pending(a);
     a->pointer_x=(float)wl_fixed_to_double(x);a->pointer_y=(float)wl_fixed_to_double(y);
     pointer_event(a,NX_EVENT_POINTER_MOVE,0);
 }
@@ -521,12 +554,23 @@ static void pointer_button(void *data,struct wl_pointer *pointer,uint32_t serial
     struct app *a=data;(void)pointer;(void)serial;(void)time;
     if(button==BTN_LEFT) {
         printf("POINTER BUTTON %u\n",state);
-        pointer_event(a,state==WL_POINTER_BUTTON_STATE_PRESSED?
-                         NX_EVENT_POINTER_DOWN:NX_EVENT_POINTER_UP,NX_BUTTON_LEFT);
+        pointer_cancel_pending(a);
+        if(state==WL_POINTER_BUTTON_STATE_PRESSED)pointer_event(a,NX_EVENT_POINTER_DOWN,NX_BUTTON_LEFT);
+        else if(state==WL_POINTER_BUTTON_STATE_RELEASED && a->pointer_view && a->pointer_view->view &&
+                a->pointer_view->configured && a->display && a->pointer==pointer) {
+            a->pointer_release_view=a->pointer_view;a->pointer_release_device=pointer;
+            a->pointer_release_revision=a->pointer_view->revision;
+            a->pointer_release_event=(nx_event){0};a->pointer_release_event.type=NX_EVENT_POINTER_UP;
+            a->pointer_release_event.x=a->pointer_x;a->pointer_release_event.y=a->pointer_y;
+            a->pointer_release_event.button=NX_BUTTON_LEFT;
+            a->pointer_release_barrier=wl_display_sync(a->display);CHECK(a->pointer_release_barrier);
+            CHECK(!wl_callback_add_listener(a->pointer_release_barrier,&pointer_release_listener,a));
+        } else if(state==WL_POINTER_BUTTON_STATE_RELEASED)pointer_event(a,NX_EVENT_POINTER_CANCEL,0);
     }
 }
 static void pointer_axis(void *data,struct wl_pointer *pointer,uint32_t time,uint32_t axis,wl_fixed_t value) {
     struct app *a=data;(void)pointer;(void)time;
+    pointer_cancel_pending(a);
     if(axis==WL_POINTER_AXIS_VERTICAL_SCROLL)a->axis_y-=wl_fixed_to_double(value);
     else if(axis==WL_POINTER_AXIS_HORIZONTAL_SCROLL)a->axis_x-=wl_fixed_to_double(value);
 }
@@ -534,6 +578,7 @@ static void pointer_frame(void *data,struct wl_pointer *pointer) {
     struct app *a=data;(void)pointer;
     double dx=a->steps_x?a->steps_x:a->axis_x/10.0;
     double dy=a->steps_y?a->steps_y:a->axis_y/10.0;
+    if(dx || dy)pointer_cancel_pending(a);
     struct view *v=a->pointer_view;
     if(v && v->configured && v->view && isfinite(dx) && isfinite(dy) &&
        fabs(dx)<=1000000 && fabs(dy)<=1000000 && (dx || dy)) {
@@ -576,6 +621,7 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
         CHECK(wl_pointer_add_listener(a->pointer,&pointer_listener,a)==0);
     }
     if(!(caps & WL_SEAT_CAPABILITY_POINTER) && a->pointer) {
+        pointer_cancel_pending(a);
         pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
         wl_pointer_release(a->pointer);a->pointer=NULL;
         a->axis_x=a->axis_y=a->steps_x=a->steps_y=0;puts("POINTER REMOVED");
@@ -769,6 +815,7 @@ int main(int argc, char **argv) {
             }
         }
     }
+    pointer_cancel_pending(&a);
     ime_stop(&a);
     if(a.ime_input)zwp_text_input_v3_destroy(a.ime_input);
     if(a.ime_manager)zwp_text_input_manager_v3_destroy(a.ime_manager);

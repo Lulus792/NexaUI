@@ -7,6 +7,13 @@ and caret contracts. Its controlled wire and callback evidence and remaining
 native Aetheri/provider, device, accessibility and physical gates are recorded
 in `examples/22_aetheri_desktop_view/README.md`. These rows remain open.
 
+I04/I07/P05: the private test host candidate based on
+`bf1080d889a6d82471b28887b0321f6a3bccc9b6` delays pointer release behind a
+Wayland sync and cancels it on observed device/view loss or model change. The
+controlled server and callback evidence in the desktop example does not rerun
+the earlier Aetheri held-device failure and cannot distinguish a real release
+from a synthesized release followed by a later removal. The gate remains open.
+
 The T05 and A04 rows below were reconciled on 2026-11-05 against published
 source `28b60f2fcad76374d5f2a91c722e8a2c27aa5829`. Their individual test results
 and earlier source revisions remain attributed in the adoption assessment;

@@ -20,9 +20,15 @@ static void wire_bind_compositor(struct wl_client *client,void *data,uint32_t ve
     static const struct wl_compositor_interface impl={.create_surface=wire_create_surface};
     wl_resource_set_implementation(r,&impl,data,NULL);
 }
+static void wire_get_pointer(struct wl_client *c,struct wl_resource *seat,uint32_t id) {
+    struct wl_resource *r=wl_resource_create(c,&wl_pointer_interface,5,id);CHECK(r);
+    static const struct wl_pointer_interface impl={.release=wire_destroy};
+    wl_resource_set_implementation(r,&impl,wl_resource_get_user_data(seat),NULL);
+}
 static void wire_bind_seat(struct wl_client *client,void *data,uint32_t version,uint32_t id) {
-    (void)version;struct wl_resource *r=wl_resource_create(client,&wl_seat_interface,1,id);CHECK(r);
-    wl_resource_set_implementation(r,NULL,data,NULL);
+    (void)version;struct wl_resource *r=wl_resource_create(client,&wl_seat_interface,5,id);CHECK(r);
+    static const struct wl_seat_interface impl={.get_pointer=wire_get_pointer,.release=wire_destroy};
+    wl_resource_set_implementation(r,&impl,data,NULL);
 }
 static void wire_enable(struct wl_client *c,struct wl_resource *r){(void)c;((struct wire_server *)wl_resource_get_user_data(r))->enabled=1;}
 static void wire_disable(struct wl_client *c,struct wl_resource *r){(void)c;((struct wire_server *)wl_resource_get_user_data(r))->enabled=0;}
@@ -73,7 +79,7 @@ static void wire_bind_manager(struct wl_client *c,void *data,uint32_t version,ui
 static void wire_global(void *data,struct wl_registry *registry,uint32_t name,const char *interface,uint32_t version) {
     (void)version;struct app *a=data;
     if(!strcmp(interface,"wl_compositor"))a->compositor=wl_registry_bind(registry,name,&wl_compositor_interface,1);
-    else if(!strcmp(interface,"wl_seat"))a->seat=wl_registry_bind(registry,name,&wl_seat_interface,1);
+    else if(!strcmp(interface,"wl_seat"))a->seat=wl_registry_bind(registry,name,&wl_seat_interface,5);
     else if(!strcmp(interface,"zwp_text_input_manager_v3"))a->ime_manager=wl_registry_bind(registry,name,&zwp_text_input_manager_v3_interface,1);
 }
 static const struct wl_registry_listener wire_registry_listener={.global=wire_global};
@@ -81,7 +87,7 @@ static void *wire_run(void *data){wl_display_run(((struct wire_server *)data)->d
 int main(int argc,char **argv) {
     CHECK(argc==2);struct wire_server server={0};server.display=wl_display_create();CHECK(server.display);
     CHECK(wl_global_create(server.display,&wl_compositor_interface,1,&server,wire_bind_compositor));
-    CHECK(wl_global_create(server.display,&wl_seat_interface,1,&server,wire_bind_seat));
+    CHECK(wl_global_create(server.display,&wl_seat_interface,5,&server,wire_bind_seat));
     CHECK(wl_global_create(server.display,&zwp_text_input_manager_v3_interface,1,&server,wire_bind_manager));
     int sockets[2];CHECK(socketpair(AF_UNIX,SOCK_STREAM,0,sockets)==0);CHECK(wl_client_create(server.display,sockets[0]));
     pthread_t thread;CHECK(!pthread_create(&thread,NULL,wire_run,&server));
@@ -116,6 +122,44 @@ int main(int argc,char **argv) {
     ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
     CHECK(!a.ime_enabled && !a.ime_surface && !strcmp(v->model.query,"ABDC"));
     advance(v);CHECK(aetheri_desktop_view_host_ime_caret(v->view,&composing)==NX_OK && composing.x==plain.x);
+    ae_desktop_model_search(&v->model,0,true);
+    CHECK(ae_desktop_model_window(&v->model,42,"Editor","org.example.Editor",false));++v->revision;
+    advance(v);advance(v);
+    uint32_t row_index=0;nx_semantic_view row;
+    CHECK(nx_semantics_find(aetheri_desktop_view_context(v->view),UINT64_C(0x100000000)+42,&row_index)==NX_OK);
+    CHECK(nx_semantics_get(aetheri_desktop_view_context(v->view),row_index,&row)==NX_OK);
+    a.pointer=wl_seat_get_pointer(a.seat);CHECK(a.pointer);
+    CHECK(!wl_pointer_add_listener(a.pointer,&pointer_listener,&a));
+    pointer_enter(&a,a.pointer,0,v->surface,wl_fixed_from_double(row.bounds.x+8),wl_fixed_from_double(row.bounds.y+8));
+    a.activation_enabled=true;
+    if(!getenv("NEXAUI_TEST_POINTER_REMOVAL_ONLY")) {
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+        CHECK(!a.activation_phase && a.pointer_release_barrier);
+        CHECK(wl_display_roundtrip(a.display)>=0);CHECK(a.activation_phase==1 && a.activation_id==42);
+        a.activation_phase=0;a.activation_enabled=true;
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+        pointer_motion(&a,a.pointer,0,wl_fixed_from_double(row.bounds.x+9),wl_fixed_from_double(row.bounds.y+8));
+        CHECK(!a.pointer_release_barrier && !a.activation_phase);
+        CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!a.activation_phase);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+        pointer_axis(&a,a.pointer,0,WL_POINTER_AXIS_VERTICAL_SCROLL,wl_fixed_from_double(10));
+        pointer_frame(&a,a.pointer);CHECK(!a.pointer_release_barrier && !a.activation_phase);
+        CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!a.activation_phase);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+        pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+        CHECK(ae_desktop_model_window(&v->model,42,"Changed","org.example.Editor",false));++v->revision;
+        CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!a.activation_phase && !a.pointer_release_barrier);
+        advance(v);
+    }
+    pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_PRESSED);
+    pointer_button(&a,a.pointer,0,0,BTN_LEFT,WL_POINTER_BUTTON_STATE_RELEASED);
+    CHECK(a.pointer_release_barrier && !a.activation_phase);
+    capabilities(&a,a.seat,0);
+    CHECK(!a.pointer && !a.pointer_release_barrier && !a.activation_phase);
+    CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!a.activation_phase);
     ime_stop(&a);zwp_text_input_v3_destroy(a.ime_input);zwp_text_input_manager_v3_destroy(a.ime_manager);
     aetheri_desktop_view_destroy(v->view);wl_surface_destroy(v->surface);wl_seat_destroy(a.seat);
     wl_compositor_destroy(a.compositor);wl_registry_destroy(a.registry);free(a.font);

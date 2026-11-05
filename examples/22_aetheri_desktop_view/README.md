@@ -434,6 +434,25 @@ test-only copy without that guard failed the unchanged-revision assertion; the
 callback case passed with GCC and Clang ASan/UBSan and leak detection. This is
 the test host's query policy, not terminal paste or production IME acceptance.
 
+The pointer-release candidate based on
+`bf1080d889a6d82471b28887b0321f6a3bccc9b6` delays a captured left-button
+release until a nonblocking `wl_display.sync` callback. Pointer loss, leave,
+intervening movement/scroll, view retirement or a changed model revision
+cancels that capture. In the controlled server test an ordinary click reached
+the intended window after the sync; a changed model or a simulated removal
+before the callback did not activate it. The server exchange and callback test
+passed with GCC and Clang ASan/UBSan with leak detection on Alpine/WSL2. A
+test-only copy restoring immediate release produced the unwanted activation in
+the removal scenario. The test invokes pointer and capability callbacks
+directly; it does not send a real device removal from the Aetheri compositor.
+
+The sync orders events already emitted on this connection; it cannot establish
+whether a release was physical or synthesized, nor predict removal reported
+after the callback. Fast pointer input before the callback conservatively
+cancels the pending click. The earlier `--test-held-removal` failure remains
+open until rerun against that compositor, and a later removal is not covered by
+this mitigation. This private host is still not a production activation policy.
+
 The focus-forwarding candidate based on
 `b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
 0.1.13 static SDK on Alpine/WSL2. Its callback test and the desktop view test
