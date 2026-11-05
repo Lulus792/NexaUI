@@ -135,3 +135,37 @@ cause and compatibility impact still need investigation; this run is not a
 clean W01 acceptance. It does not establish physical monitor sharpness,
 hardware Vulkan, mixed-output transitions, or real screenreader and installed
 IME behavior. Those and full visual/input acceptance remain open.
+
+## Initial geometry correction (2026-11-05)
+
+Candidate based on `765d8cc26cf66bdb16dd79a65e70267cf64d0a63` moves the
+initial xdg window-geometry request from the required bufferless initial
+commit to the first acknowledged configure. Subsequent size changes still
+update it. The [xdg-shell protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/1.48/stable/xdg-shell/xdg-shell.xml)
+defines an initial bufferless commit, and clamps explicit geometry to surface
+bounds. Applying it while the surface is empty explains the observed wlroots
+warning; the original trace and this intervention support that diagnosis.
+
+The controlled Wayland server records geometry requests before and after its
+first configure; the test requires none before and at least one afterwards. The new check failed on
+the unchanged baseline and passed with the candidate in all seven fractional
+protocol/fallback modes. On the same headless Sway/Pixman and lavapipe setup,
+the Settings Vulkan smoke passed again: its trace shows the bufferless commit,
+configure acknowledgement, 640×360 geometry, first buffer commit and Vulkan
+presentation in that order. Sway no longer logged the invalid effective
+geometry warning in this run. Local artifacts are
+`out/fractional-sway-20261105/geometry-fixed-client.log` (SHA-256
+`49abff5217cdc47e4deba7bf7db0c1617885b31d249d0db6ddb9fedb5c08386`) and
+`geometry-fixed-compositor.log` (SHA-256
+`ad35467a538d8c57e7a6baba077c1668f567477d93dfa6dcffe2bbb4b1bc762b`);
+the ignored artifact directory is not shipped in Git. Physical and interactive
+acceptance remains open.
+
+The full GCC shared Wayland-only suite passed 198/198 with private Weston 14,
+Xvfb and a private D-Bus session; the seven controlled fractional cases also
+passed with Clang ASan/UBSan. An earlier full run without the D-Bus session
+passed 197/198: the Settings idle test observed no sufficiently long wait.
+It failed once more in isolation without the session and passed three isolated
+repetitions with a private D-Bus session, then passed in the full rerun. No
+test deadline or assertion was changed. The two environments differ in
+accessibility service availability, so the failed run is not counted as a pass.

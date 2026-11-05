@@ -36,8 +36,8 @@ acceptance, as well as the bounded-queue behavior, still need assessment.
 The [W04 scaling assessment](aetheri-wayland-scaling-assessment.md) records the
 fractional protocol implementation, controlled checks and a headless Sway
 software-Vulkan run. Physical monitor, hardware renderer, mixed-output, input
-and visual acceptance remain open; Sway also reported an initial-geometry
-warning that needs investigation.
+and visual acceptance remain open. An initial-geometry warning observed under
+Sway no longer appeared after the correction described in that assessment.
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |

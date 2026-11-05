@@ -33,6 +33,7 @@ typedef struct test_server {
     atomic_int pointer_press_requested, pointer_remove_requested;
     atomic_int disconnect_requested, disconnect_sent;
     atomic_int attached_width, attached_height, buffer_scale;
+    atomic_int geometry_before_configure, geometry_after_configure;
     void (*surface_committed)(struct test_server *server,struct wl_client *client);
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
@@ -310,6 +311,8 @@ static void xdg_set_geometry(struct wl_client *client,
     int32_t width, int32_t height) {
     (void)client; (void)x; (void)y;
     test_server *server=wl_resource_get_user_data(resource);
+    atomic_fetch_add(server->configured ? &server->geometry_after_configure :
+                     &server->geometry_before_configure, 1);
     CHECK(width == (server->width ? server->width : 240) &&
           height == (server->height ? server->height : 120));
 }

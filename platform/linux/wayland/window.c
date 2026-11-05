@@ -2127,8 +2127,6 @@ static void nx_wayland_surface_configure(void *data,
         if (window->fractional_active)
             wp_viewport_set_destination(window->viewport,width,height);
 #endif
-        xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
-                                         width, height);
         nx_event event = {0};
         event.type = NX_EVENT_RESIZE;
         event.width = (float)width;
@@ -2136,6 +2134,9 @@ static void nx_wayland_surface_configure(void *data,
         event.scale = (float)((double)window->scale_120/120.0);
         nx_platform_event_queue_push(&window->event_queue, event);
     }
+    if (resized || !window->configured)
+        xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
+                                         width, height);
     window->configured = 1;
     if (!window->hidden && !window->external_renderer && window->error == NX_OK) {
         if (resized || !window->buffer_attached)
@@ -2278,8 +2279,6 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
             ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
     }
     xdg_toplevel_set_app_id(window->toplevel, "nexaui");
-    xdg_surface_set_window_geometry(window->xdg_surface, 0, 0,
-                                     window->width, window->height);
     wl_surface_commit(window->surface);
     if (wl_display_roundtrip(window->display) < 0 || !window->configured ||
         window->error != NX_OK) {

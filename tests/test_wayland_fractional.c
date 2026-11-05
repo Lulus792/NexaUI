@@ -109,6 +109,8 @@ int main(int argc,char **argv) {
     pthread_t thread;CHECK(pthread_create(&thread,NULL,run_server,&s.base)==0);
     window_heap heap={0};nx_window_desc desc={"fractional",101,51,0,{&heap,window_allocate,window_free}};
     nx_window *w=NULL;CHECK(nx_window_create(&desc,&w)==NX_OK);roundtrip(w);
+    CHECK(atomic_load(&s.base.geometry_before_configure)==0);
+    CHECK(atomic_load(&s.base.geometry_after_configure)>0);
     check_size(w,101,51,both && !delayed?(int)s.initial_scale:120,both && !initial_integer && !delayed?126:101,both && !initial_integer && !delayed?64:51);
     CHECK(atomic_load(&s.base.attached_width)==(both && !initial_integer && !delayed?126:101));
     CHECK(atomic_load(&s.base.attached_height)==(both && !initial_integer && !delayed?64:51));
