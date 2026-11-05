@@ -33,7 +33,7 @@ search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
 revision. Native selection-owner actions, Tab behavior outside the search field, real window activation,
-private-surface input and IME, production Aetheri shell integration,
+full private-surface input and IME, production Aetheri shell integration,
 multi-output ownership and the original process owner integration remain open.
 The Linux preview uses an ordinary NexaUI window, the software presenter,
 native input/clipboard/IME binding and optional window AT-SPI publication; it
@@ -148,3 +148,21 @@ SHA-256 `0793ba897f5d14b93f01325d8bccce2ded9a6d4f39a5bc9e928ea5090f12477f`.
 This is a private headless fixture, not the production shell adapter. Input,
 IME, AT-SPI, actual launcher ownership, hotplug, physical outputs and human
 acceptance remain open.
+
+Source `facbc3e4eea8f021b1e0c8a5ac76e96dd76c638a` extends the test-only
+layer host with a bounded XKB keymap, surface focus tracking and a subset of
+key/text translation. Model updates are acknowledged before processing the
+next input; the host retries a busy presenter after further Wayland dispatch.
+On the same isolated Aetheri test compositor, its virtual keyboard typed
+`terminal`, removed and re-entered the last character, then pressed Enter.
+The driver observed both corrected query revisions and the Terminal launch
+intent; all three dock pixel checks and orderly retirement also passed.
+The final desktop binary SHA-256 was
+`ffc5893e57b3ed9ebb717c42db955da86bb8dc4d14b9e2d146d08eb2a6f727a2`.
+The final result and logs are in
+`D:/NexaUI/out/aetheri-layer-input-final-20261105.tar.gz`, SHA-256
+`41b51b21a7674c4de93c4642f8ba41ac0e70db215f87384ab6597a98d9a6b604`.
+This fixture does not start the app and is not a complete native input
+adapter: IME/composition, key repeat, clipboard, pointer, full key mapping,
+selection and focus restoration, accessibility and human/physical validation
+remain open. The test diagnostics intentionally include the non-secret query.
