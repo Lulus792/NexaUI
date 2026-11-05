@@ -92,3 +92,25 @@ NEXAUI_RENAME_FONT=/path/to/font.ttf xvfb-run -a python3 tests/run_weston_native
   /path/to/at-spi2-registryd /tmp/rename-review/aetheri_rename_atspi_client \
   /tmp/rename-review/aetheri_rename_native
 ```
+
+## Private Wayland keyboard
+
+On base `21abd07873507fa6253a39e4a2b3179f0c45c03f`, the private Weston
+virtual-keyboard fixture runs two separate temporary-file sessions. Escape
+cancels before any rename or flush. In the second session, Tab and Enter
+confirm the original operation, the injected flush failure leaves an unknown
+result, and the recreated view keeps Confirm outside the focus sequence;
+Enter then closes through Cancel. The fixture verifies both filename/content
+outcomes and exact operation counts. A mutant that reenabled Confirm failed
+with an explicit focus assertion. Static, shared and ASan/UBSan builds passed;
+the independent native AT-SPI regression also passed with the same host.
+
+This exercises virtual keyboard events on one private Weston configuration.
+Other keyboard layouts, physical input, native resize, human accessibility,
+real asynchronous operation and actual Aetheri integration remain open.
+
+```sh
+xvfb-run -a python3 tests/run_weston_native.py --work-dir /tmp/new-rename-key \
+  -- python3 examples/25_aetheri_rename/run_keyboard.py \
+  /tmp/rename-review/aetheri_rename_native /path/to/font.ttf /path/to/xdotool
+```

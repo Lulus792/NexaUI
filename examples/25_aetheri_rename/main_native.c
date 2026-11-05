@@ -17,7 +17,8 @@ static unsigned char *read_font(const char *path,size_t *size){FILE *f=fopen(pat
     unsigned char *p=malloc((size_t)n);if(!p){fclose(f);return NULL;}if(fread(p,1,(size_t)n,f)!=(size_t)n){free(p);fclose(f);return NULL;}
     fclose(f);*size=(size_t)n;return p;}
 int main(int argc,char **argv){
-    int ok=0,done=0,dir=-1,pin=-1;size_t bytes_size=0;unsigned char *bytes=NULL;
+    int ok=0,done=0,dir=-1,pin=-1,shown=0,trace=getenv("NEXAUI_RENAME_TRACE")!=NULL;
+    uint64_t last_focus=0;size_t bytes_size=0;unsigned char *bytes=NULL;
     nx_font *font=NULL;nx_font_collection *fonts=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     rename_review *view=NULL;rename_review_owner owner={0};struct ae_files_rename *op=NULL;
     if(argc!=3 || !getenv("NEXAUI_TEST_PRIVATE_WAYLAND") || strcmp(getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),"1"))goto cleanup;
@@ -46,6 +47,7 @@ int main(int argc,char **argv){
             if(nx_window_publish_semantics(window,NULL)!=NX_OK){ok=0;break;}
             rename_review_destroy(view);view=NULL;
             if(rename_review_create(&owner,fonts,&view)!=NX_OK){ok=0;break;}
+            last_focus=0;
             puts("RENAME_NATIVE_REOPENED_UNKNOWN");fflush(stdout);continue;
         }
         if(action==REVIEW_CANCEL){done=1;break;}
@@ -54,6 +56,11 @@ int main(int argc,char **argv){
         const nx_command *commands=NULL;size_t count=0;nx_software_view_outcome outcome;
         if(nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
            nx_software_view_render(renderer,commands,count,(nx_color){0,0,0,1},&outcome)!=NX_OK){ok=0;break;}
+        if(trace && outcome==NX_SOFTWARE_VIEW_READY){
+            if(!shown){puts("RENAME_NATIVE_READY");shown=1;}
+            uint64_t focus=nx_focus_id(ctx);if(focus!=last_focus){printf("RENAME_NATIVE_FOCUS %llu\n",(unsigned long long)focus);last_focus=focus;}
+            fflush(stdout);
+        }
     }
 cleanup:
     if(window && nx_window_publish_semantics(window,NULL)!=NX_OK)ok=0;

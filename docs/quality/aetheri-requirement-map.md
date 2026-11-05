@@ -17,6 +17,10 @@ and independent AT-SPI client exercised modal blocking, explicit confirmation,
 an injected unknown result, view/bridge replacement and disabled replay.
 The host is a fixed-size polling fixture; native keyboard, real async service,
 physical/human acceptance and Aetheri integration remain open (A02/L09/P07).
+On base `21abd07873507fa6253a39e4a2b3179f0c45c03f`, virtual-keyboard tests
+on private Weston exercised Escape cancellation, Tab/Enter confirmation and
+keyboard access to Cancel after an unknown result. Other layouts, physical
+input, human acceptance and actual Aetheri integration remain open (I01/L09).
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri
