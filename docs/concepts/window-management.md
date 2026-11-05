@@ -118,3 +118,22 @@ the public Window Server drag method.
   and [ICCCM manager selections](https://www.x.org/releases/current/doc/xorg-docs/icccm/icccm.html).
 - [AppKit performWindowDragWithEvent](https://developer.apple.com/documentation/appkit/nswindow/performdrag(with:)?language=objc)
   and [NSWindow](https://developer.apple.com/documentation/appkit/nswindow).
+
+## Linux application-owned wake descriptor
+
+On Linux, `nx_window_poll_with_fd` combines the ordinary owner-thread native
+window and accessibility dispatch with one borrowed application-owned readable
+descriptor. It returns `NX_WINDOW_FD_READABLE`, `NX_WINDOW_FD_HANGUP` and
+`NX_WINDOW_FD_ERROR` flags without reading, closing or retaining the descriptor.
+`NX_BUILD_LINUX_POLL_FD` in `nx_get_build_features` identifies the compiled
+Linux capability; it does not establish that a native display is available.
+The caller keeps it open for the entire call, drains and interprets its data,
+and must handle data and hangup together. A closed/invalid descriptor produces
+the error flag; it is not silently consumed. A successful call can return no
+flags when native input or an accessibility deadline wakes it first. This API
+does not make windows or contexts thread-safe: workers should communicate
+through application-owned bounded data, and the owner thread alone updates UI.
+The Linux Settings example demonstrates one correlated reply and joins its
+short-lived producer before closing the descriptor and scene. Other platforms,
+multiple descriptors, application service lifetimes and cross-process
+authorization require their own contracts.

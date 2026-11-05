@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         nx_get_build_features(&features) != NX_OK)
         return 17;
     if (argc == 2 && !strcmp(argv[1], "--expect-wayland-only") &&
-        (!(features & NX_BUILD_WINDOW_WAYLAND) || (features & NX_BUILD_WINDOW_X11)))
+        (!(features & NX_BUILD_WINDOW_WAYLAND) || !(features & NX_BUILD_LINUX_POLL_FD) || (features & NX_BUILD_WINDOW_X11)))
         return 18;
     nx_version version = {99, 99, 99};
     if (nx_get_version(NULL) != NX_ERROR_ARGUMENT ||
@@ -67,6 +67,11 @@ int main(int argc, char **argv) {
     nx_result pixel_result=nx_window_get_pixel_size(NULL,&pixels);
     if ((pixel_result!=NX_ERROR_ARGUMENT && pixel_result!=NX_ERROR_UNSUPPORTED) || pixels.width || pixels.height)
         return 15;
+#if defined(__linux__)
+    uint32_t fd_events=99;
+    nx_result fd_result=nx_window_poll_with_fd(NULL,0,0,&fd_events);
+    if ((fd_result!=NX_ERROR_ARGUMENT && fd_result!=NX_ERROR_UNSUPPORTED) || fd_events) return 20;
+#endif
     nx_text_stamp *stamp=0;nx_rect stamp_bounds;nx_glyph_mask_view mask;
     if(nx_text_stamp_create_scaled(0,1.5f,65536,0,&stamp)!=NX_ERROR_ARGUMENT||stamp||
        nx_text_stamp_bounds(0,&stamp_bounds)!=NX_ERROR_ARGUMENT||

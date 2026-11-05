@@ -19,12 +19,13 @@ def main():
     minimum = len(sys.argv) == 5 and sys.argv[4] == '--minimum'
     small = minimum or (len(sys.argv) == 5 and sys.argv[4] == '--small')
     clipboard = len(sys.argv) == 5 and sys.argv[4] == '--clipboard'
-    if len(sys.argv) == 5 and not (controls or small or clipboard):
+    close_pending = len(sys.argv) == 5 and sys.argv[4] == '--close-pending'
+    if len(sys.argv) == 5 and not (controls or small or clipboard or close_pending):
         return 2
     env = dict(os.environ, NEXAUI_PLATFORM='wayland')
     if os.environ.get('NEXAUI_TEST_WAYLAND_TRACE') == '1':
         env['WAYLAND_DEBUG'] = '1'
-    mode = '--verify-keyboard-controls' if controls else '--verify-keyboard-minimum' if minimum else '--verify-keyboard-small' if small else '--verify-keyboard'
+    mode = '--verify-pending-close' if close_pending else '--verify-keyboard-controls' if controls else '--verify-keyboard-minimum' if minimum else '--verify-keyboard-small' if small else '--verify-keyboard'
     host = subprocess.Popen([app, font, mode], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout_lines, stderr_lines = [], []
@@ -119,11 +120,16 @@ def main():
         stderr_thread.join(timeout=5)
         if host.returncode:
             raise RuntimeError(f'Settings exit {host.returncode}: {"".join(stdout_lines)} {"".join(stderr_lines)}')
+        if close_pending and not any(line.strip() == 'SETTINGS_PENDING_CLOSED' for line in stdout_lines):
+            raise RuntimeError('Pending worker did not close through normal cleanup')
         if small:
             for line in stdout_lines:
                 if line.startswith('SETTINGS_FOCUS_VISIBLE '):
                     print(line, end='')
-        print('Native virtual keyboard changed and applied the Settings model; host closed cleanly.')
+        if close_pending:
+            print('Native virtual keyboard started a pending request; host joined the worker and closed cleanly.')
+        else:
+            print('Native virtual keyboard changed and applied the Settings model; host closed cleanly.')
         return 0
     finally:
         if host.poll() is None:

@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         if (!strcmp(argv[i], "win32")) expected |= NX_BUILD_WINDOW_WIN32;
         else if (!strcmp(argv[i], "appkit")) expected |= NX_BUILD_WINDOW_APPKIT;
-        else if (!strcmp(argv[i], "wayland")) expected |= NX_BUILD_WINDOW_WAYLAND;
+        else if (!strcmp(argv[i], "wayland")) expected |= NX_BUILD_WINDOW_WAYLAND | NX_BUILD_LINUX_POLL_FD;
         else if (!strcmp(argv[i], "x11")) expected |= NX_BUILD_WINDOW_X11;
         else if (!strcmp(argv[i], "atspi")) expected |= NX_BUILD_LINUX_ATSPI_TRANSPORT;
         else if (!strcmp(argv[i], "fractional")) expected |= NX_BUILD_WAYLAND_FRACTIONAL_SCALE;

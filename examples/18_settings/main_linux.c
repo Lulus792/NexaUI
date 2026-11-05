@@ -1,11 +1,46 @@
 #define _POSIX_C_SOURCE 200809L
 #include "scene.h"
 #include "renderer.h"
+#include <errno.h>
+#include <fcntl.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
+
+typedef struct apply_reply { uint64_t token; int success; } apply_reply;
+typedef struct apply_worker { pthread_t thread; int read_fd, write_fd, running; apply_reply reply; } apply_worker;
+/* The worker owns only its write end and a copied reply; it never sees a UI or
+   window. A fresh pipe bounds this example to one small result per request. */
+static void *apply_worker_run(void *data) {
+    apply_worker *worker=data;
+    struct timespec delay={0,250000000};
+    while(nanosleep(&delay,&delay)<0 && errno==EINTR) {}
+    ssize_t n; do {n=write(worker->write_fd,&worker->reply,sizeof(worker->reply));} while(n<0 && errno==EINTR);
+    close(worker->write_fd);
+    return n==(ssize_t)sizeof(worker->reply) ? NULL : worker;
+}
+static int apply_worker_start(apply_worker *worker, uint64_t token, int success) {
+    int fds[2]; if(pipe(fds)!=0) return 0;
+    int flags=fcntl(fds[0],F_GETFL);
+    if (flags<0 || fcntl(fds[0],F_SETFL,flags|O_NONBLOCK)<0 ||
+        fcntl(fds[0],F_SETFD,FD_CLOEXEC)<0 || fcntl(fds[1],F_SETFD,FD_CLOEXEC)<0) {
+        close(fds[0]); close(fds[1]); return 0;
+    }
+    worker->read_fd=fds[0]; worker->write_fd=fds[1]; worker->reply=(apply_reply){token,success};
+    if(pthread_create(&worker->thread,NULL,apply_worker_run,worker)!=0) {
+        close(fds[0]); close(fds[1]); worker->read_fd=-1; return 0;
+    }
+    worker->running=1; return 1;
+}
+static int apply_worker_join(apply_worker *worker) {
+    if(!worker->running) return 1;
+    void *result=NULL; int okay=pthread_join(worker->thread,&result)==0 && !result;
+    worker->running=0; close(worker->read_fd); worker->read_fd=-1; return okay;
+}
 
 static double seconds(clockid_t clock) {
     struct timespec t;
@@ -27,6 +62,7 @@ int main(int argc, char **argv) {
     int verify_ax=argc==3 && !strcmp(argv[2],"--verify-accessibility");
     int verify_keyboard_text=argc==3 && !strcmp(argv[2],"--verify-keyboard");
     int verify_keyboard_controls=argc==3 && !strcmp(argv[2],"--verify-keyboard-controls");
+    int verify_pending_close=argc==3 && !strcmp(argv[2],"--verify-pending-close");
     int verify_keyboard_minimum=argc==3 && !strcmp(argv[2],"--verify-keyboard-minimum");
     int verify_keyboard_small=(argc==3 && !strcmp(argv[2],"--verify-keyboard-small")) || verify_keyboard_minimum;
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
@@ -34,7 +70,7 @@ int main(int argc, char **argv) {
     int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
     int verify_ime_replace=argc==3 && !strcmp(argv[2],"--verify-ime-replace");
     int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace;
-    int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
+    int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small || verify_pending_close;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
     int german_error=argc==4 && ((!strcmp(argv[2],"--de") && !strcmp(argv[3],"--simulate-error")) ||
@@ -46,10 +82,10 @@ int main(int argc, char **argv) {
     if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
-    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
+    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
-    double apply_deadline=0; uint64_t scheduled_apply=0;
+    apply_worker worker={0}; worker.read_fd=-1;
     nx_window_info previous={0};
     nx_window_desc desc={german?"Einstellungsbeispiel":"Settings example",640,360,0,{0}};
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
@@ -65,13 +101,6 @@ int main(int argc, char **argv) {
         nx_window_info info; size_t routed;
         if (test_continuous) dirty=1;
         uint32_t timeout=(dirty && drawable) || smoke ? 16u : ax_unavailable ? 1000u : UINT32_MAX;
-        if (scheduled_apply) {
-            double now=seconds(CLOCK_MONOTONIC);
-            if (now<0) {okay=0;break;}
-            double remaining=apply_deadline-now;
-            uint32_t wait=remaining<=0 ? 0u : (uint32_t)ceil(remaining*1000.0);
-            if (wait<timeout) timeout=wait;
-        }
         if (idle_probe) {
             double current=seconds(CLOCK_MONOTONIC);
             if(current<0) {okay=0;break;}
@@ -83,7 +112,9 @@ int main(int argc, char **argv) {
         double wait_started=long_wait?seconds(CLOCK_MONOTONIC):0;
         if(long_wait && wait_started<0) {okay=0;break;}
         ++polls;
-        if (nx_window_poll(window,timeout)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
+        uint32_t worker_events=0;
+        nx_result poll_result=worker.running ? nx_window_poll_with_fd(window,timeout,worker.read_fd,&worker_events) : nx_window_poll(window,timeout);
+        if (poll_result!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
             nx_window_route_events(window,settings_context(scene),&routed)!=NX_OK) { okay=0; break; }
         if(long_wait) {
             double waited=seconds(CLOCK_MONOTONIC);
@@ -91,13 +122,17 @@ int main(int argc, char **argv) {
             if(waited-wait_started>=1.0) ++idle_long_waits;
         }
         if (info.should_close || (smoke && loops++>=20)) break;
-        if (scheduled_apply) {
-            double now=seconds(CLOCK_MONOTONIC);
-            if (now<0) {okay=0;break;}
-            if (now>=apply_deadline) {
-                if (!settings_complete_apply(scene,scheduled_apply,!fail_first)) {okay=0;break;}
-                fail_first=0; scheduled_apply=0; dirty=1;
+        if (worker.running && worker_events) {
+            if (worker_events&NX_WINDOW_FD_ERROR) {okay=0;break;}
+            apply_reply reply; ssize_t count;
+            do {count=read(worker.read_fd,&reply,sizeof(reply));} while(count<0 && errno==EINTR);
+            if (count<0 && (errno==EAGAIN || errno==EWOULDBLOCK)) {
+                if (routed || info.width!=previous.width || info.height!=previous.height || info.scale!=previous.scale) dirty=1;
+                continue;
             }
+            if (count!=(ssize_t)sizeof(reply) || !apply_worker_join(&worker) ||
+                !settings_complete_apply(scene,reply.token,reply.success)) {okay=0;break;}
+            dirty=1;
         }
         if (idle_probe) {
             double now=seconds(CLOCK_MONOTONIC),cpu=seconds(CLOCK_PROCESS_CPUTIME_ID);
@@ -126,11 +161,9 @@ int main(int argc, char **argv) {
         if (nx_context_set_text_raster_scale(settings_context(scene),info.scale)!=NX_OK ||
             !settings_frame(scene,info.width,info.height)) { okay=0; break; }
         int scheduled_now=0;
-        if (!scheduled_apply && settings_pending_apply(scene)) {
-            double now=seconds(CLOCK_MONOTONIC);
-            if (now<0) {okay=0;break;}
-            scheduled_apply=settings_pending_apply(scene);
-            apply_deadline=now+0.25; scheduled_now=1;
+        if (!worker.running && settings_pending_apply(scene)) {
+            if (!apply_worker_start(&worker,settings_pending_apply(scene),!fail_first)) {okay=0;break;}
+            fail_first=0; scheduled_now=1;
         }
         if (verify_ax && !ax_test_ready) {
             nx_context *ui=settings_context(scene);
@@ -200,6 +233,7 @@ int main(int argc, char **argv) {
            one further frame to reveal the focused control before going idle. */
         int probe_redraw=settings_take_accessibility_probe_redraw(scene);
         dirty=outcome!=NX_RENDER_READY || previous_focus!=nx_focus_id(settings_context(scene)) || probe_redraw || scheduled_now;
+        if (verify_pending_close && scheduled_now) {pending_close_seen=1;break;}
         if (verify_ax || verify_keyboard) {
             nx_utf8_span applied; int motion=0;
             if (!settings_applied(scene,&applied,&motion)) { okay=0; break; }
@@ -247,6 +281,7 @@ int main(int argc, char **argv) {
     }
     if (smoke && !presented) okay=0;
 cleanup:
+    if (!apply_worker_join(&worker)) okay=0;
     if (opened) {
         nx_result r=nx_renderer_close(&renderer);
         for (unsigned i=0; r==NX_ERROR_LIMIT && i<4; ++i) {
@@ -256,6 +291,10 @@ cleanup:
         if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
+    if (verify_pending_close) {
+        if (okay && pending_close_seen) {puts("SETTINGS_PENDING_CLOSED");fflush(stdout);}
+        else okay=0;
+    }
     if (verify_ime && okay && (((verify_ime_compose || verify_ime_replace) && ime_stage==2) ||
                                (verify_ime_cancel && ime_stage==3) ||
                                (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }

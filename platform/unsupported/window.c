@@ -13,6 +13,16 @@ nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
     return NX_ERROR_UNSUPPORTED;
 }
 
+#if defined(__linux__)
+nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
+                                 int fd, uint32_t *out_events) {
+    (void)window; (void)timeout_ms; (void)fd;
+    if (!out_events) return NX_ERROR_ARGUMENT;
+    *out_events=0;
+    return NX_ERROR_UNSUPPORTED;
+}
+#endif
+
 nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     (void)window;
     (void)out_info;

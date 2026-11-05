@@ -2,7 +2,7 @@
 
 This small C17 example keeps an application-owned display name and reduced-motion
 choice. Apply submits a snapshot to a deterministic in-memory example backend;
-the host completes it after a short timer, and only then does the example update
+a worker returns one bounded reply over a pipe, and only then does the example update
 its model. It does not change OS or Aetheri settings. The scene uses public text-field,
 checkbox, button, focus, semantic and theme APIs. The Linux host passes its
 window to the text field for native IME and clipboard routing, publishes the
@@ -24,8 +24,12 @@ The option can be combined with `--de`.
 While a submission is pending Apply is disabled, edits remain a separate draft,
 and a late or duplicate completion cannot apply another submission. A newer
 draft remains unsaved after the submitted snapshot succeeds. Closing destroys
-the local pending operation. This timer is a demonstration, not an OS service,
-worker-thread wakeup implementation or proof of external operation completion.
+the local pending operation after joining the short-lived worker. The worker
+does not access NexaUI objects; the owner thread waits with
+`nx_window_poll_with_fd`, correlates the reply and updates the scene. This is a
+demonstration, not an OS service or proof of external operation completion.
+The example joins the simulated 250 ms worker on exit; applications with
+long-running work need their own cancellation or independent service lifetime.
 
 An independent libatspi test discovers this actual native example, activates
 Reduce motion and Apply, and requires the application to observe the applied
@@ -62,7 +66,7 @@ exercise an installed input method or both transports in the same process.
 This is not yet the complete first-view acceptance. Native IME/clipboard input,
 accessible text editing, human screenreader and keyboard checks, visual/contrast
 review, broader resize and text-scaling behavior,
-worker wakeup, hidden-window behavior, and portable public renderer packaging remain open. Windows
+general service wakeup/recovery, hidden-window behavior, and portable public renderer packaging remain open. Windows
 and macOS native runners are not supplied. The options use a scroll area; a
 synthetic test checks focus visibility at 240x150. Below 128x120 the runner
 continues polling without drawing a new frame. Long-label reflow and native

@@ -39,6 +39,7 @@ nx_result nx_get_build_features(uint64_t *out_features) {
     features |= NX_BUILD_WINDOW_APPKIT;
 #elif defined(NEXAUI_BUILD_LINUX)
     features |= NX_BUILD_WINDOW_WAYLAND;
+    features |= NX_BUILD_LINUX_POLL_FD;
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
     features |= NX_BUILD_WINDOW_X11;
 #endif

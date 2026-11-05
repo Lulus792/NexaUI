@@ -152,7 +152,8 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
     return NX_OK;
 }
 
-nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
+static nx_result nx_linux_poll(nx_window *window, uint32_t timeout_ms,
+                               int app_fd, uint32_t *app_events) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
     ++window->operations;
@@ -160,11 +161,22 @@ nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
     if (window->retired) { nx_linux_window_release(window); return NX_ERROR_STATE; }
     timeout_ms=nx_linux_ax_timeout(window->accessibility,timeout_ms);
     int writable=0, fd=nx_linux_ax_fd(window->accessibility,&writable);
-    nx_result result=NX_LINUX_DISPATCH(nx_wayland_window_poll_with_fd(window->native.wayland,timeout_ms,fd,writable),
-        nx_x11_window_poll_with_fd(window->native.x11,timeout_ms,fd,writable));
+    nx_result result=NX_LINUX_DISPATCH(nx_wayland_window_poll_with_fd(window->native.wayland,timeout_ms,fd,writable,app_fd,app_events),
+        nx_x11_window_poll_with_fd(window->native.x11,timeout_ms,fd,writable,app_fd,app_events));
     if (!window->retired) nx_linux_ax_pump(window->accessibility);
     if (window->retired) result=NX_ERROR_STATE;
     nx_linux_window_release(window); return result;
+}
+
+nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
+    return nx_linux_poll(window,timeout_ms,-1,NULL);
+}
+
+nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
+                                 int fd, uint32_t *out_events) {
+    if (out_events) *out_events=0;
+    if (!window || fd<0 || !out_events) return NX_ERROR_ARGUMENT;
+    return nx_linux_poll(window,timeout_ms,fd,out_events);
 }
 
 nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {

@@ -95,6 +95,7 @@ NX_API nx_result nx_get_source_revision(const char **out_revision);
 #define NX_BUILD_WINDOW_X11               (UINT64_C(1) << 3)
 #define NX_BUILD_LINUX_ATSPI_TRANSPORT    (UINT64_C(1) << 4)
 #define NX_BUILD_WAYLAND_FRACTIONAL_SCALE (UINT64_C(1) << 5)
+#define NX_BUILD_LINUX_POLL_FD            (UINT64_C(1) << 6)
 /* Thread-safe, no context required; null output returns NX_ERROR_ARGUMENT.
    Optional protocols, native services and displays can still be unavailable. */
 NX_API nx_result nx_get_build_features(uint64_t *out_features);
@@ -452,6 +453,17 @@ typedef struct nx_file_drop_info {
    validation reports for native acceptance status. */
 NX_API nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window);
 NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
+#if defined(__linux__)
+/* Poll native events, accessibility and one application-owned readable fd on
+   the window's owner thread. The fd is borrowed, never read or closed by
+   NexaUI, and must stay open until this call returns. out_events is cleared on
+   entry; readiness may coexist with native events. A hangup can accompany data;
+   the owner must drain/read and interpret it. Errors include an invalid fd.
+   This operation does not make nx_window or nx_context thread-safe. */
+enum { NX_WINDOW_FD_READABLE = 1u, NX_WINDOW_FD_HANGUP = 2u, NX_WINDOW_FD_ERROR = 4u };
+NX_API nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
+                                       int fd, uint32_t *out_events);
+#endif
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
 /* Recommended native client backing extent in pixels after polling. Use this
    for render targets rather than reconstructing pixels from the float scale.

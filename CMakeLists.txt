@@ -533,6 +533,16 @@ if(NEXAUI_BUILD_TESTS)
             COMMAND nexaui_wayland_window_tests)
         set_tests_properties(nexaui_wayland_window PROPERTIES TIMEOUT 15
             SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+        add_executable(nexaui_linux_poll_fd_tests tests/test_linux_poll_fd.c)
+        target_link_libraries(nexaui_linux_poll_fd_tests PRIVATE NexaUI::NexaUI Threads::Threads)
+        add_test(NAME nexaui_wayland_poll_fd COMMAND nexaui_linux_poll_fd_tests)
+        set_tests_properties(nexaui_wayland_poll_fd PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
+            ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+        if(NEXAUI_ENABLE_X11)
+            add_test(NAME nexaui_x11_poll_fd COMMAND nexaui_linux_poll_fd_tests)
+            set_tests_properties(nexaui_x11_poll_fd PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_PLATFORM=x11" RESOURCE_LOCK native_display)
+        endif()
         add_executable(nexaui_native_management_tests tests/test_native_management.c)
         target_link_libraries(nexaui_native_management_tests PRIVATE NexaUI::NexaUI)
         if(NEXAUI_ENABLE_X11)
@@ -775,7 +785,8 @@ if(NEXAUI_BUILD_TESTS)
                 COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
                     ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_multiselection_client>
                     $<TARGET_FILE:nexaui_linux_multiselection_host>)
-            set_tests_properties(nexaui_atspi_multi_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77)
+            set_tests_properties(nexaui_atspi_multi_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                RESOURCE_LOCK native_display)
             add_executable(nexaui_atspi_large_text_host tests/atspi_large_text_host.c)
             target_link_libraries(nexaui_atspi_large_text_host PRIVATE NexaUI::NexaUI)
             target_include_directories(nexaui_atspi_large_text_host PRIVATE platform/linux)
@@ -790,7 +801,8 @@ if(NEXAUI_BUILD_TESTS)
                 COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
                     ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_large_text_client>
                     $<TARGET_FILE:nexaui_atspi_large_text_host>)
-            set_tests_properties(nexaui_atspi_large_text_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77)
+            set_tests_properties(nexaui_atspi_large_text_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                RESOURCE_LOCK native_display)
             if(NOT BUILD_SHARED_LIBS)
                 add_executable(nexaui_linux_multiselection_budget tests/test_linux_multiselection_budget.c)
                 target_include_directories(nexaui_linux_multiselection_budget PRIVATE ${NEXAUI_DBUS_INCLUDE_DIRS})

@@ -4,7 +4,7 @@ target_compile_features(nexaui_settings_scene PUBLIC c_std_17)
 if(TARGET nexaui_renderer_vulkan)
     add_executable(nexaui_settings main_linux.c)
     target_include_directories(nexaui_settings PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/renderers/vulkan)
-    target_link_libraries(nexaui_settings PRIVATE nexaui_settings_scene nexaui_renderer_vulkan m)
+    target_link_libraries(nexaui_settings PRIVATE nexaui_settings_scene nexaui_renderer_vulkan Threads::Threads m)
     target_compile_options(nexaui_settings PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 if(NEXAUI_BUILD_TESTS)
@@ -115,6 +115,11 @@ if(NEXAUI_BUILD_TESTS)
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --clipboard)
                 set_tests_properties(nexaui_settings_wayland_keyboard_clipboard PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
+                    RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_keyboard_close_pending
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --close-pending)
+                set_tests_properties(nexaui_settings_wayland_keyboard_close_pending PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
             endif()
             foreach(_platform IN LISTS _nexaui_test_platforms)

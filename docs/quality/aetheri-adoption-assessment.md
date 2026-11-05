@@ -777,3 +777,44 @@ An ID comparison found D11 missing from the earlier 102-row map; the map now
 contains 103 matching IDs with no extra IDs. The new concrete integration
 cases and changed acceptance wording still need individual reconciliation;
 ID parity is not a claim of full requirement review or acceptance.
+
+## Linux application-owned wake descriptor and Settings worker (2026-11-05)
+
+Candidate based on `f02f7229ea06c038af450564acec894aa6dccdeb` extends the
+existing Linux owner-thread poll path with `nx_window_poll_with_fd` and the
+`NX_BUILD_LINUX_POLL_FD` capability bit. The descriptor is borrowed only for
+the call; readable, hangup and error are reported separately, and the SDK
+neither drains nor owns it. Both Wayland and X11 retain the existing native and
+AT-SPI polling. The Settings example replaces its timer-only completion with
+one short-lived worker and a fresh pipe for one correlated fixed-size reply;
+the worker never receives UI/window objects. The owner reads and applies the
+reply; close joins the example worker before releasing the pipe and scene.
+This advances W10/I07/L04/P05 but is not a general service or reconnection
+implementation. Long-running work, multi-message backpressure, multiple fds,
+other platforms, ThreadSanitizer and real Aetheri service acceptance remain open.
+
+The FD test checks an empty wait, worker wakeup, ownership, wrong-thread calls,
+invalid descriptors and hangup. It passed with the real private-Weston Wayland
+backend and private-Xvfb X11 backend. Settings keyboard and independent AT-SPI
+failure/retry tests passed with the worker; a native test also exits while the
+worker is still pending. These three Wayland cases passed again with Clang
+ASan/UBSan and leak detection (`/tmp/nexaui-worker-final-asan.log`). Static and
+shared installed C17 consumers built and ran with X11 discovery disabled,
+including the new symbol and capability (`/tmp/nexaui-worker-package.log`).
+
+The first full run reported 207 passes, four opt-in skips and one AT-SPI focus
+failure (`/tmp/nexaui-worker-full.log`); two native AT-SPI fixtures were active
+on the same compositor. The multi-selection and large-text fixtures now use
+the existing native-display lock. The three affected AT-SPI cases then passed
+in a serialized repeat (`/tmp/nexaui-worker-lock.log`); the original focus
+failure is retained and its exact cause is not asserted as proven.
+
+The subsequent full GCC shared Wayland-only run with those locks and the
+capability bit passed 208 executed tests, with four opt-in IME skips
+(`/tmp/nexaui-worker-full2.log`). After a final EAGAIN-handling adjustment and
+an additional combined data/hangup assertion, the FD case passed again on
+Wayland and X11; the Wayland FD, accessibility retry and pending-close cases
+also passed with ASan/UBSan (`/tmp/nexaui-worker-last-asan.log`). All four
+previously skipped simple-IME cases passed separately on the final candidate
+(`/tmp/nexaui-worker-last-ime.log`). The full suite was not rerun after that
+final small adjustment.

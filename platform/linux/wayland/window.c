@@ -2341,7 +2341,7 @@ fail:
 }
 
 nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
-    uint32_t timeout_ms, int extra_fd, int writable) {
+    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, uint32_t *app_events) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->error != NX_OK) return window->error;
@@ -2367,7 +2367,7 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         notify_drop = 1;
         timeout_ms = 0;
     }
-    struct pollfd fds[8] = {{wl_display_get_fd(window->display),
+    struct pollfd fds[9] = {{wl_display_get_fd(window->display),
                         (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0}};
     nfds_t fd_count = 1;
     if (window->async_active && !window->async_read.finished)
@@ -2380,6 +2380,8 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         fds[fd_count++] = (struct pollfd){transfer->fd, POLLOUT, 0};
     if (extra_fd >= 0) fds[fd_count++] = (struct pollfd){extra_fd,
         (short)(POLLIN | (writable ? POLLOUT : 0)), 0};
+    nfds_t app_index=fd_count;
+    if (app_fd>=0) fds[fd_count++] = (struct pollfd){app_fd,POLLIN,0};
     int timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
     if (window->async_active) {
         uint64_t now = nx_wayland_now_ns();
@@ -2403,6 +2405,12 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     timeout = nx_wayland_repeat_timeout(&window->repeat,
                                         nx_wayland_now_ns(), timeout);
     int ready = poll(fds, fd_count, timeout);
+    if (ready>0 && app_fd>=0 && app_events) {
+        short revents=fds[app_index].revents;
+        if (revents&POLLIN) *app_events|=NX_WINDOW_FD_READABLE;
+        if (revents&POLLHUP) *app_events|=NX_WINDOW_FD_HANGUP;
+        if (revents&(POLLERR|POLLNVAL)) *app_events|=NX_WINDOW_FD_ERROR;
+    }
     if (ready > 0 && (fds[0].revents & POLLOUT)) {
         if (wl_display_flush(window->display) < 0) {
             if (errno != EAGAIN) {
@@ -3536,7 +3544,7 @@ nx_result nx_wayland_window_test_ime_state(nx_wayland_window *window,
 #endif
 
 nx_result nx_wayland_window_poll(nx_wayland_window *window, uint32_t timeout_ms) {
-    return nx_wayland_window_poll_with_fd(window, timeout_ms, -1, 0);
+    return nx_wayland_window_poll_with_fd(window, timeout_ms, -1, 0, -1, NULL);
 }
 void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geometry *out) {
     *out = (nx_linux_ax_geometry){0};
