@@ -14,10 +14,21 @@ bytes remain borrowed and unchanged; their destination geometry scales with the
 other commands. Text masks must already be generated at the desired density.
 For scales other than one, a temporary default-allocator command copy is used;
 invalid or unrepresentable geometry and allocation failure leave the output
-unchanged. This is CPU rasterization, not a Wayland buffer-presentation API or
-an automatic native fallback. The caller still owns presentation, buffer
-retirement, physical scaling and any required format/alpha conversion.
+unchanged. This rasterization call alone does not present a window.
 This symbol is additive and is absent from older binaries that may carry the
 same pre-1.0 version; consumers must pin a revision containing it.
+
+On Linux, `<nexaui/software.h>` and `NexaUI::NexaUI` also provide a Wayland
+software view. It leases an existing window, rasterizes at the observed scale,
+converts straight RGBA to native premultiplied ARGB8888, and submits a shared
+memory buffer. Three outstanding buffers are permitted, each at most 128 MiB;
+BUSY requires polling the window and retrying, not spinning. The view and its
+window must be used on their owner thread. Buffers are retained by the window
+until compositor release or window destruction, including after view close.
+Shared memory uses an unlinked temporary file under `/tmp`. The view reports
+submission, not physical presentation; a failed connection after commit has an
+unknown outcome. X11 returns unsupported, and no automatic renderer fallback
+is selected. Performance, physical displays and production compositor behavior
+are separate acceptance gates.
 
 The initial [custom viewport contract](viewport.md) imports an application-owned RGBA8 image as a lease in this command stream. Its resize and completion calls make pixel dimensions and memory lifetime explicit. Direct GPU texture import remains planned alongside the native renderer backends.

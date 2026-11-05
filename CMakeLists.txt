@@ -613,6 +613,16 @@ if(NEXAUI_BUILD_TESTS)
                     set_tests_properties(nexaui_wayland_fractional_${_mode} PROPERTIES TIMEOUT 15)
                 endforeach()
             endif()
+            add_executable(nexaui_wayland_software_tests tests/test_wayland_software.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_software_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_software_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} platform/linux)
+            target_link_libraries(nexaui_wayland_software_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_software COMMAND nexaui_wayland_software_tests)
+            set_tests_properties(nexaui_wayland_software PROPERTIES TIMEOUT 20)
             add_executable(nexaui_wayland_management_tests tests/test_wayland_management.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-decoration-protocol.c)

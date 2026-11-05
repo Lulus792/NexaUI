@@ -59,9 +59,12 @@ R01/R03/W04: `nx_headless_render_scaled` now provides scaled logical-command
 rasterization into caller-owned RGBA8 memory, reusing the existing software
 renderer. The reference parity test covers all command families at 2x, simple
 geometry at 0.125x/1.25x/1.5x/8x, and invalid/overflow atomicity. The installed
-C17 package consumer also exercises the new symbol. This is not native
-presentation, a GPU fallback, mixed-output acceptance or a complete CPU/GPU
-parity result; those gates remain open.
+C17 package consumer also exercises the new symbol. The Linux Wayland
+`nx_software_view_*` API now adds bounded native shared-memory presentation;
+the Settings example can select it at build time without Vulkan. Controlled
+buffer/scale tests and private-Weston keyboard, AT-SPI and simple-IME checks
+cover this candidate. Automatic fallback, mixed-output acceptance and complete
+CPU/GPU parity remain open.
 
 The version-query candidate based on `e0d9b143a7f6e05b7cea4b07a3e84c679f8dd766`
 was checked on Alpine/WSL2 using fresh Wayland-only C17 consumers. Static and

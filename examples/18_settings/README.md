@@ -8,13 +8,14 @@ checkbox, button, focus, semantic and theme APIs. The Linux host passes its
 window to the text field for native IME and clipboard routing, publishes the
 semantic tree, and retires the renderer before destroying the scene and window.
 
-With Linux Vulkan enabled, run `nexaui_settings /path/to/font.ttf`; add `--de`
+On Linux Wayland, run `nexaui_settings /path/to/font.ttf`; add `--de`
 to select the German example catalog. The application-owned scene can switch
 between `en` and `de` with `settings_set_language` without changing semantic
 IDs, the focused field, draft or in-flight submission. Unsupported codes are
 rejected. This example catalog does not implement general plural rules,
 locale-sensitive formatting or system language detection. The Linux runner uses
-the public `nexaui/vulkan.h` API and `NexaUI::Vulkan` target. The scene remains
+either the public `nexaui/vulkan.h` and `NexaUI::Vulkan`, or the Wayland
+`nexaui/software.h` API in `NexaUI::NexaUI`. The scene remains
 an example, not an Aetheri service. `--smoke` closes after a bounded native run.
 The headless scene test
 checks Tab and Shift-Tab traversal, text editing, checkbox and button activation,
@@ -51,6 +52,15 @@ with the presentation-fence support required by the public Vulkan adapter, and
 a font are needed at runtime. This command does not install a font or provide a
 fallback for devices without that Vulkan support.
 
+For the Wayland software runner, add `-DNEXAUI_SETTINGS_SOFTWARE=ON` to the
+standalone configure command above. The SDK may itself be built with
+`-DNEXAUI_BUILD_VULKAN=OFF`; no Vulkan library or GPU is required by that
+runner. In a source-tree Linux build, disabling the Vulkan target also selects
+the software runner; otherwise set `NEXAUI_SETTINGS_SOFTWARE=ON` explicitly.
+Selection happens at build time, not as an automatic runtime fallback. The
+software view's shared-memory limits and lifetime are described in the
+[rendering contract](../../docs/concepts/rendering.md).
+
 `tests/check_installed_settings.py` exercises a copied, installed example inside
 the private Weston fixture, checking the installed SDK revision and Wayland-only
 build features with the package consumer. It verifies keyboard operation and an
@@ -61,6 +71,8 @@ static SDKs were built from a Git archive of
 `0376982dfe0d4998dfb5f75d514ebfa6c40d4030` with X11 disabled. Keyboard and
 AT-SPI passed with both; simple-IME passed with the shared SDK. These automated
 checks do not replace physical-device and human accessibility acceptance.
+Set `NEXAUI_TEST_SETTINGS_SOFTWARE=1` to run the same installed-consumer checks
+with Vulkan discovery disabled and verify the executable does not link Vulkan.
 
 An independent libatspi test discovers this actual native example, activates
 Reduce motion and Apply, and requires the application to observe the applied

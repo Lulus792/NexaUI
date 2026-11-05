@@ -1,4 +1,5 @@
 #include "nexaui/nexaui.h"
+#include "nexaui/software.h"
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
 #include "x11/backend.h"
 #include "x11/window_internal.h"
@@ -210,9 +211,64 @@ nx_result nx_window_renderer_release(nx_window *window, const void *owner) {
     if (!window || !owner) return NX_ERROR_ARGUMENT;
     if (!nx_linux_on_owner_thread(window) || window->renderer_owner != owner)
         return NX_ERROR_STATE;
-    window->renderer_owner = NULL;
-    return NX_LINUX_DISPATCH(nx_wayland_window_set_external_renderer(window->native.wayland, 0),
+    nx_result result=NX_LINUX_DISPATCH(nx_wayland_window_set_external_renderer(window->native.wayland, 0),
         NX_OK);
+    window->renderer_owner = NULL;
+    return result;
+}
+
+struct nx_software_view {
+    nx_window *window;
+    pthread_t owner;
+    int busy;
+};
+
+nx_result nx_software_view_open(nx_window *window, nx_software_view **out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out=NULL;
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+    if (window->backend != NX_LINUX_WAYLAND) return NX_ERROR_UNSUPPORTED;
+    nx_software_view *view=calloc(1,sizeof(*view));
+    if (!view) return NX_ERROR_MEMORY;
+    view->owner=pthread_self(); view->window=window;
+    if (!nx_linux_window_hold(window)) { free(view); return NX_ERROR_STATE; }
+    nx_result result=nx_window_renderer_acquire(window,view);
+    if (result!=NX_OK) { nx_linux_window_unhold(window); free(view); return result; }
+    *out=view;
+    return NX_OK;
+}
+
+nx_result nx_software_view_render(nx_software_view *view,
+    const nx_command *commands, size_t count, nx_color clear,
+    nx_software_view_outcome *outcome) {
+    if (outcome) *outcome=NX_SOFTWARE_VIEW_SUSPENDED;
+    if (!view || !outcome) return NX_ERROR_ARGUMENT;
+    if (!pthread_equal(view->owner,pthread_self()) || view->busy || view->window->retired)
+        return NX_ERROR_STATE;
+    view->busy=1;
+    int internal=2;
+    nx_result result=nx_wayland_window_software_render(view->window->native.wayland,
+                                                        commands,count,clear,&internal);
+    view->busy=0;
+    if (result==NX_OK) *outcome=(nx_software_view_outcome)internal;
+    return result;
+}
+
+nx_result nx_software_view_close(nx_software_view **address) {
+    if (!address) return NX_ERROR_ARGUMENT;
+    nx_software_view *view=*address;
+    if (!view) return NX_OK;
+    if (!pthread_equal(view->owner,pthread_self()) || view->busy) return NX_ERROR_STATE;
+    view->busy=1;
+    nx_window *window=view->window;
+    nx_result result=NX_OK;
+    if (window->retired) window->renderer_owner=NULL;
+    else result=nx_window_renderer_release(window,view);
+    *address=NULL;
+    free(view);
+    nx_linux_window_unhold(window);
+    return result;
 }
 
 nx_result nx_window_set_cursor(nx_window *window, nx_cursor_shape shape) {

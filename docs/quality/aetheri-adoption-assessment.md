@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland software Settings candidate (2026-11-05)
+
+Candidate based on `94c3074ea50a247a04270d32170965c7cb40d7ec` adds the
+Wayland `nx_software_view_*` API and a selectable Settings software runner.
+On Alpine-Dev/WSL2, GCC Wayland-only with Vulkan disabled passed controlled
+shared-memory tests for premultiplied pixels, the three-buffer limit, release
+wakeup, wrong-thread use, allocator failure and reentrant window destruction;
+fractional fixtures checked submitted sizes at 1.25x and 1.5x. The same buffer
+and fractional tests passed in a Clang shared ASan/UBSan build with leak checks;
+the buffer test also passed in a GCC dual-backend build. Private Weston/Xvfb
+ran software Settings keyboard, independent AT-SPI error/retry and simple-IME
+composition with clean exits; the keyboard case also passed under ASan/UBSan.
+The existing Vulkan Settings keyboard case passed separately. These use virtual
+input and do not prove physical presentation, a production IME, actual Aetheri,
+performance or human accessibility acceptance. Automatic runtime selection
+between renderers remains open.
+
 ## Scaled software rasterization (2026-11-05)
 
 Candidate based on `5feea514c339718f971fdbabefd3d11367ef699d` adds

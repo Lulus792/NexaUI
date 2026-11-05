@@ -48,9 +48,12 @@ def main():
         source.mkdir()
         for name in ('CMakeLists.txt', 'main_linux.c', 'scene.c', 'scene.h'):
             shutil.copy2(ROOT / 'examples/18_settings' / name, source / name)
+        software = env.get('NEXAUI_TEST_SETTINGS_SOFTWARE') == '1'
+        optional = ['-DCMAKE_DISABLE_FIND_PACKAGE_Vulkan=ON'] if software else []
         run(['cmake', '-S', source, '-B', build, '-DCMAKE_BUILD_TYPE=Release',
              '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DCMAKE_DISABLE_FIND_PACKAGE_X11=ON',
-             '-DCMAKE_PREFIX_PATH=' + str(prefix)], env)
+             '-DCMAKE_PREFIX_PATH=' + str(prefix),
+             '-DNEXAUI_SETTINGS_SOFTWARE=' + ('ON' if software else 'OFF'), *optional], env)
         run(['cmake', '--build', build, '--parallel', '4'], env)
         commands = json.loads((build / 'compile_commands.json').read_text(encoding='utf-8'))
         if len(commands) != 2 or any(str(ROOT) in item['command'] or
@@ -70,6 +73,8 @@ def main():
             raise RuntimeError('Shared consumer did not load the requested SDK prefix')
         if not shared and resolved:
             raise RuntimeError('Static consumer unexpectedly loaded a shared SDK')
+        if software and re.search(r'^\s*libvulkan\.so', libraries, re.MULTILINE):
+            raise RuntimeError('Software consumer unexpectedly depends on Vulkan')
         if env.get('NEXAUI_TEST_SIMPLE_IME') == '1':
             run([sys.executable, ROOT / 'examples/18_settings/run_simple_ime.py', app, font, xdotool], env)
             print('Copied installed Settings consumer passed native IME composition.')

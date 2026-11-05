@@ -8,6 +8,8 @@
 typedef struct nx_wayland_window nx_wayland_window;
 nx_result nx_wayland_window_set_external_renderer(nx_wayland_window *window,
                                                   int enabled);
+nx_result nx_wayland_window_software_render(nx_wayland_window *window,
+    const nx_command *commands, size_t count, nx_color clear, int *outcome);
 
 nx_result nx_wayland_window_create(const nx_window_desc *desc,
                                    nx_wayland_window **out_window);

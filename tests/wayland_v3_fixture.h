@@ -35,6 +35,7 @@ typedef struct test_server {
     atomic_int attached_width, attached_height, buffer_scale;
     atomic_int geometry_before_configure, geometry_after_configure;
     void (*surface_committed)(struct test_server *server,struct wl_client *client);
+    void (*buffer_attached)(struct test_server *server,struct wl_resource *buffer);
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
     atomic_int send_offer, send_drop, offer_sent;
@@ -197,6 +198,7 @@ static void surface_attach(struct wl_client *client,struct wl_resource *resource
         struct wl_shm_buffer *shm=wl_shm_buffer_get(buffer);
         if(shm) {atomic_store(&server->attached_width,wl_shm_buffer_get_width(shm));
                  atomic_store(&server->attached_height,wl_shm_buffer_get_height(shm));}
+        if (server->buffer_attached) server->buffer_attached(server,buffer);
     }
 }
 static void surface_set_buffer_scale(struct wl_client *client,struct wl_resource *resource,int32_t scale) {

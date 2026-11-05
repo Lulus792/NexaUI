@@ -43,6 +43,7 @@ typedef struct nx_wayland_buffer {
     struct wl_buffer *native;
     void *pixels;
     size_t size;
+    int software;
 } nx_wayland_buffer;
 
 typedef struct nx_wayland_output {
@@ -147,6 +148,8 @@ struct nx_wayland_window {
     struct zxdg_toplevel_decoration_v1 *decoration;
     uint32_t decoration_mode;
     nx_wayland_buffer *buffers;
+    unsigned software_buffers;
+    int software_waiting, software_woken;
     nx_wayland_output *outputs;
     nx_wayland_clipboard_source *sources, *owned_source;
     nx_wayland_clipboard_offer *offers, *selection_offer;
@@ -1947,10 +1950,82 @@ static void nx_wayland_buffer_release(void *data, struct wl_buffer *native) {
     nx_wayland_buffer **slot = &window->buffers;
     while (*slot && *slot != buffer) slot = &(*slot)->next;
     if (*slot) *slot = buffer->next;
+    if (buffer->software) {
+        --window->software_buffers;
+        if (window->software_waiting) {
+            window->software_waiting=0;
+            window->software_woken=1;
+        }
+    }
     wl_buffer_destroy(native);
     munmap(buffer->pixels, buffer->size);
     window->allocator.deallocate(window->allocator.user, buffer,
                                  sizeof(*buffer));
+}
+
+static nx_result nx_wayland_create_buffer(nx_wayland_window *window,
+    int width, int height, uint32_t format, nx_wayland_buffer **out_buffer);
+
+nx_result nx_wayland_window_software_render(nx_wayland_window *window,
+    const nx_command *commands, size_t count, nx_color clear, int *outcome) {
+    if (!window || !outcome) return NX_ERROR_ARGUMENT;
+    *outcome = 2;
+    if (!nx_wayland_on_owner_thread(window) || nx_linux_window_retired(window->owner))
+        return NX_ERROR_STATE;
+    if (window->error != NX_OK) return window->error;
+    if (!window->configured || window->hidden) return NX_OK;
+    if (window->software_buffers >= 3u) {
+        window->software_waiting=1;
+        *outcome = 3;
+        return NX_OK;
+    }
+    window->software_waiting=0;
+    window->software_woken=0;
+    int width=0, height=0;
+    nx_result result=nx_wayland_scale_extent(window->width,window->height,
+                                             window->scale_120,&width,&height);
+    if (result != NX_OK) return result;
+    if ((uint64_t)width * (uint64_t)height * 4u > 128u * 1024u * 1024u)
+        return NX_ERROR_LIMIT;
+    nx_wayland_buffer *buffer=NULL;
+    result=nx_wayland_create_buffer(window,width,height,WL_SHM_FORMAT_ARGB8888,&buffer);
+    if (result != NX_OK) return result;
+    if (nx_linux_window_retired(window->owner)) result=NX_ERROR_STATE;
+    else result=nx_headless_render_scaled(commands,count,buffer->pixels,
+        (uint32_t)width,(uint32_t)height,(size_t)width*4u,clear,
+        (double)window->scale_120/120.0);
+    if (result != NX_OK) {
+        nx_wayland_buffer_release(buffer,buffer->native);
+        return result;
+    }
+    uint8_t *rgba=buffer->pixels;
+    uint32_t *argb=buffer->pixels;
+    for (size_t i=0; i<buffer->size/4u; ++i) {
+        unsigned r=rgba[i*4u], g=rgba[i*4u+1u], b=rgba[i*4u+2u], a=rgba[i*4u+3u];
+        argb[i]=(a<<24u)|(((r*a+127u)/255u)<<16u)|
+                (((g*a+127u)/255u)<<8u)|((b*a+127u)/255u);
+    }
+    buffer->software=1;
+    ++window->software_buffers;
+    int buffer_scale=window->scale;
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    if (window->fractional_active) {
+        buffer_scale=1;
+        wp_viewport_set_destination(window->viewport,window->width,window->height);
+    }
+#endif
+    if (wl_surface_get_version(window->surface) >= 3)
+        wl_surface_set_buffer_scale(window->surface,buffer_scale);
+    wl_surface_attach(window->surface,buffer->native,0,0);
+    wl_surface_damage(window->surface,0,0,window->width,window->height);
+    wl_surface_commit(window->surface);
+    window->buffer_attached=1;
+    if (wl_display_flush(window->display)<0 && errno!=EAGAIN) {
+        window->error=NX_ERROR_PLATFORM;
+        return window->error;
+    }
+    *outcome=1;
+    return NX_OK;
 }
 
 static const struct wl_buffer_listener nx_wayland_buffer_listener = {
@@ -2348,6 +2423,7 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
     if (wl_display_dispatch_pending(window->display) < 0)
         return nx_wayland_connection_failed(window);
     if (window->error != NX_OK) return window->error;
+    if (window->software_woken) { window->software_woken=0; timeout_ms=0; }
     nx_result drop_result = nx_wayland_process_drop(window);
     if (drop_result != NX_OK) return window->error = drop_result;
     nx_wayland_progress_writes(window);
@@ -2356,6 +2432,7 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
             return nx_wayland_connection_failed(window);
         if (window->error != NX_OK) return window->error;
     }
+    if (window->software_woken) { window->software_woken=0; timeout_ms=0; }
     int needs_write = 0, notify_drop = 0;
     if (wl_display_flush(window->display) < 0) {
         if (errno != EAGAIN) {

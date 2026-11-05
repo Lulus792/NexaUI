@@ -1,4 +1,5 @@
 #include "wayland_v3_fixture.h"
+#include "nexaui/software.h"
 #include "fractional-scale-v1-server-protocol.h"
 #include "viewporter-server-protocol.h"
 #include "window_internal.h"
@@ -177,6 +178,22 @@ int main(int argc,char **argv) {
         CHECK(atomic_load(&s.viewport_width)==103 && atomic_load(&s.viewport_height)==53 && atomic_load(&s.base.buffer_scale)==1);
         CHECK(nx_window_renderer_release(w,&s)==NX_OK);roundtrip(w);
         CHECK(atomic_load(&s.base.attached_width)==129 && atomic_load(&s.base.attached_height)==66);
+        nx_software_view *software=NULL;
+        nx_software_view_outcome outcome;
+        CHECK(nx_software_view_open(w,&software)==NX_OK);
+        CHECK(nx_software_view_render(software,NULL,0,(nx_color){1,0,0,1},&outcome)==NX_OK &&
+              outcome==NX_SOFTWARE_VIEW_READY);
+        roundtrip(w);
+        CHECK(atomic_load(&s.base.attached_width)==129 && atomic_load(&s.base.attached_height)==66 &&
+              atomic_load(&s.base.buffer_scale)==1);
+        atomic_store(&s.scale_request,180);wl_surface_commit(nx_window_wayland_surface(w));roundtrip(w);roundtrip(w);
+        check_size(w,103,53,180,155,80);
+        CHECK(nx_software_view_render(software,NULL,0,(nx_color){0,1,0,1},&outcome)==NX_OK &&
+              outcome==NX_SOFTWARE_VIEW_READY);
+        roundtrip(w);
+        CHECK(atomic_load(&s.base.attached_width)==155 && atomic_load(&s.base.attached_height)==80 &&
+              atomic_load(&s.viewport_width)==103 && atomic_load(&s.viewport_height)==53);
+        CHECK(nx_software_view_close(&software)==NX_OK && !software);
     }
     nx_window_destroy(w);CHECK(heap.live==0);
     wl_display_terminate(s.base.display);CHECK(pthread_join(thread,NULL)==0);wl_display_destroy(s.base.display);
