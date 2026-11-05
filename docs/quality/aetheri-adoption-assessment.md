@@ -1,5 +1,50 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri-owned Settings on the 0.1.19 candidate (2026-11-06)
+
+Aetheri commit `d242c7abf944e08f2693de0e1848f542be107981` adds its own
+Settings presentation. In a separate archive of that commit, its unchanged
+model, view, host and original scene test were built against installed NexaUI
+0.1.19 artifacts. The [isolated compatibility harness](../../tests/aetheri_settings_candidate/README.md)
+does not change Aetheri's build, which still requires exactly 0.1.18, or its
+owner's selected Settings executable. This is not an approved repin or adoption.
+
+The original scene test passed at raster densities 1 and 2 in each GCC static,
+GCC shared and Clang ASan/UBSan profile, with leak detection for the latter.
+Each density covers 270 theme/language/text-size/viewport/page combinations,
+including 200% text, 320x240 geometry, focus navigation, selection, contrast
+and owner-model retention. With the unchanged Aetheri host on private Weston,
+an independent libatspi client selected high contrast, 200% text and German,
+observed the app-owned diagnostic model and closed the window; all three
+profiles passed. A static negative with the app's AT-SPI bridge disabled
+confirmed a submitted default view stayed undiscoverable and exited normally.
+The app used fixture display records, not real display settings. The isolated
+harness also rejected an installed 0.1.18 package when configured to require
+0.1.19; this is a test-selection check, not Aetheri's own package policy.
+
+The installed SDK source was `4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`;
+`src`, public headers, platform, renderers and package CMake files have no
+subsequent changes through NexaUI base `e67e815fc4de070278be1c18d34e5d71a5d39385`.
+Static/shared/ASan library SHA-256 values respectively were
+`f9b17db6108536177040f4228104ecfbf1b08959b7e78fddd263bbb603649a63`,
+`cfd814bdf4778b055491bb51838a4b1b2a4e37bdc8a6422ecd118bb15aff161e`, and
+`111aa4bcfcb67fd3b43fbd8453e145cbe099b8831f752b24a9bf1acb9e4e29f3`.
+The font `/usr/share/fonts/dejavu/DejaVuSans.ttf` SHA-256 was
+`7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954`.
+The shared process resolved the selected installed library. The Aetheri archive
+source SHA-256 values for model.c, model.h, view.c, view.h, native main and
+scene test were respectively `3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c`,
+`776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793`,
+`d95fa8ca7784a21728e9cc8764cdfc2ff23ffea7abd578b527ebe0e9cfef09a6`,
+`c8ef629f15e449e0a1f53e81482fb1379747be89dd324a9b73e03c8e9c3a4609`,
+`7f55c8b5c8ac776dea47573c8b40e0656adb3d77b26b01b795c191e721201d0e` and
+`9773e286962e510d0699118ead5a2d04eb136568ce83737ae1ee2fcd9e2f6195`.
+
+The compositor was private Weston/Xvfb, not Aetheri's compositor or its
+development owner. Device settings, physical presentation, live input methods,
+other fonts, human screenreader/visual review and Aetheri's own version/adoption
+decision remain open. No Aetheri worktree files or pins were changed.
+
 ## Measured four-button desktop dock layout (2026-11-06)
 
 On candidate base `6ced584aa23aec468bf6ed607228d3b0a5ac2045`, the 320-logical-

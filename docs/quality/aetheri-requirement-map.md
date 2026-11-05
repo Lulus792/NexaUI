@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/L02/A02/A10/Q04: Aetheri's own Settings presentation at
+`d242c7abf944e08f2693de0e1848f542be107981` passed isolated scene and native
+AT-SPI tests against the installed 0.1.19 candidate based on
+`4f8c3426fc56f1d0547aafe8ed5dd2ca37e50025`. Aetheri still pins 0.1.18;
+its real owner/compositor, hardware and human acceptance remain open. See
+[candidate evidence](aetheri-adoption-assessment.md#aetheri-owned-settings-on-the-0119-candidate-2026-11-06).
+
 L01/D02/A10: on base `6ced584aa23aec468bf6ed607228d3b0a5ac2045`, the
 four-button example dock allocates measured label widths and clips drawing;
 320px English/German scene checks cover three fonts. Larger text scale, actual
