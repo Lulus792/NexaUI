@@ -123,6 +123,20 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             target_link_libraries(aetheri_terminal_ime_wayland_test PRIVATE
                 aetheri_terminal_ime Threads::Threads PkgConfig::WAYLAND_FIXTURE)
             set_target_properties(aetheri_terminal_ime_wayland_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            if(NEXAUI_AETHERI_PTY_EXPERIMENT)
+                add_executable(aetheri_terminal_ime_pty_test test_ime_pty_wayland.c
+                    "${NEXAUI_FIXTURE_PROTOCOL_DIR}/xdg-shell-protocol.c"
+                    "${NEXAUI_FIXTURE_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c")
+                target_include_directories(aetheri_terminal_ime_pty_test PRIVATE
+                    "${NEXAUI_FIXTURE_SOURCE_DIR}/tests" "${NEXAUI_FIXTURE_SOURCE_DIR}/platform/linux"
+                    "${NEXAUI_FIXTURE_PROTOCOL_DIR}")
+                target_link_libraries(aetheri_terminal_ime_pty_test PRIVATE
+                    aetheri_terminal_ime aetheri_original_pty Threads::Threads PkgConfig::WAYLAND_FIXTURE)
+                if(NEXAUI_AETHERI_MUSL_NORMALIZE_TERMIOS)
+                    target_link_options(aetheri_terminal_ime_pty_test PRIVATE -Wl,--wrap=tcgetattr)
+                endif()
+                set_target_properties(aetheri_terminal_ime_pty_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            endif()
         endif()
     endif()
     add_executable(aetheri_terminal_ax_host main_ax.c)

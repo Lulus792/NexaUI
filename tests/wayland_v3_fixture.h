@@ -52,7 +52,7 @@ typedef struct test_server {
     size_t surrounding_length;
     int32_t surrounding_cursor, surrounding_anchor;
     atomic_int enable_commits, disable_commits, caret_ok, surrounding_ok;
-    atomic_int field_surrounding_ok, numeric_commit, commit_control_test;
+    atomic_int field_surrounding_ok, numeric_commit, commit_control_test, commit_pty_test;
     atomic_int normal_content, password_content;
 } test_server;
 
@@ -444,8 +444,10 @@ static void text_commit(struct wl_client *client,
     if (server->enabled) {
         atomic_fetch_add(&server->enable_commits, 1);
         if (server->commit_serial == 1) {
-            const char *commit=atomic_load(&server->commit_control_test) ?
-                "c\x1b" "af\xc3\xa9" : "caf\xc3\xa9";
+            int pty_test=atomic_load(&server->commit_pty_test);
+            const char *commit=pty_test==1 ? "printf '%s%s' 'IME_' 'MARK'" :
+                pty_test==2 ? "printf\x1b '%s%s' 'IME_' 'MARK'" :
+                atomic_load(&server->commit_control_test) ? "c\x1b" "af\xc3\xa9" : "caf\xc3\xa9";
             zwp_text_input_v3_send_commit_string(resource, commit);
             zwp_text_input_v3_send_preedit_string(resource, "na\xc3\xaf", 2, 2);
         } else if (atomic_load(&server->numeric_commit)) {

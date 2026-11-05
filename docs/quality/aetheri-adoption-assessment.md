@@ -2832,3 +2832,24 @@ focus/session changes. Other platforms report the guarded getter unsupported.
 Real Aetheri focus transitions, installed IMEs, preedit rendering, PTY input,
 physical interaction and human assistive acceptance are not established by
 these controlled tests.
+
+## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
+
+On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional
+[terminal test](../../examples/23_aetheri_terminal_view/README.md#controlled-wayland-ime-to-an-aetheri-pty)
+starts the Aetheri shell and PTY from
+`87996e2f12128b172a80b325ad3b539df6aee527` before the controlled Wayland
+server thread. A complete tagged v3 IME commit is validated and written to the
+owned PTY. A separately simulated Enter executes the safe test command; its
+split marker is observed in the original terminal model. Filtered and stale
+commits are rejected, and an independent fixed command confirms the shell
+continues without the rejected marker. Static, shared and Clang ASan/UBSan
+Alpine/WSL runs passed as an unprivileged user with the separately documented
+test-only musl syscall and termios adaptations.
+An isolated mutant that discarded the approved commit failed the expected
+shell-output check.
+
+This is not installed-IME or real Aetheri compositor acceptance. The fixture's
+synchronous PTY helpers are not a production event loop; native foreground
+and focus policy, preedit painting, physical input, and human accessibility
+remain separate gates.

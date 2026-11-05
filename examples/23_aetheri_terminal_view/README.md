@@ -388,3 +388,34 @@ ASan/UBSan checks passed; a mutant that ignored the event identity failed the
 stale-event check. The owner must still advance epochs and clear composition on
 real focus loss; no installed IME, real Aetheri session or visual acceptance
 is claimed.
+
+### Controlled Wayland IME to an Aetheri PTY
+
+On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, enable both
+`NEXAUI_AETHERI_IME_EXPERIMENT` and `NEXAUI_AETHERI_PTY_EXPERIMENT`, as
+well as the controlled fixture paths above. The additional
+`aetheri_terminal_ime_pty_test` starts the original Aetheri shell and PTY
+from revision `87996e2f12128b172a80b325ad3b539df6aee527` before starting
+the Wayland server thread. A controlled v3 server emits an IME commit. The
+adapter validates the entire event sequence and the test owner writes only a
+complete accepted result to that PTY. It sends Enter separately and verifies
+the command's split output marker through Aetheri's original terminal model.
+
+Run the three scenarios as an unprivileged user:
+
+```sh
+/tmp/terminal-pty/aetheri_terminal_ime_pty_test /tmp/terminal-pty/aetheri_original_shell valid
+/tmp/terminal-pty/aetheri_terminal_ime_pty_test /tmp/terminal-pty/aetheri_original_shell filtered
+/tmp/terminal-pty/aetheri_terminal_ime_pty_test /tmp/terminal-pty/aetheri_original_shell stale
+```
+
+For filtered and stale commits, no bytes are sent from the commit. A separate
+fixed shell probe must complete without the rejected marker; then the test
+requests shell exit and observes both exit and PTY EOF. Static/shared and
+Clang ASan/UBSan runs passed on Alpine/WSL with both explicitly enabled musl
+test options described above. This is a deterministic controlled protocol
+server, not an installed IME or real Aetheri compositor. PTY writes and waits
+are bounded synchronous fixture helpers: an app must integrate a nonblocking
+write queue, focus/foreground ownership and process shutdown itself. Preedit
+painting, real focus changes, real-session and human acceptance remain open.
+An isolated mutant that discarded the approved commit failed the marker check.
