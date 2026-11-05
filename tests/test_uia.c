@@ -113,7 +113,21 @@ static int frame(scene *s) {
     CHECK(nx_semantics_add(s->ctx,&disabled_group,NULL)==NX_OK);
     d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
     CHECK(nx_button(s->ctx,&d,&state)==NX_OK);
-    if(s->overlay_stage) {
+    if(s->overlay_stage==3 || s->overlay_stage==4) {
+        nx_overlay_desc first={0};first.panel.id=2100;first.panel.parent_id=1;
+        first.panel.bounds=(nx_rect){200,200,180,90};first.panel.name=(nx_utf8_span){"First",5};first.backdrop_id=2101;
+        int dismissed=0;CHECK(nx_popup_begin(s->ctx,&first,&dismissed)==NX_OK && !dismissed);
+        d=control(2102,2100,"First action",(nx_rect){220,220,120,30});CHECK(nx_button(s->ctx,&d,&state)==NX_OK);
+        CHECK(nx_overlay_end(s->ctx)==NX_OK);
+        if(s->overlay_stage==4) {
+            nx_overlay_desc second={0};second.panel.id=2110;second.panel.parent_id=1;
+            second.panel.bounds=(nx_rect){250,260,180,90};second.panel.name=(nx_utf8_span){"Second",6};second.backdrop_id=2111;
+            CHECK(nx_popup_begin(s->ctx,&second,&dismissed)==NX_OK && !dismissed);
+            d=control(2112,2110,"Second action",(nx_rect){260,270,140,30});
+            CHECK(nx_button(s->ctx,&d,&state)==NX_OK);s->nested_clicks+=(unsigned)state.clicked;
+            CHECK(nx_overlay_end(s->ctx)==NX_OK);
+        }
+    } else if(s->overlay_stage) {
         nx_overlay_desc outer={0};outer.panel.id=2000;outer.panel.parent_id=1;
         outer.panel.bounds=(nx_rect){200,200,300,200};outer.panel.name=(nx_utf8_span){"Dialog",6};
         outer.backdrop_id=2001;int dismissed=0;
@@ -256,6 +270,13 @@ static int run(const WCHAR *client,int design_only) {
                 s.selection_moved=request!=UIA_TEST_RESTORE_SELECTION; s.other_choice=0;
                 CHECK(frame(&s)==0);
                 if (request!=UIA_TEST_MOVE_UNPUBLISHED) CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+            } else if (request>=UIA_TEST_SIBLING_OPEN && request<=UIA_TEST_SIBLING_CLOSE_ALL) {
+                if(request==UIA_TEST_SIBLING_OPEN) {s.overlay_stage=4;s.nested_clicks=0;}
+                if(request==UIA_TEST_SIBLING_CLOSE_TOP) {CHECK(nx_overlay_close(s.ctx)==NX_OK);s.overlay_stage=3;}
+                if(request==UIA_TEST_SIBLING_CLOSE_ALL) {CHECK(nx_overlay_close(s.ctx)==NX_OK);s.overlay_stage=0;}
+                size_t actions=0;CHECK(nx_window_route_events(window,s.ctx,&actions)==NX_OK);
+                CHECK(frame(&s)==0);CHECK(nx_window_publish_semantics(window,s.ctx)==NX_OK);
+                reply=request==UIA_TEST_SIBLING_APPLY?s.nested_clicks:(unsigned)nx_focus_id(s.ctx);
             } else if (request>=UIA_TEST_NESTED_OPEN && request<=UIA_TEST_NESTED_CLOSE_ALL) {
                 if(request==UIA_TEST_NESTED_OPEN)s.overlay_stage=2;
                 if(request==UIA_TEST_NESTED_CLOSE_CHILD) {CHECK(nx_overlay_close(s.ctx)==NX_OK);s.overlay_stage=1;}

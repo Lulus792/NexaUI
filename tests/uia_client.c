@@ -345,6 +345,15 @@ static int run(HWND hwnd) {
     OK(IUIAutomationElement_get_CurrentIsEnabled(trigger,&value));CHECK(value);
     CHECK(!host(UIA_TEST_NESTED_CLOSE_ALL,&nested_reply));
     IUIAutomationElement_Release(nested);IUIAutomationElement_Release(trigger);IUIAutomationElement_Release(disabled_child);
+    CHECK(!host(UIA_TEST_SIBLING_OPEN,&nested_reply) && nested_reply==2112);
+    IUIAutomationElement *first_popup=find(uia,root,2102),*second_popup=find(uia,root,2112);CHECK(first_popup && second_popup);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(first_popup,&value));CHECK(!value && invoke(first_popup,0));
+    OK(IUIAutomationElement_get_CurrentIsEnabled(second_popup,&value));CHECK(value && invoke(second_popup,1));
+    CHECK(!host(UIA_TEST_SIBLING_APPLY,&nested_reply) && nested_reply==1);
+    CHECK(!host(UIA_TEST_SIBLING_CLOSE_TOP,&nested_reply) && nested_reply==2102);
+    OK(IUIAutomationElement_get_CurrentIsEnabled(first_popup,&value));CHECK(value);
+    CHECK(!host(UIA_TEST_SIBLING_CLOSE_ALL,&nested_reply));
+    IUIAutomationElement_Release(first_popup);IUIAutomationElement_Release(second_popup);
     OK(IUIAutomationElement_get_CurrentIsPassword(secret,&value)); CHECK(value);
     VARIANT property; VariantInit(&property);
     HRESULT protected_hr=IUIAutomationElement_GetCurrentPropertyValueEx(secret,UIA_ValueValuePropertyId,TRUE,&property);
