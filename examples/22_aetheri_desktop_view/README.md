@@ -79,7 +79,7 @@ events through `aetheri_desktop_view_queue_event`, Tab and Shift-Tab in the
 search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
-revision. Native selection-owner actions, Tab behavior outside the search field, real window activation,
+revision. Tab behavior outside the search field, real window activation,
 full private-surface input and IME, production Aetheri shell integration,
 multi-output ownership and the original process owner integration remain open.
 The Linux preview uses an ordinary NexaUI window, the software presenter,
@@ -88,6 +88,18 @@ prints launch/activation intents without performing them. It is not the
 private-role shell adapter. Native input-method and human assistive-technology
 acceptance remain open. The core view test uses synthetic context events and
 semantic requests; neither test establishes physical or human acceptance.
+
+On base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, search results expose a
+single-selection owner and native selection actions. Selecting a result emits
+`AETHERI_DESKTOP_SELECT`; it does not launch or activate it. The semantic
+selected state reflects the last host-confirmed model until the caller applies
+the intent and advances the model revision. Disabled entries reject selection,
+and requests queued for an older revision produce no intent. An independent
+AT-SPI client tests the list's Selection interface, then edits the search field
+and activates Terminal; the current Aetheri snapshot also tests selecting Files.
+The test host uses simulated geometry and focus. Real private-role routing and
+human assistive acceptance remain open. Fixed dock buttons still cover only
+Search, Settings and Terminal; Files dock integration remains open.
 
 On 5 November 2026 the initial source `3c0dfd20cb7217cbbe81d0af7965533c19b0f506`
 was built on Alpine/WSL2 with GCC 15.2 against an installed static, Wayland-only

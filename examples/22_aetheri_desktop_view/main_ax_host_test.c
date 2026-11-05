@@ -84,6 +84,11 @@ int main(int argc,char **argv) {
             printf("QUERY %s\n",model.query);
             CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent));
             CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent));
+        } else if(intent.kind==AETHERI_DESKTOP_SELECT) {
+            model.selected=intent.window;model.selected_app=intent.app;++revision;
+            printf("SELECT %d %u\n",model.selected_app,model.selected);
+            CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+            CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
         } else if(intent.kind!=AETHERI_DESKTOP_NONE)
             printf("INTENT kind=%d app=%d window=%u\n",intent.kind,intent.app,intent.window);
         CHECK(nx_linux_accessibility_host_publish(host,aetheri_desktop_view_context(view),&geometry)==NX_OK);

@@ -1,5 +1,35 @@
 # Aetheri adoption: initial source assessment
 
+## Desktop search native selection owner (2026-11-06)
+
+On candidate base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, the external
+desktop view uses the existing single-selection group for search results.
+An admitted native selection produces an app-owned `AETHERI_DESKTOP_SELECT`
+intent, never a launch. Published selection reflects the confirmed model; the
+host must validate/apply the intent and advance its revision. The scene test
+checks disabled selection, rejection after a revision change, and unchanged
+model/semantics until acknowledgement. Suppressing selection intent generation
+in a test-only mutant failed the new assertion.
+
+An independent libatspi client selected a result using the list's Selection
+interface, observed the host-confirmed state, then edited the search field and
+activated Terminal. GCC static/shared and Clang ASan/UBSan consumers with leak
+detection passed using the older Aetheri desktop model snapshot, with blobs
+`be57398f32c1e16315510bd95c743559b60c7b52` and
+`5a7ed35e92744e5a4b08254b26151efc2025cb34`. A separate GCC static run used
+an archive of Aetheri commit `7374f381719397abc100dcb784becf59c86d1462` and
+also selected its newer Files search result before Terminal. The independently
+changing Aetheri checkout and its uncommitted Settings work were not edited.
+
+The first native test failed its subsequent text edit because the fixture
+published the guarded reconciliation frame; it now publishes the following
+editable frame. The failed sanitizer client exited early and reported GLib
+allocations on its failure path; the final successful sanitizer run had no
+reported leak. Native transport uses a private D-Bus registry with simulated
+surface geometry/focus, not the production shell or human screenreader input.
+The fixed dock does not yet include Files; actual shell ownership, other input
+ordering and physical acceptance remain open.
+
 ## Files queued focus and navigation ordering (2026-11-06)
 
 On base `4cc5833e84cea2b9d19f0032e3d1947f3d152d6a`, the Files consumer

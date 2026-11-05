@@ -69,6 +69,31 @@ int main(int argc,char **argv) {
     AtspiAccessible *field=NULL;
     for(unsigned n=0;n<200 && !field;++n){atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);if(!field)field=find(app,"Suche",ATSPI_ROLE_ENTRY,0);if(!field)pump(10);}
     CHECK(field);AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
+    if(getenv("NEXAUI_AX_SELECTION")) {
+        AtspiAccessible *list=find(app,"Search results",ATSPI_ROLE_LIST,0);
+        AtspiAccessible *row=find(app,"Terminal",ATSPI_ROLE_LIST_ITEM,0);
+        CHECK(list && row);GError *selection_error=NULL;
+        AtspiSelection *selection=atspi_accessible_get_selection_iface(list);CHECK(selection);
+        if(getenv("NEXAUI_AX_CURRENT_FILES")) {
+            AtspiAccessible *files=find(app,"Files",ATSPI_ROLE_LIST_ITEM,0);CHECK(files);
+            int files_index=atspi_accessible_get_index_in_parent(files,&selection_error);CHECK(files_index>=0 && !selection_error);
+            CHECK(atspi_selection_select_child(selection,files_index,&selection_error) && !selection_error);
+            char files_output[1024]={0};size_t files_used=0;
+            CHECK(wait_output(pipes[0],files_output,sizeof(files_output),&files_used,"SELECT 3 0\n"));
+            CHECK(!strstr(files_output,"INTENT"));g_object_unref(files);
+        }
+        int index=atspi_accessible_get_index_in_parent(row,&selection_error);CHECK(index>=0 && !selection_error);
+        CHECK(atspi_selection_select_child(selection,index,&selection_error) && !selection_error);
+        char selected_output[1024]={0};size_t selected_used=0;
+        CHECK(wait_output(pipes[0],selected_output,sizeof(selected_output),&selected_used,"SELECT 2 0\n"));
+        int selected=0;
+        for(unsigned i=0;i<300 && !selected;++i) {
+            pump(10);atspi_accessible_clear_cache(row);AtspiStateSet *states=atspi_accessible_get_state_set(row);
+            if(states){selected=atspi_state_set_contains(states,ATSPI_STATE_SELECTED);g_object_unref(states);}
+        }
+        CHECK(selected && !strstr(selected_output,"INTENT"));
+        g_object_unref(selection);g_object_unref(row);g_object_unref(list);
+    }
     if(getenv("NEXAUI_AX_LAYER_MULTI")) {
         GError *multi_error=NULL;CHECK(atspi_accessible_get_child_count(app,&multi_error)==3 && !multi_error);
         AtspiAccessible *other=find(app,"Suche",ATSPI_ROLE_ENTRY,0);CHECK(other);

@@ -162,6 +162,7 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         size_t selected=result_count;int moved=0;
         for(size_t i=0;i<result_count;++i)
             if(results[i].window==v->model->selected && results[i].app==v->model->selected_app) {selected=i;break;}
+        size_t confirmed_index=selected;
         if(query_state.focused && result_count) {
             const nx_event *events=NULL;size_t event_count=0;
             if(nx_frame_events(v->context,&events,&event_count)!=NX_OK)goto done;
@@ -197,7 +198,21 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         if(nx_scroll_area_begin(v->context,&scroll,&v->scroll_x,&v->scroll_y,&info)!=NX_OK)goto done;
         nx_semantic_desc list={0};list.id=31;list.parent_id=30;list.role=NX_ROLE_LIST;
         list.name=scroll.name;list.bounds=scroll.viewport;
-        if(nx_semantics_add(v->context,&list,NULL)!=NX_OK)goto done;
+        uint64_t confirmed_id=confirmed_index<result_count ?
+            (results[confirmed_index].window ? UINT64_C(0x100000000)+results[confirmed_index].window :
+             UINT64_C(0x200000000)+(uint64_t)results[confirmed_index].app) : 0;
+        uint64_t requested_id=confirmed_id;
+        if(nx_selection_group(v->context,&list,confirmed_id!=0,&requested_id)!=NX_OK)goto done;
+        if(requested_id && requested_id!=confirmed_id) {
+            for(size_t i=0;i<result_count;++i) {
+                uint64_t id=results[i].window ? UINT64_C(0x100000000)+results[i].window :
+                    UINT64_C(0x200000000)+(uint64_t)results[i].app;
+                if(id==requested_id && (!results[i].app || !v->model->pending[results[i].app])) {
+                    pending.kind=AETHERI_DESKTOP_SELECT;pending.window=results[i].window;pending.app=results[i].app;
+                    break;
+                }
+            }
+        }
         nx_color surface,hover,selected_color,foreground,selected_text,disabled_text;
         if(nx_theme_color(v->context,NX_COLOR_SURFACE_RAISED,&surface)!=NX_OK ||
            nx_theme_color(v->context,NX_COLOR_HOVER,&hover)!=NX_OK ||
@@ -214,7 +229,7 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
             int is_selected=results[i].window==v->model->selected && results[i].app==v->model->selected_app;
             int disabled=results[i].app && v->model->pending[results[i].app];
             d.semantic.state=(is_selected?NX_SEM_SELECTED:0u)|(disabled?NX_SEM_DISABLED:0u);
-            d.semantic.actions=NX_ACTION_PRESS|NX_ACTION_FOCUS;
+            d.semantic.actions=NX_ACTION_PRESS|NX_ACTION_FOCUS|NX_ACTION_SELECT;
             d.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
             nx_interaction_state state;if(nx_widget_register(v->context,&d,&state)!=NX_OK)goto done;
             nx_color fill=is_selected?selected_color:state.hovered?hover:surface;

@@ -48,6 +48,13 @@ int main(int argc,char **argv) {
     uint32_t selected_semantic;nx_semantic_view selected_state;
     CHECK(nx_semantics_find(ctx,UINT64_C(0x200000000)+AE_DESKTOP_SETTINGS,&selected_semantic)==NX_OK &&
           nx_semantics_get(ctx,selected_semantic,&selected_state)==NX_OK && selected_state.role==NX_ROLE_LIST_ITEM && (selected_state.state&NX_SEM_SELECTED));
+    CHECK(nx_semantics_request_action(ctx,UINT64_C(0x200000000)+AE_DESKTOP_SETTINGS,NX_ACTION_SELECT)==NX_ERROR_STATE);
+    CHECK(nx_semantics_request_action(ctx,UINT64_C(0x200000000)+AE_DESKTOP_TERMINAL,NX_ACTION_SELECT)==NX_OK);
+    model.contrast=true;++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE && model.selected_app==AE_DESKTOP_SETTINGS);
+    CHECK(nx_semantics_request_action(ctx,UINT64_C(0x200000000)+AE_DESKTOP_TERMINAL,NX_ACTION_SELECT)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_SELECT && intent.app==AE_DESKTOP_TERMINAL);
+    CHECK(model.selected_app==AE_DESKTOP_SETTINGS && nx_semantics_get(ctx,selected_semantic,&selected_state)==NX_OK && (selected_state.state&NX_SEM_SELECTED));
     CHECK(model.selected_app==AE_DESKTOP_SETTINGS);ae_desktop_model_select(&model,1);++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     CHECK(nx_semantics_find(ctx,UINT64_C(0x200000000)+AE_DESKTOP_TERMINAL,&selected_semantic)==NX_OK &&

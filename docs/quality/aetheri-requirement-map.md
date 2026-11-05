@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/L05/A02: on base `dcb3f4ddb20222120f1f557131a573b0c996fe10`, the
+external desktop search view exposes native single-selection actions and
+returns selection intents for owner validation. The current Aetheri model's Files
+result was tested in an independent snapshot; actual shell integration and a
+Files dock button remain open. See [candidate evidence](aetheri-adoption-assessment.md#desktop-search-native-selection-owner-2026-11-06).
+
 I01/L05/A02: on base `4cc5833e84cea2b9d19f0032e3d1947f3d152d6a`, queued
 Tab/End and Shift-Tab/End sequences in the Files consumer are routed after
 the preceding focus change; private Weston and independent AT-SPI checks pass.
