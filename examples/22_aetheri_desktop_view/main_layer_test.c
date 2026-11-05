@@ -54,6 +54,10 @@ struct app {
     struct view *pointer_view;
     float pointer_x, pointer_y;
     double axis_x,axis_y,steps_x,steps_y;
+    uint32_t activation_id;
+    uint64_t activation_revision;
+    unsigned activation_phase, activation_output;
+    bool activation_enabled, activation_hold, activation_invalidated, hold_after_collapse;
 };
 static unsigned char *load_font(const char *path, size_t *length) {
     FILE *f=fopen(path,"rb");if(!f)return NULL;long n=0;unsigned char *p=NULL;
@@ -74,6 +78,12 @@ static void advance(struct view *v) {
         printf("SELECT %u %d %u\n",v->index,intent.app,intent.window);
     } else if(intent.kind==AETHERI_DESKTOP_LAUNCH || intent.kind==AETHERI_DESKTOP_ACTIVATE || intent.kind==AETHERI_DESKTOP_SEARCH) {
         printf("INTENT %u %d %d %u\n",v->index,intent.kind,intent.app,intent.window);
+        if(intent.kind==AETHERI_DESKTOP_ACTIVATE && v->app->activation_enabled) {
+            CHECK(!v->app->activation_phase && intent.window);
+            v->app->activation_id=intent.window;v->app->activation_revision=v->revision;
+            v->app->activation_output=v->index;
+            v->app->activation_phase=1;v->app->activation_invalidated=false;
+        }
     } else CHECK(intent.kind==AETHERI_DESKTOP_NONE);
     if(intent.kind==AETHERI_DESKTOP_QUERY || intent.kind==AETHERI_DESKTOP_SELECT) {
         CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
@@ -107,6 +117,7 @@ static const struct zwlr_layer_surface_v1_listener layer_listener = {.configure 
 static void pointer_event(struct app *a,nx_event_type type,uint32_t button);
 static void view_state(struct view *v, bool expanded) {
     if(v->app->pointer_view==v)pointer_event(v->app,NX_EVENT_POINTER_CANCEL,0);
+    CHECK(v->revision<UINT64_MAX);
     v->expanded = expanded;v->configured=false; ae_desktop_model_search(&v->model,v->index,expanded); ++v->revision;
     uint32_t anchors = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
     if (expanded) anchors |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
@@ -117,6 +128,33 @@ static void view_state(struct view *v, bool expanded) {
     zwlr_layer_surface_v1_set_keyboard_interactivity(v->layer, expanded ?
         ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE : ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE);
     wl_surface_commit(v->surface);
+}
+static bool has_window(const struct view *v,uint32_t id) {
+    for(size_t i=0;i<v->model.count;++i)if(v->model.windows[i].id==id)return true;
+    return false;
+}
+/* Test owner: defer protocol changes until outside Wayland callbacks, and
+   revalidate after the compositor has configured the collapsed surface. */
+static void activation_step(struct app *a) {
+    if(!a->activation_phase || a->activation_hold)return;
+    CHECK(a->activation_output<3);struct view *v=&a->views[a->activation_output];
+    if((a->activation_phase==1 && v->revision!=a->activation_revision) ||
+       a->activation_invalidated || !has_window(v,a->activation_id)) {
+        printf("ACTIVATION_CANCELLED %u\n",a->activation_id);
+        a->activation_phase=0;a->activation_enabled=false;return;
+    }
+    if(a->activation_phase==1) {
+        if(!v->expanded || !v->configured)return;
+        view_state(v,false);
+        a->activation_revision=v->revision;a->activation_phase=2;
+        if(a->hold_after_collapse) {
+            a->activation_hold=true;printf("ACTIVATION_HELD %u\n",a->activation_id);
+        }
+    } else if(v->configured && !v->expanded) {
+        printf("ACTIVATION_REQUEST %u\n",a->activation_id);
+        aetheri_development_desktop_v1_activate(a->control,a->activation_id);
+        a->activation_phase=0;a->activation_enabled=false;
+    }
 }
 static void desktop_output(void *data, struct aetheri_development_desktop_v1 *control, uint32_t index, const char *name) {
     (void)data; (void)control; printf("OUTPUT %u %s\n", index, name);
@@ -135,6 +173,7 @@ static void desktop_window(void *data, struct aetheri_development_desktop_v1 *co
 }
 static void desktop_closed(void *data, struct aetheri_development_desktop_v1 *control, uint32_t id) {
     struct app *a=data;(void)control;
+    if(a->activation_phase && id==a->activation_id)a->activation_invalidated=true;
     for(unsigned i=0;i<3;++i) {
         struct view *v=&a->views[i];ae_desktop_model_closed(&v->model,id);
         CHECK(v->revision<UINT64_MAX);++v->revision;
@@ -334,6 +373,9 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     CHECK(argc == 1 || argc == 2 || argc == 4);
     struct app a = {.ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
+    a.activation_enabled=getenv("NEXAUI_TEST_ACTIVATE")!=NULL;
+    a.activation_hold=getenv("NEXAUI_TEST_HOLD_ACTIVATION")!=NULL;
+    a.hold_after_collapse=getenv("NEXAUI_TEST_HOLD_AFTER_COLLAPSE")!=NULL;
     for(unsigned i=0;i<3;++i) {
         a.views[i].app=&a;a.views[i].index=i;ae_desktop_model_init(&a.views[i].model);
     }
@@ -373,6 +415,7 @@ int main(int argc, char **argv) {
         bool stop = false;
         while (!stop) {
             CHECK(wl_display_dispatch_pending(a.display) >= 0);
+            activation_step(&a);
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
             struct pollfd fds[2] = {{wl_display_get_fd(a.display), POLLIN, 0}, {STDIN_FILENO, POLLIN, 0}};
@@ -385,6 +428,7 @@ int main(int argc, char **argv) {
                 else if (c == 'n') view_state(&a.views[0], false);
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);
                 else if (c == 's') aetheri_development_desktop_v1_activate(a.control, UINT32_MAX);
+                else if (c == 'g') a.activation_hold=false;
                 else if (c == 'p') paint(&a.views[0]);
                 else if (c == 'z') {
                     struct view *v=&a.views[0];ae_desktop_model_search(&v->model,0,true);

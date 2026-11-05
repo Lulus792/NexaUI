@@ -1,11 +1,13 @@
 """Exercise the NexaUI model view on Aetheri's isolated test shell connection."""
 import argparse
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import socket
 import subprocess
 import time
@@ -19,6 +21,10 @@ def main():
                         help="expose the currently unresolved pressed-device removal case")
     parser.add_argument("--app-client", type=Path,
                         help="independent Aetheri compositor test client")
+    parser.add_argument("--test-stale-activation", action="store_true",
+                        help="close the clicked window before the test owner validates it")
+    parser.add_argument("--test-stale-after-collapse", action="store_true",
+                        help="close the clicked window after search collapses")
     args = parser.parse_args()
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
     app_client = args.app_client.resolve(strict=True) if args.app_client else None
@@ -89,8 +95,18 @@ def main():
         issuer.close()
         shell_server.close()
         wait(lambda: "READY " in log("server"), "compositor")
-        client = start(desktop, "desktop", (), (shell_client.fileno(),),
-                       dict(env, WAYLAND_SOCKET=str(shell_client.fileno())))
+        desktop_env = dict(env, WAYLAND_SOCKET=str(shell_client.fileno()))
+        if app_client:
+            desktop_env["NEXAUI_TEST_ACTIVATE"] = "1"
+        if args.test_stale_activation:
+            if not app_client:
+                raise RuntimeError("stale activation case requires --app-client")
+            desktop_env["NEXAUI_TEST_HOLD_ACTIVATION"] = "1"
+        if args.test_stale_after_collapse:
+            if not app_client or args.test_stale_activation:
+                raise RuntimeError("after-collapse case requires --app-client and excludes --test-stale-activation")
+            desktop_env["NEXAUI_TEST_HOLD_AFTER_COLLAPSE"] = "1"
+        client = start(desktop, "desktop", (), (shell_client.fileno(),), desktop_env)
         shell_client.close()
         wait(lambda: all(f"PAINT {i} {width} 84\n" in log("desktop")
                          for i, width in enumerate((1920, 2560, 3840))), "three docks")
@@ -179,10 +195,6 @@ def main():
             row = re.search(rf"^WINDOW_ROW {window_a} (-?\d+\.\d+) Aetheri protocol test A$", first_snapshot, re.M)
             if not row:
                 raise RuntimeError("observed window missing from view semantics")
-            event(f"M 60 {int(float(row[1]) + 20)}")
-            event("B 272 1")
-            event("B 272 0")
-            wait(lambda: f"INTENT 0 3 0 {window_a}\n" in log("desktop"), "observed window intent")
             command(app, "u")
             wait(lambda: f"WINDOW {window_a} " in log("desktop") and "Grüße " in log("desktop"),
                  "window title update")
@@ -224,10 +236,31 @@ def main():
             if f"WINDOW_ROW {window_b} " in third_snapshot or (
                     f"WINDOW_ROW {replacement} " not in third_snapshot):
                 raise RuntimeError("view did not replace the closed window")
-            command(client, "n")
+            stale_case = args.test_stale_activation or args.test_stale_after_collapse
+            target = replacement if stale_case else window_a
+            row = re.search(rf"^WINDOW_ROW {target} (-?\d+\.\d+) ", third_snapshot, re.M)
+            if not row:
+                raise RuntimeError("target window missing from updated view")
+            event(f"M 60 {int(float(row[1]) + 20)}")
+            event("B 272 1")
+            event("B 272 0")
+            wait(lambda: f"INTENT 0 3 0 {target}\n" in log("desktop"), "observed window intent")
+            if stale_case:
+                if args.test_stale_after_collapse:
+                    wait(lambda: f"ACTIVATION_HELD {replacement}\n" in log("desktop") and
+                         log("desktop").count("PAINT 0 1920 84\n") >= 2, "owner waiting after collapse")
+                command(app, "d")
+                wait(lambda: f"CLOSED_WINDOW {replacement}\n" in log("desktop"), "target closed before validation")
+                command(client, "g")
+                wait(lambda: f"ACTIVATION_CANCELLED {replacement}\n" in log("desktop"), "stale activation cancelled")
+                if f"ACTIVATION_REQUEST {replacement}\n" in log("desktop"):
+                    raise RuntimeError("closed window was sent for activation")
+                if args.test_stale_activation:
+                    command(client, "n")
+            else:
+                wait(lambda: f"ACTIVATION_REQUEST {window_a}\n" in log("desktop") and
+                     f"ACTIVATED {window_a} 1\n" in log("desktop"), "clicked window activation")
             wait(lambda: log("desktop").count("PAINT 0 1920 84\n") >= 2, "collapse before activation")
-            command(client, "a")
-            wait(lambda: f"ACTIVATED {window_a} 1\n" in log("desktop"), "observed window activation")
             expected_exits.add(app)
             command(app, "q")
             if app.wait(timeout=10):
@@ -238,6 +271,9 @@ def main():
             wait(lambda: log("desktop").count("PAINT 0 1920 1080\n") >= 2, "reopen search")
             result["window_observation"] = "passed"
             result["observed_window_ids"] = [window_a, window_b, replacement]
+            result["activation_case"] = (
+                "stale-after-collapse" if args.test_stale_after_collapse else
+                "stale-before-validation" if args.test_stale_activation else "clicked-window")
         command(client, "f")
         wait(lambda: "SYNC f\n" in log("desktop"), "long results model")
         command(client, "i")
@@ -299,6 +335,12 @@ def main():
             stream.close()
         for sock in (controller, issuer, shell_server, shell_client):
             sock.close()
+        # Captures are owned by this fixture; keep them without exhausting
+        # the test user's temporary-storage quota over repeated runs.
+        for image in captures.glob("*.ppm"):
+            with image.open("rb") as source, gzip.open(str(image) + ".gz", "wb") as target:
+                shutil.copyfileobj(source, target)
+            image.unlink()
         result["exit_codes"] = [p.returncode for p in processes]
         (root / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
