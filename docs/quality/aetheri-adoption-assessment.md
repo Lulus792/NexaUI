@@ -24,7 +24,28 @@ the full run. Logs: `/tmp/nexaui-cell-snapshot-full.log`,
 
 This is not terminal, PTY, scrollback, IME, editable text, selection control,
 full document navigation, another platform's Text interface or human Orca
-acceptance. Installation from this exact revision remains to be verified.
+acceptance.
+
+The subsequent source `a91b30377209f57854fcfc44c171d792c1f22195` was
+exported with `git archive` and built as separate static and shared Release
+Wayland-only SDKs, with Vulkan disabled. The package consumer checked the linked
+source revision and Wayland-only features for each. A copy of the grid example,
+configured independently against each installed prefix, passed virtual native
+keyboard and independent AT-SPI text/read-only checks on private Weston. `ldd`
+resolved the shared NexaUI library from the selected prefix; the static example
+did not load a shared NexaUI library. These checks cover this example and the
+tested Alpine/WSL environment, not all downstream applications.
+
+The earlier idle-test failure was reproduced with no accessibility bus: Settings
+intentionally retries the unavailable bridge every second. With a private
+AT-SPI registry the original long-wait observation passed. Separate tests now
+cover the available-bus long wait and bounded unavailable-bus retry; they do
+not turn a missing accessibility service into a successful accessibility test.
+After that test correction, the Wayland-only private-compositor matrix reported
+215 passed, zero failed and four skipped simple-IME tests out of 219. The
+fixture reported `passed`; its log is `/tmp/nexaui-idle-fix-full.log` and its
+result is `/tmp/nexaui-idle-fix-full/result.json`. This run used virtual input,
+not human acceptance.
 
 ## Fixed-cell drawing candidate (2026-11-05)
 

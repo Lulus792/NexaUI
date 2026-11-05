@@ -308,7 +308,7 @@ cleanup:
                                (verify_ime_cancel && ime_stage==3) ||
                                (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
     else if (verify_ime) okay=0;
-    if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits);
+    if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u ax_unavailable=%d\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits,ax_unavailable);
     if (!okay) fputs("Settings example failed\n",stderr);
     return okay ? 0 : 1;
 }

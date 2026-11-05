@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 
 def stop(process):
@@ -95,7 +96,12 @@ def main():
                 time.sleep(0.01)
             else:
                 raise RuntimeError("AT-SPI registry startup timed out")
-            arguments = [host, "--optional"] if client == "--optional" else [client, host]
+            if client == "--settings-idle":
+                arguments = [sys.executable, str(Path(__file__).resolve().parents[1] /
+                             'examples/18_settings/run_idle.py'), host,
+                             os.environ['NEXAUI_SETTINGS_FONT'], '--available']
+            else:
+                arguments = [host, "--optional"] if client == "--optional" else [client, host]
             client_env = env.copy()
             if client == "--optional" and "NEXAUI_TEST_DBUS_LIBRARY_DIR" in env:
                 client_env["LD_LIBRARY_PATH"] = env["NEXAUI_TEST_DBUS_LIBRARY_DIR"]

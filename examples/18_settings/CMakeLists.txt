@@ -101,11 +101,21 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         if(TARGET nexaui_settings)
             if(Python3_Interpreter_FOUND)
-                add_test(NAME nexaui_settings_wayland_idle
-                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_idle.py
-                        $<TARGET_FILE:nexaui_settings> "${_settings_font}")
-                set_tests_properties(nexaui_settings_wayland_idle PROPERTIES TIMEOUT 20 SKIP_RETURN_CODE 77
+                add_test(NAME nexaui_settings_wayland_idle_retry
+                    COMMAND ${CMAKE_COMMAND} -E env
+                        AT_SPI_BUS_ADDRESS=unix:path=/nonexistent/nexaui-atspi-bus
+                        DBUS_SESSION_BUS_ADDRESS=unix:path=/nonexistent/nexaui-session-bus
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_idle.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" --unavailable)
+                set_tests_properties(nexaui_settings_wayland_idle_retry PROPERTIES TIMEOUT 20 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
+                if(NEXAUI_ENABLE_ATSPI AND NEXAUI_DBUS_FOUND AND NEXAUI_ATSPI_REGISTRY)
+                    add_test(NAME nexaui_settings_wayland_idle
+                        COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                            ${NEXAUI_ATSPI_REGISTRY} --settings-idle $<TARGET_FILE:nexaui_settings>)
+                    set_tests_properties(nexaui_settings_wayland_idle PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                        ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font}" RESOURCE_LOCK native_display)
+                endif()
             endif()
             find_program(NEXAUI_XDOTOOL_EXECUTABLE xdotool)
             if(Python3_Interpreter_FOUND AND NEXAUI_XDOTOOL_EXECUTABLE)
