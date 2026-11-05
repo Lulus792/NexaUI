@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Controlled Windows numeric IME composition (2026-11-05)
+
+Source `4ce0a36a231fab58338063f1e75f492f51337812` extends the existing
+Win32 IME fixture with a numeric field: injected native preedit is painted
+without changing its draft or committed value; focus loss clears preedit;
+a controlled `WM_IME_CHAR` reaches the field once and a later Enter commits
+the valid number. On Windows 10.0.26200, MSVC 19.38.33145, shared Debug,
+the IME and numeric field tests passed ten consecutive repetitions each.
+A deliberate test-only mutation that did not bind the numeric field to the
+window failed its preedit-line assertion. Restoring the source initially left
+the older mutant executable in place because its object was newer than the
+restored file; that repeat failed and is not a pass. Touching the restored
+source forced recompilation before the reported successful repetitions.
+This exercises controlled Win32 messages and test preedit, not an installed
+IME, physical keyboard, Windows screenreader or Aetheri acceptance; T05 stays
+open. No Aetheri consumer pin was changed.
+
 ## macOS AX text selection and UTF-16 conversion (2026-11-05)
 
 Source `6125a152c523afd3b4821637d9b6fafa664a0077` adds macOS AX selected-text,
