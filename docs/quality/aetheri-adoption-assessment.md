@@ -1,5 +1,44 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri headless compositor and installed Settings consumer (2026-11-05)
+
+An isolated Fedora carrier run combined NexaUI source
+`d4c9aab9354feb4c9e045b960f4985468bec3253` and the independently archived
+Aetheri source `d621c9bba1df8ffd1083999300bcff742022b9dc`. Both archives'
+SHA-256 values matched after transfer. The Aetheri checkout's concurrent input
+and IME changes were not copied or altered. On the running QMP-identified
+carrier, both were built in a separate temporary directory with GCC 16.2.1,
+Wayland 1.26.0, xkbcommon 1.13.1 and wayland-protocols 1.49. Aetheri used
+its existing wlroots 0.20.2 development prefix. NexaUI used a static
+Wayland-only Release SDK, software rendering, Vulkan off and AT-SPI off; the
+Settings example was copied and built separately with `find_package` against
+that installed SDK.
+
+The reusable driver is `tests/run_aetheri_headless.py` at source
+`beba147e02592ee5e15a89c1be969a2f458fccab`. It starts the independently
+built Aetheri **test** compositor on an owned headless socket and injects
+keyboard events through its inherited test-only input driver. The installed
+consumer mapped, submitted a software frame, traversed focus IDs 3/4/5,
+observed the applied model state, closed successfully, and the compositor
+stopped successfully. A captured 1920×1080 first output contained the
+Settings pixels; the other two capture files were produced but their pixels
+were not checked. Test compositor SHA-256:
+`da09d434747dafc3400fb8da4f426b3cc8713452515d61e2dd9d3dbf693ed164`;
+Settings executable: `574e3dac048f091c042a86b344614dbb0a5faf167279125642eda9ffcb83ee93`;
+first-output PPM: `c35004aa57f1442aa47a950c68fe4c1c1ab1596f261dd1dabbeb882684204a56`.
+The downloaded log/image archive is retained at
+`D:/NexaUI/out/aetheri-headless-2026-11-05/installed-final.tar.gz`, SHA-256
+`5eccb3f4778e4a6e4452b9e171e1fda922c257b628eb5da63cc72a253608156e`;
+the extracted image hash was independently rechecked. An input-omission
+counterexample timed out and returned failure. Two setup attempts are not
+counted: one redundantly added the already-present test device, and another
+closed the test socket before orderly server shutdown.
+
+This is actual Aetheri compositor code, but a private headless test build with
+virtual input, not the DRM desktop or its private dock role. It does not prove
+the new bounds against a dock, live Aetheri app/service models, IME, AT-SPI,
+physical devices, mixed scale, installed shared SDK or human accessibility.
+
 ## Initial Wayland window bounds (2026-11-05)
 
 Source `792520c509935fb6f77231546b90e3b4d6f1eb20` uses xdg-shell v4+
