@@ -32,6 +32,36 @@ demonstration, not an OS service or proof of external operation completion.
 The example joins the simulated 250 ms worker on exit; applications with
 long-running work need their own cancellation or independent service lifetime.
 
+The example can also be built outside the NexaUI source tree against an installed
+Linux SDK containing the optional Vulkan component. Copy `CMakeLists.txt`,
+`main_linux.c`, `scene.c` and `scene.h` into a directory, then run:
+
+```sh
+cmake -S /path/to/copied-settings -B settings-build \
+  -DCMAKE_PREFIX_PATH=/path/to/nexaui-sdk
+cmake --build settings-build
+cmake --install settings-build --prefix /path/to/settings-install
+LD_LIBRARY_PATH=/path/to/nexaui-sdk/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
+  /path/to/settings-install/bin/nexaui_settings /path/to/font.ttf
+```
+
+The library path is needed for a shared SDK when its library directory is not
+already configured in the system loader. A Wayland compositor, Vulkan device
+with the presentation-fence support required by the public Vulkan adapter, and
+a font are needed at runtime. This command does not install a font or provide a
+fallback for devices without that Vulkan support.
+
+`tests/check_installed_settings.py` exercises a copied, installed example inside
+the private Weston fixture, checking the installed SDK revision and Wayland-only
+build features with the package consumer. It verifies keyboard operation and an
+independent AT-SPI failure/retry; with `NEXAUI_TEST_SIMPLE_IME=1` it instead
+checks real simple-IME composition. The package revision is a builder
+declaration, not independent provenance proof. In a local test the shared and
+static SDKs were built from a Git archive of
+`0376982dfe0d4998dfb5f75d514ebfa6c40d4030` with X11 disabled. Keyboard and
+AT-SPI passed with both; simple-IME passed with the shared SDK. These automated
+checks do not replace physical-device and human accessibility acceptance.
+
 An independent libatspi test discovers this actual native example, activates
 Reduce motion and Apply, and requires the application to observe the applied
 model and exit through normal cleanup. It runs only in the private Weston and
