@@ -344,6 +344,34 @@ static int test_sibling_close_during_build(void) {
 static void *fail_next_allocate(void *user,size_t size) {
     int *fail=user;if (*fail) { *fail=0;return NULL; } return malloc(size);
 }
+static int test_sibling_failure_retry(void) {
+    int fail=0;nx_context_desc config={0};
+    config.allocator=(nx_allocator){&fail,fail_next_allocate,fail_deallocate};
+    nx_context *ctx=NULL;CHECK(nx_context_create(&config,&ctx)==NX_OK);
+    nx_overlay_desc first=overlay(10,11),second=overlay(20,21);
+    static char long_name[8192];memset(long_name,'a',sizeof(long_name));
+    second.panel.name=(nx_utf8_span){long_name,sizeof(long_name)};
+    int dismissed=0;CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&first,&dismissed)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    fail=1;CHECK(nx_popup_begin(ctx,&second,&dismissed)==NX_ERROR_MEMORY && !dismissed);
+    CHECK(nx_popup_begin(ctx,&second,&dismissed)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==20);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==10);
+    nx_context_destroy(ctx);return 0;
+}
+static int test_sibling_stack_limit(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    int dismissed=0;CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK);
+    for(unsigned i=0;i<16;++i) {
+        nx_overlay_desc d=overlay(100u+i*2u,101u+i*2u);
+        CHECK(nx_popup_begin(ctx,&d,&dismissed)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    }
+    nx_overlay_desc overflow=overlay(200,201);
+    CHECK(nx_popup_begin(ctx,&overflow,&dismissed)==NX_ERROR_LIMIT);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==130);
+    CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==128);
+    nx_context_destroy(ctx);return 0;
+}
 static int test_nested_failure_retry(void) {
     int fail=0; nx_context_desc config={0};
     config.allocator=(nx_allocator){&fail,fail_next_allocate,fail_deallocate};
@@ -381,7 +409,7 @@ static int test_nested_depth_limit(void) {
 }
 
 int main(void) {
-    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays() || test_nested_siblings() || test_sibling_close_during_build()) return 1;
+    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays() || test_nested_siblings() || test_sibling_close_during_build() || test_sibling_failure_retry() || test_sibling_stack_limit()) return 1;
     puts("overlay tests passed");
     return 0;
 }
