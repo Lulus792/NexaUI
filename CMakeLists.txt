@@ -852,6 +852,14 @@ if(NEXAUI_BUILD_TESTS)
         find_program(NEXAUI_NUMERIC_PEER_COPY wl-copy)
         find_program(NEXAUI_NUMERIC_PEER_PASTE wl-paste)
         if(Python3_Interpreter_FOUND AND NEXAUI_NUMERIC_PEER_XDOTOOL)
+            add_executable(nexaui_wayland_nested_keyboard_host tests/wayland_nested_keyboard_host.c)
+            target_link_libraries(nexaui_wayland_nested_keyboard_host PRIVATE NexaUI::NexaUI)
+            target_compile_features(nexaui_wayland_nested_keyboard_host PRIVATE c_std_17)
+            add_test(NAME nexaui_wayland_nested_keyboard
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_nested_keyboard.py
+                    $<TARGET_FILE:nexaui_wayland_nested_keyboard_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL})
+            set_tests_properties(nexaui_wayland_nested_keyboard PROPERTIES
+                TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
             add_executable(nexaui_wayland_numeric_peer_host tests/wayland_numeric_peer_host.c)
             target_link_libraries(nexaui_wayland_numeric_peer_host PRIVATE NexaUI::NexaUI)
             target_compile_features(nexaui_wayland_numeric_peer_host PRIVATE c_std_17)

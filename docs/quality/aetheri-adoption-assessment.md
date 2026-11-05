@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Native keyboard for a nested modal and menu (2026-11-05)
+
+On the candidate based on `9228a2306f46c91bc7eb97dbdfb0593ba8c709ee`,
+a visible test-only Wayland software host exercises the existing modal and
+popup APIs. On private Weston 14/Xvfb, a virtual keyboard focuses a trigger,
+opens the modal and its menu, tabs to a second menu action and activates it.
+The first Escape returns focus to the modal trigger; the second returns it to
+the original trigger. The host checks the actual focus IDs and action count.
+
+The native driver and existing headless overlay regression passed in GCC static
+and shared Debug and Clang ASan/UBSan Debug with leak detection on Alpine/WSL.
+An intentional negative control disabling Escape on the inner menu failed at
+the expected modal-focus assertion; its original fixture result is
+`/tmp/nexaui-nested-keyboard-mutant-20261105-a/result.json`. The host paints
+control geometry but does not draw label glyphs or publish native semantics.
+Earlier independent AT-SPI/UIA/AX checks cover other selected actions but do
+not by themselves prove this exact visible keyboard scenario.
+
+No SDK API or implementation changed. Full rendered labels and visual review,
+human screenreader and physical-input acceptance, other compositors and actual
+Aetheri integration remain open; L10 is not complete.
+
 ## Numeric field with Weston simple-IME (2026-11-05)
 
 On the candidate based on `b2a29e28823478789693b896f87c9f89b52be988`,

@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L10/I01: on base `9228a2306f46c91bc7eb97dbdfb0593ba8c709ee`, virtual
+keyboard input opened a modal and nested menu, activated a menu item and
+restored focus through both levels on private Weston. The fixture lacks drawn
+labels and native semantics; human and actual Aetheri acceptance remain open.
+See the [candidate evidence](aetheri-adoption-assessment.md#native-keyboard-for-a-nested-modal-and-menu-2026-11-05).
+
 T05/I02: on base `b2a29e28823478789693b896f87c9f89b52be988`, private
 Weston simple-IME preedit and invalid Unicode commit reached the real numeric
 widget without changing its committed value. In that fixture Ctrl+Z arrived as
