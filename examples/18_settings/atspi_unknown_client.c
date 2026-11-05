@@ -73,6 +73,10 @@ int main(int argc,char **argv) {
         AtspiEditableText *editor=atspi_accessible_get_editable_text_iface(name);CHECK(editor);
         CHECK(atspi_editable_text_set_text_contents(editor,"Reopened draft",&error) && !error);
         g_object_unref(editor);
+        AtspiAccessible *motion=find(root,"Reduce motion",0);CHECK(motion);
+        AtspiComponent *component=atspi_accessible_get_component_iface(motion);CHECK(component);
+        CHECK(atspi_component_grab_focus(component,&error) && !error);
+        g_object_unref(component);g_object_unref(motion);
     }
     CHECK(atspi_action_do_action(action,0,&error) && !error);
     if(reopen) {
@@ -89,6 +93,10 @@ int main(int argc,char **argv) {
         for(unsigned i=0;i<200 && !observed;++i){pump(10);observed=status_is(status,"Applied to this example");}
         CHECK(observed);
         name=find(root,"Display name",0);apply=find(root,"Apply settings",0);CHECK(name && apply && enabled(apply));
+        AtspiAccessible *motion=find(root,"Reduce motion",0);CHECK(motion);
+        AtspiStateSet *states=atspi_accessible_get_state_set(motion);
+        CHECK(states && atspi_state_set_contains(states,ATSPI_STATE_FOCUSED));
+        g_object_unref(states);g_object_unref(motion);
         AtspiText *text=atspi_accessible_get_text_iface(name);CHECK(text);
         char *draft=atspi_text_get_text(text,0,-1,&error);
         CHECK(!error && draft && !strcmp(draft,"Reopened draft"));g_free(draft);g_object_unref(text);

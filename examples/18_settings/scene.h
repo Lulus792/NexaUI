@@ -43,8 +43,10 @@ int settings_complete_apply(settings_scene *scene, uint64_t token, int success);
    result through the session or restored scene. No worker, native or NexaUI
    pointer is stored; tokens are local to this example session, not global IDs.
    Retire published semantics with nx_window_publish_semantics(window, NULL)
-   before detaching and publish the new scene after its first frame. Focus,
-   scroll position and undo history are not transferred.
+   before detaching and publish the new scene after its first frame. The example
+   restores its control focus and scroll offset when possible; a disabled Apply
+   falls back to the checkbox. New input takes precedence. The focused control
+   is revealed on a follow-up frame. Undo and text selection are not transferred.
    This is not disk persistence, cross-process restoration or authorization. */
 int settings_detach(settings_scene **scene, settings_session **out_session);
 void settings_session_destroy(settings_session *session);

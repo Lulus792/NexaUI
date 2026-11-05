@@ -210,6 +210,7 @@ int main(int argc,char **argv) {
           original.name_length==8 && !memcmp(original.name,"Original",8) && service_submit(&service,&original));
     CHECK(!settings_take_apply_request(s));
     CHECK(settings_set_draft_name(s,"Newer draft",11) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,4)==NX_OK && settings_frame(s,128,150));
     CHECK(!settings_detach(&s,NULL) && s);
     CHECK(settings_detach(&s,&session) && !s && session && settings_session_pending_apply(session)==detached_token);
     CHECK(!settings_session_complete_apply(session,detached_token+1,1));
@@ -218,7 +219,9 @@ int main(int argc,char **argv) {
     CHECK(settings_session_observe_unknown(session,detached_token));
     CHECK(!settings_resume(NULL,0,NULL,&session,&s) && session && !s);
     CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s) && !session && s);
-    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    ui=settings_context(s);CHECK(settings_frame(s,128,150) && nx_focus_id(ui)==4 && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134);
     CHECK(settings_pending_apply(s)==detached_token && !settings_take_apply_request(s));
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.value.length==strlen(unknown) && !memcmp(view.value.data,unknown,view.value.length));
@@ -230,7 +233,7 @@ int main(int argc,char **argv) {
     CHECK(settings_session_complete_apply(session,detached_token,service_result) && service.starts==1 && service.queries==2);
     CHECK(!settings_session_complete_apply(session,detached_token,1) && !settings_session_pending_apply(session));
     CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s) && !session && s);
-    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    ui=settings_context(s);CHECK(settings_frame(s,640,360) && nx_focus_id(ui)==4);
     CHECK(settings_applied(s,&value,&motion) && value.length==8 && !memcmp(value.data,"Original",8));
     CHECK(nx_semantics_find(ui,3,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.value.length==11 && !memcmp(view.value.data,"Newer draft",11));
@@ -239,9 +242,29 @@ int main(int argc,char **argv) {
     CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
     uint64_t unclaimed=settings_pending_apply(s);CHECK(unclaimed && unclaimed>detached_token);
     CHECK(settings_detach(&s,&session) && settings_resume(bytes,(size_t)length,NULL,&session,&s));
-    ui=settings_context(s);CHECK(settings_frame(s,640,360));
+    ui=settings_context(s);CHECK(settings_frame(s,640,360) && nx_focus_id(ui)==4);
     CHECK(settings_take_apply_request(s)==unclaimed && !settings_take_apply_request(s));
     CHECK(settings_complete_apply(s,unclaimed,0));
+    CHECK(settings_frame(s,640,360) && nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t finished_away=settings_take_apply_request(s);CHECK(finished_away);
+    CHECK(settings_detach(&s,&session) && settings_session_complete_apply(session,finished_away,1));
+    CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s));
+    ui=settings_context(s);CHECK(settings_frame(s,640,360) && nx_focus_id(ui)==5);
+    /* Input already queued for the replacement wins over remembered focus. */
+    CHECK(settings_frame(s,640,360) && nx_focus_set(ui,3)==NX_OK);
+    CHECK(settings_detach(&s,&session) && settings_resume(bytes,(size_t)length,NULL,&session,&s));
+    ui=settings_context(s);CHECK(key(ui,NX_KEY_TAB,0) && settings_frame(s,640,360) && !nx_focus_id(ui));
+    CHECK(nx_focus_set(ui,4)==NX_OK && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK);
+    float before_transfer_scroll_y=view.bounds.y;
+    CHECK(key(ui,NX_KEY_PAGE_DOWN,0) && settings_frame(s,128,150));
+    CHECK(nx_focus_set(ui,0)==NX_OK && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK);
+    float saved_status_y=view.bounds.y;CHECK(saved_status_y<before_transfer_scroll_y);
+    CHECK(settings_detach(&s,&session) && settings_resume(bytes,(size_t)length,NULL,&session,&s));
+    ui=settings_context(s);CHECK(settings_frame(s,128,150) && !nx_focus_id(ui));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.y==saved_status_y);
     char *large=malloc(65537u);CHECK(large);memset(large,'x',65537u);
     CHECK(settings_set_draft_name(s,large,65537u));free(large);large=NULL;
     CHECK(!settings_detach(&s,&session) && s && !session);

@@ -39,17 +39,18 @@ struct settings_scene {
     int probe_redraw, probe_step;
     float scroll_x, scroll_y;
     float status_width, status_max_height;
-    uint64_t revealed_focus;
+    uint64_t revealed_focus, resume_focus;
     float revealed_viewport_height, revealed_width;
 };
 /* This belongs to the example application, not the toolkit or a backend. */
 struct settings_session {
     char applied_name[NAME_CAP], submitted_name[NAME_CAP];
     size_t applied_length, submitted_length, draft_length;
-    uint64_t next_submission, pending_submission;
+    uint64_t next_submission, pending_submission, focus;
     int submitted_motion, apply_error, outcome_unknown, dispatch_pending;
     int motion, applied_motion, applied;
     unsigned language;
+    float scroll_x, scroll_y;
     char draft[];
 };
 static nx_utf8_span text(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
@@ -227,6 +228,7 @@ int settings_detach(settings_scene **scene, settings_session **out) {
     state->outcome_unknown=s->outcome_unknown || (s->pending_submission && !s->dispatch_pending);
     state->motion=s->motion;state->applied_motion=s->applied_motion;state->applied=s->applied;
     state->language=s->language;state->draft_length=draft.length;
+    state->focus=nx_focus_id(s->ui);state->scroll_x=s->scroll_x;state->scroll_y=s->scroll_y;
     if(draft.length)memcpy(state->draft,draft.data,draft.length);
     settings_destroy(s);*scene=NULL;*out=state;return 1;
 }
@@ -270,6 +272,7 @@ int settings_resume(const unsigned char *bytes,size_t length,nx_window *window,
     s->outcome_unknown=state->outcome_unknown;s->dispatch_pending=state->dispatch_pending;
     s->motion=state->motion;s->applied_motion=state->applied_motion;s->applied=state->applied;
     s->language=state->language;s->status_width=0;
+    s->resume_focus=state->focus;s->scroll_x=state->scroll_x;s->scroll_y=state->scroll_y;
     settings_session_destroy(state);*session=NULL;*out=s;return 1;
 }
 int settings_frame(settings_scene *s, float width, float height) {
@@ -346,6 +349,21 @@ int settings_frame(settings_scene *s, float width, float height) {
     apply.label_origin=(nx_point){32+(apply_width-(float)nx_text_layout_width(s->apply_label))*0.5f,apply_y+8-y}; apply.glyph_cache_bytes=CACHE_BYTES;
     apply.disabled=!valid || s->pending_submission || s->next_submission==UINT64_MAX;
     TRY(nx_button(s->ui,&apply,&interaction));
+    if (s->resume_focus) {
+        const nx_event *events=NULL; size_t count=0; int user_input=0;
+        TRY(nx_frame_events(s->ui,&events,&count));
+        for(size_t i=0;i<count;++i) {
+            if(events[i].type==NX_EVENT_KEY_DOWN || events[i].type==NX_EVENT_KEY_UP ||
+               events[i].type==NX_EVENT_TEXT || events[i].type==NX_EVENT_TEXT_COMMAND ||
+               events[i].type==NX_EVENT_POINTER_DOWN || events[i].type==NX_EVENT_POINTER_UP) user_input=1;
+        }
+        if(!user_input && !nx_focus_id(s->ui)) {
+            uint64_t target=s->resume_focus;
+            if(target==5 && apply.disabled) target=4;
+            if(target>=3 && target<=5) TRY(nx_focus_set(s->ui,target));
+        }
+        s->resume_focus=0;
+    }
     if (!s->pending_submission && s->restore_apply_focus) {
         if (!nx_focus_id(s->ui) && !apply.disabled)
             TRY(nx_focus_set(s->ui,5));

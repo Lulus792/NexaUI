@@ -117,7 +117,9 @@ private-Weston `nexaui_settings_wayland_atspi_reopen` test exercises that handof
 with a simulated service and an independent accessibility client. The normal
 runner still ends its work on window close. This example does not provide disk
 persistence, cross-process recovery, real service reconciliation, or restored
-focus, scroll position and undo history.
+text selection and undo history. It restores the remembered control focus and
+scroll offset where possible, reveals the focus on a follow-up frame, and uses
+the checkbox when Apply is disabled. New input wins over focus restoration.
 
 The private-Weston AT-SPI tests verify that copy/cut fail without a Wayland
 input serial and that copy/cut/paste work after virtual keyboard input. If
