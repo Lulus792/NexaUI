@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Guarded macOS AX whole-value editing (2026-11-05)
+
+Source `6491d77caef0587293ebb4f3dbad2e3039da572d` adds bounded whole-value
+replacement for real writable text and numeric fields to the AppKit AX bridge.
+Requests copy UTF-8 and retain a revocable lease, text identity/revision and
+native incarnation through owner-thread routing and core application. Disabled,
+read-only and protected targets cannot be edited; replacing a text model retires
+its old native element. The native queue and payload limits remain bounded.
+
+The preceding test-only `fc79fa4c0562466a7a00905e888211b569f82164` failed at
+the expected unavailable setter in both
+[static](https://github.com/Lulus792/NexaUI/actions/runs/42012142086/job/127193540560)
+and [shared](https://github.com/Lulus792/NexaUI/actions/runs/42012142086/job/127193540419)
+macOS jobs. The corrected source passed the complete native suites:
+[static 112/112](https://github.com/Lulus792/NexaUI/actions/runs/42013208132/job/127197143765)
+and [shared 111/111](https://github.com/Lulus792/NexaUI/actions/runs/42013208132/job/127197143493).
+An independent ApplicationServices client successfully replaces numeric and
+Unicode text values and observes publication. The in-process AppKit case also
+checks invalid numeric drafts and commit, model replacement after routing,
+disable/re-enable, stale retained elements, read-only/protected targets,
+single-line newline rejection and the payload bound. This is whole-value
+editing, not native text selection/ranges, physical IME, VoiceOver or Aetheri
+acceptance. Those remain open, and no Aetheri consumer pin changed.
+
 ## Numeric value visibility through macOS AX (2026-11-05)
 
 Source `efea520b9f12d7e2bd34035164980e8aae4846d7` adds a real numeric field
@@ -9,9 +33,9 @@ verify that AX value replacement is unavailable. On native macOS ARM64 CI,
 the complete suites passed: [static 112/112](https://github.com/Lulus792/NexaUI/actions/runs/42011616407/job/127191793640)
 and [shared 111/111](https://github.com/Lulus792/NexaUI/actions/runs/42011616407/job/127191793708).
 The external AX case was executed and passed in both, rather than skipped.
-This confirms read-only visibility and the documented missing editing capability;
-it does not implement AX editing or demonstrate VoiceOver, IME, physical display,
-or Aetheri acceptance. The general macOS AX text/range gap remains open.
+At that source revision it confirmed read-only visibility and the then-missing
+editing capability. The later whole-value implementation above supersedes that
+limitation; text ranges, VoiceOver, physical IME and Aetheri acceptance remain open.
 
 ## Numeric value through Windows UI Automation (2026-11-05)
 
