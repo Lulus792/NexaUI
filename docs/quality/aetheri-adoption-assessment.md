@@ -2736,3 +2736,23 @@ The deterministic test then exited 0 with leak detection enabled and passed
 10 consecutive runs. All 13 controlled async-drop cases passed in static,
 shared and Clang ASan/UBSan configurations on Alpine/WSL. The old GitHub run
 remains failed; a successful local correction does not replace a new CI run.
+
+## Original Aetheri shell and PTY view lifetime — 5 November 2026
+
+On NexaUI base `6c44a9abc9a3fd25901f71ec2dad76579b68affe`, the optional
+[terminal consumer experiment](../../examples/23_aetheri_terminal_view/README.md#original-shell-and-pty-lifetime-experiment)
+uses the model, PTY and shell from Aetheri revision
+`87996e2f12128b172a80b325ad3b539df6aee527`. Actual shell output reached the
+model and a rendered text view; a second command succeeded after view
+destruction, and a replacement view observed its output. The test separately
+observed the shell's clean exit and PTY EOF before closing the PTY. Static,
+shared and Clang ASan/UBSan runs passed on Alpine/WSL as an unprivileged user;
+a `/bin/false` replacement was rejected.
+
+This environment required optional test-local syscall wrappers. Without the
+separately enabled `tcgetattr` output normalization, the shell reported
+terminal-mode drift and exited 125. With that normalization it passed; the
+underlying cause remains a hypothesis, and this is not a pass for unmodified
+Aetheri on musl or for its glibc target. Actual process-owner and native-input
+integration, IME, clipboard-to-PTY delivery, session policy, physical input and
+human assistive acceptance remain open.

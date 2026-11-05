@@ -254,3 +254,49 @@ The private fixture command above can be reused by replacing the driver and
 consumer arguments with `run_copy_native.py` and
 `/tmp/terminal-view/aetheri_terminal_native_copy`; the same font, xdotool,
 `wl-copy` and `wl-paste` arguments apply.
+
+### Original shell and PTY lifetime experiment
+
+On NexaUI base `6c44a9abc9a3fd25901f71ec2dad76579b68affe`, this optional
+headless test builds the original Aetheri terminal model, PTY and shell from
+the immutable Aetheri snapshot `87996e2f12128b172a80b325ad3b539df6aee527`.
+The PTY source blob is `e1edae65915a9749466550bee0265bdf7a4166ff` and the
+shell source tree is `d0fb1d637b00bb330f0c38bc00e5e8111d087eae`. The test
+starts the shell before initializing the font or UI, sends a command, feeds
+the actual PTY output to the app-owned model and checks the rendered view and
+its text snapshot. It destroys the view, confirms the PTY cannot be closed
+while its child is alive, sends another command, recreates the view on the
+same model and checks that output. Finally it requests shell exit, observes
+both child exit and PTY EOF, and closes the PTY. Each output marker is split
+in the command so the echoed command cannot satisfy the output assertion.
+
+The following enables only the optional Linux test. The shell refuses root,
+so run the executable as an ordinary user. The font must be a readable TTF.
+Use a disposable immutable source snapshot, not Aetheri's live worktree:
+
+```sh
+cmake -S examples/23_aetheri_terminal_view -B /tmp/terminal-pty \
+  -DCMAKE_PREFIX_PATH=/path/to/installed-nexaui \
+  -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot \
+  -DNEXAUI_AETHERI_PTY_EXPERIMENT=ON
+cmake --build /tmp/terminal-pty
+/tmp/terminal-pty/aetheri_terminal_pty_view_test \
+  /tmp/terminal-pty/aetheri_original_shell /path/to/font.ttf
+```
+
+On Alpine/musl, add `-DNEXAUI_AETHERI_MUSL_COMPAT=ON` to supply test-local
+`close_range` and `execveat` system-call wrappers. In this environment the
+unmodified shell then exited 125 with `editor terminal modes drifted`.
+Adding `-DNEXAUI_AETHERI_MUSL_NORMALIZE_TERMIOS=ON` separately wraps
+`tcgetattr`, zeroing its output before the libc call; this test-only change
+made the experiment pass. The suspected difference in unused control-character
+slots is not established as the sole cause. Neither option changes Aetheri's
+sources or demonstrates its unmodified glibc target. Both default to OFF.
+
+On 5 November 2026, the normalized Alpine/WSL experiment passed as an
+unprivileged user against installed 0.1.15 SDKs in static, shared and Clang
+ASan/UBSan configurations. Replacing the shell with `/bin/false` caused the
+test to fail as expected. These are headless, synthetic command checks: real
+Aetheri process-owner integration, native input and IME, real clipboard-to-PTY
+delivery, resize, terminal session policy, physical and human accessibility
+acceptance remain open. The toolkit does not own the PTY or the shell.
