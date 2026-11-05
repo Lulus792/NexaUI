@@ -1,6 +1,7 @@
 #import "accessibility.h"
 #include "../../src/context_identity.h"
 #include "../../src/selection_model.h"
+#include "../../src/text_value.h"
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -22,6 +23,7 @@ typedef struct nx_ax_node {
     uint32_t selected_last, next_selected, selected_count, member_count;
     uint64_t membership, policy_epoch;
     nx_selection_target target;
+    int intrinsic_disabled;
     int owner_multiple;
     const char *name, *help, *value;
 } nx_ax_node;
@@ -673,13 +675,16 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
         nx_semantic_view v; if (nx_semantics_get(context,(uint32_t)i,&v)!=NX_OK) return NX_ERROR_STATE;
         nx_ax_node *n=&s->nodes[i]; *n=(nx_ax_node){0};
         n->id=v.id; n->role=v.role; n->state=v.state; n->actions=v.actions; n->bounds=v.bounds;
+        n->intrinsic_disabled=nx_context_semantic_intrinsically_disabled(context,v.id);
         n->first=n->last=n->next=n->owner=n->selected=n->focus=n->selected_last=n->next_selected=NX_AX_NONE;
         n->target=nx_context_selection_target(context,n->id);
         n->membership=nx_context_selection_membership(context,n->id);
         n->parent=find(s,v.parent_id);
         if (n->parent!=NX_AX_NONE) {
             nx_ax_node *parent=&s->nodes[n->parent];
-            n->state|=parent->state&(NX_SEM_DISABLED|NX_SEM_OFFSCREEN);
+            n->intrinsic_disabled|=parent->intrinsic_disabled;
+            if(n->intrinsic_disabled)n->state|=NX_SEM_DISABLED;
+            n->state|=parent->state&NX_SEM_OFFSCREEN;
             n->owner=(parent->state&NX_AX_SELECTION) ? n->parent : parent->owner;
             if(n->owner!=NX_AX_NONE)n->owner_multiple=!!(s->nodes[n->owner].state&NX_SEM_SELECTION_MULTIPLE);
         }

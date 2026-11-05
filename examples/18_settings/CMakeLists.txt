@@ -12,7 +12,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     find_package(Threads REQUIRED)
     add_library(nexaui_settings_scene STATIC scene.c)
     target_compile_features(nexaui_settings_scene PUBLIC c_std_17)
-    target_link_libraries(nexaui_settings_scene PUBLIC NexaUI::NexaUI)
+    target_link_libraries(nexaui_settings_scene PUBLIC NexaUI::NexaUI m)
     add_executable(nexaui_settings main_linux.c renderer.c)
     set_target_properties(nexaui_settings PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
     target_link_libraries(nexaui_settings PRIVATE nexaui_settings_scene Threads::Threads m)
@@ -26,6 +26,9 @@ endif()
 
 add_library(nexaui_settings_scene STATIC scene.c)
 target_link_libraries(nexaui_settings_scene PUBLIC NexaUI::NexaUI)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(nexaui_settings_scene PUBLIC m)
+endif()
 target_compile_features(nexaui_settings_scene PUBLIC c_std_17)
 option(NEXAUI_SETTINGS_SOFTWARE "Use the Linux Wayland software renderer" OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND (NEXAUI_SETTINGS_SOFTWARE OR NOT TARGET nexaui_renderer_vulkan))
@@ -53,6 +56,12 @@ if(NEXAUI_BUILD_TESTS)
         target_link_libraries(nexaui_settings_scene_tests PRIVATE nexaui_settings_scene)
         add_test(NAME nexaui_settings_scene COMMAND nexaui_settings_scene_tests "${_settings_font}")
         set_tests_properties(nexaui_settings_scene PROPERTIES TIMEOUT 20)
+        if(WIN32 AND BUILD_SHARED_LIBS)
+            # The DLL is in the core target's configuration directory while
+            # this example's test executable lives in its own subdirectory.
+            set_tests_properties(nexaui_settings_scene PROPERTIES
+                WORKING_DIRECTORY "$<TARGET_FILE_DIR:nexaui>")
+        endif()
         if(TARGET nexaui_wayland_test_protocols)
             add_executable(nexaui_settings_ime_v3_tests test_ime_v3.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
