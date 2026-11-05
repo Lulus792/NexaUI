@@ -1,5 +1,13 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
+on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's
+original operation at `8bfa5684c809899edfc2765e6c03478e2629e9bf`. A bounded
+headless view distinguishes explicit confirmation, conflict and unknown,
+retains the original operation across view replacement and disables replay.
+Native modal/assistive acceptance, long-name scrolling, restart recovery and
+actual Aetheri integration remain open.
+
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri
 Files model at `87ff701f7d793b825c1d9012fc7d4bbd7b30773d` and the installed

@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.21)
+project(NexaUIAetheriRename LANGUAGES C)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "The Aetheri rename experiment requires Linux")
+endif()
+find_package(NexaUI 0.1.15 CONFIG REQUIRED)
+set(AETHERI_SOURCE_DIR "" CACHE PATH "Immutable Aetheri source snapshot")
+foreach(path src/files/rename.c src/files/rename.h src/files/create.c src/files/model.c
+             src/editor/file.c src/editor/document.c src/text/grapheme.c src/text/grapheme_data.h)
+    if(NOT EXISTS "${AETHERI_SOURCE_DIR}/${path}")
+        message(FATAL_ERROR "Missing ${path} in the selected Aetheri snapshot")
+    endif()
+endforeach()
+add_library(aetheri_rename_original STATIC
+    "${AETHERI_SOURCE_DIR}/src/files/rename.c" "${AETHERI_SOURCE_DIR}/src/files/create.c"
+    "${AETHERI_SOURCE_DIR}/src/files/model.c" "${AETHERI_SOURCE_DIR}/src/editor/file.c"
+    "${AETHERI_SOURCE_DIR}/src/editor/document.c" "${AETHERI_SOURCE_DIR}/src/text/grapheme.c")
+set_source_files_properties("${AETHERI_SOURCE_DIR}/src/editor/file.c" PROPERTIES COMPILE_DEFINITIONS _GNU_SOURCE)
+target_include_directories(aetheri_rename_original PUBLIC "${AETHERI_SOURCE_DIR}/src")
+add_executable(aetheri_rename_review_test review.c test_review.c)
+target_link_libraries(aetheri_rename_review_test PRIVATE aetheri_rename_original NexaUI::NexaUI)
+target_link_options(aetheri_rename_review_test PRIVATE -Wl,--wrap=fsync,--wrap=renameat2)
+set_target_properties(aetheri_rename_original aetheri_rename_review_test PROPERTIES
+    C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
