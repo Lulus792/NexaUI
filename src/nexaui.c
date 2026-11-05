@@ -273,6 +273,10 @@ typedef struct nx_field_pointer {
 struct nx_numeric_field {
     nx_text_buffer *buffer;
     nx_text_value_target text_value;
+    nx_window *ime_window; /* Borrowed; see nx_numeric_field_set_ime_window. */
+    uint64_t ime_published_revision;
+    uint64_t ime_batch_target, ime_batch_revision;
+    int ime_batch_accepted;
     double committed;
     size_t history_bytes;
     const nx_context *last_context;
@@ -6260,6 +6264,34 @@ done:
 }
 
 
+/* The revision binds native replies to the field instance, its model and the
+   exact buffer/selection generation. Both numeric and general editors need the
+   same rules so replacing one cannot revive a reply for an earlier model. */
+static uint64_t nx_buffer_ime_revision(const nx_text_buffer *buffer,
+                                       const void *owner,
+                                       const nx_text_value_target *model) {
+    const char *bytes = NULL;
+    size_t length = 0, anchor = 0, cursor = 0;
+    (void)nx_text_buffer_text(buffer, &bytes, &length);
+    (void)nx_text_buffer_selection(buffer, &anchor, &cursor);
+    uint64_t hash = UINT64_C(14695981039346656037);
+    for (size_t i = 0; i < length; ++i)
+        hash = (hash ^ (unsigned char)bytes[i]) * UINT64_C(1099511628211);
+    uint64_t values[] = {(uint64_t)length, (uint64_t)anchor,
+                         (uint64_t)cursor, (uint64_t)(uintptr_t)owner,
+                         model->identity, model->revision,
+                         nx_text_buffer_change_serial(buffer)};
+    for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
+        for (unsigned byte = 0; byte < 8; ++byte)
+            hash = (hash ^ (uint8_t)(values[i] >> (byte * 8u))) *
+                   UINT64_C(1099511628211);
+    return hash ? hash : 1u;
+}
+
+static int nx_field_ime_surrounding(nx_utf8_span text, size_t anchor,
+                                    size_t cursor, size_t *out_start,
+                                    size_t *out_length);
+
 nx_result nx_numeric_field_create(double initial_value,
                                   size_t history_bytes,
                                   nx_numeric_field **out_field) {
@@ -6290,6 +6322,17 @@ void nx_numeric_field_destroy(nx_numeric_field *field) {
     if (!field) return;
     nx_text_buffer_destroy(field->buffer);
     free(field);
+}
+
+nx_result nx_numeric_field_set_ime_window(nx_numeric_field *field, nx_window *window) {
+    if (!field) return NX_ERROR_ARGUMENT;
+    if (field->ime_window == window) return NX_OK;
+    if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
+    /* Invalidate replies from an old window, even if the field and its text
+       happen to be unchanged when a different native window is attached. */
+    ++field->text_value.revision;
+    field->ime_window = window;
+    return NX_OK;
 }
 
 nx_result nx_numeric_field_set_value(nx_numeric_field *field, double value) {
@@ -6458,12 +6501,21 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     result = nx_widget_register(ctx, &widget, &state);
     if (result != NX_OK) return result;
     nx_text_layout *layout = NULL;
+    char *ime_preedit_copy = NULL;
+    uint64_t ime_batch_target=field->ime_batch_target, ime_batch_revision=field->ime_batch_revision;
+    int ime_batch_accepted=field->ime_batch_accepted;
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
                                   &field->buffer,&field->text_value,NULL,&value_changed,0);
     if (result != NX_OK) goto rollback;
     if (value_changed) { field->pointer.active = 0; field->suppress_caret_reveal = 0; }
+    if (field->ime_window && ctx->ime_active_window==field->ime_window &&
+        ctx->ime_active_id==desc->id && field->ime_published_revision &&
+        field->ime_published_revision!=nx_buffer_ime_revision(field->buffer,field,&field->text_value) &&
+        nx_window_set_ime_enabled(field->ime_window,0)==NX_OK) {
+        ctx->ime_active_window=NULL; ctx->ime_active_id=0; ctx->ime_active_password=0;
+    }
     if (field->last_context != ctx ||
         field->last_frame_serial != ctx->frame_serial) {
         if (field->last_context!=ctx || field->last_frame_serial+1u!=ctx->frame_serial)
@@ -6471,6 +6523,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
         field->last_context = ctx;
         field->last_frame_serial = ctx->frame_serial;
         field->next_event_index = 0;
+        ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
     }
     nx_text_field_desc pointer_desc={0};
     pointer_desc.id=desc->id; pointer_desc.bounds=desc->bounds;
@@ -6483,6 +6536,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             if (event->type==NX_EVENT_POINTER_CANCEL ||
                 (event->type==NX_EVENT_FOCUS && !event->focused)) field->pointer.active=0;
             if (route->pointer_id==desc->id && nx_field_pointer_event(event)) {
+                ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
                 int press=event->type==NX_EVENT_POINTER_DOWN || event->type==NX_EVENT_TOUCH_UP;
                 if (press || (field->pointer.active && field->pointer.id==desc->id)) {
                     nx_text_caret hit; int applied=0;
@@ -6496,20 +6550,48 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                     field->pointer.active=0;
                 ++field->next_event_index; continue;
             }
-            if (route->focus_id!=desc->id) { ++field->next_event_index; continue; }
-            /* Numeric fields do not yet publish an IME target/revision. A
-               reply for another (possibly replaced) field must not edit one. */
-            if (event->ime_target && (event->type == NX_EVENT_TEXT ||
-                                      event->type == NX_EVENT_TEXT_COMMAND)) {
+            if (route->focus_id!=desc->id) {
+                ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
                 ++field->next_event_index; continue;
+            }
+            if (event->type == NX_EVENT_IME_DELETE_RANGE ||
+                event->type == NX_EVENT_IME_DELETE_SURROUNDING) {
+                ime_batch_target = event->ime_target;
+                ime_batch_revision = event->ime_revision;
+                ime_batch_accepted = field->ime_window && event->ime_target == desc->id &&
+                    event->ime_revision == nx_buffer_ime_revision(field->buffer, field, &field->text_value);
+                if (ime_batch_accepted) {
+                    result = event->type == NX_EVENT_IME_DELETE_RANGE ?
+                        nx_text_buffer_delete_relative(field->buffer,event->ime_index,event->ime_length) :
+                        nx_text_buffer_delete_surrounding(field->buffer,event->ime_before,event->ime_after);
+                    if (result == NX_ERROR_ARGUMENT) { ime_batch_accepted=0; result=NX_OK; }
+                    if (result != NX_OK) goto rollback;
+                    if (ime_batch_accepted) { field->pointer.active=0; field->suppress_caret_reveal=0; }
+                }
+                ++field->next_event_index; continue;
+            }
+            if ((event->type == NX_EVENT_TEXT || event->type == NX_EVENT_TEXT_COMMAND) && event->ime_target) {
+                int same=ime_batch_target==event->ime_target && ime_batch_revision==event->ime_revision;
+                if (!same) ime_batch_accepted=field->ime_window && event->ime_target==desc->id &&
+                    event->ime_revision==nx_buffer_ime_revision(field->buffer,field,&field->text_value);
+                ime_batch_target=event->ime_target; ime_batch_revision=event->ime_revision;
+                if (!ime_batch_accepted) { ++field->next_event_index; continue; }
+            } else {
+                ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
             }
             if (event->type == NX_EVENT_KEY_DOWN ||
                 event->type == NX_EVENT_TEXT || event->type == NX_EVENT_TEXT_COMMAND) {
                 field->pointer.active=0; field->suppress_caret_reveal=0;
                 int handled = 0;
-                result = nx_numeric_input_apply_event(field->buffer, event,
-                    desc->minimum, desc->maximum, &field->committed,
-                    &handled, &valid);
+                /* IME replacement is a batch: do not silently discard a
+                   committed scalar after accepting its preceding deletion. An
+                   invalid draft remains visible and does not change the value. */
+                if (event->type == NX_EVENT_TEXT && event->ime_target)
+                    result = nx_text_buffer_apply_event(field->buffer,event,&handled);
+                else
+                    result = nx_numeric_input_apply_event(field->buffer, event,
+                        desc->minimum, desc->maximum, &field->committed,
+                        &handled, &valid);
                 if (result != NX_OK) goto rollback;
             }
             ++field->next_event_index;
@@ -6545,17 +6627,53 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     node->value_length = draft.length;
     if (valid) node->state &= ~NX_SEM_INVALID;
     else node->state |= NX_SEM_INVALID;
+    nx_utf8_span ime_preedit={0}; int32_t ime_begin=0, ime_end=0;
+    if (state.focused && !desc->disabled && field->ime_window && !ctx->ime_active_password &&
+        (!ctx->ime_active_window || (ctx->ime_active_window==field->ime_window && ctx->ime_active_id==desc->id))) {
+        result=nx_window_get_ime_preedit(field->ime_window,NULL,0,&ime_preedit.length,&ime_begin,&ime_end);
+        if (result==NX_ERROR_UNSUPPORTED) { result=NX_OK; ime_preedit.length=0; }
+        else if (result!=NX_OK) goto rollback;
+        if (ime_preedit.length) {
+            if (ime_preedit.length==SIZE_MAX) { result=NX_ERROR_LIMIT; goto rollback; }
+            ime_preedit_copy=malloc(ime_preedit.length+1u);
+            if (!ime_preedit_copy) { result=NX_ERROR_MEMORY; goto rollback; }
+            result=nx_window_get_ime_preedit(field->ime_window,ime_preedit_copy,ime_preedit.length+1u,
+                                             &ime_preedit.length,&ime_begin,&ime_end);
+            if (result!=NX_OK) goto rollback;
+            ime_preedit.data=ime_preedit_copy;
+        }
+    }
+    nx_rect caret_rect={0}; int caret_visible=0;
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
                             desc->pixels_per_em, desc->glyph_cache_bytes,
                             field->buffer, 0, desc->disabled, !valid,
-                            state.focused, NULL, (nx_utf8_span){0}, 0, 0, NULL, !field->suppress_caret_reveal,
+                            state.focused, NULL, ime_preedit, ime_begin, ime_end, NULL, !field->suppress_caret_reveal,
                             &field->scroll_x,
-                            &field->scroll_y, NULL, NULL);
+                            &field->scroll_y, &caret_rect, &caret_visible);
     if (result != NX_OK) goto rollback;
+    if (caret_visible && field->ime_window) (void)nx_window_set_ime_rect(field->ime_window,caret_rect);
+    if (state.focused && !desc->disabled && field->ime_window) {
+        size_t anchor=0,cursor=0,start=0,length=0;
+        (void)nx_text_buffer_selection(field->buffer,&anchor,&cursor);
+        uint64_t revision=nx_buffer_ime_revision(field->buffer,field,&field->text_value);
+        if (nx_field_ime_surrounding(draft,anchor,cursor,&start,&length))
+            (void)nx_window_set_ime_surrounding_text(field->ime_window,desc->id,revision,
+                draft.data+start,length,cursor-start,anchor-start);
+        else (void)nx_window_set_ime_surrounding_text(field->ime_window,desc->id,revision,"",0,0,0);
+        ctx->ime_candidate_window=field->ime_window; ctx->ime_candidate_id=desc->id;
+        ctx->ime_candidate_revision=revision; ctx->ime_candidate_password=0;
+        field->ime_published_revision=revision;
+    }
+    free(ime_preedit_copy);
+    field->ime_batch_target=ime_batch_target; field->ime_batch_revision=ime_batch_revision;
+    field->ime_batch_accepted=ime_batch_accepted;
     *out_state = state;
     *out_valid = valid;
     return NX_OK;
 rollback:
+    free(ime_preedit_copy);
+    field->ime_batch_target=ime_batch_target; field->ime_batch_revision=ime_batch_revision;
+    field->ime_batch_accepted=ime_batch_accepted;
     ctx->command_count = old_command_count;
     ctx->clip_depth = old_clip_depth;
     nx_free_owned_bitmaps(ctx, old_bitmap);
@@ -6949,22 +7067,7 @@ static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_fi
 }
 
 static uint64_t nx_field_ime_revision(const nx_text_field *field) {
-    const char *bytes = NULL;
-    size_t length = 0, anchor = 0, cursor = 0;
-    (void)nx_text_buffer_text(field->buffer, &bytes, &length);
-    (void)nx_text_buffer_selection(field->buffer, &anchor, &cursor);
-    uint64_t hash = UINT64_C(14695981039346656037);
-    for (size_t i = 0; i < length; ++i)
-        hash = (hash ^ (unsigned char)bytes[i]) * UINT64_C(1099511628211);
-    uint64_t values[] = {(uint64_t)length, (uint64_t)anchor,
-                         (uint64_t)cursor, (uint64_t)(uintptr_t)field,
-                         field->text_value.identity, field->text_value.revision,
-                         nx_text_buffer_change_serial(field->buffer)};
-    for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
-        for (unsigned byte = 0; byte < 8; ++byte)
-            hash = (hash ^ (uint8_t)(values[i] >> (byte * 8u))) *
-                   UINT64_C(1099511628211);
-    return hash ? hash : 1u;
+    return nx_buffer_ime_revision(field->buffer, field, &field->text_value);
 }
 
 #if defined(__linux__)

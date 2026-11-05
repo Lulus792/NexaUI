@@ -237,6 +237,106 @@ int main(int argc, char **argv) {
           memcmp(server.surrounding, "abc", 3) == 0);
     CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    /* Numeric widgets reuse the real native IME transport and reject replies
+       after their model is replaced. The fixture supplies an invalid commit
+       after deleting one digit, so the complete draft must stay visible. */
+    atomic_store(&server.surrounding_ok, 0);
+    CHECK(nx_font_open(font_bytes,sizeof(font_bytes),NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    nx_numeric_field *number=NULL;
+    nx_context *numeric_context=NULL;
+    CHECK(nx_numeric_field_create(1234,1024,&number)==NX_OK);
+    CHECK(nx_numeric_field_set_ime_window(number,window)==NX_OK);
+    CHECK(nx_context_create(NULL,&numeric_context)==NX_OK);
+    nx_numeric_field_desc numeric_desc={0};
+    numeric_desc.id=181; numeric_desc.bounds=(nx_rect){0,0,120,28};
+    numeric_desc.name=(nx_utf8_span){"Number",6}; numeric_desc.fonts=fonts;
+    numeric_desc.pixels_per_em=16; numeric_desc.glyph_cache_bytes=4096;
+    numeric_desc.minimum=-10000; numeric_desc.maximum=10000;
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK);
+    CHECK(nx_end_frame(numeric_context)==NX_OK && nx_focus_set(numeric_context,181)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && interaction.focused);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(nx_window_route_events(window,numeric_context,&routed)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_frame_commands(numeric_context,&commands,&command_count)==NX_OK);
+    line_count=0;
+    for(size_t i=0;i<command_count;++i) if(commands[i].type==NX_COMMAND_LINE) ++line_count;
+    CHECK(line_count==1); /* Native preedit underline; IME hid the caret. */
+    atomic_store(&server.surrounding_ok,1);
+    CHECK(nx_numeric_field_set_value(number,1234)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(nx_window_route_events(window,numeric_context,&routed)==NX_OK && routed>=2);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_frame_events(numeric_context,&frame_events,&frame_event_count)==NX_OK);
+    nx_event numeric_delete={0},numeric_commit={0};
+    for(size_t i=0;i<frame_event_count;++i) {
+        if(frame_events[i].type==NX_EVENT_IME_DELETE_SURROUNDING) numeric_delete=frame_events[i];
+        if(frame_events[i].type==NX_EVENT_TEXT && frame_events[i].ime_target==181) numeric_commit=frame_events[i];
+    }
+    CHECK(numeric_delete.ime_target==181 && numeric_commit.ime_target==181);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && !valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==4 && !memcmp(draft.data,"123!",4));
+    double numeric_value=0;
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==1234);
+    CHECK(nx_numeric_field_set_value(number,55)==NX_OK);
+    CHECK(nx_context_queue_event(numeric_context,&numeric_delete)==NX_OK);
+    CHECK(nx_context_queue_event(numeric_context,&numeric_commit)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"55",2));
+    atomic_store(&server.numeric_commit,1);
+    CHECK(nx_numeric_field_set_value(number,55)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(nx_window_route_events(window,numeric_context,&routed)==NX_OK && routed>=3);
+    /* A detached and reattached window must not accept its old reply, even
+       when the field, text and selection have not otherwise changed. */
+    CHECK(nx_numeric_field_set_ime_window(number,NULL)==NX_OK);
+    CHECK(nx_numeric_field_set_ime_window(number,window)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"55",2));
+    CHECK(nx_numeric_field_set_value(number,55)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(nx_window_route_events(window,numeric_context,&routed)==NX_OK && routed>=3);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==3 && !memcmp(draft.data,"567",3));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==55);
+    nx_event enter={0}; enter.type=NX_EVENT_TEXT_COMMAND; enter.text_command=NX_TEXT_COMMAND_NEWLINE;
+    CHECK(nx_context_queue_event(numeric_context,&enter)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==567);
+    nx_context_destroy(numeric_context); nx_numeric_field_destroy(number);
+    nx_font_collection_destroy(fonts); nx_font_close(font);
     /* A different client of the same display (such as Vulkan WSI) can read
        new-id events into the default queue without dispatching that queue. */
     struct wl_display *display = nx_window_wayland_display(window);

@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 5
+#define NX_VERSION_PATCH 6
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2228,6 +2228,11 @@ NX_API nx_result nx_numeric_field_create(double initial_value,
                                          size_t history_bytes,
                                          nx_numeric_field **out_field);
 NX_API void nx_numeric_field_destroy(nx_numeric_field *field);
+/* Optional borrowed window for native IME, on the UI thread. The window must
+   outlive the last frame using it and the context that activated it, just as
+   nx_text_field_desc.ime_window requires. NULL disables numeric IME use. */
+NX_API nx_result nx_numeric_field_set_ime_window(nx_numeric_field *field,
+                                                 nx_window *window);
 NX_API nx_result nx_numeric_field_set_value(nx_numeric_field *field,
                                             double value);
 NX_API nx_result nx_numeric_field_value(const nx_numeric_field *field,

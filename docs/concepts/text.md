@@ -40,8 +40,13 @@ passwords. The standalone text model has no viewport or clipboard and leaves
 such commands unhandled. The numeric widget forwards logical text commands to
 its existing numeric buffer, including selection, deletion, undo/redo and Enter
 to commit a valid draft. It does not yet share the complete general-field native
-input path: preedit, native replacement, clipboard callbacks and visual-layout
-navigation remain separate work.
+input path. A numeric field can opt into the borrowed-window IME path with
+`nx_numeric_field_set_ime_window`; preedit and revision-checked native
+replacement then use the same transport and painting as general fields. IME
+commits may produce an invalid visible draft, which never updates the committed
+number until a valid Enter. Clipboard callbacks and visual-layout navigation
+remain separate work. Other native IME implementations and interactive acceptance
+need their own checks.
 See the [native command report](../quality/macos-input-commands-report.md).
 
 General and numeric text fields now support left-button drag selection and
