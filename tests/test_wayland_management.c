@@ -14,9 +14,10 @@
 typedef struct server {
     struct wl_display *display;
     struct wl_resource *surface,*xdg,*top,*seat,*pointer,*decoration;
-    int configured,reject;
+    int configured,reject,bounds_case;
     uint32_t serial,state;
     atomic_int command,moves,resizes,minimizes,decorations,attaches,acks;
+    atomic_int buffer_width,buffer_height;
 } server;
 static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_resource_destroy(r); }
 static void configure(server *s) {
@@ -24,7 +25,8 @@ static void configure(server *s) {
     uint32_t *v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_ACTIVATED;
     if (s->state&1u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_MAXIMIZED; }
     if (s->state&2u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_FULLSCREEN; }
-    xdg_toplevel_send_configure(s->top,s->state ? 480 : 0,s->state ? 240 : 0,&a); wl_array_release(&a);
+    int width = s->state ? 480 : (!s->configured && s->bounds_case == 3 ? 300 : 0);
+    xdg_toplevel_send_configure(s->top,width,s->state ? 240 : 0,&a); wl_array_release(&a);
     xdg_surface_send_configure(s->xdg,++s->serial);
 }
 static void caps(server *s,int enabled) {
@@ -38,9 +40,12 @@ static void caps(server *s,int enabled) {
 static void commit(struct wl_client *c,struct wl_resource *r) {
     (void)c; server *s=wl_resource_get_user_data(r); if (r!=s->surface || !s->top) return;
     if (!s->configured) {
-        s->configured=1; caps(s,1);
+        if (wl_resource_get_version(s->top)>=5) caps(s,1);
         if (s->decoration) zxdg_toplevel_decoration_v1_send_configure(s->decoration,s->reject ? 2 : 1);
-        configure(s); return;
+        if (s->bounds_case && wl_resource_get_version(s->top)>=4) xdg_toplevel_send_configure_bounds(s->top,
+            s->bounds_case == 2 || s->bounds_case == 4 ? 0 : 160,
+            s->bounds_case == 4 ? 0 : 90);
+        configure(s); s->configured=1; return;
     }
     switch (atomic_exchange(&s->command,0)) {
     case 1: /* Zero is a valid native press serial; it must not be used as a sentinel. */
@@ -63,7 +68,13 @@ static void commit(struct wl_client *c,struct wl_resource *r) {
 }
 static void attach(struct wl_client *c,struct wl_resource *r,struct wl_resource *buffer,int32_t x,int32_t y) {
     (void)c;(void)x;(void)y; server *s=wl_resource_get_user_data(r);
-    if (buffer) { atomic_fetch_add(&s->attaches,1); wl_buffer_send_release(buffer); }
+    if (buffer) {
+        struct wl_shm_buffer *shm=wl_shm_buffer_get(buffer);
+        CHECK(shm);
+        atomic_store(&s->buffer_width,wl_shm_buffer_get_width(shm));
+        atomic_store(&s->buffer_height,wl_shm_buffer_get_height(shm));
+        atomic_fetch_add(&s->attaches,1); wl_buffer_send_release(buffer);
+    }
 }
 static void damage(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r;(void)x;(void)y;(void)w;(void)h; }
 static void scale(struct wl_client *c,struct wl_resource *r,int32_t n) { (void)c;(void)r; CHECK(n>0); }
@@ -102,14 +113,14 @@ static void resize(struct wl_client *c,struct wl_resource *r,struct wl_resource 
 static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=string,
     .set_maximized=maximize,.unset_maximized=restore,.unset_fullscreen=unfullscreen,.set_minimized=minimize,.move=move,.resize=resize};
 static void top(struct wl_client *c,struct wl_resource *r,uint32_t id) {
-    server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,5,id); CHECK(s->top);
+    server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,wl_resource_get_version(r),id); CHECK(s->top);
     wl_resource_set_implementation(s->top,&top_impl,s,NULL);
 }
-static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r; CHECK(x==0 && y==0 && ((w==240 && h==120) || (w==480 && h==240) || (w==300 && h==150))); }
+static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r; CHECK(x==0 && y==0 && ((w==240 && h==120) || (w==480 && h==240) || (w==300 && h==150) || (w==160 && h==90) || (w==240 && h==90) || (w==300 && h==90))); }
 static void ack(struct wl_client *c,struct wl_resource *r,uint32_t serial) { (void)c; server *s=wl_resource_get_user_data(r); CHECK(serial>0 && serial<=s->serial); atomic_fetch_add(&s->acks,1); }
 static const struct xdg_surface_interface xdg_impl={.destroy=destroy,.get_toplevel=top,.set_window_geometry=geometry,.ack_configure=ack};
 static void xdg(struct wl_client *c,struct wl_resource *r,uint32_t id,struct wl_resource *surface) {
-    server *s=wl_resource_get_user_data(r); CHECK(surface==s->surface); s->xdg=wl_resource_create(c,&xdg_surface_interface,5,id); CHECK(s->xdg);
+    server *s=wl_resource_get_user_data(r); CHECK(surface==s->surface); s->xdg=wl_resource_create(c,&xdg_surface_interface,wl_resource_get_version(r),id); CHECK(s->xdg);
     wl_resource_set_implementation(s->xdg,&xdg_impl,s,NULL);
 }
 static const struct xdg_wm_base_interface wm_impl={.destroy=destroy,.get_xdg_surface=xdg};
@@ -192,8 +203,41 @@ static void test(int client_mode,int reject) {
     wl_display_terminate(s.display); CHECK(!pthread_join(thread,NULL)); wl_display_destroy_clients(s.display); wl_display_destroy(s.display);
     CHECK(!unlink(path) || access(path,F_OK)!=0); CHECK(!rmdir(runtime));
 }
+static void test_bounds(int which) {
+    server s={0}; s.bounds_case=which; heap h={0};
+    char runtime[]="/tmp/nexaui-window-bounds-XXXXXX"; CHECK(mkdtemp(runtime));
+    CHECK(!setenv("XDG_RUNTIME_DIR",runtime,1) && !setenv("NEXAUI_PLATFORM","wayland",1));
+    s.display=wl_display_create(); CHECK(s.display && wl_display_init_shm(s.display)==0);
+    CHECK(wl_global_create(s.display,&wl_compositor_interface,4,&s,bind_compositor));
+    CHECK(wl_global_create(s.display,&xdg_wm_base_interface,which==5?3:5,&s,bind_wm));
+    const char *socket=wl_display_add_socket_auto(s.display); CHECK(socket && !setenv("WAYLAND_DISPLAY",socket,1));
+    char path[256]; CHECK(snprintf(path,sizeof(path),"%s/%s",runtime,socket)>0);
+    pthread_t thread; CHECK(!pthread_create(&thread,NULL,run,&s));
+    nx_window_desc d={"Wayland bounds",240,120,0,{&h,allocate,deallocate}};
+    nx_window *w=NULL; CHECK(nx_window_create(&d,&w)==NX_OK && w);
+    nx_window_info info; CHECK(nx_window_get_info(w,&info)==NX_OK);
+    CHECK(info.width==(which==1?160:which==3?300:240));
+    CHECK(info.height==(which>=4?120:90));
+    float initial_width=info.width, initial_height=info.height;
+    roundtrip(w);
+    CHECK(atomic_load(&s.buffer_width)==(int)initial_width && atomic_load(&s.buffer_height)==(int)initial_height);
+    CHECK(nx_window_maximize(w)==NX_OK); roundtrip(w);
+    CHECK(nx_window_get_info(w,&info)==NX_OK && info.width==480 && info.height==240);
+    CHECK(nx_window_restore(w)==NX_OK); roundtrip(w);
+    CHECK(nx_window_get_info(w,&info)==NX_OK && info.width==initial_width && info.height==initial_height);
+    /* Later compositor resize and maximize/restore are not clamped by bounds. */
+    send(&s,w,9); CHECK(nx_window_get_info(w,&info)==NX_OK && info.width==300 && info.height==150);
+    CHECK(nx_window_maximize(w)==NX_OK); roundtrip(w);
+    CHECK(nx_window_get_info(w,&info)==NX_OK && info.width==480 && info.height==240);
+    CHECK(nx_window_restore(w)==NX_OK); roundtrip(w);
+    CHECK(nx_window_get_info(w,&info)==NX_OK && info.width==300 && info.height==150);
+    nx_window_destroy(w); CHECK(!h.live);
+    wl_display_terminate(s.display); CHECK(!pthread_join(thread,NULL)); wl_display_destroy_clients(s.display); wl_display_destroy(s.display);
+    CHECK(!unlink(path) || access(path,F_OK)!=0); CHECK(!rmdir(runtime));
+}
 int main(void) {
     test(0,0); test(1,0); test(1,1);
+    for(int i=1;i<=5;++i) test_bounds(i);
     puts("Wayland: real protocol configure/capabilities, decoration acceptance/refusal/cleanup, seat/zero-serial move and eight resize directions, release/leave/removal guards passed; no physical acceptance.");
     return 0;
 }

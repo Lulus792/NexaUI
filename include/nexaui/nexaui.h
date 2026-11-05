@@ -409,7 +409,8 @@ typedef struct nx_window_status {
 
 typedef struct nx_window_desc {
     const char *title_utf8; /* NUL-terminated; NULL selects "NexaUI". Borrowed. */
-    float width, height;    /* Positive finite logical client size. */
+    float width, height;    /* Positive finite initial logical client size request;
+                               native configuration can choose another size. */
     uint32_t flags;         /* NX_WINDOW_HIDDEN, CLIENT_CHROME, STATE_EVENTS. */
     nx_allocator allocator; /* Optional callback pair. */
 } nx_window_desc;

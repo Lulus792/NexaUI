@@ -175,6 +175,7 @@ struct nx_wayland_window {
     uint32_t scale_120;
     int background_width, background_height, cursor_width, cursor_height;
     int pending_width, pending_height;
+    int bounds_width, bounds_height;
     int normal_width, normal_height;
     int configured, should_close, hidden, buffer_attached, destroying;
     int connection_failed;
@@ -2189,7 +2190,9 @@ static void nx_wayland_toplevel_close(void *data,
 
 #ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
 static void nx_wayland_configure_bounds(void *data, struct xdg_toplevel *top, int32_t width, int32_t height) {
-    (void)data; (void)top; (void)width; (void)height;
+    nx_wayland_window *window = data; (void)top;
+    window->bounds_width = width > 0 ? width : 0;
+    window->bounds_height = height > 0 ? height : 0;
 }
 #endif
 #ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
@@ -2244,6 +2247,15 @@ static void nx_wayland_surface_configure(void *data,
                 restoring ? window->normal_width : window->width;
     int height = window->pending_height > 0 ? window->pending_height :
                  restoring ? window->normal_height : window->height;
+    /* Bounds are advisory. Apply them only to dimensions the compositor has
+       left to us on the initial normal configure, never to later user resizes
+       or compositor-selected maximized/fullscreen dimensions. */
+    if (!window->configured && !(window->state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN))) {
+        if (window->pending_width <= 0 && window->bounds_width > 0 && width > window->bounds_width)
+            width = window->bounds_width;
+        if (window->pending_height <= 0 && window->bounds_height > 0 && height > window->bounds_height)
+            height = window->bounds_height;
+    }
     if (!(window->state & (NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN))) {
         window->normal_width = width;
         window->normal_height = height;

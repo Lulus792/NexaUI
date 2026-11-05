@@ -33,7 +33,13 @@ must not occur reentrantly during an active native interaction.
 - Wayland: use xdg-toplevel move/resize with the cached seat/button serial,
   observe state at configure boundaries, and negotiate client-side decoration
   when the compositor exposes xdg-decoration. A rejected requested mode fails
-  creation; protocol requests do not fabricate confirmed state.
+  creation; protocol requests do not fabricate confirmed state. On the first
+  normal configure, xdg-shell v4+ advisory `configure_bounds` limits only an
+  initial dimension left unspecified by the compositor. Explicit configured
+  dimensions, later resizes, maximize and fullscreen are not clamped by that
+  initial policy. Zero or unavailable bounds leave the requested size intact.
+  Query actual logical and pixel sizes after creation before laying out or
+  allocating a frame. See the [xdg-shell protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/stable/xdg-shell/xdg-shell.xml).
 - X11: use WM/EWMH messages and observed properties. A bare X server is not a
   window manager; unavailable management must report unsupported. Motif hints
   request client decoration; the actual WM remains responsible for honoring it.
