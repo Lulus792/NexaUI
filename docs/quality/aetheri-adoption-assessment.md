@@ -1,5 +1,39 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri SDL desktop with installed NexaUI consumers (2026-11-05)
+
+Driver source `374e69da19ef9708068bdb3ab808254d603a024c` exercises the
+independently built actual Aetheri SDL desktop from source
+`d621c9bba1df8ffd1083999300bcff742022b9dc`, on the private headless test
+compositor and test-input driver from that same source. The installed static
+Wayland-only, software-only NexaUI SDK remains
+`d4c9aab9354feb4c9e045b960f4985468bec3253` with AT-SPI disabled. The desktop
+uses the existing reviewed SDL3/text prefix and a private shader cache; its
+launcher channel is retained by the driver but no app-launch request is made.
+The consumers are started independently, not by Aetheri's lifecycle owner.
+
+The actual desktop creates compact dock surfaces on all three outputs. A public
+SDK probe observes 1840×916 initial, 1920×996 maximized and 1840×916 restored;
+first-output pixels show the dock, window and work-area boundaries in each
+state. The desktop observes the probe's close. A separately built installed
+Settings example then maps on the second output; captured pixels show its
+content, and virtual native keys traverse focus 3/4/5 and produce the expected
+applied model state. The desktop observes its arrival and departure. Both
+consumers, the SDL desktop and compositor exit 0; the private socket disappears.
+An earlier SDK `2e4e8e9ffa0e0244b9a6bbecbe73f7fc43e91c65` instead submits
+2100×1200 and the same driver fails waiting for the required initial size.
+
+The SDL desktop executable SHA-256 is
+`68814d3f4c03bd1285e3a1ea77dee27ae229d60989ee3c751fecaa57ef8edac9`.
+The locally retained archive
+`D:/NexaUI/out/aetheri-sdl-2026-11-05/positive.tar.gz` has SHA-256
+`5cf2723e53b257e7e164370c18a1ccb48a487aa455b9174c3c609af92b2d6bee`;
+its Settings image independently re-hashes to
+`28f5fa4110739c89e5d499e7e811d9077f3e431be8e8c817fd0d53c4cf8e3e9a`.
+This is headless software composition and synthetic input: it does not prove
+actual owner-mediated launch, Aetheri-backed Settings models, IME or AT-SPI,
+mixed scaling, DRM/physical input, or human accessibility acceptance.
+
 ## Aetheri dock and ordinary NexaUI window (2026-11-05)
 
 Test source `7598f34c0f5d7ce0002a1d831316ba5a709031d9` adds a strict C17
