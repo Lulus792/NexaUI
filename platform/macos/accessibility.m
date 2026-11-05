@@ -342,11 +342,16 @@ static int value_changed(nx_ax_node *a,nx_ax_node *b) {
 }
 static int text_selection_changed(nx_ax_node *a,nx_ax_node *b) {
     if(!text_readable(a) || !text_readable(b))return 0;
-    if(a->text_selection.anchor!=b->text_selection.anchor || a->text_selection.cursor!=b->text_selection.cursor)return 1;
-    size_t end=b->text_selection.anchor>b->text_selection.cursor?b->text_selection.anchor:b->text_selection.cursor;
-    /* Prefix changes can move the UTF-16 range or alter its selected text even
-       if the corresponding UTF-8 byte offsets remain the same. */
-    return end && memcmp(a->value,b->value,end)!=0;
+    size_t a_start=a->text_selection.anchor<a->text_selection.cursor?a->text_selection.anchor:a->text_selection.cursor;
+    size_t a_end=a->text_selection.anchor>a->text_selection.cursor?a->text_selection.anchor:a->text_selection.cursor;
+    size_t b_start=b->text_selection.anchor<b->text_selection.cursor?b->text_selection.anchor:b->text_selection.cursor;
+    size_t b_end=b->text_selection.anchor>b->text_selection.cursor?b->text_selection.anchor:b->text_selection.cursor;
+    if(a_start==b_start && a_end==b_end && (!a_end || !memcmp(a->value,b->value,a_end)))return 0;
+    NSRange old_range=text_selection_range(a),new_range=text_selection_range(b);
+    if(old_range.location==NSNotFound || new_range.location==NSNotFound)return 0;
+    if(!NSEqualRanges(old_range,new_range))return 1;
+    size_t old_length=a_end-a_start,new_length=b_end-b_start;
+    return old_length!=new_length || (old_length && memcmp(a->value+a_start,b->value+b_start,old_length)!=0);
 }
 static NSRect logical(nx_ax_node *n) { return NSMakeRect(n->bounds.x,n->bounds.y,n->bounds.width,n->bounds.height); }
 static NSRect screen(NXMacAXBridge *b,nx_ax_node *n) {
