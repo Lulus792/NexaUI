@@ -12,6 +12,11 @@ On base `3f93c535fd3bfa9387a232a732594210f3cd6dfd`, the example additionally
 routes synthetic queued pointer and selection-key events to the original model,
 with revision/focus/cancellation checks and the model's own copy operation.
 Native input and independent clipboard peers remain unproved.
+I05/I07/T06/T07: on base `aecd753658edf0b0db379eee16a1e527d45f59f2`,
+the same consumer combines the installed nonblocking Wayland clipboard transport
+with Aetheri's original paste validator and preview. Controlled protocol and
+stale-focus evidence is in the example; independent peers, review UI, PTY
+delivery and native Aetheri acceptance remain open.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on

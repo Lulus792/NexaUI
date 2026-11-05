@@ -12,7 +12,9 @@ Build against an installed NexaUI 0.1.15 or newer and a separately obtained,
 immutable Aetheri source snapshot. The checked model came from Aetheri commit
 `87996e2f12128b172a80b325ad3b539df6aee527`; `model.c` Git blob is
 `5865f239a0c9b2c83392f3b7a1f341d5d4cea28e`, `model.h` is
-`cdcba69432c363c93848666d7b47fa73bac3f2bd`. The original 0.1.14 example
+`cdcba69432c363c93848666d7b47fa73bac3f2bd`; `paste.c` is
+`a5a79d13b6bb1a8a49d7442121592435495bfb0d` and `paste.h` is
+`aa719aa40bbeb0b78110ba7dbf183a5d73edfd1a`. The original 0.1.14 example
 used core based on `129dea2bffa9f084ee1dd7949fa69134291264f7`. The 0.1.15
 no-caret snapshot extension was developed on NexaUI base
 `4763bdd73143708207e678e5df204bc375d98ad6`.
@@ -25,6 +27,20 @@ cmake -S examples/23_aetheri_terminal_view -B /tmp/terminal-view \
 cmake --build /tmp/terminal-view
 /tmp/terminal-view/aetheri_terminal_view_test /path/to/monospace.ttf
 /tmp/terminal-view/aetheri_terminal_selection_test /path/to/monospace.ttf
+/tmp/terminal-view/aetheri_terminal_paste_test
+```
+
+On Linux, the optional controlled Wayland fixture uses a NexaUI checkout and
+the generated protocols from an already configured NexaUI test build:
+
+```sh
+cmake -S examples/23_aetheri_terminal_view -B /tmp/terminal-view \
+  -DCMAKE_PREFIX_PATH=/path/to/installed/nexaui \
+  -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot \
+  -DNEXAUI_FIXTURE_SOURCE_DIR=/path/to/nexaui-checkout \
+  -DNEXAUI_FIXTURE_PROTOCOL_DIR=/path/to/nexaui-build/generated/wayland
+cmake --build /tmp/terminal-view
+/tmp/terminal-view/aetheri_terminal_paste_wayland_test
 ```
 
 On Linux with libatspi development files, D-Bus, a registry and Python, an
@@ -80,6 +96,13 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   selection. Partial offscreen selection is not represented as a complete one.
 - Glyph lookup may return the font's missing-glyph index. Correct glyph coverage,
   width policy, mark positioning and actual font metrics remain host obligations.
+- `paste_flow` uses the real nonblocking Wayland clipboard API and original
+  `ae_terminal_paste_set`/preview. The owner must advance identity, revision and
+  focus epoch and supply the actual focus state; it must cancel on close and
+  render/navigate the complete review before a fresh non-repeat confirmation.
+  The owner copies confirmed bytes into its own PTY write queue. The example
+  does not write to a PTY or itself implement the review interface. Returned
+  text is borrowed and expires at reset; reset is not a secure-erasure promise.
 
 ## Evidence and remaining work
 
@@ -112,3 +135,13 @@ isolated negative control that removed selection extension failed the copy
 assertion. A separate libatspi client also read a reverse selection created by
 these events, then the same accessible after scrolling. The events are synthetic
 and no native pointer capture is proved.
+
+The paste flow was developed on NexaUI base
+`aecd753658edf0b0db379eee16a1e527d45f59f2`. Static, shared and Clang
+ASan/UBSan tests exercised the original Aetheri paste model, full 4096-byte
+preview traversal, CRLF normalization, rejected controls, explicit review,
+cancellation, duplicate delivery and stale focus/revision. The real NexaUI
+Wayland async transport was exercised against an in-process controlled protocol
+server, including a stalled transfer revoked on focus-epoch change. A deliberately
+broken stale guard failed the test. An independent application clipboard peer,
+native review UI, PTY writes and real Aetheri session remain open.
