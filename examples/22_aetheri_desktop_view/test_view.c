@@ -26,6 +26,14 @@ int main(int argc,char **argv) {
     CHECK(ae_desktop_model_window(&model,42,"Editor","org.example.Editor",false));++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
     CHECK(nx_focus_set(ctx,20)==NX_OK);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_DOWN;
+    CHECK(nx_context_queue_event(ctx,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_SELECT && intent.app==AE_DESKTOP_TERMINAL && !intent.window);
+    CHECK(model.selected_app==AE_DESKTOP_SETTINGS);ae_desktop_model_select(&model,1);++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_ENTER;
+    CHECK(nx_context_queue_event(ctx,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&key)==NX_OK);
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_TERMINAL);
     nx_event text={0};text.type=NX_EVENT_TEXT;text.scalar='A';CHECK(nx_context_queue_event(ctx,&text)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_QUERY && intent.query[0]=='A' && !intent.query[1]);
     CHECK(!model.query[0] && ae_desktop_model_text(&model,intent.query));++revision;
@@ -54,5 +62,11 @@ int main(int argc,char **argv) {
     CHECK(model.count==1 && model.search);
     CHECK(nx_semantics_request_action(ctx,UINT64_C(0x100000000)+42,NX_ACTION_PRESS)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_ACTIVATE && intent.window==42);
+    for(uint32_t i=1;i<=20;++i)CHECK(ae_desktop_model_window(&model,i,"Window","org.example.App",false));
+    model.selected=20;model.selected_app=AE_DESKTOP_APP_NONE;++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,240,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    uint32_t selected_index;nx_semantic_view selected_view;
+    CHECK(nx_semantics_find(ctx,UINT64_C(0x100000000)+20,&selected_index)==NX_OK && nx_semantics_get(ctx,selected_index,&selected_view)==NX_OK);
+    CHECK(selected_view.bounds.y>=68 && selected_view.bounds.y+selected_view.bounds.height<=152);
     aetheri_desktop_view_destroy(view);free(bytes);return 0;
 }

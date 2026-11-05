@@ -5,7 +5,8 @@
 typedef struct aetheri_desktop_view aetheri_desktop_view;
 typedef enum aetheri_desktop_intent_kind {
     AETHERI_DESKTOP_NONE, AETHERI_DESKTOP_SEARCH,
-    AETHERI_DESKTOP_LAUNCH, AETHERI_DESKTOP_ACTIVATE, AETHERI_DESKTOP_QUERY
+    AETHERI_DESKTOP_LAUNCH, AETHERI_DESKTOP_ACTIVATE, AETHERI_DESKTOP_QUERY,
+    AETHERI_DESKTOP_SELECT
 } aetheri_desktop_intent_kind;
 typedef struct aetheri_desktop_intent {
     aetheri_desktop_intent_kind kind;

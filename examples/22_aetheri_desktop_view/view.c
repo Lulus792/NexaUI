@@ -9,6 +9,7 @@ struct aetheri_desktop_view {
     nx_font_collection *fonts;
     nx_text_field *query;
     float scroll_x,scroll_y;
+    float revealed_width,revealed_height;
     uint64_t model_revision;
 };
 void aetheri_desktop_view_destroy(aetheri_desktop_view *v) {
@@ -86,11 +87,40 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         query.pixels_per_em=16;query.glyph_cache_bytes=1024u*1024u;query.validate=valid_query;
         nx_interaction_state query_state;int valid=0,submitted=0;
         if(nx_text_field_widget(v->context,&query,v->query,&query_state,&valid,&submitted)!=NX_OK)goto done;
+        size_t selected=result_count;int moved=0;
+        for(size_t i=0;i<result_count;++i)
+            if(results[i].window==v->model->selected && results[i].app==v->model->selected_app) {selected=i;break;}
+        if(query_state.focused && result_count) {
+            const nx_event *events=NULL;size_t event_count=0;
+            if(nx_frame_events(v->context,&events,&event_count)!=NX_OK)goto done;
+            for(size_t i=0;i<event_count;++i) {
+                if(events[i].type!=NX_EVENT_KEY_DOWN || events[i].modifiers)continue;
+                if(events[i].key!=NX_KEY_DOWN && events[i].key!=NX_KEY_UP)continue;
+                if(selected==result_count)selected=0;
+                else if(events[i].key==NX_KEY_DOWN)selected=(selected+1)%result_count;
+                else selected=selected?selected-1:result_count-1;
+                moved=1;
+            }
+            if(selected<result_count && (moved || submitted)) {
+                struct ae_desktop_result choice=results[selected];
+                if(moved)pending.kind=AETHERI_DESKTOP_SELECT;
+                if(submitted && (!choice.app || !v->model->pending[choice.app]))
+                    pending.kind=choice.window?AETHERI_DESKTOP_ACTIVATE:AETHERI_DESKTOP_LAUNCH;
+                if(pending.kind!=AETHERI_DESKTOP_NONE) {pending.window=choice.window;pending.app=choice.app;}
+            }
+        }
         nx_scroll_area_desc scroll={0};scroll.id=30;scroll.parent_id=1;
         const char *heading=v->model->german?"Suchergebnisse":"Search results";
         scroll.name=(nx_utf8_span){heading,strlen(heading)};
         scroll.viewport=(nx_rect){16,68,width-32,height-156};
         scroll.content_size=(nx_size){width-32,content_height};scroll.axes=NX_SCROLL_Y;
+        if(selected<result_count && (revision!=v->model_revision || width!=v->revealed_width || height!=v->revealed_height)) {
+            float top=result_y[selected],bottom=top+result_height[selected];
+            if(top<v->scroll_y)v->scroll_y=top;
+            else if(bottom>v->scroll_y+scroll.viewport.height)v->scroll_y=bottom-scroll.viewport.height;
+            if(v->scroll_y<0)v->scroll_y=0;
+        }
+        v->revealed_width=width;v->revealed_height=height;
         nx_scroll_info info;
         if(nx_scroll_area_begin(v->context,&scroll,&v->scroll_x,&v->scroll_y,&info)!=NX_OK)goto done;
         for(size_t i=0;i<result_count;++i) {
@@ -101,6 +131,10 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
             d.label_origin=(nx_point){d.bounds.x+8,d.bounds.y+8};d.glyph_cache_bytes=1024u*1024u;
             d.disabled=results[i].app && v->model->pending[results[i].app];
             nx_interaction_state state;if(nx_button(v->context,&d,&state)!=NX_OK)goto done;
+            if(results[i].window==v->model->selected && results[i].app==v->model->selected_app) {
+                nx_color border;if(nx_theme_color(v->context,NX_COLOR_BORDER,&border)!=NX_OK ||
+                    nx_stroke_rect(v->context,d.bounds,2,border)!=NX_OK)goto done;
+            }
             if(state.clicked) {
                 pending.kind=results[i].window?AETHERI_DESKTOP_ACTIVATE:AETHERI_DESKTOP_LAUNCH;
                 pending.window=results[i].window;pending.app=results[i].app;
