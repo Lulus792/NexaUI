@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Deferred fixture disconnect after request dispatch (2026-11-05)
+
+On `1b5699f906979fe8aa5cdfdbecebb7c0a896f672`, the Ubuntu debugger caught
+the multi-window test crashing inside `libwayland-server`'s event dispatch,
+while the main test thread waited for the fixture server to stop: see the
+[static job](https://github.com/Lulus792/NexaUI/actions/runs/42008136380/job/127180001922)
+and [shared job](https://github.com/Lulus792/NexaUI/actions/runs/42008136380/job/127180001771).
+Both had reproduced a SIGSEGV in the test suite; debugger retries caught the
+multi-window crash on their second and first attempts, respectively. This
+places the failure in the fixture server but does not alone prove the cause.
+
+The fixture had destroyed a Wayland client directly inside two request
+handlers. The Wayland server implementation continues to use the client and
+connection after dispatching a request (see the
+[Wayland server source](https://chromium.googlesource.com/external/wayland/wayland/+/refs/heads/master/src/wayland-server.c)).
+Source `d8b9db9d22656c7f1a70bd8f8639a3b37c533159` instead schedules the
+simulated disconnect on the server loop's idle phase, after request dispatch.
+The same five client-facing failure scenarios still execute. Alpine/WSL GCC
+15.2 shared Release passed 30 repetitions each; Clang ASan/UBSan with leak
+detection passed ten each (`/tmp/nexaui-deferred-disconnect-release.log`,
+`/tmp/nexaui-deferred-disconnect-asan.log`). Neither local pass proves the
+Ubuntu failures are fixed: the new Ubuntu CI result remains required. This
+change only touches the controlled test fixture, not the NexaUI client.
+
 ## Numeric input through controlled Wayland text-input-v1 (2026-11-05)
 
 Source `a01cbee4d45a3726b373564369c8b46eabc244e9` extends the existing
