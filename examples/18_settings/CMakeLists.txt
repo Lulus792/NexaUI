@@ -101,6 +101,16 @@ if(NEXAUI_BUILD_TESTS)
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --minimum)
                 set_tests_properties(nexaui_settings_wayland_keyboard_minimum PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_keyboard_german
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --small)
+                set_tests_properties(nexaui_settings_wayland_keyboard_german PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
+                    ENVIRONMENT "NEXAUI_SETTINGS_TEST_GERMAN=1" RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_keyboard_german_minimum
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --minimum)
+                set_tests_properties(nexaui_settings_wayland_keyboard_german_minimum PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
+                    ENVIRONMENT "NEXAUI_SETTINGS_TEST_GERMAN=1" RESOURCE_LOCK native_display)
                 add_test(NAME nexaui_settings_wayland_keyboard_clipboard
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --clipboard)
@@ -166,6 +176,12 @@ if(NEXAUI_BUILD_TESTS)
                         ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
                 set_tests_properties(nexaui_settings_wayland_atspi_apply_error PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                     ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_TEST_APPLY_ERROR=1"
+                    RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_atspi_german
+                    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                        ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
+                set_tests_properties(nexaui_settings_wayland_atspi_german PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                    ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font};NEXAUI_SETTINGS_TEST_GERMAN=1;NEXAUI_SETTINGS_TEST_APPLY_ERROR=1"
                     RESOURCE_LOCK native_display)
                 if(NEXAUI_XDOTOOL_EXECUTABLE)
                     add_test(NAME nexaui_settings_wayland_atspi_clipboard

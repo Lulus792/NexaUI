@@ -37,9 +37,13 @@ int main(int argc, char **argv) {
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
-    int simulate_error=argc==3 && !strcmp(argv[2],"--simulate-error");
+    int german_error=argc==4 && ((!strcmp(argv[2],"--de") && !strcmp(argv[3],"--simulate-error")) ||
+                                 (!strcmp(argv[3],"--de") && !strcmp(argv[2],"--simulate-error")));
+    int simulate_error=(argc==3 && !strcmp(argv[2],"--simulate-error")) || german_error;
+    int german=(argc==3 && !strcmp(argv[2],"--de")) || german_error ||
+        ((verify_ax || verify_keyboard) && getenv("NEXAUI_SETTINGS_TEST_GERMAN"));
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
@@ -47,12 +51,13 @@ int main(int argc, char **argv) {
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
     double apply_deadline=0; uint64_t scheduled_apply=0;
     nx_window_info previous={0};
-    nx_window_desc desc={"Settings example",640,360,0,{0}};
+    nx_window_desc desc={german?"Einstellungsbeispiel":"Settings example",640,360,0,{0}};
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
         !settings_create(font,font_size,window,&scene) ||
         nx_vulkan_driver_open(window,&renderer)!=NX_OK) goto cleanup;
     opened=1; okay=1;
+    if (german && !settings_set_language(scene,"de")) okay=0;
     if (verify_ax && (!settings_set_draft_name(scene,"A\xc3\xa9\xf0\x9f\x8c\x8d",7) ||
                       !settings_enable_accessibility_probe(scene))) okay=0;
     if (idle_probe) {start=seconds(CLOCK_MONOTONIC);cpu_start=seconds(CLOCK_PROCESS_CPUTIME_ID);if(start<0 || cpu_start<0)okay=0;}

@@ -2,8 +2,9 @@
 
 Assessment baseline: `05e28bb16c1e60ac339cd9428ff2d3afbafc21f6` (published main, checked 2026-11-04). This is an inventory, not acceptance of the catalogue. The requirements and acceptance criteria remain in the separately supplied `NEXT_AETHERI_UI.md`; this file records the first dependency stage. Later catalogue rows remain to be individually assessed.
 
-The [preliminary full-catalogue source map](aetheri-requirement-map.md) lists all
-102 requirement IDs, candidate source families and original acceptance targets.
+The [preliminary full-catalogue source map](aetheri-requirement-map.md) originally
+listed 102 requirement IDs; D11 has since been added for the updated 103-ID
+catalogue. It lists candidate source families and original acceptance targets.
 It is a navigation and triage aid, not a substitute for individual row review or
 evidence that the listed acceptance targets have passed.
 
@@ -744,3 +745,35 @@ passed 203 executed tests with four opt-in IME skips
 (`/tmp/nexaui-reflow-full.log`). All four skipped real `weston-simple-im`
 cases then passed separately (`/tmp/nexaui-reflow-ime.log`). The adjusted scene
 test passed again in GCC shared and Clang ASan/UBSan.
+
+## German/English Settings example and catalogue update (2026-11-05)
+
+Candidate based on `8d82652c08684c792ed36b28ed207dde3236a345` adds a bounded
+application-owned DE/EN string table to the existing Settings scene. `--de`
+selects German in the native example; the scene's `settings_set_language`
+rejects other codes and reflows the same controls with stable semantic IDs.
+The example also allows `--de --simulate-error`. The scene test changes
+language around a UTF-8 draft and an in-flight submission and checks focus,
+semantic names/status, unchanged token and correct eventual model. German
+labels use the same width-aware layout as English, including its documented
+small-size fallback for unbreakable words. General pluralization, locale-safe
+formatting, native window-title changes after a live scene-language switch,
+translated IME composition, visual legibility and human screenreader review
+remain open; this does not complete D02/L02 or 200% text-scale acceptance.
+
+The private Weston keyboard test passed in German at 240x150 and 128x150; an
+independent AT-SPI client found the German names, observed a German simulated
+failure and retried successfully (`/tmp/nexaui-de-native.log`,
+`/tmp/nexaui-de-min.log`). The scene test passed with GCC shared and Clang
+ASan/UBSan. The complete GCC suite passed 206 executed cases and skipped four
+opt-in IME cases (`/tmp/nexaui-de-full.log`) before a final status assertion and
+argument-parsing extension. After those changes, the scene and two selected
+German native cases passed again (`/tmp/nexaui-de-final.log`), as did all four
+separate opt-in simple-IME cases (`/tmp/nexaui-de-ime.log`).
+
+The updated external catalogue SHA-256 is
+`4e75bfc2c040c2eae74dfd164ec3ec33482af0b87671237470d4f8e7a13a808e`.
+An ID comparison found D11 missing from the earlier 102-row map; the map now
+contains 103 matching IDs with no extra IDs. The new concrete integration
+cases and changed acceptance wording still need individual reconciliation;
+ID parity is not a claim of full requirement review or acceptance.

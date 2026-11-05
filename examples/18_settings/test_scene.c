@@ -135,6 +135,28 @@ int main(int argc,char **argv) {
     CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134 &&
           view.bounds.x+view.bounds.width<=112);
+    /* Language changes keep IDs, focus, draft and in-flight work intact. */
+    const char *german_name="M\xc3\xbcnchen";
+    CHECK(settings_set_draft_name(s,german_name,strlen(german_name)) && settings_frame(s,240,150));
+    CHECK(nx_focus_set(ui,3)==NX_OK && settings_set_language(s,"de") && settings_frame(s,240,150));
+    CHECK(nx_focus_id(ui)==3 && nx_semantics_find(ui,3,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.name.length==strlen("Anzeigename") && !memcmp(view.name.data,"Anzeigename",view.name.length) &&
+          view.value.length==strlen(german_name) && !memcmp(view.value.data,german_name,view.value.length));
+    CHECK(nx_semantics_find(ui,5,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.name.length==strlen("Einstellungen anwenden") && !memcmp(view.name.data,"Einstellungen anwenden",view.name.length));
+    const char *german_status="Ungespeicherte \xc3\x84nderungen";
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(german_status) && !memcmp(view.value.data,german_status,view.value.length));
+    CHECK(!settings_set_language(s,"fr") && settings_frame(s,240,150) && nx_focus_id(ui)==3);
+    CHECK(key(ui,NX_KEY_TAB,0) && settings_frame(s,240,150) && nx_focus_id(ui)==4);
+    CHECK(key(ui,NX_KEY_TAB,0) && settings_frame(s,240,150) && nx_focus_id(ui)==5);
+    CHECK(key(ui,NX_KEY_SPACE,0) && settings_frame(s,240,150));
+    uint64_t language_token=settings_pending_apply(s); CHECK(language_token);
+    CHECK(settings_set_language(s,"en") && settings_frame(s,240,150));
+    CHECK(settings_pending_apply(s)==language_token && settings_set_language(s,"de") && settings_frame(s,240,150));
+    CHECK(settings_pending_apply(s)==language_token && settings_complete_apply(s,language_token,1));
+    CHECK(settings_frame(s,240,150) && settings_applied(s,&value,&motion) &&
+          value.length==strlen(german_name) && !memcmp(value.data,german_name,value.length));
     settings_destroy(s); free(bytes); return 0;
 fail:
     if (f) fclose(f); settings_destroy(s); free(bytes); return 1;

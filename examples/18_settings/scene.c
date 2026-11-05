@@ -7,6 +7,18 @@
 #define NAME_CAP 128u
 #define TRY(x) do { if ((x) != NX_OK) return 0; } while (0)
 
+typedef struct settings_strings {
+    const char *root, *title, *options, *name, *motion, *apply, *apply_name;
+    const char *pending, *applied, *invalid, *clean, *applying, *error;
+} settings_strings;
+static const settings_strings languages[]={
+    {"Settings example","Settings","Settings options","Display name","Reduce motion","Apply","Apply settings",
+     "Unsaved changes","Applied to this example","Enter a name under 128 bytes","No changes",
+     "Applying to example...","Example apply failed. Retry."},
+    {"Einstellungsbeispiel","Einstellungen","Einstellungsoptionen","Anzeigename","Bewegung reduzieren","Anwenden","Einstellungen anwenden",
+     "Ungespeicherte \xc3\x84nderungen","Im Beispiel angewendet","Name unter 128 Bytes eingeben","Keine \xc3\x84nderungen",
+     "Wird im Beispiel angewendet...","Anwenden fehlgeschlagen. Erneut versuchen."}
+};
 struct settings_scene {
     nx_context *ui;
     nx_window *window;
@@ -23,6 +35,7 @@ struct settings_scene {
     uint64_t next_submission, pending_submission;
     int submitted_motion, apply_error, restore_apply_focus;
     int motion, applied_motion, applied;
+    unsigned language;
     int probe_redraw, probe_step;
     float scroll_x, scroll_y;
     float status_width, status_max_height;
@@ -54,12 +67,13 @@ static int fitted_label(settings_scene *s, const char *str, double size,
 }
 static int reflow_status(settings_scene *s, float width) {
     if (s->status_width==width) return 1;
-    const char *values[]={"Unsaved changes", "Applied to this example", "Enter a name under 128 bytes",
-                          "No changes", "Applying to example...", "Example apply failed. Retry."};
+    const settings_strings *strings=&languages[s->language];
+    const char *values[]={strings->pending,strings->applied,strings->invalid,
+                          strings->clean,strings->applying,strings->error};
     nx_text_layout **slots[]={&s->pending_label,&s->applied_label,&s->invalid_label,
                               &s->clean_label,&s->applying_label,&s->error_label};
     nx_text_layout *next[6]={0}; float maximum=0;
-    nx_text_layout *motion=NULL, *name=NULL, *title=NULL;
+    nx_text_layout *motion=NULL, *name=NULL, *title=NULL, *apply=NULL;
     for (size_t i=0;i<6;++i) {
         if (!fitted_label(s,values[i],15,width,&next[i])) {
             for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
@@ -68,20 +82,23 @@ static int reflow_status(settings_scene *s, float width) {
         maximum=fmaxf(maximum,(float)nx_text_layout_height(next[i]));
     }
     float motion_width=width<116 ? width : width-38;
-    if (!fitted_label(s,"Reduce motion",width<116?14:16,motion_width,&motion)) {
+    if (!fitted_label(s,strings->motion,width<116?14:16,motion_width,&motion)) {
         for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
         return 0;
     }
-    if (!fitted_label(s,"Display name",16,width,&name) ||
-        !fitted_label(s,"Settings",26,width,&title)) {
+    if (!fitted_label(s,strings->name,16,width,&name) ||
+        !fitted_label(s,strings->title,26,width,&title) ||
+        !fitted_label(s,strings->apply,16,fminf(110,width)-12,&apply)) {
         for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
         nx_text_layout_destroy(motion); nx_text_layout_destroy(name); nx_text_layout_destroy(title);
+        nx_text_layout_destroy(apply);
         return 0;
     }
     for (size_t i=0;i<6;++i) { nx_text_layout_destroy(*slots[i]); *slots[i]=next[i]; }
     nx_text_layout_destroy(s->motion_label); s->motion_label=motion;
     nx_text_layout_destroy(s->name_label); s->name_label=name;
     nx_text_layout_destroy(s->title); s->title=title;
+    nx_text_layout_destroy(s->apply_label); s->apply_label=apply;
     s->status_width=width; s->status_max_height=maximum;
     return 1;
 }
@@ -129,6 +146,15 @@ nx_context *settings_context(settings_scene *s) { return s ? s->ui : NULL; }
 int settings_set_draft_name(settings_scene *s, const char *name, size_t length) {
     return s && nx_text_field_set_text(s->name,name,length)==NX_OK;
 }
+int settings_set_language(settings_scene *s, const char *language) {
+    if (!s || !language) return 0;
+    unsigned next;
+    if (!strcmp(language,"en")) next=0;
+    else if (!strcmp(language,"de")) next=1;
+    else return 0;
+    if (s->language!=next) {s->language=next;s->status_width=0;s->revealed_width=-1;}
+    return 1;
+}
 int settings_enable_accessibility_probe(settings_scene *s) {
     return s && !s->probe_secret && nx_text_field_create_password("private",7,&s->probe_secret)==NX_OK;
 }
@@ -159,19 +185,20 @@ int settings_complete_apply(settings_scene *s, uint64_t token, int success) {
 int settings_frame(settings_scene *s, float width, float height) {
     if (!s || width < 128 || height < 120) return 0;
     if (!reflow_status(s,width-64)) return 0;
+    const settings_strings *strings=&languages[s->language];
     TRY(nx_begin_frame(s->ui, width, height, 1.0/60.0));
     nx_color fg, muted;
     TRY(nx_theme_color(s->ui, NX_COLOR_TEXT, &fg));
     TRY(nx_theme_color(s->ui, NX_COLOR_TEXT_MUTED, &muted));
     nx_semantic_desc root = {0}; root.id=1; root.role=NX_ROLE_WINDOW;
-    root.bounds=(nx_rect){0,0,width,height}; root.name=text("Settings example");
+    root.bounds=(nx_rect){0,0,width,height}; root.name=text(strings->root);
     TRY(nx_semantics_add(s->ui, &root, NULL));
     nx_container_desc panel={0}; panel.id=2; panel.parent_id=1;
-    panel.bounds=(nx_rect){16,16,width-32,height-32}; panel.name=text("Settings");
+    panel.bounds=(nx_rect){16,16,width-32,height-32}; panel.name=text(strings->title);
     panel.label_layout=s->title; panel.label_origin=(nx_point){32,30}; panel.glyph_cache_bytes=CACHE_BYTES;
     TRY(nx_panel(s->ui, &panel));
     nx_scroll_area_desc scroll={0}; scroll.id=7; scroll.parent_id=2;
-    scroll.name=text("Settings options"); scroll.viewport=(nx_rect){16,70,width-32,height-86};
+    scroll.name=text(strings->options); scroll.viewport=(nx_rect){16,70,width-32,height-86};
     int stacked_motion=width<180;
     float field_y=fmaxf(104,85+(float)nx_text_layout_height(s->name_label));
     float motion_y=160+field_y-104;
@@ -210,21 +237,21 @@ int settings_frame(settings_scene *s, float width, float height) {
     float y=s->scroll_y;
     TRY(nx_draw_text_layout(s->ui,s->name_label,(nx_point){32,78-y},fg,CACHE_BYTES));
     nx_text_field_desc field={0}; field.id=3; field.parent_id=7;
-    field.bounds=(nx_rect){32,field_y-y,width-64,38}; field.name=text("Display name");
+    field.bounds=(nx_rect){32,field_y-y,width-64,38}; field.name=text(strings->name);
     field.fonts=s->fonts; field.pixels_per_em=16; field.glyph_cache_bytes=CACHE_BYTES;
     field.validate=valid_name; field.ime_window=s->window;
     if (s->window) TRY(nx_text_clipboard_for_window(s->window,&field.clipboard));
     nx_interaction_state interaction; int valid=0, submitted=0;
     TRY(nx_text_field_widget(s->ui,&field,s->name,&interaction,&valid,&submitted));
     nx_control_desc motion={0}; motion.id=4; motion.parent_id=7;
-    motion.bounds=(nx_rect){32,motion_y-y,width-64,stacked_motion?24:32}; motion.name=text("Reduce motion");
+    motion.bounds=(nx_rect){32,motion_y-y,width-64,stacked_motion?24:32}; motion.name=text(strings->motion);
     motion.label_layout=stacked_motion?NULL:s->motion_label; motion.label_origin=(nx_point){70,motion_y+4-y}; motion.glyph_cache_bytes=CACHE_BYTES;
     TRY(nx_checkbox(s->ui,&motion,&s->motion,&interaction));
     if (stacked_motion)
         TRY(nx_draw_text_layout(s->ui,s->motion_label,(nx_point){32,motion_y+28-y},fg,CACHE_BYTES));
     nx_control_desc apply={0}; apply.id=5; apply.parent_id=7;
     float apply_width=fminf(110,width-64);
-    apply.bounds=(nx_rect){32,apply_y-y,apply_width,38}; apply.name=text("Apply settings");
+    apply.bounds=(nx_rect){32,apply_y-y,apply_width,38}; apply.name=text(strings->apply_name);
     apply.label_layout=s->apply_label;
     apply.label_origin=(nx_point){32+(apply_width-(float)nx_text_layout_width(s->apply_label))*0.5f,apply_y+8-y}; apply.glyph_cache_bytes=CACHE_BYTES;
     apply.disabled=!valid || s->pending_submission || s->next_submission==UINT64_MAX;
@@ -243,15 +270,15 @@ int settings_frame(settings_scene *s, float width, float height) {
     }
     int same = name.length==s->applied_length &&
         memcmp(name.data,s->applied_name,name.length)==0 && s->motion==s->applied_motion;
-    const char *message = s->pending_submission ? "Applying to example..." :
-                          !valid ? "Enter a name under 128 bytes" :
-                          s->apply_error ? "Example apply failed. Retry." :
-                          !same ? "Unsaved changes" : s->applied ? "Applied to this example" : "No changes";
+    const char *message = s->pending_submission ? strings->applying :
+                          !valid ? strings->invalid :
+                          s->apply_error ? strings->error :
+                          !same ? strings->pending : s->applied ? strings->applied : strings->clean;
     nx_text_layout *status = s->pending_submission ? s->applying_label :
                              !valid ? s->invalid_label : s->apply_error ? s->error_label :
                              !same ? s->pending_label : s->applied ? s->applied_label : s->clean_label;
     nx_semantic_desc state={0}; state.id=6; state.parent_id=7; state.role=NX_ROLE_STATUS;
-    state.bounds=(nx_rect){32,status_y-y,width-64,(float)nx_text_layout_height(status)}; state.name=text("Settings status"); state.value=text(message);
+    state.bounds=(nx_rect){32,status_y-y,width-64,(float)nx_text_layout_height(status)}; state.name=text(s->language?"Einstellungsstatus":"Settings status"); state.value=text(message);
     TRY(nx_semantics_add(s->ui,&state,NULL));
     TRY(nx_draw_text_layout(s->ui,status,(nx_point){32,status_y-y},muted,CACHE_BYTES));
     TRY(nx_scroll_area_end(s->ui));

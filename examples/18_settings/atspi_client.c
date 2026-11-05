@@ -167,7 +167,10 @@ int main(int argc,char **argv) {
     CHECK(atspi_init()==0); atspi_set_timeout(1000,1000);
     AtspiAccessible *desktop=atspi_get_desktop(0); CHECK(desktop);
     AtspiAccessible *app=app_for_pid(desktop); CHECK(app);
-    AtspiAccessible *name=find(app,"Display name",0), *motion=find(app,"Reduce motion",0), *apply=find(app,"Apply settings",0);
+    int german=getenv("NEXAUI_SETTINGS_TEST_GERMAN")!=NULL;
+    AtspiAccessible *name=find(app,german?"Anzeigename":"Display name",0),
+        *motion=find(app,german?"Bewegung reduzieren":"Reduce motion",0),
+        *apply=find(app,german?"Einstellungen anwenden":"Apply settings",0);
     CHECK(name && motion && apply);
     AtspiAccessible *secret=find(app,"Secret probe",0), *custom=find(app,"Custom text probe",0);
     CHECK(secret && custom);
@@ -296,13 +299,14 @@ int main(int argc,char **argv) {
     for(unsigned i=0;i<200 && !changed;++i) {pump(10);atspi_accessible_clear_cache(motion);changed=checked(motion);}
     CHECK(changed && activate(apply));
     if (getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR")) {
-        AtspiAccessible *message=find(app,"Settings status",0); CHECK(message);
+        AtspiAccessible *message=find(app,german?"Einstellungsstatus":"Settings status",0); CHECK(message);
         int failed=0;
         for(unsigned i=0;i<200 && !failed;++i) {
             pump(10); atspi_accessible_clear_cache(message);
             GHashTable *attrs=atspi_accessible_get_attributes(message,&error);
             CHECK(attrs && !error);
-            failed=g_strcmp0(g_hash_table_lookup(attrs,"nexaui-value"),"Example apply failed. Retry.")==0;
+            failed=g_strcmp0(g_hash_table_lookup(attrs,"nexaui-value"),german?
+                "Anwenden fehlgeschlagen. Erneut versuchen.":"Example apply failed. Retry.")==0;
             g_hash_table_unref(attrs);
         }
         CHECK(failed && activate(apply));

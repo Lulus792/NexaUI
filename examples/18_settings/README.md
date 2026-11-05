@@ -8,13 +8,19 @@ checkbox, button, focus, semantic and theme APIs. The Linux host passes its
 window to the text field for native IME and clipboard routing, publishes the
 semantic tree, and retires the renderer before destroying the scene and window.
 
-With Linux Vulkan enabled, run `nexaui_settings /path/to/font.ttf`. The runner
+With Linux Vulkan enabled, run `nexaui_settings /path/to/font.ttf`; add `--de`
+to select the German example catalog. The application-owned scene can switch
+between `en` and `de` with `settings_set_language` without changing semantic
+IDs, the focused field, draft or in-flight submission. Unsupported codes are
+rejected. This example catalog does not implement general plural rules,
+locale-sensitive formatting or system language detection. The runner
 currently uses the private build-tree Vulkan adapter and is not an installed-SDK
 consumer. `--smoke` closes after a bounded native run. The headless scene test
 checks Tab and Shift-Tab traversal, text editing, checkbox and button activation,
 validation, applied model values and status semantics. It uses synthetic events.
 Run `nexaui_settings /path/to/font.ttf --simulate-error` to make the first
 submission fail; the status describes the example failure and Apply retries.
+The option can be combined with `--de`.
 While a submission is pending Apply is disabled, edits remain a separate draft,
 and a late or duplicate completion cannot apply another submission. A newer
 draft remains unsaved after the submitted snapshot succeeds. Closing destroys
@@ -62,14 +68,14 @@ synthetic test checks focus visibility at 240x150. Below 128x120 the runner
 continues polling without drawing a new frame. Long-label reflow and native
 small-window accessibility remain open.
 
-The example wraps its fixed English labels and status messages to the available
+The example wraps its English or German labels and status messages to the available
 column. If an individual word cannot wrap, it reduces that label's size enough
 to fit. At narrow widths the motion label moves below its checkbox; Apply fits
 the content width. While focus is on the checkbox or Apply, Page Down and Page
 Up scroll by half a viewport to inspect long status text. The scene and private
 Weston tests exercise the 128x150 and 240x150 cases, including keyboard focus
 and status scrolling. These geometry checks do not replace visual review, do not
-establish 200% text-scale or translated-label acceptance, and at the minimum
+establish 200% text-scale or complete translation acceptance, and at the minimum
 height a whole multiline label may not fit in one viewport.
 
 The native runner redraws after routed input or size/scale changes rather than

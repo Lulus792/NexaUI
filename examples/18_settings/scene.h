@@ -12,6 +12,8 @@ nx_context *settings_context(settings_scene *scene);
 int settings_frame(settings_scene *scene, float width, float height);
 int settings_applied(settings_scene *scene, nx_utf8_span *name, int *reduced_motion);
 int settings_set_draft_name(settings_scene *scene, const char *name, size_t length);
+/* Application-owned example catalog; unsupported language codes are rejected. */
+int settings_set_language(settings_scene *scene, const char *language);
 /* The host owns completion. Tokens identify one immutable submission; stale or
    duplicate completions are rejected. No work survives scene destruction. */
 uint64_t settings_pending_apply(const settings_scene *scene);
