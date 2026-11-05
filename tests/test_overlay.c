@@ -323,6 +323,18 @@ static int test_nested_siblings(void) {
     CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==12);
     nx_context_destroy(ctx);return 0;
 }
+static int test_sibling_close_during_build(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    nx_overlay_desc first=overlay(10,11),second=overlay(20,21);
+    int dismissed=0;
+    CHECK(nx_begin_frame(ctx,200,120,0)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&first,&dismissed)==NX_OK && nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_popup_begin(ctx,&second,&dismissed)==NX_OK);
+    CHECK(nx_overlay_close(ctx)==NX_ERROR_STATE);
+    CHECK(nx_overlay_end(ctx)==NX_OK && nx_overlay_close(ctx)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_id(ctx)==10);
+    nx_context_destroy(ctx);return 0;
+}
 
 static void *fail_next_allocate(void *user,size_t size) {
     int *fail=user;if (*fail) { *fail=0;return NULL; } return malloc(size);
@@ -364,7 +376,7 @@ static int test_nested_depth_limit(void) {
 }
 
 int main(void) {
-    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays() || test_nested_siblings()) return 1;
+    if (test_modal_popup_tooltip() || test_failure_retry() || test_nested_overlay() || test_nested_failure_retry() || test_nested_depth_limit() || test_sibling_overlays() || test_nested_siblings() || test_sibling_close_during_build()) return 1;
     puts("overlay tests passed");
     return 0;
 }

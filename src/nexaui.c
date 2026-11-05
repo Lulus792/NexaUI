@@ -4696,7 +4696,7 @@ nx_result nx_overlay_end(nx_context *ctx) {
 
 nx_result nx_overlay_close(nx_context *ctx) {
     if (!ctx || !ctx->state || (ctx->building_overlay_id &&
-        ctx->overlay_current_depth<=ctx->overlay_build_depth))
+        ctx->current_overlay_id==ctx->building_overlay_id))
         return NX_ERROR_STATE;
     if (ctx->state == 1u) {
         if (!ctx->current_overlay_id && !ctx->previous_overlay_id)
