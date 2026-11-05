@@ -15,6 +15,8 @@ typedef struct aetheri_desktop_intent {
 /* Model and font bytes are borrowed until destroy. No process or role is owned. */
 int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out);
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *view);
-int aetheri_desktop_view_frame(aetheri_desktop_view *view,float width,float height,aetheri_desktop_intent *intent);
+/* revision must increase whenever the caller mutates the model, even if an ID
+   or value is later reused. Events from an older revision are discarded. */
+int aetheri_desktop_view_frame(aetheri_desktop_view *view,float width,float height,uint64_t revision,aetheri_desktop_intent *intent);
 void aetheri_desktop_view_destroy(aetheri_desktop_view *view);
 #endif
