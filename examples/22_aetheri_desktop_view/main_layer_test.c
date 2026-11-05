@@ -225,6 +225,13 @@ static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial)
     size_t start=lo-result.before,end=hi+result.after;
     if((start<a->ime_length && ((unsigned char)a->ime_surrounding[start]&0xc0u)==0x80u) ||
        (end<a->ime_length && ((unsigned char)a->ime_surrounding[end]&0xc0u)==0x80u))return;
+    size_t incoming=0;
+    for(size_t i=0;i<result.scalar_count;++i) {
+        uint32_t scalar=result.scalars[i];
+        incoming+=scalar<0x80u?1u:scalar<0x800u?2u:scalar<0x10000u?3u:4u;
+    }
+    size_t removed=(result.before || result.after || result.scalar_count)?end-start:0;
+    if(a->ime_length-removed+incoming>=AE_DESKTOP_QUERY)return;
     CHECK(aetheri_desktop_view_host_ime_preedit(v->view,current,NULL,0,0,0)==NX_OK);
     nx_event event={0};event.ime_target=20;event.ime_revision=current;
     if(result.before || result.after) {

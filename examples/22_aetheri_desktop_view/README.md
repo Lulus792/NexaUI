@@ -414,6 +414,26 @@ Aetheri compositor or its Compose provider, physical input, native AT-SPI,
 multi-output acceptance or human assistive review. It does not resolve the
 held-pointer removal failure; the private host remains test-only.
 
+The subsequent wire-test candidate based on
+`f005c93eac9d28674e9f25dc46b2a792e6bb1053` additionally delays a commit
+across an intervening local model edit. The server then sends the old `done`
+and a new commit; only the new commit reaches the model. It also sends a
+preedit followed by a pending commit, native text-input leave and late `done`;
+the draft clears and the late commit has no effect. The controlled wire test
+passed with GCC and Clang ASan/UBSan with leak detection on Alpine/WSL2. A
+test-only mutant removing both stale-revision guards inserted the old `X` and
+failed the `ABDC` assertion. The compositor and keyboard focus remain fixtures.
+The available Alpine environment had no wlroots-0.20 development package or
+built Aetheri test compositor; the optional Aetheri Compose provider was not
+executed here. No packages or Aetheri files were changed to manufacture a pass.
+
+The same candidate bounds the complete resulting search query before queueing
+any IME deletion or committed scalar. A 128-emoji commit that cannot fit the
+Aetheri model is rejected without changing the field revision or model. A
+test-only copy without that guard failed the unchanged-revision assertion; the
+callback case passed with GCC and Clang ASan/UBSan and leak detection. This is
+the test host's query policy, not terminal paste or production IME acceptance.
+
 The focus-forwarding candidate based on
 `b097deac0894fed6573a2f39bfbedeece7182867` was built against the installed
 0.1.13 static SDK on Alpine/WSL2. Its callback test and the desktop view test

@@ -37,6 +37,8 @@ static void wire_surrounding(struct wl_client *c,struct wl_resource *r,const cha
     CHECK(cursor>=0 && anchor>=0 && (size_t)cursor<=strlen(text) && (size_t)anchor<=strlen(text));
     if(s->serial==0)CHECK(!strcmp(text,"A") && cursor==1 && anchor==1);
     if(s->serial==2)CHECK(!strcmp(text,"A\xc3\xa9") && cursor==3 && anchor==3);
+    if(s->serial==3)CHECK(!strcmp(text,"AB") && cursor==2 && anchor==2);
+    if(s->serial==4)CHECK(!strcmp(text,"ABD") && cursor==3 && anchor==3);
     atomic_fetch_add(&s->surrounding,1);
 }
 static void wire_commit(struct wl_client *c,struct wl_resource *r) {
@@ -45,6 +47,15 @@ static void wire_commit(struct wl_client *c,struct wl_resource *r) {
     if(s->serial==1)zwp_text_input_v3_send_preedit_string(r,"x",1,1);
     else if(s->serial==2) {zwp_text_input_v3_send_commit_string(r,"\xc3\xa9");zwp_text_input_v3_send_preedit_string(r,"",0,0);}
     else if(s->serial==3) {zwp_text_input_v3_send_delete_surrounding_text(r,2,0);zwp_text_input_v3_send_commit_string(r,"B");}
+    else if(s->serial==4) {zwp_text_input_v3_send_commit_string(r,"X");return;}
+    else if(s->serial==5) {
+        zwp_text_input_v3_send_done(r,4);
+        zwp_text_input_v3_send_commit_string(r,"C");
+    } else if(s->serial==6)zwp_text_input_v3_send_preedit_string(r,"x",1,1);
+    else if(s->serial==7) {
+        zwp_text_input_v3_send_commit_string(r,"X");
+        zwp_text_input_v3_send_leave(r,s->surface);
+    }
     zwp_text_input_v3_send_done(r,s->serial);
 }
 static void wire_get_input(struct wl_client *c,struct wl_resource *manager,uint32_t id,struct wl_resource *seat) {
@@ -92,6 +103,19 @@ int main(int argc,char **argv) {
     CHECK(!strcmp(v->model.query,"A"));ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
     CHECK(!strcmp(v->model.query,"A\xc3\xa9"));ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
     CHECK(!strcmp(v->model.query,"AB") && atomic_load(&server.caret)>=3 && atomic_load(&server.surrounding)>=3);
+    ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);CHECK(!strcmp(v->model.query,"AB"));
+    nx_event typed={0};typed.type=NX_EVENT_TEXT;typed.scalar='D';
+    CHECK(aetheri_desktop_view_queue_event(v->view,&typed)==NX_OK);advance(v);advance(v);
+    CHECK(!strcmp(v->model.query,"ABD"));ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
+    CHECK(!strcmp(v->model.query,"ABDC"));
+    uint64_t revision=0;nx_rect plain={0},composing={0};
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&revision)==NX_OK);
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&plain)==NX_OK);
+    ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
+    CHECK(aetheri_desktop_view_host_ime_caret(v->view,&composing)==NX_OK && composing.x>plain.x);
+    ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
+    CHECK(!a.ime_enabled && !a.ime_surface && !strcmp(v->model.query,"ABDC"));
+    advance(v);CHECK(aetheri_desktop_view_host_ime_caret(v->view,&composing)==NX_OK && composing.x==plain.x);
     ime_stop(&a);zwp_text_input_v3_destroy(a.ime_input);zwp_text_input_manager_v3_destroy(a.ime_manager);
     aetheri_desktop_view_destroy(v->view);wl_surface_destroy(v->surface);wl_seat_destroy(a.seat);
     wl_compositor_destroy(a.compositor);wl_registry_destroy(a.registry);free(a.font);

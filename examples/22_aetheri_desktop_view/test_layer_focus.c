@@ -37,6 +37,10 @@ int main(int argc, char **argv) {
     nx_rect before={0},after={0};CHECK(aetheri_desktop_view_host_ime_caret(v->view,&before)==NX_OK);
     ime_commit(&a,NULL,"\xff");ime_done(&a,NULL,1);CHECK(!strcmp(v->model.query,"A"));
     ime_delete(&a,NULL,99,0);ime_commit(&a,NULL,"X");ime_done(&a,NULL,1);CHECK(!strcmp(v->model.query,"A"));
+    char large[513];for(size_t i=0;i<128;++i)memcpy(large+i*4,"\xf0\x9f\x98\x80",4);large[512]=0;
+    uint64_t before_large=current;
+    ime_commit(&a,NULL,large);ime_done(&a,NULL,1);
+    CHECK(!strcmp(v->model.query,"A") && aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK && current==before_large);
     ime_preedit(&a,NULL,"x",-1,-1);ime_done(&a,NULL,1);
     CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_ERROR_STATE && a.ime_enabled);
     ime_preedit(&a,NULL,"x",1,1);ime_done(&a,NULL,1);
