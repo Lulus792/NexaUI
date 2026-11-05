@@ -11,6 +11,19 @@ regression on that source, Windows 10.0.26200 x64 with MSVC 19.38.33145 shared
 Debug passed `nexaui_overlay` and `nexaui_search` five consecutive times each.
 Those Windows tests are not macOS AX, VoiceOver or Aetheri acceptance.
 
+## Windows IME focus transfer (2026-11-05)
+
+Test source `e4ce4d1f554f5c4fc3eee6fbe5e41869a7d7cf49` adds a controlled
+same-window transition between two numeric fields: an old composition result
+must not reach the newly focused field. On Windows 10.0.26200 x64, MSVC
+19.38.33145 shared Debug, the new test passed ten consecutive runs on the
+equivalent test tree based on `b2851034be5a9398d10626d921428777e76b9a4f`;
+the only additional committed differences there were macOS test files and
+documentation. An isolated build with target-change revocation deliberately
+disabled failed exactly at the new no-text-event assertion. These are injected
+messages, not acceptance of a physical keyboard or installed IME. T05 remains
+open and no Aetheri consumer pin changed.
+
 ## macOS selection notification comparison (2026-11-05)
 
 The native macOS static and shared CI jobs for source
