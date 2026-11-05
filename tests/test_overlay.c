@@ -257,6 +257,7 @@ static int test_nested_overlay(void) {
 
 /* Two independently owned top-level popups remain visible. Only the last
    popup receives input; dismissing it restores the earlier popup's focus. */
+static int sibling_first_clicked,sibling_second_clicked;
 static int sibling_frame(nx_context *ctx,int show_second,int *first_dismissed,int *second_dismissed) {
     nx_control_desc background=button(1,(nx_rect){0,0,200,120});
     nx_control_desc first_item=button(12,(nx_rect){50,30,40,20});first_item.parent_id=10;
@@ -264,10 +265,14 @@ static int sibling_frame(nx_context *ctx,int show_second,int *first_dismissed,in
     nx_overlay_desc first=overlay(10,11),second=overlay(20,21);
     nx_interaction_state state;
     if(nx_begin_frame(ctx,200,120,0)!=NX_OK || nx_button(ctx,&background,&state)!=NX_OK ||
-       nx_popup_begin(ctx,&first,first_dismissed)!=NX_OK || nx_button(ctx,&first_item,&state)!=NX_OK ||
-       nx_overlay_end(ctx)!=NX_OK) return 0;
-    if(show_second && (nx_popup_begin(ctx,&second,second_dismissed)!=NX_OK ||
-       nx_button(ctx,&second_item,&state)!=NX_OK || nx_overlay_end(ctx)!=NX_OK)) return 0;
+       nx_popup_begin(ctx,&first,first_dismissed)!=NX_OK || nx_button(ctx,&first_item,&state)!=NX_OK) return 0;
+    sibling_first_clicked=state.clicked;sibling_second_clicked=0;
+    if(nx_overlay_end(ctx)!=NX_OK) return 0;
+    if(show_second) {
+        if(nx_popup_begin(ctx,&second,second_dismissed)!=NX_OK || nx_button(ctx,&second_item,&state)!=NX_OK) return 0;
+        sibling_second_clicked=state.clicked;
+        if(nx_overlay_end(ctx)!=NX_OK) return 0;
+    }
     return nx_end_frame(ctx)==NX_OK;
 }
 static int test_sibling_overlays(void) {
@@ -280,6 +285,14 @@ static int test_sibling_overlays(void) {
     CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
     CHECK(nx_semantics_request_action(ctx,12,NX_ACTION_PRESS)==NX_ERROR_STATE);
     CHECK(nx_semantics_request_action(ctx,22,NX_ACTION_PRESS)==NX_OK);
+    CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
+    CHECK(click(ctx,55,35));
+    CHECK(sibling_frame(ctx,1,&first,&second) && !first && !second && !sibling_first_clicked && !sibling_second_clicked);
+    CHECK(click(ctx,105,55));
+    CHECK(sibling_frame(ctx,1,&first,&second) && !first && !second && !sibling_first_clicked && sibling_second_clicked);
+    CHECK(click(ctx,5,110));
+    CHECK(sibling_frame(ctx,1,&first,&second) && !first && second && nx_focus_id(ctx)==12);
+    CHECK(sibling_frame(ctx,0,&first,&second) && nx_focus_id(ctx)==12);
     CHECK(sibling_frame(ctx,1,&first,&second) && nx_focus_id(ctx)==22);
     CHECK(nx_overlay_close(ctx)==NX_OK && nx_focus_id(ctx)==12);
     CHECK(sibling_frame(ctx,0,&first,&second) && nx_focus_id(ctx)==12);
