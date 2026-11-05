@@ -190,3 +190,25 @@ Positive and negative logs plus two failed screenshot runs are archived in
 The screenshot failures reported a compositor capture/write failure; after
 compressing this task's accumulated temporary captures, the final run passed.
 No specific underlying write error was recorded.
+
+Source `57b0273b248286f07bf8edc34db36cd0222bc899` invalidates a
+captured pointer press and an Enter/Space activation when the model revision
+changes, while retaining the current focus. The regression holds a press on
+window 42, removes and recreates that ID, presents the new revision and then
+releases: neither the old pointer press nor the old Enter press may activate
+the replacement. Fresh pointer and Enter presses on the replacement still
+activate it. The pointer assertion failed before the change; after adding the
+pointer cancellation, the separate Enter assertion also failed until the
+keyboard capture was retired.
+
+The core view regression passed with GCC 15.2 and Clang 22.1.3 ASan/UBSan
+with leak detection, and with GCC 16.2.1 on the Fedora carrier. The separate
+ordinary-window Wayland keyboard and independent AT-SPI regressions passed
+under private Weston. The full private Aetheri layer fixture also passed; its
+desktop binary SHA-256 was
+`556c6a30481283a7c61c10877e4432e2d639a807055a4cacc03ea1d4f55e84cd`.
+Its logs are in `D:/NexaUI/out/aetheri-layer-revision-guard-20261105.tar.gz`,
+SHA-256 `7735efdabb14dea4a3c09a725e5b1094fe42fa3dc1ddf076011c2dfcfcf13323`.
+The host must still advance and recheck its revision before acting. This fix
+does not resolve the separate held-device removal case above, which can
+produce a native release before any model revision or device-loss event.
