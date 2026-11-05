@@ -23,6 +23,26 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             target_link_libraries(aetheri_desktop_atspi_client PRIVATE PkgConfig::ATSPI)
             set_target_properties(aetheri_desktop_atspi_client PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
         endif()
+        pkg_check_modules(WAYLAND_CLIENT QUIET IMPORTED_TARGET wayland-client)
+        pkg_check_modules(WAYLAND_PROTOCOLS QUIET wayland-protocols)
+        find_program(WAYLAND_SCANNER wayland-scanner)
+        find_package(Threads QUIET)
+        if(WAYLAND_CLIENT_FOUND AND WAYLAND_PROTOCOLS_FOUND AND WAYLAND_SCANNER AND Threads_FOUND)
+            pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
+            set(XDG_XML "${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
+            add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h"
+                COMMAND "${WAYLAND_SCANNER}" client-header "${XDG_XML}" "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h"
+                DEPENDS "${XDG_XML}" VERBATIM)
+            add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c"
+                COMMAND "${WAYLAND_SCANNER}" private-code "${XDG_XML}" "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c"
+                DEPENDS "${XDG_XML}" VERBATIM)
+            add_executable(aetheri_desktop_borrowed main_borrowed.c
+                "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h"
+                "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c")
+            target_include_directories(aetheri_desktop_borrowed PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+            target_link_libraries(aetheri_desktop_borrowed PRIVATE aetheri_desktop_view PkgConfig::WAYLAND_CLIENT Threads::Threads)
+            set_target_properties(aetheri_desktop_borrowed PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+        endif()
     endif()
 endif()
 foreach(target aetheri_desktop_model aetheri_desktop_view aetheri_desktop_view_test)
