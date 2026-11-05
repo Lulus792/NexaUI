@@ -1,5 +1,41 @@
 # Aetheri adoption: initial source assessment
 
+## Nested overlays through Linux AT-SPI (2026-11-05)
+
+Source `01b04679211e380e28a6e341e1ca9f5df4967353` fixes a Linux bridge
+regression in the 0.1.9 development package. The bridge previously inherited
+an overlay-derived disabled state from the outer trigger into the active nested
+popup. It now inherits actual local/ancestor disabled state separately while
+retaining each node's overlay-derived state. A truly disabled group still
+disables its child.
+
+An independent libatspi client drives a separate NexaUI host on private Weston
+14.0.2/Xvfb and a private D-Bus/AT-SPI registry. It opens a modal and nested
+popup, observes the outer trigger disabled and inner action enabled and focused,
+verifies the outer action is rejected, activates the inner action and observes
+the host's count, closes the popup, and observes the trigger enabled and
+focused again. The added disabled-group case verifies real disabled inheritance.
+Before the bridge fix this client failed its enabled-state assertion; the
+failed fixture result is `/tmp/nexaui-nested-atspi-20261105/result.json` and
+the diagnostic is retained in the execution transcript.
+
+On Alpine/WSL, GCC 15.2 Release, Wayland-only, AT-SPI-enabled shared build
+passed that native case plus existing native multi-selection and large-text
+cases (3/3, `/tmp/nexaui-nested-atspi-019.log`, compositor result
+`/tmp/nexaui-nested-atspi-019-20261105/result.json`). Clang 22.1.3 Debug
+ASan/UBSan with leak detection passed the independent nested case (1/1,
+`/tmp/nexaui-nested-atspi-019-asan.log`). The overlay, search, semantics and
+multi-selection core regressions passed under ASan/UBSan before the final
+version-only bump (`/tmp/nexaui-nested-atspi-core.log`). Static/shared installed
+C17 package checks also passed (`/tmp/nexaui-nested-atspi-019-package.log`).
+Those local native builds did not embed a `NEXAUI_SOURCE_REVISION` value; the
+source above identifies the tested tree rather than a linked provenance query.
+
+This is an automated private-compositor/client result, not a human screenreader
+or Aetheri acceptance. Windows UIA and macOS AX source use similar disabled-state
+inheritance and still need correction and native tests. Sibling overlays remain
+unsupported. No Aetheri consumer pin or 1.0.0 release was changed.
+
 ## Nested overlay focus scopes (2026-11-05)
 
 Source `d929460b54ca47fe048b1a49784773f17afa8b6c` adds up to 16 nested
