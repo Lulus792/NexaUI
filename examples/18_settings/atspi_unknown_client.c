@@ -80,7 +80,11 @@ int main(int argc,char **argv) {
     int reopen=getenv("NEXAUI_SETTINGS_REOPEN_TEST")!=NULL;int markers[2]={-1,-1};
     if(reopen)CHECK(pipe(markers)==0);
     host=fork();CHECK(host>=0);
-    if(!host){if(reopen){dup2(markers[1],STDOUT_FILENO);close(markers[0]);close(markers[1]);}
+    if(!host){if(reopen){char fd_text[32];close(markers[0]);
+        if(snprintf(fd_text,sizeof(fd_text),"%d",markers[1])<=0 ||
+           setenv("NEXAUI_SETTINGS_TEST_MARKER_FD",fd_text,1)!=0)_exit(127);
+        static const char noise[]="unrelated stdout from the Settings process\n";
+        if(write(STDOUT_FILENO,noise,sizeof(noise)-1)!=(ssize_t)(sizeof(noise)-1))_exit(127);}
         execl(argv[1],argv[1],font,reopen?"--verify-reopen":"--simulate-unknown",(char *)NULL);_exit(127);}
     if(reopen)close(markers[1]);
     CHECK(atspi_init()==0);AtspiAccessible *desktop=atspi_get_desktop(0),*root=NULL;

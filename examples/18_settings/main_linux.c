@@ -3,6 +3,7 @@
 #include "renderer.h"
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -75,6 +76,13 @@ int main(int argc, char **argv) {
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
     int simulate_unknown=argc==3 && !strcmp(argv[2],"--simulate-unknown");
     int verify_reopen=argc==3 && !strcmp(argv[2],"--verify-reopen");
+    int marker_fd=STDOUT_FILENO;
+    const char *marker_env=verify_reopen?getenv("NEXAUI_SETTINGS_TEST_MARKER_FD"):NULL;
+    if(marker_env) {
+        char *end=NULL;errno=0;long value=strtol(marker_env,&end,10);
+        if(errno || !*marker_env || *end || value<0 || value>INT_MAX) return 2;
+        marker_fd=(int)value;
+    }
     int german_error=argc==4 && ((!strcmp(argv[2],"--de") && !strcmp(argv[3],"--simulate-error")) ||
                                  (!strcmp(argv[3],"--de") && !strcmp(argv[2],"--simulate-error")));
     int simulate_error=(argc==3 && !strcmp(argv[2],"--simulate-error")) || german_error;
@@ -123,7 +131,7 @@ int main(int argc, char **argv) {
                 if(count!=(ssize_t)sizeof(reply) || !apply_worker_join(&worker) ||
                    !settings_session_complete_apply(session,reply.token,reply.success) ||
                    !settings_resume(font,font_size,window,&session,&scene)){okay=0;break;}
-                puts("SETTINGS_VIEW_REOPENED");fflush(stdout);
+                if(dprintf(marker_fd,"SETTINGS_VIEW_REOPENED\n")<0){okay=0;break;}
                 dirty=1;renderer_waiting=0;continue;
             }
             continue;
@@ -204,7 +212,7 @@ int main(int argc, char **argv) {
                it before destroying that context and publishing its replacement. */
             if(nx_window_publish_semantics(window,NULL)!=NX_OK){okay=0;break;}
             if(!settings_detach(&scene,&session)){okay=0;break;}
-            puts("SETTINGS_VIEW_DETACHED");fflush(stdout);
+            if(dprintf(marker_fd,"SETTINGS_VIEW_DETACHED\n")<0){okay=0;break;}
             continue;
         }
         if (verify_ax && !ax_test_ready) {
