@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri-owned Settings native keyboard on 0.1.19 (2026-11-06)
+
+On NexaUI base `61dab137b03da4755e15d5beb7c4706d19189e13`, the separate
+consumer harness runs the unchanged Aetheri Settings process from
+`d242c7abf944e08f2693de0e1848f542be107981` with the same installed 0.1.19
+SDK artifacts recorded below. A virtual keyboard under private Weston/Xvfb
+tabbed to Appearance, selected high contrast and 200% text, opened Language,
+selected German and closed with Escape. The driver waits for observed focus
+changes and owner-model diagnostics, and requires successful process exit.
+GCC static/shared and Clang ASan/UBSan profiles passed with leak detection
+enabled for the sanitizer run. The app used fixture display records and a
+1000x720 logical window with DejaVu Sans.
+
+The first test-driver version waited for any new settled frame, occasionally
+proceeding before the requested focus change; its run selected the wrong control
+and failed. The final driver waits for the actual focus transition and each
+expected model state. This is private Weston virtual input, not Aetheri's own
+compositor/owner, physical keyboard, IME, 320x240 native run or human review.
+Aetheri still deliberately requires 0.1.18 in its own configuration; this
+separate candidate test changes no Aetheri files or pins.
+
 ## Aetheri-owned Settings on the 0.1.19 candidate (2026-11-06)
 
 Aetheri commit `d242c7abf944e08f2693de0e1848f542be107981` adds its own

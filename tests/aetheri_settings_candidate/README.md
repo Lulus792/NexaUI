@@ -26,6 +26,20 @@ proves actual AT-SPI delivery, physical presentation or human acceptance.
 Record the exact archive, selected font, SDK artifacts and results when using a
 different candidate; a successful build is not approval to change Aetheri's pin.
 
+With the private Weston fixture and `xdotool`, the same unchanged native process
+can be exercised using virtual keyboard input:
+
+```sh
+xvfb-run -a python3 tests/run_weston_native.py -- \
+  python3 tests/aetheri_settings_candidate/native_keyboard.py \
+  /tmp/settings-candidate/aetheri_settings_candidate_native /path/to/font.ttf /path/to/xdotool
+```
+
+The driver waits for each observed focus change and model result; it opens
+Appearance, selects high contrast and 200% text, opens Language, chooses German
+and closes with Escape. It uses fixture displays and one ordinary Weston window.
+It does not exercise Aetheri's compositor, a physical keyboard or an IME.
+
 When Linux AT-SPI development files are present, the build also provides an
 independent `aetheri_settings_candidate_client` and the unchanged Aetheri
 `aetheri_settings_candidate_native` process. With the existing private Weston

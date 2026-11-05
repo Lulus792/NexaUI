@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/I01/A10/Q04: on NexaUI base `61dab137b03da4755e15d5beb7c4706d19189e13`,
+the unchanged Aetheri-owned Settings host passed a private Weston virtual-keyboard
+workflow including 200% text and German against 0.1.19. Aetheri's own compositor,
+version decision, physical input and human acceptance remain open; see
+[candidate evidence](aetheri-adoption-assessment.md#aetheri-owned-settings-native-keyboard-on-0119-2026-11-06).
+
 B03/L02/A02/A10/Q04: Aetheri's own Settings presentation at
 `d242c7abf944e08f2693de0e1848f542be107981` passed isolated scene and native
 AT-SPI tests against the installed 0.1.19 candidate based on
