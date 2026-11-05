@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Independent Wayland windows (2026-11-05)
+
+The earlier W02 source pointer `tests/test_multi_window.c` is Windows-only.
+Source `453f42894226d31c8baf9e8ba2bd43a0e78154c9` adds a public-API Linux
+host and a private Weston/Xvfb driver. Two separate windows, contexts and
+software views submit frames; virtual keyboard input is routed to the focused
+window, Weston switches focus, and the application closes one window. The
+survivor submits another frame and receives distinct keyboard input. The driver
+checks the complete text-event sequence for duplication or misrouting. The
+final GCC test passed three consecutive runs (`/tmp/nexaui-w02-final/result.json`)
+and passed once with Clang ASan/UBSan (`/tmp/nexaui-w02-asan/result.json`).
+An initial fixture run did not observe a close acknowledgement; replacing the
+signal file atomically removed a possible partial-write race, but its cause was
+not independently isolated. The next run sent the survivor's key before
+focus was observed; waiting for the compositor's actual focus event corrected
+that ordering. The test polls each connection with a 5 ms bound and redraws
+continuously; it does not establish an efficient idle event loop. Submitted
+frames are not proof of visible pixels. Compositor-requested close, Aetheri's
+compositor, multiple outputs, physical input, human accessibility and Vulkan
+multi-window behavior remain open.
+
 ## IME reply after field replacement (2026-11-05)
 
 On parent `febf5ad8981f928573814a02d26f5186f7b290fa`, a controlled Wayland
