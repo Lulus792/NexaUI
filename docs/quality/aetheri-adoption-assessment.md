@@ -1,5 +1,47 @@
 # Aetheri adoption: initial source assessment
 
+## Original development owner and model-view lifecycle (2026-11-05)
+
+Consumer and test source `8e0b8d5dbac3fc975e3bca3f03ba3768550df857`
+accepts the development owner's fixed `--font`, `--cache`, `--diagnostics`
+argument shape; the cache path is unused. SIGINT/SIGTERM wake the UI owner
+through an application-owned nonblocking self-pipe and use ordinary teardown;
+Ctrl+Q also closes the view. This is an experimental consumer, not an Aetheri
+installation or change to its launcher.
+
+The original Aetheri supervisor and its headless fixture from archived source
+`d621c9bba1df8ffd1083999300bcff742022b9dc` ran with the actual SDL desktop,
+test compositor and the installed-SDK consumer, supplied as separate binaries
+in an isolated temporary directory. Native virtual search launched Settings,
+Ctrl+Q exited it, the owner drained its original child and pipe, and search
+launched a second child. After its window was observed, SIGTERM to the owner
+caused the second consumer's signal cleanup, then desktop and compositor
+retirement; all original children and owner exited 0. No real carrier session,
+root controller or app installation was changed. The fixture reads its normal
+carrier terminal-asset manifest (`ui-inputs.json` SHA-256
+`67d59c720482c5e593ad616d1136994102624ded4fafaaf4057381a0b5a01319`) and the
+existing reviewed font. This is a headless test adapter around the original
+supervisor, not proof of an installed production session or service integration.
+
+The first run stopped the second process before its first frame because the
+driver mistakenly counted the first process's diagnostic output. Its owner
+reported `settings: -15`; the driver was fixed to wait for a model line after
+the second spawn and the failure remains in the archive. The final driver also
+checks the desktop's window observation and the supervisor's actual JSON exit
+statuses. Independent AT-SPI action and a separate owner-argument/SIGTERM
+compositor run passed for the same consumer. Its binary SHA-256 is
+`b43a89aecdb1f0a79b3dfa30636dd84bb891614b6584839a4714c3342c22df10`.
+Logs and results are retained at `D:/NexaUI/out/aetheri-model-2026-11-05/owner.tar.gz`,
+SHA-256 `7d065c30969520cde96836f57f6d9f004063e68772eb6ab4323ed403c5c30519`.
+The prior record identifies the source SDK/compositor; the original owner and
+fixture hashes are `f530816dbef2184293eb30b43371d8ef94888f6a78bc0c6768ccd2a24820382c`
+and `13623182530bae2c08521adf09cb92ac58c3a33367f512e3152db15c35f06ee6`.
+
+NexaUI currently hardcodes the Wayland app ID `nexaui`; it cannot yet identify
+this consumer as Aetheri Settings for the desktop's app-specific matching.
+Live-app activation/reuse, full app model and commands, input/IME, real services,
+DRM and human acceptance remain open. A submitted frame is not app readiness.
+
 ## Original-model view reflow (2026-11-05)
 
 Consumer source `f66d0c427ab1fecd15ad870ee3ecd7c9168ac1e1` measures
