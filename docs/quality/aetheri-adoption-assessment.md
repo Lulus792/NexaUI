@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric value visibility through macOS AX (2026-11-05)
+
+Source `efea520b9f12d7e2bd34035164980e8aae4846d7` adds a real numeric field
+to the existing AppKit AX fixture. The in-process test and the independent
+ApplicationServices client observe its text-field role and current value and
+verify that AX value replacement is unavailable. On native macOS ARM64 CI,
+the complete suites passed: [static 112/112](https://github.com/Lulus792/NexaUI/actions/runs/42011616407/job/127191793640)
+and [shared 111/111](https://github.com/Lulus792/NexaUI/actions/runs/42011616407/job/127191793708).
+The external AX case was executed and passed in both, rather than skipped.
+This confirms read-only visibility and the documented missing editing capability;
+it does not implement AX editing or demonstrate VoiceOver, IME, physical display,
+or Aetheri acceptance. The general macOS AX text/range gap remains open.
+
 ## Numeric value through Windows UI Automation (2026-11-05)
 
 Source `6dde095865b6465dd944ff702cc399f0f834c210` extends the existing
