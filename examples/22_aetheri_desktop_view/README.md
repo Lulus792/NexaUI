@@ -36,3 +36,11 @@ blob IDs were `be57398f32c1e16315510bd95c743559b60c7b52` for `model.c` and
 files in Aetheri commit `78932584c30f4364814d227e434feeb2b74078ed` at inspection.
 The older installed SDK encountered first was version 0.1.3 and was correctly
 rejected by the example's 0.1.5 minimum; it was not counted as a pass.
+
+Source `b645fee6cd0e5743bb88e22b8eb24ed9dc2922b2` adds scrollable model
+results and distinguishes fixed app tags from observed window IDs. The same
+GCC and Clang ASan/UBSan consumer builds passed a window-activation test and
+a remove/re-add case where a queued request for the old ID is dropped after
+the model revision changes. A separate test-only copy with the revision check
+removed failed that case. This does not protect a caller that fails to advance
+or recheck its revision, and it does not establish real compositor activation.
