@@ -1,4 +1,5 @@
 #include <nexaui/nexaui.h>
+#include <string.h>
 
 static nx_result sample_series(void *user, size_t index,
                                nx_series_point *out) {
@@ -29,7 +30,14 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 
 static void consumer_release(void *user) { (void)user; }
 
-int main(void) {
+int main(int argc, char **argv) {
+    uint64_t features = 0;
+    if (nx_get_build_features(NULL) != NX_ERROR_ARGUMENT ||
+        nx_get_build_features(&features) != NX_OK)
+        return 17;
+    if (argc == 2 && !strcmp(argv[1], "--expect-wayland-only") &&
+        (!(features & NX_BUILD_WINDOW_WAYLAND) || (features & NX_BUILD_WINDOW_X11)))
+        return 18;
     nx_version version = {99, 99, 99};
     if (nx_get_version(NULL) != NX_ERROR_ARGUMENT ||
         nx_get_version(&version) != NX_OK ||

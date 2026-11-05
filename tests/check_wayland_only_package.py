@@ -42,7 +42,7 @@ def main():
             # On Linux the shared consumer must load the just-installed SDK.
             libdirs = [str(prefix / "lib"), str(prefix / "lib64")]
             env["LD_LIBRARY_PATH"] = os.pathsep.join(libdirs + [env.get("LD_LIBRARY_PATH", "")])
-            run(str(consumer / "consumer"), env=env)
+            run(str(consumer / "consumer"), "--expect-wayland-only", env=env)
     print("Static and shared installed consumers passed without CMake X11 discovery.")
 
 

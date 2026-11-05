@@ -14,6 +14,19 @@ may have the same 0.1.0 version but not export it, so applications using it
 must ship or require a library containing this API. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
+`nx_get_build_features` reports facilities compiled into the linked core as a
+`uint64_t` bit mask. It is thread-safe, needs no context and returns
+`NX_ERROR_ARGUMENT` for a null output. Ignore unrecognized bits. The window
+bits identify the compiled Win32, AppKit, Wayland and X11 adapters;
+`NX_BUILD_LINUX_ATSPI_TRANSPORT` means the Linux D-Bus transport was compiled,
+and `NX_BUILD_WAYLAND_FRACTIONAL_SCALE` means the two Wayland scaling protocol
+bindings were compiled. A set bit does not establish that a display, service,
+IME, compositor protocol or physical device is available. Use the operation's
+result and the existing per-window capabilities for the current session. This
+query describes the core only: the separately linked private Vulkan renderer
+is not represented. As with `nx_get_version`, an older 0.1.0 binary can lack
+this newer symbol.
+
 ## Results and ownership
 
 `NX_OK` means success. `NX_ERROR_ARGUMENT` reports a null required pointer, invalid geometry/color, or invalid allocator configuration. `NX_ERROR_STATE` reports an invalid frame/scope order. `NX_ERROR_MEMORY` reports allocator failure. `NX_ERROR_LIMIT` reports an explicit depth or size limit. `NX_ERROR_COMMAND` reports an invalid externally supplied command stream. Calls append no partial command when they fail.

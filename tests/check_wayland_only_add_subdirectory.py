@@ -64,7 +64,7 @@ target_link_libraries(consumer PRIVATE NexaUI::NexaUI)
                                if line.strip().startswith('libnexaui.so') and '=>' in line]
                     if len(matches) != 1 or not Path(matches[0]).resolve().is_relative_to(build.resolve()):
                         raise RuntimeError('consumer did not resolve this build of NexaUI')
-                run(executable, env=env)
+                run(executable, '--expect-wayland-only', env=env)
     print('Four external add_subdirectory C17 consumers passed.')
 
 

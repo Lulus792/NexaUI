@@ -41,8 +41,9 @@ with tempfile.TemporaryDirectory(prefix="nexaui-old-wayland-protocols-") as temp
     commands = json.loads((build / "compile_commands.json").read_text(encoding="utf-8"))
     wayland = [entry for entry in commands if entry["file"].endswith("/platform/linux/wayland/window.c")]
     assert len(wayland) == 1 and "NEXAUI_WAYLAND_FRACTIONAL_SCALE" not in wayland[0]["command"]
-    subprocess.run(["cmake", "--build", str(build), "--target", "nexaui_wayland_async_clipboard_tests"],
+    subprocess.run(["cmake", "--build", str(build), "--target", "nexaui_wayland_async_clipboard_tests",
+                    "nexaui_build_features_tests"],
                    check=True, env=env)
-    subprocess.run(["ctest", "--test-dir", str(build), "-R", "^nexaui_wayland_async_clipboard$",
+    subprocess.run(["ctest", "--test-dir", str(build), "-R", "^(nexaui_wayland_async_clipboard|nexaui_build_features)$",
                     "--output-on-failure"], check=True, env=env)
 print("Wayland SDK builds and runs its controlled clipboard test without fractional protocol XML.")

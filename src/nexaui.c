@@ -21,6 +21,29 @@ nx_result nx_get_version(nx_version *out_version) {
     return NX_OK;
 }
 
+nx_result nx_get_build_features(uint64_t *out_features) {
+    if (!out_features) return NX_ERROR_ARGUMENT;
+    uint64_t features = 0;
+#if defined(_WIN32)
+    features |= NX_BUILD_WINDOW_WIN32;
+#elif defined(__APPLE__)
+    features |= NX_BUILD_WINDOW_APPKIT;
+#elif defined(NEXAUI_BUILD_LINUX)
+    features |= NX_BUILD_WINDOW_WAYLAND;
+#ifndef NEXAUI_LINUX_WAYLAND_ONLY
+    features |= NX_BUILD_WINDOW_X11;
+#endif
+#ifdef NEXAUI_HAVE_DBUS_SDK
+    features |= NX_BUILD_LINUX_ATSPI_TRANSPORT;
+#endif
+#ifdef NEXAUI_WAYLAND_FRACTIONAL_SCALE
+    features |= NX_BUILD_WAYLAND_FRACTIONAL_SCALE;
+#endif
+#endif
+    *out_features = features;
+    return NX_OK;
+}
+
 typedef struct nx_event_route {
     uint64_t pointer_id, focus_id, focus_serial;
 } nx_event_route;

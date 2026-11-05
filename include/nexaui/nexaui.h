@@ -76,6 +76,18 @@ typedef struct nx_version {
 
 NX_API nx_result nx_get_version(nx_version *out_version);
 
+/* Compiled core facilities, not runtime availability or renderer capability.
+   Unknown future bits must be ignored. All bits describe the linked core. */
+#define NX_BUILD_WINDOW_WIN32             (UINT64_C(1) << 0)
+#define NX_BUILD_WINDOW_APPKIT            (UINT64_C(1) << 1)
+#define NX_BUILD_WINDOW_WAYLAND           (UINT64_C(1) << 2)
+#define NX_BUILD_WINDOW_X11               (UINT64_C(1) << 3)
+#define NX_BUILD_LINUX_ATSPI_TRANSPORT    (UINT64_C(1) << 4)
+#define NX_BUILD_WAYLAND_FRACTIONAL_SCALE (UINT64_C(1) << 5)
+/* Thread-safe, no context required; null output returns NX_ERROR_ARGUMENT.
+   Optional protocols, native services and displays can still be unavailable. */
+NX_API nx_result nx_get_build_features(uint64_t *out_features);
+
 /* Allocations must be aligned for max_align_t. Supply both callbacks or neither.
    The default allocator uses malloc/free. Deallocation receives the original size. */
 typedef struct nx_allocator {
