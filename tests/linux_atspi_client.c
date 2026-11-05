@@ -162,7 +162,9 @@ int main(int argc,char **argv) {
     AtspiAccessible *menu=find(app,"Nested menu",0),*inner=find(app,"Nested action",0);
     CHECK(menu && inner);
     atspi_accessible_clear_cache(trigger);atspi_accessible_clear_cache(inner);
-    if (getenv("NEXAUI_TEST_PRIVATE_WAYLAND"))
+    int private_wayland=getenv("NEXAUI_TEST_PRIVATE_WAYLAND") && getenv("NEXAUI_PLATFORM") &&
+        !strcmp(getenv("NEXAUI_PLATFORM"),"wayland");
+    if (private_wayland)
         CHECK(state(inner,ATSPI_STATE_FOCUSED) && !state(trigger,ATSPI_STATE_FOCUSED));
     CHECK(!state(trigger,ATSPI_STATE_ENABLED) && state(inner,ATSPI_STATE_ENABLED));
     AtspiAction *trigger_action=atspi_accessible_get_action_iface(trigger);
@@ -173,7 +175,7 @@ int main(int argc,char **argv) {
     for(unsigned i=0;i<100 && !named(nested_count,"Nested counts 0 1");++i) pump(10);
     CHECK(named(nested_count,"Nested counts 0 1"));
     CHECK(command("closemenu"));pump(100);atspi_accessible_clear_cache(trigger);
-    if (getenv("NEXAUI_TEST_PRIVATE_WAYLAND")) CHECK(state(trigger,ATSPI_STATE_FOCUSED));
+    if (private_wayland) CHECK(state(trigger,ATSPI_STATE_FOCUSED));
     CHECK(state(trigger,ATSPI_STATE_ENABLED));
     CHECK(command("closemodal"));pump(100);
     g_object_unref(inner_action);g_object_unref(trigger_action);
