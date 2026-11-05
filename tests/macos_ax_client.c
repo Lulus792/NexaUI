@@ -7,6 +7,11 @@
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
+static unsigned text_selection_events;
+static void selection_observed(AXObserverRef observer,AXUIElementRef element,CFStringRef notification,void *user) {
+    (void)observer;(void)element;(void)user;
+    if(CFEqual(notification,CFSTR("AXSelectedTextChanged")))++text_selection_events;
+}
 static double now(void) {
     struct timespec t; if (clock_gettime(CLOCK_MONOTONIC,&t)) { perror("clock_gettime"); exit(1); }
     return (double)t.tv_sec+(double)t.tv_nsec/1.e9;
@@ -95,6 +100,9 @@ int main(int argc,char **argv) {
     CHECK(string_is(edit,kAXValueAttribute,CFSTR("ordinary")));
     CHECK(AXUIElementSetAttributeValue(edit,kAXValueAttribute,CFSTR("é🌍"))==kAXErrorSuccess);
     CHECK(wait_string(edit,kAXValueAttribute,CFSTR("é🌍")));
+    AXObserverRef observer=NULL;CHECK(AXObserverCreate((pid_t)strtol(argv[1],NULL,10),selection_observed,&observer)==kAXErrorSuccess);
+    CHECK(AXObserverAddNotification(observer,edit,CFSTR("AXSelectedTextChanged"),NULL)==kAXErrorSuccess);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);
     CFRange expected_range=CFRangeMake(1,2);AXValueRef range=AXValueCreate(kAXValueCFRangeType,&expected_range);CHECK(range);
     CHECK(AXUIElementSetAttributeValue(edit,kAXSelectedTextRangeAttribute,range)==kAXErrorSuccess);CFRelease(range);
     double range_end=now()+10;int selected=0;
@@ -107,6 +115,10 @@ int main(int argc,char **argv) {
         if(result)CFRelease(result);if(!selected)pause_poll();
     } while(!selected && now()<range_end);
     CHECK(selected && wait_string(edit,kAXSelectedTextAttribute,CFSTR("🌍")));
+    double notification_end=now()+5;
+    while(!text_selection_events && now()<notification_end)CFRunLoopRunInMode(kCFRunLoopDefaultMode,.02,true);
+    CHECK(text_selection_events>0);
+    CFRunLoopRemoveSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);CFRelease(observer);
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));
