@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric field logical commands (2026-11-05)
+
+Source `3c2b336ac8cbaa7fdd11dc3485d9ed080b0097b7` routes focused
+`NX_EVENT_TEXT_COMMAND` events through the existing numeric input buffer. The
+widget test exercises select-all and replacement, valid and invalid commits,
+undo/redo, a consumed Enter, disabled input and retry after paint failure. The
+new selection/replacement assertion failed before the routing change; the
+previous committed number was retained when a draft was invalid.
+
+On Alpine/WSL, the numeric buffer, numeric widget and general text widget tests
+passed in the Wayland-only Clang 22.1.3 Debug ASan/UBSan build with leak
+detection and in the GCC 15.2 Debug dual Wayland/X11 build (three tests each).
+The numeric buffer and widget tests passed in a GCC Release Wayland-only build
+(`/tmp/nexaui-numeric-release-test.log`). An initial Release configure attempt
+failed before configuration due to a shell-quoting error; the corrected run is
+the one reported. These tests inject normalized events into the widget; they do
+not demonstrate actual platform IME delivery. Preedit and replacement, native
+clipboard integration, visual navigation and real Aetheri acceptance remain
+open, so T05 is not complete.
+
 ## Aetheri virtual output mode change while Settings is running (2026-11-05)
 
 Test driver source `9ff7e08454679754b70294ed659cfc43c50594e9` extends the
