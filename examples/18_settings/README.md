@@ -23,6 +23,13 @@ validation, applied model values and status semantics. It uses synthetic events.
 Run `nexaui_settings /path/to/font.ttf --simulate-error` to make the first
 submission fail; the status describes the example failure and Apply retries.
 The option can be combined with `--de`.
+Run with `--simulate-unknown` to make the first example submission return an
+uncertain outcome. The status asks for a service check, keeps Apply disabled,
+and does not start the operation again. The same token can be resolved by a
+later authoritative `settings_complete_apply` observation; a newer draft is
+preserved. The demo has no real service or recheck button, so the simulated
+unknown state remains until the window is closed. A real application must
+reconcile with the original operation rather than treating timeout as failure.
 While a submission is pending Apply is disabled, edits remain a separate draft,
 and a late or duplicate completion cannot apply another submission. A newer
 draft remains unsaved after the submitted snapshot succeeds. Closing destroys

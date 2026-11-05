@@ -73,13 +73,14 @@ int main(int argc, char **argv) {
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small || verify_pending_close;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
+    int simulate_unknown=argc==3 && !strcmp(argv[2],"--simulate-unknown");
     int german_error=argc==4 && ((!strcmp(argv[2],"--de") && !strcmp(argv[3],"--simulate-error")) ||
                                  (!strcmp(argv[3],"--de") && !strcmp(argv[2],"--simulate-error")));
     int simulate_error=(argc==3 && !strcmp(argv[2],"--simulate-error")) || german_error;
     int german=(argc==3 && !strcmp(argv[2],"--de")) || german_error ||
         ((verify_ax || verify_keyboard) && getenv("NEXAUI_SETTINGS_TEST_GERMAN"));
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; settings_renderer *renderer=NULL;
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
@@ -135,7 +136,8 @@ int main(int argc, char **argv) {
                 continue;
             }
             if (count!=(ssize_t)sizeof(reply) || !apply_worker_join(&worker) ||
-                !settings_complete_apply(scene,reply.token,reply.success)) {okay=0;break;}
+                !(reply.success<0 ? settings_observe_apply_unknown(scene,reply.token) :
+                                   settings_complete_apply(scene,reply.token,reply.success))) {okay=0;break;}
             dirty=1;
         }
         if (idle_probe) {
@@ -165,9 +167,12 @@ int main(int argc, char **argv) {
         if (nx_context_set_text_raster_scale(settings_context(scene),info.scale)!=NX_OK ||
             !settings_frame(scene,info.width,info.height)) { okay=0; break; }
         int scheduled_now=0;
-        if (!worker.running && settings_pending_apply(scene)) {
-            if (!apply_worker_start(&worker,settings_pending_apply(scene),!fail_first)) {okay=0;break;}
-            fail_first=0; scheduled_now=1;
+        if (!worker.running) {
+            uint64_t request=settings_take_apply_request(scene);
+            if(request) {
+                if (!apply_worker_start(&worker,request,simulate_unknown?-1:!fail_first)) {okay=0;break;}
+                fail_first=0; simulate_unknown=0; scheduled_now=1;
+            }
         }
         if (verify_ax && !ax_test_ready) {
             nx_context *ui=settings_context(scene);

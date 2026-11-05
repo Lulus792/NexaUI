@@ -157,6 +157,42 @@ int main(int argc,char **argv) {
     CHECK(settings_pending_apply(s)==language_token && settings_complete_apply(s,language_token,1));
     CHECK(settings_frame(s,240,150) && settings_applied(s,&value,&motion) &&
           value.length==strlen(german_name) && !memcmp(value.data,german_name,value.length));
+    /* An uncertain reply is not failure or success and must never redispatch. */
+    CHECK(settings_set_language(s,"en") && settings_set_draft_name(s,"Submitted",9) && settings_frame(s,640,360));
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t uncertain=settings_pending_apply(s); CHECK(uncertain);
+    CHECK(settings_take_apply_request(s)==uncertain && !settings_take_apply_request(s));
+    CHECK(!settings_observe_apply_unknown(s,uncertain+1));
+    CHECK(settings_observe_apply_unknown(s,uncertain) && settings_frame(s,640,360));
+    CHECK(settings_pending_apply(s)==uncertain && !settings_take_apply_request(s));
+    CHECK(nx_semantics_find(ui,5,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK && (view.state&NX_SEM_DISABLED));
+    const char *unknown="Outcome unknown. Check the service.";
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(unknown) && !memcmp(view.value.data,unknown,view.value.length));
+    CHECK(settings_applied(s,&value,&motion) && value.length==strlen(german_name) && !memcmp(value.data,german_name,value.length));
+    CHECK(settings_set_draft_name(s,"Later",5) && settings_set_language(s,"de") && settings_frame(s,240,150));
+    const char *unknown_de="Ergebnis unbekannt. Dienst pr\xc3\xbc" "fen.";
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(unknown_de) && !memcmp(view.value.data,unknown_de,view.value.length));
+    CHECK(!settings_take_apply_request(s) && !settings_complete_apply(s,uncertain+1,1));
+    CHECK(settings_complete_apply(s,uncertain,1) && settings_frame(s,640,360));
+    CHECK(!settings_pending_apply(s) && !settings_take_apply_request(s) &&
+          settings_applied(s,&value,&motion) && value.length==9 && !memcmp(value.data,"Submitted",9));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(german_status) && !memcmp(view.value.data,german_status,view.value.length));
+    /* Only a definitive failure releases the old token and allows a retry. */
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t unresolved=settings_pending_apply(s);CHECK(unresolved && unresolved!=uncertain);
+    CHECK(settings_take_apply_request(s)==unresolved && settings_observe_apply_unknown(s,unresolved));
+    CHECK(settings_set_draft_name(s,"",0) && settings_frame(s,640,360));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.value.length==strlen(unknown_de) && !memcmp(view.value.data,unknown_de,view.value.length));
+    CHECK(settings_complete_apply(s,unresolved,0) && settings_set_draft_name(s,"Retry",5) && settings_frame(s,640,360));
+    CHECK(settings_applied(s,&value,&motion) && value.length==9 && !memcmp(value.data,"Submitted",9));
+    CHECK(nx_focus_set(ui,5)==NX_OK && key(ui,NX_KEY_SPACE,0) && settings_frame(s,640,360));
+    uint64_t resolved_retry=settings_pending_apply(s);CHECK(resolved_retry && resolved_retry!=unresolved);
+    CHECK(!settings_complete_apply(s,unresolved,1) && settings_take_apply_request(s)==resolved_retry);
+    CHECK(settings_complete_apply(s,resolved_retry,0));
     settings_destroy(s); free(bytes); return 0;
 fail:
     if (f) fclose(f); settings_destroy(s); free(bytes); return 1;

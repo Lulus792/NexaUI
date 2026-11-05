@@ -9,15 +9,15 @@
 
 typedef struct settings_strings {
     const char *root, *title, *options, *name, *motion, *apply, *apply_name;
-    const char *pending, *applied, *invalid, *clean, *applying, *error;
+    const char *pending, *applied, *invalid, *clean, *applying, *error, *unknown;
 } settings_strings;
 static const settings_strings languages[]={
     {"Settings example","Settings","Settings options","Display name","Reduce motion","Apply","Apply settings",
      "Unsaved changes","Applied to this example","Enter a name under 128 bytes","No changes",
-     "Applying to example...","Example apply failed. Retry."},
+     "Applying to example...","Example apply failed. Retry.","Outcome unknown. Check the service."},
     {"Einstellungsbeispiel","Einstellungen","Einstellungsoptionen","Anzeigename","Bewegung reduzieren","Anwenden","Einstellungen anwenden",
      "Ungespeicherte \xc3\x84nderungen","Im Beispiel angewendet","Name unter 128 Bytes eingeben","Keine \xc3\x84nderungen",
-     "Wird im Beispiel angewendet...","Anwenden fehlgeschlagen. Erneut versuchen."}
+     "Wird im Beispiel angewendet...","Anwenden fehlgeschlagen. Erneut versuchen.","Ergebnis unbekannt. Dienst pr\xc3\xbc" "fen."}
 };
 struct settings_scene {
     nx_context *ui;
@@ -27,13 +27,13 @@ struct settings_scene {
     nx_text_field *name, *probe_secret;
     nx_text_layout *title, *name_label, *motion_label, *apply_label;
     nx_text_layout *pending_label, *applied_label, *invalid_label, *clean_label;
-    nx_text_layout *applying_label, *error_label;
+    nx_text_layout *applying_label, *error_label, *unknown_label;
     char applied_name[NAME_CAP];
     size_t applied_length;
     char submitted_name[NAME_CAP];
     size_t submitted_length;
     uint64_t next_submission, pending_submission;
-    int submitted_motion, apply_error, restore_apply_focus;
+    int submitted_motion, apply_error, restore_apply_focus, outcome_unknown, dispatch_pending;
     int motion, applied_motion, applied;
     unsigned language;
     int probe_redraw, probe_step;
@@ -69,32 +69,32 @@ static int reflow_status(settings_scene *s, float width) {
     if (s->status_width==width) return 1;
     const settings_strings *strings=&languages[s->language];
     const char *values[]={strings->pending,strings->applied,strings->invalid,
-                          strings->clean,strings->applying,strings->error};
+                          strings->clean,strings->applying,strings->error,strings->unknown};
     nx_text_layout **slots[]={&s->pending_label,&s->applied_label,&s->invalid_label,
-                              &s->clean_label,&s->applying_label,&s->error_label};
-    nx_text_layout *next[6]={0}; float maximum=0;
+                              &s->clean_label,&s->applying_label,&s->error_label,&s->unknown_label};
+    nx_text_layout *next[7]={0}; float maximum=0;
     nx_text_layout *motion=NULL, *name=NULL, *title=NULL, *apply=NULL;
-    for (size_t i=0;i<6;++i) {
+    for (size_t i=0;i<7;++i) {
         if (!fitted_label(s,values[i],15,width,&next[i])) {
-            for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+            for (size_t j=0;j<7;++j) nx_text_layout_destroy(next[j]);
             return 0;
         }
         maximum=fmaxf(maximum,(float)nx_text_layout_height(next[i]));
     }
     float motion_width=width<116 ? width : width-38;
     if (!fitted_label(s,strings->motion,width<116?14:16,motion_width,&motion)) {
-        for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+        for (size_t j=0;j<7;++j) nx_text_layout_destroy(next[j]);
         return 0;
     }
     if (!fitted_label(s,strings->name,16,width,&name) ||
         !fitted_label(s,strings->title,26,width,&title) ||
         !fitted_label(s,strings->apply,16,fminf(110,width)-12,&apply)) {
-        for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+        for (size_t j=0;j<7;++j) nx_text_layout_destroy(next[j]);
         nx_text_layout_destroy(motion); nx_text_layout_destroy(name); nx_text_layout_destroy(title);
         nx_text_layout_destroy(apply);
         return 0;
     }
-    for (size_t i=0;i<6;++i) { nx_text_layout_destroy(*slots[i]); *slots[i]=next[i]; }
+    for (size_t i=0;i<7;++i) { nx_text_layout_destroy(*slots[i]); *slots[i]=next[i]; }
     nx_text_layout_destroy(s->motion_label); s->motion_label=motion;
     nx_text_layout_destroy(s->name_label); s->name_label=name;
     nx_text_layout_destroy(s->title); s->title=title;
@@ -104,6 +104,7 @@ static int reflow_status(settings_scene *s, float width) {
 }
 void settings_destroy(settings_scene *s) {
     if (!s) return;
+    nx_text_layout_destroy(s->unknown_label);
     nx_text_layout_destroy(s->error_label); nx_text_layout_destroy(s->applying_label);
     nx_text_layout_destroy(s->clean_label);
     nx_text_layout_destroy(s->invalid_label); nx_text_layout_destroy(s->applied_label);
@@ -136,6 +137,7 @@ int settings_create(const unsigned char *bytes, size_t length, nx_window *window
         !label(s, "No changes", 15, &s->clean_label) ||
         !label(s, "Applying to example...", 15, &s->applying_label) ||
         !label(s, "Example apply failed. Retry.", 15, &s->error_label) ||
+        !label(s, "Outcome unknown. Check the service.", 15, &s->unknown_label) ||
         !label(s, "Enter a name under 128 bytes", 15, &s->invalid_label)) {
         settings_destroy(s); return 0;
     }
@@ -170,9 +172,18 @@ int settings_applied(settings_scene *s, nx_utf8_span *name, int *motion) {
 uint64_t settings_pending_apply(const settings_scene *s) {
     return s ? s->pending_submission : 0;
 }
+uint64_t settings_take_apply_request(settings_scene *s) {
+    if (!s || !s->pending_submission || !s->dispatch_pending || s->outcome_unknown) return 0;
+    s->dispatch_pending=0; return s->pending_submission;
+}
+int settings_observe_apply_unknown(settings_scene *s, uint64_t token) {
+    if (!s || !token || token!=s->pending_submission) return 0;
+    s->outcome_unknown=1; s->dispatch_pending=0; return 1;
+}
 int settings_complete_apply(settings_scene *s, uint64_t token, int success) {
     if (!s || !token || token != s->pending_submission || (success != 0 && success != 1)) return 0;
     s->pending_submission = 0;
+    s->dispatch_pending=0; s->outcome_unknown=0;
     s->apply_error = !success;
     if (success) {
         memcpy(s->applied_name,s->submitted_name,s->submitted_length);
@@ -267,14 +278,15 @@ int settings_frame(settings_scene *s, float width, float height) {
         s->submitted_motion=s->motion; s->apply_error=0;
         s->restore_apply_focus=nx_focus_id(s->ui)==5;
         s->pending_submission=++s->next_submission;
+        s->dispatch_pending=1; s->outcome_unknown=0;
     }
     int same = name.length==s->applied_length &&
         memcmp(name.data,s->applied_name,name.length)==0 && s->motion==s->applied_motion;
-    const char *message = s->pending_submission ? strings->applying :
+    const char *message = s->outcome_unknown ? strings->unknown : s->pending_submission ? strings->applying :
                           !valid ? strings->invalid :
                           s->apply_error ? strings->error :
                           !same ? strings->pending : s->applied ? strings->applied : strings->clean;
-    nx_text_layout *status = s->pending_submission ? s->applying_label :
+    nx_text_layout *status = s->outcome_unknown ? s->unknown_label : s->pending_submission ? s->applying_label :
                              !valid ? s->invalid_label : s->apply_error ? s->error_label :
                              !same ? s->pending_label : s->applied ? s->applied_label : s->clean_label;
     nx_semantic_desc state={0}; state.id=6; state.parent_id=7; state.role=NX_ROLE_STATUS;
