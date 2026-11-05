@@ -1,5 +1,56 @@
 # Aetheri adoption: initial source assessment
 
+## Nested overlays through macOS AX and CI portability (2026-11-05)
+
+Source `de808bdacef1e35111a6f0c69338f6017afab153`, based on the test-only
+`a866fd52b6cd4a49fceb0f8f3d370fbe7d022676`, separates intrinsic disability
+from overlay suppression in the macOS AX snapshot, retaining inherited
+offscreen state. The in-process native AppKit test checks the disabled parent,
+active inner action and its actual delivery, restored logical focus and a truly
+disabled group's child. The preceding test-only candidate failed exactly at
+the inner action on both native macOS configurations
+([static job](https://github.com/Lulus792/NexaUI/actions/runs/42003819088/job/127165441373),
+[shared job](https://github.com/Lulus792/NexaUI/actions/runs/42003819088/job/127165441163)).
+The corrected source passed the complete macOS CI suites: 112/112 static and
+111/111 shared on macOS 26.7.2 ARM64, image `macos-26-arm64/20261102.0473.1`
+([static job](https://github.com/Lulus792/NexaUI/actions/runs/42004372290/job/127167303385),
+[shared job](https://github.com/Lulus792/NexaUI/actions/runs/42004372290/job/127167303569)).
+The pre-existing independent AX client also passed as a regression, but the
+new nested action is exercised in-process; an independent nested AX workflow
+and human VoiceOver acceptance remain open.
+
+The same source corrects three evidenced CI portability defects. The Linux
+clipboard-send fixture declares the glibc feature needed for `pipe2`; the
+numeric test no longer assumes macOS Home moves the caret; the Settings scene
+declares its own Linux math dependency. In the Windows shared Debug build,
+the Settings test previously timed out at 20 seconds because its executable
+could not locate the core DLL. Setting the test working directory to the core
+target directory passed in 0.82 seconds without increasing the deadline
+(`D:/NexaUI/out/nested-settings-ci-debug-20261105/settings-scene-final.log`).
+The prior macOS CI failed numeric-field assertion and Ubuntu glibc jobs failed
+`pipe2` declaration or the Settings `fmaxf` link; the corrected macOS numeric
+test passed in both jobs, and the corrected Ubuntu jobs passed their build step.
+Local Alpine shared Settings, numeric and two native clipboard-send cases passed
+(`/tmp/nexaui-portability-final.log`). Later CI steps may have independent
+results and are not inferred from those build passes. The package version is
+0.1.11; no Aetheri pin or 1.0.0 release was changed.
+
+The full `de808bd` Ubuntu CI did **not** pass: both variants failed the new
+X11 focus assertion because the private-Wayland fixture flag was inherited by
+X11 tests, and the Settings AT-SPI reopen case failed in both. Static also
+reported a disconnect-reentry segfault; shared reported multi-window-failure and
+disconnect segfaults. See [static job](https://github.com/Lulus792/NexaUI/actions/runs/42004372290/job/127167303526)
+and [shared job](https://github.com/Lulus792/NexaUI/actions/runs/42004372290/job/127167303446).
+Follow-up `7afb1f7af8abaa10ccd48368fc5ae0b3225788e0` scopes the focus assertion
+to actual Wayland; two independent X11 AT-SPI tests passed locally with the
+private-Wayland environment flag present (`/tmp/nexaui-nested-x11-final.log`).
+The reopen case passed once on local Alpine/WSL Weston with Vulkan validation
+(`/tmp/nexaui-reopen-investigate.log`); 30 local repetitions of disconnect
+reentry with ASan and of multi-window failure also passed
+(`/tmp/nexaui-drop-reentry-repeat.log`, `/tmp/nexaui-multi-failure-repeat.log`).
+Those local results do not explain or erase the Ubuntu failures. Their causes
+and the follow-up CI run remain open.
+
 ## Nested overlays through Windows UI Automation (2026-11-05)
 
 Source `fafd19e808475d46e8f44db71b2dd9d3ddaa0bfd` applies the same distinction
