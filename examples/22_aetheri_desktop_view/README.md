@@ -61,3 +61,16 @@ a remove/re-add case where a queued request for the old ID is dropped after
 the model revision changes. A separate test-only copy with the revision check
 removed failed that case. This does not protect a caller that fails to advance
 or recheck its revision, and it does not establish real compositor activation.
+
+Source `6860251c49f3ba1782c06ba73411d2e58de44b23` adds the ordinary-window
+preview and a private-Weston/Xvfb native input test. The test types `Terminal`,
+observes that complete query and its fixed Terminal launch intent, sends Escape
+and requires a clean child exit. On Alpine/WSL2 it passed once with GCC and three
+times with Clang 22.1.3 ASan/UBSan and leak detection; the latter used 30 ms
+between virtual key events. The initial ASan run before immediate model-frame
+reconciliation lost characters and failed (for example `Trminl`). A later
+reconciled run passed; the earlier failure is not a pass. Fixture records are
+`/tmp/nexaui-desktop-preview-gcc-final-20261105/result.json` and
+`/tmp/nexaui-dock-fast-asan-{1,2,3}-20261105/result.json`. This uses virtual
+input and a private software compositor, not the Aetheri shell connection or
+an installed input method.
