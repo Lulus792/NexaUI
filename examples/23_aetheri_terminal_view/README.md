@@ -332,3 +332,38 @@ partial writes and an app-owned session policy. This is not an Aetheri target
 or glibc acceptance result, nor a native IME, real-session, physical-input or
 human accessibility test. It also does not establish clipboard persistence
 after an owner exits.
+
+### Terminal preedit adapter experiment
+
+On NexaUI base `47d7436d8e91edcafd8b46c0484c1426f81a9812`, the optional
+`NEXAUI_AETHERI_IME_EXPERIMENT` builds the original Aetheri composition model
+from `87996e2f12128b172a80b325ad3b539df6aee527` (`composition.c` blob
+`5a2c3586803c95b2fa761927a90f9dd9f74806c0`, header blob
+`9906676a02cecfb6e150b99e1d47514f31f5878b`) and an example adapter.
+It converts NexaUI's UTF-8 byte offsets into the model's Unicode scalar
+positions, preserves hidden caret and representable selections, rejects invalid
+boundaries and invalid drafts without mutating the prior model, and clears the
+draft if the caller's focus/session epoch no longer matches. The original
+composition model reserves selection length -1 as a sentinel, so the adapter
+explicitly rejects an adjacent one-scalar reverse selection rather than
+silently changing it.
+
+Enable the option in the normal example build, then run
+`aetheri_terminal_ime_test`. To include the controlled Wayland v3 test, also
+set the two existing `NEXAUI_FIXTURE_*` paths described above and run
+`aetheri_terminal_ime_wayland_test`. Static/shared and Clang ASan/UBSan
+builds passed on Alpine/WSL. The controlled protocol test queried native
+preedit state after a v3 notification and passed it into the original Aetheri
+model. A separate mutant that treated byte offsets as scalar positions failed
+the multibyte test.
+
+This is an adapter experiment, not an IME-complete terminal. The Wayland
+preedit notification is not itself tagged with the application epoch; the
+owner must establish and fence that association, and the simulated guard
+test does not prove stale native notifications cannot cross a focus transition.
+The example does not draw the composition or forward commits to a PTY. NexaUI
+currently exposes committed text as scalar events; a complete terminal bridge
+still needs a verified boundary and atomic validation for the whole native
+commit, including rejection of controls and stale target changes, before any
+bytes reach the app-owned output queue. Actual Aetheri, installed IME, scale,
+focus, physical input and human accessibility acceptance remain open.

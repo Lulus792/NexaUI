@@ -2777,3 +2777,20 @@ documented termios normalization. The synchronous PTY helpers are for the
 bounded fixture only. Aetheri's real process owner, native IME, app event-loop
 backpressure, glibc target, physical input and human assistive acceptance remain
 open; this result does not move shell or session ownership into NexaUI.
+
+## Terminal composition position adapter — 5 November 2026
+
+On NexaUI base `47d7436d8e91edcafd8b46c0484c1426f81a9812`, an optional
+[terminal IME adapter experiment](../../examples/23_aetheri_terminal_view/README.md#terminal-preedit-adapter-experiment)
+converts NexaUI preedit UTF-8 byte offsets to the original Aetheri composition
+model's scalar positions, with explicit unsupported handling for an adjacent
+reverse selection the original model cannot represent. Static, shared and
+Clang ASan/UBSan tests covered multibyte positions, hidden caret, draft
+validation and simulated stale owner guards. A controlled Wayland v3 server
+delivered actual protocol preedit through NexaUI to that model. A mutant using
+byte positions directly failed the multibyte test.
+
+The caller must still fence untagged native preedit notifications across focus
+and session changes. Preedit drawing and atomic whole-commit validation and
+delivery to the app-owned PTY are not implemented here. Installed IME, actual
+Aetheri, physical input, scale and human assistive acceptance remain open.
