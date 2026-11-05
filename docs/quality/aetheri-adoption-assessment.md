@@ -47,6 +47,18 @@ fixture reported `passed`; its log is `/tmp/nexaui-idle-fix-full.log` and its
 result is `/tmp/nexaui-idle-fix-full/result.json`. This run used virtual input,
 not human acceptance.
 
+The four opt-in simple-IME tests were subsequently run against build source
+`279a5c9e69e7e05961ed3dfb239fef760f9da969` on a separate owned Xvfb and
+Weston 14.0.2 session with `weston-simple-im`, a private `compose:ralt` keymap
+and a D-Bus session. All four executed and passed: composition, window focus
+loss, focus transfer to another control, and selection replacement. The helper
+`tests/run_simple_ime_session.py` checks the JUnit records and fails if a case
+is missing, skipped or failed; the final repeat's report and compositor metadata
+are in `/tmp/nexaui-279-ime-fixture-final/`. Initial fixture attempts exposed
+that TCP Xvfb does not provide the needed shared-memory output and that Weston
+also requires `XKB_DEFAULT_OPTIONS=compose:ralt`; neither was counted as a pass.
+The test uses virtual input and does not establish human or physical acceptance.
+
 ## Fixed-cell drawing candidate (2026-11-05)
 
 Candidate based on `88aeef97f0cd9b90f335e8520cae65570994ba09` adds
