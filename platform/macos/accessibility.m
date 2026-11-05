@@ -340,6 +340,14 @@ static int value_changed(nx_ax_node *a,nx_ax_node *b) {
     return strcmp((a->state&NX_SEM_PROTECTED) ? "" : value_string(a),
                   (b->state&NX_SEM_PROTECTED) ? "" : value_string(b))!=0;
 }
+static int text_selection_changed(nx_ax_node *a,nx_ax_node *b) {
+    if(!text_readable(a) || !text_readable(b))return 0;
+    if(a->text_selection.anchor!=b->text_selection.anchor || a->text_selection.cursor!=b->text_selection.cursor)return 1;
+    size_t end=b->text_selection.anchor>b->text_selection.cursor?b->text_selection.anchor:b->text_selection.cursor;
+    /* Prefix changes can move the UTF-16 range or alter its selected text even
+       if the corresponding UTF-8 byte offsets remain the same. */
+    return end && memcmp(a->value,b->value,end)!=0;
+}
 static NSRect logical(nx_ax_node *n) { return NSMakeRect(n->bounds.x,n->bounds.y,n->bounds.width,n->bounds.height); }
 static NSRect screen(NXMacAXBridge *b,nx_ax_node *n) {
     NSWindow *window=[b->view window];
@@ -898,6 +906,8 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
             nx_ax_node *a=&snapshot->nodes[prior], *b=&s->nodes[next];
             if (value_changed(a,b))
                 [notifications addObject:@[item,NSAccessibilityValueChangedNotification]];
+            if (text_selection_changed(a,b))
+                [notifications addObject:@[item,NSAccessibilitySelectedTextChangedNotification]];
             if ((b->state&NX_AX_SELECTION) && !selected_equal(snapshot,a,s,b,0)) {
                 [notifications addObject:@[item,NSAccessibilitySelectedChildrenChangedNotification]];
                 if ((b->role==NX_ROLE_LIST || b->role==NX_ROLE_TREE || b->role==NX_ROLE_TABLE) &&
