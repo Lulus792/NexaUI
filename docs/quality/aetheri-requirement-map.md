@@ -6,8 +6,9 @@ at 320–480 by 240 logical pixels in controlled German 200% tests with three
 DejaVu fonts. Its earlier host stopped updating below 480 by 380. A private
 Sway test now resizes to 320x240 and back with an independent AT-SPI client,
 which changes and verifies the German high-contrast model at 200%/150%.
-Native keyboard at that size, smaller windows, other fonts/locales and human
-acceptance remain open.
+At 100% text a private Sway virtual keyboard also changed settings at 320x240,
+retained focus through restore and closed with Escape. Other keyboard layouts,
+physical input, smaller windows, other fonts/locales and human acceptance remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's

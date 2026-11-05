@@ -54,7 +54,9 @@ controlled keyboard tests cover German at 200% and 320–480 pixels wide. A
 private headless Sway test drives a native 320x240 resize and restores 800x480.
 With `--atspi-client` and `--atspi-registry`, an independent client changes
 the model before and during that resize and checks the semantic window sizes.
-These runs do not cover native keyboard, all fonts or languages. Build
+The separate `--wtype` mode drives a private virtual keyboard through the
+resize, including focus retention and Escape. It does not test physical input,
+all fonts or languages. Build
 `atspi_client.c` separately using the `atspi-2`, `gobject-2.0` and `dbus-1`
 pkg-config modules; run `run_sway_resize.py --help` for fixture inputs. The broader Settings example in `examples/18_settings`
 provides separate text/IME and asynchronous service examples. Actual Aetheri

@@ -22,9 +22,13 @@ def main():
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--atspi-client', type=Path)
     parser.add_argument('--atspi-registry', type=Path)
+    parser.add_argument('--wtype', type=Path, help='Exercise a private virtual keyboard')
     args = parser.parse_args()
     if bool(args.atspi_client) != bool(args.atspi_registry):
         parser.error('--atspi-client and --atspi-registry must be supplied together')
+    if args.wtype and args.atspi_client:
+        parser.error('--wtype and --atspi-client are separate test modes')
+    wtype = args.wtype.resolve(strict=True) if args.wtype else None
     sway, swaymsg, host, font = (p.resolve(strict=True) for p in
                                  (args.sway, args.swaymsg, args.host, args.font))
     work = args.work_dir.resolve()
@@ -133,13 +137,35 @@ def main():
                     model='MODEL theme=2 german=1 text=150'
                 elif args.atspi_client:
                     (work/'resize-large').write_text('ready\n',encoding='ascii')
-            if not args.atspi_client:
+                elif wtype and width==320:
+                    for focus in (10, 11):
+                        before_key = len(lines())
+                        subprocess.run([str(wtype), '-s', '100', '-k', 'Tab'], env=env, check=True, timeout=5)
+                        wait(lambda: f'FOCUS {focus}' in lines()[before_key:], f'keyboard focus {focus}')
+                    before_key = len(lines())
+                    subprocess.run([str(wtype), '-s', '100', '-k', 'space'], env=env, check=True, timeout=5)
+                    model='MODEL theme=1 german=0 text=100'
+                    wait(lambda: ready(320, 240, before_key, model), 'keyboard model change at 320x240')
+                elif wtype:
+                    if 'FOCUS 11' not in lines()[before:]:
+                        raise RuntimeError('Focus was not retained through resize')
+                    before_key = len(lines())
+                    subprocess.run([str(wtype), '-s', '100', '-k', 'Tab'], env=env, check=True, timeout=5)
+                    wait(lambda: 'FOCUS 12' in lines()[before_key:], 'keyboard focus after restore')
+                    before_key = len(lines())
+                    subprocess.run([str(wtype), '-s', '100', '-k', 'space'], env=env, check=True, timeout=5)
+                    wait(lambda: ready(800, 480, before_key, 'MODEL theme=2 german=0 text=100'),
+                         'keyboard model change after restore')
+                    subprocess.run([str(wtype), '-s', '100', '-k', 'Escape'], env=env, check=True, timeout=5)
+            if not args.atspi_client and not wtype:
                 app.send_signal(signal.SIGTERM)
             if app.wait(timeout=5) != 0:
                 raise RuntimeError('Settings did not close cleanly')
             app = None
             if args.atspi_client:
                 print('Private Sway: AT-SPI changed Settings at 320x240, verified the restored size and closed.')
+            elif wtype:
+                print('Private Sway: virtual keyboard changed Settings before and after resize, retained focus and closed.')
             else:
                 print('Private Sway: Settings rendered at 320x240 and 800x480, retained model and closed.')
             return 0

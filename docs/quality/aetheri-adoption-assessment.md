@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Virtual keyboard across a native Settings resize (2026-11-05)
+
+On the consumer based on `7ab4c7fc4fb83801a38e67e1adade1695766d847`, a
+private headless Sway/Pixman test used wtype 0.4-r0 to send virtual-keyboard
+events. At 320x240 and default 100% English text, Tab moved focus through the
+first two radio controls and Space changed the original model to Light. After
+restoring 800x480, the diagnostic frame retained focus on Light; Tab and Space
+selected High contrast, and Escape closed the process successfully. Static,
+shared and Clang ASan/UBSan installed consumers all passed (three runs,
+exit 0). The existing AT-SPI resize mode also passed again with the shared
+consumer. An old host/view from `84ec8384ef30f36f3c2e2945e46e88d52ea46d63`
+with the frame diagnostic added failed before keyboard input because it never
+submitted a 320x240 frame; this does not isolate keyboard handling.
+
+The first keyboard attempt without an explicit input delay reached and changed
+Light but timed out on the first Tab after restore; its log showed focus still
+on Light. The cause was not established. The passing driver invokes wtype with
+a 100 ms sleep before each key and waits for observed frames/state rather than
+extending test deadlines. The wtype Alpine package was extracted privately, not
+installed system-wide; its package SHA-256 is
+`e3237925ad960fd8e8aaa38bc9b0eb3033c1802a6e62be5a040747b13d02833e`.
+This does not establish physical keyboard, other layouts, active IME, real
+screenreader, physical monitor or actual Aetheri acceptance.
+
 ## AT-SPI actions across a native Settings resize (2026-11-05)
 
 On the consumer and SDK based on `6c7253db0186e59e938552460a3fad42acd08c7c`,
