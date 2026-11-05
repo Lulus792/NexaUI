@@ -166,7 +166,7 @@ static int run(void) {
     CHECK([button accessibilityParent]==find(view,1) && [button accessibilityWindow]==native);
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
-    id number=find(view,2032);CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
+    id number=[find(view,2032) retain];CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
     CHECK([[number accessibilityValue] isEqual:@"1234"] && [number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     [number setAccessibilityValue:@"bad"];CHECK(advance(window,&s)==0);
     double number_value=0;CHECK([[number accessibilityValue] isEqual:@"bad"]);
@@ -186,6 +186,11 @@ static int run(void) {
     CHECK(![number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     s.number_disabled=0;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK && advance(window,&s)==0);
     CHECK([[number accessibilityValue] isEqual:@"7"] && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
+    nx_numeric_field_destroy(s.number);s.number=NULL;
+    CHECK(nx_numeric_field_create(7,1024,&s.number)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    CHECK(![number isAccessibilityElement] && [number accessibilityValue]==nil && find(view,2032)!=number);
+    [number setAccessibilityValue:@"99"];CHECK(advance(window,&s)==0 && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
+    [number release];
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
     s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);

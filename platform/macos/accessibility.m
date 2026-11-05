@@ -772,6 +772,12 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
         }
         uint32_t old=context_identity==binding ? find(snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && snapshot->nodes[old].role==n->role;
+        if(same && (n->text_target.identity || snapshot->nodes[old].text_target.identity)) {
+            nx_ax_node *prior=&snapshot->nodes[old];
+            same=n->text_target.identity && n->text_target.identity==prior->text_target.identity &&
+                !((n->state^prior->state)&NX_SEM_PROTECTED) &&
+                same_ancestry(s,n->parent,snapshot,prior->parent);
+        }
         if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
             (snapshot->nodes[old].state&NX_SEM_SELECTION_MULTIPLE) || snapshot->nodes[old].owner_multiple)) {
             nx_ax_node *prior=&snapshot->nodes[old];
