@@ -8,6 +8,7 @@ struct aetheri_desktop_view {
     nx_font *font;
     nx_font_collection *fonts;
     nx_text_field *query;
+    nx_window *window;
     float scroll_x,scroll_y;
     float revealed_width,revealed_height;
     uint64_t model_revision;
@@ -29,6 +30,10 @@ int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,
     *out=v;return 1;
 }
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *v) {return v?v->context:NULL;}
+nx_result aetheri_desktop_view_set_window(aetheri_desktop_view *v,nx_window *window) {
+    if(!v)return NX_ERROR_ARGUMENT;
+    v->window=window;return NX_OK;
+}
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *v,const nx_event *event) {
     if(!v || !event)return NX_ERROR_ARGUMENT;
     nx_event mapped=*event;
@@ -98,6 +103,8 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         const char *query_name=v->model->german?"Suche":"Search";
         query.name=(nx_utf8_span){query_name,strlen(query_name)};query.fonts=v->fonts;
         query.pixels_per_em=16;query.glyph_cache_bytes=1024u*1024u;query.validate=valid_query;
+        query.ime_window=v->window;
+        if(v->window && nx_text_clipboard_for_window(v->window,&query.clipboard)!=NX_OK)goto done;
         nx_interaction_state query_state;int valid=0,submitted=0;
         if(nx_text_field_widget(v->context,&query,v->query,&query_state,&valid,&submitted)!=NX_OK)goto done;
         size_t selected=result_count;int moved=0;

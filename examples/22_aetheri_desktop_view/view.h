@@ -17,6 +17,9 @@ typedef struct aetheri_desktop_intent {
 /* Model and font bytes are borrowed until destroy. No process or role is owned. */
 int aetheri_desktop_view_create(struct ae_desktop_model *model,const void *font,size_t length,aetheri_desktop_view **out);
 nx_context *aetheri_desktop_view_context(aetheri_desktop_view *view);
+/* Optional ordinary NexaUI window for IME and clipboard. The caller keeps it
+   alive until this is cleared and the view completes another frame. */
+nx_result aetheri_desktop_view_set_window(aetheri_desktop_view *view,nx_window *window);
 /* Queue host-translated events here. Tab/Shift-Tab in the search field map to
    next/previous result; native-consumed and modified keys pass through. */
 nx_result aetheri_desktop_view_queue_event(aetheri_desktop_view *view,const nx_event *event);

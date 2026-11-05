@@ -18,6 +18,7 @@ cmake -S /path/to/copied-example -B build \
   -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot
 cmake --build build
 ./build/aetheri_desktop_view_test /path/to/font.ttf
+./build/aetheri_desktop_preview /path/to/font.ttf
 ```
 
 This is an initial dock and model-result view, not a complete shell adapter.
@@ -32,11 +33,15 @@ search field also propose next/previous selection without moving the text focus.
 Native-consumed and otherwise modified keys are left unchanged. The model-confirmed row
 is highlighted, exposed as a selected list item and revealed after a model
 revision. Native selection-owner actions and independent assistive-client
-verification remain open, as do Tab behavior outside the search field, real window activation, native
-input and IME, borrowed-surface presentation,
-AT-SPI publication, scaling, multi-output ownership and the original process
-owner integration remain open. The test uses synthetic context events and
-semantic requests; it does not establish actual Aetheri or human acceptance.
+verification remain open, as do Tab behavior outside the search field, real window activation,
+private-surface input and IME, borrowed-surface presentation,
+multi-output ownership and the original process owner integration remain open.
+The Linux preview uses an ordinary NexaUI window, the software presenter,
+native input/clipboard/IME binding and optional window AT-SPI publication; it
+prints launch/activation intents without performing them. It is not the
+private-role shell adapter. Native input-method and independent assistive-client
+acceptance remain open. The core view test uses synthetic context events and
+semantic requests; neither test establishes physical or human acceptance.
 
 On 5 November 2026 the initial source `3c0dfd20cb7217cbbe81d0af7965533c19b0f506`
 was built on Alpine/WSL2 with GCC 15.2 against an installed static, Wayland-only
