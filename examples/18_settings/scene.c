@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "text_wrap.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,19 +63,10 @@ static int label(settings_scene *s, const char *str, double size, nx_text_layout
     return nx_text_layout_create(s->fonts, str, strlen(str), NX_BIDI_LTR,
                                  size, 500, out) == NX_OK;
 }
-/* The text API does not break unbreakable words. Scale only when such a word
-   would exceed this example's fixed minimum-width content column. */
+/* Keep the requested text size and wrap long words at grapheme boundaries. */
 static int fitted_label(settings_scene *s, const char *str, double size,
                         float width, nx_text_layout **out) {
-    nx_text_layout *layout=NULL;
-    if (nx_text_layout_create(s->fonts,str,strlen(str),NX_BIDI_LTR,size,width,&layout)!=NX_OK) return 0;
-    if (nx_text_layout_width(layout)>width) {
-        size*=0.98*width/nx_text_layout_width(layout);
-        nx_text_layout_destroy(layout); layout=NULL;
-        if (nx_text_layout_create(s->fonts,str,strlen(str),NX_BIDI_LTR,size,width,&layout)!=NX_OK) return 0;
-    }
-    if (nx_text_layout_width(layout)>width) { nx_text_layout_destroy(layout); return 0; }
-    *out=layout; return 1;
+    return nx_example_small_text_layout(s->fonts,str,strlen(str),size,width,out);
 }
 static int reflow_status(settings_scene *s, float width) {
     if (s->status_width==width) return 1;
@@ -93,7 +85,7 @@ static int reflow_status(settings_scene *s, float width) {
         maximum=fmaxf(maximum,(float)nx_text_layout_height(next[i]));
     }
     float motion_width=width<116 ? width : width-38;
-    if (!fitted_label(s,strings->motion,width<116?14:16,motion_width,&motion)) {
+    if (!fitted_label(s,strings->motion,16,motion_width,&motion)) {
         for (size_t j=0;j<7;++j) nx_text_layout_destroy(next[j]);
         return 0;
     }
@@ -290,27 +282,33 @@ int settings_frame(settings_scene *s, float width, float height) {
     nx_semantic_desc root = {0}; root.id=1; root.role=NX_ROLE_WINDOW;
     root.bounds=(nx_rect){0,0,width,height}; root.name=text(strings->root);
     TRY(nx_semantics_add(s->ui, &root, NULL));
+    int compact=width<200 || nx_text_layout_height(s->title)>34;
     nx_container_desc panel={0}; panel.id=2; panel.parent_id=1;
     panel.bounds=(nx_rect){16,16,width-32,height-32}; panel.name=text(strings->title);
-    panel.label_layout=s->title; panel.label_origin=(nx_point){32,30}; panel.glyph_cache_bytes=CACHE_BYTES;
+    panel.label_layout=compact?NULL:s->title; panel.label_origin=(nx_point){32,30}; panel.glyph_cache_bytes=CACHE_BYTES;
     TRY(nx_panel(s->ui, &panel));
     nx_scroll_area_desc scroll={0}; scroll.id=7; scroll.parent_id=2;
-    scroll.name=text(strings->options); scroll.viewport=(nx_rect){16,70,width-32,height-86};
+    float scroll_top=compact?24:70;
+    scroll.name=text(strings->options); scroll.viewport=(nx_rect){16,scroll_top,width-32,height-scroll_top-16};
     int stacked_motion=width<180;
-    float field_y=fmaxf(104,85+(float)nx_text_layout_height(s->name_label));
-    float motion_y=160+field_y-104;
-    float apply_y=210+field_y-104+(stacked_motion ? (float)nx_text_layout_height(s->motion_label)+8 : 0);
-    float status_y=apply_y+42;
-    scroll.content_size=(nx_size){width-32,status_y-70+s->status_max_height+8}; scroll.axes=NX_SCROLL_Y;
+    float name_y=compact?30+(float)nx_text_layout_height(s->title)+8:78;
+    float field_y=fmaxf(name_y+26,name_y+7+(float)nx_text_layout_height(s->name_label));
+    float motion_y=field_y+56;
+    float motion_height=stacked_motion?28+(float)nx_text_layout_height(s->motion_label):
+                        fmaxf(32,8+(float)nx_text_layout_height(s->motion_label));
+    float apply_y=motion_y+motion_height+18;
+    float apply_height=fmaxf(38,16+(float)nx_text_layout_height(s->apply_label));
+    float status_y=apply_y+apply_height+4;
+    scroll.content_size=(nx_size){width-32,status_y-scroll_top+s->status_max_height+8}; scroll.axes=NX_SCROLL_Y;
     uint64_t focus=nx_focus_id(s->ui);
     if (focus!=s->revealed_focus || scroll.viewport.height!=s->revealed_viewport_height || width!=s->revealed_width) {
         float top=0, bottom=0;
-        if (focus==3) {top=field_y-70;bottom=top+38;}
+        if (focus==3) {top=field_y-scroll_top;bottom=top+38;}
         else if (focus==4) {
-            top=motion_y-70;
-            bottom=top+(stacked_motion ? 28+(float)nx_text_layout_height(s->motion_label) : 32);
+            top=motion_y-scroll_top;
+            bottom=top+fminf(motion_height,scroll.viewport.height);
         }
-        else if (focus==5) {top=apply_y-70;bottom=top+38;}
+        else if (focus==5) {top=apply_y-scroll_top;bottom=top+apply_height;}
         if (bottom>top) {
             if (top<s->scroll_y) s->scroll_y=top;
             else if (bottom>s->scroll_y+scroll.viewport.height)
@@ -332,7 +330,8 @@ int settings_frame(settings_scene *s, float width, float height) {
     nx_scroll_info scroll_info;
     TRY(nx_scroll_area_begin(s->ui,&scroll,&s->scroll_x,&s->scroll_y,&scroll_info));
     float y=s->scroll_y;
-    TRY(nx_draw_text_layout(s->ui,s->name_label,(nx_point){32,78-y},fg,CACHE_BYTES));
+    if(compact) TRY(nx_draw_text_layout(s->ui,s->title,(nx_point){32,30-y},fg,CACHE_BYTES));
+    TRY(nx_draw_text_layout(s->ui,s->name_label,(nx_point){32,name_y-y},fg,CACHE_BYTES));
     nx_text_field_desc field={0}; field.id=3; field.parent_id=7;
     field.bounds=(nx_rect){32,field_y-y,width-64,38}; field.name=text(strings->name);
     field.fonts=s->fonts; field.pixels_per_em=16; field.glyph_cache_bytes=CACHE_BYTES;
@@ -348,7 +347,7 @@ int settings_frame(settings_scene *s, float width, float height) {
         TRY(nx_draw_text_layout(s->ui,s->motion_label,(nx_point){32,motion_y+28-y},fg,CACHE_BYTES));
     nx_control_desc apply={0}; apply.id=5; apply.parent_id=7;
     float apply_width=fminf(110,width-64);
-    apply.bounds=(nx_rect){32,apply_y-y,apply_width,38}; apply.name=text(strings->apply_name);
+    apply.bounds=(nx_rect){32,apply_y-y,apply_width,apply_height}; apply.name=text(strings->apply_name);
     apply.label_layout=s->apply_label;
     apply.label_origin=(nx_point){32+(apply_width-(float)nx_text_layout_width(s->apply_label))*0.5f,apply_y+8-y}; apply.glyph_cache_bytes=CACHE_BYTES;
     apply.disabled=!valid || s->pending_submission || s->next_submission==UINT64_MAX;

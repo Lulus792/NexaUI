@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Full Settings example: small-window text reflow (2026-11-05)
+
+On the candidate based on `71b71fa9b7065ec9e49e9afeea69374e8fe0c8ac`,
+the full Settings example shares the existing example-only grapheme wrapper
+with the original-model consumer. Long German labels at 128x150 retain their
+requested font sizes rather than shrinking to fit; measured title, control and
+status heights determine the scrollable layout. The public SDK is unchanged.
+The copied installed example now includes the shared helper explicitly.
+
+The scene regression passed with DejaVu Sans, Serif and Sans Mono. The scene
+and three controlled text-input-v3 tests passed in static GCC, shared GCC and
+Clang ASan/UBSan builds. A private Weston virtual keyboard exercised focus,
+status paging, apply and clean close at the minimum size. The previous native
+diagnostic used the former fixed 70-pixel viewport top and initially failed;
+it now checks complete semantic bounds against the actual scroll viewport.
+An independently copied software consumer built against the installed static
+SDK declared at the base revision passed native keyboard and independent
+AT-SPI apply/retry. Four private Weston simple-IME cases passed, including
+composition, both focus cancellations and selection replacement. A preliminary
+IME run lacked a built focus client and two cases failed; it is not counted.
+
+These are automated virtual fixtures, not human screenreader, physical input,
+200% text-scale, other fonts/scripts or actual Aetheri integration acceptance.
+The installed SDK contains unchanged core sources from the stated base; the
+example changes were the working candidate, not that committed revision.
+
 ## Bounded ASCII emergency wrapping (2026-11-05)
 
 On the candidate based on `c075b03a8405c11898cc7cbb081c61260e768884`, the

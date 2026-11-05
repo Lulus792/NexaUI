@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L01/L02/A10/Q06: the full Settings example based on
+`71b71fa9b7065ec9e49e9afeea69374e8fe0c8ac` reuses the original-model
+consumer's example-only text wrapper for small windows. Automated scene,
+native virtual-keyboard, simple-IME and installed-consumer AT-SPI checks passed;
+200% scaling, human assistive review and actual Aetheri adoption remain open.
+See the [candidate evidence](aetheri-adoption-assessment.md#full-settings-example-small-window-text-reflow-2026-11-05).
+
 W04/L01/A10: the original-model Settings consumer based on
 `84ec8384ef30f36f3c2e2945e46e88d52ea46d63` lays out and follows keyboard focus
 at 320–480 by 240 logical pixels in controlled German 200% tests with three

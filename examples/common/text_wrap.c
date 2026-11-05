@@ -39,7 +39,7 @@ static nx_text_layout *ascii_wrap(nx_font_collection *fonts,const char *text,siz
 /* The shared layout deliberately preserves unbreakable words even when wider
    than its limit. In a narrow Settings viewport, add emergency line breaks at
    grapheme boundaries; semantic names continue to use the original bytes. */
-int aetheri_small_text_layout(nx_font_collection *fonts,const char *text,size_t length,
+int nx_example_small_text_layout(nx_font_collection *fonts,const char *text,size_t length,
                              double size,double width,nx_text_layout **out) {
     if(nx_text_layout_create(fonts,text,length,NX_BIDI_LTR,size,width,out)!=NX_OK) return 0;
     if(nx_text_layout_width(*out)<=width) return 1;

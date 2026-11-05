@@ -42,7 +42,8 @@ long-running work need their own cancellation or independent service lifetime.
 
 The example can also be built outside the NexaUI source tree against an installed
 Linux SDK. Copy `CMakeLists.txt`, `main_linux.c`, `renderer.c`, `renderer.h`,
-`scene.c` and `scene.h` into a directory, then run:
+`scene.c` and `scene.h` from this directory and `text_wrap.c`/`text_wrap.h`
+from `examples/common` into a directory, then run:
 
 ```sh
 cmake -S /path/to/copied-settings -B settings-build \

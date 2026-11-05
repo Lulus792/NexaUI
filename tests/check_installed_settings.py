@@ -53,6 +53,8 @@ def main():
         source.mkdir()
         for name in ('CMakeLists.txt', 'main_linux.c', 'renderer.c', 'renderer.h', 'scene.c', 'scene.h'):
             shutil.copy2(ROOT / 'examples/18_settings' / name, source / name)
+        for name in ('text_wrap.c', 'text_wrap.h'):
+            shutil.copy2(ROOT / 'examples/common' / name, source / name)
         software = env.get('NEXAUI_TEST_SETTINGS_SOFTWARE') == '1'
         no_vulkan = env.get('NEXAUI_TEST_SETTINGS_NO_VULKAN_PACKAGE') == '1'
         optional = ['-DCMAKE_DISABLE_FIND_PACKAGE_Vulkan=ON'] if software or no_vulkan else []
@@ -62,7 +64,7 @@ def main():
              '-DNEXAUI_SETTINGS_SOFTWARE=' + ('ON' if software else 'OFF'), *optional], env)
         run(['cmake', '--build', build, '--parallel', '4'], env)
         commands = json.loads((build / 'compile_commands.json').read_text(encoding='utf-8'))
-        if len(commands) != 3 or any(str(ROOT) in item['command'] or
+        if len(commands) != 4 or any(str(ROOT) in item['command'] or
                                      not Path(item['file']).is_relative_to(source) for item in commands):
             raise RuntimeError('Consumer unexpectedly uses a source-tree path')
         run(['cmake', '--install', build, '--prefix', install], env)

@@ -298,11 +298,13 @@ int main(int argc, char **argv) {
             }
             if (verify_keyboard_small && previous_focus==nx_focus_id(settings_context(scene))) {
                 uint64_t focus=nx_focus_id(settings_context(scene));
-                uint32_t index; nx_semantic_view focused;
-                if (focus>=3 && focus<=5 && nx_semantics_find(settings_context(scene),focus,&index)==NX_OK &&
+                uint32_t index; nx_semantic_view focused, viewport;
+                int have_viewport=nx_semantics_find(settings_context(scene),7,&index)==NX_OK &&
+                    nx_semantics_get(settings_context(scene),index,&viewport)==NX_OK;
+                if (have_viewport && focus>=3 && focus<=5 && nx_semantics_find(settings_context(scene),focus,&index)==NX_OK &&
                     nx_semantics_get(settings_context(scene),index,&focused)==NX_OK &&
-                    focused.bounds.y>=70 && focused.bounds.y+focused.bounds.height<=info.height-16 &&
-                    focused.bounds.x>=16 && focused.bounds.x+focused.bounds.width<=info.width-16) {
+                    focused.bounds.y>=viewport.bounds.y && focused.bounds.y+focused.bounds.height<=viewport.bounds.y+viewport.bounds.height &&
+                    focused.bounds.x>=viewport.bounds.x && focused.bounds.x+focused.bounds.width<=viewport.bounds.x+viewport.bounds.width) {
                     unsigned bit=1u<<(focus-3);
                     if (!(settled_focuses&bit)) {
                         settled_focuses|=bit;
@@ -310,11 +312,11 @@ int main(int argc, char **argv) {
                         fflush(stdout);
                     }
                 }
-                if (verify_keyboard_minimum && !status_visible && focus==4 &&
+                if (have_viewport && verify_keyboard_minimum && !status_visible && focus==4 &&
                     nx_semantics_find(settings_context(scene),6,&index)==NX_OK &&
                     nx_semantics_get(settings_context(scene),index,&focused)==NX_OK &&
-                    focused.bounds.y>=70 && focused.bounds.y+focused.bounds.height<=info.height-16 &&
-                    focused.bounds.x>=16 && focused.bounds.x+focused.bounds.width<=info.width-16) {
+                    focused.bounds.y>=viewport.bounds.y && focused.bounds.y+focused.bounds.height<=viewport.bounds.y+viewport.bounds.height &&
+                    focused.bounds.x>=viewport.bounds.x && focused.bounds.x+focused.bounds.width<=viewport.bounds.x+viewport.bounds.width) {
                     status_visible=1; puts("SETTINGS_STATUS_VISIBLE"); fflush(stdout);
                 }
             }

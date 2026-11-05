@@ -1,4 +1,6 @@
 #include "scene.h"
+#include "text_wrap.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -117,14 +119,9 @@ int main(int argc,char **argv) {
     CHECK(nx_font_open(bytes,(size_t)length,NULL,&measure_font)==NX_OK);
     CHECK(nx_font_collection_create(NULL,&measure_fonts)==NX_OK &&
           nx_font_collection_add(measure_fonts,measure_font)==NX_OK);
-    CHECK(nx_text_layout_create(measure_fonts,invalid,strlen(invalid),NX_BIDI_LTR,15,64,&measured)==NX_OK);
+    CHECK(nx_example_small_text_layout(measure_fonts,invalid,strlen(invalid),15,64,&measured));
     double measured_width=nx_text_layout_width(measured), measured_height=nx_text_layout_height(measured);
-    if (measured_width>64) {
-        double size=15*0.98*64/measured_width;
-        nx_text_layout_destroy(measured); measured=NULL;
-        CHECK(nx_text_layout_create(measure_fonts,invalid,strlen(invalid),NX_BIDI_LTR,size,64,&measured)==NX_OK);
-        measured_width=nx_text_layout_width(measured); measured_height=nx_text_layout_height(measured);
-    }
+    CHECK(nx_text_layout_pixels_per_em(measured)==15);
     nx_text_layout_destroy(measured); measured=NULL;
     nx_font_collection_destroy(measure_fonts); nx_font_close(measure_font);
     CHECK(measured_width<=64 && view.bounds.height==measured_height);
@@ -142,7 +139,7 @@ int main(int argc,char **argv) {
           view.bounds.y>bottom_status_y);
     CHECK(settings_frame(s,640,150) && settings_frame(s,128,150) && nx_focus_id(ui)==4);
     CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
-          view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134 &&
+          view.bounds.y>=24 && view.bounds.y+view.bounds.height<=134 &&
           view.bounds.x+view.bounds.width<=112);
     /* Language changes keep IDs, focus, draft and in-flight work intact. */
     const char *german_name="M\xc3\xbcnchen";
@@ -156,6 +153,22 @@ int main(int argc,char **argv) {
     const char *german_status="Ungespeicherte \xc3\x84nderungen";
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.value.length==strlen(german_status) && !memcmp(view.value.data,german_status,view.value.length));
+    /* A narrow German status must wrap without reducing its requested 15px. */
+    CHECK(settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK);
+    CHECK(nx_font_open(bytes,(size_t)length,NULL,&measure_font)==NX_OK &&
+          nx_font_collection_create(NULL,&measure_fonts)==NX_OK && nx_font_collection_add(measure_fonts,measure_font)==NX_OK);
+    CHECK(nx_example_small_text_layout(measure_fonts,german_status,strlen(german_status),15,64,&measured) &&
+          nx_text_layout_pixels_per_em(measured)==15 && nx_text_layout_width(measured)<=64 &&
+          view.bounds.height==nx_text_layout_height(measured));
+    nx_text_layout_destroy(measured); measured=NULL;
+    CHECK(nx_example_small_text_layout(measure_fonts,"Anwenden",8,16,52,&measured) &&
+          nx_text_layout_pixels_per_em(measured)==16 && nx_text_layout_width(measured)<=52);
+    CHECK(nx_semantics_find(ui,5,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.height==fmaxf(38,16+(float)nx_text_layout_height(measured)) &&
+          view.bounds.x+view.bounds.width<=112);
+    nx_text_layout_destroy(measured); measured=NULL;
+    nx_font_collection_destroy(measure_fonts); measure_fonts=NULL; nx_font_close(measure_font); measure_font=NULL;
     CHECK(!settings_set_language(s,"fr") && settings_frame(s,240,150) && nx_focus_id(ui)==3);
     CHECK(key(ui,NX_KEY_TAB,0) && settings_frame(s,240,150) && nx_focus_id(ui)==4);
     CHECK(key(ui,NX_KEY_TAB,0) && settings_frame(s,240,150) && nx_focus_id(ui)==5);
@@ -221,7 +234,7 @@ int main(int argc,char **argv) {
     CHECK(settings_resume(bytes,(size_t)length,NULL,&session,&s) && !session && s);
     ui=settings_context(s);CHECK(settings_frame(s,128,150) && nx_focus_id(ui)==4 && settings_frame(s,128,150));
     CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
-          view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134);
+          view.bounds.y>=24 && view.bounds.y+view.bounds.height<=134);
     CHECK(settings_pending_apply(s)==detached_token && !settings_take_apply_request(s));
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.value.length==strlen(unknown) && !memcmp(view.value.data,unknown,view.value.length));

@@ -34,7 +34,7 @@ static int cached_layout(nx_font_collection *fonts,nx_text_layout **slot,layout_
     if(key->valid && key->length==length && key->size==size && key->width==width &&
        key->small==small && !memcmp(key->text,text,length)) return 1;
     nx_text_layout *next=NULL;
-    if(small ? !aetheri_small_text_layout(fonts,text,length,size,width,&next) :
+    if(small ? !nx_example_small_text_layout(fonts,text,length,size,width,&next) :
        nx_text_layout_create(fonts,text,length,NX_BIDI_LTR,size,width,&next)!=NX_OK) return 0;
     nx_text_layout_destroy(*slot); *slot=next;
     memcpy(key->text,text,length); key->text[length]=0;

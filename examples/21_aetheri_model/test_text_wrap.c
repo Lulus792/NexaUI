@@ -7,7 +7,7 @@
 #define COMBINED_E "e\xcc\x81"
 static int check_layout(nx_font_collection *fonts,const char *text,double width,int require_break) {
     size_t length=strlen(text), source=0; nx_text_layout *layout=NULL; nx_utf8_span result;
-    if(!aetheri_small_text_layout(fonts,text,length,28,width,&layout)) {fputs("layout creation failed\n",stderr);goto fail;}
+    if(!nx_example_small_text_layout(fonts,text,length,28,width,&layout)) {fputs("layout creation failed\n",stderr);goto fail;}
     if(nx_text_layout_width(layout)>width || nx_text_layout_text(layout,&result)!=NX_OK) goto fail;
     unsigned breaks=0;
     for(size_t i=0;i<result.length;++i) {
@@ -48,7 +48,7 @@ int main(int argc,char **argv) {
             }
         }
     nx_text_layout *impossible=NULL;
-    CHECK(!aetheri_small_text_layout(fonts,"W",1,28,1,&impossible) && !impossible);
+    CHECK(!nx_example_small_text_layout(fonts,"W",1,28,1,&impossible) && !impossible);
     nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);
     puts("Emergency wraps preserve bytes and graphemes within measured widths");return 0;
 fail:
