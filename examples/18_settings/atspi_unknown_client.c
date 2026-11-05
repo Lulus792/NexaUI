@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 /* Independent native consumer: no NexaUI headers or linkage. */
 #include <atspi/atspi.h>
+#include <errno.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -48,10 +49,30 @@ static int enabled(AtspiAccessible *node) {
 }
 static int marker(int fd,const char *expected) {
     char line[128];size_t used=0;struct pollfd wait={fd,POLLIN|POLLHUP,0};
-    while(used+1<sizeof(line) && poll(&wait,1,5000)>0) {
-        ssize_t n=read(fd,line+used,1);if(n!=1)return 0;
-        if(line[used++]=='\n'){line[used-1]=0;return !strcmp(line,expected);}
+    while(used+1<sizeof(line)) {
+        int ready;
+        do {ready=poll(&wait,1,5000);} while(ready<0 && errno==EINTR);
+        if(ready<=0) {
+            fprintf(stderr,"Waiting for %s: %s\n",expected,ready==0?"timeout":strerror(errno));
+            return 0;
+        }
+        ssize_t n;
+        do {n=read(fd,line+used,1);} while(n<0 && errno==EINTR);
+        if(n!=1) {
+            fprintf(stderr,"Waiting for %s: %s after %zu bytes\n",expected,
+                    n==0?"end of output":strerror(errno),used);
+            return 0;
+        }
+        if(line[used++]=='\n') {
+            line[used-1]=0;
+            if(strcmp(line,expected)) {
+                fprintf(stderr,"Expected marker %s, received: %s\n",expected,line);
+                return 0;
+            }
+            return 1;
+        }
     }
+    fprintf(stderr,"Waiting for %s: output line too long\n",expected);
     return 0;
 }
 int main(int argc,char **argv) {
