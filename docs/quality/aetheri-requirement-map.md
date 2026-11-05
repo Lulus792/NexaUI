@@ -33,7 +33,9 @@ increment/decrement actions remained unhandled by the core request queue (A04/L0
 On base `41c7dc2c122c938715a05ea13655dc7359375ef0`, the core accepts those
 actions for actual scroll thumbs, revalidates owner/axis/modal state and applies
 bounded steps. An independent AT-SPI client exercised both directions on a
-vertical thumb; horizontal native and other platform acceptance remain open.
+vertical thumb. On base `93384d478c27b54a1940023546c1f686035f7ef6`, an
+independent AT-SPI client also stepped both axes of the same area independently
+on private Weston. Other platform and human assistive acceptance remain open.
 
 L05/L06/I04/P07: the [Files identity experiment](../../examples/24_aetheri_files_identity/README.md)
 on base `358965e12779364125f28c3fa54005b0d4a24139` reuses the original Aetheri

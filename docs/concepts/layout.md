@@ -62,8 +62,9 @@ through `nx_semantics_request_action`. Each accepted step uses the area's
 does not move keyboard focus. The queued request is applied only while the same
 thumb still belongs to the same scroll area, axis and overlay and remains
 enabled. Other controls' increment/decrement actions are not covered by this
-contract. Native AT-SPI was exercised for a vertical thumb on private Wayland;
-cross-platform and human assistive acceptance remain separate.
+contract. An independent native AT-SPI client exercised both axes in one
+two-axis scroll area on private Wayland, including independent step and return
+actions. Cross-platform and human assistive acceptance remain separate.
 
 Set `thumb_x_id` or `thumb_y_id` to a unique, nonzero widget ID to make that axis's thumb draggable and keyboard focusable. The corresponding scroll axis must be enabled. Dragging maps thumb travel to the full content offset and retains pointer capture outside the track. A focused vertical thumb accepts Up/Down, Page Up/Down, Home and End; a focused horizontal thumb accepts Left/Right, Page Up/Down, Home and End. Arrow keys move by `wheel_step` (40 by default), page keys by one viewport, and Home/End to the limits. The thumb is exposed as a child slider semantic with its current percentage. A zero thumb ID keeps the visual bar and wheel scrolling, without a focusable thumb. Disabling the area also disables thumb input and removes its keyboard focus.
 

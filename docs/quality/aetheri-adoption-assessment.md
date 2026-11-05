@@ -1,5 +1,23 @@
 # Aetheri adoption: initial source assessment
 
+## Native two-axis scrollbar actions (2026-11-05)
+
+The added C17 test host and independent libatspi client, on the source tree
+based on `93384d478c27b54a1940023546c1f686035f7ef6`, exercise horizontal and
+vertical scrollbar increment and decrement actions in one area. The client
+observes 0/0, 10/0, 10/10, 0/10 and 0/0 percent before closing the host via
+AT-SPI; the host reports its final application-owned offsets. On Alpine/WSL2,
+private Weston 14/Xvfb and an unprivileged test process, direct fixture runs
+passed for static, shared and Clang ASan/UBSan builds (exit 0 each); the
+registered CTest also passed 1/1 in the static build. An older locally installed
+static SDK failed the same client at the first horizontal step, observing 0/0
+instead of 10/0. The initial CTest attempt failed before running the test
+because its existing log directory was not writable by the unprivileged user;
+the later run used a writable test-log directory. This is automated private
+compositor evidence, not physical input, a human screenreader, other platforms
+or Aetheri adoption. The fixture is `nexaui_atspi_scroll_wayland_private` and
+requires the existing private Weston wrapper and AT-SPI test dependencies.
+
 ## Borrowed host scale and presenter ownership (2026-11-05)
 
 Test source `920787e36bfa298e734be5fc644cfb7cd20e0d2d` exercises the existing
