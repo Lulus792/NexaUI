@@ -20,6 +20,10 @@ On base `d74583a03cb497b21cb616a421b3d848f8e8fd05`, the consumer reuses
 unchanged bounded layouts. A 16-display, long-name small-window benchmark
 showed lower repeated frame-construction time on one WSL profile; cold reflow,
 presentation, other targets and an approved performance budget remain open.
+On base `c075b03a8405c11898cc7cbb081c61260e768884`, single unbroken ASCII
+names additionally reuse initial shaped caret positions for emergency wrapping;
+the verified fallback still handles other text. The synthetic cold-frame
+measurement improved, but cold shaping, other scripts and target budgets remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's

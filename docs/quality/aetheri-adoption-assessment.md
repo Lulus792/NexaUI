@@ -1,5 +1,38 @@
 # Aetheri adoption: initial source assessment
 
+## Bounded ASCII emergency wrapping (2026-11-05)
+
+On the candidate based on `c075b03a8405c11898cc7cbb081c61260e768884`, the
+Settings example's emergency wrapper can derive breaks for one unbroken
+printable ASCII run from its existing shaped caret positions. It requires one
+line, an ordered caret per byte and monotonic finite positions. The result is
+reshaped and its maximum line width checked; failures and all other text use
+the prior grapheme-by-grapheme path. Accessibility names remain the original
+bytes. The helper is internal to the example; no SDK API or dependency changed.
+
+The new direct test checks exact byte preservation, grapheme-boundary breaks,
+measured width and an impossible-width failure over ASCII, ligature candidates,
+spaces, combining sequences and Hebrew. DejaVu Sans, Serif and Sans Mono passed
+on static, shared and Clang ASan/UBSan consumer builds (nine runs), with one
+full Settings scene regression per build. A deliberately corrupted ASCII byte
+copy failed the direct test at the expected byte comparison. An initial test
+incorrectly assumed that every long string required inserted hard breaks;
+the combining input could already wrap naturally, so that assertion was corrected.
+The private Sway virtual-pointer and AT-SPI resize workflows passed on all
+three builds (six runs). These are automated fixtures, not human reading or
+physical input.
+
+The same optional 16-display benchmark, DejaVu Sans, 120-byte unbroken ASCII
+names, German 200% and 128x150, was run three times per source on Alpine/WSL2
+with GCC 15.2.0, a Release consumer and the same installed static Debug SDK.
+The exact base's cold frame took 294–337 ms and subsequent frames 18–27 ms;
+the candidate's cold frame took 133–153 ms and subsequent frames 18–21 ms.
+This wall-clock frame-construction experiment excludes native presentation;
+host load, other text and other machines may differ. The selected display's
+name includes a suffix and takes the general path. No target performance
+budget, complex-script improvement, real Aetheri adoption or physical
+responsiveness is established.
+
 ## Cached original-model Settings text layouts (2026-11-05)
 
 The consumer candidate based on `d74583a03cb497b21cb616a421b3d848f8e8fd05`

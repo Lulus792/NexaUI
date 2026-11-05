@@ -1,4 +1,5 @@
 #include "view.h"
+#include "text_wrap.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,45 +28,13 @@ struct aetheri_view {
     uint64_t revealed_focus;
 };
 static nx_utf8_span span(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
-/* The shared layout deliberately preserves unbreakable words even when wider
-   than its limit. In a narrow Settings viewport, add emergency line breaks at
-   grapheme boundaries; semantic names continue to use the original bytes. */
-static int small_text_layout(nx_font_collection *fonts,const char *text,size_t length,
-                             double size,double width,nx_text_layout **out) {
-    if(nx_text_layout_create(fonts,text,length,NX_BIDI_LTR,size,width,out)!=NX_OK) return 0;
-    if(nx_text_layout_width(*out)<=width) return 1;
-    nx_text_layout_destroy(*out); *out=NULL;
-    if(length>(SIZE_MAX-1)/2) return 0;
-    char *wrapped=malloc(length*2+1); if(!wrapped) return 0;
-    size_t line=0,pos=0,written=0;
-    while(pos<length) {
-        size_t next;
-        nx_text_layout *probe=NULL;
-        if(nx_grapheme_next(text,length,pos,&next)!=NX_OK ||
-           nx_text_layout_create(fonts,text+line,next-line,NX_BIDI_LTR,size,width,&probe)!=NX_OK) {
-            free(wrapped); return 0;
-        }
-        int overflow=nx_text_layout_width(probe)>width;
-        nx_text_layout_destroy(probe);
-        if(overflow) {
-            if(pos==line) {free(wrapped);return 0;}
-            wrapped[written++]='\n'; line=pos;
-        }
-        memcpy(wrapped+written,text+pos,next-pos); written+=next-pos; pos=next;
-    }
-    nx_result result=nx_text_layout_create(fonts,wrapped,written,NX_BIDI_LTR,size,width,out);
-    free(wrapped);
-    if(result!=NX_OK) return 0;
-    if(nx_text_layout_width(*out)>width) {nx_text_layout_destroy(*out);*out=NULL;return 0;}
-    return 1;
-}
 static int cached_layout(nx_font_collection *fonts,nx_text_layout **slot,layout_key *key,
                          const char *text,size_t length,double size,double width,int small) {
     if(length>=sizeof(key->text)) return 0;
     if(key->valid && key->length==length && key->size==size && key->width==width &&
        key->small==small && !memcmp(key->text,text,length)) return 1;
     nx_text_layout *next=NULL;
-    if(small ? !small_text_layout(fonts,text,length,size,width,&next) :
+    if(small ? !aetheri_small_text_layout(fonts,text,length,size,width,&next) :
        nx_text_layout_create(fonts,text,length,NX_BIDI_LTR,size,width,&next)!=NX_OK) return 0;
     nx_text_layout_destroy(*slot); *slot=next;
     memcpy(key->text,text,length); key->text[length]=0;

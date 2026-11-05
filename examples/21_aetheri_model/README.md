@@ -19,6 +19,7 @@ cmake -S examples/21_aetheri_model -B build-aetheri-model \
   -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot
 cmake --build build-aetheri-model
 build-aetheri-model/aetheri_model_view_test /path/to/font.ttf
+build-aetheri-model/aetheri_model_text_wrap_test /path/to/font.ttf
 build-aetheri-model/aetheri_model_view /path/to/font.ttf
 ```
 
@@ -73,6 +74,9 @@ optional headless 16-display layout benchmark, configure the standalone build
 with `-DNEXAUI_MODEL_BUILD_BENCHMARK=ON` and run
 `aetheri_model_view_benchmark /path/to/font.ttf`. It does not measure native
 presentation or physical input.
+For a single unbroken printable ASCII name, narrow wrapping can reuse caret
+positions from the initial shape. It validates the reshaped result and falls
+back to the general grapheme path when that check or its preconditions fail.
 
 For the optional virtual-pointer check, generate the helper from the installed
 `wlr-protocols` XML in a temporary directory, then pass its binary as
