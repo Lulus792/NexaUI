@@ -15,6 +15,26 @@ ordinary role, submit a frame and receive a worker reply. This does not provide
 an AT-SPI bridge for host-owned surfaces, general service persistence or proof
 of actual Aetheri private-role, idle-performance or physical acceptance.
 
+The committed source `3cbfe22b3bfe160adfa33f1efec15e7a951fe147` was exported
+with `git archive` and built as static and shared Wayland-only SDKs with Vulkan
+disabled. Separate copied host consumers and package probes compiled against
+each installation with X11 discovery disabled; the probes compared the linked
+core's declared revision to its package. On private Weston, both consumers
+configured an ordinary host-owned role, queued a frame, received the worker
+reply and exited with the compositor and child both at exit 0. The shared
+consumer resolved NexaUI from the selected prefix; the static consumer did not
+load a shared NexaUI library. Compile commands use the copied source and
+installed headers. Local artifacts and SHA-256:
+
+- `/tmp/nexaui-host-poll-3cb-consumer-ON.log`: `b2f71a69b22c06e134cb997cd940499ad0a4da287e4ab751ee41c2c1e6021867`
+- `/tmp/nexaui-host-poll-3cb-consumer-OFF.log`: `7e25bb5cd0b7834cf1d17e9563915278292928e2ff35627f1c08e9a1eace3e81`
+- `/tmp/nexaui-host-poll-3cb-native-shared/result.json`: `7fcad21955c3803aa3cda449d48db0de58884aac83dbf5240888c1333af96750`
+- `/tmp/nexaui-host-poll-3cb-native-static/result.json`: `d4ea2ab58bedbe7541c8fb99d8f7587df34cf639c0d21f5fa1d7ac652c3a7a9e`
+
+The current isolated Alpine environment lacks the pinned wlroots development
+dependencies of Aetheri's private compositor. No existing Aetheri development
+session was started or changed, and its separate SDL consumer remains usable.
+
 ## Host-owned Wayland surface candidate (2026-11-05)
 
 Candidate based on `48123ef1bfdba28986c7f86790005fa5ddf40c5d` adds
