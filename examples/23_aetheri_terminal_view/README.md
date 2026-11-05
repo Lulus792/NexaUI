@@ -607,3 +607,24 @@ The setup uses a real separate Weston input-method process and virtual input,
 not a selected production IME, real Aetheri session, physical input/output or
 human assistive/visual acceptance. The app still owns session focus, security,
 output queue limits and cancellation, font selection and process policy.
+
+### Original shell while its PTY is full
+
+On NexaUI base `8c77c8bab7676ff7213d1b23f6ef3edf7cc9fb56`, build the
+`aetheri_terminal_pty_backpressure_test` target with the PTY experiment and
+an installed NexaUI 0.1.18 SDK. Run it as an unprivileged user under the
+existing private-Weston runner, passing the separately built original shell:
+
+```sh
+xvfb-run -a python3 tests/run_weston_native.py --work-dir /tmp/new-pty-run -- \
+  /tmp/terminal-pty/aetheri_terminal_pty_backpressure_test \
+  /tmp/terminal-pty/aetheri_original_shell
+```
+
+Select the same private Weston environment as the IME test above. With the
+Alpine/musl wrappers described earlier, static/shared and ASan/UBSan builds
+passed: the fixture stopped its own shell, filled its PTY, queued two commands
+and an exit, resumed the shell and observed both results exactly once in order,
+plus process exit and EOF. A reversed-command negative control failed. The
+fixture does not test IME or paste review under this same load; it is not a
+production session-switch, physical-device or Aetheri-compositor acceptance.

@@ -10,6 +10,10 @@ On base `00649d379c10bc4565daaf63e6faad8db275e2f2`, the same example queue is
 also exercised against a full Linux PTY and a delayed raw-mode slave reader.
 Its ordered multi-item transfer, bounded rejection and injected short/error
 writes are controlled tests, not an Aetheri shell under actual backpressure.
+On base `8c77c8bab7676ff7213d1b23f6ef3edf7cc9fb56`, a private-Weston
+consumer additionally fills the PTY while the original shell is stopped,
+then resumes it and observes two queued commands and clean exit. Production
+session transitions and native Aetheri acceptance remain open.
 
 T07/T08/A05: the [terminal model consumer](../../examples/23_aetheri_terminal_view/README.md)
 uses Aetheri model revision `87996e2f12128b172a80b325ad3b539df6aee527`.

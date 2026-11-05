@@ -2900,6 +2900,27 @@ claiming an actual native fractional-scale output.
 Installed IME candidate presentation, real Aetheri chrome and focus, physical
 output changes and human visual acceptance remain open.
 
+## Original Aetheri shell under PTY backpressure — 5 November 2026
+
+On NexaUI base `8c77c8bab7676ff7213d1b23f6ef3edf7cc9fb56`, the installed
+consumer `aetheri_terminal_pty_backpressure_test` opens the original Aetheri
+shell revision `87996e2f12128b172a80b325ad3b539df6aee527` before creating
+its window. Once its prompt is observed, the fixture stops only its owned
+child and fills its PTY with no-op input until a nonblocking write returns
+`EAGAIN` and the window wait reports no write readiness. It queues two
+separately identifiable commands and an exit request, resumes the shell,
+and drives the queue through the public single-window wait. Both actual
+shell result markers appeared once and in order, and exit status and PTY EOF
+were observed. The static, shared and Clang ASan/UBSan cases passed on private
+Weston/Alpine; an isolated reversed-command mutant failed the ordering check.
+
+An initial negative-control attempt failed earlier because the PTY driver
+could free space between the wait and an extra direct write. That extra write
+was removed; the final test writes queued data only after readiness. The
+fixture uses virtual display and process stopping and the documented musl
+test wrappers. It does not establish physical interaction, an unmodified
+glibc build, arbitrary shell workloads or Aetheri's production session policy.
+
 ## Controlled PTY backpressure — 5 November 2026
 
 On base `00649d379c10bc4565daaf63e6faad8db275e2f2`, the native IME test
