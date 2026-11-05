@@ -631,3 +631,44 @@ but the causes have not been established; no deadlines or assertions were
 weakened. The logs are `/tmp/nexaui-ime-full-isolated.log` and
 `/tmp/nexaui-ime-leave-retry.log`. These results do not establish a clean full
 suite or explain the earlier two failures.
+
+## Accessible paste timeout test ordering (2026-11-05)
+
+On source `3e3fcaf1fc3361c6d3fd6197f2fec9fc8084a9cd` plus this test
+change, a controlled delayed-focus case waits beyond the existing 100 ms
+deadline and dispatches the timeout before the focus frame. The previous test
+failed at its assertion that the request must still be pending
+(`/tmp/nexaui-ax-delay-before.log`). The test now accepts either a pending
+request or one already completed as a non-applied timeout, and still requires
+exactly one completion, released ownership, unchanged text and the original
+upper time bound. The delayed case additionally requires that timeout to have
+actually completed before the assertion. This reproduces a valid ordering with
+the same symptom as the previous intermittent failure; it does not prove the
+historical run followed that ordering.
+
+All eight accessible asynchronous paste cases passed in the GCC shared and
+Clang ASan/UBSan Wayland-only builds before the delayed-case assertion was
+strengthened; the normal and strengthened delayed cases were then rerun and
+passed in each build. No product timeout or behavior was changed. The separate
+native AT-SPI clipboard-serial failure remains under investigation.
+
+The full GCC Wayland-only private-Weston suite after the timeout test change
+passed 201 executed tests; four opt-in simple-IME tests were skipped there
+(`/tmp/nexaui-ax-short-full.log`). This run preceded the resource-lock change
+below; the opt-in IME cases had passed separately on the preceding source.
+
+## Shared native-seat test isolation (2026-11-05)
+
+Running `nexaui_settings_wayland_atspi` concurrently with
+`nexaui_settings_wayland_atspi_clipboard_peer` on the same private Weston seat
+reproduced both the missing-error assertion previously seen in the first test
+and a focus-restoration failure in the peer test (`/tmp/nexaui-atspi-pair.log`).
+The first test assumes no input serial; the peer test sends actual key events
+and changes focus on that same seat. The former now uses the existing CTest
+`native_display` resource lock already held by the latter. This serializes
+these competing native-seat fixtures without changing either test's behavioral
+assertions. It does not establish the cause of unrelated historical failures.
+After adding the lock, the same two-test selection with `-j 2 --repeat
+until-fail:6` ran each case six times successfully, with the seat-dependent
+cases serialized (`/tmp/nexaui-atspi-pair-lock.log`, SHA-256
+`8c6b27be3ec1fde7b21722132d7d0191210d850539f26ae79c7b6565f323f213`).

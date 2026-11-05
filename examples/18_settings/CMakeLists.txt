@@ -51,11 +51,14 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_settings_ax_async_once COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-once)
             add_test(NAME nexaui_settings_ax_async_stall COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-stall)
             add_test(NAME nexaui_settings_ax_async_short COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-short)
+            add_test(NAME nexaui_settings_ax_async_short_delayed_focus
+                COMMAND ${CMAKE_COMMAND} -E env NEXAUI_TEST_DELAY_SHORT_FOCUS=1
+                    $<TARGET_FILE:nexaui_settings_ime_v3_tests> "${_settings_font}" --ax-async-short)
             add_test(NAME nexaui_settings_ax_async_input COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-input)
             add_test(NAME nexaui_settings_ax_async_model COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-model)
             add_test(NAME nexaui_settings_ax_async_detach COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-detach)
             add_test(NAME nexaui_settings_ax_async_omit COMMAND nexaui_settings_ime_v3_tests "${_settings_font}" --ax-async-omit)
-            set_tests_properties(nexaui_settings_ax_async_once nexaui_settings_ax_async_stall nexaui_settings_ax_async_short nexaui_settings_ax_async_input nexaui_settings_ax_async_model nexaui_settings_ax_async_detach nexaui_settings_ax_async_omit PROPERTIES TIMEOUT 20)
+            set_tests_properties(nexaui_settings_ax_async_once nexaui_settings_ax_async_stall nexaui_settings_ax_async_short nexaui_settings_ax_async_short_delayed_focus nexaui_settings_ax_async_input nexaui_settings_ax_async_model nexaui_settings_ax_async_detach nexaui_settings_ax_async_omit PROPERTIES TIMEOUT 20)
             set_tests_properties(nexaui_settings_keyboard_clipboard_focus nexaui_settings_keyboard_clipboard_model nexaui_settings_keyboard_clipboard_selection nexaui_settings_keyboard_clipboard_timeout nexaui_settings_keyboard_clipboard_command nexaui_settings_keyboard_clipboard_abandoned nexaui_settings_keyboard_clipboard_ime nexaui_settings_keyboard_clipboard_revert nexaui_settings_keyboard_clipboard_repeat nexaui_settings_keyboard_clipboard_window_focus PROPERTIES TIMEOUT 20)
         endif()
         if(TARGET nexaui_settings)
@@ -151,7 +154,8 @@ if(NEXAUI_BUILD_TESTS)
                     COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
                         ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_settings_atspi_client> $<TARGET_FILE:nexaui_settings>)
                 set_tests_properties(nexaui_settings_wayland_atspi PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
-                    ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font}")
+                    ENVIRONMENT "NEXAUI_SETTINGS_FONT=${_settings_font}"
+                    RESOURCE_LOCK native_display)
                 if(NEXAUI_XDOTOOL_EXECUTABLE)
                     add_test(NAME nexaui_settings_wayland_atspi_clipboard
                         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py

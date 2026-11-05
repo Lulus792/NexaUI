@@ -167,8 +167,21 @@ int main(int argc,char **argv) {
                     CHECK(settings_frame(scene,640,360));
                 }
                 else {
+                    if(ax_short && getenv("NEXAUI_TEST_DELAY_SHORT_FOCUS")) {
+                        struct timespec delay={0,150000000};
+                        while(nanosleep(&delay,&delay)!=0) {}
+                        CHECK(nx_window_poll(window,0)==NX_OK);
+                        CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK);
+                    }
                     CHECK(nx_focus_set(ctx,4)==NX_OK && settings_frame(scene,640,360));
-                    CHECK(!ticket.calls && ticket.refs==1);
+                    if(ax_short && getenv("NEXAUI_TEST_DELAY_SHORT_FOCUS"))
+                        CHECK(ticket.calls==1 && !ticket.applied && ticket.refs==0);
+                    /* The short deadline may expire while the event loop is
+                       waiting for the stalled offer or before this frame. */
+                    if(ax_short && ticket.calls)
+                        CHECK(ticket.calls==1 && !ticket.applied && ticket.refs==0);
+                    else
+                        CHECK(!ticket.calls && ticket.refs==1);
                 }
             }
             for(unsigned i=0;i<40 && !ticket.calls;++i) {
