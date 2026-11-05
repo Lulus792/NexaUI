@@ -36,7 +36,7 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
        v->model->count>AE_DESKTOP_WINDOWS || !memchr(v->model->query,0,sizeof(v->model->query)))return 0;
     aetheri_desktop_intent pending={0};
     const char *labels[]={v->model->german?"Suchen":"Search",v->model->german?"System":"Settings","Terminal"};
-    nx_text_layout *layouts[3]={0},*result_layouts[AE_DESKTOP_RESULTS]={0};int okay=0;
+    nx_text_layout *layouts[3]={0},*result_layouts[AE_DESKTOP_RESULTS]={0};int okay=0,guarded=0;
     struct ae_desktop_result results[AE_DESKTOP_RESULTS];size_t result_count=0;
     float result_y[AE_DESKTOP_RESULTS]={0},result_height[AE_DESKTOP_RESULTS]={0},content_height=0;
     for(int i=0;i<3;++i)
@@ -56,6 +56,10 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
             if(h<44)h=44;
             result_y[i]=content_height;result_height[i]=h;content_height+=h+8;
         }
+    }
+    if(v->model->search && v->model_revision && revision!=v->model_revision) {
+        if(nx_text_field_set_read_only(v->query,1)!=NX_OK)goto done;
+        guarded=1;
     }
     if(nx_begin_frame(v->context,width,height,0)!=NX_OK)goto done;
     nx_semantic_desc root={0};root.id=1;root.role=NX_ROLE_WINDOW;root.bounds=(nx_rect){0,0,width,height};
@@ -121,6 +125,7 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
     if(!v->model_revision || revision==v->model_revision)*intent=pending;
     v->model_revision=revision;okay=1;
 done:
+    if(guarded && nx_text_field_set_read_only(v->query,0)!=NX_OK)okay=0;
     for(int i=0;i<3;++i)nx_text_layout_destroy(layouts[i]);
     for(size_t i=0;i<AE_DESKTOP_RESULTS;++i)nx_text_layout_destroy(result_layouts[i]);
     return okay;

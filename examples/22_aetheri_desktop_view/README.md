@@ -22,9 +22,10 @@ cmake --build build
 
 This is an initial dock and model-result view, not a complete shell adapter.
 Search edits return bounded whole-query proposals; the host applies or rejects
-them and advances its model revision. The current frame on a concurrent model
-revision can still visually contain a queued stale edit before the next redraw;
-that edit is not returned as an intent. Search-result selection/navigation,
+them and advances its model revision. On a changed revision the query field is
+read-only for that frame, so queued older edits do not alter its published text
+or produce an intent; it becomes editable again for the next frame. That frame's
+semantic snapshot also reports read-only. Search-result selection/navigation,
 real window activation, native input and IME, borrowed-surface presentation,
 AT-SPI publication, scaling, multi-output ownership and the original process
 owner integration remain open. The test uses synthetic context events and
