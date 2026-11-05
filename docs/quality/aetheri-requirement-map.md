@@ -1,5 +1,9 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/B04, I01/I03, A01/A02, D01/D02 and P04/P05 have additional limited
+original-model consumer evidence in the [adoption assessment](aetheri-adoption-assessment.md#external-aetheri-settings-model-experiment-2026-11-05).
+It does not close the remaining consumer and acceptance gates in those rows.
+
 Catalog source: `D:/NexaUI/NEXT_AETHERI_UI.md`, SHA-256 `e177c65c3fdd9438a4feb19656f293d990ac68a47a79c0d4af9fc5ae8727be56`;
 base revision `05e28bb16c1e60ac339cd9428ff2d3afbafc21f6` with the uncommitted
 candidate described in [the adoption assessment](aetheri-adoption-assessment.md).

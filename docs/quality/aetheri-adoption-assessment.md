@@ -1,5 +1,40 @@
 # Aetheri adoption: initial source assessment
 
+## External Aetheri Settings model experiment (2026-11-05)
+
+Consumer and test source `9ff75928edcf333662593c26b59bf03effc74b66`
+builds independently against the original Aetheri `src/settings/model.c` from
+archived source `d621c9bba1df8ffd1083999300bcff742022b9dc`, and an installed
+static, Wayland-only NexaUI SDK from
+`d4c9aab9354feb4c9e045b960f4985468bec3253`. The Aetheri working tree was not
+changed. The model owner retains appearance, language and text-size values
+when a view is destroyed and recreated. A C17 consumer test passed on Fedora
+and on Alpine/WSL2; the latter also passed with Clang 22.1.3 ASan/UBSan and
+leak detection. A separate `-Wall -Wextra -Wpedantic` build produced no warnings.
+
+On the private headless Aetheri compositor, virtual native keyboard input
+selected high contrast, German and 200% text size in the original model, then
+Escape closed the consumer. The independently captured 1920x1080 output SHA-256
+was `c30e207cefc612a4af599938a62e5ea86b0c039c893315c37c5b3444eaeaa0e1`.
+An independent libatspi client on the same compositor and a private registry
+selected the same three radio controls, observed their checked states and
+closed the app through its localized button. The AT-SPI-disabled consumer failed
+at application discovery as expected. An initial positive run exposed that the
+consumer drained window events without routing native accessibility actions;
+the tested source uses `nx_window_route_events` and the repeated run passed.
+
+The compositor, AT-SPI-enabled consumer and independent client SHA-256 values
+were respectively `da09d434747dafc3400fb8da4f426b3cc8713452515d61e2dd9d3dbf693ed164`,
+`d9abf8b7b769aae12aaad81b4a77b5fe2430637075d87e880b13e953b97f618b`, and
+`23a2ba88d6770d9de78e161253cea0a9a87fcfb66705a3b737d66be7afb35787`.
+The positive, negative and initial failing logs and capture are retained in
+`D:/NexaUI/out/aetheri-model-2026-11-05/results.tar.gz`, SHA-256
+`a49831ea3b3ebe0075d43b3c094fb3431834c33f939ced04f1cee6fe05e5fa5d`.
+This covers a limited model/view seam, not the full Settings consumer: Aetheri's
+process owner, display observation, service wakeup, IME field, target-image
+accessibility service, persistence, physical output and human review remain
+open. The layout and fitting are provisional; no app or OS settings are saved.
+
 ## Settings AT-SPI alongside Aetheri's SDL desktop (2026-11-05)
 
 Driver source `82ca6abf155dd4c9a3c30724a669a7e372b6f904` combines the
