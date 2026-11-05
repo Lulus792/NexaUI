@@ -2,6 +2,18 @@
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
+`NX_VERSION_MAJOR`, `NX_VERSION_MINOR` and `NX_VERSION_PATCH` describe the
+headers. `nx_get_version` writes the version of the linked core library to a
+fixed `nx_version` structure and returns `NX_ERROR_ARGUMENT` for a null output.
+It can be called on any thread without a context. In a shared build this is the
+library resolved by the platform loader; in a static build it is the core
+linked into the program. The three numbers are not a Git revision or backend
+capability report, and matching versions do not prove identical source. Record
+the actual source pin separately. This symbol is new: an older shared library
+may have the same 0.1.0 version but not export it, so applications using it
+must ship or require a library containing this API. This does not declare a
+1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
+
 ## Results and ownership
 
 `NX_OK` means success. `NX_ERROR_ARGUMENT` reports a null required pointer, invalid geometry/color, or invalid allocator configuration. `NX_ERROR_STATE` reports an invalid frame/scope order. `NX_ERROR_MEMORY` reports allocator failure. `NX_ERROR_LIMIT` reports an explicit depth or size limit. `NX_ERROR_COMMAND` reports an invalid externally supplied command stream. Calls append no partial command when they fail.

@@ -65,6 +65,17 @@ typedef enum nx_result {
     NX_ERROR_PLATFORM = 7
 } nx_result;
 
+/* Version of the linked NexaUI core, which can differ from the headers used
+   to compile a consumer. This three-field structure is fixed; future metadata
+   will use a separate API. The call is thread-safe and needs no context.
+   A null output returns NX_ERROR_ARGUMENT. Version numbers do not identify
+   an exact source revision or guarantee that an optional backend is available. */
+typedef struct nx_version {
+    uint32_t major, minor, patch;
+} nx_version;
+
+NX_API nx_result nx_get_version(nx_version *out_version);
+
 /* Allocations must be aligned for max_align_t. Supply both callbacks or neither.
    The default allocator uses malloc/free. Deallocation receives the original size. */
 typedef struct nx_allocator {

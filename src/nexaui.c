@@ -15,6 +15,12 @@
 
 #define NX_TOUCH_DRAG_THRESHOLD 8.0
 
+nx_result nx_get_version(nx_version *out_version) {
+    if (!out_version) return NX_ERROR_ARGUMENT;
+    *out_version = (nx_version){NX_VERSION_MAJOR, NX_VERSION_MINOR, NX_VERSION_PATCH};
+    return NX_OK;
+}
+
 typedef struct nx_event_route {
     uint64_t pointer_id, focus_id, focus_serial;
 } nx_event_route;

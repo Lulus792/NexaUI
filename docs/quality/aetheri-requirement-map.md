@@ -38,13 +38,31 @@ fractional protocol implementation, controlled checks and a headless Sway
 software-Vulkan run. Physical monitor, hardware renderer, mixed-output, input
 and visual acceptance remain open. An initial-geometry warning observed under
 Sway no longer appeared after the correction described in that assessment.
+For B04, the later `nx_get_version` API reports the linked core's three-part
+version; exact revision identification, optional backend capabilities and a
+complete compatibility/error contract remain open.
+
+The version-query candidate based on `e0d9b143a7f6e05b7cea4b07a3e84c679f8dd766`
+was checked on Alpine/WSL2 using fresh Wayland-only C17 consumers. Static and
+shared installed consumers compared the linked-library result with both their
+headers and CMake package version and checked the null-output error. Four
+external `add_subdirectory` combinations (static/shared, Vulkan off/on) also
+ran; the shared cases verified the resolved library path. The installed-package
+probe disabled CMake X11 discovery but did not hide installed X11 files. These
+are Linux consumer checks, not Windows/macOS, backend availability or source-pin
+acceptance. The pre-1.0 version is unchanged, and the new symbol is absent from
+earlier binaries with the same version. Logs are retained locally as
+`/tmp/nexaui-version-package-20261105.log` (SHA-256
+`5f95e054a167a6c0c8dfaae4f7c65ae80e9d4b493940d0822d4b52233723fe6a`) and
+`/tmp/nexaui-version-subdirectory-20261105.log` (SHA-256
+`a0f007a7e4ec144672794e559e62c1c854d2b23bc2fe8c15d55205256fe73f21`).
 
 | ID | Priority | Current disposition | Candidate source / evidence | Observable acceptance still required |
 | --- | --- | --- | --- | --- |
 | B01 | 0 | Candidate implemented; acceptance matrix incomplete | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Explicit Wayland-only Linux build; current CMakeLists.txt:29 requires X11:** Configure, build and installed C17 consumer work without X11 headers/libraries; default dual-backend build still passes |
 | B02 | 0 | Evidence missing; assess implementation | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Deliberate software/Vulkan and accessibility dependency profiles:** Each selected profile exposes its actual transitive dependencies; disabling X11 does not disable IME/AT-SPI or skip required native checks |
 | B03 | 0 | Linux consumer profiles exercised; acceptance matrix incomplete | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Static/shared, add_subdirectory and installed find_package consumers:** Small external consumers build/run with exported targets and no private headers or source-tree paths |
-| B04 | 0 | Evidence missing; assess implementation | [public C API](../../include/nexaui/nexaui.h), [threading](../concepts/threading.md), [allocation/lifecycle](../../src/nexaui.c) | **Exact version, source pin and compatibility/error contract:** Consumer can identify SDK/backend capabilities and handle unsupported features; compatible changes retain existing behavior |
+| B04 | 0 | Runtime version query added; source pin, capabilities and compatibility remain open | [public C API](../../include/nexaui/nexaui.h), [version contract](../api/core.md), [threading](../concepts/threading.md), [allocation/lifecycle](../../src/nexaui.c) | **Exact version, source pin and compatibility/error contract:** Consumer can identify SDK/backend capabilities and handle unsupported features; compatible changes retain existing behavior |
 | B05 | 0 | Evidence missing; assess implementation | [public C API](../../include/nexaui/nexaui.h), [threading](../concepts/threading.md), [allocation/lifecycle](../../src/nexaui.c) | **C17 ownership/thread/allocator rules on every public operation:** OOM, invalid input, wrong-thread and close/reentry cases preserve documented state and release owned resources |
 | B06 | 1 | Evidence missing; assess implementation | [build/export](../../CMakeLists.txt), [package configuration](../../cmake/NexaUIConfig.cmake.in), [installed consumer probe](../../tests/check_wayland_only_package.py), [add_subdirectory probe](../../tests/check_wayland_only_add_subdirectory.py) | **Optional backend isolation and clean removal:** No hidden downloads or unselected runtime dependencies; installed manifest describes owned files and licenses |
 | B07 | 1 | Evidence missing; assess implementation | [public C API](../../include/nexaui/nexaui.h), [threading](../concepts/threading.md), [allocation/lifecycle](../../src/nexaui.c) | **Migration without toolkit-owned application persistence:** Replacing SDL/NexaUI views preserves app data, commands and service APIs; opaque handles never enter app databases |

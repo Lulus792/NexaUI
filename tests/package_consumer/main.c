@@ -30,6 +30,18 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(void) {
+    nx_version version = {99, 99, 99};
+    if (nx_get_version(NULL) != NX_ERROR_ARGUMENT ||
+        nx_get_version(&version) != NX_OK ||
+        version.major != NX_VERSION_MAJOR || version.minor != NX_VERSION_MINOR ||
+        version.patch != NX_VERSION_PATCH)
+        return 16;
+#ifdef NEXAUI_PACKAGE_VERSION_MAJOR
+    if (version.major != NEXAUI_PACKAGE_VERSION_MAJOR ||
+        version.minor != NEXAUI_PACKAGE_VERSION_MINOR ||
+        version.patch != NEXAUI_PACKAGE_VERSION_PATCH)
+        return 16;
+#endif
     nx_pixel_size pixels={9,9};
     nx_result pixel_result=nx_window_get_pixel_size(NULL,&pixels);
     if ((pixel_result!=NX_ERROR_ARGUMENT && pixel_result!=NX_ERROR_UNSUPPORTED) || pixels.width || pixels.height)
