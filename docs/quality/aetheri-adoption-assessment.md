@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Settings uncertain operation outcome (2026-11-05)
+
+Example source `619d8c387e34807cd66f4bd70ef167d871416005` distinguishes an
+unknown Apply outcome from confirmed success or failure. The app-owned token
+remains pending, the status is visible and semantic in English/German, Apply is
+disabled and the host can claim a submission only once. A later authoritative
+completion of the same token updates only the submitted snapshot, preserving a
+newer draft; a confirmed failure permits a new request. Stale tokens are
+rejected. `--simulate-unknown` demonstrates an unresolved outcome without
+pretending that the example backend provides a service or recheck operation.
+
+The scene test exercised dispatch exactly once, unresolved and stale tokens,
+draft changes, language changes, invalid drafts and subsequent success/failure;
+it passed under GCC and Clang ASan/UBSan. An independent libatspi client saw
+the unknown status, rejected another Apply and verified the later draft was
+preserved without automatic completion. Nineteen Settings scene, v3 protocol,
+native keyboard and AT-SPI tests passed on private Weston
+(`/tmp/nexaui-settings-unknown-final/result.json`). A copied example from this
+source also passed the independent client against static and shared installed
+SDKs from `4e6c240bda94d8bc537851cdbb89846003eb86e3`
+(`/tmp/nexaui-unknown-619-external-ON/result.json` and
+`/tmp/nexaui-unknown-619-external-OFF/result.json`). This is virtual-input and
+simulated-service evidence, not real backend reconciliation, reopening after
+scene destruction, human screenreader acceptance or all L11 states.
+
 ## Wayland selection offered before focus (2026-11-05)
 
 The [Wayland core protocol](https://wayland.freedesktop.org/docs/html/apa.html)
