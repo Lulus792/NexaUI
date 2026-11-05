@@ -23,6 +23,10 @@ detection passed ten each (`/tmp/nexaui-deferred-disconnect-release.log`,
 `/tmp/nexaui-deferred-disconnect-asan.log`). Neither local pass proves the
 Ubuntu failures are fixed: the new Ubuntu CI result remains required. This
 change only touches the controlled test fixture, not the NexaUI client.
+The wider local Wayland fixture regression on `a346b47ca7b017927bc9a228c255a06cd02132f4`
+also passed 47/47 cases (GCC Release shared, exit 0), including scaling,
+software, host, IME, clipboard, drag/drop and multi-window checks; command
+output is `/tmp/nexaui-fixture-all-test.log`. This is still Alpine/WSL evidence.
 
 ## Numeric input through controlled Wayland text-input-v1 (2026-11-05)
 
