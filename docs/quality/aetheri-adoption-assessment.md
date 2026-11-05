@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric clipboard selection reversion (2026-11-05)
+
+On the candidate based on `4ed4db364203c8ca5a82ce25a9621f565c7ded64`,
+the controlled Wayland numeric clipboard fixture starts a delayed paste, moves
+the selection, restores the original selection, and only then completes the
+transfer. The draft and committed number remain unchanged. An intentional
+negative control leaving the original selection untouched failed at that same
+assertion, confirming the peer's bytes would otherwise be applied. The normal
+and numeric asynchronous clipboard tests passed in static GCC, shared GCC and
+Clang ASan/UBSan with leak detection (two cases per profile). The widget guide
+also now describes the existing optional numeric IME and clipboard APIs rather
+than claiming numeric clipboard is unavailable. No SDK implementation changed.
+
+The peer is a controlled Wayland server, not an independent desktop clipboard
+client. Actual Aetheri peers, installed IMEs, physical input and human assistive
+acceptance remain open; this result does not complete T05 or I05.
+
 ## Full Settings example: small-window text reflow (2026-11-05)
 
 On the candidate based on `71b71fa9b7065ec9e49e9afeea69374e8fe0c8ac`,

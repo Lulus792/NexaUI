@@ -129,7 +129,20 @@ int main(int argc, char **argv) {
         draw_numeric(ctx,field,&nd,1);close_peer(&server);
         CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
         draw_numeric(ctx,field,&nd,1);CHECK(numeric_is(field,"1",1));
-        publish_offer(&server,window);CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        /* Returning to the original selection must not revive a pending paste. */
+        event.text_command=NX_TEXT_COMMAND_SELECT_ALL;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);
+        publish_offer(&server,window);event.text_command=NX_TEXT_COMMAND_PASTE;
+        CHECK(nx_context_queue_event(ctx,&event)==NX_OK);draw_numeric(ctx,field,&nd,1);
+        for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i) CHECK(nx_window_poll(window,100)==NX_OK);
+        CHECK(atomic_load(&server.stalled_fd));
+        event.text_command=NX_TEXT_COMMAND_MOVE_LEFT;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        event.text_command=NX_TEXT_COMMAND_SELECT_ALL;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);close_peer(&server);
+        CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+        draw_numeric(ctx,field,&nd,1);CHECK(numeric_is(field,"1",1));
+        publish_offer(&server,window);event.text_command=NX_TEXT_COMMAND_PASTE;
+        CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
         draw_numeric(ctx,field,&nd,1);
         for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i) CHECK(nx_window_poll(window,100)==NX_OK);
         CHECK(atomic_load(&server.stalled_fd));

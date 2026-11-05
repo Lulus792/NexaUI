@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I05: a controlled Wayland numeric paste based on
+`4ed4db364203c8ca5a82ce25a9621f565c7ded64` rejects its delayed result when
+the selection changes and is then restored. Independent desktop peers and
+actual Aetheri acceptance remain open; see the
+[candidate evidence](aetheri-adoption-assessment.md#numeric-clipboard-selection-reversion-2026-11-05).
+
 L01/L02/A10/Q06: the full Settings example based on
 `71b71fa9b7065ec9e49e9afeea69374e8fe0c8ac` reuses the original-model
 consumer's example-only text wrapper for small windows. Automated scene,
