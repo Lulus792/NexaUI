@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## Bounded outgoing Wayland clipboard transfers (2026-11-05)
+
+Source `a7bfc0964ee2773f47c1564d03b8bde462d5b021` gives each native
+outgoing clipboard request a five-second total deadline, included in both
+single-window and group waits. Partial writes do not extend it. At expiry the
+owner closes the pipe and releases the slot while polling; the receiver can
+have received a prefix, and neither closure nor a complete write establishes
+delivery or revocation. Existing limits and owner-thread ownership remain.
+
+Two controlled Wayland-server tests each fill four pipes, drain them after two
+seconds, verify expiry around the original deadline, then verify that four new
+requests can make progress. They passed GCC and Clang ASan/UBSan Wayland-only
+builds; with the previous adapter in an isolated dual-backend source copy, both
+failed the time bound after nine seconds. Ten clipboard cases and the separate
+async-read and group-transfer cases passed in the GCC build. After rebuilding
+the examples against the changed static library, the native Settings keyboard
+clipboard and cell-grid clipboard tests passed on private Weston/Xvfb
+(`/tmp/nexaui-send-native-settings-final/result.json` and
+`/tmp/nexaui-send-native-grid-final/result.json`). The earlier native run
+before relinking does not count. These checks do not establish Aetheri
+compositor acceptance, delivery to a real slow application, full clipboard
+interoperability, or physical and human accessibility acceptance.
+
 ## Multi-window wait failure and lifetime probes (2026-11-05)
 
 Source `0265f37e1287edb9e4100866edb5e26c53ba991a` adds controlled tests for
