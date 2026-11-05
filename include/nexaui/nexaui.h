@@ -556,7 +556,11 @@ NX_API nx_result nx_window_route_events(nx_window *window, nx_context *context,
    capacity returns NX_ERROR_LIMIT with the required count and writes no bytes.
    Set converts lone CR and LF to Windows CRLF; get converts CRLF to LF.
    An unavailable text format returns NX_ERROR_STATE. Unsupported backends
-   return NX_ERROR_UNSUPPORTED. Native clipboard ownership is process-external. */
+   return NX_ERROR_UNSUPPORTED. Native clipboard ownership is process-external.
+   On Wayland each outgoing request has a five-second total deadline, even when
+   it makes partial progress. A slow receiver can get an incomplete snapshot;
+   closing a transfer does not prove receipt or revocation. Continue polling the
+   owner window to service requests and release expired transfers. */
 NX_API nx_result nx_window_clipboard_set_text(nx_window *window,
                                                const char *bytes,
                                                size_t length);

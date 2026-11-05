@@ -72,6 +72,13 @@ operation rejects X11 members with `NX_ERROR_UNSUPPORTED` and rejects nested
 polling of participating windows. It does not provide application redraw
 deadlines: supply a timeout corresponding to the next deadline.
 
+Wayland clipboard sends are nonblocking and limited to four concurrent
+transfers per window. Each has a five-second total deadline from the native
+send request; partial progress does not extend it. Expiry closes the transfer
+and releases its slot during owner-thread polling, including a group wait.
+The receiver may have obtained only a prefix. Neither expiry nor a completed
+write proves that the receiver used, retained or discarded the text.
+
 Create the window with `NX_WINDOW_CLIENT_CHROME | NX_WINDOW_STATE_EVENTS`.
 After polling, route its events to the UI context as usual. Query
 `nx_window_get_status` to update a maximize/restore icon; use `known` before

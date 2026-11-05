@@ -80,6 +80,7 @@ typedef struct nx_wayland_clipboard_write {
     nx_wayland_clipboard_source *source;
     int fd;
     size_t length, offset;
+    uint64_t deadline;
 } nx_wayland_clipboard_write;
 
 struct nx_wayland_window {
@@ -210,6 +211,7 @@ enum {
 };
 
 #define NX_WAYLAND_CLIPBOARD_LIMIT (32u * 1024u * 1024u)
+#define NX_WAYLAND_CLIPBOARD_WRITE_TIMEOUT_NS 5000000000ull
 #define NX_WAYLAND_CLIPBOARD_UTF8 "text/plain;charset=utf-8"
 
 static void *nx_wayland_allocate(void *user, size_t size) {
@@ -408,7 +410,15 @@ static void nx_wayland_progress_writes(nx_wayland_window *window) {
     nx_wayland_clipboard_write **slot = &window->writes;
     while (*slot) {
         nx_wayland_clipboard_write *transfer = *slot;
+        uint64_t now = nx_wayland_now_ns();
+        if (!now || now >= transfer->deadline)
+            transfer->offset = transfer->length;
         while (transfer->offset < transfer->length) {
+            now = nx_wayland_now_ns();
+            if (!now || now >= transfer->deadline) {
+                transfer->offset = transfer->length;
+                break;
+            }
             ssize_t count = nx_wayland_write_without_sigpipe(transfer->fd,
                 transfer->source->text + transfer->offset,
                 transfer->length - transfer->offset);
@@ -470,6 +480,11 @@ static void nx_wayland_source_send(void *data,
         close(fd);
         return;
     }
+    uint64_t now = nx_wayland_now_ns();
+    if (!now || UINT64_MAX - now < NX_WAYLAND_CLIPBOARD_WRITE_TIMEOUT_NS) {
+        close(fd);
+        return;
+    }
     nx_wayland_clipboard_write *transfer = window->allocator.allocate(
         window->allocator.user, sizeof(*transfer));
     if (!transfer) { close(fd); return; }
@@ -477,6 +492,7 @@ static void nx_wayland_source_send(void *data,
     transfer->source = source;
     transfer->fd = fd;
     transfer->length = source->length;
+    transfer->deadline = now + NX_WAYLAND_CLIPBOARD_WRITE_TIMEOUT_NS;
     ++source->write_refs;
     transfer->next = window->writes;
     window->writes = transfer;
@@ -2452,6 +2468,15 @@ static nx_wayland_poll_set nx_wayland_make_poll_set(nx_wayland_window *window,
         if (!now || now >= deadline) set.timeout = 0;
         else {
             uint64_t millis = (deadline - now + 999999u) / 1000000u;
+            if (millis < (uint64_t)set.timeout) set.timeout = (int)millis;
+        }
+    }
+    for (nx_wayland_clipboard_write *transfer = window->writes;
+         transfer; transfer = transfer->next) {
+        uint64_t now = nx_wayland_now_ns();
+        if (!now || now >= transfer->deadline) set.timeout = 0;
+        else {
+            uint64_t millis = (transfer->deadline - now + 999999u) / 1000000u;
             if (millis < (uint64_t)set.timeout) set.timeout = (int)millis;
         }
     }

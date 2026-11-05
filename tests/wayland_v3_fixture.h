@@ -37,6 +37,7 @@ typedef struct test_server {
     atomic_int geometry_before_configure, geometry_after_configure;
     void (*surface_committed)(struct test_server *server,struct wl_client *client);
     void (*buffer_attached)(struct test_server *server,struct wl_resource *buffer);
+    void (*selection_changed)(struct test_server *server,struct wl_resource *source);
     atomic_int keyboard_press_requested, selection_serial_seen;
     void (*keyboard_bound)(struct wl_resource *keyboard);
     atomic_int send_offer, send_drop, offer_sent;
@@ -494,8 +495,9 @@ static void create_data_source(struct wl_client *client,struct wl_resource *mana
     wl_resource_set_implementation(source,&implementation,wl_resource_get_user_data(manager),NULL);
 }
 static void set_selection(struct wl_client *client,struct wl_resource *device,struct wl_resource *source,uint32_t serial) {
-    (void)client;(void)source;test_server *server=wl_resource_get_user_data(device);
+    (void)client;test_server *server=wl_resource_get_user_data(device);
     atomic_store(&server->selection_serial_seen,(int)serial);
+    if (server->selection_changed) server->selection_changed(server,source);
 }
 static void get_data_device(struct wl_client *client, struct wl_resource *manager,
                              uint32_t id, struct wl_resource *seat) {

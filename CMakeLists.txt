@@ -690,6 +690,17 @@ if(NEXAUI_BUILD_TESTS)
                 PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_wayland_poll_many_transfer COMMAND nexaui_wayland_poll_many_transfer_tests)
             set_tests_properties(nexaui_wayland_poll_many_transfer PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_clipboard_send_tests tests/test_wayland_clipboard_send.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_clipboard_send_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_clipboard_send_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_clipboard_send_tests PRIVATE NexaUI::NexaUI Threads::Threads
+                PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_clipboard_send_deadline COMMAND nexaui_wayland_clipboard_send_tests)
+            add_test(NAME nexaui_wayland_clipboard_send_many_deadline COMMAND nexaui_wayland_clipboard_send_tests --many)
+            set_tests_properties(nexaui_wayland_clipboard_send_deadline nexaui_wayland_clipboard_send_many_deadline PROPERTIES TIMEOUT 15)
             target_include_directories(nexaui_wayland_async_clipboard_tests PRIVATE
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
             target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
