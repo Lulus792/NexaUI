@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## AT-SPI actions across a native Settings resize (2026-11-05)
+
+On the consumer and SDK based on `6c7253db0186e59e938552460a3fad42acd08c7c`,
+the independent libatspi client selects high contrast, German and 200% text,
+then pauses while private headless Sway resizes the actual software-rendered
+window from 800x480 to 320x240. It observes the semantic window's new size,
+checks the previous selections and changes text size to 150%. After restore to
+800x480 it observes that size and the retained selections, chooses the second
+synthetic display and closes via AT-SPI. The host's submitted frame/model logs
+and Sway geometry are checked independently. Installed static/shared and
+Clang ASan/UBSan consumers passed on Alpine/WSL2 with private Sway/Pixman and
+a private accessibility bus (three runs, exit 0).
+
+As a negative control, the same test and SDK used the original Settings view
+and host from `84ec8384ef30f36f3c2e2945e46e88d52ea46d63`, with only the
+current frame-size diagnostic added to the old host. Sway reported 320x240,
+but the old host did not submit the required small frame; the client timed out
+waiting for the resize handoff and exited 1. This exercises the old 480x380
+cutoff, not the separately tested same-size configure wake. Native keyboard
+interaction during resize, real input methods, human screenreader review,
+physical displays and actual Aetheri adoption remain open.
+
 ## Same-size Wayland configure and Settings resize (2026-11-05)
 
 On the candidate based on `993e02f1e352b3e38df855c43070ea70b7f55e2f`, an

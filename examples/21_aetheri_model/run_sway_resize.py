@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -19,7 +20,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('sway', 'swaymsg', 'host', 'font', 'work-dir'):
         parser.add_argument('--' + name, required=True, type=Path)
+    parser.add_argument('--atspi-client', type=Path)
+    parser.add_argument('--atspi-registry', type=Path)
     args = parser.parse_args()
+    if bool(args.atspi_client) != bool(args.atspi_registry):
+        parser.error('--atspi-client and --atspi-registry must be supplied together')
     sway, swaymsg, host, font = (p.resolve(strict=True) for p in
                                  (args.sway, args.swaymsg, args.host, args.font))
     work = args.work_dir.resolve()
@@ -59,7 +64,19 @@ def main():
             ipc, display = wait(sockets, 'private compositor sockets')
             env['SWAYSOCK'] = str(ipc)
             env['WAYLAND_DISPLAY'] = display.name
-            app = subprocess.Popen([str(host), str(font), '--diagnostics', '--fixture-displays'],
+            if args.atspi_client:
+                env.update(NEXAUI_SETTINGS_FONT=str(font), NEXAUI_MODEL_DISPLAY_FIXTURE='1',
+                           NEXAUI_MODEL_RESIZE_READY=str(work/'client-ready'),
+                           NEXAUI_MODEL_RESIZE_SMALL=str(work/'resize-small'),
+                           NEXAUI_MODEL_RESIZE_CHANGED=str(work/'client-changed'),
+                           NEXAUI_MODEL_RESIZE_LARGE=str(work/'resize-large'))
+                env.pop('NO_AT_BRIDGE', None)
+                runner = Path(__file__).resolve().parents[2]/'tests/run_atspi_native.py'
+                app_command = [sys.executable, str(runner), str(args.atspi_registry.resolve(strict=True)),
+                               str(args.atspi_client.resolve(strict=True)), str(host)]
+            else:
+                app_command = [str(host), str(font), '--diagnostics', '--fixture-displays']
+            app = subprocess.Popen(app_command,
                                    env=env, stdout=host_log, stderr=subprocess.STDOUT)
             def command(*arguments):
                 result = subprocess.run([str(swaymsg), '-r', *arguments], env=env,
@@ -76,24 +93,29 @@ def main():
             def lines():
                 return (work / 'host.log').read_text(encoding='utf-8', errors='replace').splitlines()
 
-            def ready(width, height, after):
+            def ready(width, height, after, model='MODEL theme=0 german=0 text=100'):
                 log = lines()[after:]
                 frame = f'FRAME {width} {height} 1.00'
                 if frame not in log:
                     return False
                 i = log.index(frame)
-                return 'MODEL theme=0 german=0 text=100' in log[i+1:] and \
+                return model in log[i+1:] and \
                        'FIXTURE_DISPLAYS count=2 selected=42 stale=0' in log[i+1:]
 
             wait(window, 'Settings window')
-            wait(lambda: ready(1280, 720, 0), 'initial tiled frame')
+            if args.atspi_client:
+                wait(lambda: (work/'client-ready').exists(), 'AT-SPI model changes')
+                model='MODEL theme=2 german=1 text=200'
+            else:
+                model='MODEL theme=0 german=0 text=100'
+            wait(lambda: ready(1280, 720, 0, model), 'initial tiled frame')
             target = '[app_id="^org.aetheri.Settings$"]'
             before = len(lines())
             result = command(f'{target} floating enable')
             if not result or not all(item.get('success') for item in result):
                 raise RuntimeError(f'Sway rejected floating mode: {result}')
             wait(lambda: window() and window().get('floating') == 'user_on', 'floating window')
-            wait(lambda: ready(800, 480, before), 'initial floating frame')
+            wait(lambda: ready(800, 480, before, model), 'initial floating frame')
             for width, height in ((320, 240), (800, 480)):
                 before = len(lines())
                 result = command(f'{target} resize set width {width} px height {height} px')
@@ -101,19 +123,31 @@ def main():
                     raise RuntimeError(f'Sway rejected resize: {result}')
                 (work / f'tree-{width}x{height}.json').write_text(
                     json.dumps(command('-t', 'get_tree'), indent=2), encoding='utf-8')
-                wait(lambda: ready(width, height, before), f'{width}x{height} frame')
+                wait(lambda: ready(width, height, before, model), f'{width}x{height} frame')
                 current = window()
                 if not current or current['rect']['width'] != width or current['rect']['height'] != height:
                     raise RuntimeError(f'Unexpected Sway geometry: {current}')
-            app.send_signal(signal.SIGTERM)
+                if args.atspi_client and width==320:
+                    (work/'resize-small').write_text('ready\n',encoding='ascii')
+                    wait(lambda: (work/'client-changed').exists(), 'AT-SPI action at small size')
+                    model='MODEL theme=2 german=1 text=150'
+                elif args.atspi_client:
+                    (work/'resize-large').write_text('ready\n',encoding='ascii')
+            if not args.atspi_client:
+                app.send_signal(signal.SIGTERM)
             if app.wait(timeout=5) != 0:
                 raise RuntimeError('Settings did not close cleanly')
             app = None
-            print('Private Sway: Settings rendered at 320x240 and 800x480, retained model and closed.')
+            if args.atspi_client:
+                print('Private Sway: AT-SPI changed Settings at 320x240, verified the restored size and closed.')
+            else:
+                print('Private Sway: Settings rendered at 320x240 and 800x480, retained model and closed.')
             return 0
         finally:
             if app and app.poll() is None:
-                app.terminate()
+                # The AT-SPI wrapper owns separately-sessioned bus/client
+                # processes; SIGINT lets its finally block stop them.
+                app.send_signal(signal.SIGINT if args.atspi_client else signal.SIGTERM)
                 try:
                     app.wait(timeout=3)
                 except subprocess.TimeoutExpired:

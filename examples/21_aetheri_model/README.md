@@ -51,9 +51,12 @@ Its measured control wrapping and focus-following scroll area retain the chosen
 text size, but need broader font, viewport and human accessibility review. The
 layout remains provisional. At narrow widths its title scrolls with the content;
 controlled keyboard tests cover German at 200% and 320–480 pixels wide. A
-private headless Sway test drives a native 320x240 resize and restores 800x480;
-its default-model run does not cover native keyboard, all fonts or languages.
-Run `run_sway_resize.py --help` for the isolated fixture inputs. The broader Settings example in `examples/18_settings`
+private headless Sway test drives a native 320x240 resize and restores 800x480.
+With `--atspi-client` and `--atspi-registry`, an independent client changes
+the model before and during that resize and checks the semantic window sizes.
+These runs do not cover native keyboard, all fonts or languages. Build
+`atspi_client.c` separately using the `atspi-2`, `gobject-2.0` and `dbus-1`
+pkg-config modules; run `run_sway_resize.py --help` for fixture inputs. The broader Settings example in `examples/18_settings`
 provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.

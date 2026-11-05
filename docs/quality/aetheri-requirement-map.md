@@ -4,8 +4,10 @@ W04/L01/A10: the original-model Settings consumer based on
 `84ec8384ef30f36f3c2e2945e46e88d52ea46d63` lays out and follows keyboard focus
 at 320–480 by 240 logical pixels in controlled German 200% tests with three
 DejaVu fonts. Its earlier host stopped updating below 480 by 380. A private
-Sway test now resizes the default model to 320x240 and back; native keyboard
-at that size, smaller windows, other fonts/locales and human acceptance remain open.
+Sway test now resizes to 320x240 and back with an independent AT-SPI client,
+which changes and verifies the German high-contrast model at 200%/150%.
+Native keyboard at that size, smaller windows, other fonts/locales and human
+acceptance remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's

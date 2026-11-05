@@ -24,7 +24,8 @@ static AtspiAccessible *find(AtspiAccessible *node, const char *name, unsigned d
     if (!node || depth > 16) return NULL;
     GError *error = NULL; char *actual = atspi_accessible_get_name(node, &error);
     int match = !error && actual && !strcmp(actual, name);
-    if (error) g_error_free(error); g_free(actual);
+    if (error) g_error_free(error);
+    g_free(actual);
     if (match) return g_object_ref(node);
     error = NULL; int count = atspi_accessible_get_child_count(node, &error);
     if (error) { g_error_free(error); return NULL; }
@@ -48,7 +49,8 @@ static AtspiAccessible *app_for_pid(AtspiAccessible *desktop) {
             if (!app) continue;
             atspi_accessible_clear_cache(app); guint pid = atspi_accessible_get_process_id(app, &error);
             if (!error && pid == (guint)host && atspi_accessible_get_child_count(app, &error) > 0 && !error) return app;
-            if (error) g_error_free(error); g_object_unref(app);
+            if (error) g_error_free(error);
+            g_object_unref(app);
         }
     }
     return NULL;
@@ -71,11 +73,37 @@ static int await_checked(AtspiAccessible *item) {
     for (unsigned i = 0; i < 200; ++i) { pump(10); if (checked(item)) return 1; }
     return 0;
 }
+static int signal_file(const char *variable) {
+    const char *path=getenv(variable); if(!path || !*path) return 0;
+    FILE *f=fopen(path,"wx"); if(!f) return 0;
+    int ok=fputs("ready\n",f)>=0; return fclose(f)==0 && ok;
+}
+static int await_file(const char *variable) {
+    const char *path=getenv(variable); if(!path || !*path) return 0;
+    for(unsigned i=0;i<800;++i) { if(access(path,F_OK)==0) return 1; pump(10); }
+    return 0;
+}
+static int await_size(AtspiAccessible *item,int width,int height) {
+    AtspiComponent *component=atspi_accessible_get_component_iface(item);
+    if(!component) return 0;
+    int matched=0;
+    for(unsigned i=0;i<200 && !matched;++i) {
+        GError *error=NULL; atspi_accessible_clear_cache(item);
+        AtspiPoint *size=atspi_component_get_size(component,&error);
+        matched=!error && size && size->x==width && size->y==height;
+        if(error)g_error_free(error);
+        g_free(size);
+        if(!matched)pump(10);
+    }
+    g_object_unref(component); return matched;
+}
 int main(int argc, char **argv) {
     const char *font = getenv("NEXAUI_SETTINGS_FONT"); CHECK(argc == 2 && font && *font);
     host = fork(); CHECK(host >= 0);
     if (!host) {
-        if (getenv("NEXAUI_MODEL_DISPLAY_FIXTURE"))
+        if (getenv("NEXAUI_MODEL_RESIZE_READY"))
+            execl(argv[1], argv[1], font, "--diagnostics", "--fixture-displays", (char *)NULL);
+        else if (getenv("NEXAUI_MODEL_DISPLAY_FIXTURE"))
             execl(argv[1], argv[1], font, "--verify", "--fixture-displays", (char *)NULL);
         else execl(argv[1], argv[1], font, "--verify", (char *)NULL);
         _exit(127);
@@ -94,6 +122,16 @@ int main(int argc, char **argv) {
     CHECK(activate(german) && await_checked(german));
     CHECK(activate(size) && await_checked(size));
     CHECK(checked(contrast) && checked(german) && checked(size));
+    AtspiAccessible *medium=NULL,*root=NULL;
+    if(getenv("NEXAUI_MODEL_RESIZE_READY")) {
+        CHECK(signal_file("NEXAUI_MODEL_RESIZE_READY") && await_file("NEXAUI_MODEL_RESIZE_SMALL"));
+        root=find(app,"Aetheri Einstellungen",0); CHECK(root && await_size(root,320,240));
+        CHECK(checked(contrast) && checked(german) && checked(size));
+        medium=find(app,"150%",0); CHECK(medium && activate(medium) && await_checked(medium));
+        CHECK(!checked(size));
+        CHECK(signal_file("NEXAUI_MODEL_RESIZE_CHANGED") && await_file("NEXAUI_MODEL_RESIZE_LARGE"));
+        CHECK(await_size(root,800,480) && checked(medium) && checked(contrast) && checked(german));
+    }
     if (getenv("NEXAUI_MODEL_DISPLAY_FIXTURE")) {
         AtspiAccessible *display=find(app,"Monitor B",0); CHECK(display && activate(display));
         AtspiAccessible *selected=NULL;
@@ -108,6 +146,8 @@ int main(int argc, char **argv) {
     }
     CHECK(finished && WIFEXITED(status) && WEXITSTATUS(status) == 0);
     g_object_unref(close); g_object_unref(size); g_object_unref(german); g_object_unref(contrast);
+    if(medium)g_object_unref(medium);
+    if(root)g_object_unref(root);
     g_object_unref(app); g_object_unref(desktop); atspi_exit();
     puts("Independent AT-SPI actions changed three Aetheri model groups and closed the view.");
     return 0;
