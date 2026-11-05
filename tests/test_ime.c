@@ -336,6 +336,26 @@ int main(void) {
     CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK && nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
     CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"45",2));
     CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==45);
+    /* Switching editors on the same native window revokes the old result. */
+    nx_numeric_field *other=NULL;nx_numeric_field_desc second=numeric;
+    second.id=3;second.bounds.x=90;second.name=(nx_utf8_span){"Other number",12};
+    CHECK(nx_numeric_field_create(7,1024,&other)==NX_OK && nx_numeric_field_set_ime_window(other,window)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&second,other,&state,&valid)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    CHECK(nx_focus_set(ctx,3)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && !state.focused);
+    CHECK(nx_numeric_field_widget(ctx,&second,other,&state,&valid)==NX_OK && state.focused && nx_end_frame(ctx)==NX_OK);
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);} while(available);
+    SendMessageW(hwnd,WM_IME_CHAR,L'9',0);CHECK(nx_window_poll(window,0)==NX_OK);
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);CHECK(!available || event.type!=NX_EVENT_TEXT);} while(available);
+    CHECK(nx_numeric_field_value(other,&numeric_value)==NX_OK && numeric_value==7);
+    SendMessageW(hwnd,WM_IME_ENDCOMPOSITION,0,0);
+    CHECK(nx_focus_set(ctx,2)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && state.focused);
+    CHECK(nx_numeric_field_widget(ctx,&second,other,&state,&valid)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    nx_numeric_field_destroy(other);
     /* A late result from a canceled composition must not become plain input. */
     SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
     CHECK(nx_focus_set(ctx,0)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
