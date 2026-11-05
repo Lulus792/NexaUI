@@ -1,5 +1,13 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T07/T08/A05: the [terminal model consumer](../../examples/23_aetheri_terminal_view/README.md)
+uses Aetheri model revision `87996e2f12128b172a80b325ad3b539df6aee527`
+against installed NexaUI based on `129dea2bffa9f084ee1dd7949fa69134291264f7`.
+It demonstrates bounded visible cells, owner selection and copy, and simulated
+host AT-SPI text/selection. Scrollback without a visible caret deliberately has
+no Text interface. Native interaction, editor, PTY/session and other packet 5
+gates remain open; this example does not establish Aetheri adoption.
+
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on
 its existing connection and uses the field revision, preedit, surrounding text
