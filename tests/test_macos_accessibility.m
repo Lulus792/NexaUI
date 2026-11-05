@@ -31,7 +31,7 @@ static void deallocate(void *user,void *pointer,size_t bytes) {
 }
 typedef struct scene {
     nx_context *ui;
-    nx_numeric_field *number;
+    nx_numeric_field *number;nx_text_field *edit;
     int clicks, checked, queued, removed, retyped, large, renamed, moved, disabled, total_clicks;
     int overlay_stage, nested_clicks, number_disabled;
     uint64_t required, optional, radio, other, legacy;
@@ -65,6 +65,11 @@ static int frame(scene *s) {
     number.fonts=numeric_fonts;number.pixels_per_em=16;number.glyph_cache_bytes=65536;
     number.minimum=-10000;number.maximum=10000;number.disabled=s->number_disabled;int number_valid=0;
     CHECK(nx_numeric_field_widget(s->ui,&number,s->number,&state,&number_valid)==NX_OK);
+    if(!s->edit)CHECK(nx_text_field_create("ordinary",8,1024,&s->edit)==NX_OK);
+    nx_text_field_desc edit={0};edit.id=2033;edit.parent_id=1;
+    edit.name=(nx_utf8_span){"Text field",10};edit.bounds=(nx_rect){120,390,100,30};
+    edit.fonts=numeric_fonts;edit.pixels_per_em=16;edit.glyph_cache_bytes=65536;int edit_valid=0,submitted=0;
+    CHECK(nx_text_field_widget(s->ui,&edit,s->edit,&state,&edit_valid,&submitted)==NX_OK);
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
     if (!s->removed) {
@@ -166,6 +171,7 @@ static int run(void) {
     CHECK([button accessibilityParent]==find(view,1) && [button accessibilityWindow]==native);
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
+    CHECK(![secret isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     id number=[find(view,2032) retain];CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
     CHECK([[number accessibilityValue] isEqual:@"1234"] && [number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     [number setAccessibilityValue:@"bad"];CHECK(advance(window,&s)==0);
@@ -186,11 +192,22 @@ static int run(void) {
     CHECK(![number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
     s.number_disabled=0;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK && advance(window,&s)==0);
     CHECK([[number accessibilityValue] isEqual:@"7"] && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
+    [number setAccessibilityValue:@"1\n2"];
+    NSString *too_long=[@"1" stringByPaddingToLength:65537 withString:@"1" startingAtIndex:0];
+    [number setAccessibilityValue:too_long];[number setAccessibilityValue:@42];
+    CHECK(advance(window,&s)==0 && [[number accessibilityValue] isEqual:@"7"]);
     nx_numeric_field_destroy(s.number);s.number=NULL;
     CHECK(nx_numeric_field_create(7,1024,&s.number)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
     CHECK(![number isAccessibilityElement] && [number accessibilityValue]==nil && find(view,2032)!=number);
     [number setAccessibilityValue:@"99"];CHECK(advance(window,&s)==0 && nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==7);
     [number release];
+    id edit=find(view,2033);CHECK(edit && [edit isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    [edit setAccessibilityValue:@"é🌍"];CHECK(advance(window,&s)==0 && [[edit accessibilityValue] isEqual:@"é🌍"]);
+    nx_utf8_span edit_value;CHECK(nx_text_field_text(s.edit,&edit_value)==NX_OK && edit_value.length==6 && !memcmp(edit_value.data,"\xc3\xa9\xf0\x9f\x8c\x8d",6));
+    CHECK(nx_text_field_set_read_only(s.edit,1)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
+    CHECK(![edit isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    [edit setAccessibilityValue:@"denied"];CHECK(advance(window,&s)==0 && [[edit accessibilityValue] isEqual:@"é🌍"]);
+    CHECK(nx_text_field_set_read_only(s.edit,0)==NX_OK && frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
     s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
@@ -268,7 +285,7 @@ static int run(void) {
     CHECK(nx_window_route_events(other_window,s.ui,&routed)==NX_ERROR_STATE);
     CHECK([button accessibilityPerformPress] && advance(other_window,&other_scene)==0 && !other_scene.clicks);
     CHECK(advance(window,&s)==0 && s.clicks);
-    nx_context_destroy(other_scene.ui);nx_numeric_field_destroy(other_scene.number); nx_window_destroy(other_window);
+    nx_context_destroy(other_scene.ui);nx_numeric_field_destroy(other_scene.number);nx_text_field_destroy(other_scene.edit); nx_window_destroy(other_window);
     CHECK(![other_button isAccessibilityElement] && [button isAccessibilityElement]); [other_button release];
     s.large=1; s.renamed=1; CHECK(frame(&s)==0); h.fail_next=1;
     CHECK(nx_window_publish_semantics(window,s.ui)==NX_ERROR_MEMORY && !h.fail_next);
@@ -293,7 +310,7 @@ static int run(void) {
     CHECK(nx_window_publish_semantics(window,NULL)==NX_OK && ![current isAccessibilityElement]);
     CHECK(nx_window_publish_semantics(window,s.ui)==NX_OK && find(view,2)!=current);
     id final=[find(view,2) retain];
-    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window);
+    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number);nx_text_field_destroy(s.edit); nx_window_destroy(window);
     CHECK(h.count==0 && ![final isAccessibilityElement] && ![final accessibilityPerformPress] && NSEqualRects([final accessibilityFrame],NSZeroRect));
     CHECK([saved_label isEqualToString:@"Öffnen 📁"]); [saved_label release];
     [final release]; [current release]; [replacement release]; [dynamic release]; [secret release]; [toggle release]; [button release];
@@ -309,7 +326,7 @@ static int external(const char *client) {
     char parent[32]; snprintf(parent,sizeof(parent),"%ld",(long)getpid());
     char *arguments[]={(char *)client,parent,NULL}; pid_t child;
     int spawn_error=posix_spawn(&child,client,NULL,NULL,arguments,environ);
-    if (spawn_error) { nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window); return 1; }
+    if (spawn_error) { nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number);nx_text_field_destroy(s.edit); nx_window_destroy(window); return 1; }
     double started=[[NSProcessInfo processInfo] systemUptime]; int status=0,failed=0;
     for (;;) {
         pid_t result=waitpid(child,&status,WNOHANG);
@@ -321,7 +338,7 @@ static int external(const char *client) {
         }
         CFRunLoopRunInMode(kCFRunLoopDefaultMode,.001,true);
     }
-    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number); nx_window_destroy(window);
+    nx_context_destroy(s.ui);nx_numeric_field_destroy(s.number);nx_text_field_destroy(s.edit); nx_window_destroy(window);
     return failed || !WIFEXITED(status) ? 1 : WEXITSTATUS(status);
 }
 int main(int argc,char **argv) {
