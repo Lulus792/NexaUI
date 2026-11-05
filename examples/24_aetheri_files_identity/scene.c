@@ -104,6 +104,13 @@ nx_result files_scene_focus_filter(files_scene *s,int clear) {
     r=replace_filter_draft(s,"",0);if(r==NX_OK)s->query_rejected=0;return r;
 }
 int files_scene_filter_has_focus(const files_scene *s){return s && s->query && nx_focus_id(s->ctx)==FILTER_ID;}
+int files_scene_list_has_focus(const files_scene *s) {
+    if(!s || !s->ready)return 0;
+    uint64_t focus=nx_focus_id(s->ctx);
+    if(!focus || focus==ROOT_ID)return 1;
+    for(size_t i=0;i<s->count;++i)if(s->ids[i]==focus)return 1;
+    return 0;
+}
 nx_result files_scene_filter(files_scene *s,const char *query,size_t length) {
     if(!s)return NX_ERROR_ARGUMENT;
     if(!ae_files_filter(s->model,query,length)){s->query_valid=0;s->query_rejected=1;return NX_ERROR_ARGUMENT;}

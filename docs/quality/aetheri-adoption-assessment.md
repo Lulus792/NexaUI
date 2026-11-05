@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Files navigation respects control focus (2026-11-06)
+
+On candidate base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the
+original-model Files consumer sends navigation keys to its list only when a
+current row or the tree has focus, or when there is no focused control.
+Previously it intercepted those keys on any non-filter control.
+The scene regression checks filter, clear, close and selected-row focus;
+GCC static/shared and Clang ASan/UBSan builds using the separately installed
+SDK and Aetheri snapshot `87ff701f7d793b825c1d9012fc7d4bbd7b30773d` passed.
+Restoring the earlier non-filter-only condition in a test mutant failed the
+close-control assertion. A private Weston 14.0.2/Xvfb run sent End on clear
+and close with virtual keyboard input, checked the unchanged model selection
+after each frame, and retained existing list navigation and close behavior.
+An initial run used a nonexistent font path; the successful tests used
+`/usr/share/fonts/dejavu/DejaVuSans.ttf`. An initial Weston launch lacked its
+private library path and a second lacked the module map; the final run used
+both. This is an example consumer with virtual input, not physical input,
+the actual Aetheri app or a human assistive-technology acceptance.
+
 ## Native accessibility of a virtual 100,000-row tree (2026-11-06)
 
 On candidate base `8632bfbdef912fed11445e5391b148523e709968`, a synthetic

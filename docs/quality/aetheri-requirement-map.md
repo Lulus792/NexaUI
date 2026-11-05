@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I01/L05/A02: on base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the
+original-model Files consumer limits list keyboard navigation to the list's
+focus and verifies clear/close focus with private Weston virtual input. Actual
+Aetheri and human assistive review remain open; see [candidate evidence](aetheri-adoption-assessment.md#files-navigation-respects-control-focus-2026-11-06).
+
 P02/L05/A05: on base `8632bfbdef912fed11445e5391b148523e709968`, an
 independent AT-SPI client checks bounded visible rows and stable selection and
 references through scroll and filter of a synthetic 100,000-key tree. Actual

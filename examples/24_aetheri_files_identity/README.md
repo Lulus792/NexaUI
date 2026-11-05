@@ -62,6 +62,15 @@ that the Aetheri model meets the separate 100,000-row toolkit performance goal.
 
 ## Virtualized scene experiment
 
+On NexaUI base `471348c1b8fee3aa0d75eb129ba1059acc2a1c90`, the native
+consumer routes list navigation only while an existing list row or its tree
+owns focus, or while no control has focus. In particular, arrow and page
+keys on the filter, clear or close control no longer change the file selection.
+The scene test covers those controls and the active row. A private Weston/Xvfb
+test sends End to the clear and close controls and verifies the model selection
+after each rendered frame. This is a consumer policy, not a new SDK contract;
+physical input, human screenreader review and actual Aetheri remain open.
+
 On NexaUI base `31da772f94a2fdea863157bf06819a30aa13480b`, `scene.c` adds a
 font-backed headless scene using the same pinned model, `nx_virtual_list` and
 the existing tree widgets. It registers only rows intersecting the viewport,

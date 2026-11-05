@@ -31,7 +31,7 @@ int main(int argc,char **argv) {
     size_t font_length=0;unsigned char *font_bytes=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
     struct ae_files *model=NULL;files_scene *scene=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     char previous_selected[AE_FILES_LABEL+1]={0},previous_visible[AE_FILES_LABEL+1]={0};
-    char previous_query[AE_FILES_QUERY+1]={0};int previous_valid=1,filter_reported=0;size_t previous_draft=0;
+    char previous_query[AE_FILES_QUERY+1]={0};int previous_valid=1,filter_reported=0,trace_other_navigation=0;size_t previous_draft=0;
     struct sigaction action={0};action.sa_handler=request_stop;sigemptyset(&action.sa_mask);
     if(sigaction(SIGINT,&action,NULL) || sigaction(SIGTERM,&action,NULL))goto cleanup;
     if(getenv("NEXAUI_FILES_IME_TEST")){action.sa_handler=request_test_clear;if(sigaction(SIGUSR1,&action,NULL))goto cleanup;}
@@ -83,9 +83,13 @@ int main(int argc,char **argv) {
                 filter_reported=0;
                 dirty=1;continue;
             }
-            if(event.type==NX_EVENT_KEY_DOWN && focused && drawable && !files_scene_filter_has_focus(scene) && navigation(event.key) && !event.modifiers) {
+            if(event.type==NX_EVENT_KEY_DOWN && focused && drawable && files_scene_list_has_focus(scene) && navigation(event.key) && !event.modifiers) {
                 if(files_scene_key(scene,event.key,1)!=NX_OK){okay=0;break;}
                 dirty=1;continue;
+            }
+            if(trace && event.type==NX_EVENT_KEY_DOWN && focused && drawable &&
+               !files_scene_list_has_focus(scene) && navigation(event.key) && !event.modifiers) {
+                trace_other_navigation=1;
             }
             if(event.type==NX_EVENT_WHEEL && drawable && event.x>=0 && event.x<info.width &&
                event.y>=0 && event.y<fminf(info.height,1800.0f)) {
@@ -146,6 +150,7 @@ int main(int argc,char **argv) {
                 printf("FILES_NATIVE_DRAFT %zu %d\n",previous_draft,valid);fflush(stdout);
             }
             const struct ae_files_entry *selected=ae_files_entry(model,ae_files_selected(model));
+            if(selected && trace_other_navigation){printf("FILES_NATIVE_NAV_OTHER %s\n",selected->label);fflush(stdout);trace_other_navigation=0;}
             if(selected && strcmp(previous_selected,selected->label)) {
                 snprintf(previous_selected,sizeof(previous_selected),"%s",selected->label);
                 printf("FILES_NATIVE_SELECTED %s\n",previous_selected);fflush(stdout);

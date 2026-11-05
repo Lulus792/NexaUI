@@ -11,6 +11,8 @@ void files_scene_destroy(files_scene *scene);
 nx_result files_scene_enable_filter(files_scene *scene,nx_window *window);
 nx_result files_scene_focus_filter(files_scene *scene,int clear);
 int files_scene_filter_has_focus(const files_scene *scene);
+/* Startup without a focused control and current tree rows accept navigation. */
+int files_scene_list_has_focus(const files_scene *scene);
 /* Call sync after an external model refresh. Directory changes retire all row IDs. */
 nx_result files_scene_sync(files_scene *scene);
 /* Rejected whole queries keep the old model filter but invalidate activation. */

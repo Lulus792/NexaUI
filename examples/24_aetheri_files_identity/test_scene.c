@@ -44,6 +44,7 @@ int main(int argc,char **argv) {
     CHECK(files_scene_create(model,fonts,&scene)==NX_OK);
     CHECK(files_scene_frame(scene,240,84)==NX_OK);
     nx_context *ctx=files_scene_context(scene);uint64_t first=files_scene_selected(scene);CHECK(first);
+    CHECK(files_scene_list_has_focus(scene));
     CHECK(semantic(ctx,first,"item00",1,0));
     size_t semantics=0;CHECK(nx_semantics_count(ctx,&semantics)==NX_OK && semantics<=5);
     const nx_command *commands=NULL;size_t command_count=0,bitmaps=0;
@@ -87,6 +88,12 @@ int main(int argc,char **argv) {
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && files_scene_frame(scene,240,84)==NX_OK);
     CHECK(files_scene_selected(scene)==clicked && !strcmp(ae_files_entry(model,ae_files_selected(model))->name,name));
     CHECK(files_scene_enable_filter(scene,NULL)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(nx_focus_set(ctx,3)==NX_OK && !files_scene_list_has_focus(scene));
+    CHECK(files_scene_key(scene,NX_KEY_HOME,files_scene_list_has_focus(scene))==NX_OK && files_scene_selected(scene)==clicked);
+    CHECK(nx_focus_set(ctx,5)==NX_OK && !files_scene_list_has_focus(scene));
+    CHECK(nx_focus_set(ctx,2)==NX_OK && !files_scene_list_has_focus(scene));
+    CHECK(files_scene_key(scene,NX_KEY_END,1)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
+    CHECK(files_scene_list_has_focus(scene));
     CHECK(files_scene_filter(scene,"no-such-file",12)==NX_OK && files_scene_frame(scene,240,120)==NX_OK);
     uint32_t status_index;nx_semantic_view status;
     CHECK(nx_semantics_find(ctx,4,&status_index)==NX_OK && nx_semantics_get(ctx,status_index,&status)==NX_OK &&
