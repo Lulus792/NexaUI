@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Settings text selection across view replacement (2026-11-05)
+
+Source `75958824484c4e373ec5ec49815fde357dfd0cf8` adds
+`nx_text_field_set_selection` using grapheme-boundary UTF-8 byte offsets and
+increments the development package version to 0.1.2. Changed selection
+invalidates pending asynchronous edits; an unchanged selection leaves them
+alone. IME revisions also incorporate edit serials so changing a selection and
+returning it to its old offsets cannot admit an old IME response. The Settings
+session saves and restores anchor and cursor; undo history and active
+composition are not transferred.
+
+The scene test replaced a reversed selection containing a multibyte character
+after reopening. API tests covered combining/emoji boundaries, invalid offsets,
+unchanged selection, undo/redo and stale queued semantic edits. A controlled
+Wayland v3 fixture rejected an IME response after selection changed and returned
+to the same offsets. Twenty-nine text, input and Settings tests passed on private
+Weston/Xvfb (`/tmp/nexaui-field-selection-regression/result.json`); four focused
+cases passed under Clang ASan/UBSan. The independent AT-SPI client observed the
+restored selection. Separate Settings consumers built and passed that client
+against freshly installed static and shared 0.1.2 SDKs
+(`/tmp/nexaui-field-012-native-OFF/result.json` and
+`/tmp/nexaui-field-012-native-ON/result.json`); configuration rejected the older
+0.1.1 installation. These are Linux virtual-input checks, not Windows/macOS,
+physical input, human accessibility acceptance, real service reconciliation,
+or an ABI compatibility guarantee. No release tag or 1.0.0 approval is implied.
+
 ## Settings focus across view replacement (2026-11-05)
 
 Example source `4d793b52d9f6d0d0fc6b3d23f3b02d7b3edcf1b3` transfers the
