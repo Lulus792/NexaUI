@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--swaymsg', required=True)
     parser.add_argument('--host', required=True)
     parser.add_argument('--ctest-dir', help='Run the registered CTest case from this build')
+    parser.add_argument('--poll-many', action='store_true')
     parser.add_argument('--work-dir', required=True, type=Path)
     args=parser.parse_args()
     work=args.work_dir.resolve()
@@ -41,9 +42,11 @@ def main():
             else:
                 raise RuntimeError(f'Sway did not create its private sockets; see {work}/sway.log')
             env['SWAYSOCK']=str(sockets[0]);env['WAYLAND_DISPLAY']=displays[0].name
-            command=([ 'ctest', '--test-dir', args.ctest_dir, '-R', '^nexaui_wayland_two_windows_sway_close$',
+            testname='^nexaui_wayland_two_windows_sway_close_many$' if args.poll_many else '^nexaui_wayland_two_windows_sway_close$'
+            command=([ 'ctest', '--test-dir', args.ctest_dir, '-R', testname,
                        '--no-tests=error', '--output-on-failure'] if args.ctest_dir else
                      [sys.executable,str(ROOT/'tests/run_sway_two_windows.py'),args.host,args.swaymsg])
+            if args.poll_many and not args.ctest_dir: command.append('--poll-many')
             result=subprocess.run(command,
                                   env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=35)
             (work/'client.log').write_text(result.stdout,encoding='utf-8')

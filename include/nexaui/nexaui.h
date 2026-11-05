@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 2
+#define NX_VERSION_PATCH 3
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -463,6 +463,20 @@ NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
 enum { NX_WINDOW_FD_READABLE = 1u, NX_WINDOW_FD_HANGUP = 2u, NX_WINDOW_FD_ERROR = 4u };
 NX_API nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
                                        int fd, uint32_t *out_events);
+/* Wait for 1..16 distinct Wayland windows and optionally one borrowed app fd
+   (-1 means none). All windows must belong to the calling owner thread and
+   remain live; nested polling of any member returns STATE. X11 members return
+   UNSUPPORTED. The call dispatches work for all members, so route each window's
+   events afterward. A queued event or close request returns without sleeping;
+   a return may also be spurious or reflect an internal deadline.
+   out_events receives only application-fd readiness. Errors may occur after
+   some windows have dispatched work; inspect each live window before retrying.
+   The caller owns the fd; the call never reads or closes it. A hangup may
+   accompany data, which the caller must drain. All windows and the fd must
+   remain valid until this call returns. */
+#define NX_WINDOW_POLL_MAX_WINDOWS 16u
+NX_API nx_result nx_window_poll_many(nx_window *const *windows, size_t count,
+                                    uint32_t timeout_ms, int fd, uint32_t *out_events);
 #endif
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
 /* Recommended native client backing extent in pixels after polling. Use this

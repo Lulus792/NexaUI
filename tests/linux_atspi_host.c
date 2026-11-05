@@ -115,8 +115,13 @@ int main(int argc,char **argv) {
     char buffer[256]; size_t used=0;
     scene peer={0}; nx_window *peer_window=NULL; heap peer_memory={0};
     while (!quit) {
-        if (nx_window_poll(window,poll_timeout)!=NX_OK) return 1;
-        if (peer_window && nx_window_poll(peer_window,0)!=NX_OK) return 1;
+        if(getenv("NEXAUI_TEST_POLL_MANY")) {
+            nx_window *windows[2]={window,peer_window}; uint32_t events=0;
+            if(nx_window_poll_many(windows,peer_window?2:1,poll_timeout,STDIN_FILENO,&events)!=NX_OK)return 1;
+        } else {
+            if (nx_window_poll(window,poll_timeout)!=NX_OK) return 1;
+            if (peer_window && nx_window_poll(peer_window,0)!=NX_OK) return 1;
+        }
         char command[256]={0};
         ssize_t n=read(STDIN_FILENO,buffer+used,sizeof(buffer)-used-1u);
         if (!n) break;

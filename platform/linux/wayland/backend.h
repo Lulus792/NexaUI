@@ -16,6 +16,9 @@ nx_result nx_wayland_window_create(const nx_window_desc *desc,
 void nx_wayland_window_set_owner(nx_wayland_window *window, nx_window *owner);
 nx_result nx_wayland_window_poll(nx_wayland_window *window, uint32_t timeout_ms);
 nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window, uint32_t timeout_ms, int fd, int writable, int app_fd, uint32_t *app_events);
+nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t count,
+    uint32_t timeout_ms, const int *extra_fds, const int *writable,
+    int app_fd, uint32_t *app_events);
 void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geometry *out);
 int nx_wayland_window_ax_focus(nx_wayland_window *window);
 nx_result nx_wayland_window_get_info(nx_wayland_window *window,

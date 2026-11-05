@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+project(NexaUIPollManyConsumer LANGUAGES C)
+find_package(NexaUI 0.1.3 CONFIG REQUIRED)
+add_executable(poll_many_consumer main.c)
+set_target_properties(poll_many_consumer PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+target_link_libraries(poll_many_consumer PRIVATE NexaUI::NexaUI)

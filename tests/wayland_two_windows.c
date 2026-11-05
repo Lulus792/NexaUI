@@ -2,6 +2,7 @@
 #include "nexaui/software.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
 typedef struct window_slot { nx_window *window; nx_context *context; nx_software_view *view; int id, presented; } window_slot;
@@ -18,7 +19,9 @@ static int draw(window_slot *s) {
     fflush(stdout);
     if(nx_fill_rect(s->context,(nx_rect){0,0,info.width,info.height},
                     s->id==1?(nx_color){0.3f,0.1f,0.1f,1}:(nx_color){0.1f,0.2f,0.4f,1})!=NX_OK ||
-       nx_end_frame(s->context)!=NX_OK || nx_frame_commands(s->context,&commands,&count)!=NX_OK) return 0;
+       nx_end_frame(s->context)!=NX_OK) return 0;
+    if(getenv("NEXAUI_W02_POLL_MANY") && s->presented && !routed)return 1;
+    if(nx_frame_commands(s->context,&commands,&count)!=NX_OK) return 0;
     nx_software_view_outcome outcome;
     if(nx_software_view_render(s->view,commands,count,(nx_color){0,0,0,1},&outcome)!=NX_OK) return 0;
     if(outcome==NX_SOFTWARE_VIEW_READY) s->presented=1;
@@ -33,9 +36,36 @@ int main(void) {
         CHECK(nx_software_view_open(slots[i].window,&slots[i].view)==NX_OK);
     }
     int first_closed=0, ready=0, survivor_presented=0;
+    const char *control=getenv("NEXAUI_W02_CONTROL_FD");
+    int group=getenv("NEXAUI_W02_POLL_MANY")!=NULL, fd=control?atoi(control):-1, done=0;
+    if(group) {
+        uint32_t events=99;nx_window *duplicates[2]={slots[0].window,slots[0].window};
+        CHECK(nx_window_poll_many(NULL,1,0,-1,&events)==NX_ERROR_ARGUMENT && !events);
+        CHECK(nx_window_poll_many(duplicates,2,0,-1,&events)==NX_ERROR_ARGUMENT);
+        CHECK(nx_window_poll_many(duplicates,0,0,-1,&events)==NX_ERROR_ARGUMENT);
+        CHECK(nx_window_poll_many(duplicates,17,0,-1,&events)==NX_ERROR_ARGUMENT);
+        CHECK(nx_window_poll_many(duplicates,1,0,-2,&events)==NX_ERROR_ARGUMENT);
+    }
     for(unsigned n=0;n<8000;++n) {
+        if(group) {
+            nx_window *members[2];size_t count=0;uint32_t events=0;
+            for(unsigned i=0;i<2;++i)if(slots[i].window)members[count++]=slots[i].window;
+            CHECK(nx_window_poll_many(members,count,ready?5000:0,fd,&events)==NX_OK);
+            if(events&NX_WINDOW_FD_READABLE) {
+                char command=0;CHECK(read(fd,&command,1)==1);
+                if(command=='D')done=1;
+                else {
+                    CHECK(!first_closed && (command=='A' || command=='B'));
+                    unsigned i=command=='A'?0:1;
+                    CHECK(nx_software_view_close(&slots[i].view)==NX_OK);
+                    nx_context_destroy(slots[i].context);nx_window_destroy(slots[i].window);
+                    slots[i]=(window_slot){0};slots[1-i].presented=0;first_closed=1;
+                    printf("CLOSED %c\n",command);fflush(stdout);
+                }
+            }
+        }
         for(unsigned i=0;i<2;++i) if(slots[i].window) {
-            CHECK(nx_window_poll(slots[i].window,5)==NX_OK);
+            if(!group)CHECK(nx_window_poll(slots[i].window,5)==NX_OK);
             nx_window_info info;
             CHECK(nx_window_get_info(slots[i].window,&info)==NX_OK);
             if(info.should_close) {
@@ -72,6 +102,7 @@ int main(void) {
                 printf("CLOSED %c\n",which);fflush(stdout);
             }
         }
+        if(done)break;
         if(first_closed && getenv("NEXAUI_W02_DONE_FILE")) {
             FILE *signal=fopen(getenv("NEXAUI_W02_DONE_FILE"),"rb");
             if(signal){fclose(signal);break;}

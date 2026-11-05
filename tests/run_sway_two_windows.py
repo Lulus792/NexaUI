@@ -11,17 +11,24 @@ import time
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3,4) or (len(sys.argv)==4 and sys.argv[3]!='--poll-many'):
         return 2
     if os.environ.get('NEXAUI_TEST_PRIVATE_SWAY') != '1' or not os.environ.get('SWAYSOCK'):
         return 77
-    host, swaymsg = sys.argv[1:]
+    host, swaymsg = sys.argv[1:3]
+    group=len(sys.argv)==4
     with tempfile.TemporaryDirectory(prefix='nexaui-sway-two-windows-') as tmp:
         done = Path(tmp) / 'done'
         env = dict(os.environ, NEXAUI_PLATFORM='wayland', NEXAUI_W02_NATIVE_CLOSE='1',
                    NEXAUI_W02_DONE_FILE=str(done))
         env.pop('NEXAUI_W02_CLOSE_FILE', None)
-        process = subprocess.Popen([host], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        read_fd,write_fd=os.pipe() if group else (-1,-1)
+        if group:
+            env['NEXAUI_W02_POLL_MANY']='1';env['NEXAUI_W02_CONTROL_FD']=str(read_fd)
+            env.pop('NEXAUI_W02_DONE_FILE')
+        process = subprocess.Popen([host], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                                   pass_fds=(read_fd,) if group else ())
+        if group: os.close(read_fd)
         messages = queue.Queue()
         output = []
         def collect():
@@ -67,13 +74,15 @@ def main():
             focused=[node for node in nodes(command('-t','get_tree')) if node.get('name')=='NexaUI W02 B']
             if len(focused)!=1 or not focused[0].get('focused'):
                 raise RuntimeError('Sway did not report the survivor as focused')
-            done.write_text('done',encoding='ascii')
+            if group: os.write(write_fd,b'D')
+            else: done.write_text('done',encoding='ascii')
             wait('WINDOWS_CLOSED')
             if process.wait(timeout=5):
                 raise RuntimeError('Host failed: '+process.stderr.read())
             print('Sway close request affected A; B survived, presented and accepted a focus request.')
             return 0
         finally:
+            if group: os.close(write_fd)
             if process.poll() is None:
                 process.terminate()
                 try:

@@ -11,16 +11,23 @@ import time
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3,4) or (len(sys.argv)==4 and sys.argv[3]!='--poll-many'):
         return 2
     if os.environ.get('NEXAUI_TEST_PRIVATE_WAYLAND') != '1' or os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test':
         return 77
-    host, xdotool = sys.argv[1:]
+    host, xdotool = sys.argv[1:3]
+    group=len(sys.argv)==4
     with tempfile.TemporaryDirectory(prefix='nexaui-two-windows-') as tmp:
         close = Path(tmp) / 'close'
         done = Path(tmp) / 'done'
         env = dict(os.environ, NEXAUI_PLATFORM='wayland', NEXAUI_W02_CLOSE_FILE=str(close), NEXAUI_W02_DONE_FILE=str(done))
-        process = subprocess.Popen([host], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+        read_fd,write_fd=os.pipe() if group else (-1,-1)
+        if group:
+            env['NEXAUI_W02_POLL_MANY']='1';env['NEXAUI_W02_CONTROL_FD']=str(read_fd)
+            env.pop('NEXAUI_W02_CLOSE_FILE');env.pop('NEXAUI_W02_DONE_FILE')
+        process = subprocess.Popen([host], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env,
+                                   pass_fds=(read_fd,) if group else ())
+        if group: os.close(read_fd)
         messages = queue.Queue()
         output = []
         def collect():
@@ -60,9 +67,12 @@ def main():
             second = wait('TEXT ').split()
             if second[2] != '98' or second[1] == first[1]:
                 raise RuntimeError(f'Window focus did not switch: {first}, {second}')
-            request = Path(tmp) / 'request'
-            request.write_text(second[1], encoding='ascii')
-            request.replace(close)
+            if group:
+                os.write(write_fd,second[1].encode('ascii'))
+            else:
+                request = Path(tmp) / 'request'
+                request.write_text(second[1], encoding='ascii')
+                request.replace(close)
             wait('CLOSED ' + second[1])
             closed_at=output.index('CLOSED ' + second[1])
             wait('SURVIVOR_PRESENTED')
@@ -72,7 +82,8 @@ def main():
             survivor = wait('TEXT ').split()
             if survivor[2] != '99' or survivor[1] != first[1]:
                 raise RuntimeError(f'Input reached the wrong survivor: {survivor}')
-            done.write_text('done', encoding='ascii')
+            if group: os.write(write_fd,b'D')
+            else: done.write_text('done', encoding='ascii')
             wait('WINDOWS_CLOSED')
             if process.wait(timeout=5):
                 raise RuntimeError('Host failed: ' + process.stderr.read())
@@ -84,6 +95,7 @@ def main():
             print(f'Independent Wayland windows {first[1]} and {second[1]} received distinct input; {first[1]} survived close.')
             return 0
         finally:
+            if group: os.close(write_fd)
             if process.poll() is None:
                 process.terminate()
                 try:

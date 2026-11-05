@@ -61,6 +61,17 @@ acceptance remain open.
 
 ## Application integration
 
+On Linux, `nx_window_poll_many` can wait for up to 16 distinct Wayland windows
+and an optional application-owned fd on their owner thread. Route and inspect
+each live window after return, since work may be dispatched for any member and
+returns can be spurious. Accessibility, transfer and key-repeat deadlines are
+included in the wait. The fd remains application-owned; readable and hangup
+may be reported together. Remove closed windows before the next wait. Partial
+errors may follow dispatch for other windows, so check each live window. The
+operation rejects X11 members with `NX_ERROR_UNSUPPORTED` and rejects nested
+polling of participating windows. It does not provide application redraw
+deadlines: supply a timeout corresponding to the next deadline.
+
 Create the window with `NX_WINDOW_CLIENT_CHROME | NX_WINDOW_STATE_EVENTS`.
 After polling, route its events to the UI context as usual. Query
 `nx_window_get_status` to update a maximize/restore icon; use `known` before

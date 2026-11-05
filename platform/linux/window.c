@@ -38,7 +38,7 @@ struct nx_window {
     size_t operations;
     uint64_t ax_revision;
     uint64_t public_clipboard_token;
-    int retired, ax_publishing, ax_cancelled;
+    int retired, ax_publishing, ax_cancelled, polling_group;
     union {
 #ifndef NEXAUI_LINUX_WAYLAND_ONLY
         nx_x11_window *x11;
@@ -158,7 +158,7 @@ nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window) {
 static nx_result nx_linux_poll(nx_window *window, uint32_t timeout_ms,
                                int app_fd, uint32_t *app_events) {
     if (!window) return NX_ERROR_ARGUMENT;
-    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+    if (!nx_linux_on_owner_thread(window) || window->retired || window->polling_group) return NX_ERROR_STATE;
     ++window->operations;
     if (nx_linux_ax_pump(window->accessibility)) timeout_ms=0;
     if (window->retired) { nx_linux_window_release(window); return NX_ERROR_STATE; }
@@ -180,6 +180,44 @@ nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
     if (out_events) *out_events=0;
     if (!window || fd<0 || !out_events) return NX_ERROR_ARGUMENT;
     return nx_linux_poll(window,timeout_ms,fd,out_events);
+}
+
+nx_result nx_window_poll_many(nx_window *const *windows,size_t count,
+                              uint32_t timeout_ms,int fd,uint32_t *out_events) {
+    if(out_events)*out_events=0;
+    if(!windows || !out_events || !count || count>NX_WINDOW_POLL_MAX_WINDOWS || fd< -1)
+        return NX_ERROR_ARGUMENT;
+    nx_wayland_window *native[NX_WINDOW_POLL_MAX_WINDOWS];
+    nx_window *members[NX_WINDOW_POLL_MAX_WINDOWS];
+    int extras[NX_WINDOW_POLL_MAX_WINDOWS], writable[NX_WINDOW_POLL_MAX_WINDOWS];
+    for(size_t i=0;i<count;++i) {
+        members[i]=windows[i];
+        if(!members[i])return NX_ERROR_ARGUMENT;
+        for(size_t j=0;j<i;++j)if(members[i]==members[j])return NX_ERROR_ARGUMENT;
+        if(!nx_linux_on_owner_thread(members[i]) || members[i]->retired || members[i]->polling_group)
+            return NX_ERROR_STATE;
+        if(members[i]->backend!=NX_LINUX_WAYLAND)return NX_ERROR_UNSUPPORTED;
+        if(members[i]->operations==SIZE_MAX)return NX_ERROR_LIMIT;
+    }
+    for(size_t i=0;i<count;++i){++members[i]->operations;members[i]->polling_group=1;native[i]=members[i]->native.wayland;}
+    nx_result result=NX_OK;
+    for(size_t i=0;i<count;++i) {
+        if(nx_linux_ax_pump(members[i]->accessibility))timeout_ms=0;
+        for(size_t j=0;j<count;++j)if(members[j]->retired){result=NX_ERROR_STATE;goto done;}
+    }
+    for(size_t i=0;i<count;++i) {
+        timeout_ms=nx_linux_ax_timeout(members[i]->accessibility,timeout_ms);
+        extras[i]=nx_linux_ax_fd(members[i]->accessibility,&writable[i]);
+    }
+    result=nx_wayland_windows_poll(native,count,timeout_ms,extras,writable,fd,out_events);
+    for(size_t i=0;i<count;++i) {
+        if(!members[i]->retired)nx_linux_ax_pump(members[i]->accessibility);
+    }
+    for(size_t i=0;i<count;++i)if(members[i]->retired && result==NX_OK)result=NX_ERROR_STATE;
+done:
+    for(size_t i=0;i<count;++i)members[i]->polling_group=0;
+    for(size_t i=0;i<count;++i)nx_linux_window_release(members[i]);
+    return result;
 }
 
 nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {

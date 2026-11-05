@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.2 LANGUAGES C)
+project(NexaUI VERSION 0.1.3 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -770,6 +770,11 @@ if(NEXAUI_BUILD_TESTS)
                     $<TARGET_FILE:nexaui_wayland_two_windows_host> ${NEXAUI_DROP_XDOTOOL})
             set_tests_properties(nexaui_wayland_two_windows PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
                 ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+            add_test(NAME nexaui_wayland_two_windows_poll_many
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_two_windows.py
+                    $<TARGET_FILE:nexaui_wayland_two_windows_host> ${NEXAUI_DROP_XDOTOOL} --poll-many)
+            set_tests_properties(nexaui_wayland_two_windows_poll_many PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
             find_program(NEXAUI_SWAYMSG_EXECUTABLE swaymsg)
             if(NEXAUI_SWAYMSG_EXECUTABLE)
                 add_test(NAME nexaui_wayland_two_windows_sway_close
@@ -777,7 +782,23 @@ if(NEXAUI_BUILD_TESTS)
                         $<TARGET_FILE:nexaui_wayland_two_windows_host> ${NEXAUI_SWAYMSG_EXECUTABLE})
                 set_tests_properties(nexaui_wayland_two_windows_sway_close PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_wayland_two_windows_sway_close_many
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_sway_two_windows.py
+                        $<TARGET_FILE:nexaui_wayland_two_windows_host> ${NEXAUI_SWAYMSG_EXECUTABLE} --poll-many)
+                set_tests_properties(nexaui_wayland_two_windows_sway_close_many PROPERTIES TIMEOUT 45 SKIP_RETURN_CODE 77
+                    RESOURCE_LOCK native_display)
             endif()
+        endif()
+        add_executable(nexaui_linux_poll_many_tests tests/test_linux_poll_many.c)
+        target_include_directories(nexaui_linux_poll_many_tests PRIVATE platform/linux)
+        target_link_libraries(nexaui_linux_poll_many_tests PRIVATE NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_CLIENT)
+        add_test(NAME nexaui_wayland_poll_many COMMAND nexaui_linux_poll_many_tests)
+        set_tests_properties(nexaui_wayland_poll_many PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
+            ENVIRONMENT "NEXAUI_PLATFORM=wayland" RESOURCE_LOCK native_display)
+        if(NEXAUI_ENABLE_X11)
+            add_test(NAME nexaui_x11_poll_many_unsupported COMMAND nexaui_linux_poll_many_tests --expect-unsupported)
+            set_tests_properties(nexaui_x11_poll_many_unsupported PROPERTIES TIMEOUT 15 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_PLATFORM=x11" RESOURCE_LOCK native_display)
         endif()
         if(TARGET nexaui_wayland_drop_source AND Python3_Interpreter_FOUND AND NEXAUI_DROP_XDOTOOL)
             add_test(NAME nexaui_wayland_drop_peer
@@ -823,6 +844,12 @@ if(NEXAUI_BUILD_TESTS)
                     $<TARGET_FILE:nexaui_linux_atspi_host>)
             set_tests_properties(nexaui_atspi_idle_reconnect_wayland PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                 RESOURCE_LOCK native_display)
+            add_test(NAME nexaui_atspi_idle_reconnect_wayland_poll_many
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_linux_atspi_client>
+                    $<TARGET_FILE:nexaui_linux_atspi_host>)
+            set_tests_properties(nexaui_atspi_idle_reconnect_wayland_poll_many PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                ENVIRONMENT "NEXAUI_TEST_POLL_MANY=1" RESOURCE_LOCK native_display)
             add_executable(nexaui_linux_multiselection_host tests/linux_multiselection_host.c)
             target_include_directories(nexaui_linux_multiselection_host PRIVATE platform/linux)
             target_compile_definitions(nexaui_linux_multiselection_host PRIVATE NEXAUI_X11_TEST_HOOKS)

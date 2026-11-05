@@ -3,6 +3,14 @@
 #include "text_value.h"
 #include <time.h>
 
+static nx_result fixture_poll(nx_window *window,uint32_t timeout) {
+    if(getenv("NEXAUI_TEST_POLL_MANY")) {
+        uint32_t events=0;
+        return nx_window_poll_many(&window,1,timeout,-1,&events);
+    }
+    return nx_window_poll(window,timeout);
+}
+
 typedef struct paste_ticket { int refs,calls,applied,deferred,revoked; uint32_t timeout; } paste_ticket;
 typedef struct delayed_allocator { int armed,delayed; } delayed_allocator;
 static void *delayed_allocate(void *p,size_t size) {
@@ -152,7 +160,7 @@ int main(int argc,char **argv) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed<1.0 && ticket.deferred && ticket.refs==1 && !ticket.calls);
             if(!ax_once) {
-                for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(nx_window_poll(window,100)==NX_OK);
+                for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(fixture_poll(window,100)==NX_OK);
                 CHECK(atomic_load(&server.stalled_fd) && value_is(ctx,"Aethericaf\xc3\xa9"));
                 if(ax_input) {
                     nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='X';
@@ -170,7 +178,7 @@ int main(int argc,char **argv) {
                     if(ax_short && getenv("NEXAUI_TEST_DELAY_SHORT_FOCUS")) {
                         struct timespec delay={0,150000000};
                         while(nanosleep(&delay,&delay)!=0) {}
-                        CHECK(nx_window_poll(window,0)==NX_OK);
+                        CHECK(fixture_poll(window,0)==NX_OK);
                         CHECK(nx_window_route_events(window,ctx,&routed)==NX_OK);
                     }
                     CHECK(nx_focus_set(ctx,4)==NX_OK && settings_frame(scene,640,360));
@@ -185,7 +193,7 @@ int main(int argc,char **argv) {
                 }
             }
             for(unsigned i=0;i<40 && !ticket.calls;++i) {
-                CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                CHECK(fixture_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
                 if(routed)CHECK(settings_frame(scene,640,360));
             }
             CHECK(ticket.calls==1 && ticket.refs==0 && ticket.applied==ax_once);
@@ -200,25 +208,25 @@ int main(int argc,char **argv) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed<1.0 && value_is(ctx,"Aethericaf\xc3\xa9"));
             for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)
-                CHECK(nx_window_poll(window,100)==NX_OK);
+                CHECK(fixture_poll(window,100)==NX_OK);
             CHECK(atomic_load(&server.stalled_fd) && atomic_load(&server.offer_reads)==1);
             if(keyboard_abandoned) {
                 settings_destroy(scene); scene=NULL;
                 int fd=atomic_exchange(&server.stalled_fd,0); CHECK(fd>0 && close(fd-1)==0);
                 int woke=0;
                 for(unsigned i=0;i<30 && !woke;++i) {
-                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    CHECK(fixture_poll(window,100)==NX_OK);
                     nx_event event; int available=0;
                     do { CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
                          if(available && event.type==NX_EVENT_WAKE) woke=1; } while(available);
                 }
                 CHECK(woke);
                 struct timespec before,after; CHECK(clock_gettime(CLOCK_MONOTONIC,&before)==0);
-                CHECK(nx_window_poll(window,100)==NX_OK && clock_gettime(CLOCK_MONOTONIC,&after)==0);
+                CHECK(fixture_poll(window,100)==NX_OK && clock_gettime(CLOCK_MONOTONIC,&after)==0);
                 CHECK((double)(after.tv_sec-before.tv_sec)+(after.tv_nsec-before.tv_nsec)/1e9 >= 0.05);
                 uint64_t new_token=0; nx_result availability=NX_ERROR_LIMIT;
                 for(unsigned i=0;i<60 && availability==NX_ERROR_LIMIT;++i) {
-                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    CHECK(fixture_poll(window,100)==NX_OK);
                     availability=nx_linux_window_clipboard_async_start(window,1024,1000,0,&new_token);
                 }
                 CHECK(availability==NX_OK && new_token && nx_linux_window_clipboard_async_cancel(window,new_token)==NX_OK);
@@ -227,7 +235,7 @@ int main(int argc,char **argv) {
             if(keyboard_timeout) {
                 int woke=0;
                 for(unsigned i=0;i<80 && !woke;++i) {
-                    CHECK(nx_window_poll(window,100)==NX_OK);
+                    CHECK(fixture_poll(window,100)==NX_OK);
                     nx_event event; int available=0; size_t count=0;
                     do {
                         CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
@@ -261,7 +269,7 @@ int main(int argc,char **argv) {
             }
             int fd=atomic_exchange(&server.stalled_fd,0);CHECK(fd>0);CHECK(close(fd-1)==0);
             for(unsigned i=0;i<20;++i) {
-                CHECK(nx_window_poll(window,20)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                CHECK(fixture_poll(window,20)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
                 if(routed)CHECK(settings_frame(scene,640,360));
                 if(!keyboard_ime || value_is(ctx,"Aethericaf\xc3\xa9Once"))break;
             }
@@ -280,7 +288,7 @@ int main(int argc,char **argv) {
         } else {
         if(keyboard_once || keyboard_command || keyboard_repeat) {
             for(unsigned i=0;i<40 && !value_is(ctx,keyboard_repeat?"Aethericaf\xc3\xa9OnceOnce":"Aethericaf\xc3\xa9Once");++i) {
-                CHECK(nx_window_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
+                CHECK(fixture_poll(window,100)==NX_OK && nx_window_route_events(window,ctx,&routed)==NX_OK);
                 if(routed) CHECK(settings_frame(scene,640,360));
             }
         }
