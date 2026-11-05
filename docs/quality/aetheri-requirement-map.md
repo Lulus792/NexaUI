@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/I01/A02/A10/Q06: on base `185dd6947e61c4b0a7180248d9d03718e6286ea1`,
+the Aetheri-owned Settings keyboard workflow has simultaneous independent AT-SPI
+focus/checked-state checks against 0.1.19. Native event order, a human
+screenreader and Aetheri's own compositor remain open; see
+[candidate evidence](aetheri-adoption-assessment.md#aetheri-settings-keyboard-and-native-focus-together-2026-11-06).
+
 B03/I01/A10/Q04: on NexaUI base `61dab137b03da4755e15d5beb7c4706d19189e13`,
 the unchanged Aetheri-owned Settings host passed a private Weston virtual-keyboard
 workflow including 200% text and German against 0.1.19. Aetheri's own compositor,

@@ -40,6 +40,23 @@ Appearance, selects high contrast and 200% text, opens Language, chooses German
 and closes with Escape. It uses fixture displays and one ordinary Weston window.
 It does not exercise Aetheri's compositor, a physical keyboard or an IME.
 
+To observe native accessibility focus and checked states during that same
+keyboard run, use the separate read-only `aetheri_settings_candidate_focus`
+client with a private registry:
+
+```sh
+NEXAUI_AETHERI_SETTINGS_FONT=/path/to/font.ttf \
+NEXAUI_SETTINGS_XDOTOOL=/path/to/xdotool \
+NEXAUI_SETTINGS_AX_PROBE=/tmp/settings-candidate/aetheri_settings_candidate_focus \
+xvfb-run -a python3 tests/run_weston_native.py -- \
+  python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+    --settings-keyboard-ax /tmp/settings-candidate/aetheri_settings_candidate_native
+```
+
+Set `NEXAUI_SETTINGS_AX_NEGATIVE=1` to additionally require rejection of an
+unfocused control as the current focus. This queries AT-SPI state, not spoken
+screenreader announcements or native focus event ordering.
+
 When Linux AT-SPI development files are present, the build also provides an
 independent `aetheri_settings_candidate_client` and the unchanged Aetheri
 `aetheri_settings_candidate_native` process. With the existing private Weston

@@ -54,6 +54,11 @@ def main():
     def send(key):
         subprocess.run([xdotool, 'key', '--delay', '35', key], check=True, timeout=5, env=env)
 
+    def observe(name, role, checked='any'):
+        probe = env.get('NEXAUI_SETTINGS_AX_PROBE')
+        if probe:
+            subprocess.run([probe, str(process.pid), name, role, checked], check=True, timeout=8, env=env)
+
     def focus(target):
         for _ in range(24):
             with condition:
@@ -68,20 +73,36 @@ def main():
         wait(lambda: observed['settled'] > 0, 'initial Settings frame')
         subprocess.run([xdotool, 'windowfocus', windows[0]], check=True, timeout=5, env=env)
         focus(51)
+        observe('Appearance', 'button')
+        if env.get('NEXAUI_SETTINGS_AX_NEGATIVE'):
+            probe = env.get('NEXAUI_SETTINGS_AX_PROBE')
+            if not probe:
+                raise RuntimeError('The negative focus check requires NEXAUI_SETTINGS_AX_PROBE')
+            result = subprocess.run([probe, str(process.pid), 'Language', 'button', 'any'],
+                                    capture_output=True, text=True, timeout=8, env=env)
+            if result.returncode != 1 or 'AT-SPI focus/state not observed' not in result.stderr:
+                raise RuntimeError(f'The wrong-focus negative control was not rejected: {result}')
         send('space')
         wait(lambda: observed['model'] == (0, 0, 100, 1), 'Appearance')
         focus(102)
+        observe('High contrast', 'radio', 'unchecked')
         send('space')
         wait(lambda: observed['model'] == (2, 0, 100, 1), 'high contrast')
+        observe('High contrast', 'radio', 'checked')
         focus(112)
+        observe('200 %', 'radio', 'unchecked')
         send('space')
         wait(lambda: observed['model'] == (2, 0, 200, 1), '200% text')
+        observe('200 %', 'radio', 'checked')
         focus(52)
+        observe('Language', 'button')
         send('space')
         wait(lambda: observed['model'] == (2, 0, 200, 2), 'Language')
         focus(121)
+        observe('German', 'radio', 'unchecked')
         send('space')
         wait(lambda: observed['model'] == (2, 1, 200, 2), 'German')
+        observe('Deutsch', 'radio', 'checked')
         subprocess.run([xdotool, 'key', 'Escape'], check=True, timeout=5, env=env)
         if process.wait(timeout=8) != 0:
             raise RuntimeError(f'Settings process failed: {lines[-30:]}')

@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri Settings keyboard and native focus together (2026-11-06)
+
+On NexaUI base `185dd6947e61c4b0a7180248d9d03718e6286ea1`, the existing
+private-Weston keyboard workflow for the unchanged Aetheri Settings process
+also runs an independent read-only libatspi observer against the same process.
+It verifies the focused and enabled Appearance and Language buttons, and the
+focused, unchecked-to-checked high-contrast, 200% and German radio controls;
+the last control is reacquired as `Deutsch` after the language change. The
+keyboard driver independently confirms the owner-model values and clean close.
+A negative control asks the observer to find Language focused while Appearance
+has focus and is rejected. GCC static/shared and Clang ASan/UBSan with leak
+detection passed using the same installed 0.1.19 SDK and Aetheri
+`d242c7abf944e08f2693de0e1848f542be107981` snapshot recorded below. The
+existing independent virtual-list AT-SPI regression also passed.
+
+The observer queries current AT-SPI state; it does not verify event ordering,
+spoken announcements, a real screenreader, Aetheri's compositor/owner,
+physical input or 320x240 native behavior. The app uses fixture displays.
+Aetheri's own exact 0.1.18 dependency and worktree remain unchanged.
+
 ## Aetheri-owned Settings native keyboard on 0.1.19 (2026-11-06)
 
 On NexaUI base `61dab137b03da4755e15d5beb7c4706d19189e13`, the separate

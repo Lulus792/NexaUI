@@ -100,6 +100,10 @@ def main():
                 arguments = [sys.executable, str(Path(__file__).resolve().parents[1] /
                              'examples/18_settings/run_idle.py'), host,
                              os.environ['NEXAUI_SETTINGS_FONT'], '--available']
+            elif client == "--settings-keyboard-ax":
+                arguments = [sys.executable, str(Path(__file__).resolve().parent /
+                             'aetheri_settings_candidate/native_keyboard.py'), host,
+                             os.environ['NEXAUI_AETHERI_SETTINGS_FONT'], os.environ['NEXAUI_SETTINGS_XDOTOOL']]
             else:
                 arguments = [host, "--optional"] if client == "--optional" else [client, host]
             client_env = env.copy()
