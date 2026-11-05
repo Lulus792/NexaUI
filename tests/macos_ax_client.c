@@ -89,7 +89,9 @@ int main(int argc,char **argv) {
     CHECK(string_is(secret,kAXValueAttribute,CFSTR("")));
     CHECK(string_is(number,kAXRoleAttribute,kAXTextFieldRole));
     CHECK(string_is(number,kAXValueAttribute,CFSTR("1234")));
-    Boolean settable=true;CHECK(AXUIElementIsAttributeSettable(number,kAXValueAttribute,&settable)==kAXErrorSuccess && !settable);
+    Boolean settable=false;CHECK(AXUIElementIsAttributeSettable(number,kAXValueAttribute,&settable)==kAXErrorSuccess && settable);
+    CHECK(AXUIElementSetAttributeValue(number,kAXValueAttribute,CFSTR("42"))==kAXErrorSuccess);
+    CHECK(wait_string(number,kAXValueAttribute,CFSTR("42")));
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */
     CHECK(AXUIElementPerformAction(toggle,kAXPressAction)==kAXErrorSuccess && wait_one(toggle));

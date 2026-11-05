@@ -64,7 +64,7 @@ static int frame(scene *s) {
     number.name=(nx_utf8_span){"Numeric field",13};number.bounds=(nx_rect){120,350,100,30};
     number.fonts=numeric_fonts;number.pixels_per_em=16;number.glyph_cache_bytes=65536;
     number.minimum=-10000;number.maximum=10000;int number_valid=0;
-    CHECK(nx_numeric_field_widget(s->ui,&number,s->number,&state,&number_valid)==NX_OK && number_valid);
+    CHECK(nx_numeric_field_widget(s->ui,&number,s->number,&state,&number_valid)==NX_OK);
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
     if (!s->removed) {
@@ -167,7 +167,14 @@ static int run(void) {
     CHECK([[secret accessibilityValue] isEqual:@""] && [secret isAccessibilityProtectedContent]);
     CHECK([[secret accessibilitySubrole] isEqualToString:NSAccessibilitySecureTextFieldSubrole]);
     id number=find(view,2032);CHECK(number && [[number accessibilityRole] isEqualToString:NSAccessibilityTextFieldRole]);
-    CHECK([[number accessibilityValue] isEqual:@"1234"] && ![number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    CHECK([[number accessibilityValue] isEqual:@"1234"] && [number isAccessibilitySelectorAllowed:@selector(setAccessibilityValue:)]);
+    [number setAccessibilityValue:@"bad"];CHECK(advance(window,&s)==0);
+    double number_value=0;CHECK([[number accessibilityValue] isEqual:@"bad"]);
+    CHECK(nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==1234);
+    [number setAccessibilityValue:@"42"];CHECK(advance(window,&s)==0 && [[number accessibilityValue] isEqual:@"42"]);
+    nx_event enter={0};enter.type=NX_EVENT_TEXT_COMMAND;enter.text_command=NX_TEXT_COMMAND_NEWLINE;
+    CHECK(nx_focus_set(s.ui,2032)==NX_OK && nx_context_queue_event(s.ui,&enter)==NX_OK && advance(window,&s)==0);
+    CHECK(nx_numeric_field_value(s.number,&number_value)==NX_OK && number_value==42);
     CHECK(![find(view,4) isAccessibilityEnabled] && ![find(view,4) accessibilityPerformPress]);
     CHECK(![find(view,2031) isAccessibilityEnabled] && ![find(view,2031) accessibilityPerformPress]);
     s.overlay_stage=2;CHECK(frame(&s)==0 && nx_window_publish_semantics(window,s.ui)==NX_OK);
