@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Settings focus across view replacement (2026-11-05)
+
+Example source `4d793b52d9f6d0d0fc6b3d23f3b02d7b3edcf1b3` transfers the
+example's logical control focus and scroll offset alongside its application
+session. The first rebuilt frame restores an available control unless new
+input is already queued. A disabled Apply falls back to the checkbox; the
+following frame reveals the focused control if needed. The model test checks
+the disabled and enabled cases, a 128x150 viewport, new-input precedence and
+a genuinely changed scroll position, with GCC and Clang ASan/UBSan. The
+independent AT-SPI client focused the checkbox, replaced the view and observed
+the new accessible as focused. Twenty scene, protocol, keyboard and native
+AT-SPI cases passed on private Weston/Xvfb
+(`/tmp/nexaui-settings-focus-regression/result.json`); the additional final
+model cases were rerun separately. This uses virtual input and a simulated
+service. Text selection, undo history, composition, human screenreader review
+and real service reconciliation remain open.
+
 ## Settings view replacement (2026-11-05)
 
 Example source `d612e51a04551e98f21aac707c0a1b7d2849445f` transfers its
