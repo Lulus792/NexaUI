@@ -200,3 +200,13 @@ role and checks initial acknowledgement, queue isolation, transparency,
 backpressure and lifetime. Neither proves actual Aetheri private-role policy,
 input/AT-SPI integration, three-output behavior, physical presentation or
 display-loss recovery or re-establishment of a role after a disconnect.
+
+## Wayland application grouping
+
+On Linux, `nx_window_set_wayland_app_id` sends a bounded ASCII application ID
+for an ordinary Wayland toplevel. Set it on the owner thread before presenting
+the first frame; the existing `nx_window_desc` and default `nexaui` ID remain
+unchanged. Invalid input is rejected before a request; X11 returns unsupported.
+The call reports request delivery/queuing, not compositor acceptance, launcher
+admission, process identity or authority. The app and its desktop owner decide
+which ID and desktop entry are appropriate. This API requires NexaUI 0.1.4.

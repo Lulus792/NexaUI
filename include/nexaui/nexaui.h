@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 3
+#define NX_VERSION_PATCH 4
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -455,6 +455,14 @@ typedef struct nx_file_drop_info {
 NX_API nx_result nx_window_create(const nx_window_desc *desc, nx_window **out_window);
 NX_API nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms);
 #if defined(__linux__)
+/* Set the Wayland xdg-toplevel application ID. id is a borrowed,
+   NUL-terminated 1..255 byte ASCII string containing only letters, digits,
+   '.', '_' or '-'; invalid values return ARGUMENT, oversize returns LIMIT.
+   Call on the window's owner thread, preferably before the first frame.
+   X11 returns UNSUPPORTED. OK means the request was queued/flushed, not that
+   a compositor honored it; this metadata is never authorization or identity
+   proof. The default remains "nexaui" until changed. */
+NX_API nx_result nx_window_set_wayland_app_id(nx_window *window, const char *id);
 /* Poll native events, accessibility and one application-owned readable fd on
    the window's owner thread. The fd is borrowed, never read or closed by
    NexaUI, and must stay open until this call returns. out_events is cleared on

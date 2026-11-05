@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
     nx_window *window=NULL; nx_software_view *renderer=NULL; aetheri_view *view=NULL;
     nx_window_desc desc={"Aetheri settings model",800,480,0,{0}};
     if(!font || nx_window_create(&desc,&window)!=NX_OK ||
+       nx_window_set_wayland_app_id(window,"org.aetheri.Settings")!=NX_OK ||
        !aetheri_view_create(&model,font,length,&view) || nx_software_view_open(window,&renderer)!=NX_OK) {
         okay=0; goto done;
     }

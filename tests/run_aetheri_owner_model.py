@@ -71,6 +71,18 @@ def main():
             wait(lambda: len(re.findall(r'^SPAWN settings \d+$', log(), re.M)) == 1 and
                  'settings: MODEL theme=0 german=0 text=100' in log(), 'owner-launched Settings')
             first = int(re.findall(r'^SPAWN settings (\d+)$', log(), re.M)[0])
+            wait(lambda: bool(re.search(r'desktop: VIEW .*output=0 .*windows=1 ', log())), 'desktop observes Settings')
+            # Clicking the Settings dock entry again must activate the observed
+            # original window, not merely receive a successful launch reply.
+            rows=re.findall(r'desktop: VIEW (\d+) output=0 search=([01]) size=(\d+)x(\d+).*windows=1 ',log())
+            frame,expanded,_,height=map(int,rows[-1])
+            match=re.search(r'desktop: CONTROL '+str(frame)+r' 0 2 0 ([\d.]+) ([\d.]+)',log())
+            if not match: raise RuntimeError('Settings dock control missing')
+            x,y=map(float,match.groups()); activated=len(re.findall(r'desktop: ACTIVATED \d+ 1',log()))
+            event(f'M {x} {y if expanded else 1080-height+y}'); event('B 272 1'); event('B 272 0')
+            wait(lambda: len(re.findall(r'desktop: ACTIVATED \d+ 1',log()))>activated,'existing Settings activation')
+            if len(re.findall(r'^SPAWN settings \d+$',log(),re.M))!=1:
+                raise RuntimeError('existing Settings was duplicated')
             key(29, True); tap(16); key(29, False)
             wait(lambda: 'desktop: LAUNCH_REPLY X S' in log(), 'first child and pipe drained')
             launch()

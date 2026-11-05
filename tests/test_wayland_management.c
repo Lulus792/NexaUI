@@ -17,7 +17,7 @@ typedef struct server {
     int configured,reject,bounds_case;
     uint32_t serial,state;
     atomic_int command,moves,resizes,minimizes,decorations,attaches,acks;
-    atomic_int buffer_width,buffer_height;
+    atomic_int buffer_width,buffer_height,app_requests,app_matches;
 } server;
 static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_resource_destroy(r); }
 static void configure(server *s) {
@@ -99,6 +99,11 @@ static void bind_seat(struct wl_client *c,void *data,uint32_t version,uint32_t i
     wl_resource_set_implementation(s->seat,&seat_impl,s,NULL); wl_seat_send_capabilities(s->seat,WL_SEAT_CAPABILITY_POINTER);
 }
 static void string(struct wl_client *c,struct wl_resource *r,const char *text) { (void)c;(void)r;(void)text; }
+static void app_id(struct wl_client *c,struct wl_resource *r,const char *text) {
+    (void)c; server *s=wl_resource_get_user_data(r);
+    if (!strcmp(text,"org.aetheri.Settings")) atomic_fetch_add(&s->app_matches,1);
+    atomic_fetch_add(&s->app_requests,1);
+}
 static void maximize(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state|=1; configure(s); }
 static void restore(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); if(!(s->state&2u)) s->state&=~1u; configure(s); }
 static void unfullscreen(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state&=~2u; configure(s); }
@@ -110,7 +115,7 @@ static void resize(struct wl_client *c,struct wl_resource *r,struct wl_resource 
     (void)c; server *s=wl_resource_get_user_data(r); static const uint32_t expected[]={5,1,9,8,10,2,6,4};
     int i=atomic_fetch_add(&s->resizes,1); CHECK(seat==s->seat && serial==0 && i<8 && edge==expected[i]);
 }
-static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=string,
+static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=app_id,
     .set_maximized=maximize,.unset_maximized=restore,.unset_fullscreen=unfullscreen,.set_minimized=minimize,.move=move,.resize=resize};
 static void top(struct wl_client *c,struct wl_resource *r,uint32_t id) {
     server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,wl_resource_get_version(r),id); CHECK(s->top);
@@ -138,6 +143,9 @@ static void bind_decoration(struct wl_client *c,void *s,uint32_t version,uint32_
     struct wl_resource *r=wl_resource_create(c,&zxdg_decoration_manager_v1_interface,version,id); CHECK(r); wl_resource_set_implementation(r,&manager_impl,s,NULL);
 }
 static void *run(void *data) { wl_display_run(((server *)data)->display); return NULL; }
+static void *wrong_app_thread(void *data) {
+    return (void *)(uintptr_t)(nx_window_set_wayland_app_id(data,"org.aetheri.Settings")!=NX_ERROR_STATE);
+}
 typedef struct heap { size_t live; } heap;
 static void *allocate(void *data,size_t n) { void *p=malloc(n); if(p) ++((heap *)data)->live; return p; }
 static void deallocate(void *data,void *p,size_t n) { (void)n; CHECK(((heap *)data)->live); --((heap *)data)->live; free(p); }
@@ -162,6 +170,18 @@ static void test(int client_mode,int reject) {
     if(reject) CHECK(result==NX_ERROR_UNSUPPORTED && !w && !h.live && !atomic_load(&s.attaches));
     else {
         CHECK(result==NX_OK && w); roundtrip(w);
+        CHECK(atomic_load(&s.app_requests)==1 && !atomic_load(&s.app_matches));
+        CHECK(nx_window_set_wayland_app_id(NULL,"org.aetheri.Settings")==NX_ERROR_ARGUMENT);
+        CHECK(nx_window_set_wayland_app_id(w,NULL)==NX_ERROR_ARGUMENT && nx_window_set_wayland_app_id(w,"")==NX_ERROR_ARGUMENT);
+        CHECK(nx_window_set_wayland_app_id(w,"bad/id")==NX_ERROR_ARGUMENT && nx_window_set_wayland_app_id(w,"bad id")==NX_ERROR_ARGUMENT);
+        char long_id[257]; memset(long_id,'a',256); long_id[256]=0;
+        CHECK(nx_window_set_wayland_app_id(w,long_id)==NX_ERROR_LIMIT);
+        pthread_t wrong_thread; void *wrong_result;
+        CHECK(!pthread_create(&wrong_thread,NULL,wrong_app_thread,w) && !pthread_join(wrong_thread,&wrong_result) && !wrong_result);
+        CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_OK); roundtrip(w);
+        CHECK(atomic_load(&s.app_requests)==2 && atomic_load(&s.app_matches)==1);
+        long_id[255]=0; CHECK(nx_window_set_wayland_app_id(w,long_id)==NX_OK); roundtrip(w);
+        CHECK(atomic_load(&s.app_requests)==3 && atomic_load(&s.app_matches)==1);
         CHECK(atomic_load(&s.decorations)==client_mode);
         nx_window_status status; CHECK(nx_window_get_status(w,&status)==NX_OK && status.known==14u && status.state==NX_WINDOW_STATE_ACTIVE && status.client_chrome==client_mode);
         CHECK(!(status.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
@@ -197,7 +217,8 @@ static void test(int client_mode,int reject) {
         CHECK((client_mode ? states>=3 : states==0) && cancels==9);
         send(&s,w,1); send(&s,w,6); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
         if(client_mode) { send(&s,w,4); CHECK(nx_window_get_status(w,&status)==NX_ERROR_UNSUPPORTED && !status.known && !status.capabilities); }
-        else { send(&s,w,7); CHECK(nx_window_get_status(w,&status)==NX_ERROR_STATE && !status.state && !status.known && !status.capabilities && !status.client_chrome); }
+        else { send(&s,w,7); CHECK(nx_window_get_status(w,&status)==NX_ERROR_STATE && !status.state && !status.known && !status.capabilities && !status.client_chrome);
+            CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_STATE); }
         nx_window_destroy(w); CHECK(!h.live);
     }
     wl_display_terminate(s.display); CHECK(!pthread_join(thread,NULL)); wl_display_destroy_clients(s.display); wl_display_destroy(s.display);

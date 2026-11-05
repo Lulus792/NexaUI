@@ -1,4 +1,4 @@
-# Core API (0.1.3)
+# Core API (0.1.4)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -12,7 +12,8 @@ capability report, and matching versions do not prove identical source. Record
 the actual source pin separately. Applications using these queries can require
 the CMake package version 0.1.1 or newer in the same minor series. The
 `nx_text_field_set_selection` API requires 0.1.2 or newer; Linux
-`nx_window_poll_many` requires 0.1.3 or newer. This does not declare a
+`nx_window_poll_many` requires 0.1.3 or newer; Linux
+`nx_window_set_wayland_app_id` requires 0.1.4 or newer. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full

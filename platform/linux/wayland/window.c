@@ -2740,6 +2740,13 @@ static nx_result nx_wayland_management_flush(nx_wayland_window *window) {
     return wl_display_flush(window->display) >= 0 || errno == EAGAIN ? NX_OK : NX_ERROR_PLATFORM;
 }
 
+nx_result nx_wayland_window_set_app_id(nx_wayland_window *window, const char *id) {
+    nx_result result=nx_wayland_management_ready(window);
+    if (result!=NX_OK) return result;
+    xdg_toplevel_set_app_id(window->toplevel,id);
+    return nx_wayland_management_flush(window);
+}
+
 nx_result nx_wayland_window_minimize(nx_wayland_window *window) {
     nx_window_status status; nx_result result = nx_wayland_window_get_status(window, &status);
     if (result != NX_OK) return result;

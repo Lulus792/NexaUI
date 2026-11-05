@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(NexaUIAetheriSettingsModel LANGUAGES C)
-find_package(NexaUI 0.1.3 CONFIG REQUIRED)
+find_package(NexaUI 0.1.4 CONFIG REQUIRED)
 set(AETHERI_SOURCE_DIR "" CACHE PATH "Aetheri source snapshot containing src/settings/model.c")
 if(NOT EXISTS "${AETHERI_SOURCE_DIR}/src/settings/model.c" OR NOT EXISTS "${AETHERI_SOURCE_DIR}/src/settings/model.h")
     message(FATAL_ERROR "Set AETHERI_SOURCE_DIR to the desired Aetheri source snapshot")

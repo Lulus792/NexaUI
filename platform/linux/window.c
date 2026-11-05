@@ -182,6 +182,20 @@ nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
     return nx_linux_poll(window,timeout_ms,fd,out_events);
 }
 
+nx_result nx_window_set_wayland_app_id(nx_window *window, const char *id) {
+    if (!window || !id || !*id) return NX_ERROR_ARGUMENT;
+    size_t i=0;
+    for (; i<255 && id[i]; ++i) {
+        unsigned char c=(unsigned char)id[i];
+        if (!((c>='a' && c<='z') || (c>='A' && c<='Z') ||
+              (c>='0' && c<='9') || c=='.' || c=='_' || c=='-')) return NX_ERROR_ARGUMENT;
+    }
+    if (i==255 && id[i]) return NX_ERROR_LIMIT;
+    if (!nx_linux_on_owner_thread(window) || window->retired) return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_set_app_id(window->native.wayland,id),
+                             NX_ERROR_UNSUPPORTED);
+}
+
 nx_result nx_window_poll_many(nx_window *const *windows,size_t count,
                               uint32_t timeout_ms,int fd,uint32_t *out_events) {
     if(out_events)*out_events=0;

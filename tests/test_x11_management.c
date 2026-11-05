@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
     Atom wm_selection=XInternAtom(wm,selection,False); CHECK(XGetSelectionOwner(wm,wm_selection)==None);
     nx_window_desc d={"X11 management",320,200,NX_WINDOW_CLIENT_CHROME|NX_WINDOW_STATE_EVENTS,{0}};
     nx_window *w=NULL; CHECK(nx_window_create(&d,&w)==NX_OK);
+    CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_UNSUPPORTED);
     nx_window_status s; CHECK(nx_window_get_status(w,&s)==NX_OK && s.client_chrome && !s.known && s.capabilities==NX_WINDOW_CAP_CLIENT_CHROME);
     CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED && nx_window_restore(w)==NX_ERROR_UNSUPPORTED);
     CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)0)==NX_ERROR_ARGUMENT);
