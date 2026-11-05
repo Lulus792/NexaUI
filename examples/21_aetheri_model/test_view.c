@@ -19,6 +19,16 @@ static int visible(nx_context *ui,uint64_t id,float width,float height) {
            item.bounds.x>=0 && item.bounds.y>=0 && item.bounds.width>0 && item.bounds.height>0 &&
            item.bounds.x+item.bounds.width<=width && item.bounds.y+item.bounds.height<=height;
 }
+static int inside_scroll(nx_context *ui,uint64_t id) {
+    uint32_t index; nx_semantic_view item, scroll;
+    if(nx_semantics_find(ui,id,&index)!=NX_OK || nx_semantics_get(ui,index,&item)!=NX_OK ||
+       nx_semantics_find(ui,5,&index)!=NX_OK || nx_semantics_get(ui,index,&scroll)!=NX_OK) return 0;
+    if(item.bounds.y>=scroll.bounds.y &&
+       item.bounds.y+item.bounds.height<=scroll.bounds.y+scroll.bounds.height) return 1;
+    fprintf(stderr,"item %llu: %.1f+%.1f outside %.1f+%.1f\n",(unsigned long long)id,
+            item.bounds.y,item.bounds.height,scroll.bounds.y,scroll.bounds.height);
+    return 0;
+}
 static int named(nx_context *ui,uint64_t id,const char *name,uint32_t required_state) {
     uint32_t index; nx_semantic_view item; size_t length=strlen(name);
     return nx_semantics_find(ui,id,&index)==NX_OK && nx_semantics_get(ui,index,&item)==NX_OK &&
@@ -60,6 +70,22 @@ int main(int argc,char **argv) {
         if(i+1<sizeof(order)/sizeof(order[0]))
             CHECK(press(ui,NX_KEY_TAB) && aetheri_view_frame(view,480,380,&changed));
     }
+    /* The installed host must keep rendering and following keyboard focus
+       after a compositor resize below its former 480x380 cutoff. */
+    const float widths[]={320,360,399,400,440,480};
+    for(size_t w=0;w<sizeof(widths)/sizeof(widths[0]);++w) {
+        float width=widths[w];
+        CHECK(aetheri_view_frame(view,width,240,&changed));
+        CHECK(nx_focus_set(ui,10)==NX_OK && aetheri_view_frame(view,width,240,&changed));
+        for(size_t i=0;i<sizeof(order)/sizeof(order[0]);++i) {
+            CHECK(nx_focus_id(ui)==order[i]);
+            CHECK(visible(ui,order[i],width,240));
+            if(order[i]!=19) CHECK(inside_scroll(ui,order[i]));
+            if(i+1<sizeof(order)/sizeof(order[0]))
+                CHECK(press(ui,NX_KEY_TAB) && aetheri_view_frame(view,width,240,&changed));
+        }
+    }
+    CHECK(aetheri_view_frame(view,480,380,&changed));
     /* At 200% the longest option retains its 28px layout, rather than being
        squeezed into a third of the window. */
     nx_font *measure_font=NULL; nx_font_collection *measure_fonts=NULL; nx_text_layout *measure=NULL;

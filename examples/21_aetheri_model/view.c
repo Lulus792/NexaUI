@@ -40,7 +40,7 @@ int aetheri_view_create(struct ae_settings *model, const void *font, size_t leng
 nx_context *aetheri_view_context(aetheri_view *v) { return v?v->context:NULL; }
 int aetheri_view_close_requested(const aetheri_view *v) { return v && v->close_requested; }
 int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed) {
-    if (!v || !changed || width<480 || height<380) return 0;
+    if (!v || !changed || width<320 || height<240) return 0;
     *changed=0;
     struct ae_settings *m=v->model;
     if (m->count>AE_SETTINGS_DISPLAYS || (m->count && m->selected>=m->count) ||
@@ -54,8 +54,9 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     double size=14.0*(double)m->text_percent/100.0;
     for(size_t i=0;i<13;++i) {
         double label_size=i==0?size*1.3:size;
+        int option=(i>=2 && i<=4) || (i>=6 && i<=7) || (i>=9 && i<=11);
         if(nx_text_layout_create(v->fonts,labels[i],strlen(labels[i]),NX_BIDI_LTR,
-                                 label_size,width-64,&v->labels[i])!=NX_OK) return 0;
+                                 label_size,width-(option?160:64),&v->labels[i])!=NX_OK) return 0;
     }
     const char *display_heading=m->german?"Anzeigen":"Displays";
     const char *status=m->stale ? (m->german?"Anzeigedaten veraltet":"Display data is stale") :
@@ -78,18 +79,23 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
        their text to fit an equal-width column. Coordinates are content-local. */
     const int starts[]={2,6,9}, counts[]={3,2,3}, headings[]={1,5,8};
     nx_rect items[3][3]={0}, groups_rect[3]={0};
-    float content_width=width-64, cursor_y=0;
+    int compact=width<400;
+    float content_width=width-64;
+    float cursor_y=compact?(float)nx_text_layout_height(v->labels[0])+12:0;
     for(int row=0;row<3;++row) {
-        float start_y=cursor_y, x=0;
+        float start_y=cursor_y, x=0, line_height=0;
         cursor_y+=(float)nx_text_layout_height(v->labels[headings[row]])+8;
         for(int i=0;i<counts[row];++i) {
-            float item_width=(float)nx_text_layout_width(v->labels[starts[row]+i])+64;
+            float item_height=(float)nx_text_layout_height(v->labels[starts[row]+i])+10;
+            if(item_height<42) item_height=42;
+            float item_width=(float)nx_text_layout_width(v->labels[starts[row]+i])+item_height+22;
             if(item_width>content_width) item_width=content_width;
-            if(x>0 && x+item_width>content_width) {x=0;cursor_y+=48;}
-            items[row][i]=(nx_rect){x,cursor_y,item_width,42};
+            if(x>0 && x+item_width>content_width) {x=0;cursor_y+=line_height+6;line_height=0;}
+            items[row][i]=(nx_rect){x,cursor_y,item_width,item_height};
+            if(item_height>line_height) line_height=item_height;
             x+=item_width+8;
         }
-        cursor_y+=54;
+        cursor_y+=line_height+12;
         groups_rect[row]=(nx_rect){0,start_y,content_width,cursor_y-start_y};
     }
     float displays_y=cursor_y;
@@ -105,9 +111,9 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     float close_width=(float)nx_text_layout_width(v->labels[12])+32;
     float title_height=(float)nx_text_layout_height(v->labels[0]);
     int close_below=24+(float)nx_text_layout_width(v->labels[0])+16+close_width>width-24;
-    float close_y=close_below?20+title_height+8:16;
+    float close_y=!compact && close_below?20+title_height+8:16;
     float header_bottom=close_y+50;
-    if(header_bottom<20+title_height+8) header_bottom=20+title_height+8;
+    if(!compact && header_bottom<20+title_height+8) header_bottom=20+title_height+8;
     nx_theme theme;
     nx_theme_kind kind=m->theme==AE_SETTINGS_LIGHT?NX_THEME_LIGHT:m->theme==AE_SETTINGS_CONTRAST?NX_THEME_HIGH_CONTRAST:NX_THEME_DARK;
     if(nx_theme_preset(kind,&theme)!=NX_OK || nx_context_set_theme(v->context,&theme)!=NX_OK ||
@@ -115,8 +121,8 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span(labels[0])};
     nx_color fg, border;
     if(nx_semantics_add(v->context,&root,NULL)!=NX_OK || nx_theme_color(v->context,NX_COLOR_TEXT,&fg)!=NX_OK ||
-       nx_theme_color(v->context,NX_COLOR_BORDER,&border)!=NX_OK ||
-       nx_draw_text_layout(v->context,v->labels[0],(nx_point){24,20},fg,CACHE)!=NX_OK) return 0;
+       nx_theme_color(v->context,NX_COLOR_BORDER,&border)!=NX_OK) return 0;
+    if(!compact && nx_draw_text_layout(v->context,v->labels[0],(nx_point){24,20},fg,CACHE)!=NX_OK) return 0;
     uint64_t theme_id=(uint64_t)m->theme+1, lang_id=m->german?2u:1u, size_id=m->text_percent==100?1u:m->text_percent==150?2u:3u;
     uint64_t old_theme=theme_id, old_lang=lang_id, old_size=size_id;
     nx_scroll_area_desc scroll={0}; scroll.id=5; scroll.parent_id=1;
@@ -143,6 +149,8 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     }
     nx_scroll_info scroll_info;
     if(nx_scroll_area_begin(v->context,&scroll,&v->scroll_x,&v->scroll_y,&scroll_info)!=NX_OK) return 0;
+    if(compact && nx_draw_text_layout(v->context,v->labels[0],
+        (nx_point){24,scroll.viewport.y-v->scroll_y},fg,CACHE)!=NX_OK) return 0;
     uint64_t *groups[]={&theme_id,&lang_id,&size_id};
     for(int row=0;row<3;++row) {
         float y=scroll.viewport.y-v->scroll_y;
@@ -156,12 +164,12 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
             nx_control_desc control={0}; control.id=(uint64_t)(10+row*3+i); control.parent_id=(uint64_t)(2+row);
             control.bounds=items[row][i]; control.bounds.x+=24; control.bounds.y+=y;
             control.name=span(labels[label]); control.label_layout=v->labels[label];
-            control.label_origin=(nx_point){control.bounds.x+48,control.bounds.y+5}; control.glyph_cache_bytes=CACHE;
+            control.label_origin=(nx_point){control.bounds.x+control.bounds.height+6,control.bounds.y+5}; control.glyph_cache_bytes=CACHE;
             nx_interaction_state state;
             if(nx_radio(v->context,&control,(uint64_t)i+1,groups[row],&state)!=NX_OK) return 0;
             /* The preset's raised fill can match the scroll surface. Keep an
                explicit boundary around each mark, including unchecked ones. */
-            nx_rect mark={control.bounds.x,control.bounds.y,42,42};
+            nx_rect mark={control.bounds.x,control.bounds.y,control.bounds.height,control.bounds.height};
             if(nx_stroke_rect(v->context,mark,2,border)!=NX_OK) return 0;
         }
     }

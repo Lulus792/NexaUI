@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Original-model Settings narrow view (2026-11-05)
+
+On the consumer tree based on NexaUI
+`84ec8384ef30f36f3c2e2945e46e88d52ea46d63`, the installed C17 example now
+wraps radio labels and sizes their rows for the actual measured text. At narrow
+widths the title is part of the scrollable content, leaving room to reveal
+focused controls. The former host skipped new frames below 480x380; the new
+limit is 320x240. Sizes below the new limit still do not receive a new frame.
+
+The controlled scene test covers focus traversal and full focused-control
+visibility inside the scroll viewport at widths 320, 360, 399, 400, 440 and
+480 with height 240, German and 200% text. Installed static, shared and
+Clang ASan/UBSan SDK consumers each passed with DejaVu Sans, Serif and Sans
+Mono (nine runs, exit 0). The pre-change scene rejected 320x240. A headless
+320x240 frame was visually inspected; an initial frame exposed text/mark
+overlap, and the corrected frame was inspected again. This is not a native
+resize, hardware scaling, full contrast or human accessibility acceptance.
+The existing independent AT-SPI client also passed on private Weston at the
+host's normal initial size, changing the appearance, language, text size and
+fixture display before closing. That regression does not test a native resize.
+The external Aetheri model snapshot's model.c/model.h SHA-256 values are
+`3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c` and
+`776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793`,
+matching the unmodified model files in Aetheri revision
+`6891615dc9803e3a0d328534f17731a130645d4b`. No Aetheri files or pins changed.
+
 ## Native two-axis scrollbar actions (2026-11-05)
 
 The added C17 test host and independent libatspi client, on the source tree

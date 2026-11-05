@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
             }
             continue;
         }
-        if(info.width<480 || info.height<380) {dirty=0;busy=0;continue;}
+        if(info.width<320 || info.height<240) {dirty=0;busy=0;continue;}
         int changed=0;
         if(nx_context_set_text_raster_scale(aetheri_view_context(view),info.scale)!=NX_OK ||
            !aetheri_view_frame(view,info.width,info.height,&changed)) {okay=0;break;}

@@ -23,7 +23,9 @@ build-aetheri-model/aetheri_model_view /path/to/font.ttf
 ```
 
 The process requires a working Wayland session and a TrueType font. The
-software renderer uses a minimum logical window size of 480 by 380. Native
+software renderer supports logical window sizes down to 320 by 240. Below that
+size this example does not render a new frame; it needs a smaller-layout design.
+Native
 accessibility requires a NexaUI build with AT-SPI and an available service;
 the view remains usable when that optional service is unavailable. `--verify`
 prints the three appearance model values for the automated integration fixture.
@@ -47,7 +49,9 @@ field, or perform OS changes. Its compositor output observations are not proof
 of physical monitors or display control.
 Its measured control wrapping and focus-following scroll area retain the chosen
 text size, but need broader font, viewport and human accessibility review. The
-layout remains provisional. The broader Settings example in `examples/18_settings`
+layout remains provisional. At narrow widths its title scrolls with the content;
+controlled keyboard tests cover German at 200% and 320–480 pixels wide, not
+live compositor resize or every font and language. The broader Settings example in `examples/18_settings`
 provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.
