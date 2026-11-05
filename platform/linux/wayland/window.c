@@ -2410,8 +2410,60 @@ fail:
     return result;
 }
 
-nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
-    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, uint32_t *app_events) {
+/* Keep the per-window transfer descriptors and deadlines together so the
+   same wait requirements can be used when composing more than one window. */
+typedef struct nx_wayland_poll_set {
+    struct pollfd fds[9];
+    nfds_t count, app_index;
+    int timeout, notify_drop;
+} nx_wayland_poll_set;
+
+static nx_wayland_poll_set nx_wayland_make_poll_set(nx_wayland_window *window,
+    uint32_t timeout_ms, int needs_write, int extra_fd, int writable, int app_fd) {
+    nx_wayland_poll_set set = {0};
+    set.fds[set.count++] = (struct pollfd){wl_display_get_fd(window->display),
+        (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0};
+    if (window->async_active && !window->async_read.finished)
+        set.fds[set.count++] = (struct pollfd){window->async_read.fd, POLLIN, 0};
+    if (window->drop_read_active && !window->drop_read.finished)
+        set.fds[set.count++] = (struct pollfd){window->drop_read.fd, POLLIN, 0};
+    nfds_t write_limit = set.count + 4u;
+    for (nx_wayland_clipboard_write *transfer = window->writes;
+         transfer && set.count < write_limit; transfer = transfer->next)
+        set.fds[set.count++] = (struct pollfd){transfer->fd, POLLOUT, 0};
+    if (extra_fd >= 0) set.fds[set.count++] = (struct pollfd){extra_fd,
+        (short)(POLLIN | (writable ? POLLOUT : 0)), 0};
+    set.app_index = set.count;
+    if (app_fd >= 0) set.fds[set.count++] = (struct pollfd){app_fd, POLLIN, 0};
+    set.timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
+    if (window->async_active) {
+        uint64_t now = nx_wayland_now_ns();
+        uint64_t deadline = window->async_read.finished && window->async_notified ?
+            window->async_expiry : window->async_read.deadline;
+        if ((window->async_read.finished && !window->async_notified) || !now || now >= deadline) set.timeout = 0;
+        else {
+            uint64_t remaining = deadline - now;
+            uint64_t millis = (remaining + 999999u) / 1000000u;
+            if (millis < (uint64_t)set.timeout) set.timeout = (int)millis;
+        }
+    }
+    if (window->drop_read_active) {
+        uint64_t now = nx_wayland_now_ns(), deadline = window->drop_read.deadline;
+        if (!now || now >= deadline) set.timeout = 0;
+        else {
+            uint64_t millis = (deadline - now + 999999u) / 1000000u;
+            if (millis < (uint64_t)set.timeout) set.timeout = (int)millis;
+        }
+    }
+    set.timeout = nx_wayland_repeat_timeout(&window->repeat,
+                                             nx_wayland_now_ns(), set.timeout);
+    return set;
+}
+
+/* A successful prepare owns one Wayland read reservation. It must be paired
+   with finish, including on timeout, interruption and poll errors. */
+static nx_result nx_wayland_poll_prepare(nx_wayland_window *window,
+    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, nx_wayland_poll_set *out) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
     if (window->error != NX_OK) return window->error;
@@ -2439,46 +2491,17 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         notify_drop = 1;
         timeout_ms = 0;
     }
-    struct pollfd fds[9] = {{wl_display_get_fd(window->display),
-                        (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0}};
-    nfds_t fd_count = 1;
-    if (window->async_active && !window->async_read.finished)
-        fds[fd_count++] = (struct pollfd){window->async_read.fd, POLLIN, 0};
-    if (window->drop_read_active && !window->drop_read.finished)
-        fds[fd_count++] = (struct pollfd){window->drop_read.fd, POLLIN, 0};
-    nfds_t write_limit = fd_count + 4u;
-    for (nx_wayland_clipboard_write *transfer = window->writes;
-         transfer && fd_count < write_limit; transfer = transfer->next)
-        fds[fd_count++] = (struct pollfd){transfer->fd, POLLOUT, 0};
-    if (extra_fd >= 0) fds[fd_count++] = (struct pollfd){extra_fd,
-        (short)(POLLIN | (writable ? POLLOUT : 0)), 0};
-    nfds_t app_index=fd_count;
-    if (app_fd>=0) fds[fd_count++] = (struct pollfd){app_fd,POLLIN,0};
-    int timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
-    if (window->async_active) {
-        uint64_t now = nx_wayland_now_ns();
-        uint64_t deadline = window->async_read.finished && window->async_notified ?
-            window->async_expiry : window->async_read.deadline;
-        if ((window->async_read.finished && !window->async_notified) || !now || now >= deadline) timeout = 0;
-        else {
-            uint64_t remaining = deadline - now;
-            uint64_t millis = (remaining + 999999u) / 1000000u;
-            if (millis < (uint64_t)timeout) timeout = (int)millis;
-        }
-    }
-    if (window->drop_read_active) {
-        uint64_t now = nx_wayland_now_ns(), deadline = window->drop_read.deadline;
-        if (!now || now >= deadline) timeout = 0;
-        else {
-            uint64_t millis = (deadline - now + 999999u) / 1000000u;
-            if (millis < (uint64_t)timeout) timeout = (int)millis;
-        }
-    }
-    timeout = nx_wayland_repeat_timeout(&window->repeat,
-                                        nx_wayland_now_ns(), timeout);
-    int ready = poll(fds, fd_count, timeout);
+    *out=nx_wayland_make_poll_set(window,timeout_ms,needs_write,extra_fd,writable,app_fd);
+    out->notify_drop=notify_drop;
+    return NX_OK;
+}
+
+static nx_result nx_wayland_poll_finish(nx_wayland_window *window, nx_wayland_poll_set *set,
+                                         int ready, int poll_errno, int app_fd, uint32_t *app_events) {
+    struct pollfd *fds=set->fds;
+    int notify_drop=set->notify_drop;
     if (ready>0 && app_fd>=0 && app_events) {
-        short revents=fds[app_index].revents;
+        short revents=fds[set->app_index].revents;
         if (revents&POLLIN) *app_events|=NX_WINDOW_FD_READABLE;
         if (revents&POLLHUP) *app_events|=NX_WINDOW_FD_HANGUP;
         if (revents&(POLLERR|POLLNVAL)) *app_events|=NX_WINDOW_FD_ERROR;
@@ -2496,7 +2519,7 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
             return nx_wayland_connection_failed(window);
     } else {
         wl_display_cancel_read(window->display);
-        if (ready < 0 && errno != EINTR) return nx_wayland_connection_failed(window);
+        if (ready < 0 && poll_errno != EINTR) return nx_wayland_connection_failed(window);
         if (ready > 0 && (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)))
             return nx_wayland_connection_failed(window);
     }
@@ -2510,10 +2533,20 @@ nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
         nx_wayland_reap_one_offer(window);
     }
     if (window->error != NX_OK) return window->error;
-    drop_result = nx_wayland_process_drop(window);
+    nx_result drop_result = nx_wayland_process_drop(window);
     if (drop_result != NX_OK) return window->error = drop_result;
     nx_wayland_emit_due_repeats(window);
     return window->event_queue.error;
+}
+
+nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
+    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, uint32_t *app_events) {
+    nx_wayland_poll_set set;
+    nx_result result=nx_wayland_poll_prepare(window,timeout_ms,extra_fd,writable,app_fd,&set);
+    if (result!=NX_OK) return result;
+    int ready=poll(set.fds,set.count,set.timeout);
+    int poll_errno=errno;
+    return nx_wayland_poll_finish(window,&set,ready,poll_errno,app_fd,app_events);
 }
 
 nx_result nx_wayland_window_get_info(nx_wayland_window *window,
