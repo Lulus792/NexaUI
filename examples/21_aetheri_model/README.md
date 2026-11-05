@@ -66,6 +66,14 @@ provides separate text/IME and asynchronous service examples. Actual Aetheri
 consumer adoption, physical hardware and human accessibility review remain
 open. See `docs/quality/aetheri-adoption-assessment.md` for scoped evidence.
 
+The view keeps bounded text-layout caches keyed by the original text, wrap
+width, text size and small-layout mode. Changing those values rebuilds the
+affected layout; removing displays releases their cached layouts. To run the
+optional headless 16-display layout benchmark, configure the standalone build
+with `-DNEXAUI_MODEL_BUILD_BENCHMARK=ON` and run
+`aetheri_model_view_benchmark /path/to/font.ttf`. It does not measure native
+presentation or physical input.
+
 For the optional virtual-pointer check, generate the helper from the installed
 `wlr-protocols` XML in a temporary directory, then pass its binary as
 `--pointer-driver` together with `--wtype` and a size below 320x240:

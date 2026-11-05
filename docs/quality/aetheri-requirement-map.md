@@ -16,6 +16,10 @@ private Sway. On base `5114c345c7833b303087b7d3754b0e63f5c23b5f`, separated
 radio and display labels also forward pointer clicks without extra tab stops;
 the radio label was exercised using a private Sway virtual pointer. Still
 smaller sizes, long-content performance, real IMEs and human review remain open.
+On base `d74583a03cb497b21cb616a421b3d848f8e8fd05`, the consumer reuses
+unchanged bounded layouts. A 16-display, long-name small-window benchmark
+showed lower repeated frame-construction time on one WSL profile; cold reflow,
+presentation, other targets and an approved performance budget remain open.
 
 D07/L09/L11/P07: the [rename review experiment](../../examples/25_aetheri_rename/README.md)
 on NexaUI base `28827b139e2d407305a1ff5ac4a41c39baf3720c` borrows Aetheri's

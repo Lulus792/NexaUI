@@ -5,6 +5,12 @@
 #include <string.h>
 
 #define CACHE (1024u * 1024u)
+typedef struct layout_key {
+    char text[192];
+    double size,width;
+    size_t length;
+    int small,valid;
+} layout_key;
 struct aetheri_view {
     struct ae_settings *model;
     nx_context *context;
@@ -12,6 +18,8 @@ struct aetheri_view {
     nx_font_collection *fonts;
     nx_text_layout *labels[15];
     nx_text_layout *displays[AE_SETTINGS_DISPLAYS];
+    layout_key label_keys[15];
+    layout_key display_keys[AE_SETTINGS_DISPLAYS];
     int close_requested;
     float scroll_x, scroll_y, revealed_width, revealed_height;
     unsigned revealed_text_percent;
@@ -51,6 +59,19 @@ static int small_text_layout(nx_font_collection *fonts,const char *text,size_t l
     if(nx_text_layout_width(*out)>width) {nx_text_layout_destroy(*out);*out=NULL;return 0;}
     return 1;
 }
+static int cached_layout(nx_font_collection *fonts,nx_text_layout **slot,layout_key *key,
+                         const char *text,size_t length,double size,double width,int small) {
+    if(length>=sizeof(key->text)) return 0;
+    if(key->valid && key->length==length && key->size==size && key->width==width &&
+       key->small==small && !memcmp(key->text,text,length)) return 1;
+    nx_text_layout *next=NULL;
+    if(small ? !small_text_layout(fonts,text,length,size,width,&next) :
+       nx_text_layout_create(fonts,text,length,NX_BIDI_LTR,size,width,&next)!=NX_OK) return 0;
+    nx_text_layout_destroy(*slot); *slot=next;
+    memcpy(key->text,text,length); key->text[length]=0;
+    key->length=length; key->size=size; key->width=width; key->small=small; key->valid=1;
+    return 1;
+}
 void aetheri_view_destroy(aetheri_view *v) {
     if (!v) return;
     for (size_t i=0;i<15;++i) nx_text_layout_destroy(v->labels[i]);
@@ -82,8 +103,12 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
     const char *en[]={"Aetheri Settings", "Appearance", "Dark", "Light", "High contrast", "Language", "English", "German", "Text size", "100%", "150%", "200%", "Close"};
     const char *de[]={"Aetheri Einstellungen", "Darstellung", "Dunkel", "Hell", "Hoher Kontrast", "Sprache", "Englisch", "Deutsch", "Textgr\xc3\xb6\xc3\x9f" "e", "100%", "150%", "200%", "Schlie\xc3\x9f" "en"};
     const char **labels=m->german?de:en;
-    for(size_t i=0;i<15;++i) { nx_text_layout_destroy(v->labels[i]); v->labels[i]=NULL; }
-    for(size_t i=0;i<AE_SETTINGS_DISPLAYS;++i) { nx_text_layout_destroy(v->displays[i]); v->displays[i]=NULL; }
+    for(size_t i=m->count;i<AE_SETTINGS_DISPLAYS;++i) {
+        if(v->displays[i] || v->display_keys[i].valid) {
+            nx_text_layout_destroy(v->displays[i]); v->displays[i]=NULL;
+            memset(&v->display_keys[i],0,sizeof(v->display_keys[i]));
+        }
+    }
     int small=width<320 || height<240;
     float content_x=small?16:24, content_width=width-(small?32:64);
     double size=14.0*(double)m->text_percent/100.0;
@@ -91,19 +116,16 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
         double label_size=i==0?size*1.3:size;
         int option=(i>=2 && i<=4) || (i>=6 && i<=7) || (i>=9 && i<=11);
         float wrap=small?(i==12?content_width-32:content_width):width-(option?160:64);
-        if(small ? !small_text_layout(v->fonts,labels[i],strlen(labels[i]),label_size,wrap,&v->labels[i]) :
-           nx_text_layout_create(v->fonts,labels[i],strlen(labels[i]),NX_BIDI_LTR,
-                                 label_size,wrap,&v->labels[i])!=NX_OK) return 0;
+        if(!cached_layout(v->fonts,&v->labels[i],&v->label_keys[i],labels[i],strlen(labels[i]),
+                          label_size,wrap,small)) return 0;
     }
     const char *display_heading=m->german?"Anzeigen":"Displays";
     const char *status=m->stale ? (m->german?"Anzeigedaten veraltet":"Display data is stale") :
         !m->refreshes ? (m->german?"Noch keine Anzeigedaten":"Display data not yet observed") :
         !m->count ? (m->german?"Keine Anzeigen beobachtet":"No displays observed") :
         (m->german?"Beobachtete Anzeigen":"Observed displays");
-    if(small ? (!small_text_layout(v->fonts,display_heading,strlen(display_heading),size,content_width,&v->labels[13]) ||
-                !small_text_layout(v->fonts,status,strlen(status),size,content_width,&v->labels[14])) :
-       (nx_text_layout_create(v->fonts,display_heading,strlen(display_heading),NX_BIDI_LTR,size,content_width,&v->labels[13])!=NX_OK ||
-        nx_text_layout_create(v->fonts,status,strlen(status),NX_BIDI_LTR,size,content_width,&v->labels[14])!=NX_OK)) return 0;
+    if(!cached_layout(v->fonts,&v->labels[13],&v->label_keys[13],display_heading,strlen(display_heading),size,content_width,small) ||
+       !cached_layout(v->fonts,&v->labels[14],&v->label_keys[14],status,strlen(status),size,content_width,small)) return 0;
     char display_names[AE_SETTINGS_DISPLAYS][192]; nx_rect display_rects[AE_SETTINGS_DISPLAYS]={0};
     for(size_t i=0;i<m->count;++i) {
         const struct ae_settings_display *d=&m->displays[i];
@@ -112,8 +134,8 @@ int aetheri_view_frame(aetheri_view *v, float width, float height, int *changed)
         int written=d->mode_known ? snprintf(display_names[i],sizeof(display_names[i]),"%s (%d x %d)%s",d->name,d->width,d->height,selected) :
                                    snprintf(display_names[i],sizeof(display_names[i]),"%s%s",d->name,selected);
         if(written<0 || (size_t)written>=sizeof(display_names[i])) return 0;
-        if(small ? !small_text_layout(v->fonts,display_names[i],(size_t)written,size,content_width-16,&v->displays[i]) :
-           nx_text_layout_create(v->fonts,display_names[i],(size_t)written,NX_BIDI_LTR,size,width-88,&v->displays[i])!=NX_OK) return 0;
+        if(!cached_layout(v->fonts,&v->displays[i],&v->display_keys[i],display_names[i],(size_t)written,
+                          size,small?content_width-16:width-88,small)) return 0;
     }
     /* Measure at the requested size and wrap whole controls, never shrink
        their text to fit an equal-width column. Coordinates are content-local. */

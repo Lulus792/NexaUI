@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Cached original-model Settings text layouts (2026-11-05)
+
+The consumer candidate based on `d74583a03cb497b21cb616a421b3d848f8e8fd05`
+retains at most 15 label and 16 display layouts, keyed by original text,
+logical width, text size and small-layout mode. Unused display slots are
+released; new layouts are created before their old slot is destroyed. Tests
+exercise the same display ID with changed content, width and scale, alongside
+the existing locale, selection, click, clipping and long-grapheme cases. A
+mutant that ignored the width key failed the new displayed-height assertion.
+Static, shared and Clang ASan/UBSan consumers passed those tests with DejaVu
+Sans, Serif and Sans Mono (nine runs). The private Sway virtual-pointer and
+independent AT-SPI resize workflows also passed for all three builds (six runs).
+
+The optional `aetheri_model_view_benchmark` used 16 synthetic display names of
+120 unbroken ASCII bytes, German 200% text and a 128x150 logical frame. On
+Alpine/WSL2, GCC 15.2.0, a Release consumer and the same installed static Debug
+SDK, three separate baseline runs from the base and three candidate runs each
+measured one cold and five repeated frame constructions. Baseline cold ranged
+339–427 ms and repeated frames 293–505 ms; candidate cold ranged 352–390 ms
+and repeated frames 20–33 ms. These wall-clock observations include layout,
+semantic and command construction, not raster presentation; host load varied.
+The synthetic worst case is not an approved target or proof of physical-device
+responsiveness. Cold layout, other fonts/targets, memory budgets, native input
+latency and actual Aetheri adoption remain open.
+
 ## Pointer interaction on small Settings labels (2026-11-05)
 
 The consumer candidate based on `5114c345c7833b303087b7d3754b0e63f5c23b5f`

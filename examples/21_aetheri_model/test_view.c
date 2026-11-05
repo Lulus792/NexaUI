@@ -193,6 +193,23 @@ int main(int argc,char **argv) {
     CHECK(named(ui,UINT64_C(0x100000000)+91,expected_name,0));
     CHECK(nx_focus_set(ui,UINT64_C(0x100000000)+91)==NX_OK && aetheri_view_frame(view,128,150,&changed));
     CHECK(visible(ui,UINT64_C(0x100000000)+91,128,150) && inside_scroll(ui,UINT64_C(0x100000000)+91));
+    /* The same stable display ID must remeasure when its text, width or
+       text scale changes; semantic identity alone cannot be a cache key. */
+    struct ae_settings_display changing={.id=91,.name="A",.scale=1};
+    CHECK(ae_settings_snapshot(&model,&changing,1) && aetheri_view_frame(view,320,240,&changed));
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&index)==NX_OK && nx_semantics_get(ui,index,&option)==NX_OK);
+    float short_height=option.bounds.height;
+    snprintf(changing.name,sizeof(changing.name),"Alpha Beta Gamma Delta Epsilon Zeta Eta Theta Iota Kappa Lambda");
+    CHECK(ae_settings_snapshot(&model,&changing,1) && aetheri_view_frame(view,320,240,&changed));
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&index)==NX_OK && nx_semantics_get(ui,index,&option)==NX_OK);
+    float narrow_height=option.bounds.height; CHECK(narrow_height>short_height);
+    CHECK(aetheri_view_frame(view,800,480,&changed));
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&index)==NX_OK && nx_semantics_get(ui,index,&option)==NX_OK &&
+          option.bounds.height<narrow_height);
+    model.text_percent=100;
+    CHECK(aetheri_view_frame(view,320,240,&changed));
+    CHECK(nx_semantics_find(ui,UINT64_C(0x100000000)+91,&index)==NX_OK && nx_semantics_get(ui,index,&option)==NX_OK &&
+          option.bounds.height<narrow_height);
     aetheri_view_destroy(view); free(font);
     puts("Original Aetheri model retains theme, language and scale across NexaUI view replacement"); return 0;
 fail:
