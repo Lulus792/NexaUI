@@ -453,3 +453,34 @@ poll interval failed that same case in three more attempts. This comparison
 does not prove the ultimate cause or turn the failures into passes. The native
 X11 AT-SPI recovery and X11 window tests passed on a separate dual-backend
 build. The one-shot failure remains open.
+
+## Text-input-v1 keysym modifiers (2026-11-05)
+
+Candidate based on `a74f206b855e0587d291110a74d243f98789e0f6`: the v1
+adapter ignored both `modifiers_map` and the keysym's modifier mask, instead
+using the unrelated physical-keyboard state. A controlled server sent
+Control+A using a reordered map while the physical state was unmodified; the
+new test failed against the previous source and passed after translating the
+protocol map. It checks Shift, Control, Mod1/Alt, Mod4/Super, changed maps,
+bit 31, unmapped bits, stale serial, invalid key state, malformed map and
+recovery. Events referring to unmapped bits and all keysyms after a malformed
+map are discarded; unknown names do not map to NexaUI modifiers. The
+[text-input-v1 protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/1.48/unstable/text-input/text-input-unstable-v1.xml)
+defines map positions as keysym-mask indices and separates key events from
+ordinary committed text. The fixture also routes Control+A into a focused
+text field and verifies selection of the whole draft. Its first attempt sent
+the key in reply to an older queued state commit and was correctly rejected as
+stale; the final fixture first completes those pending requests.
+
+Wayland v1/v3 controlled tests and three Settings v3 scene tests passed in the
+GCC shared build and Clang ASan/UBSan static build. Four Settings keyboard
+cases passed on private Weston with its default input method. An intermediate
+candidate before the final unmapped-bit guard was also run with
+`weston-simple-im` and failed all four: two timed out waiting for applied
+state, one did not reach the next visible focus, and one did not reach the
+expected clipboard draft. Its output is retained locally in
+`/tmp/nexaui-ime-modifiers-simple.log`, SHA-256
+`095122871a7207831a87fafb3c6a3ad1d585644f5f3276ce9027ac5baa2c5462`.
+The earlier trace above shows that this input method commits control keys as
+text in that setup; this keysym correction does not solve that separate
+behavior. Real installed-IME and human acceptance remain open.

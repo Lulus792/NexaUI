@@ -107,6 +107,9 @@ struct nx_wayland_window {
     int32_t ime_pending_preedit_begin, ime_pending_preedit_end;
     int32_t ime_v1_preedit_cursor;
     int ime_v1_preedit_cursor_set;
+    uint32_t ime_v1_modifier_masks[4];
+    uint32_t ime_v1_modifier_indices;
+    int ime_v1_modifier_map_state; /* 0 unseen, 1 valid, 2 invalid */
     char *ime_surrounding;
     size_t ime_surrounding_length, ime_surrounding_cursor;
     size_t ime_surrounding_anchor;
@@ -1115,7 +1118,32 @@ static void nx_wayland_ime_leave(void *data, struct zwp_text_input_v1 *input) {
 
 static void nx_wayland_ime_modifiers_map(void *data,
     struct zwp_text_input_v1 *input, struct wl_array *map) {
-    (void)data; (void)input; (void)map;
+    nx_wayland_window *window = data;
+    (void)input;
+    memset(window->ime_v1_modifier_masks, 0, sizeof(window->ime_v1_modifier_masks));
+    window->ime_v1_modifier_indices = 0;
+    window->ime_v1_modifier_map_state = 2;
+    if (!map || (map->size && !map->data) || map->size > 4096u) return;
+    const char *names[] = {XKB_MOD_NAME_SHIFT, XKB_MOD_NAME_CTRL,
+                           XKB_MOD_NAME_ALT, XKB_MOD_NAME_LOGO};
+    uint32_t masks[4] = {0}, indices = 0;
+    const char *name = map->data;
+    size_t remaining = map->size;
+    for (unsigned index = 0; remaining && index < 32u; ++index) {
+        const char *end = memchr(name, '\0', remaining);
+        if (!end) return;
+        size_t length = (size_t)(end - name);
+        indices |= UINT32_C(1) << index;
+        for (unsigned i = 0; i < 4u; ++i)
+            if (strlen(names[i]) == length && !memcmp(name, names[i], length))
+                masks[i] |= UINT32_C(1) << index;
+        size_t consumed = length + 1u;
+        name += consumed;
+        remaining -= consumed;
+    }
+    memcpy(window->ime_v1_modifier_masks, masks, sizeof(masks));
+    window->ime_v1_modifier_indices = indices;
+    window->ime_v1_modifier_map_state = 1;
 }
 
 static void nx_wayland_ime_panel_state(void *data,
@@ -1279,15 +1307,22 @@ static void nx_wayland_ime_keysym(void *data, struct zwp_text_input_v1 *input,
     uint32_t serial, uint32_t time, uint32_t sym, uint32_t state,
     uint32_t modifiers) {
     nx_wayland_window *window = data;
-    (void)input; (void)time; (void)modifiers;
+    (void)input; (void)time;
     if (!nx_wayland_ime_v1_serial_valid(window, serial)) return;
+    if (state != WL_KEYBOARD_KEY_STATE_PRESSED &&
+        state != WL_KEYBOARD_KEY_STATE_RELEASED) return;
+    if (window->ime_v1_modifier_map_state == 2 ||
+        (modifiers & ~window->ime_v1_modifier_indices)) return;
     nx_key key = nx_wayland_key((xkb_keysym_t)sym);
     if (key == NX_KEY_UNKNOWN) return;
     nx_event event = {0};
     event.type = state == WL_KEYBOARD_KEY_STATE_PRESSED ?
         NX_EVENT_KEY_DOWN : NX_EVENT_KEY_UP;
     event.key = key;
-    event.modifiers = nx_wayland_modifiers(window);
+    if (modifiers & window->ime_v1_modifier_masks[0]) event.modifiers |= NX_MOD_SHIFT;
+    if (modifiers & window->ime_v1_modifier_masks[1]) event.modifiers |= NX_MOD_CONTROL;
+    if (modifiers & window->ime_v1_modifier_masks[2]) event.modifiers |= NX_MOD_ALT;
+    if (modifiers & window->ime_v1_modifier_masks[3]) event.modifiers |= NX_MOD_SUPER;
     nx_platform_event_queue_push(&window->event_queue, event);
 }
 

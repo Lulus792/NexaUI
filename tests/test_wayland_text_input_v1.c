@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <wayland-server.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
 
 #include "fixture_font.h"
 
@@ -27,6 +28,7 @@ typedef struct test_server {
     int configured, enabled, state_commits, keyboard_entered;
     uint32_t serial;
     atomic_int activation_count, deactivation_count, caret_ok;
+    atomic_int send_keysyms;
     atomic_int normal_content, password_content;
     char surrounding[64];
     uint32_t surrounding_cursor, surrounding_anchor;
@@ -256,10 +258,42 @@ static void text_commit_state(struct wl_client *client,
     (void)client;
     CHECK(server->enabled);
     server->serial = serial;
+    int keysym_case = atomic_exchange(&server->send_keysyms, 0);
+    if (keysym_case) {
+        static const char names[] = "Mod4\0Control\0Shift\0Mod1";
+        static const char changed[] = "Shift\0Control\0Mod1\0Mod4";
+        static const char malformed[] = "Shift\0Control";
+        char high[31u * 2u + sizeof("Control") + sizeof("Shift")];
+        for (size_t i = 0; i < 31u; ++i) { high[i * 2u] = 'x'; high[i * 2u + 1u] = '\0'; }
+        memcpy(high + 62u, "Control", sizeof("Control"));
+        memcpy(high + 62u + sizeof("Control"), "Shift", sizeof("Shift"));
+        const char *data = keysym_case == 1 ? names : keysym_case == 2 || keysym_case >= 5 ? changed : keysym_case == 3 ? malformed : high;
+        size_t bytes = keysym_case == 1 ? sizeof(names) : keysym_case == 2 || keysym_case >= 5 ? sizeof(changed) : keysym_case == 3 ? sizeof(malformed) - 1u : sizeof(high);
+        struct wl_array map;
+        wl_array_init(&map);
+        void *storage = wl_array_add(&map, bytes); CHECK(storage);
+        memcpy(storage, data, bytes);
+        zwp_text_input_v1_send_modifiers_map(resource, &map);
+        wl_array_release(&map);
+        if (keysym_case != 1) {
+            zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_a, WL_KEYBOARD_KEY_STATE_PRESSED,
+                keysym_case == 4 ? (UINT32_C(1) << 31) : keysym_case == 5 ? (1u << 4) : keysym_case == 6 ? (1u << 1) : 3u);
+            return;
+        }
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_a, WL_KEYBOARD_KEY_STATE_PRESSED, 1u << 1);
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_a, WL_KEYBOARD_KEY_STATE_RELEASED, 0);
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_ISO_Left_Tab, WL_KEYBOARD_KEY_STATE_PRESSED, 1u << 2);
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED, (1u << 3) | 1u);
+        zwp_text_input_v1_send_keysym(resource, serial - 1u, 0, XKB_KEY_a, WL_KEYBOARD_KEY_STATE_PRESSED, 1u << 1);
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_a, 99, 1u << 1);
+        return;
+    }
     if (++server->state_commits == 1) {
         zwp_text_input_v1_send_preedit_cursor(resource, 2);
         zwp_text_input_v1_send_preedit_string(resource, serial,
             "na\xc3\xaf", "");
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_a, WL_KEYBOARD_KEY_STATE_PRESSED, 1);
+        zwp_text_input_v1_send_keysym(resource, serial, 0, XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
     } else if (server->state_commits == 2) {
         zwp_text_input_v1_send_commit_string(resource, serial,
             "caf\xc3\xa9");
@@ -381,13 +415,16 @@ int main(void) {
     CHECK(length == 4 && begin == 2 && end == 2 &&
         strcmp(preedit, "na\xc3\xaf") == 0);
     nx_event event;
-    int available = 0, preedit_events = 0;
+    int available = 0, preedit_events = 0, tab_events = 0;
     do {
         CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
         if (available && event.type == NX_EVENT_IME_PREEDIT_CHANGED)
             ++preedit_events;
+        else if (available && event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_TAB && !event.modifiers)
+            ++tab_events;
+        else if (available) CHECK(event.type != NX_EVENT_KEY_DOWN && event.type != NX_EVENT_KEY_UP);
     } while (available);
-    CHECK(preedit_events == 1);
+    CHECK(preedit_events == 1 && tab_events == 1);
 
     CHECK(nx_window_set_ime_rect(window, (nx_rect){13, 34, 2, 18}) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
@@ -409,6 +446,46 @@ int main(void) {
         &length, &begin, &end) == NX_OK && length == 0);
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK &&
           !available);
+    atomic_store(&server.send_keysyms, 1);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){15, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_A && event.modifiers == NX_MOD_CONTROL);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_UP && event.key == NX_KEY_A && event.modifiers == 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_TAB && event.modifiers == NX_MOD_SHIFT);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_RIGHT && event.modifiers == (NX_MOD_ALT | NX_MOD_SUPER));
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_keysyms, 2);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){16, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_A &&
+          event.modifiers == (NX_MOD_SHIFT | NX_MOD_CONTROL));
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_keysyms, 4);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){19, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_A && event.modifiers == NX_MOD_CONTROL);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_keysyms, 5);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){20, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_keysyms, 3);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){17, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_keysyms, 2);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){18, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_A &&
+          event.modifiers == (NX_MOD_SHIFT | NX_MOD_CONTROL));
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
     CHECK(nx_window_set_ime_surrounding_text(window, 91, 7,
         "ab\xc3\xa9" "cd", 6, 6, 6) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
@@ -497,6 +574,20 @@ int main(void) {
     CHECK(nx_end_frame(context) == NX_OK);
     CHECK(nx_text_field_text(field, &draft) == NX_OK);
     CHECK(draft.length == 4 && memcmp(draft.data, "abc!", 4) == 0);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    atomic_store(&server.send_keysyms, 6);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){21, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_route_events(window, context, &routed) == NX_OK);
+    if (routed != 1) fprintf(stderr, "expected one IME key event, got %zu\n", routed);
+    CHECK(routed == 1);
+    CHECK(nx_begin_frame(context, 160, 60, 0) == NX_OK);
+    CHECK(nx_text_field_widget(context, &field_desc, field, &interaction,
+        &valid, &submitted) == NX_OK);
+    CHECK(nx_end_frame(context) == NX_OK);
+    size_t anchor = 0, cursor = 0;
+    CHECK(nx_text_field_selection(field, &anchor, &cursor) == NX_OK &&
+          anchor == 0 && cursor == 4);
     nx_context_destroy(context);
     nx_text_field_destroy(field);
     nx_font_collection_destroy(fonts);
