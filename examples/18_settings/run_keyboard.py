@@ -16,14 +16,15 @@ def main():
         return 77
     app, font, xdotool = sys.argv[1:4]
     controls = len(sys.argv) == 5 and sys.argv[4] == '--controls'
-    small = len(sys.argv) == 5 and sys.argv[4] == '--small'
+    minimum = len(sys.argv) == 5 and sys.argv[4] == '--minimum'
+    small = minimum or (len(sys.argv) == 5 and sys.argv[4] == '--small')
     clipboard = len(sys.argv) == 5 and sys.argv[4] == '--clipboard'
     if len(sys.argv) == 5 and not (controls or small or clipboard):
         return 2
     env = dict(os.environ, NEXAUI_PLATFORM='wayland')
     if os.environ.get('NEXAUI_TEST_WAYLAND_TRACE') == '1':
         env['WAYLAND_DEBUG'] = '1'
-    mode = '--verify-keyboard-controls' if controls else '--verify-keyboard-small' if small else '--verify-keyboard'
+    mode = '--verify-keyboard-controls' if controls else '--verify-keyboard-minimum' if minimum else '--verify-keyboard-small' if small else '--verify-keyboard'
     host = subprocess.Popen([app, font, mode], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout_lines, stderr_lines = [], []
@@ -88,6 +89,7 @@ def main():
             await_draft(3)
             steps = [['key', 'Tab'], ['key', 'space'], ['key', 'Tab'], ['key', 'space']]
         focus_ids = iter((3, 4, 5))
+        space_count = 0
         for args in steps:
             if small and args == ['key', 'Tab']:
                 # Require visibility before key release or another user input.
@@ -96,6 +98,16 @@ def main():
                 subprocess.run([xdotool, 'keyup', 'Tab'], env=env, check=True)
             else:
                 subprocess.run([xdotool, *args], env=env, check=True)
+            if minimum and args == ['key', 'space']:
+                space_count += 1
+                if space_count == 1:
+                    for _ in range(10):
+                        subprocess.run([xdotool, 'key', 'Next'], env=env, check=True)
+                        time.sleep(.1)
+                    try:
+                        await_line('SETTINGS_STATUS_VISIBLE', 5)
+                    except RuntimeError as problem:
+                        raise RuntimeError(f'{problem}: {"".join(stdout_lines)}') from problem
             time.sleep(.15)
         try:
             host.wait(timeout=12)

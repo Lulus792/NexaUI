@@ -96,6 +96,45 @@ int main(int argc,char **argv) {
     CHECK(settings_applied(s,&value,&motion) && value.length==5 && !memcmp(value.data,"First",5));
     CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
           view.value.length==15 && !memcmp(view.value.data,"Unsaved changes",15));
+    /* At the minimum width, status geometry must accommodate wrapped text and
+       Apply must not extend outside the content area. */
+    CHECK(settings_set_draft_name(s,"",0) && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,5,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.x+view.bounds.width<=112);
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.height>20);
+    nx_font *measure_font=NULL; nx_font_collection *measure_fonts=NULL; nx_text_layout *measured=NULL;
+    const char *invalid="Enter a name under 128 bytes";
+    CHECK(nx_font_open(bytes,(size_t)length,NULL,&measure_font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&measure_fonts)==NX_OK &&
+          nx_font_collection_add(measure_fonts,measure_font)==NX_OK);
+    CHECK(nx_text_layout_create(measure_fonts,invalid,strlen(invalid),NX_BIDI_LTR,15,64,&measured)==NX_OK);
+    double measured_width=nx_text_layout_width(measured), measured_height=nx_text_layout_height(measured);
+    if (measured_width>64) {
+        double size=15*0.98*64/measured_width;
+        nx_text_layout_destroy(measured); measured=NULL;
+        CHECK(nx_text_layout_create(measure_fonts,invalid,strlen(invalid),NX_BIDI_LTR,size,64,&measured)==NX_OK);
+        measured_width=nx_text_layout_width(measured); measured_height=nx_text_layout_height(measured);
+    }
+    nx_text_layout_destroy(measured); measured=NULL;
+    nx_font_collection_destroy(measure_fonts); nx_font_close(measure_font);
+    CHECK(measured_width<=64 && view.bounds.height==measured_height);
+    CHECK(nx_focus_set(ui,4)==NX_OK && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK);
+    float initial_status_y=view.bounds.y;
+    for (unsigned page=0;page<8;++page)
+        CHECK(key(ui,NX_KEY_PAGE_DOWN,0) && settings_frame(s,128,150));
+    CHECK(nx_focus_id(ui)==4 && nx_semantics_find(ui,6,&index)==NX_OK &&
+          nx_semantics_get(ui,index,&view)==NX_OK && view.bounds.y<initial_status_y &&
+          view.bounds.y+view.bounds.height<=134);
+    float bottom_status_y=view.bounds.y;
+    CHECK(key(ui,NX_KEY_PAGE_UP,0) && settings_frame(s,128,150));
+    CHECK(nx_semantics_find(ui,6,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.y>bottom_status_y);
+    CHECK(settings_frame(s,640,150) && settings_frame(s,128,150) && nx_focus_id(ui)==4);
+    CHECK(nx_semantics_find(ui,4,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK &&
+          view.bounds.y>=70 && view.bounds.y+view.bounds.height<=134 &&
+          view.bounds.x+view.bounds.width<=112);
     settings_destroy(s); free(bytes); return 0;
 fail:
     if (f) fclose(f); settings_destroy(s); free(bytes); return 1;

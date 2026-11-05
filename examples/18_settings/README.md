@@ -62,6 +62,16 @@ synthetic test checks focus visibility at 240x150. Below 128x120 the runner
 continues polling without drawing a new frame. Long-label reflow and native
 small-window accessibility remain open.
 
+The example wraps its fixed English labels and status messages to the available
+column. If an individual word cannot wrap, it reduces that label's size enough
+to fit. At narrow widths the motion label moves below its checkbox; Apply fits
+the content width. While focus is on the checkbox or Apply, Page Down and Page
+Up scroll by half a viewport to inspect long status text. The scene and private
+Weston tests exercise the 128x150 and 240x150 cases, including keyboard focus
+and status scrolling. These geometry checks do not replace visual review, do not
+establish 200% text-scale or translated-label acceptance, and at the minimum
+height a whole multiline label may not fit in one viewport.
+
 The native runner redraws after routed input or size/scale changes rather than
 continuously after a successful presentation. A changed focus schedules one
 follow-up frame so that its control can be scrolled into view; a viewport-height

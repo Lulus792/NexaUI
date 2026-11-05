@@ -27,7 +27,8 @@ int main(int argc, char **argv) {
     int verify_ax=argc==3 && !strcmp(argv[2],"--verify-accessibility");
     int verify_keyboard_text=argc==3 && !strcmp(argv[2],"--verify-keyboard");
     int verify_keyboard_controls=argc==3 && !strcmp(argv[2],"--verify-keyboard-controls");
-    int verify_keyboard_small=argc==3 && !strcmp(argv[2],"--verify-keyboard-small");
+    int verify_keyboard_minimum=argc==3 && !strcmp(argv[2],"--verify-keyboard-minimum");
+    int verify_keyboard_small=(argc==3 && !strcmp(argv[2],"--verify-keyboard-small")) || verify_keyboard_minimum;
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
     int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
     int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
@@ -41,13 +42,13 @@ int main(int argc, char **argv) {
     if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error) { fputs("usage: nexaui_settings FONT_FILE [--smoke|--idle-probe|--simulate-error]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; nx_renderer_driver renderer={0};
-    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
+    int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0;
     double apply_deadline=0; uint64_t scheduled_apply=0;
     nx_window_info previous={0};
     nx_window_desc desc={"Settings example",640,360,0,{0}};
-    if (verify_keyboard_small) { desc.width=240; desc.height=150; }
+    if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
         !settings_create(font,font_size,window,&scene) ||
         nx_vulkan_driver_open(window,&renderer)!=NX_OK) goto cleanup;
@@ -150,7 +151,7 @@ int main(int argc, char **argv) {
         if (nx_theme_color(settings_context(scene),NX_COLOR_BACKGROUND,&bg)!=NX_OK ||
             nx_renderer_run(&renderer,(nx_render_target){pixels.width,pixels.height,info.scale},commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
         if (outcome==NX_RENDER_DEVICE_LOST && nx_renderer_recover(&renderer)!=NX_OK) { okay=0; break; }
-        if (verify_keyboard_small && outcome==NX_RENDER_READY && (info.width!=240 || info.height!=150)) {
+        if (verify_keyboard_small && outcome==NX_RENDER_READY && (info.width!=(verify_keyboard_minimum?128:240) || info.height!=150)) {
             fprintf(stderr,"Unexpected small-window size %.0fx%.0f\n",info.width,info.height);
             okay=0; break;
         }
@@ -210,7 +211,8 @@ int main(int argc, char **argv) {
                 uint32_t index; nx_semantic_view focused;
                 if (focus>=3 && focus<=5 && nx_semantics_find(settings_context(scene),focus,&index)==NX_OK &&
                     nx_semantics_get(settings_context(scene),index,&focused)==NX_OK &&
-                    focused.bounds.y>=70 && focused.bounds.y+focused.bounds.height<=info.height-16) {
+                    focused.bounds.y>=70 && focused.bounds.y+focused.bounds.height<=info.height-16 &&
+                    focused.bounds.x>=16 && focused.bounds.x+focused.bounds.width<=info.width-16) {
                     unsigned bit=1u<<(focus-3);
                     if (!(settled_focuses&bit)) {
                         settled_focuses|=bit;
@@ -218,12 +220,19 @@ int main(int argc, char **argv) {
                         fflush(stdout);
                     }
                 }
+                if (verify_keyboard_minimum && !status_visible && focus==4 &&
+                    nx_semantics_find(settings_context(scene),6,&index)==NX_OK &&
+                    nx_semantics_get(settings_context(scene),index,&focused)==NX_OK &&
+                    focused.bounds.y>=70 && focused.bounds.y+focused.bounds.height<=info.height-16 &&
+                    focused.bounds.x>=16 && focused.bounds.x+focused.bounds.width<=info.width-16) {
+                    status_visible=1; puts("SETTINGS_STATUS_VISIBLE"); fflush(stdout);
+                }
             }
             const char *expected=verify_ax?"AT-SPI Tokyo":
                 (verify_keyboard_text || verify_keyboard_small)?"Ada":"Aetheri";
             size_t expected_length=strlen(expected);
             if (motion && applied.length==expected_length && !memcmp(applied.data,expected,expected_length)) {
-                if (verify_keyboard_small && settled_focuses!=7) {
+                if (verify_keyboard_small && (settled_focuses!=7 || (verify_keyboard_minimum && !status_visible))) {
                     fprintf(stderr,"Focus did not settle visibly before activation: %u\n",settled_focuses);
                     okay=0;
                 }

@@ -712,3 +712,35 @@ then passed separately (`/tmp/nexaui-apply-simple-ime.log`). These are virtual
 fixture results, not physical-device or human acceptance. The native AT-SPI
 failure/retry case also passed with Clang ASan/UBSan and leak detection
 (`/tmp/nexaui-apply-asan-native.log`).
+
+## Narrow Settings layout and status scrolling (2026-11-05)
+
+Candidate based on `120384bcb9d80f9b5a958bab337fbfecbb30ca7a` replaces the
+fixed 500-pixel status layouts with cached layouts for the actual content
+width. It measures the status height for semantics and scroll extent, fits the
+Apply control to the column, and reflows the title, field and motion labels;
+the motion label moves below the checkbox at narrow widths. Fixed labels with
+an unbreakable word wider than the column are reduced just enough to fit.
+Focused controls are revealed again after a width change. Page Up/Down while
+the checkbox or Apply is focused moves by half a viewport, keeping successive
+pages overlapping. It does not consume text-field paging keys.
+
+The earlier implementation failed the new minimum-width Apply-bounds check
+(`/tmp/nexaui-status-reflow-before.log`). A native test first revealed that
+whole-viewport page jumps could skip completely over a short status; the
+recorded positions in `/tmp/nexaui-reflow-debug.log` motivated overlapping
+steps. The headless scene test checks the 128-pixel Apply bounds, measured
+multiline status height, keyboard paging, focus and width-only resize; it
+passed in GCC shared and Clang ASan/UBSan. Private Weston/Xvfb tests exercised
+keyboard navigation at 128x150 and 240x150, reaching the status at minimum
+width, plus the native AT-SPI failure/retry case
+(`/tmp/nexaui-reflow-complete.log`). This is not a visual or human screenreader
+review. Translations, 200% text scale, 128x120 label visibility and physical
+display acceptance remain open.
+
+Before the final test-only adjustment for fonts whose unbreakable words require
+scaling, the full GCC shared Wayland-only private-Weston suite
+passed 203 executed tests with four opt-in IME skips
+(`/tmp/nexaui-reflow-full.log`). All four skipped real `weston-simple-im`
+cases then passed separately (`/tmp/nexaui-reflow-ime.log`). The adjusted scene
+test passed again in GCC shared and Clang ASan/UBSan.

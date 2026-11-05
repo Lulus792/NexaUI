@@ -1,4 +1,5 @@
 #include "scene.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,8 +25,9 @@ struct settings_scene {
     int motion, applied_motion, applied;
     int probe_redraw, probe_step;
     float scroll_x, scroll_y;
+    float status_width, status_max_height;
     uint64_t revealed_focus;
-    float revealed_viewport_height;
+    float revealed_viewport_height, revealed_width;
 };
 static nx_utf8_span text(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 static int valid_name(nx_utf8_span s, void *unused) {
@@ -35,6 +37,53 @@ static int valid_name(nx_utf8_span s, void *unused) {
 static int label(settings_scene *s, const char *str, double size, nx_text_layout **out) {
     return nx_text_layout_create(s->fonts, str, strlen(str), NX_BIDI_LTR,
                                  size, 500, out) == NX_OK;
+}
+/* The text API does not break unbreakable words. Scale only when such a word
+   would exceed this example's fixed minimum-width content column. */
+static int fitted_label(settings_scene *s, const char *str, double size,
+                        float width, nx_text_layout **out) {
+    nx_text_layout *layout=NULL;
+    if (nx_text_layout_create(s->fonts,str,strlen(str),NX_BIDI_LTR,size,width,&layout)!=NX_OK) return 0;
+    if (nx_text_layout_width(layout)>width) {
+        size*=0.98*width/nx_text_layout_width(layout);
+        nx_text_layout_destroy(layout); layout=NULL;
+        if (nx_text_layout_create(s->fonts,str,strlen(str),NX_BIDI_LTR,size,width,&layout)!=NX_OK) return 0;
+    }
+    if (nx_text_layout_width(layout)>width) { nx_text_layout_destroy(layout); return 0; }
+    *out=layout; return 1;
+}
+static int reflow_status(settings_scene *s, float width) {
+    if (s->status_width==width) return 1;
+    const char *values[]={"Unsaved changes", "Applied to this example", "Enter a name under 128 bytes",
+                          "No changes", "Applying to example...", "Example apply failed. Retry."};
+    nx_text_layout **slots[]={&s->pending_label,&s->applied_label,&s->invalid_label,
+                              &s->clean_label,&s->applying_label,&s->error_label};
+    nx_text_layout *next[6]={0}; float maximum=0;
+    nx_text_layout *motion=NULL, *name=NULL, *title=NULL;
+    for (size_t i=0;i<6;++i) {
+        if (!fitted_label(s,values[i],15,width,&next[i])) {
+            for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+            return 0;
+        }
+        maximum=fmaxf(maximum,(float)nx_text_layout_height(next[i]));
+    }
+    float motion_width=width<116 ? width : width-38;
+    if (!fitted_label(s,"Reduce motion",width<116?14:16,motion_width,&motion)) {
+        for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+        return 0;
+    }
+    if (!fitted_label(s,"Display name",16,width,&name) ||
+        !fitted_label(s,"Settings",26,width,&title)) {
+        for (size_t j=0;j<6;++j) nx_text_layout_destroy(next[j]);
+        nx_text_layout_destroy(motion); nx_text_layout_destroy(name); nx_text_layout_destroy(title);
+        return 0;
+    }
+    for (size_t i=0;i<6;++i) { nx_text_layout_destroy(*slots[i]); *slots[i]=next[i]; }
+    nx_text_layout_destroy(s->motion_label); s->motion_label=motion;
+    nx_text_layout_destroy(s->name_label); s->name_label=name;
+    nx_text_layout_destroy(s->title); s->title=title;
+    s->status_width=width; s->status_max_height=maximum;
+    return 1;
 }
 void settings_destroy(settings_scene *s) {
     if (!s) return;
@@ -109,6 +158,7 @@ int settings_complete_apply(settings_scene *s, uint64_t token, int success) {
 }
 int settings_frame(settings_scene *s, float width, float height) {
     if (!s || width < 128 || height < 120) return 0;
+    if (!reflow_status(s,width-64)) return 0;
     TRY(nx_begin_frame(s->ui, width, height, 1.0/60.0));
     nx_color fg, muted;
     TRY(nx_theme_color(s->ui, NX_COLOR_TEXT, &fg));
@@ -122,13 +172,21 @@ int settings_frame(settings_scene *s, float width, float height) {
     TRY(nx_panel(s->ui, &panel));
     nx_scroll_area_desc scroll={0}; scroll.id=7; scroll.parent_id=2;
     scroll.name=text("Settings options"); scroll.viewport=(nx_rect){16,70,width-32,height-86};
-    scroll.content_size=(nx_size){width-32,202}; scroll.axes=NX_SCROLL_Y;
+    int stacked_motion=width<180;
+    float field_y=fmaxf(104,85+(float)nx_text_layout_height(s->name_label));
+    float motion_y=160+field_y-104;
+    float apply_y=210+field_y-104+(stacked_motion ? (float)nx_text_layout_height(s->motion_label)+8 : 0);
+    float status_y=apply_y+42;
+    scroll.content_size=(nx_size){width-32,status_y-70+s->status_max_height+8}; scroll.axes=NX_SCROLL_Y;
     uint64_t focus=nx_focus_id(s->ui);
-    if (focus!=s->revealed_focus || scroll.viewport.height!=s->revealed_viewport_height) {
+    if (focus!=s->revealed_focus || scroll.viewport.height!=s->revealed_viewport_height || width!=s->revealed_width) {
         float top=0, bottom=0;
-        if (focus==3) {top=34;bottom=72;}
-        else if (focus==4) {top=90;bottom=122;}
-        else if (focus==5) {top=140;bottom=178;}
+        if (focus==3) {top=field_y-70;bottom=top+38;}
+        else if (focus==4) {
+            top=motion_y-70;
+            bottom=top+(stacked_motion ? 28+(float)nx_text_layout_height(s->motion_label) : 32);
+        }
+        else if (focus==5) {top=apply_y-70;bottom=top+38;}
         if (bottom>top) {
             if (top<s->scroll_y) s->scroll_y=top;
             else if (bottom>s->scroll_y+scroll.viewport.height)
@@ -136,25 +194,39 @@ int settings_frame(settings_scene *s, float width, float height) {
         }
         s->revealed_focus=focus;
         s->revealed_viewport_height=scroll.viewport.height;
+        s->revealed_width=width;
+    }
+    /* Page through long status text without stealing text-field editing keys. */
+    if (focus==4 || focus==5) {
+        const nx_event *events=NULL; size_t count=0;
+        TRY(nx_frame_events(s->ui,&events,&count));
+        for (size_t i=0;i<count;++i) if (events[i].type==NX_EVENT_KEY_DOWN && !events[i].modifiers) {
+            if (events[i].key==NX_KEY_PAGE_DOWN) s->scroll_y+=scroll.viewport.height*0.5f;
+            else if (events[i].key==NX_KEY_PAGE_UP) s->scroll_y=fmaxf(0,s->scroll_y-scroll.viewport.height*0.5f);
+        }
     }
     nx_scroll_info scroll_info;
     TRY(nx_scroll_area_begin(s->ui,&scroll,&s->scroll_x,&s->scroll_y,&scroll_info));
     float y=s->scroll_y;
     TRY(nx_draw_text_layout(s->ui,s->name_label,(nx_point){32,78-y},fg,CACHE_BYTES));
     nx_text_field_desc field={0}; field.id=3; field.parent_id=7;
-    field.bounds=(nx_rect){32,104-y,width-64,38}; field.name=text("Display name");
+    field.bounds=(nx_rect){32,field_y-y,width-64,38}; field.name=text("Display name");
     field.fonts=s->fonts; field.pixels_per_em=16; field.glyph_cache_bytes=CACHE_BYTES;
     field.validate=valid_name; field.ime_window=s->window;
     if (s->window) TRY(nx_text_clipboard_for_window(s->window,&field.clipboard));
     nx_interaction_state interaction; int valid=0, submitted=0;
     TRY(nx_text_field_widget(s->ui,&field,s->name,&interaction,&valid,&submitted));
     nx_control_desc motion={0}; motion.id=4; motion.parent_id=7;
-    motion.bounds=(nx_rect){32,160-y,width-64,32}; motion.name=text("Reduce motion");
-    motion.label_layout=s->motion_label; motion.label_origin=(nx_point){70,164-y}; motion.glyph_cache_bytes=CACHE_BYTES;
+    motion.bounds=(nx_rect){32,motion_y-y,width-64,stacked_motion?24:32}; motion.name=text("Reduce motion");
+    motion.label_layout=stacked_motion?NULL:s->motion_label; motion.label_origin=(nx_point){70,motion_y+4-y}; motion.glyph_cache_bytes=CACHE_BYTES;
     TRY(nx_checkbox(s->ui,&motion,&s->motion,&interaction));
+    if (stacked_motion)
+        TRY(nx_draw_text_layout(s->ui,s->motion_label,(nx_point){32,motion_y+28-y},fg,CACHE_BYTES));
     nx_control_desc apply={0}; apply.id=5; apply.parent_id=7;
-    apply.bounds=(nx_rect){32,210-y,110,38}; apply.name=text("Apply settings");
-    apply.label_layout=s->apply_label; apply.label_origin=(nx_point){61,218-y}; apply.glyph_cache_bytes=CACHE_BYTES;
+    float apply_width=fminf(110,width-64);
+    apply.bounds=(nx_rect){32,apply_y-y,apply_width,38}; apply.name=text("Apply settings");
+    apply.label_layout=s->apply_label;
+    apply.label_origin=(nx_point){32+(apply_width-(float)nx_text_layout_width(s->apply_label))*0.5f,apply_y+8-y}; apply.glyph_cache_bytes=CACHE_BYTES;
     apply.disabled=!valid || s->pending_submission || s->next_submission==UINT64_MAX;
     TRY(nx_button(s->ui,&apply,&interaction));
     if (!s->pending_submission && s->restore_apply_focus) {
@@ -179,9 +251,9 @@ int settings_frame(settings_scene *s, float width, float height) {
                              !valid ? s->invalid_label : s->apply_error ? s->error_label :
                              !same ? s->pending_label : s->applied ? s->applied_label : s->clean_label;
     nx_semantic_desc state={0}; state.id=6; state.parent_id=7; state.role=NX_ROLE_STATUS;
-    state.bounds=(nx_rect){32,252-y,width-64,20}; state.name=text("Settings status"); state.value=text(message);
+    state.bounds=(nx_rect){32,status_y-y,width-64,(float)nx_text_layout_height(status)}; state.name=text("Settings status"); state.value=text(message);
     TRY(nx_semantics_add(s->ui,&state,NULL));
-    TRY(nx_draw_text_layout(s->ui,status,(nx_point){32,252-y},muted,CACHE_BYTES));
+    TRY(nx_draw_text_layout(s->ui,status,(nx_point){32,status_y-y},muted,CACHE_BYTES));
     TRY(nx_scroll_area_end(s->ui));
     if (s->probe_secret) {
         nx_text_field_desc secret={0}; secret.id=8; secret.parent_id=2;

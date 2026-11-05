@@ -96,6 +96,11 @@ if(NEXAUI_BUILD_TESTS)
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --small)
                 set_tests_properties(nexaui_settings_wayland_keyboard_small PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
                     RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_settings_wayland_keyboard_minimum
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --minimum)
+                set_tests_properties(nexaui_settings_wayland_keyboard_minimum PROPERTIES TIMEOUT 40 SKIP_RETURN_CODE 77
+                    RESOURCE_LOCK native_display)
                 add_test(NAME nexaui_settings_wayland_keyboard_clipboard
                     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_keyboard.py
                         $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE} --clipboard)
