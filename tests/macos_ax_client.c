@@ -124,6 +124,11 @@ int main(int argc,char **argv) {
     CHECK(AXUIElementSetAttributeValue(edit,kAXSelectedTextRangeAttribute,range)==kAXErrorSuccess);CFRelease(range);
     settle_end=now()+.25;while(now()<settle_end)CFRunLoopRunInMode(kCFRunLoopDefaultMode,.02,true);
     CHECK(text_selection_events==before_invalid && wait_string(edit,kAXSelectedTextAttribute,CFSTR("🌍")));
+    AXUIElementRef prefix=wait_find(window,2034);CHECK(prefix);
+    CHECK(AXUIElementPerformAction(prefix,kAXPressAction)==kAXErrorSuccess);
+    CHECK(wait_string(edit,kAXValueAttribute,CFSTR("a🌍")) && wait_string(edit,kAXSelectedTextAttribute,CFSTR("🌍")));
+    settle_end=now()+.25;while(now()<settle_end)CFRunLoopRunInMode(kCFRunLoopDefaultMode,.02,true);
+    CHECK(text_selection_events==before_invalid);CFRelease(prefix);
     CFRunLoopRemoveSource(CFRunLoopGetCurrent(),AXObserverGetRunLoopSource(observer),kCFRunLoopDefaultMode);CFRelease(observer);
     CHECK(AXUIElementPerformAction(button,kAXPressAction)==kAXErrorSuccess);
     CHECK(wait_string(count,kAXValueAttribute,CFSTR("1"))); /* Published application model, not an enqueue acknowledgement. */

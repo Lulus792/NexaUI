@@ -70,6 +70,12 @@ static int frame(scene *s) {
     edit.name=(nx_utf8_span){"Text field",10};edit.bounds=(nx_rect){120,390,100,30};
     edit.fonts=numeric_fonts;edit.pixels_per_em=16;edit.glyph_cache_bytes=65536;int edit_valid=0,submitted=0;
     CHECK(nx_text_field_widget(s->ui,&edit,s->edit,&state,&edit_valid,&submitted)==NX_OK);
+    d=control(2034,1,"Replace text prefix",(nx_rect){10,390,100,30});
+    CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+    if(state.clicked) {
+        CHECK(nx_text_field_set_text(s->edit,"a\xf0\x9f\x8c\x8d",5)==NX_OK);
+        CHECK(nx_text_field_set_selection(s->edit,1,5)==NX_OK);
+    }
     d=control(9,1,"Legacy radio",(nx_rect){10,220,100,30});
     CHECK(nx_radio(s->ui,&d,9,&s->legacy,&state)==NX_OK);
     if (!s->removed) {
