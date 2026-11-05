@@ -68,6 +68,10 @@ python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
 NEXAUI_REVIEW_ACCEPT=1 python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
   /tmp/terminal-view/aetheri_terminal_review_atspi_client \
   /tmp/terminal-view/aetheri_terminal_review_ax_host
+NEXAUI_REVIEW_DE_ZOOM=1 NEXAUI_REVIEW_ACCEPT=1 \
+  python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+  /tmp/terminal-view/aetheri_terminal_review_atspi_client \
+  /tmp/terminal-view/aetheri_terminal_review_ax_host
 ```
 
 The host is a headless fixture with simulated focus and geometry; it is not a
@@ -114,9 +118,13 @@ combining-mark callback is synthetic and is not a shaping or visual-quality test
   every escaped preview row in navigable pages. Cancel has initial focus;
   Escape cancels and repeated Enter does not confirm. Page navigation and
   actions are exposed to AT-SPI. Destroying an open review cancels it. The scene
-  is fixed at 640x360 logical pixels, 16 preview columns and English labels;
-  responsive sizing, localization and integration in the actual Aetheri window
-  remain open. A fresh confirmation returns bytes to the app, not to a PTY.
+  supports English and German, configurable logical size and 16–32 px text,
+  with 16 preview columns. It rejects sizes or fonts that cannot fit its
+  required content rather than clipping it. The visible source position is
+  preserved where possible on reflow. After geometry/text/language changes,
+  confirmation waits for a frame in which activation keys and buttons are
+  released. Integration in the actual Aetheri window remains open. A fresh
+  confirmation returns bytes to the app, not to a PTY.
 
 ## Evidence and remaining work
 
@@ -170,3 +178,14 @@ simulated host with simulated native focus/geometry. A stale-guard mutant was
 detected. The controlled Wayland test also connected actual asynchronous receipt
 to the scene and exercised both confirmation and cancellation. This does not prove native Aetheri integration, a physical display,
 multiple scales, localization, or human assistive-technology acceptance.
+
+The reflow update was developed on NexaUI base
+`14462a33126acbde336151bfe921be7cf4024dd5`. At 480x380 logical pixels and
+32 px German text, the test verifies all buttons, complete last-row navigation,
+preservation through resize, focus and suppression of held keyboard/pointer
+activation. Bounds were additionally checked at 400x320/16 px and 960x640/32 px.
+Dark and light software-rendered images were visually inspected;
+an independent libatspi client navigated and confirmed that German scene with
+simulated native focus/geometry. Static, shared and ASan/UBSan configurations
+passed; disabling the resize guard produced a failing counterexample. This is
+not acceptance at every size, font, native pixel scale, compositor or locale.

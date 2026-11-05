@@ -24,6 +24,11 @@ host. Real Aetheri window/input, adaptive layout, localization, independent
 clipboard peer, PTY delivery and human accessibility acceptance remain open.
 The controlled Wayland fixture also exercises receipt through modal confirmation
 and cancellation; it does not substitute for an independent clipboard peer.
+A10/D02: on base `14462a33126acbde336151bfe921be7cf4024dd5`, the standalone
+paste review supports German/English reflow and 16–32 px text. A 480x380 German
+200% headless/AT-SPI case, focus preservation and resize activation guards are
+recorded in the example. Actual native resize, physical scale, other locales,
+fonts and human assistive acceptance remain open.
 
 T04/T06, I02 and D05: the private desktop test host candidate based on
 `340ac8b58c364bc479471e05292b313e9367f857` optionally binds text-input-v3 on

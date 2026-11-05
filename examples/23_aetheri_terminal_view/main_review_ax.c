@@ -23,13 +23,16 @@ int main(int argc,char **argv) {
     nx_font *font=NULL;nx_font_collection *fonts=NULL;CHECK(nx_font_open(bytes,size,NULL,&font)==NX_OK);
     CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
     terminal_paste_guard guard={11,1,1,1};terminal_paste_flow flow={0};flow.guard=guard;
+    int zoom=getenv("NEXAUI_REVIEW_DE_ZOOM")!=NULL;
     char text[257];memset(text,'A',128);memset(text+128,'B',128);text[256]='\n';
+    if(zoom)memset(text+16,'B',240);
     CHECK(ae_terminal_paste_set(&flow.paste,text,sizeof(text))==AE_TERM_PASTE_OK);flow.state=2;
     terminal_paste_review *review=NULL;CHECK(terminal_paste_review_create(&flow,fonts,width,&review)==NX_OK);
+    if(zoom)CHECK(terminal_paste_review_configure(review,480,380,32,1)==NX_OK);
     enum terminal_review_result result;nx_utf8_span output;
     CHECK(terminal_paste_review_frame(review,guard,&result,&output)==NX_OK && result==TERMINAL_REVIEW_OPEN);
     nx_linux_accessibility_host *host=NULL;CHECK(nx_linux_accessibility_host_create(&host)==NX_OK);
-    nx_linux_accessibility_geometry geometry={0,0,640,360,0,1,1};
+    nx_linux_accessibility_geometry geometry={0,0,zoom?480:640,zoom?380:360,0,1,1};
     CHECK(nx_linux_accessibility_host_publish(host,terminal_paste_review_context(review),&geometry)==NX_OK);
     struct sigaction action={0};action.sa_handler=on_signal;sigemptyset(&action.sa_mask);
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));

@@ -40,7 +40,9 @@ int main(int argc,char **argv) {
             if(error){g_error_free(error);error=NULL;}g_object_unref(candidate);}
         if(!app)pause_ms();
     }
-    CHECK(app);AtspiAccessible *row=find(app,"Preview row",0),*next=find(app,"Next",0),*cancel=find(app,"Cancel",0);
+    int zoom=getenv("NEXAUI_REVIEW_DE_ZOOM")!=NULL;
+    CHECK(app);AtspiAccessible *row=find(app,zoom?"Vorschauzeile":"Preview row",0),
+        *next=find(app,zoom?"Weiter":"Next",0),*cancel=find(app,zoom?"Abbrechen":"Cancel",0);
     CHECK(row && next && cancel);AtspiStateSet *states=atspi_accessible_get_state_set(cancel);
     CHECK(states && atspi_state_set_contains(states,ATSPI_STATE_FOCUSED));g_object_unref(states);
     AtspiText *text=atspi_accessible_get_text_iface(row);CHECK(text);GError *error=NULL;
@@ -54,7 +56,7 @@ int main(int argc,char **argv) {
         changed=!strcmp(value,"BBBBBBBBBBBBBBBB");g_free(value);if(!changed)pause_ms();}
     CHECK(changed);
     AtspiAccessible *decision=cancel;
-    if(getenv("NEXAUI_REVIEW_ACCEPT")){decision=find(app,"Paste",0);CHECK(decision);}
+    if(getenv("NEXAUI_REVIEW_ACCEPT")){decision=find(app,zoom?"Einfügen":"Paste",0);CHECK(decision);}
     action=atspi_accessible_get_action_iface(decision);CHECK(action);
     CHECK(atspi_action_do_action(action,0,&error) && !error);g_object_unref(action);
     if(decision!=cancel)g_object_unref(decision);
