@@ -62,7 +62,9 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         if(nx_text_field_set_read_only(v->query,1)!=NX_OK)goto done;
         guarded=1;
     }
-    if(nx_begin_frame(v->context,width,height,0)!=NX_OK)goto done;
+    nx_theme theme;
+    if(nx_theme_preset(v->model->contrast?NX_THEME_HIGH_CONTRAST:NX_THEME_DARK,&theme)!=NX_OK ||
+       nx_context_set_theme(v->context,&theme)!=NX_OK || nx_begin_frame(v->context,width,height,0)!=NX_OK)goto done;
     nx_semantic_desc root={0};root.id=1;root.role=NX_ROLE_WINDOW;root.bounds=(nx_rect){0,0,width,height};
     root.name=(nx_utf8_span){"Aetheri Desktop",15};
     if(nx_semantics_add(v->context,&root,NULL)!=NX_OK)goto done;
@@ -123,18 +125,32 @@ int aetheri_desktop_view_frame(aetheri_desktop_view *v,float width,float height,
         v->revealed_width=width;v->revealed_height=height;
         nx_scroll_info info;
         if(nx_scroll_area_begin(v->context,&scroll,&v->scroll_x,&v->scroll_y,&info)!=NX_OK)goto done;
+        nx_semantic_desc list={0};list.id=31;list.parent_id=30;list.role=NX_ROLE_LIST;
+        list.name=scroll.name;list.bounds=scroll.viewport;
+        if(nx_semantics_add(v->context,&list,NULL)!=NX_OK)goto done;
+        nx_color surface,hover,selected_color,foreground,selected_text,disabled_text;
+        if(nx_theme_color(v->context,NX_COLOR_SURFACE_RAISED,&surface)!=NX_OK ||
+           nx_theme_color(v->context,NX_COLOR_HOVER,&hover)!=NX_OK ||
+           nx_theme_color(v->context,NX_COLOR_SELECTION,&selected_color)!=NX_OK ||
+           nx_theme_color(v->context,NX_COLOR_TEXT,&foreground)!=NX_OK ||
+           nx_theme_color(v->context,NX_COLOR_SELECTION_TEXT,&selected_text)!=NX_OK ||
+           nx_theme_color(v->context,NX_COLOR_DISABLED_TEXT,&disabled_text)!=NX_OK)goto done;
         for(size_t i=0;i<result_count;++i) {
-            nx_control_desc d={0};
-            d.id=results[i].window ? UINT64_C(0x100000000)+results[i].window : UINT64_C(0x200000000)+(uint64_t)results[i].app;
-            d.parent_id=30;d.bounds=(nx_rect){24,scroll.viewport.y-v->scroll_y+result_y[i],width-48,result_height[i]};
-            d.name=(nx_utf8_span){results[i].label,strlen(results[i].label)};d.label_layout=result_layouts[i];
-            d.label_origin=(nx_point){d.bounds.x+8,d.bounds.y+8};d.glyph_cache_bytes=1024u*1024u;
-            d.disabled=results[i].app && v->model->pending[results[i].app];
-            nx_interaction_state state;if(nx_button(v->context,&d,&state)!=NX_OK)goto done;
-            if(results[i].window==v->model->selected && results[i].app==v->model->selected_app) {
-                nx_color border;if(nx_theme_color(v->context,NX_COLOR_BORDER,&border)!=NX_OK ||
-                    nx_stroke_rect(v->context,d.bounds,2,border)!=NX_OK)goto done;
-            }
+            nx_widget_desc d={0};
+            d.semantic.id=results[i].window ? UINT64_C(0x100000000)+results[i].window : UINT64_C(0x200000000)+(uint64_t)results[i].app;
+            d.semantic.parent_id=31;d.semantic.role=NX_ROLE_LIST_ITEM;
+            d.semantic.bounds=(nx_rect){24,scroll.viewport.y-v->scroll_y+result_y[i],width-48,result_height[i]};
+            d.semantic.name=(nx_utf8_span){results[i].label,strlen(results[i].label)};
+            int is_selected=results[i].window==v->model->selected && results[i].app==v->model->selected_app;
+            int disabled=results[i].app && v->model->pending[results[i].app];
+            d.semantic.state=(is_selected?NX_SEM_SELECTED:0u)|(disabled?NX_SEM_DISABLED:0u);
+            d.semantic.actions=NX_ACTION_PRESS|NX_ACTION_FOCUS;
+            d.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
+            nx_interaction_state state;if(nx_widget_register(v->context,&d,&state)!=NX_OK)goto done;
+            nx_color fill=is_selected?selected_color:state.hovered?hover:surface;
+            nx_color text=disabled?disabled_text:is_selected?selected_text:foreground;
+            if(nx_fill_rect(v->context,d.semantic.bounds,fill)!=NX_OK ||
+               nx_draw_text_layout(v->context,result_layouts[i],(nx_point){d.semantic.bounds.x+8,d.semantic.bounds.y+8},text,1024u*1024u)!=NX_OK)goto done;
             if(state.clicked) {
                 pending.kind=results[i].window?AETHERI_DESKTOP_ACTIVATE:AETHERI_DESKTOP_LAUNCH;
                 pending.window=results[i].window;pending.app=results[i].app;

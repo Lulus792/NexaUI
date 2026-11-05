@@ -29,8 +29,17 @@ int main(int argc,char **argv) {
     key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_DOWN;
     CHECK(nx_context_queue_event(ctx,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&key)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_SELECT && intent.app==AE_DESKTOP_TERMINAL && !intent.window);
+    uint32_t selected_semantic;nx_semantic_view selected_state;
+    CHECK(nx_semantics_find(ctx,UINT64_C(0x200000000)+AE_DESKTOP_SETTINGS,&selected_semantic)==NX_OK &&
+          nx_semantics_get(ctx,selected_semantic,&selected_state)==NX_OK && selected_state.role==NX_ROLE_LIST_ITEM && (selected_state.state&NX_SEM_SELECTED));
     CHECK(model.selected_app==AE_DESKTOP_SETTINGS);ae_desktop_model_select(&model,1);++revision;
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_semantics_find(ctx,UINT64_C(0x200000000)+AE_DESKTOP_TERMINAL,&selected_semantic)==NX_OK &&
+          nx_semantics_get(ctx,selected_semantic,&selected_state)==NX_OK && (selected_state.state&NX_SEM_SELECTED));
+    model.contrast=true;++revision;
+    CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_NONE);
+    CHECK(nx_semantics_find(ctx,UINT64_C(0x200000000)+AE_DESKTOP_TERMINAL,&selected_semantic)==NX_OK &&
+          nx_semantics_get(ctx,selected_semantic,&selected_state)==NX_OK && (selected_state.state&NX_SEM_SELECTED));
     key=(nx_event){0};key.type=NX_EVENT_KEY_DOWN;key.key=NX_KEY_ENTER;
     CHECK(nx_context_queue_event(ctx,&key)==NX_OK);key.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&key)==NX_OK);
     CHECK(aetheri_desktop_view_frame(view,640,480,revision,&intent) && intent.kind==AETHERI_DESKTOP_LAUNCH && intent.app==AE_DESKTOP_TERMINAL);

@@ -26,9 +26,10 @@ them and advances its model revision. On a changed revision the query field is
 read-only for that frame, so queued older edits do not alter its published text
 or produce an intent; it becomes editable again for the next frame. That frame's
 semantic snapshot also reports read-only. Up/Down in the search field proposes
-a selected result to the host; Enter proposes activation. The selected row is
-outlined and revealed after a model revision. Native selected-item semantics
-and Aetheri's Tab behavior remain open, as do real window activation, native
+a selected result to the host; Enter proposes activation. The model-confirmed row
+is highlighted, exposed as a selected list item and revealed after a model
+revision. Native selection-owner actions and independent assistive-client
+verification remain open, as do Aetheri's Tab behavior, real window activation, native
 input and IME, borrowed-surface presentation,
 AT-SPI publication, scaling, multi-output ownership and the original process
 owner integration remain open. The test uses synthetic context events and
