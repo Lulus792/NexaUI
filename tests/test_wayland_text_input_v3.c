@@ -335,6 +335,29 @@ int main(int argc, char **argv) {
     CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && valid);
     CHECK(nx_end_frame(numeric_context)==NX_OK);
     CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==567);
+    /* Even an invalid IME draft can be bidirectional. Visual Right from the
+       end of this RTL run moves to its middle rather than staying at byte end. */
+    atomic_store(&server.numeric_commit,2);
+    CHECK(nx_numeric_field_set_value(number,5)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    wl_surface_commit(nx_window_wayland_surface(window));
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    CHECK(nx_window_route_events(window,numeric_context,&routed)==NX_OK && routed>=3);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && !valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==4 && !memcmp(draft.data,"\xd7\x90\xd7\x91",4));
+    nx_event right={0}; right.type=NX_EVENT_TEXT_COMMAND; right.text_command=NX_TEXT_COMMAND_MOVE_RIGHT;
+    nx_event digit={0}; digit.type=NX_EVENT_TEXT; digit.scalar='1';
+    CHECK(nx_context_queue_event(numeric_context,&right)==NX_OK && nx_context_queue_event(numeric_context,&digit)==NX_OK);
+    CHECK(nx_begin_frame(numeric_context,160,60,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(numeric_context,&numeric_desc,number,&interaction,&valid)==NX_OK && !valid);
+    CHECK(nx_end_frame(numeric_context)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==5 && !memcmp(draft.data,"\xd7\x90" "1" "\xd7\x91",5));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==5);
     nx_context_destroy(numeric_context); nx_numeric_field_destroy(number);
     nx_font_collection_destroy(fonts); nx_font_close(font);
     /* A different client of the same display (such as Vulkan WSI) can read

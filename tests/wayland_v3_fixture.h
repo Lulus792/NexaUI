@@ -432,7 +432,8 @@ static void text_commit(struct wl_client *client,
             zwp_text_input_v3_send_preedit_string(resource, "na\xc3\xaf", 2, 2);
         } else if (atomic_load(&server->numeric_commit)) {
             zwp_text_input_v3_send_delete_surrounding_text(resource, 1, 0);
-            zwp_text_input_v3_send_commit_string(resource, "67");
+            zwp_text_input_v3_send_commit_string(resource,
+                atomic_load(&server->numeric_commit)==2 ? "\xd7\x90\xd7\x91" : "67");
             zwp_text_input_v3_send_preedit_string(resource, "", 0, 0);
         } else if (atomic_load(&server->field_surrounding_ok) &&
                    server->surrounding_length == 4 &&

@@ -283,6 +283,10 @@ struct nx_numeric_field {
     uint64_t last_frame_serial;
     size_t next_event_index;
     double scroll_x, scroll_y;
+    double vertical_x;
+    int vertical_x_valid;
+    nx_text_caret command_caret;
+    int command_caret_valid;
     nx_field_pointer pointer;
     int suppress_caret_reveal;
 };
@@ -6351,6 +6355,7 @@ nx_result nx_numeric_field_set_value(nx_numeric_field *field, double value) {
     ++field->text_value.revision;
     field->committed = value;
     field->suppress_caret_reveal=0;
+    field->command_caret_valid=field->vertical_x_valid=0;
     field->pointer=(nx_field_pointer){0};
     field->last_context = NULL;
     field->last_frame_serial = 0;
@@ -6458,6 +6463,43 @@ static int nx_field_pointer_event(const nx_event *event) {
         event->type==NX_EVENT_POINTER_UP || event->type==NX_EVENT_TOUCH_UP;
 }
 
+static uint32_t nx_field_key_command(const nx_event *event);
+static nx_result nx_field_visual_command(const nx_text_field_desc *desc,
+                                         nx_text_field *field,uint32_t value);
+static int nx_field_is_visual_command(uint32_t value) {
+    uint32_t command=nx_text_command_base(value);
+    return command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_RIGHT ||
+        command==NX_TEXT_COMMAND_MOVE_WORD_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_RIGHT ||
+        (command>=NX_TEXT_COMMAND_MOVE_UP && command<=NX_TEXT_COMMAND_LINE_RIGHT) ||
+        command==NX_TEXT_COMMAND_DELETE_LINE_START || command==NX_TEXT_COMMAND_DELETE_LINE_END ||
+        (command>=NX_TEXT_COMMAND_SCROLL_LINE_UP && command<=NX_TEXT_COMMAND_SCROLL_DOCUMENT_END) ||
+        command==NX_TEXT_COMMAND_MOVE_PAGE_UP || command==NX_TEXT_COMMAND_MOVE_PAGE_DOWN;
+}
+
+static nx_result nx_numeric_visual_command(const nx_text_field_desc *desc,
+                                            nx_numeric_field *field,uint32_t value) {
+    nx_text_field visual={0};
+    visual.buffer=field->buffer;
+    visual.vertical_x=field->vertical_x; visual.vertical_x_valid=field->vertical_x_valid;
+    visual.scroll_x=field->scroll_x; visual.scroll_y=field->scroll_y;
+    visual.command_caret=field->command_caret; visual.command_caret_valid=field->command_caret_valid;
+    visual.suppress_caret_reveal=field->suppress_caret_reveal;
+    uint32_t command=nx_text_command_base(value);
+    int scrolling=command>=NX_TEXT_COMMAND_SCROLL_LINE_UP && command<=NX_TEXT_COMMAND_SCROLL_DOCUMENT_END;
+    if (command!=NX_TEXT_COMMAND_PAGE_UP && command!=NX_TEXT_COMMAND_PAGE_DOWN && !scrolling)
+        visual.suppress_caret_reveal=0;
+    if ((value&NX_TEXT_COMMAND_EXTEND_SELECTION) &&
+        (command==NX_TEXT_COMMAND_PAGE_UP || command==NX_TEXT_COMMAND_PAGE_DOWN)) visual.suppress_caret_reveal=0;
+    nx_result result=nx_field_visual_command(desc,&visual,value);
+    if (result==NX_OK) {
+        field->vertical_x=visual.vertical_x; field->vertical_x_valid=visual.vertical_x_valid;
+        field->scroll_x=visual.scroll_x; field->scroll_y=visual.scroll_y;
+        field->command_caret=visual.command_caret; field->command_caret_valid=visual.command_caret_valid;
+        field->suppress_caret_reveal=visual.suppress_caret_reveal;
+    }
+    return result;
+}
+
 nx_result nx_numeric_field_widget(nx_context *ctx,
                                   const nx_numeric_field_desc *desc,
                                   nx_numeric_field *field,
@@ -6509,7 +6551,10 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
                                   &field->buffer,&field->text_value,NULL,&value_changed,0);
     if (result != NX_OK) goto rollback;
-    if (value_changed) { field->pointer.active = 0; field->suppress_caret_reveal = 0; }
+    if (value_changed) {
+        field->pointer.active=0; field->suppress_caret_reveal=0;
+        field->command_caret_valid=field->vertical_x_valid=0;
+    }
     if (field->ime_window && ctx->ime_active_window==field->ime_window &&
         ctx->ime_active_id==desc->id && field->ime_published_revision &&
         field->ime_published_revision!=nx_buffer_ime_revision(field->buffer,field,&field->text_value) &&
@@ -6544,7 +6589,10 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                         &field->scroll_x,&field->scroll_y,event->x,event->y,press,
                         (event->modifiers&NX_MOD_SHIFT)!=0,0,&hit,&applied);
                     if (result!=NX_OK) goto rollback;
-                    if (applied) field->suppress_caret_reveal=1;
+                    if (applied) {
+                        field->suppress_caret_reveal=1;
+                        field->command_caret=hit; field->command_caret_valid=1; field->vertical_x_valid=0;
+                    }
                 }
                 if (event->type==NX_EVENT_POINTER_UP || event->type==NX_EVENT_TOUCH_UP)
                     field->pointer.active=0;
@@ -6566,7 +6614,10 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                         nx_text_buffer_delete_surrounding(field->buffer,event->ime_before,event->ime_after);
                     if (result == NX_ERROR_ARGUMENT) { ime_batch_accepted=0; result=NX_OK; }
                     if (result != NX_OK) goto rollback;
-                    if (ime_batch_accepted) { field->pointer.active=0; field->suppress_caret_reveal=0; }
+                    if (ime_batch_accepted) {
+                        field->pointer.active=0; field->suppress_caret_reveal=0;
+                        field->command_caret_valid=field->vertical_x_valid=0;
+                    }
                 }
                 ++field->next_event_index; continue;
             }
@@ -6581,7 +6632,15 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             }
             if (event->type == NX_EVENT_KEY_DOWN ||
                 event->type == NX_EVENT_TEXT || event->type == NX_EVENT_TEXT_COMMAND) {
-                field->pointer.active=0; field->suppress_caret_reveal=0;
+                field->pointer.active=0;
+                uint32_t visual_command=event->type==NX_EVENT_KEY_DOWN ? nx_field_key_command(event) :
+                    event->type==NX_EVENT_TEXT_COMMAND ? event->text_command : 0;
+                if (visual_command && nx_field_is_visual_command(visual_command)) {
+                    result=nx_numeric_visual_command(&pointer_desc,field,visual_command);
+                    if (result!=NX_OK) goto rollback;
+                    ++field->next_event_index; continue;
+                }
+                field->suppress_caret_reveal=0;
                 int handled = 0;
                 /* IME replacement is a batch: do not silently discard a
                    committed scalar after accepting its preceding deletion. An
@@ -6593,6 +6652,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                         desc->minimum, desc->maximum, &field->committed,
                         &handled, &valid);
                 if (result != NX_OK) goto rollback;
+                if (handled) field->command_caret_valid=field->vertical_x_valid=0;
             }
             ++field->next_event_index;
         }
@@ -6606,7 +6666,10 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                 &field->scroll_x,&field->scroll_y,ctx->input.pointer_x,ctx->input.pointer_y,
                 0,0,1,&hit,&applied);
             if (result!=NX_OK) goto rollback;
-            if (applied) field->suppress_caret_reveal=1;
+            if (applied) {
+                field->suppress_caret_reveal=1;
+                field->command_caret=hit; field->command_caret_valid=1; field->vertical_x_valid=0;
+            }
         }
     }
     result = nx_numeric_field_text(field, &draft);
@@ -6647,7 +6710,8 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
                             desc->pixels_per_em, desc->glyph_cache_bytes,
                             field->buffer, 0, desc->disabled, !valid,
-                            state.focused, NULL, ime_preedit, ime_begin, ime_end, NULL, !field->suppress_caret_reveal,
+                            state.focused, NULL, ime_preedit, ime_begin, ime_end,
+                            field->command_caret_valid?&field->command_caret:NULL, !field->suppress_caret_reveal,
                             &field->scroll_x,
                             &field->scroll_y, &caret_rect, &caret_visible);
     if (result != NX_OK) goto rollback;
@@ -7055,11 +7119,7 @@ static nx_result nx_field_text_command(const nx_text_field_desc *desc,nx_text_fi
         if (result==NX_OK && key!=NX_KEY_C) field->command_caret_valid=field->vertical_x_valid=0;
         return result;
     }
-    if (command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_RIGHT ||
-        command==NX_TEXT_COMMAND_MOVE_WORD_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_RIGHT ||
-        (command>=NX_TEXT_COMMAND_MOVE_UP && command<=NX_TEXT_COMMAND_LINE_RIGHT) ||
-        command==NX_TEXT_COMMAND_DELETE_LINE_START || command==NX_TEXT_COMMAND_DELETE_LINE_END || scrolling ||
-        command==NX_TEXT_COMMAND_MOVE_PAGE_UP || command==NX_TEXT_COMMAND_MOVE_PAGE_DOWN)
+    if (nx_field_is_visual_command(event->text_command))
         return nx_field_visual_command(desc,field,event->text_command);
     int handled=0; nx_result result=nx_text_buffer_apply_event(field->buffer,event,&handled);
     if (result==NX_OK && handled) field->command_caret_valid=field->vertical_x_valid=0;

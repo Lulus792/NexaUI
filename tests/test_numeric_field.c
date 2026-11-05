@@ -349,10 +349,35 @@ static int test_native_text_commands(void) {
     return 0;
 }
 
+static int test_visual_text_commands(void) {
+    uint8_t bytes[512]; font_fixture(bytes);
+    nx_font *font=NULL; nx_font_collection *fonts=NULL;
+    nx_numeric_field *field=NULL; nx_context *ctx=NULL;
+    CHECK(nx_font_open(bytes,sizeof(bytes),NULL,&font)==NX_OK);
+    CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
+    CHECK(nx_numeric_field_create(111,4096,&field)==NX_OK && nx_context_create(NULL,&ctx)==NX_OK);
+    nx_numeric_field_desc desc={0}; desc.id=1; desc.bounds=(nx_rect){0,0,80,24};
+    desc.name=(nx_utf8_span){"Number",6}; desc.fonts=fonts; desc.pixels_per_em=20;
+    desc.glyph_cache_bytes=65536; desc.minimum=-10000; desc.maximum=10000;
+    CHECK(numeric_frame(ctx,field,&desc,1) && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_LINE_LEFT) && queue_text(ctx,'5'));
+    CHECK(numeric_frame(ctx,field,&desc,1) && expect_field(field,"5111",111));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_LINE_RIGHT));
+    CHECK(queue_command(ctx,(nx_text_command)(NX_TEXT_COMMAND_MOVE_LEFT|NX_TEXT_COMMAND_EXTEND_SELECTION)));
+    CHECK(queue_text(ctx,'5') && numeric_frame(ctx,field,&desc,1) && expect_field(field,"5115",111));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_UNDO) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"5111",111));
+    CHECK(queue_key(ctx,NX_KEY_HOME,0) && queue_key(ctx,NX_KEY_RIGHT,NX_MOD_SHIFT) && queue_text(ctx,'1'));
+    CHECK(numeric_frame(ctx,field,&desc,1) && expect_field(field,"1111",111));
+    nx_context_destroy(ctx); nx_numeric_field_destroy(field);
+    nx_font_collection_destroy(fonts); nx_font_close(font);
+    return 0;
+}
+
 int main(void) {
     if (test_numeric_field()) return 1;
     if (test_retry_after_paint_failure()) return 1;
     if (test_native_text_commands()) return 1;
+    if (test_visual_text_commands()) return 1;
     puts("numeric field tests passed");
     return 0;
 }

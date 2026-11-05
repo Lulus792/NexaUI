@@ -44,9 +44,10 @@ input path. A numeric field can opt into the borrowed-window IME path with
 `nx_numeric_field_set_ime_window`; preedit and revision-checked native
 replacement then use the same transport and painting as general fields. IME
 commits may produce an invalid visible draft, which never updates the committed
-number until a valid Enter. Clipboard callbacks and visual-layout navigation
-remain separate work. Other native IME implementations and interactive acceptance
-need their own checks.
+number until a valid Enter. Numeric fields reuse the general-field visual
+navigation and selection logic, including caret affinity for bidirectional
+drafts. Clipboard callbacks remain separate work. Other native IME
+implementations and interactive acceptance need their own checks.
 See the [native command report](../quality/macos-input-commands-report.md).
 
 General and numeric text fields now support left-button drag selection and
