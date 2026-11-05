@@ -339,8 +339,9 @@ typedef struct nx_event {
     };
     int repeat;
     int focused;
-    /* Wayland IME TEXT and DELETE events carry the editor target and
-       text/selection revision. Match both fields before editing. The v3
+    /* Wayland IME TEXT and DELETE events, and Windows WM_IME_CHAR results
+       from a tracked composition, carry the editor target and text/selection
+       revision. Match both fields before editing. The Wayland v3
        DELETE_SURROUNDING counts UTF-8 bytes outside the selection. The v1
        DELETE_RANGE starts at cursor + ime_index and spans ime_length bytes. */
     uint64_t ime_target, ime_revision;

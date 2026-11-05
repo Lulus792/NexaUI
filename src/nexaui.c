@@ -2747,6 +2747,11 @@ nx_result nx_end_frame(nx_context *ctx) {
     ctx->ime_active_id = ctx->ime_active_window ? ctx->ime_candidate_id : 0;
     nx_result selection_result = nx_multi_finish(ctx);
     if (selection_result != NX_OK) return selection_result;
+#if defined(_WIN32)
+    if (ctx->ime_active_window)
+        nx_windows_window_set_ime_target(ctx->ime_active_window,
+            ctx->ime_active_id,ctx->ime_candidate_revision);
+#endif
     ctx->state = 2u;
     nx_text_values_finish(ctx);
     nx_multi_requests_clear(ctx);

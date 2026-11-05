@@ -2,6 +2,11 @@
 #define NEXAUI_PRIVATE_TEXT_VALUE_H
 #include "nexaui/nexaui.h"
 
+#if defined(_WIN32)
+/* Internal editor identity tracking; does not expose native surrounding text. */
+void nx_windows_window_set_ime_target(nx_window *window, uint64_t target, uint64_t revision);
+#endif
+
 #if defined(__linux__)
 /* Private single-transfer clipboard read. The caller frees *out_bytes. */
 nx_result nx_linux_window_clipboard_fetch_text(nx_window *window, char **out_bytes,

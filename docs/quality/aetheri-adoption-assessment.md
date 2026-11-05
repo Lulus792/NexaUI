@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Windows numeric IME result identity (2026-11-05)
+
+Source `c0aeaada667f3e6644851636ec795f6e650e7486` associates a controlled
+`WM_IME_CHAR` from an active self-drawn composition with its editor and revision.
+The numeric field can retain an invalid IME result as an undoable draft without
+committing it; regular `WM_CHAR` remains ordinary filtered input. A changed
+editor/revision or lost focus invalidates the tracked composition. The native
+surrounding-text API remains unsupported on Windows.
+
+On Windows 10.0.26200 x64, MSVC 19.38.33145, the shared Debug IME and numeric
+tests each passed ten consecutive runs, and the three UI Automation value test
+variants each passed five runs. Static Debug IME and numeric tests each passed
+five runs. The fixture covers a supplementary Unicode scalar, invalid draft,
+undo, valid multi-character result, commit, stale model, focus loss and legacy
+untargeted input. The same test with unchanged main source
+`c131ea0ce62859984e160e388b6bc00aad620ac6` failed at the invalid-draft
+assertion. These are injected Win32 messages, not evidence from an installed
+IME or a human screenreader; ordering and cancellation across real IMEs and
+Aetheri acceptance remain open. T05 is not complete.
+
 ## Controlled Windows numeric IME composition (2026-11-05)
 
 Source `4ce0a36a231fab58338063f1e75f492f51337812` extends the existing
