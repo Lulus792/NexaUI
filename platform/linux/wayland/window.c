@@ -2532,7 +2532,7 @@ typedef struct nx_wayland_poll_set {
 } nx_wayland_poll_set;
 
 static nx_wayland_poll_set nx_wayland_make_poll_set(nx_wayland_window *window,
-    uint32_t timeout_ms, int needs_write, int extra_fd, int writable, int app_fd) {
+    uint32_t timeout_ms, int needs_write, int extra_fd, int writable, int app_fd,uint32_t interests) {
     nx_wayland_poll_set set = {0};
     set.fds[set.count++] = (struct pollfd){wl_display_get_fd(window->display),
         (short)(POLLIN | (needs_write ? POLLOUT : 0)), 0};
@@ -2547,7 +2547,8 @@ static nx_wayland_poll_set nx_wayland_make_poll_set(nx_wayland_window *window,
     if (extra_fd >= 0) set.fds[set.count++] = (struct pollfd){extra_fd,
         (short)(POLLIN | (writable ? POLLOUT : 0)), 0};
     set.app_index = set.count;
-    if (app_fd >= 0) set.fds[set.count++] = (struct pollfd){app_fd, POLLIN, 0};
+    if (app_fd >= 0) set.fds[set.count++] = (struct pollfd){app_fd,
+        (short)(((interests&NX_WINDOW_FD_READABLE)?POLLIN:0)|((interests&NX_WINDOW_FD_WRITABLE)?POLLOUT:0)),0};
     set.timeout = timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
     if (window->async_active) {
         uint64_t now = nx_wayland_now_ns();
@@ -2600,7 +2601,7 @@ static nx_result nx_wayland_poll_service(nx_wayland_window *window, uint32_t *ti
 }
 
 static nx_result nx_wayland_poll_prepare(nx_wayland_window *window,
-    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, nx_wayland_poll_set *out) {
+    uint32_t timeout_ms, int extra_fd, int writable, int app_fd,uint32_t interests, nx_wayland_poll_set *out) {
     nx_result service=nx_wayland_poll_service(window,&timeout_ms);
     if (service!=NX_OK) return service;
     while (wl_display_prepare_read(window->display) != 0) {
@@ -2620,7 +2621,7 @@ static nx_result nx_wayland_poll_prepare(nx_wayland_window *window,
         notify_drop = 1;
         timeout_ms = 0;
     }
-    *out=nx_wayland_make_poll_set(window,timeout_ms,needs_write,extra_fd,writable,app_fd);
+    *out=nx_wayland_make_poll_set(window,timeout_ms,needs_write,extra_fd,writable,app_fd,interests);
     out->notify_drop=notify_drop;
     return NX_OK;
 }
@@ -2631,6 +2632,7 @@ static nx_result nx_wayland_poll_read(nx_wayland_window *window, nx_wayland_poll
     if (ready>0 && app_fd>=0 && app_events) {
         short revents=fds[set->app_index].revents;
         if (revents&POLLIN) *app_events|=NX_WINDOW_FD_READABLE;
+        if (revents&POLLOUT) *app_events|=NX_WINDOW_FD_WRITABLE;
         if (revents&POLLHUP) *app_events|=NX_WINDOW_FD_HANGUP;
         if (revents&(POLLERR|POLLNVAL)) *app_events|=NX_WINDOW_FD_ERROR;
     }
@@ -2678,9 +2680,9 @@ static nx_result nx_wayland_poll_finish(nx_wayland_window *window, nx_wayland_po
 }
 
 nx_result nx_wayland_window_poll_with_fd(nx_wayland_window *window,
-    uint32_t timeout_ms, int extra_fd, int writable, int app_fd, uint32_t *app_events) {
+    uint32_t timeout_ms, int extra_fd, int writable, int app_fd,uint32_t interests, uint32_t *app_events) {
     nx_wayland_poll_set set;
-    nx_result result=nx_wayland_poll_prepare(window,timeout_ms,extra_fd,writable,app_fd,&set);
+    nx_result result=nx_wayland_poll_prepare(window,timeout_ms,extra_fd,writable,app_fd,interests,&set);
     if (result!=NX_OK) return result;
     int ready=poll(set.fds,set.count,set.timeout);
     int poll_errno=errno;
@@ -2698,7 +2700,7 @@ int nx_wayland_test_poll_many_fault_pending(void) { return nx_wayland_many_fault
    callbacks may run while any display has a prepared read reservation. */
 nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t count,
     uint32_t timeout_ms, const int *extra_fds, const int *writable,
-    int app_fd, uint32_t *app_events) {
+    int app_fd,uint32_t interests, uint32_t *app_events) {
     nx_wayland_poll_set sets[16]; size_t offsets[16];
     struct pollfd fds[16*9+1]; nfds_t total=0; size_t prepared=0;
     nx_result result=NX_OK, reads[16]={0}; nx_wayland_window *failed=NULL;
@@ -2732,14 +2734,15 @@ nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t coun
             if(errno!=EAGAIN) {result=NX_ERROR_PLATFORM;failed=w;goto cancel;}
             needs_write=1;
         } else if(w->drop_finish_pending) {notify_drop=1;timeout=0;}
-        sets[i]=nx_wayland_make_poll_set(w,(uint32_t)timeout,needs_write,extra_fds[i],writable[i],-1);
+        sets[i]=nx_wayland_make_poll_set(w,(uint32_t)timeout,needs_write,extra_fds[i],writable[i],-1,0);
         sets[i].notify_drop=notify_drop;
         if(sets[i].timeout<timeout) timeout=sets[i].timeout;
         offsets[i]=total;
         for(nfds_t k=0;k<sets[i].count;++k) fds[total++]=sets[i].fds[k];
     }
     nfds_t app_index=total;
-    if(app_fd>=0) fds[total++]=(struct pollfd){app_fd,POLLIN,0};
+    if(app_fd>=0) fds[total++]=(struct pollfd){app_fd,
+        (short)(((interests&NX_WINDOW_FD_READABLE)?POLLIN:0)|((interests&NX_WINDOW_FD_WRITABLE)?POLLOUT:0)),0};
     int ready, poll_errno;
 #ifdef NEXAUI_WAYLAND_TEST_HOOKS
     if(nx_wayland_many_fault==3) {nx_wayland_many_fault=0;ready=-1;poll_errno=EINVAL;}
@@ -2753,6 +2756,7 @@ nx_result nx_wayland_windows_poll(nx_wayland_window *const *windows, size_t coun
     if(ready>0 && app_fd>=0) {
         short events=fds[app_index].revents;
         if(events&POLLIN)*app_events|=NX_WINDOW_FD_READABLE;
+        if(events&POLLOUT)*app_events|=NX_WINDOW_FD_WRITABLE;
         if(events&POLLHUP)*app_events|=NX_WINDOW_FD_HANGUP;
         if(events&(POLLERR|POLLNVAL))*app_events|=NX_WINDOW_FD_ERROR;
     }
@@ -3929,7 +3933,7 @@ nx_result nx_wayland_window_test_ime_state(nx_wayland_window *window,
 #endif
 
 nx_result nx_wayland_window_poll(nx_wayland_window *window, uint32_t timeout_ms) {
-    return nx_wayland_window_poll_with_fd(window, timeout_ms, -1, 0, -1, NULL);
+    return nx_wayland_window_poll_with_fd(window, timeout_ms, -1, 0, -1, 0, NULL);
 }
 void nx_wayland_window_ax_geometry(nx_wayland_window *window, nx_linux_ax_geometry *out) {
     *out = (nx_linux_ax_geometry){0};

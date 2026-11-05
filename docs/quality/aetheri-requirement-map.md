@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W10/I07/P04: the candidate based on `1b8020e694236d3a2151345ea07064040b9e87fa`
+adds optional writable interest to Linux single-window and Wayland group
+waits. Controlled nonblocking socket tests exercise backpressure and wakeup;
+the native terminal IME test queues one validated commit for its original
+Aetheri PTY. These are bounded examples, not evidence of production PTY
+backpressure, session switching, or Aetheri acceptance.
+
 T07/T08/A05: the [terminal model consumer](../../examples/23_aetheri_terminal_view/README.md)
 uses Aetheri model revision `87996e2f12128b172a80b325ad3b539df6aee527`.
 The 0.1.15 snapshot extension was developed on NexaUI base

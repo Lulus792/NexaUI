@@ -1210,14 +1210,14 @@ static void nx_x11_dispatch_pending(nx_x11_window *window) {
 }
 
 nx_result nx_x11_window_poll_with_fd(nx_x11_window *window, uint32_t timeout_ms,
-                                      int extra_fd, int writable, int app_fd, uint32_t *app_events) {
+                                      int extra_fd, int writable, int app_fd,uint32_t interests, uint32_t *app_events) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_x11_on_owner_thread(window) || !window->alive)
         return NX_ERROR_STATE;
     {
         struct pollfd fds[3] = {{ConnectionNumber(window->display), POLLIN, 0},
             {extra_fd, (short)(POLLIN | (writable ? POLLOUT : 0)), 0},
-            {app_fd,POLLIN,0}};
+            {app_fd,(short)(((interests&NX_WINDOW_FD_READABLE)?POLLIN:0)|((interests&NX_WINDOW_FD_WRITABLE)?POLLOUT:0)),0}};
         int timeout = XPending(window->display) ? 0 : timeout_ms > INT_MAX ? INT_MAX : (int)timeout_ms;
         int ready = poll(fds,3,timeout);
         if (ready < 0 && errno != EINTR) return NX_ERROR_PLATFORM;
@@ -1226,6 +1226,7 @@ nx_result nx_x11_window_poll_with_fd(nx_x11_window *window, uint32_t timeout_ms,
         if (ready>0 && app_fd>=0 && app_events) {
             short revents=fds[2].revents;
             if (revents&POLLIN) *app_events|=NX_WINDOW_FD_READABLE;
+            if (revents&POLLOUT) *app_events|=NX_WINDOW_FD_WRITABLE;
             if (revents&POLLHUP) *app_events|=NX_WINDOW_FD_HANGUP;
             if (revents&(POLLERR|POLLNVAL)) *app_events|=NX_WINDOW_FD_ERROR;
         }
@@ -1950,7 +1951,7 @@ nx_result nx_x11_window_test_ime_clear(nx_x11_window *window) {
 #endif
 
 nx_result nx_x11_window_poll(nx_x11_window *window, uint32_t timeout_ms) {
-    return nx_x11_window_poll_with_fd(window, timeout_ms, -1, 0, -1, NULL);
+    return nx_x11_window_poll_with_fd(window, timeout_ms, -1, 0, -1, 0, NULL);
 }
 void nx_x11_window_ax_geometry(nx_x11_window *window, nx_linux_ax_geometry *out) {
     *out = (nx_linux_ax_geometry){0};

@@ -1,4 +1,4 @@
-# Core API (0.1.17)
+# Core API (0.1.18)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -19,7 +19,7 @@ the CMake package version 0.1.1 or newer in the same minor series. The
 `nx_numeric_field_set_clipboard` requires 0.1.7 or newer; nested overlay
 scopes require 0.1.8 or newer; Wayland IME commit-boundary flags require
 0.1.16 or newer; the guarded Wayland preedit snapshot requires 0.1.17 or
-newer. This does not declare a
+newer; Linux descriptor interest selection requires 0.1.18 or newer. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full

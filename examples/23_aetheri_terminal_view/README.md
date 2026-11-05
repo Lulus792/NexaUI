@@ -551,8 +551,8 @@ The owner opens the shell before UI initialization, validates each complete
 native commit before sending it to its own PTY, observes the resulting shell
 output, and waits for shell exit and PTY EOF before closing. It processes all
 queued focus changes before synchronizing the final IME state and avoids
-republishing an unchanged candidate rectangle. This is a test consumer: its
-bounded synchronous PTY writes are not a production backpressure solution.
+republishing an unchanged candidate rectangle. At that base the test consumer
+used bounded synchronous PTY writes, not a production backpressure solution.
 
 With both IME and PTY experiment options enabled and the separately described
 Alpine/musl test wrappers selected, the following owns a private Xvfb/Weston
@@ -584,7 +584,15 @@ Wayland-v1 focus races are solved.
 An isolated mutant suppressing the validated PTY write failed because the
 expected shell output did not appear.
 
+On NexaUI base `1b8020e694236d3a2151345ea07064040b9e87fa`, the test consumer
+requires SDK 0.1.18 and copies its one validated commit into bounded storage.
+It requests descriptor write readiness only while bytes remain, handles partial
+writes and retries after interruption or `EAGAIN`. The static, shared and
+ASan/UBSan private-Weston commit and focus-cancellation cases passed again.
+Those short commits do not establish behavior under actual PTY backpressure;
+the fixture's separate shutdown helper still uses bounded synchronous writes.
+
 The setup uses a real separate Weston input-method process and virtual input,
 not a selected production IME, real Aetheri session, physical input/output or
 human assistive/visual acceptance. The app still owns session focus, security,
-asynchronous output queuing, font selection and process policy.
+output queue limits and cancellation, font selection and process policy.

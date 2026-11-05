@@ -2900,6 +2900,29 @@ claiming an actual native fractional-scale output.
 Installed IME candidate presentation, real Aetheri chrome and focus, physical
 output changes and human visual acceptance remain open.
 
+## Linux descriptor write readiness — 5 November 2026
+
+On base `1b8020e694236d3a2151345ea07064040b9e87fa`, the 0.1.18 candidate
+adds explicit read/write interests for a borrowed Linux application descriptor
+to single-window and Wayland multi-window waits. The earlier functions remain
+read-only. A controlled socketpair test filled a nonblocking send buffer to
+`EAGAIN`, verified that writability was absent, then checked that a delayed
+peer drain woke the group wait. It also checked simultaneous read/write,
+invalid-descriptor error, hangup and legacy read-only behavior. Static, shared
+and Clang ASan/UBSan variants passed. The single-window API was additionally
+exercised with native Wayland and X11 windows. On private Weston, the existing
+group wait fault-injection, owner-thread, reentry and peer-destruction tests
+also passed in the static build. Four controlled text-input-v3 regressions
+passed in each of the three build configurations.
+
+The installed native terminal test consumer now queues its single validated IME
+commit and writes it only on readiness; private Weston simple-IME commit and
+focus-cancellation cases passed in all three configurations with Aetheri shell
+revision `87996e2f12128b172a80b325ad3b539df6aee527`. Alpine/musl test wrappers
+remain necessary for that shell. These short commits do not exercise actual PTY
+backpressure, multiple commits, session switching, or production shutdown. The
+fixture still uses a bounded synchronous helper to terminate the owned shell.
+
 ## Private Weston simple-IME to Aetheri PTY — 5 November 2026
 
 On NexaUI base `2f3b3af20af80918738b5dbeef13fb8b9d0fbb19`, an optional

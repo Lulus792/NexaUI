@@ -23,6 +23,10 @@ static void *wrong_thread(void *p) {
     wrong_thread_args *a=p; a->flags=99;
     a->result=nx_window_poll_with_fd(a->window,0,a->fd,&a->flags); return NULL;
 }
+static void *wrong_thread_events(void *p) {
+    wrong_thread_args *a=p;a->flags=99;
+    a->result=nx_window_poll_with_fd_events(a->window,0,a->fd,NX_WINDOW_FD_WRITABLE,&a->flags);return NULL;
+}
 int main(void) {
     nx_window_desc desc={"FD wake test",240,120,NX_WINDOW_HIDDEN,{0}};
     nx_window *window=NULL; nx_result result=nx_window_create(&desc,&window);
@@ -33,8 +37,14 @@ int main(void) {
     CHECK(nx_window_poll_with_fd(NULL,0,fds[0],&flags)==NX_ERROR_ARGUMENT && flags==0);
     CHECK(nx_window_poll_with_fd(window,0,-1,&flags)==NX_ERROR_ARGUMENT && flags==0);
     CHECK(nx_window_poll_with_fd(window,0,fds[0],NULL)==NX_ERROR_ARGUMENT);
+    CHECK(nx_window_poll_with_fd_events(window,0,fds[1],0,&flags)==NX_ERROR_ARGUMENT && flags==0);
+    CHECK(nx_window_poll_with_fd_events(window,0,fds[1],NX_WINDOW_FD_ERROR,&flags)==NX_ERROR_ARGUMENT && flags==0);
+    CHECK(nx_window_poll_with_fd_events(window,0,fds[1],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && (flags&NX_WINDOW_FD_WRITABLE));
+    CHECK(nx_window_poll_with_fd_events(window,0,fds[1],NX_WINDOW_FD_READABLE,&flags)==NX_OK && !(flags&NX_WINDOW_FD_WRITABLE));
     wrong_thread_args wrong={window,fds[0],NX_OK,99}; pthread_t thread;
     CHECK(pthread_create(&thread,NULL,wrong_thread,&wrong)==0 && pthread_join(thread,NULL)==0);
+    CHECK(wrong.result==NX_ERROR_STATE && wrong.flags==0);
+    CHECK(pthread_create(&thread,NULL,wrong_thread_events,&wrong)==0 && pthread_join(thread,NULL)==0);
     CHECK(wrong.result==NX_ERROR_STATE && wrong.flags==0);
     for(unsigned i=0;i<4;++i) CHECK(nx_window_poll(window,0)==NX_OK);
     CHECK(nx_window_poll_with_fd(window,0,fds[0],&flags)==NX_OK && flags==0);

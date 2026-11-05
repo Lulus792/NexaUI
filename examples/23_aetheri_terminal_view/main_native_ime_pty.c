@@ -74,6 +74,7 @@ int main(int argc,char **argv) {
     terminal_ime_adapter ime={0};terminal_ime_guard guard={123,1,0};
     terminal_ime_overlay overlay={.ime=&ime,.current=guard};uint64_t revision=1;
     nx_rect last_caret={0};int caret_set=0;
+    char pending[AE_TERM_PASTE_BYTES];size_t pending_length=0,pending_at=0;
     int cancel_test=getenv("NEXAUI_TEST_FOCUS_CANCEL")!=NULL,cancel_reported=0;
     uint32_t expected=cancel_test?'z':0xe1;
     if(argc!=3 || getuid()==0 || setenv("TERM","dumb",1)!=0)goto cleanup;
@@ -92,10 +93,19 @@ int main(int argc,char **argv) {
     okay=1;double deadline=now_seconds()+25;
     while(okay && !stop && now_seconds()<deadline) {
         uint32_t events=0;
-        if(nx_window_poll_with_fd(window,50,pty.master,&events)!=NX_OK){okay=0;break;}
+        uint32_t interests=NX_WINDOW_FD_READABLE;
+        if(pending_at<pending_length)interests|=NX_WINDOW_FD_WRITABLE;
+        if(nx_window_poll_with_fd_events(window,1000,pty.master,interests,&events)!=NX_OK){okay=0;break;}
+        if(events&NX_WINDOW_FD_ERROR){okay=0;break;}
         if(events&(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_HANGUP)) {
             int changed=0;if(!drain(&pty,model,&changed)){okay=0;break;}
             if(changed){++revision;dirty=1;}
+        }
+        if((events&NX_WINDOW_FD_WRITABLE) && pending_at<pending_length) {
+            ssize_t n=write(pty.master,pending+pending_at,pending_length-pending_at);
+            if(n>0)pending_at+=(size_t)n;
+            else if(n==0 || (errno!=EINTR && errno!=EAGAIN && errno!=EWOULDBLOCK)){okay=0;break;}
+            if(pending_at==pending_length){memset(pending,0,pending_length);pending_at=pending_length=0;}
         }
         nx_window_info info;if(nx_window_get_info(window,&info)!=NX_OK || info.should_close){okay=0;break;}
         nx_event event;int available=0,focus_changed=0;
@@ -112,7 +122,10 @@ int main(int argc,char **argv) {
             } else if(guard.focused && !focus_changed && event.type==NX_EVENT_TEXT && event.ime_target) {
                 int ready=0;nx_utf8_span text={0};
                 if(terminal_ime_commit_event(&ime,guard,&event,&ready,&text)!=NX_OK){okay=0;break;}
-                if(ready){if(commit_seen || !send_bytes(pty.master,text.data,text.length)){okay=0;break;}commit_seen=1;dirty=1;}
+                if(ready){
+                    if(commit_seen || pending_length || !text.length || text.length>sizeof(pending)){okay=0;break;}
+                    memcpy(pending,text.data,text.length);pending_length=text.length;pending_at=0;commit_seen=1;dirty=1;
+                }
             }
         } while(available);
         if(!okay)break;
@@ -156,8 +169,10 @@ int main(int argc,char **argv) {
             puts("TERMINAL_IME_PREEDIT");fflush(stdout);preedit_seen=1;
         }
     }
-    if(!preedit_seen || !commit_seen || count_scalar(model,expected)!=1 || (cancel_test && !cancel_reported))okay=0;
+    if(!preedit_seen || !commit_seen || pending_length || count_scalar(model,expected)!=1 ||
+       (cancel_test && !cancel_reported))okay=0;
 cleanup:
+    memset(pending,0,sizeof(pending));
     terminal_ime_reset(&ime);
     if(renderer && nx_software_view_close(&renderer)!=NX_OK)okay=0;
     if(window)nx_window_destroy(window);

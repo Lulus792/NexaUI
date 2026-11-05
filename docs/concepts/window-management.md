@@ -162,6 +162,17 @@ short-lived producer before closing the descriptor and scene. Other platforms,
 multiple descriptors, application service lifetimes and cross-process
 authorization require their own contracts.
 
+Since 0.1.18, `nx_window_poll_with_fd_events` accepts `NX_WINDOW_FD_READABLE`,
+`NX_WINDOW_FD_WRITABLE`, or both as interests for the borrowed descriptor.
+`nx_window_poll_many_with_fd_events` offers the same selection for a Wayland
+window group; with no descriptor (`fd = -1`), its interest mask must be zero.
+The original functions retain their read-only behavior. Hangup and error are
+reported regardless of the interests. Readiness is advisory: use nonblocking
+I/O and handle partial writes, interruption, and `EAGAIN`. Request writable
+notifications only while output is queued, because a writable descriptor can
+otherwise wake the loop continuously. The caller still owns queue limits,
+session identity, cancellation, and shutdown policy.
+
 ## Host-owned Wayland surface
 
 `<nexaui/wayland_host.h>` exposes `nx_wayland_shm_host_*` on Linux through

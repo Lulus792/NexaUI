@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 17
+#define NX_VERSION_PATCH 18
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -479,9 +479,16 @@ NX_API nx_result nx_window_set_wayland_app_id(nx_window *window, const char *id)
    entry; readiness may coexist with native events. A hangup can accompany data;
    the owner must drain/read and interpret it. Errors include an invalid fd.
    This operation does not make nx_window or nx_context thread-safe. */
-enum { NX_WINDOW_FD_READABLE = 1u, NX_WINDOW_FD_HANGUP = 2u, NX_WINDOW_FD_ERROR = 4u };
+enum { NX_WINDOW_FD_READABLE = 1u, NX_WINDOW_FD_HANGUP = 2u, NX_WINDOW_FD_ERROR = 4u,
+       NX_WINDOW_FD_WRITABLE = 8u };
 NX_API nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
                                        int fd, uint32_t *out_events);
+/* Like nx_window_poll_with_fd, with explicit READABLE/WRITABLE interests.
+   At least one interest is required; HANGUP and ERROR are always reported.
+   Request WRITABLE only while the owner has queued output, to avoid a busy
+   loop. Readiness is advisory; the owner handles partial I/O and EAGAIN. */
+NX_API nx_result nx_window_poll_with_fd_events(nx_window *window,uint32_t timeout_ms,
+    int fd,uint32_t interests,uint32_t *out_events);
 /* Wait for 1..16 distinct Wayland windows and optionally one borrowed app fd
    (-1 means none). All windows must belong to the calling owner thread and
    remain live; nested polling of any member returns STATE. X11 members return
@@ -496,6 +503,10 @@ NX_API nx_result nx_window_poll_with_fd(nx_window *window, uint32_t timeout_ms,
 #define NX_WINDOW_POLL_MAX_WINDOWS 16u
 NX_API nx_result nx_window_poll_many(nx_window *const *windows, size_t count,
                                     uint32_t timeout_ms, int fd, uint32_t *out_events);
+/* Group variant with the same interest flags. fd=-1 requires interests=0;
+   otherwise at least one READABLE/WRITABLE interest must be specified. */
+NX_API nx_result nx_window_poll_many_with_fd_events(nx_window *const *windows,size_t count,
+    uint32_t timeout_ms,int fd,uint32_t interests,uint32_t *out_events);
 #endif
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
 /* Recommended native client backing extent in pixels after polling. Use this

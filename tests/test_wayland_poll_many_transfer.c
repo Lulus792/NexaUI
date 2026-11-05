@@ -1,10 +1,23 @@
 #include "wayland_v3_fixture.h"
 #include "nexaui/wayland_clipboard.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/socket.h>
 #include <time.h>
 
 static double now_seconds(void) {
     struct timespec t;CHECK(clock_gettime(CLOCK_MONOTONIC,&t)==0);
     return t.tv_sec+t.tv_nsec/1e9;
+}
+typedef struct drain_args {int fd;size_t bytes;int error;} drain_args;
+static void *delayed_drain(void *user) {
+    drain_args *a=user;struct timespec delay={0,150000000};
+    while(nanosleep(&delay,&delay)<0 && errno==EINTR){}
+    char buffer[4096];ssize_t n;
+    do {n=read(a->fd,buffer,sizeof(buffer));if(n>0)a->bytes+=(size_t)n;}
+    while(n>0 || (n<0 && errno==EINTR));
+    if(n>=0 || (errno!=EAGAIN && errno!=EWOULDBLOCK))a->error=1;
+    return NULL;
 }
 static const char *start_server(test_server *s,pthread_t *thread) {
     s->clipboard_auto_focus=1;s->display=wl_display_create();CHECK(s->display);
@@ -48,6 +61,38 @@ int main(void) {
     CHECK(atomic_load(&peer->offer_reads)==1 && atomic_load(&peer->stalled_fd)>0);
     CHECK(close(atomic_exchange(&peer->stalled_fd,0)-1)==0);
     CHECK(nx_window_poll_many(&windows[0],1,0,-1,&flags)==NX_OK);
+    int pair[2];CHECK(socketpair(AF_UNIX,SOCK_STREAM,0,pair)==0);
+    CHECK(fcntl(pair[0],F_SETFL,fcntl(pair[0],F_GETFL)|O_NONBLOCK)==0);
+    CHECK(fcntl(pair[1],F_SETFL,fcntl(pair[1],F_GETFL)|O_NONBLOCK)==0);
+    flags=99;CHECK(nx_window_poll_many_with_fd_events(windows,2,0,pair[0],0,&flags)==NX_ERROR_ARGUMENT && !flags);
+    flags=99;CHECK(nx_window_poll_many_with_fd_events(windows,2,0,-1,NX_WINDOW_FD_WRITABLE,&flags)==NX_ERROR_ARGUMENT && !flags);
+    flags=99;CHECK(nx_window_poll_with_fd_events(windows[0],0,pair[0],NX_WINDOW_FD_ERROR,&flags)==NX_ERROR_ARGUMENT && !flags);
+    char buffer[4096]={0};ssize_t n;
+    do {n=write(pair[0],buffer,sizeof(buffer));} while(n>0 || (n<0 && errno==EINTR));
+    CHECK(n<0 && (errno==EAGAIN || errno==EWOULDBLOCK));
+    CHECK(nx_window_poll_many_with_fd_events(windows,2,0,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && !(flags&NX_WINDOW_FD_WRITABLE));
+    CHECK(nx_window_poll_with_fd_events(windows[0],0,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && !(flags&NX_WINDOW_FD_WRITABLE));
+    drain_args args={.fd=pair[1]};pthread_t drain_thread;
+    CHECK(!pthread_create(&drain_thread,NULL,delayed_drain,&args));double blocked_start=now_seconds();
+    do {
+        CHECK(nx_window_poll_many_with_fd_events(windows,2,1000,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK);
+        drain(windows[0]);drain(windows[1]);
+    } while(!(flags&NX_WINDOW_FD_WRITABLE) && now_seconds()-blocked_start<2);
+    double blocked_elapsed=now_seconds()-blocked_start;
+    CHECK(!pthread_join(drain_thread,NULL) && !args.error && args.bytes>0);
+    CHECK((flags&NX_WINDOW_FD_WRITABLE) && blocked_elapsed>=.08 && blocked_elapsed<1.5);
+    CHECK(nx_window_poll_many(windows,2,0,-1,&flags)==NX_OK);
+    CHECK(nx_window_poll_with_fd_events(windows[0],0,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && (flags&NX_WINDOW_FD_WRITABLE));
+    CHECK(nx_window_poll_with_fd_events(windows[0],0,pair[0],NX_WINDOW_FD_READABLE,&flags)==NX_OK && !(flags&NX_WINDOW_FD_WRITABLE));
+    CHECK(write(pair[1],"q",1)==1);
+    CHECK(nx_window_poll_many_with_fd_events(windows,2,0,pair[0],NX_WINDOW_FD_READABLE|NX_WINDOW_FD_WRITABLE,&flags)==NX_OK &&
+          (flags&(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_WRITABLE))==(NX_WINDOW_FD_READABLE|NX_WINDOW_FD_WRITABLE));
+    CHECK(nx_window_poll_with_fd(windows[0],0,pair[0],&flags)==NX_OK && (flags&NX_WINDOW_FD_READABLE) && !(flags&NX_WINDOW_FD_WRITABLE));
+    int invalid=dup(pair[0]);CHECK(invalid>=0 && close(invalid)==0);
+    CHECK(nx_window_poll_many_with_fd_events(windows,2,0,invalid,NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && (flags&NX_WINDOW_FD_ERROR));
+    CHECK(read(pair[0],buffer,1)==1 && buffer[0]=='q');CHECK(close(pair[1])==0);
+    CHECK(nx_window_poll_many_with_fd_events(windows,2,0,pair[0],NX_WINDOW_FD_WRITABLE,&flags)==NX_OK && (flags&NX_WINDOW_FD_HANGUP));
+    CHECK(close(pair[0])==0);
     for(unsigned i=0;i<2;++i)nx_window_destroy(windows[i]);
     for(unsigned i=0;i<2;++i) {
         wl_display_terminate(servers[i].display);CHECK(!pthread_join(threads[i],NULL));
