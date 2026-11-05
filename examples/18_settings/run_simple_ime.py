@@ -13,7 +13,7 @@ import time
 def main():
     if (len(sys.argv) not in (4, 5, 6) or
             (len(sys.argv) == 5 and sys.argv[4] != '--cancel') or
-            (len(sys.argv) == 6 and sys.argv[4] != '--control-cancel')):
+            (len(sys.argv) == 6 and sys.argv[4] not in ('--control-cancel', '--replace'))):
         return 2
     if (os.environ.get('NEXAUI_TEST_PRIVATE_WAYLAND') != '1' or
             os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test' or
@@ -22,10 +22,11 @@ def main():
         return 77
     app, font, xdotool = sys.argv[1:4]
     cancel = len(sys.argv) == 5
-    control_cancel = len(sys.argv) == 6
-    focus_client = sys.argv[5] if control_cancel else None
+    control_cancel = len(sys.argv) == 6 and sys.argv[4] == '--control-cancel'
+    replace = len(sys.argv) == 6 and sys.argv[4] == '--replace'
+    focus_client = sys.argv[5] if control_cancel or replace else None
     env = dict(os.environ, NEXAUI_PLATFORM='wayland', WAYLAND_DEBUG='1')
-    mode = '--verify-ime-control-cancel' if control_cancel else '--verify-ime-focus-cancel' if cancel else '--verify-ime-compose'
+    mode = '--verify-ime-replace' if replace else '--verify-ime-control-cancel' if control_cancel else '--verify-ime-focus-cancel' if cancel else '--verify-ime-compose'
     host = subprocess.Popen([app, font, mode], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     x11 = display = None
@@ -79,6 +80,9 @@ def main():
         time.sleep(1.2)
         subprocess.run([xdotool, 'key', 'Tab'], env=env, check=True)
         wait_for('SETTINGS_IME_FOCUSED')
+        if replace:
+            subprocess.run([focus_client, str(host.pid), 'Display name', '--select'], env=env, check=True)
+            wait_trace(r'set_surrounding_text\("Aetheri", (?:4, 1|1, 4)\)')
         # X11 keycode 108 is RAlt on this explicitly configured evdev/Xvfb map.
         for key in ('108', 'apostrophe'):
             subprocess.run([xdotool, 'key', key], env=env, check=True)

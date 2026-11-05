@@ -117,6 +117,12 @@ if(NEXAUI_BUILD_TESTS)
                             --control-cancel $<TARGET_FILE:nexaui_settings_atspi_focus_client>)
                     set_tests_properties(nexaui_settings_wayland_simple_ime_control_cancel PROPERTIES
                         TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+                    add_test(NAME nexaui_settings_wayland_simple_ime_replace
+                        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_simple_ime.py
+                            $<TARGET_FILE:nexaui_settings> "${_settings_font}" ${NEXAUI_XDOTOOL_EXECUTABLE}
+                            --replace $<TARGET_FILE:nexaui_settings_atspi_focus_client>)
+                    set_tests_properties(nexaui_settings_wayland_simple_ime_replace PROPERTIES
+                        TIMEOUT 45 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
                 endif()
                 add_executable(nexaui_settings_atspi_client atspi_client.c)
                 target_link_libraries(nexaui_settings_atspi_client PRIVATE PkgConfig::NEXAUI_ATSPI)

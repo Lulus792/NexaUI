@@ -578,3 +578,29 @@ full run preceded the final test-only delete-pair extension; the extended v1
 test then passed independently in GCC shared, Clang ASan/UBSan static and the
 dual-backend build. Full-run log `/tmp/nexaui-ime-control-full.log` has SHA-256
 `d99c1f1619b2bc5772822ee19014b12af0ede1cf4ef9c6af7b5edba2b01a6d1c`.
+
+## Real IME replacement of an accessible selection (2026-11-05)
+
+Candidate based on `054cf3bb1f85a2c985ea29679bece1ae230bf853` adds an
+opt-in private-Weston test that selects characters 1 through 4 of `Aetheri`
+through a separate libatspi client, composes `á` with `weston-simple-im`, and
+checks the unchanged applied model, intermediate preedit, resulting `Aáeri`
+draft and clean exit. The initial test failed: a delayed v1 `leave` from the
+previous activation cleared the already published new surrounding snapshot,
+causing the next update to reset the composition. The v1 handler now keeps
+the new snapshot when that leave arrives before the new activation's enter.
+The initial failing log is `/tmp/nexaui-ime-replace-first.log`.
+
+All four opt-in simple-IME cases passed separately with the GCC shared and
+Clang ASan/UBSan builds on private Weston 14.0.2/Xvfb. Logs are
+`/tmp/nexaui-ime-replace-second.log` and `/tmp/nexaui-ime-replace-asan.log`.
+The full GCC suite recorded 198 passes, four opt-in skips and two failures
+(`nexaui_atspi_idle_reconnect_wayland` and
+`nexaui_settings_wayland_keyboard_clipboard`) while another native fixture was
+running; both failed cases passed in a subsequent isolated run. The cause of
+the initial failures was not established. Logs are `/tmp/nexaui-ime-full2.log`
+and `/tmp/nexaui-ime-retry.log`. The skipped IME cases passed separately as
+described above.
+These automated tests do not establish acceptance with other input methods,
+physical hardware or a human user; the keyboard workflow limitation above
+also remains open.

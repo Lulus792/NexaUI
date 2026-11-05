@@ -1109,6 +1109,9 @@ static void nx_wayland_ime_enter(void *data, struct zwp_text_input_v1 *input,
 static void nx_wayland_ime_leave(void *data, struct zwp_text_input_v1 *input) {
     (void)input;
     nx_wayland_window *window = data;
+    /* A leave for a previous activation can arrive after a new activate
+       request, but before its enter. Do not discard the new snapshot. */
+    if (window->ime_activated && !window->ime_entered) return;
     window->ime_entered = 0;
     window->ime_v1_preedit_cursor_set = 0;
     nx_wayland_ime_v1_clear_delete(window);

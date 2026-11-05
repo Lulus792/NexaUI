@@ -31,7 +31,8 @@ int main(int argc, char **argv) {
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
     int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
     int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
-    int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control;
+    int verify_ime_replace=argc==3 && !strcmp(argv[2],"--verify-ime-replace");
+    int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
@@ -158,8 +159,9 @@ int main(int argc, char **argv) {
                        view.value.length==8 && !memcmp(view.value.data,"Aetheria",8)) {
                     puts("SETTINGS_IME_AFTER_RETURN"); fflush(stdout); ime_stage=verify_ime_control?4:3; break;
                 }
-            } else if (verify_ime_compose && ime_stage==1 && !preedit_length && view.value.length==9 &&
-                       !memcmp(view.value.data,"Aetheri\xc3\xa1",9)) {
+            } else if ((verify_ime_compose || verify_ime_replace) && ime_stage==1 && !preedit_length &&
+                       ((verify_ime_compose && view.value.length==9 && !memcmp(view.value.data,"Aetheri\xc3\xa1",9)) ||
+                        (verify_ime_replace && view.value.length==6 && !memcmp(view.value.data,"A\xc3\xa1" "eri",6)))) {
                 puts("SETTINGS_IME_COMMITTED"); fflush(stdout); ime_stage=2; break;
             }
         }
@@ -215,7 +217,7 @@ cleanup:
         if (r!=NX_OK) { fputs("Renderer retirement incomplete\n",stderr); return 1; }
     }
     settings_destroy(scene); nx_window_destroy(window); free(font);
-    if (verify_ime && okay && ((verify_ime_compose && ime_stage==2) ||
+    if (verify_ime && okay && (((verify_ime_compose || verify_ime_replace) && ime_stage==2) ||
                                (verify_ime_cancel && ime_stage==3) ||
                                (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
     else if (verify_ime) okay=0;

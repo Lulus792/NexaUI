@@ -30,7 +30,7 @@ static AtspiAccessible *find_name(AtspiAccessible *node, const char *name, unsig
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) return 2;
+    if (argc != 3 && (argc != 4 || strcmp(argv[3], "--select"))) return 2;
     char *end = NULL;
     errno = 0;
     unsigned long pid = strtoul(argv[1], &end, 10);
@@ -58,17 +58,35 @@ int main(int argc, char **argv) {
     }
     int okay = 0;
     if (target) {
-        AtspiComponent *component = atspi_accessible_get_component_iface(target);
-        if (component) {
+        if (argc == 4) {
+            AtspiText *text = atspi_accessible_get_text_iface(target);
             GError *error = NULL;
-            okay = atspi_component_grab_focus(component, &error) && !error;
-            if (error) { fprintf(stderr, "GrabFocus: %s\n", error->message); g_error_free(error); }
-            g_object_unref(component);
+            if (text) {
+                int count = atspi_text_get_n_selections(text, &error);
+                if (!error && count == 0) okay = atspi_text_add_selection(text, 1, 4, &error);
+                else if (!error && count == 1) okay = atspi_text_set_selection(text, 0, 1, 4, &error);
+                if (error) { fprintf(stderr, "Selection: %s\n", error->message); g_error_free(error); error = NULL; okay = 0; }
+                if (okay) {
+                    AtspiRange *range = atspi_text_get_selection(text, 0, &error);
+                    okay = !error && range && range->start_offset == 1 && range->end_offset == 4;
+                    if (range) g_boxed_free(ATSPI_TYPE_RANGE, range);
+                    if (error) { g_error_free(error); error = NULL; }
+                }
+                g_object_unref(text);
+            }
+        } else {
+            AtspiComponent *component = atspi_accessible_get_component_iface(target);
+            if (component) {
+                GError *error = NULL;
+                okay = atspi_component_grab_focus(component, &error) && !error;
+                if (error) { fprintf(stderr, "GrabFocus: %s\n", error->message); g_error_free(error); }
+                g_object_unref(component);
+            }
         }
         g_object_unref(target);
     }
     g_object_unref(desktop);
     atspi_exit();
-    if (!okay) fprintf(stderr, "Could not focus '%s' in process %lu\n", argv[2], pid);
+    if (!okay) fprintf(stderr, "Could not %s '%s' in process %lu\n", argc == 4 ? "select in" : "focus", argv[2], pid);
     return okay ? 0 : 1;
 }
