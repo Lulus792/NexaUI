@@ -2718,3 +2718,21 @@ synthetic preedit and commit test. Four rebuilt controlled Wayland v1/v3 input
 tests passed. In a separate test-only source copy, disabling host-preedit
 painting made the caret movement assertion fail. These are not installed IME,
 physical input, Aetheri host-protocol or human accessibility acceptance.
+
+## Drop fixture cleanup — 5 November 2026
+
+The [GitHub sanitizer job for b009c9f](https://github.com/Lulus792/NexaUI/actions/runs/42065028791/job/127376677806)
+failed its reverse-driver run: LeakSanitizer reported 18,752 bytes in 23
+allocations from a client of the controlled Wayland drop test server. The same
+test had passed earlier in the other driver order. This is a server-fixture
+lifetime finding, not proof that production clipboard or drop resources leaked.
+
+On candidate base `8b13235`, the backpressure test deterministically pauses
+the server before closing the client. With the old teardown, Clang ASan/LSan
+reproduced the same 18,752 bytes / 23 allocations and exit 1. After joining the
+server thread, the fixture now destroys connected clients before the display,
+as specified by the [Wayland server API](https://wayland.freedesktop.org/docs/html/apc.html).
+The deterministic test then exited 0 with leak detection enabled and passed
+10 consecutive runs. All 13 controlled async-drop cases passed in static,
+shared and Clang ASan/UBSan configurations on Alpine/WSL. The old GitHub run
+remains failed; a successful local correction does not replace a new CI run.

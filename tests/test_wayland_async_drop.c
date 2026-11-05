@@ -88,7 +88,8 @@ int main(int argc, char **argv) {
         CHECK(atomic_load(&server.offer_reads)==(invalid?1:0));
         nx_window_destroy(window); CHECK(allocations.heap.live==0);
         wl_display_terminate(server.display); CHECK(pthread_join(thread,NULL)==0);
-        wl_display_destroy(server.display); CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
+        wl_display_destroy_clients(server.display);wl_display_destroy(server.display);
+        CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
         return 0;
     }
     for (unsigned i=0; i<20 && !atomic_load(&server.stalled_fd); ++i)
@@ -193,12 +194,23 @@ int main(int argc, char **argv) {
     do {CHECK(nx_window_next_event(window,&event,&has_event)==NX_OK);if(has_event && event.type==NX_EVENT_WAKE)woke=1;} while(has_event);
     CHECK(woke);
     }
+    /* Force the backpressure server to stop dispatching before the client
+       closes, so cleanup must release still-connected server-side resources. */
+    if(backpressure) {
+        atomic_store(&server.pause_server,1);
+        double deadline=now_seconds()+2;
+        while(!atomic_load(&server.server_paused) && now_seconds()<deadline) {
+            struct timespec wait={0,1000000};nanosleep(&wait,NULL);
+        }
+        CHECK(atomic_load(&server.server_paused));
+    }
     if(window) nx_window_destroy(window);
     if(timeout || destroy) CHECK(atomic_load(&server.drop_finishes)==0);
     CHECK(allocations.heap.live==0);
     int remaining=atomic_exchange(&server.stalled_fd,0); if(remaining)CHECK(close(remaining-1)==0);
     if(backpressure)atomic_store(&server.stop_server,1);else wl_display_terminate(server.display);
     CHECK(pthread_join(thread,NULL)==0);
-    wl_display_destroy(server.display); CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
+    wl_display_destroy_clients(server.display);wl_display_destroy(server.display);
+    CHECK(unlink(path)==0 || access(path,F_OK)!=0); CHECK(rmdir(runtime)==0);
     puts("Asynchronous Wayland drop remains responsive and completes"); return 0;
 }
