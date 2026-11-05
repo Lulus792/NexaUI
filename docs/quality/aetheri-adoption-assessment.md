@@ -21,6 +21,24 @@ the same virtual-keyboard case passed with ASan/UBSan. It does not establish
 actual terminal/PTY behavior, retained glyph-atlas performance, Aetheri
 integration, IME, accessible text or human/physical acceptance.
 
+For committed source `8e6d1300ea3de9de06c27ee94c5747859e2d0821`, static and
+shared Wayland-only SDKs were built from a Git archive with Vulkan disabled.
+Separate copied C17 grid examples and package probes built against each
+installation without CMake X11 discovery; probes checked the declared linked
+core revision and called both grid APIs. Each example received native virtual
+text and right-arrow input on private Weston, advanced over a wide-cell
+continuation in its own model and closed cleanly. Both fixture result records
+show child, compositor and overall exit 0. Compile commands use copied source
+and installed headers; `ldd` resolves the shared SDK from its chosen prefix and
+the static consumer has no shared NexaUI dependency. The example uses DejaVu
+Sans Mono from the test environment; font coverage, especially the wide sample,
+is not asserted and missing characters may use `.notdef`. Local artifacts:
+
+- `/tmp/nexaui-cell-8e6-consumer-ON.log`: SHA-256 `c70ea02cf12cbd13586ef8916a6c69ff46c12df5eb3a9965e9dd23be2905392c`
+- `/tmp/nexaui-cell-8e6-consumer-OFF.log`: SHA-256 `03b931cbb80943ade0c062edad1a7e907e831f407937a62d4bbfbb0ea3da3d2c`
+- `/tmp/nexaui-cell-8e6-native-shared/result.json`: SHA-256 `9438f1a9adecde10f9d873d8f3a06b7d5159a4a78b02a1be005ae3b856e41518`
+- `/tmp/nexaui-cell-8e6-native-static/result.json`: SHA-256 `e2876ad311877699210a65ef283e1d4574272bb97cf4f1912bfda582722a0a99`
+
 ## Host-owned Wayland worker wake candidate (2026-11-05)
 
 Candidate based on `dac7e21b8b9422bf2103a8db4ad3549ca0b78a5f` adds
