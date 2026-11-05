@@ -152,11 +152,11 @@ nx_result aetheri_terminal_view_frame_with_overlay(aetheri_terminal_view *v,uint
     nx_semantic_desc text={.id=2,.parent_id=1,.role=NX_ROLE_TEXT,.bounds=d.bounds,
         .name={"Visible terminal text",21},.value={v->text,v->text_length},.state=NX_SEM_READONLY};
     r=nx_draw_cell_grid(v->context,&d);
-    if(r==NX_OK && overlay)r=overlay(user,v->context,&v->desc);
     if(r==NX_OK)r=nx_semantics_add(v->context,&root,NULL);
     if(r==NX_OK)r=v->has_caret?
         nx_semantics_add_readonly_text_snapshot(v->context,&text,v->desc.text_identity,v->anchor,v->cursor,NULL):
         nx_semantics_add_readonly_text_snapshot_without_caret(v->context,&text,v->desc.text_identity,NULL);
+    if(r==NX_OK && overlay)r=overlay(user,v->context,&v->desc);
     nx_result end=nx_end_frame(v->context);if(r!=NX_OK)return r;if(end!=NX_OK)return end;
     v->revision=revision;return NX_OK;
 }

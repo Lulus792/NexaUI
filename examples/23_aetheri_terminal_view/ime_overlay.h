@@ -6,6 +6,12 @@
 typedef struct terminal_ime_overlay {
     const terminal_ime_adapter *ime; /* borrowed through frame */
     terminal_ime_guard current;
+    /* Optional stable nonzero identity for a separate uncommitted text object.
+       Must differ from the terminal text identity; change when the session is
+       replaced. Zero omits it;
+       the owner must omit it for sensitive/password input. */
+    uint64_t semantic_identity;
+    nx_utf8_span semantic_name; /* optional borrowed localized label */
 } terminal_ime_overlay;
 /* Candidate area in logical pixels, including a horizontally scrolled draft.
    The host must re-query after composition, caret, size, focus or scale changes. */

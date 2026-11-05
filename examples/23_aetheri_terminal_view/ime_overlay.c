@@ -8,6 +8,7 @@ typedef struct geometry {
 } geometry;
 static nx_result locate(const terminal_ime_overlay *overlay,const aetheri_terminal_view_desc *d,geometry *g) {
     if(!overlay || !overlay->ime || !d || !d->model || !g)return NX_ERROR_ARGUMENT;
+    if(overlay->semantic_identity && overlay->semantic_identity==d->text_identity)return NX_ERROR_ARGUMENT;
     const terminal_ime_guard a=overlay->ime->guard,b=overlay->current;
     if(!a.identity || !a.epoch || a.focused!=1 || b.focused!=1 || a.identity!=b.identity || a.epoch!=b.epoch)
         return NX_ERROR_STATE;
@@ -80,5 +81,16 @@ nx_result terminal_ime_overlay_draw(void *user,nx_context *context,const aetheri
     }
     if(g.draft.hidden_before && (r=nx_fill_rect(context,(nx_rect){g.x,g.y,bar,d->cell_height},accent))!=NX_OK)return r;
     if(g.draft.hidden_after && (r=nx_fill_rect(context,(nx_rect){g.x+(float)g.columns*d->cell_width-bar,g.y,bar,d->cell_height},accent))!=NX_OK)return r;
+    if(overlay->semantic_identity) {
+        nx_utf8_span name=overlay->semantic_name.length?overlay->semantic_name:
+            (nx_utf8_span){"Uncommitted composition",23};
+        nx_semantic_desc semantic={.id=3,.parent_id=1,.role=NX_ROLE_TEXT,
+            .bounds={g.x,g.y,(float)occupied*d->cell_width,d->cell_height},.name=name,
+            .value={c->text,c->size},.state=NX_SEM_READONLY};
+        r=c->caret?nx_semantics_add_readonly_text_snapshot(context,&semantic,overlay->semantic_identity,
+             c->offsets[c->anchor],c->offsets[c->cursor],NULL):
+             nx_semantics_add_readonly_text_snapshot_without_caret(context,&semantic,overlay->semantic_identity,NULL);
+        if(r!=NX_OK)return r;
+    }
     return NX_OK;
 }

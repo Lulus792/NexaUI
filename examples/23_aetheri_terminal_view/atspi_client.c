@@ -42,6 +42,47 @@ int main(int argc,char **argv) {
         if(!target)pause_ms();
     }
     CHECK(target);AtspiText *text=atspi_accessible_get_text_iface(target);
+    if(getenv("NEXAUI_TERMINAL_AX_COMPOSITION")) {
+        CHECK(text);GError *error=NULL;
+        AtspiAccessible *parent=atspi_accessible_get_parent(target,&error);CHECK(!error && parent);
+        AtspiAccessible *draft=find(parent,"Uncommitted composition",0);CHECK(draft);
+        AtspiText *draft_text=atspi_accessible_get_text_iface(draft);CHECK(draft_text);
+        CHECK(atspi_text_get_character_count(draft_text,&error)==3 && !error);
+        char *value=atspi_text_get_text(draft_text,0,-1,&error);
+        CHECK(!error && value && !strcmp(value,"na\xc3\xaf"));g_free(value);
+        int hidden=getenv("NEXAUI_TERMINAL_AX_HIDDEN")!=NULL;
+        CHECK(atspi_text_get_caret_offset(draft_text,&error)==(hidden?-1:1) && !error);
+        CHECK(atspi_text_get_n_selections(draft_text,&error)==(hidden?0:1) && !error);
+        if(!hidden) {
+            AtspiRange *range=atspi_text_get_selection(draft_text,0,&error);
+            CHECK(!error && range && range->start_offset==1 && range->end_offset==3);g_free(range);
+        }
+        CHECK(!atspi_text_set_caret_offset(draft_text,0,&error) && !error);
+        CHECK(!atspi_text_set_selection(draft_text,0,0,1,&error) && !error);
+        CHECK(!kill(child,SIGUSR2));int updated=0;
+        for(unsigned attempt=0;attempt<300;++attempt) {
+            while(g_main_context_iteration(NULL,FALSE)){}
+            atspi_accessible_clear_cache(draft);
+            value=atspi_text_get_text(draft_text,0,-1,&error);CHECK(!error);
+            if(value && !strcmp(value,"n\xc3\xa4"))updated=1;
+            g_free(value);if(updated)break;pause_ms();
+        }
+        CHECK(updated && atspi_text_get_caret_offset(draft_text,&error)==2 && !error);
+        CHECK(atspi_text_get_n_selections(draft_text,&error)==0 && !error);
+        CHECK(!kill(child,SIGUSR1));int removed=0;
+        for(unsigned attempt=0;attempt<300;++attempt) {
+            while(g_main_context_iteration(NULL,FALSE)){}
+            atspi_accessible_clear_cache(parent);
+            AtspiAccessible *current=find(parent,"Uncommitted composition",0);
+            if(!current){removed=1;break;}g_object_unref(current);pause_ms();
+        }
+        CHECK(removed);
+        value=atspi_text_get_text(text,0,4,&error);
+        CHECK(!error && value && !strcmp(value,"A\xe7\x95\x8c" "e\xcc\x81"));g_free(value);
+        g_object_unref(draft_text);g_object_unref(draft);g_object_unref(parent);
+        g_object_unref(text);g_object_unref(target);g_object_unref(desktop);cleanup();
+        puts("Independent AT-SPI uncommitted composition and removal passed");return 0;
+    }
     if(getenv("NEXAUI_TERMINAL_AX_SCROLL")) {
         CHECK(text);GError *error=NULL;
         CHECK(atspi_text_get_character_count(text,&error)>0 && !error);

@@ -1,6 +1,9 @@
 #define _POSIX_C_SOURCE 200809L
 /* Independent AT-SPI fixture with app-owned terminal model; no native window. */
 #include "view.h"
+#ifdef NEXAUI_TERMINAL_AX_IME
+#include "ime_overlay.h"
+#endif
 #include <nexaui/linux_accessibility_host.h>
 #include <errno.h>
 #include <poll.h>
@@ -11,8 +14,10 @@
 #define CHECK(x) do {if(!(x)){fprintf(stderr,"terminal-ax:%d: %s\n",__LINE__,#x);return 1;}} while(0)
 static volatile sig_atomic_t stop;
 static volatile sig_atomic_t scroll_requested;
+static volatile sig_atomic_t update_requested;
 static void on_signal(int sig){(void)sig;stop=1;}
 static void on_scroll(int sig){(void)sig;scroll_requested=1;}
+static void on_update(int sig){(void)sig;update_requested=1;}
 static void scroll_history(struct ae_terminal *model) {
     ae_terminal_select_clear(model);
     const char lines[]="\r\n1\r\n2\r\n3\r\n4";
@@ -43,7 +48,20 @@ int main(int argc,char **argv) {
     aetheri_terminal_view_desc d={.model=model,.regular=font,.bold=font,.text_identity=123,
         .cell_width=12,.cell_height=22,.baseline=17,.pixels_per_em=16,.mark_position=position};
     aetheri_terminal_view *view=NULL;CHECK(aetheri_terminal_view_create(&d,&view)==NX_OK);
-    uint64_t revision=1;CHECK(aetheri_terminal_view_frame(view,revision,1)==NX_OK);
+    uint64_t revision=1;
+#ifdef NEXAUI_TERMINAL_AX_IME
+    int composition=getenv("NEXAUI_TERMINAL_AX_COMPOSITION")!=NULL;
+    terminal_ime_adapter ime={0};terminal_ime_guard guard={123,1,1};
+    terminal_ime_overlay overlay={.ime=&ime,.current=guard,.semantic_identity=124};
+    if(composition) {
+        const char draft[]="na\xc3\xaf";
+        int hidden=getenv("NEXAUI_TERMINAL_AX_HIDDEN")!=NULL;
+        CHECK(terminal_ime_bind(&ime,guard)==NX_OK &&
+              terminal_ime_preedit(&ime,guard,draft,4,hidden?-1:1,hidden?-1:4)==NX_OK);
+        CHECK(aetheri_terminal_view_frame_with_overlay(view,revision,1,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    } else
+#endif
+    CHECK(aetheri_terminal_view_frame(view,revision,1)==NX_OK);
     if(from_events) {
         nx_event events[3]={{.type=NX_EVENT_POINTER_DOWN,.button=NX_BUTTON_LEFT,.x=48,.y=5},
             {.type=NX_EVENT_POINTER_MOVE,.x=12,.y=5},
@@ -61,10 +79,30 @@ int main(int argc,char **argv) {
     CHECK(!sigaction(SIGTERM,&action,NULL) && !sigaction(SIGINT,&action,NULL));
     struct sigaction scroll_action={0};scroll_action.sa_handler=on_scroll;sigemptyset(&scroll_action.sa_mask);
     CHECK(!sigaction(SIGUSR1,&scroll_action,NULL));
+    struct sigaction update_action={0};update_action.sa_handler=on_update;sigemptyset(&update_action.sa_mask);
+    CHECK(!sigaction(SIGUSR2,&update_action,NULL));
     while(!stop) {
+#ifdef NEXAUI_TERMINAL_AX_IME
+        if(update_requested && composition) {
+            update_requested=0;const char updated[]="n\xc3\xa4";
+            CHECK(terminal_ime_preedit(&ime,guard,updated,3,3,3)==NX_OK);
+            CHECK(aetheri_terminal_view_frame_with_overlay(view,++revision,1,terminal_ime_overlay_draw,&overlay)==NX_OK);
+            CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
+        }
+#endif
         if(scroll_requested) {
-            scroll_requested=0;scroll_history(model);CHECK(model->history_count>0);
+            scroll_requested=0;
+#ifdef NEXAUI_TERMINAL_AX_IME
+            if(composition) {
+                CHECK(terminal_ime_preedit(&ime,guard,NULL,0,0,0)==NX_OK);
+                CHECK(aetheri_terminal_view_frame_with_overlay(view,++revision,1,terminal_ime_overlay_draw,&overlay)==NX_OK);
+            } else {
+#endif
+            scroll_history(model);CHECK(model->history_count>0);
             CHECK(aetheri_terminal_view_frame(view,++revision,1)==NX_OK);
+#ifdef NEXAUI_TERMINAL_AX_IME
+            }
+#endif
             CHECK(nx_linux_accessibility_host_publish(host,aetheri_terminal_view_context(view),&geometry)==NX_OK);
         }
         int fd=-1,writable=0;uint32_t timeout=1000;
@@ -76,5 +114,8 @@ int main(int argc,char **argv) {
         CHECK(!routed && !focus);
     }
     CHECK(nx_linux_accessibility_host_destroy(&host)==NX_OK);
+#ifdef NEXAUI_TERMINAL_AX_IME
+    terminal_ime_reset(&ime);
+#endif
     aetheri_terminal_view_destroy(view);free(model);nx_font_close(font);free(bytes);return 0;
 }

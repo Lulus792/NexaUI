@@ -39,7 +39,7 @@ int main(int argc,char **argv) {
         .regular_fallback=fallback,.bold_fallback=fallback};
     aetheri_terminal_view *view=NULL;CHECK(aetheri_terminal_view_create(&desc,&view)==NX_OK);
     terminal_ime_adapter ime={0};terminal_ime_guard guard={77,1,1};CHECK(terminal_ime_bind(&ime,guard)==NX_OK);
-    terminal_ime_overlay overlay={&ime,guard};
+    terminal_ime_overlay overlay={.ime=&ime,.current=guard,.semantic_identity=78};
     unsigned char base[200*40*4],paint[200*40*4];
     CHECK(aetheri_terminal_view_frame(view,1,1)==NX_OK && render(view,base));
     nx_utf8_span before;size_t anchor,cursor;int has_caret;
@@ -81,6 +81,19 @@ int main(int argc,char **argv) {
     nx_semantic_view semantic;uint32_t index=0;nx_context *ctx=aetheri_terminal_view_context(view);
     CHECK(nx_semantics_find(ctx,2,&index)==NX_OK && nx_semantics_get(ctx,index,&semantic)==NX_OK &&
         semantic.value.length==original_length && !memcmp(semantic.value.data,original,original_length));
+    CHECK(nx_semantics_find(ctx,3,&index)==NX_OK && nx_semantics_get(ctx,index,&semantic)==NX_OK &&
+        semantic.state==NX_SEM_READONLY && semantic.value.length==sizeof(draft)-1 &&
+        !memcmp(semantic.value.data,draft,sizeof(draft)-1));
+    overlay.semantic_name=(nx_utf8_span){"Eingabeentwurf",14};
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1,terminal_ime_overlay_draw,&overlay)==NX_OK);
+    CHECK(nx_semantics_find(ctx,3,&index)==NX_OK && nx_semantics_get(ctx,index,&semantic)==NX_OK &&
+          semantic.name.length==14 && !memcmp(semantic.name.data,"Eingabeentwurf",14));
+    overlay.semantic_name=(nx_utf8_span){0};overlay.semantic_identity=0;
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1,terminal_ime_overlay_draw,&overlay)==NX_OK &&
+          nx_semantics_find(ctx,3,&index)==NX_ERROR_ARGUMENT);
+    overlay.semantic_identity=77;
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,1,1,terminal_ime_overlay_draw,&overlay)==NX_ERROR_ARGUMENT);
+    overlay.semantic_identity=78;
     aetheri_terminal_view_desc without_marks=desc;without_marks.mark_position=NULL;
     aetheri_terminal_view *unsupported=NULL;
     CHECK(aetheri_terminal_view_create(&without_marks,&unsupported)==NX_OK);
@@ -101,6 +114,12 @@ int main(int argc,char **argv) {
     model->x=19;model->sequence++;
     CHECK(terminal_ime_overlay_caret(&overlay,&desc,&caret)==NX_OK && caret.x==190);
     CHECK(aetheri_terminal_view_frame_with_overlay(view,2,2,terminal_ime_overlay_draw,&overlay)==NX_OK && render(view,paint));
+    CHECK(nx_semantics_find(ctx,3,&index)==NX_OK && nx_semantics_get(ctx,index,&semantic)==NX_OK &&
+          semantic.value.length==sizeof(long_draft) && !memcmp(semantic.value.data,long_draft,sizeof(long_draft)));
+    CHECK(terminal_ime_preedit(&ime,guard,NULL,0,0,0)==NX_OK);
+    CHECK(aetheri_terminal_view_frame_with_overlay(view,2,1,terminal_ime_overlay_draw,&overlay)==NX_OK &&
+          nx_semantics_find(ctx,3,&index)==NX_ERROR_ARGUMENT);
+    CHECK(terminal_ime_preedit(&ime,guard,long_draft,sizeof(long_draft),40,40)==NX_OK);
     uint64_t last_revision=2;
     if(fallback) {
         ae_terminal_init(model,20,2,width);

@@ -2868,6 +2868,22 @@ One glyph and font pair do not establish general shaping, bidi, cross-font
 mark placement, font discovery, visual quality on Aetheri, or human assistive
 acceptance. Those gates remain open.
 
+## Read-only terminal composition accessibility — 5 November 2026
+
+On NexaUI base `1c915a65e3d10027500efbd2dc2d59c879eac3c3`, the optional
+[terminal composition snapshot](../../examples/23_aetheri_terminal_view/README.md#read-only-accessible-composition-snapshot)
+publishes the full uncommitted draft separately from the existing terminal
+text, with app-supplied identity, optional localized name, actual selection and
+optional caret. An independent libatspi client using a private registry and
+simulated host verified text, range, hidden caret, change, removal and rejected
+mutation; it also verified the confirmed terminal content was unchanged.
+Static/shared and Clang ASan/UBSan runs passed. A mutant publishing different
+text failed the client, and existing terminal accessibility tests passed.
+
+Publication is opt-in and must be disabled by the owner for sensitive input.
+Real native focus, automatic announcement, installed IMEs, production privacy
+handling and human screenreader acceptance are not demonstrated by this host.
+
 ## Controlled Wayland IME to original Aetheri PTY — 5 November 2026
 
 On NexaUI base `032bfeccdd546b34d500bbd6f15b59eeb3e19f9c`, an optional

@@ -451,9 +451,9 @@ image. The later fallback experiment below addresses that specific missing
 glyph; complete Unicode shaping remains open.
 
 This is not an installed-IME or real-Aetheri visual pass. Candidate placement
-still needs connection to the live native window, and preedit text is not yet
-published as a separate accessible composition; the unchanged read-only
-terminal snapshot must not be mistaken for full screenreader acceptance.
+still needs connection to the live native window. The original overlay did not
+publish preedit text separately; the later accessibility experiment below adds
+a scoped read-only snapshot, not full screenreader acceptance.
 
 ### Ordered fallback for terminal and preedit glyphs
 
@@ -484,3 +484,33 @@ general CJK shaping, cross-font mark placement, variable-font interpolation,
 font discovery or redistribution rights. Real Aetheri visual and human
 accessibility acceptance remain open. Supply both font paths to
 `aetheri_terminal_ime_overlay_test` to run the fallback-specific case.
+
+### Read-only accessible composition snapshot
+
+On NexaUI base `1c915a65e3d10027500efbd2dc2d59c879eac3c3`, a host may opt in
+to a separate read-only semantic object by supplying a nonzero
+`semantic_identity` on `terminal_ime_overlay`. It must differ from the
+terminal text identity and change when the terminal/composition session is
+replaced. The object defaults to the name “Uncommitted composition”; the host
+can provide a localized `semantic_name`. The entire bounded composition is
+exposed, even when the visual viewport scrolls. Its selection and scalar
+caret derive from the original model; a hidden caret remains absent. The
+confirmed terminal snapshot is unchanged, and clearing composition removes
+the separate object. Zero identity suppresses publication. The owner must
+use that opt-out for sensitive or password input and enforce its own terminal
+privacy policy; this example cannot infer whether terminal input is secret.
+
+An independent libatspi client using a private D-Bus registry and the
+headless accessibility host read the text, selected range and caret, saw
+updates on the same object, observed its removal, and confirmed that native
+text mutation is rejected. It also checked a hidden caret and unchanged
+terminal content. Static/shared and Clang ASan/UBSan runs passed, as did the
+existing terminal AT-SPI regression. A mutant publishing incorrect draft text
+failed the independent client. Reproduce with the earlier AT-SPI command and
+`NEXAUI_TERMINAL_AX_COMPOSITION=1`; add `NEXAUI_TERMINAL_AX_HIDDEN=1` for the
+hidden-caret case. The example must be built with
+`NEXAUI_AETHERI_IME_EXPERIMENT=ON`.
+
+This is a queryable read-only snapshot in a simulated accessibility host. It
+does not establish automatic announcement, real native focus, an installed IME,
+production sensitive-input handling or human screenreader acceptance.
