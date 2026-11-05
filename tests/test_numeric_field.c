@@ -337,6 +337,11 @@ static int test_native_text_commands(void) {
     nx_event consumed={0};consumed.type=NX_EVENT_KEY_DOWN_CONSUMED;consumed.key=NX_KEY_ENTER;
     CHECK(nx_context_queue_event(ctx,&consumed)==NX_OK && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",5));
     CHECK(queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
+    nx_event stale={0};stale.type=NX_EVENT_TEXT_COMMAND;stale.text_command=NX_TEXT_COMMAND_SELECT_ALL;
+    stale.ime_target=1;stale.ime_revision=1;
+    CHECK(nx_context_queue_event(ctx,&stale)==NX_OK);
+    stale.type=NX_EVENT_TEXT;stale.scalar='5';
+    CHECK(nx_context_queue_event(ctx,&stale)==NX_OK && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
     desc.disabled=1;
     CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'5') &&
           queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));

@@ -6497,6 +6497,12 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                 ++field->next_event_index; continue;
             }
             if (route->focus_id!=desc->id) { ++field->next_event_index; continue; }
+            /* Numeric fields do not yet publish an IME target/revision. A
+               reply for another (possibly replaced) field must not edit one. */
+            if (event->ime_target && (event->type == NX_EVENT_TEXT ||
+                                      event->type == NX_EVENT_TEXT_COMMAND)) {
+                ++field->next_event_index; continue;
+            }
             if (event->type == NX_EVENT_KEY_DOWN ||
                 event->type == NX_EVENT_TEXT || event->type == NX_EVENT_TEXT_COMMAND) {
                 field->pointer.active=0; field->suppress_caret_reveal=0;
