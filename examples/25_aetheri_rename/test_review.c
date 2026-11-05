@@ -123,12 +123,19 @@ int main(int argc,char **argv){int ok=0,dir=-1,pin=-1;char path[]="/tmp/nexaui-r
     uint32_t name_index;nx_semantic_view name_view;
     CHECK(nx_semantics_find(ctx,4,&name_index)==NX_OK && nx_semantics_get(ctx,name_index,&name_view)==NX_OK);
     float before_y=name_view.bounds.y;
+    CHECK(value(ctx,32,NULL,1) && value(ctx,33,NULL,0));
+    CHECK(nx_semantics_request_action(ctx,33,NX_ACTION_PRESS)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);
+    CHECK(rename_review_frame(view,&action)==NX_OK && value(ctx,32,NULL,0));
+    CHECK(nx_semantics_find(ctx,4,&name_index)==NX_OK && nx_semantics_get(ctx,name_index,&name_view)==NX_OK && name_view.bounds.y<before_y);
+    CHECK(nx_semantics_request_action(ctx,32,NX_ACTION_PRESS)==NX_OK);
+    CHECK(rename_review_frame(view,&action)==NX_OK && rename_review_frame(view,&action)==NX_OK && value(ctx,32,NULL,1));
     CHECK(nx_focus_set(ctx,31)==NX_OK);
     event=(nx_event){0};event.type=NX_EVENT_KEY_DOWN;event.key=NX_KEY_END;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     event.type=NX_EVENT_KEY_UP;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
     CHECK(rename_review_frame(view,&action)==NX_OK && action==REVIEW_NONE);
     CHECK(nx_semantics_find(ctx,4,&name_index)==NX_OK && nx_semantics_get(ctx,name_index,&name_view)==NX_OK &&
-          name_view.bounds.y<before_y && name_view.bounds.y+name_view.bounds.height<=168);
+          name_view.bounds.y<before_y && name_view.bounds.y+name_view.bounds.height<=158);
     CHECK(rename_review_frame(view,&action)==NX_OK && value(ctx,11,NULL,0) && value(ctx,5,"Ready for confirmation",-1));
     CHECK(capture(ctx,getenv("NEXAUI_RENAME_LONG_END_CAPTURE")));
     CHECK(nx_focus_set(ctx,11)==NX_OK);

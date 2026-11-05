@@ -1,5 +1,6 @@
 #include "review.h"
 #include "files/model.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 struct rename_review { rename_review_owner *owner; nx_font_collection *fonts; nx_context *ctx; int open,seen_bottom; float scroll_x,scroll_y; };
@@ -68,19 +69,20 @@ nx_result rename_review_frame(rename_review *r,rename_review_action *action) {
     enum ae_files_rename_result operation_status=ae_files_rename_status(r->owner->operation);
     const char *message=r->owner->submitted && operation_status==AE_FILES_RENAME_PREPARED ?
         "Confirmation requested; awaiting result" : status(operation_status);
-    const char *strings[]={"Rename entry",old_display,new_display,message,"Cancel","Confirm"};
-    nx_text_layout *layouts[6]={0};nx_result e=NX_OK;
+    const char *strings[]={"Rename entry",old_display,new_display,message,"Cancel","Confirm","Previous","Next"};
+    nx_text_layout *layouts[8]={0};nx_result e=NX_OK;
     for(unsigned i=0;i<3 && e==NX_OK;++i){float width=i?340:360;
         e=nx_text_layout_create(r->fonts,strings[i],strlen(strings[i]),NX_BIDI_AUTO,16,width,&layouts[i]);
         if(e==NX_OK && nx_text_layout_width(layouts[i])>width)e=NX_ERROR_LIMIT;}
     if(e!=NX_OK)goto done;
     float old_height=(float)nx_text_layout_height(layouts[1]),new_height=(float)nx_text_layout_height(layouts[2]);
     float content_height=old_height+new_height+16;
-    int reviewed=r->seen_bottom || content_height<=120;
+    int reviewed=r->seen_bottom || content_height<=110;
     if(!reviewed && operation_status==AE_FILES_RENAME_PREPARED && !r->owner->submitted)
         strings[3]="Scroll to review both names";
-    for(unsigned i=3;i<6 && e==NX_OK;++i){e=nx_text_layout_create(r->fonts,strings[i],strlen(strings[i]),NX_BIDI_AUTO,16,360,&layouts[i]);
-        if(e==NX_OK && (nx_text_layout_height(layouts[i])>60 || nx_text_layout_width(layouts[i])>360))e=NX_ERROR_LIMIT;}
+    for(unsigned i=3;i<8 && e==NX_OK;++i){float width=i==3?360:(i>=6?80:104),height=i==3?40:24;
+        e=nx_text_layout_create(r->fonts,strings[i],strlen(strings[i]),NX_BIDI_AUTO,16,width,&layouts[i]);
+        if(e==NX_OK && (nx_text_layout_height(layouts[i])>height || nx_text_layout_width(layouts[i])>width))e=NX_ERROR_LIMIT;}
     if(e!=NX_OK)goto done;
     e=nx_begin_frame(r->ctx,400,300,0);if(e!=NX_OK)goto done;
     nx_color color;e=nx_theme_color(r->ctx,NX_COLOR_TEXT,&color);
@@ -95,7 +97,7 @@ nx_result rename_review_frame(rename_review *r,rename_review_action *action) {
     if(e==NX_OK)e=nx_semantics_add(r->ctx,&title,NULL);
     if(e==NX_OK)e=nx_draw_text_layout(r->ctx,layouts[0],(nx_point){20,14},color,1024*1024);
     nx_scroll_area_desc scroll={0};scroll.id=30;scroll.parent_id=1;scroll.thumb_y_id=31;
-    scroll.name=span("Names to review");scroll.viewport=(nx_rect){20,48,360,120};
+    scroll.name=span("Names to review");scroll.viewport=(nx_rect){20,48,360,110};
     scroll.content_size=(nx_size){360,content_height};scroll.axes=NX_SCROLL_Y;
     nx_scroll_info info={0};int scrolling=0;
     if(e==NX_OK){e=nx_scroll_area_begin(r->ctx,&scroll,&r->scroll_x,&r->scroll_y,&info);if(e==NX_OK)scrolling=1;}
@@ -106,21 +108,30 @@ nx_result rename_review_frame(rename_review *r,rename_review_action *action) {
         if(e==NX_OK)e=nx_draw_text_layout(r->ctx,layouts[1+i],(nx_point){item.bounds.x,item.bounds.y},color,1024*1024);}
     if(scrolling){nx_result end=nx_scroll_area_end(r->ctx);if(e==NX_OK)e=end;}
     nx_semantic_desc status_node={0};status_node.id=5;status_node.parent_id=1;status_node.role=NX_ROLE_STATUS;
-    status_node.bounds=(nx_rect){20,180,360,60};status_node.name=span("Rename status");status_node.value=span(strings[3]);
+    status_node.bounds=(nx_rect){20,162,360,40};status_node.name=span("Rename status");status_node.value=span(strings[3]);
     if(e==NX_OK)e=nx_semantics_add(r->ctx,&status_node,NULL);
-    if(e==NX_OK)e=nx_draw_text_layout(r->ctx,layouts[3],(nx_point){20,180},color,1024*1024);
+    if(e==NX_OK)e=nx_draw_text_layout(r->ctx,layouts[3],(nx_point){20,162},color,1024*1024);
     int cancel=0,confirm=0;
     for(unsigned i=0;e==NX_OK && i<2;++i){nx_control_desc b={0};b.id=10+i;b.parent_id=1;
         b.bounds=(nx_rect){20+i*130,250,120,36};b.name=span(strings[4+i]);b.label_layout=layouts[4+i];
         b.label_origin=(nx_point){b.bounds.x+8,b.bounds.y+8};b.glyph_cache_bytes=1024*1024;
         b.disabled=i && (!reviewed || r->owner->submitted || ae_files_rename_status(r->owner->operation)!=AE_FILES_RENAME_PREPARED);
         e=nx_button(r->ctx,&b,&state);if(e==NX_OK){if(i)confirm=state.clicked!=0;else cancel=state.clicked!=0;}}
+    if(e==NX_OK && scrolling && info.max_y>0){
+        for(unsigned i=0;i<2 && e==NX_OK;++i){nx_control_desc page={0};page.id=32+i;page.parent_id=1;
+            page.bounds=(nx_rect){180+i*100,207,90,32};page.name=span(i?"Next page":"Previous page");
+            page.label_layout=layouts[6+i];page.label_origin=(nx_point){page.bounds.x+5,page.bounds.y+6};
+            page.glyph_cache_bytes=1024*1024;page.disabled=i?r->scroll_y>=info.max_y:r->scroll_y<=0;
+            e=nx_button(r->ctx,&page,&state);
+            if(e==NX_OK && state.clicked)r->scroll_y=i?fminf(info.max_y,r->scroll_y+110):fmaxf(0,r->scroll_y-110);
+        }
+    }
     if(overlay_open){nx_result end=nx_overlay_end(r->ctx);if(e==NX_OK)e=end;}
     if(e==NX_OK && scrolling && info.offset_y>=info.max_y)r->seen_bottom=1;
     if(e==NX_OK && (cancel || dismissed)){*action=REVIEW_CANCEL;r->open=0;e=nx_overlay_close(r->ctx);}
     else if(e==NX_OK && confirm){*action=REVIEW_CONFIRM;r->owner->submitted=1;}
     {nx_result end=nx_end_frame(r->ctx);if(e==NX_OK)e=end;}
 done:
-    for(unsigned i=0;i<6;++i)if(layouts[i])nx_text_layout_destroy(layouts[i]);
+    for(unsigned i=0;i<8;++i)if(layouts[i])nx_text_layout_destroy(layouts[i]);
     return e;
 }

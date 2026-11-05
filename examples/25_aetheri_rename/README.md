@@ -135,3 +135,20 @@ passed; top and bottom 400x300 captures were inspected. The private host still
 uses a fixed-size layout and simulated flush failure. Actual screenreader
 scrolling/announcements, proportional fonts beyond the measured layout bound,
 localization, real Aetheri integration and physical acceptance remain open.
+
+## Assistive page navigation
+
+On base `7cf7062d81fbaa33d36b5127a711e65855e48b9b`, long reviews also expose
+visible `Previous page` and `Next page` button actions. An independent native
+AT-SPI client pages to the bottom, observes Confirm become enabled, pages back,
+and confirms the same 255-byte operation before checking its injected unknown
+result. The completed scroll gate remains satisfied after paging back; it does
+not claim the user read the contents. Static, shared and ASan/UBSan scene,
+keyboard and AT-SPI variants passed; a mutant that ignored page actions failed.
+A 400x300 headless capture was inspected.
+
+The generic scrollbar currently advertises increment/decrement actions, but
+the public core action queue does not handle those actions. The explicit page
+buttons provide the tested assistive path for this example; they do not close
+that reusable scrollbar contract gap. Human screenreader and physical-input
+acceptance, other fonts and actual Aetheri integration remain open.
