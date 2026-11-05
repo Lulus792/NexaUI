@@ -244,7 +244,7 @@ int main(void) {
     numeric.id=2; numeric.bounds=(nx_rect){10,12,65,26};
     numeric.name=(nx_utf8_span){"IME number",10}; numeric.fonts=fonts;
     numeric.pixels_per_em=18; numeric.glyph_cache_bytes=65536;
-    numeric.minimum=-1000; numeric.maximum=1000;
+    numeric.minimum=-10000; numeric.maximum=10000;
     CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK);
     CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK);
     CHECK(nx_end_frame(ctx)==NX_OK && nx_focus_set(ctx,2)==NX_OK);
@@ -270,23 +270,93 @@ int main(void) {
     CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && state.focused);
     CHECK(nx_end_frame(ctx)==NX_OK);
     do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);} while(available);
-    SendMessageW(hwnd,WM_IME_CHAR,L'3',0);
+    /* Invalid native text remains visible and undoable without committing. */
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    SendMessageW(hwnd,WM_IME_CHAR,0x9053,0);
     CHECK(nx_window_poll(window,0)==NX_OK); committed=0;
     do {
         CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
-        if(available && event.type==NX_EVENT_TEXT && event.scalar=='3') {
+        if(available && event.type==NX_EVENT_TEXT && event.scalar==0x9053) {
             ++committed;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
         }
     } while(available);
     CHECK(committed==1 && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK);
+    CHECK(!valid);
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==5 && !memcmp(draft.data,"12\xe9\x81\x93",5));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==12);
+    event=(nx_event){0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_UNDO;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"12",2));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==12);
+    /* A UTF-16 surrogate pair remains one targeted Unicode scalar. */
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    SendMessageW(hwnd,WM_IME_CHAR,0xd83d,0);
+    SendMessageW(hwnd,WM_IME_CHAR,0xde00,0);
+    CHECK(nx_window_poll(window,0)==NX_OK); committed=0;
+    do {
+        CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT) {
+            CHECK(event.scalar==0x1f600 && event.ime_target==2 && event.ime_revision!=0);
+            ++committed;
+        }
+    } while(available);
+    CHECK(committed==1);
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    SendMessageW(hwnd,WM_IME_CHAR,L'3',0);
+    SendMessageW(hwnd,WM_IME_CHAR,L'4',0);
+    CHECK(nx_window_poll(window,0)==NX_OK); committed=0;
+    do {
+        CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT && (event.scalar=='3' || event.scalar=='4')) {
+            CHECK(event.ime_target==2 && event.ime_revision!=0);
+            ++committed;CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+        }
+    } while(available);
+    CHECK(committed==2 && nx_begin_frame(ctx,200,100,0)==NX_OK);
     CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
     CHECK(nx_end_frame(ctx)==NX_OK);
-    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==3 && !memcmp(draft.data,"123",3));
+    CHECK(nx_numeric_field_text(number,&draft)==NX_OK && draft.length==4 && !memcmp(draft.data,"1234",4));
     CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==12);
     event=(nx_event){0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_NEWLINE;
     CHECK(nx_context_queue_event(ctx,&event)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
     CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
-    CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==123);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==1234);
+    /* Old composition events cannot overwrite a replaced numeric model. */
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    SendMessageW(hwnd,WM_IME_CHAR,0x9053,0);CHECK(nx_window_poll(window,0)==NX_OK);
+    nx_event stale={0};int stale_count=0;
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT && event.scalar==0x9053){stale=event;++stale_count;}
+    } while(available);
+    CHECK(stale_count==1 && stale.ime_target==2 && stale.ime_revision!=0);
+    CHECK(nx_numeric_field_set_value(number,45)==NX_OK && nx_context_queue_event(ctx,&stale)==NX_OK);
+    CHECK(nx_begin_frame(ctx,200,100,0)==NX_OK && nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && valid);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_numeric_field_text(number,&draft)==NX_OK && draft.length==2 && !memcmp(draft.data,"45",2));
+    CHECK(nx_numeric_field_value(number,&numeric_value)==NX_OK && numeric_value==45);
+    /* A late result from a canceled composition must not become plain input. */
+    SendMessageW(hwnd,WM_IME_STARTCOMPOSITION,0,0);
+    CHECK(nx_focus_set(ctx,0)==NX_OK && nx_begin_frame(ctx,200,100,0)==NX_OK);
+    CHECK(nx_numeric_field_widget(ctx,&numeric,number,&state,&valid)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);} while(available);
+    SendMessageW(hwnd,WM_IME_CHAR,0x9053,0);CHECK(nx_window_poll(window,0)==NX_OK);
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);CHECK(!available || event.type!=NX_EVENT_TEXT);} while(available);
+    /* Ordinary character input remains untagged and available. */
+    SendMessageW(hwnd,WM_CHAR,L'x',0);CHECK(nx_window_poll(window,0)==NX_OK);int plain=0;
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT && event.scalar=='x'){CHECK(!event.ime_target);++plain;}
+    } while(available);
+    CHECK(plain==1);
+    /* Once the canceled composition ends, legacy unbound IME characters still
+       reach applications as ordinary untagged input. */
+    SendMessageW(hwnd,WM_IME_ENDCOMPOSITION,0,0);
+    SendMessageW(hwnd,WM_IME_CHAR,0x9053,0);CHECK(nx_window_poll(window,0)==NX_OK);plain=0;
+    do {CHECK(nx_window_next_event(window,&event,&available)==NX_OK);
+        if(available && event.type==NX_EVENT_TEXT && event.scalar==0x9053){CHECK(!event.ime_target);++plain;}
+    } while(available);
+    CHECK(plain==1);
     nx_context_destroy(ctx);
     nx_numeric_field_destroy(number);
     nx_font_collection_destroy(fonts);

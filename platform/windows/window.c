@@ -32,6 +32,9 @@ struct nx_window {
     uint32_t flags, reported_state;
     POINT left_press;
     uint16_t pending_high_surrogate;
+    uint64_t pending_ime_target, pending_ime_revision;
+    uint64_t ime_target, ime_revision, composition_target, composition_revision;
+    int composition_state; /* 0 idle, 1 active, 2 revoked until next start */
     char *ime_preedit;
     size_t ime_preedit_length;
     int32_t ime_preedit_cursor;
@@ -333,32 +336,38 @@ static void nx_window_emit_resize(nx_window *window) {
     nx_window_push_event(window, event);
 }
 
-static void nx_window_emit_text(nx_window *window, uint32_t scalar) {
+static void nx_window_emit_text(nx_window *window, uint32_t scalar,
+                                uint64_t target, uint64_t revision) {
     if (scalar < 0x20u || scalar == 0x7fu || scalar > 0x10ffffu ||
         (scalar >= 0xd800u && scalar <= 0xdfffu)) return;
     nx_event event = {0};
-    event.type = NX_EVENT_TEXT;
-    event.scalar = scalar;
+    event.type = NX_EVENT_TEXT; event.scalar = scalar;
+    event.ime_target = target; event.ime_revision = revision;
     nx_window_push_event(window, event);
 }
 
-static void nx_window_emit_utf16(nx_window *window, uint16_t unit) {
+static void nx_window_emit_utf16(nx_window *window, uint16_t unit,
+                                 uint64_t target, uint64_t revision) {
+    if (window->pending_high_surrogate &&
+        (window->pending_ime_target != target || window->pending_ime_revision != revision))
+        window->pending_high_surrogate = 0;
     if (window->pending_high_surrogate) {
         if (unit >= 0xdc00u && unit <= 0xdfffu) {
             uint32_t high = window->pending_high_surrogate - 0xd800u;
-            nx_window_emit_text(window, 0x10000u + (high << 10u) + unit - 0xdc00u);
+            nx_window_emit_text(window, 0x10000u + (high << 10u) + unit - 0xdc00u, target, revision);
             window->pending_high_surrogate = 0;
             return;
         }
-        nx_window_emit_text(window, 0xfffdu);
+        nx_window_emit_text(window, 0xfffdu, target, revision);
         window->pending_high_surrogate = 0;
     }
     if (unit >= 0xd800u && unit <= 0xdbffu) {
         window->pending_high_surrogate = unit;
+        window->pending_ime_target = target; window->pending_ime_revision = revision;
     } else if (unit >= 0xdc00u && unit <= 0xdfffu) {
-        nx_window_emit_text(window, 0xfffdu);
+        nx_window_emit_text(window, 0xfffdu, target, revision);
     } else {
-        nx_window_emit_text(window, unit);
+        nx_window_emit_text(window, unit, target, revision);
     }
 }
 
@@ -460,16 +469,29 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             nx_window_push_event(window, event);
             if (message == WM_KILLFOCUS) {
                 window->pending_high_surrogate = 0;
+                if (window->composition_state == 1) window->composition_state = 2;
                 nx_window_clear_preedit(window);
             }
             return 0;
         }
         if (message == WM_IME_STARTCOMPOSITION && window->ime_self_draw) {
+            window->pending_high_surrogate = 0;
+            window->composition_state = 1;
+            window->composition_target = window->ime_target;
+            window->composition_revision = window->ime_revision;
             nx_window_clear_preedit(window);
             return 0;
         }
-        if (message == WM_IME_ENDCOMPOSITION && window->ime_self_draw) {
+        if (message == WM_IME_ENDCOMPOSITION && (window->ime_self_draw || window->composition_state)) {
+            int self_draw = window->ime_self_draw;
+            window->pending_high_surrogate = 0;
+            window->composition_state = 0;
             nx_window_clear_preedit(window);
+            return self_draw ? 0 : DefWindowProcW(hwnd, message, wparam, lparam);
+        }
+        if (message == WM_IME_CHAR && window->composition_state == 2) return 0;
+        if (message == WM_IME_CHAR && window->ime_self_draw && window->composition_state == 1) {
+            nx_window_emit_utf16(window,(uint16_t)wparam,window->composition_target,window->composition_revision);
             return 0;
         }
         if (message == WM_IME_COMPOSITION && window->ime_self_draw) {
@@ -585,12 +607,12 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
         if (message == WM_SYSCHAR && (window->flags & NX_WINDOW_CLIENT_CHROME))
             return DefWindowProcW(hwnd, message, wparam, lparam);
         if (message == WM_CHAR || message == WM_SYSCHAR) {
-            nx_window_emit_utf16(window, (uint16_t)wparam);
+            nx_window_emit_utf16(window, (uint16_t)wparam, 0, 0);
             return 0;
         }
         if (message == WM_UNICHAR) {
             if (wparam == UNICODE_NOCHAR) return TRUE;
-            nx_window_emit_text(window, (uint32_t)wparam);
+            nx_window_emit_text(window, (uint32_t)wparam, 0, 0);
             return 0;
         }
         if (message == WM_GETOBJECT && window->accessibility && nx_uia_object_id(lparam))
@@ -932,8 +954,25 @@ nx_result nx_window_set_ime_enabled(nx_window *window, int enabled) {
                     ~ISC_SHOWUICOMPOSITIONWINDOW :
                     window->ime_context_options);
     }
-    if (!enabled) nx_window_clear_preedit(window);
+    if (!enabled) {
+        if (window->composition_state == 1) window->composition_state = 2;
+        window->ime_target = window->ime_revision = 0;
+        window->pending_high_surrogate = 0;
+        nx_window_clear_preedit(window);
+    }
     return NX_OK;
+}
+
+void nx_windows_window_set_ime_target(nx_window *window, uint64_t target, uint64_t revision) {
+    if (!window || GetCurrentThreadId() != window->owner_thread || !window->hwnd) return;
+    int revoke = (window->ime_target != target || window->ime_revision != revision) &&
+                 window->composition_state == 1;
+    window->ime_target = target; window->ime_revision = revision;
+    if (revoke) {
+        window->composition_state = 2;
+        window->pending_high_surrogate = 0;
+        nx_window_clear_preedit(window);
+    }
 }
 
 nx_result nx_window_set_ime_purpose(nx_window *window,
