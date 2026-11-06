@@ -84,6 +84,12 @@ The subsequent owner test exercises this focus transition with Aetheri's native
 Compose provider; see the
 [native focus evidence](../../docs/quality/aetheri-adoption-assessment.md#native-compose-across-a-desktop-focus-edge-2026-11-06).
 
+The private test host applies each mapped output's committed integer scale to
+its buffer and text density while retaining logical input/semantic geometry.
+A 2x virtual output was checked with a modified compositor fixture; unchanged
+Aetheri 2x layout and fractional scaling remain open. See the
+[scale evidence](../../docs/quality/aetheri-adoption-assessment.md#integer-output-scale-in-the-private-desktop-host-2026-11-06).
+
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
 until Wayland dispatch returns. It cancels a pending pointer release and

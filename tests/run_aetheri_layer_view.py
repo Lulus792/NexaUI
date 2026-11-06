@@ -28,6 +28,8 @@ def main():
                         help="close the clicked window after search collapses")
     parser.add_argument("--test-launch-channel", action="store_true",
                         help="exercise the fixed three-byte launch protocol with a test owner")
+    parser.add_argument("--second-output-scale2", action="store_true",
+                        help="expect a controlled test compositor with its second virtual output at 2x")
     parser.add_argument("--test-invalid-launch", choices=("uncorrelated", "oversized", "ancillary", "peer-loss"),
                         help="require the test host to reject an invalid owner response")
     args = parser.parse_args()
@@ -125,8 +127,11 @@ def main():
         shell_client.close()
         if launch_client:
             launch_client.close()
+        logical_widths = (1920, 1280 if args.second_output_scale2 else 2560, 3840)
         wait(lambda: all(f"PAINT {i} {width} 84\n" in log("desktop")
-                         for i, width in enumerate((1920, 2560, 3840))), "three docks")
+                         for i, width in enumerate(logical_widths)), "three docks")
+        if args.second_output_scale2:
+            wait(lambda: "BACKING 1 2 2560 168\n" in log("desktop"), "second output 2x buffer")
         if args.test_invalid_launch:
             if args.test_invalid_launch == "uncorrelated":
                 launch_owner.sendall(b"A3T")
@@ -167,7 +172,8 @@ def main():
             if (magic != b"P6" or dimensions != f"{width} {height}".encode() or
                     maximum != b"255" or len(pixels) != width * height * 3):
                 raise RuntimeError("invalid output capture")
-            offset = ((height - 65) * width + 20) * 3
+            scale = 2 if index == 1 and args.second_output_scale2 else 1
+            offset = ((height - 65 * scale) * width + 20 * scale) * 3
             if tuple(pixels[offset:offset + 3]) != (128, 175, 255):
                 raise RuntimeError("dock pixels missing on output " + str(index))
             result[f"dock_output_{index}_sha256"] = hashlib.sha256(raw).hexdigest()
@@ -190,6 +196,14 @@ def main():
         def key(code):
             for down in (1, 0):
                 event(f"K {code} {down}")
+        if args.second_output_scale2:
+            # The compositor's pointer coordinates remain logical; the
+            # second output begins at x=1920 and is 720 logical pixels high.
+            event("M 1940 655")
+            event("B 272 1")
+            event("B 272 0")
+            wait(lambda: "INTENT 1 1 0 0\n" in log("desktop"), "2x logical dock hit")
+            result["second_output_logical_hit"] = "passed"
         for code in (20, 18, 19, 50, 23, 49, 30, 38):
             key(code)
         wait(lambda: "QUERY 0 terminal\n" in log("desktop"), "typed search")

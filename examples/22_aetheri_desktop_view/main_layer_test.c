@@ -27,7 +27,7 @@
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 struct app;
-struct output_observation { char name[128]; bool invalid; };
+struct output_observation { struct app *app;char name[128]; bool invalid,scale_pending;int32_t scale,next_scale; };
 struct view {
     struct app *app; unsigned index;
     struct wl_surface *surface;
@@ -66,6 +66,7 @@ struct app {
     struct wl_output *outputs[3];
     uint32_t output_names[3];
     struct output_observation observed_outputs[3];
+    struct output_observation *mapped_observations[3];
     char desktop_output_names[3][128];
     unsigned desktop_output_count;
     bool desktop_snapshot_done,output_mapping_done,initial_output_removed;
@@ -357,6 +358,13 @@ static uint32_t accessibility_prepare(struct app *a,struct pollfd *fds,uint32_t 
     }
     return wait_ms;
 }
+static bool view_pixels(const struct view *v,uint32_t scale,nx_pixel_size *pixels) {
+    if(!pixels || !scale || scale>8 || !v->width || !v->height ||
+       v->width>(uint32_t)(INT32_MAX/4)/(uint32_t)scale || v->height>(uint32_t)INT32_MAX/scale)return false;
+    uint32_t width=v->width*scale,height=v->height*scale;
+    if((uint64_t)width*height*4u>128u*1024u*1024u)return false;
+    *pixels=(nx_pixel_size){width,height};return true;
+}
 static void paint(struct view *v) {
     struct app *a=v->app; CHECK(v->width>=320 && v->height>=84);
     if(!v->view) {
@@ -366,6 +374,10 @@ static void paint(struct view *v) {
         if(a->focused==v) CHECK(aetheri_desktop_view_surface_focus(v->view,1)==NX_OK);
     }
     if(!v->presenter) CHECK(nx_wayland_shm_host_create(a->display,a->shm,v->surface,NULL,&v->presenter)==NX_OK);
+    struct output_observation *observation=a->mapped_observations[v->index];
+    uint32_t scale=observation && observation->scale>0?(uint32_t)observation->scale:1u;
+    nx_pixel_size pixels;CHECK(view_pixels(v,scale,&pixels));
+    CHECK(nx_context_set_text_raster_scale(aetheri_desktop_view_context(v->view),(float)scale)==NX_OK);
     const nx_command *commands=NULL; size_t count=0;
     nx_wayland_shm_outcome outcome;
     advance(v);
@@ -375,10 +387,12 @@ static void paint(struct view *v) {
         if(aetheri_desktop_view_host_ime_revision(v->view,&revision)!=NX_OK)advance(v);
     }
     CHECK(nx_frame_commands(aetheri_desktop_view_context(v->view),&commands,&count)==NX_OK);
-    CHECK(nx_wayland_shm_host_present(v->presenter,(nx_pixel_size){v->width,v->height},1,commands,count,
+    wl_surface_set_buffer_scale(v->surface,(int32_t)scale);
+    CHECK(nx_wayland_shm_host_present(v->presenter,pixels,(double)scale,commands,count,
                                       (nx_color){0,0,0,0},&outcome)==NX_OK);
     if(outcome==NX_WAYLAND_SHM_BUSY){v->dirty=true;return;}
     CHECK(outcome==NX_WAYLAND_SHM_READY);
+    printf("BACKING %u %u %u %u\n",v->index,scale,pixels.width,pixels.height);
     accessibility_publish(v);
     v->dirty=false;
     printf("PAINT %u %u %u\n",v->index,v->width,v->height);
@@ -619,7 +633,8 @@ static void retire_output(struct app *a,unsigned index) {
     if(v->layer){zwlr_layer_surface_v1_destroy(v->layer);v->layer=NULL;}
     if(v->surface){wl_surface_destroy(v->surface);v->surface=NULL;}
     if(a->outputs[index]){wl_output_destroy(a->outputs[index]);a->outputs[index]=NULL;}
-    a->output_names[index]=0;v->configured=false;v->expanded=false;v->dirty=false;v->remove_pending=false;
+    a->output_names[index]=0;a->mapped_observations[index]=NULL;
+    v->configured=false;v->expanded=false;v->dirty=false;v->remove_pending=false;
     printf("OUTPUT_REMOVED %u\n",index);
 }
 static void pointer_release_ready(void *data,struct wl_callback *callback,uint32_t serial) {
@@ -744,8 +759,20 @@ static void output_geometry(void *data,struct wl_output *output,int32_t x,int32_
 static void output_mode(void *data,struct wl_output *output,uint32_t flags,int32_t width,int32_t height,int32_t refresh) {
     (void)data;(void)output;(void)flags;(void)width;(void)height;(void)refresh;
 }
-static void output_done(void *data,struct wl_output *output) {(void)data;(void)output;}
-static void output_scale(void *data,struct wl_output *output,int32_t scale) {(void)data;(void)output;(void)scale;}
+static void output_done(void *data,struct wl_output *output) {
+    struct output_observation *o=data;(void)output;
+    if(!o->scale_pending)return;
+    o->scale_pending=false;
+    if(o->scale==o->next_scale)return;
+    o->scale=o->next_scale;
+    if(o->app && o->app->output_mapping_done)for(unsigned i=0;i<3;++i)
+        if(o->app->mapped_observations[i]==o && !o->app->views[i].remove_pending)
+            o->app->views[i].dirty=true;
+}
+static void output_scale(void *data,struct wl_output *output,int32_t scale) {
+    struct output_observation *o=data;(void)output;CHECK(scale>=1 && scale<=8);
+    o->next_scale=scale;o->scale_pending=true;
+}
 static void output_name(void *data,struct wl_output *output,const char *name) {
     struct output_observation *o=data;(void)output;
     if(!name || !*name || strlen(name)>=sizeof(o->name) || o->name[0]){o->invalid=true;return;}
@@ -759,7 +786,7 @@ static const struct wl_output_listener output_listener={.geometry=output_geometr
 static bool map_initial_outputs(struct app *a) {
     if(a->output_mapping_done || !a->desktop_snapshot_done || a->desktop_output_count!=3 ||
        a->output_count!=3 || a->initial_output_removed)return false;
-    struct wl_output *mapped[3]={0};uint32_t names[3]={0};bool used[3]={0};
+    struct wl_output *mapped[3]={0};uint32_t names[3]={0};struct output_observation *observations[3]={0};bool used[3]={0};
     for(unsigned i=0;i<3;++i) {
         if(!a->desktop_output_names[i][0])return false;
         unsigned matches=0,slot=0;
@@ -768,9 +795,10 @@ static bool map_initial_outputs(struct app *a) {
             if(!strcmp(a->desktop_output_names[i],a->observed_outputs[j].name)){++matches;slot=j;}
         }
         if(matches!=1 || used[slot])return false;
-        used[slot]=true;mapped[i]=a->outputs[slot];names[i]=a->output_names[slot];
+        used[slot]=true;mapped[i]=a->outputs[slot];names[i]=a->output_names[slot];observations[i]=&a->observed_outputs[slot];
     }
     memcpy(a->outputs,mapped,sizeof(mapped));memcpy(a->output_names,names,sizeof(names));
+    memcpy(a->mapped_observations,observations,sizeof(observations));
     a->output_mapping_done=true;return true;
 }
 static void global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) {
@@ -798,6 +826,7 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
         }
         CHECK(a->ordinary || version>=4);
         unsigned slot=a->output_count++;
+        a->observed_outputs[slot].app=a;a->observed_outputs[slot].scale=1;
         a->output_names[slot]=name;
         a->outputs[slot] = wl_registry_bind(registry, name, &wl_output_interface, version>=4?4:version);
         CHECK(a->outputs[slot] && wl_output_add_listener(a->outputs[slot],&output_listener,&a->observed_outputs[slot])==0);

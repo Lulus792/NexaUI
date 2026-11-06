@@ -1,5 +1,43 @@
 # Aetheri adoption: initial source assessment
 
+## Integer output scale in the private desktop host (2026-11-06)
+
+On NexaUI base `25db24712ab1466f2a7fc0f8275063f3eb8ed2a2`, the private
+layer test host now stages `wl_output.scale` and applies it at `wl_output.done`
+to the output matched by name. It marks only the corresponding view dirty,
+sets surface buffer scale and text raster density, and passes checked physical
+dimensions and matching scale to the existing shared-memory presenter. Layout,
+input and accessibility geometry remain logical. The host accepts integer
+scales 1–8 and rejects frames exceeding the presenter's 128 MiB buffer limit;
+this is a bounded test host, not fractional-scale support.
+
+On Fedora, an isolated compositor fixture based on Aetheri source
+`d56d69523c33a48648af343e7d36526f84518c90` advertised a 2x second virtual
+output. The initial run showed the unchanged compositor still configured its
+layer with physical output dimensions. A second isolated fixture adjustment
+used effective logical output dimensions and placement; with that change the
+desktop submitted a 2560×168 buffer for a 1280×84 logical dock, the captured
+output contained the expected dock pixels, and a pointer click in logical
+coordinates produced the second dock's Search intent. The other two virtual
+outputs remained 1x. Two fixture runs passed; the final run also checked that
+pointer hit. This altered compositor is a test fixture, not an Aetheri fix or
+evidence that its unchanged 2x compositor works.
+
+The unchanged compositor's 1x regression passed with independent window and
+launch-channel clients. GCC static/shared and Clang ASan/UBSan consumer focus,
+IME-wire and launcher regressions passed on Alpine/WSL. The scale callback test
+checks reordered output identity, unchanged scale before `done`, targeted dirty
+notification and physical-dimension bounds. The final desktop binary SHA-256 was
+`4ea8135ed98a95b9a65dfebf0413c80e37371069a8c3483d4179d598df98f5bb`;
+the modified compositor binary was
+`33e3205910ae82be7a0635b44ebaed973c0946d26804bc8a16fda9523c4de177`.
+Both modified compositor source files, the initial failure, captures and logs
+are in `D:/NexaUI/out/nexaui-output-scale2-final-evidence-20261106.tar.gz`,
+SHA-256 `262986c90184afd3116c6fabf945a8a3efcd856237e164aa572560d4ee4f7408`.
+Dynamic real output scaling, native fractional scale, Aetheri's unchanged 2x
+layout, screenreader coordinates, physical monitors and human review remain
+open. Aetheri's live checkout and pinned SDK were not modified.
+
 ## Native Compose across a desktop focus edge (2026-11-06)
 
 On NexaUI base `6b1876f1788dfe30da75112a83dc519ef02cb53a`, the owner

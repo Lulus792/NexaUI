@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W04/W05/D05/R01/Q04: the private test host applies the mapped output's committed
+integer scale to its backing buffer and text density. A 2x virtual output and
+logical pointer hit passed with an altered compositor fixture; the unchanged
+Aetheri 2x layout, dynamic changes, fractional scaling and physical/human
+acceptance remain open. See [scale evidence](aetheri-adoption-assessment.md#integer-output-scale-in-the-private-desktop-host-2026-11-06).
+
 D05/W05/Q04: the private desktop test host matches initial compositor output
 names to `wl_output.name` instead of trusting registry order. Controlled
 reordering/negative cases and an isolated Aetheri compositor run passed; dynamic

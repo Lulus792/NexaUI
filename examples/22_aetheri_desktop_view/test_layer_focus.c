@@ -6,7 +6,11 @@
 int main(int argc, char **argv) {
     CHECK(argc==2);
     struct app mapping={.output_count=3};
-    for(unsigned i=0;i<3;++i){mapping.outputs[i]=(struct wl_output *)(uintptr_t)(i+1u);mapping.output_names[i]=100u+i;}
+    for(unsigned i=0;i<3;++i){mapping.outputs[i]=(struct wl_output *)(uintptr_t)(i+1u);mapping.output_names[i]=100u+i;
+        mapping.observed_outputs[i].app=&mapping;mapping.observed_outputs[i].scale=1;}
+    output_scale(&mapping.observed_outputs[0],NULL,2);
+    CHECK(mapping.observed_outputs[0].scale==1);output_done(&mapping.observed_outputs[0],NULL);
+    CHECK(mapping.observed_outputs[0].scale==2);
     output_name(&mapping.observed_outputs[0],NULL,"HDMI");
     output_name(&mapping.observed_outputs[1],NULL,"DP-2");
     output_name(&mapping.observed_outputs[2],NULL,"eDP");
@@ -23,6 +27,14 @@ int main(int argc, char **argv) {
     CHECK(mapping.output_names[0]==102 && mapping.output_names[1]==100 && mapping.output_names[2]==101);
     CHECK(mapping.outputs[0]==(struct wl_output *)(uintptr_t)3 && mapping.outputs[1]==(struct wl_output *)(uintptr_t)1 &&
           mapping.outputs[2]==(struct wl_output *)(uintptr_t)2);
+    CHECK(mapping.mapped_observations[1]==&mapping.observed_outputs[0] && mapping.mapped_observations[1]->scale==2);
+    struct view geometry={.width=640,.height=480};nx_pixel_size pixels={0};
+    CHECK(view_pixels(&geometry,2,&pixels) && pixels.width==1280 && pixels.height==960);
+    geometry.width=UINT32_MAX;CHECK(!view_pixels(&geometry,8,&pixels));
+    output_scale(&mapping.observed_outputs[0],NULL,3);
+    CHECK(mapping.mapped_observations[1]->scale==2 && !mapping.views[1].dirty);
+    output_done(&mapping.observed_outputs[0],NULL);
+    CHECK(mapping.mapped_observations[1]->scale==3 && mapping.views[1].dirty && !mapping.views[0].dirty);
     CHECK(!map_initial_outputs(&mapping) && mapping.output_names[0]==102);
     global_remove(&mapping,NULL,100);CHECK(mapping.views[1].remove_pending && !mapping.views[0].remove_pending);
     struct app a={.launcher=-1,.toggle_output=-1,.output_mapping_done=true};
