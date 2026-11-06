@@ -48,8 +48,12 @@ once and blocks further launch requests while the owner drains children. A
 socketpair test covers these messages and rejects a version-2 reply. The
 version-2 results below describe historical runs with an older owner; they do
 not demonstrate compatibility with the current owner. The new protocol was
-also exercised with an independent test peer on the Aetheri test compositor,
-not yet with the current original supervisor.
+also exercised with an independent test peer on the Aetheri test compositor.
+The subsequent isolated original-owner test on base `1eeb035799affe2bdaf4c1a9bb01b76ef70e83b9`
+covered Settings and Terminal launch/reuse, Settings reopen and Ctrl+Q owner
+shutdown ordering. It used the Settings model consumer and existing test
+binaries; production adoption and actual output hotplug remain open. See the
+[evidence record](../../docs/quality/aetheri-adoption-assessment.md#version-3-shell-with-the-current-owner-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

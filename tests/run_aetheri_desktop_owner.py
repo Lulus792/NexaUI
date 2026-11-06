@@ -19,6 +19,8 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--terminal", type=Path)
     parser.add_argument("--shell", type=Path)
+    parser.add_argument("--cmake-cache", type=Path,
+                        help="actual Aetheri build cache used to select the fixture profile")
     args = parser.parse_args()
     if bool(args.terminal) != bool(args.shell):
         parser.error("--terminal and --shell must be supplied together")
@@ -28,6 +30,8 @@ def main():
     root.mkdir(mode=0o700)
     build = root / "build"
     build.mkdir(mode=0o700)
+    if args.cmake_cache:
+        shutil.copy2(args.cmake_cache.resolve(strict=True), build / "CMakeCache.txt")
     for name, target in (("test_compositor_server", server), ("aetheri-desktop", desktop),
                          ("aetheri-settings", settings)):
         (build / name).symlink_to(target)
@@ -37,7 +41,8 @@ def main():
         (build / "aetheri-terminal").symlink_to(terminal)
         # Terminal opens the shell with O_NOFOLLOW; keep an ordinary copied file.
         shutil.copy2(shell, build / "aetheri-shell")
-    for name in ("captures", "sessions", "sessions/fixture", "sessions/fixture/runtime", "sessions/fixture/cache"):
+    for name in ("captures", "sessions", "sessions/fixture", "sessions/fixture/runtime", "sessions/fixture/cache",
+                 "sessions/fixture/documents"):
         (root / name).mkdir(mode=0o700)
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     controller.settimeout(5)
@@ -45,9 +50,12 @@ def main():
         with path.open("rb") as stream:
             return hashlib.file_digest(stream, "sha256").hexdigest()
     result = {"status": "failed", "scope": "original supervisor, isolated headless compositor and NexaUI test host",
+              "runner_sha256": digest(Path(__file__).resolve()),
               "fixture_sha256": digest(fixture), "owner_sha256": digest(owner),
               "server_sha256": digest(server), "desktop_sha256": digest(desktop),
               "settings_sha256": digest(settings)}
+    if args.cmake_cache:
+        result["cmake_cache_sha256"] = digest((build / "CMakeCache.txt"))
     result["terminal_case"] = "not-run"
     if args.terminal:
         result.update(terminal_sha256=digest(terminal), shell_sha256=digest(shell))
@@ -171,7 +179,18 @@ def main():
                 if len(re.findall(r"^SPAWN terminal \d+$", log(), re.M)) != 1:
                     raise RuntimeError("owner created a duplicate Terminal process")
                 result["terminal_case"] = "passed"
-            child.send_signal(signal.SIGTERM)
+            # The owner, rather than the desktop, drains apps before retiring
+            # the privileged display. Request that fence through real input.
+            previous_focus = log().count("desktop: ENTER 0\n")
+            event("M 100 100")
+            event("K 125 1")
+            tap(57)
+            event("K 125 0")
+            wait(lambda: log().count("desktop: ENTER 0\n") > previous_focus, "shutdown search focus")
+            event("K 29 1")
+            tap(16)
+            event("K 29 0")
+            wait(lambda: "desktop: CLOSE_REQUEST\n" in log(), "desktop shutdown request")
             if child.wait(timeout=15):
                 raise RuntimeError("supervisor shutdown failed")
             ending = re.search(r"^SESSION_END (.*)$", log(), re.M)
@@ -179,6 +198,13 @@ def main():
                 raise RuntimeError("missing owner exit report")
             if "settings: SHUTDOWN signal\n" not in log().split("SPAWN settings " + str(second), 1)[1]:
                 raise RuntimeError("reopened Settings did not report signal shutdown")
+            close_at = log().rfind("desktop: CLOSE_REQUEST\n")
+            stopping_at = log().rfind("\nSTOPPING\n")
+            settings_at = log().rfind("settings: SHUTDOWN signal\n")
+            desktop_at = log().rfind("desktop: RETIRED\n")
+            if min(close_at, stopping_at, settings_at, desktop_at) < 0 or not (
+                    close_at < stopping_at < settings_at < desktop_at):
+                raise RuntimeError("owner did not fence and drain apps before desktop retirement")
             summary = json.loads(ending[1])
             expected_children = {"compositor": 0, "desktop": 0, "settings": 0}
             if args.terminal:

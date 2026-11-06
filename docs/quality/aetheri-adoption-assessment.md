@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Version-3 shell with the current owner (2026-11-06)
+
+On NexaUI base `1eeb035799affe2bdaf4c1a9bb01b76ef70e83b9`, the updated
+`run_aetheri_desktop_owner.py` ran the unmodified Aetheri supervisor and its
+headless adapter from source revision `d56d69523c33a48648af343e7d36526f84518c90`
+(source archive SHA-256 `32e81c3757179249f1fbfdb3a08a61fde94f20cc810d8abfd539de14c961ead9`).
+Virtual input launched a NexaUI Settings **model consumer**, reused its process,
+closed it, and launched a new process; it also launched and reused the original
+Aetheri Terminal and activated the existing windows. Ctrl+Q on the NexaUI
+desktop sent the owner close request; the test checked the owner fence, Terminal
+drain before Settings, and Settings shutdown before desktop retirement. The
+compositor, desktop, Settings and Terminal all exited 0. This passed twice; the
+second run has the stricter ordered-shutdown assertions.
+
+The runner SHA-256 was `b8d4988f046607c44b52b9eb3b9dec5385ae38ba5f0220e63a7959ea0e451fcf`;
+the desktop binary was `eff18402f96792ab9b2b70d0f5b9b84b29005030fffc36c2f0e0c72e48b65bf9`.
+The result file records hashes of all executables, the owner, fixture and copied
+build cache. Logs, both passes and the initial failure caused by the new missing
+build cache are preserved in `D:/NexaUI/out/nexaui-owner-v3-evidence-20261106.tar.gz`,
+SHA-256 `f8379b17fc6d7fc8f6a734874da76d8d374536d1a8bb60852de87f5ece7e587e`.
+The test used existing carrier binaries whose build provenance was not rebuilt
+for this run, a headless compositor and an isolated owner fixture. It does not
+establish production desktop adoption, the complete Settings application,
+real output hotplug, private-surface native IME/AT-SPI or physical acceptance.
+Aetheri's live checkout and SDK pin were not modified.
+
 ## Current desktop owner protocol (2026-11-06)
 
 On NexaUI base `6ec56009c4115082e5bc3aef32a403945f2e22a6`, the private
@@ -18,9 +44,9 @@ window observation, input and three virtual docks; all three processes exited
 0. Results are in `/tmp/nexaui-shell-map-f7fc-9NHe0df8/layer-run-v3/` on the
 carrier; desktop binary SHA-256 is
 `eff18402f96792ab9b2b70d0f5b9b84b29005030fffc36c2f0e0c72e48b65bf9`.
-This uses the previously recorded `c1c85ae` model snapshot and test compositor,
-not the current original supervisor; actual current-owner launch, reuse and
-ordered shutdown remain open. No Aetheri checkout or pinned SDK was modified.
+This peer test used the previously recorded `c1c85ae` model snapshot and test
+compositor, not the original supervisor. The later owner run above provides
+separate headless evidence. No Aetheri checkout or pinned SDK was modified.
 
 ## Input after output retirement is scheduled (2026-11-06)
 
