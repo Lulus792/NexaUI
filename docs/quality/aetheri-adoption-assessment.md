@@ -1,5 +1,62 @@
 # Aetheri adoption: initial source assessment
 
+## Unquantified operation activity (2026-11-06)
+
+Based on NexaUI `7998ca5d95ece2b7440020434f025f5aa7291a49`, this 0.1.23
+development candidate adds `nx_activity` without changing `nx_progress` or an
+existing descriptor. Aetheri's management operation response can supply a
+state/phase/outcome without a completion fraction; the new control exposes a
+read-only busy status, copied name/description and no numeric value or actions.
+Its `[0,1]` phase positions a visual band only. Scheduling and operation ownership
+remain with the caller; constant phase supports reduced motion. An unknown
+result is a separate observed status, not an inferred busy or completed state.
+The [external C17 example](../../examples/26_operation_status/README.md) renders
+measured progress, unquantified activity and an unknown result without a display,
+GPU, network, timer or operation backend.
+
+On the Fedora carrier (GCC 16.2.1, CMake 4.3.0, Wayland 1.26.0, xkbcommon 1.13.1),
+static Release, shared Release and static ASan/UBSan Wayland-only software
+profiles with AT-SPI disabled each passed `nexaui_cloud_components`. Checks cover
+invalid phases, busy/no-value semantics, band geometry, rasterization and
+allocation rollback with a successful retry in the same context. Each installed
+package built and ran the external C17 example with `-Wall -Wextra -Werror`.
+CMake rejected the older 0.1.22 package. `ldd` confirmed the shared consumer used
+the new installation. All three 480×180 PPMs had SHA-256
+`6f8c7fd2a41f8282f3c46f12c7be487e10a42fd48ab200950f2490bc06093949`;
+the inspected conversion is `D:/NexaUI/out/nexaui-activity-20261106.png`.
+
+Separate AT-SPI-enabled static Release and ASan/UBSan builds ran the existing
+Linux accessibility host/client suite on Aetheri's isolated test compositor from
+`d56d69523c33a48648af343e7d36526f84518c90`. The extended independent libatspi
+client checked the activity role, busy/read-only states, description, absent
+value/action interfaces and absent `nexaui-value` attribute. A host command then
+replaced that same status identity with an unknown result; the client observed
+its new description/name and cleared busy state. Both complete suites passed and
+closed cleanly. An isolated host mutant omitting busy failed the intended state
+assertion; its forced negative teardown is not a clean-close result. This tests
+native queries and a controlled transition, not human screenreader announcements
+or real service reconciliation. The first manual mutant compile omitted the
+existing test-hook definition and failed; adding that fixture definition allowed
+the intended negative runtime check, without changing SDK code.
+
+Native Release and sanitizer host hashes were respectively
+`d62258f7fe478fdac3c355fb898337419e2c16d7cffe27c65fc913a9b3426892` and
+`dc86904b3683e11f493cd910cca15d6f0a4aac94aa213a3fb2c4c60ee6024b8c`.
+Source, CMake caches, test/example logs, native results, mutant and image outputs
+are archived at `D:/NexaUI/out/nexaui-activity-20261106.tar.gz`, SHA-256
+`2255947028ede155469bbf5e67af3fe4c772e6c2d0de8a5a7966965161059e18`.
+Builder-declared source revision was empty; the archive identifies the candidate
+from the cited base plus these API/test changes rather than claiming a release
+attestation. The font is the carrier's existing Liberation Sans Regular.
+
+This advances D07/D11/L11/A02 presentation seams. It does not close P01/P07,
+real installer/device/software commands, exact-target review, durable reconnect,
+trusted authorization, production accessibility, other platforms, localization,
+physical input/scaling or human design/assistive acceptance. The separate Files
+unpaced sanitizer stress failure remains open. Aetheri may adopt the new control
+independently at 0.1.23; no Aetheri source, SDK pin or live session was changed.
+No 1.0.0 release or tag is implied.
+
 ## Rename review on Aetheri's test compositor (2026-11-06)
 
 The existing `25_aetheri_rename` example from NexaUI

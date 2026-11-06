@@ -43,6 +43,31 @@ static int controls(void) {
     nx_context_destroy(ui); return 0;
 }
 
+static int activity(void) {
+    nx_context *ui=NULL; CHECK(nx_context_create(NULL,&ui)==NX_OK);
+    nx_activity_desc desc={1,0,{10,10,80,8},{"Installing",10},{"Waiting for the service",23},0};
+    const double phases[]={0,.5,1};
+    for(size_t p=0;p<3;++p) {
+        CHECK(nx_begin_frame(ui,120,40,0)==NX_OK);
+        desc.phase=NAN; CHECK(nx_activity(ui,&desc)==NX_ERROR_ARGUMENT);
+        desc.phase=-.1; CHECK(nx_activity(ui,&desc)==NX_ERROR_ARGUMENT);
+        desc.phase=1.1; CHECK(nx_activity(ui,&desc)==NX_ERROR_ARGUMENT);
+        desc.phase=phases[p]; CHECK(nx_activity(ui,&desc)==NX_OK);
+        CHECK(nx_end_frame(ui)==NX_OK);
+        uint32_t index=0; nx_semantic_view view;
+        CHECK(nx_semantics_find(ui,1,&index)==NX_OK && nx_semantics_get(ui,index,&view)==NX_OK);
+        CHECK(view.role==NX_ROLE_STATUS && (view.state&NX_SEM_BUSY) &&
+              (view.state&NX_SEM_READONLY) && !view.value.length && !view.actions);
+        CHECK(view.description.length==23 && !memcmp(view.description.data,"Waiting for the service",23));
+        const nx_command *commands=NULL; size_t count=0;
+        CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK && count==2);
+        CHECK(commands[1].rect.width==20 && commands[1].rect.x==10+60*(float)phases[p]);
+        uint8_t pixels[120*40*4];
+        CHECK(nx_headless_render(commands,count,pixels,120,40,120*4,(nx_color){0,0,0,1})==NX_OK);
+    }
+    nx_context_destroy(ui); return 0;
+}
+
 static int icons_and_surface(void) {
     nx_context *ui = NULL; CHECK(nx_context_create(NULL,&ui) == NX_OK);
     CHECK(nx_begin_frame(ui,800,120,0) == NX_OK);
@@ -137,4 +162,31 @@ static int rollback(void) {
     }
     CHECK(failures >= 4); return 0;
 }
-int main(void) { return controls() || icons_and_surface() || primary_contrast() || rollback(); }
+
+static int activity_rollback(void) {
+    unsigned failures=0;
+    for(size_t offset=1;offset<=8;++offset) {
+        fail_allocator a={0}; nx_context_desc config={0};
+        config.allocator=(nx_allocator){&a,allocate,deallocate};
+        config.initial_command_capacity=config.initial_semantic_capacity=1;
+        config.initial_semantic_text_capacity=1;
+        nx_context *ui=NULL; CHECK(nx_context_create(&config,&ui)==NX_OK);
+        CHECK(nx_begin_frame(ui,120,40,0)==NX_OK);
+        nx_activity_desc desc={1,0,{10,10,80,8},{"Installing",10},{"No estimate",11},.5};
+        a.fail=a.calls+offset;
+        nx_result result=nx_activity(ui,&desc);
+        if(result==NX_ERROR_MEMORY) {
+            ++failures;
+            CHECK(nx_end_frame(ui)==NX_OK);
+            uint32_t index; const nx_command *commands=NULL;size_t count=0;
+            CHECK(nx_semantics_find(ui,1,&index)!=NX_OK);
+            CHECK(nx_frame_commands(ui,&commands,&count)==NX_OK && !count);
+            /* Retry in the same context with the original identity. */
+            a.fail=0; CHECK(nx_begin_frame(ui,120,40,0)==NX_OK);
+            CHECK(nx_activity(ui,&desc)==NX_OK && nx_end_frame(ui)==NX_OK);
+        } else { CHECK(result==NX_OK && nx_end_frame(ui)==NX_OK); }
+        nx_context_destroy(ui);
+    }
+    CHECK(failures>=2);return 0;
+}
+int main(void) { return controls() || activity() || icons_and_surface() || primary_contrast() || rollback() || activity_rollback(); }

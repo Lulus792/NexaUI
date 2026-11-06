@@ -1,4 +1,4 @@
-# Core API (0.1.22)
+# Core API (0.1.23)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -27,7 +27,7 @@ or newer. `nx_window_fullscreen` and `NX_WINDOW_CAP_FULLSCREEN` require
 not compositor acceptance; the observed state remains separate. Windows and
 macOS currently return unsupported for fullscreen requests.
 `nx_text_field_widget_described` and `nx_text_field_widget_styled` require
-0.1.22 or newer. This does not declare a
+0.1.22 or newer. `nx_activity` requires 0.1.23 or newer. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full
@@ -61,6 +61,20 @@ this newer symbol. CMake package selection only validates configuration-time
 metadata: ensure the runtime loader resolves the intended shared library. If
 an older loaded library lacks a required symbol, loading or the first call may
 fail before a version comparison can run.
+
+## Activity without an estimate
+
+`nx_activity` draws an unquantified activity band using the current selection
+and accent theme colors. It registers a read-only `NX_ROLE_STATUS` node with
+`NX_SEM_BUSY`, copied name/description, no value and no actions. Unlike
+`nx_progress`, it does not expose a completion percentage. The finite `[0,1]`
+phase controls only visual band position. The caller owns redraw scheduling;
+keep phase constant for reduced motion and stop animation deadlines when hidden
+or no longer active. An unknown result must be a separate observed status, not
+automatically busy. The control owns no operation, timer or command dispatch.
+Invalid spans/geometry/phase fail without registering the control; allocation
+failure rolls back its commands and semantic node. See the
+[installed C17 example](../../examples/26_operation_status/README.md).
 
 ## Results and ownership
 

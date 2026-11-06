@@ -16,7 +16,7 @@ typedef struct scene {
     nx_context *ui;
     unsigned count;
     int checked, removed, retyped, renamed, long_name, fresh, fresh_type;
-    int overlay_stage; unsigned inner_clicks, outer_clicks;
+    int overlay_stage, activity_unknown; unsigned inner_clicks, outer_clicks;
     uint64_t required, optional;
 } scene;
 typedef struct heap { void *pointers[256]; size_t sizes[256],count; int fail_next; } heap;
@@ -136,6 +136,14 @@ static int frame(scene *s) {
     CHECK(nx_semantics_add(s->ui,&disabled_group,NULL)==NX_OK);
     d=control(2031,2030,"Disabled group child",(nx_rect){10,260,100,30});
     CHECK(nx_button(s->ui,&d,&state)==NX_OK);
+    if(!s->activity_unknown) {
+        nx_activity_desc activity={2040,1,{150,320,200,8},span("Operation active"),span("No completion estimate"),.5};
+        CHECK(nx_activity(s->ui,&activity)==NX_OK);
+    } else {
+        nx_semantic_desc unknown={2040,1,NX_ROLE_STATUS,{150,320,200,8},
+            span("Operation result unknown"),span("Reconnect to the original owner"),{0},NX_SEM_READONLY,0};
+        CHECK(nx_semantics_add(s->ui,&unknown,NULL)==NX_OK);
+    }
     CHECK(nx_end_frame(s->ui)==NX_OK); return 1;
 }
 int main(int argc,char **argv) {
@@ -180,6 +188,7 @@ int main(int argc,char **argv) {
             else if (!strcmp(command,"resume")) paused=0;
             else if (!strcmp(command,"wait")) poll_timeout=2000;
             else if (!strcmp(command,"normal")) poll_timeout=50;
+            else if (!strcmp(command,"activityunknown")) app.activity_unknown=1;
             else if (!strcmp(command,"openmodal")) app.overlay_stage=1;
             else if (!strcmp(command,"openmenu")) app.overlay_stage=2;
             else if (!strcmp(command,"opensiblings")) {app.outer_clicks=0;app.inner_clicks=0;app.overlay_stage=4;}

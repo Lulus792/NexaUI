@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 22
+#define NX_VERSION_PATCH 23
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -1432,6 +1432,18 @@ typedef struct nx_progress_desc {
 
 /* Read-only determinate progress, using selection and accent theme colors. */
 NX_API nx_result nx_progress(nx_context *context, const nx_progress_desc *desc);
+
+typedef struct nx_activity_desc {
+    uint64_t id, parent_id;
+    nx_rect bounds;
+    nx_utf8_span name, description;
+    double phase; /* Finite [0,1] visual band position, never a completion fraction. */
+} nx_activity_desc;
+/* Read-only busy status without a numeric value. The caller supplies observed
+   activity and controls phase/redraw scheduling; keep phase constant for reduced
+   motion. Unknown results must be shown separately rather than inferred busy.
+   No timer, operation dispatch or completion state is owned by this control. */
+NX_API nx_result nx_activity(nx_context *context, const nx_activity_desc *desc);
 
 typedef struct nx_scroll_area_desc {
     uint64_t id, parent_id;

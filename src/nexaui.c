@@ -4096,6 +4096,33 @@ nx_result nx_progress(nx_context *ctx, const nx_progress_desc *desc) {
     return result;
 }
 
+nx_result nx_activity(nx_context *ctx, const nx_activity_desc *desc) {
+    if (!ctx || !desc || !desc->name.length || !nx_valid_span(desc->name) ||
+        !nx_valid_span(desc->description) || !nx_valid_rect(desc->bounds) ||
+        !isfinite(desc->phase) || desc->phase<0 || desc->phase>1)
+        return NX_ERROR_ARGUMENT;
+    if (ctx->state!=1u) return NX_ERROR_STATE;
+    nx_semantic_desc node={desc->id,desc->parent_id,NX_ROLE_STATUS,desc->bounds,
+        desc->name,desc->description,{0},NX_SEM_READONLY|NX_SEM_BUSY,0};
+    size_t old_text=ctx->semantics.text_count,old_commands=ctx->command_count;
+    nx_result result=nx_semantics_add(ctx,&node,NULL);
+    if (result!=NX_OK) return result;
+    nx_theme *theme=&ctx->theme_stack[ctx->theme_depth];
+    float radius=desc->bounds.height*.5f;
+    result=nx_fill_round_rect(ctx,desc->bounds,radius,theme->colors[NX_COLOR_SELECTION]);
+    if (result==NX_OK) {
+        nx_rect band=desc->bounds;
+        band.width*=.25f;
+        band.x+=(desc->bounds.width-band.width)*(float)desc->phase;
+        result=nx_fill_round_rect(ctx,band,radius,theme->colors[NX_COLOR_ACCENT]);
+    }
+    if (result!=NX_OK) {
+        ctx->command_count=old_commands;
+        nx_semantics_rollback_last(ctx,desc->id,old_text);
+    }
+    return result;
+}
+
 nx_result nx_scroll_area_begin(nx_context *ctx,
                                 const nx_scroll_area_desc *desc,
                                 float *offset_x, float *offset_y,
