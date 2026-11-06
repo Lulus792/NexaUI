@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Two NexaUI windows on the Aetheri test compositor (2026-11-06)
+
+The unchanged public C17 two-window consumer from NexaUI commit
+`861ac665eeb4662b795629bc502e86fb36a5c9e6` was linked separately against
+that commit's installed static Wayland-only 0.1.21 SDK and run on the isolated
+Aetheri `d56d69523c33a48648af343e7d36526f84518c90` test compositor. Its
+two independent Wayland windows use `nx_window_poll_many` with an application
+control descriptor. Virtual pointer input focuses first A and then B; native
+keyboard events deliver `a` and `b` to the respective contexts. In separate
+runs, the focused A or B is closed by the application. The remaining window
+submits another software frame, regains focus and receives `c`; the driver
+rejects duplicate or misrouted text. Both processes exit 0.
+
+Both close orders passed GCC 16.2.1 Release and ASan/UBSan with leak detection
+in the consumer and static SDK. The instrumented consumer SHA-256 was
+`76cf17116f349338e06aacfe1769317c8dede07d21d47e7b7232b851a8bcdb30`;
+the release consumer was
+`c071bdc101b489fcca4af25a09414b39a56ff58b10da71c029feaf7c898c33a8`.
+Logs, source and build caches are in
+`D:/NexaUI/out/nexaui-aetheri-two-windows-20261106.tar.gz`, SHA-256
+`075e64ccee41f4abbda1b890c2c10cb9ba301e22737a9d0a4c6d5474130a34b0`.
+Frame submission is not proof of presentation. This controlled fixture uses
+three virtual 1x outputs and app-owned close; compositor-requested close,
+physical displays, human interaction and actual Aetheri app adoption remain
+open. No Aetheri worktree was modified.
+
 ## Settings IME control-focus cancellation on Aetheri (2026-11-06)
 
 On example base `1a4fea0aba79046013e0bd67b465ef4224e6fcb8`, the external
