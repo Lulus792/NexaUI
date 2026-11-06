@@ -149,12 +149,19 @@ static void format_row(removal_review *view,size_t index,const char *status,revi
             entry->label,group_names[group],entry->reason,identity,identity+16,entry->logical_bytes);
     }
 }
+static nx_result add_row(removal_review *view,const nx_semantic_desc *node){
+    /* Values are readable through native Text, without inventing a caret or
+       exposing edits to the owner's immutable plan. Status remains a status. */
+    return node->role==NX_ROLE_TEXT?
+        nx_semantics_add_readonly_text_snapshot_without_caret(view->ctx,node,node->id,NULL):
+        nx_semantics_add(view->ctx,node,NULL);
+}
 static nx_result row_semantics(removal_review *view,const review_row *row,float top,float width){
     double offset=0,next=0;nx_result result=nx_virtual_list_offset_at(view->index,row->index,&offset);
     if(result==NX_OK)result=nx_virtual_list_offset_at(view->index,row->index+1,&next);
     nx_semantic_desc node={row->id,20,row->role,{16-view->x,top+(float)(offset-view->y),width,(float)(next-offset)},
         span(row->name),{0},span(row->value),NX_SEM_READONLY,0};
-    return result==NX_OK?nx_semantics_add(view->ctx,&node,NULL):result;
+    return result==NX_OK?add_row(view,&node):result;
 }
 static nx_result virtual_body(removal_review *view,float top,float viewport_height,const char *status,nx_color text){
     nx_virtual_range range,anchor;nx_result result=nx_virtual_list_range(view->index,view->y,viewport_height,1,&range);
@@ -273,7 +280,7 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
     for(size_t i=0;!large && i<count && result==NX_OK;++i){
         review_row *row=&rows[i];nx_semantic_desc node={row->id,20,row->role,{16-view->x,y,content_width,row->height},
             span(row->name),{0},span(row->value),NX_SEM_READONLY,0};
-        result=nx_semantics_add(view->ctx,&node,NULL);
+        result=add_row(view,&node);
         if(result==NX_OK)result=nx_draw_text_layout(view->ctx,row->layout,(nx_point){16-view->x,y},text,1024*1024);
         y+=row->height;
     }

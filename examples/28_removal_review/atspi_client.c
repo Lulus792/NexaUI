@@ -38,12 +38,42 @@ static int state(AtspiAccessible *node,AtspiStateType wanted){
     atspi_accessible_clear_cache(node);AtspiStateSet *states=atspi_accessible_get_state_set(node);
     int result=states && atspi_state_set_contains(states,wanted);if(states)g_object_unref(states);return result;
 }
+static int readable_text(AtspiAccessible *node,const char *expected){
+    GError *error=NULL;atspi_accessible_clear_cache(node);
+    AtspiText *text=atspi_accessible_get_text_iface(node);
+    if(!text){fprintf(stderr,"Missing AT-SPI Text for a read-only value\n");return 0;}
+    char *actual=atspi_text_get_text(text,0,-1,&error);
+    int result=!error && actual && !strcmp(actual,expected);g_free(actual);
+    if(!error)result=result && atspi_text_get_character_count(text,&error)==g_utf8_strlen(expected,-1);
+    if(!error)result=result && atspi_text_get_caret_offset(text,&error)==-1;
+    if(!error)result=result && atspi_text_get_n_selections(text,&error)==0;
+    if(error){g_error_free(error);error=NULL;result=0;}
+    /* Read-only data cannot acquire a caret or an app-owned selection. */
+    int moved=atspi_text_set_caret_offset(text,0,&error);
+    result=result && !moved;if(error){g_error_free(error);error=NULL;}
+    int selected=atspi_text_add_selection(text,0,1,&error);
+    result=result && !selected;if(error){g_error_free(error);error=NULL;}
+    actual=atspi_text_get_text(text,0,-1,&error);
+    result=result && !error && actual && !strcmp(actual,expected);g_free(actual);
+    if(!error)result=result && atspi_text_get_caret_offset(text,&error)==-1;
+    if(!error)result=result && atspi_text_get_n_selections(text,&error)==0;
+    if(error){g_error_free(error);result=0;}
+    AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(node);
+    result=result && !editable;if(editable)g_object_unref(editable);
+    g_object_unref(text);return result;
+}
+static int retired_text(AtspiText *text){
+    GError *error=NULL;char *value=atspi_text_get_text(text,0,-1,&error);
+    int result=error && (!value || !value[0]);g_free(value);
+    if(error)g_error_free(error);
+    return result;
+}
 static int value(AtspiAccessible *node,const char *expected){
     GError *error=NULL;atspi_accessible_clear_cache(node);GHashTable *attrs=atspi_accessible_get_attributes(node,&error);
     int result=!error && attrs && !g_strcmp0(g_hash_table_lookup(attrs,"nexaui-value"),expected);
     if(attrs)g_hash_table_unref(attrs);
     if(error)g_error_free(error);
-    return result;
+    return result && (!expected || readable_text(node,expected));
 }
 static int activate(AtspiAccessible *node){
     GError *error=NULL;AtspiAction *action=atspi_accessible_get_action_iface(node);
@@ -72,6 +102,7 @@ static int response(FILE *stream,const char *expected){
 int main(int argc,char **argv){
     int okay=0,input[2]={-1,-1},output[2]={-1,-1};pid_t child=-1;FILE *commands=NULL,*responses=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*reviewed=NULL,*request=NULL,*close_view=NULL,*old_plan=NULL,*status=NULL,*old_request=NULL;
+    AtspiText *held_text=NULL;
     const char *font=getenv("NEXAUI_REMOVAL_FONT");int incomplete=getenv("NEXAUI_REMOVAL_INCOMPLETE")!=NULL;
     int keyboard=getenv("NEXAUI_REMOVAL_KEYBOARD")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
     int large=getenv("NEXAUI_REMOVAL_LARGE")!=NULL;
@@ -93,6 +124,7 @@ int main(int argc,char **argv){
     }
     CHECK(reviewed);request=find(app,"Request removal",0);close_view=find(app,"Close view",0);old_plan=find(app,"Plan",0);
     CHECK(request && close_view && old_plan && value(old_plan,"00000000000000000000000000000001 / revision 42"));
+    held_text=atspi_accessible_get_text_iface(old_plan);CHECK(held_text);
     AtspiAccessible *installation=find(app,"Installation",0),*scope=find(app,"Scope",0);
     CHECK(installation && scope && value(installation,"00000000000000000000000000000002") &&
         value(scope,"Selected user's managed installation (00000000000000000000000000000003)"));
@@ -106,7 +138,16 @@ int main(int argc,char **argv){
         CHECK(value(group,expected));g_object_unref(group);}
     const char *objects[]={"Application code","Private settings and cache","Credential registration","Owned background service",
         "Shared support library","Profile deliberately kept","Independent project document","Backup outside this action"};
-    if(!large)for(unsigned i=0;i<8;++i){AtspiAccessible *object=find(app,objects[i],0);CHECK(object);g_object_unref(object);}
+    const char *reasons[]={"Owned by this installation","Managed private state in the selected user scope",
+        "Revoke the app-owned credential registration","Stop and unregister only this app's background work",
+        "Another installed application still requires this component","The user explicitly chose to retain this profile",
+        "User-created document outside automatic app-state removal","This request does not remove backup or remote copies"};
+    if(!large)for(unsigned i=0;i<8;++i){
+        AtspiAccessible *object=find(app,objects[i],0);char expected[512];CHECK(object);
+        snprintf(expected,sizeof(expected),"%s. %s\nObject: %032x\nLogical bytes: %u",
+            groups[i<4?0:i-3],reasons[i],10+i,4096*(i+1));
+        CHECK(value(object,expected));g_object_unref(object);
+    }
     if(large && !incomplete){
         AtspiAccessible *scroll=find(app,"Vertical scrollbar",0),*object=NULL;CHECK(scroll);
         if(keyboard){
@@ -151,7 +192,7 @@ int main(int argc,char **argv){
             if(app)request=find(app,"Request removal",0);
             if(!request)pause_briefly();
         }
-        CHECK(request && !state(request,ATSPI_STATE_ENABLED) && state(old_plan,ATSPI_STATE_DEFUNCT));
+        CHECK(request && !state(request,ATSPI_STATE_ENABLED) && state(old_plan,ATSPI_STATE_DEFUNCT) && retired_text(held_text));
         CHECK(!activate(request) && state(old_request,ATSPI_STATE_DEFUNCT) && !activate(old_request));
         status=find(app,"Request handed to owner; outcome unknown",0);CHECK(status && !state(status,ATSPI_STATE_BUSY));
         close_view=find(app,"Close view",0);CHECK(close_view);
@@ -168,6 +209,7 @@ cleanup:
         for(unsigned i=0;i<100 && !(ended=waitpid(child,&status_code,WNOHANG));++i)pause_briefly();
         if(!ended){kill(child,SIGKILL);waitpid(child,&status_code,0);}
     }
+    if(held_text)g_object_unref(held_text);
     if(status)g_object_unref(status);
     if(old_plan)g_object_unref(old_plan);
     if(old_request)g_object_unref(old_request);

@@ -126,7 +126,7 @@ nx_result observer_frame(operation_observer *view,float width,float height,obser
     float y=top-view->scroll_y;
     for(unsigned i=0;i<9 && result==NX_OK;++i){
         nx_semantic_desc node={100+i,20,NX_ROLE_TEXT,{16,y,width-56,heights[i]},span(names[i]),{0},span(values[i]),NX_SEM_READONLY,0};
-        result=nx_semantics_add(view->ctx,&node,NULL);
+        result=nx_semantics_add_readonly_text_snapshot_without_caret(view->ctx,&node,node.id,NULL);
         if(result==NX_OK)result=nx_draw_text_layout(view->ctx,rows[i],(nx_point){16,y},text,1024*1024);
         y+=heights[i];
     }

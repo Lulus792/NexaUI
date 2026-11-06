@@ -38,13 +38,43 @@ static int state(AtspiAccessible *node,AtspiStateType wanted){
     atspi_accessible_clear_cache(node);AtspiStateSet *states=atspi_accessible_get_state_set(node);
     int result=states && atspi_state_set_contains(states,wanted);if(states)g_object_unref(states);return result;
 }
+static int readable_text(AtspiAccessible *node,const char *expected){
+    GError *error=NULL;atspi_accessible_clear_cache(node);
+    AtspiText *text=atspi_accessible_get_text_iface(node);
+    if(!text){fprintf(stderr,"Missing AT-SPI Text for a read-only value\n");return 0;}
+    char *actual=atspi_text_get_text(text,0,-1,&error);
+    int result=!error && actual && !strcmp(actual,expected);g_free(actual);
+    if(!error)result=result && atspi_text_get_character_count(text,&error)==g_utf8_strlen(expected,-1);
+    if(!error)result=result && atspi_text_get_caret_offset(text,&error)==-1;
+    if(!error)result=result && atspi_text_get_n_selections(text,&error)==0;
+    if(error){g_error_free(error);error=NULL;result=0;}
+    /* Read-only data cannot acquire a caret or an app-owned selection. */
+    int moved=atspi_text_set_caret_offset(text,0,&error);
+    result=result && !moved;if(error){g_error_free(error);error=NULL;}
+    int selected=atspi_text_add_selection(text,0,1,&error);
+    result=result && !selected;if(error){g_error_free(error);error=NULL;}
+    actual=atspi_text_get_text(text,0,-1,&error);
+    result=result && !error && actual && !strcmp(actual,expected);g_free(actual);
+    if(!error)result=result && atspi_text_get_caret_offset(text,&error)==-1;
+    if(!error)result=result && atspi_text_get_n_selections(text,&error)==0;
+    if(error){g_error_free(error);result=0;}
+    AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(node);
+    result=result && !editable;if(editable)g_object_unref(editable);
+    g_object_unref(text);return result;
+}
+static int retired_text(AtspiText *text){
+    GError *error=NULL;char *value=atspi_text_get_text(text,0,-1,&error);
+    int result=error && (!value || !value[0]);g_free(value);
+    if(error)g_error_free(error);
+    return result;
+}
 static int value(AtspiAccessible *node,const char *expected){
     GError *error=NULL;atspi_accessible_clear_cache(node);
     GHashTable *attrs=atspi_accessible_get_attributes(node,&error);
     int result=!error && attrs && !g_strcmp0(g_hash_table_lookup(attrs,"nexaui-value"),expected);
     if(attrs)g_hash_table_unref(attrs);
     if(error)g_error_free(error);
-    return result;
+    return result && (!expected || readable_text(node,expected));
 }
 static int response(FILE *responses,const char *expected){
     struct pollfd fd={fileno(responses),POLLIN,0};char line[160];
@@ -62,6 +92,7 @@ static int activate(AtspiAccessible *node){
 int main(int argc,char **argv){
     int ok=0,in[2]={-1,-1},out[2]={-1,-1};pid_t child=-1;FILE *commands=NULL,*responses=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*status=NULL,*operation=NULL,*component=NULL,*refresh=NULL,*close_view=NULL,*old_operation=NULL;
+    AtspiText *held_text=NULL;
     int keyboard=getenv("NEXAUI_OPERATION_KEYBOARD")!=NULL;
     const char *manifest=getenv("NEXAUI_OPERATION_MANIFEST"),*expected=getenv("NEXAUI_OPERATION_EXPECTED"),
         *catalogue=getenv("NEXAUI_OPERATION_CATALOGUE"),*font=getenv("NEXAUI_OPERATION_FONT");
@@ -86,6 +117,7 @@ int main(int argc,char **argv){
     CHECK(!atspi_accessible_get_value_iface(status) && !atspi_accessible_get_action_iface(status) && value(status,NULL));
     operation=find(app,"Operation",0);component=find(app,"Component",0);refresh=find(app,"Refresh status",0);
     CHECK(operation && component && refresh && value(operation,"0000000000004000800000000000000b") && value(component,"aetheri.p0.probe"));
+    held_text=atspi_accessible_get_text_iface(operation);CHECK(held_text);
     CHECK(state(refresh,ATSPI_STATE_FOCUSED));
     if(keyboard){puts("OPERATION_KEYBOARD_REFRESH");fflush(stdout);}else CHECK(activate(refresh));
     CHECK(response(responses,"OBS_REFRESH\n"));
@@ -102,7 +134,7 @@ int main(int argc,char **argv){
     operation=find(app,"Operation",0);component=find(app,"Component",0);refresh=find(app,"Refresh status",0);close_view=find(app,"Close view",0);
     CHECK(operation && component && refresh && close_view && value(operation,"0000000000004000800000000000000b") && value(component,"aetheri.p0.probe"));
     CHECK((strcmp(ATSPI_OBJECT(operation)->path,ATSPI_OBJECT(old_operation)->path) ||
-        strcmp(ATSPI_OBJECT(operation)->app->bus_name,ATSPI_OBJECT(old_operation)->app->bus_name)) && state(old_operation,ATSPI_STATE_DEFUNCT));
+        strcmp(ATSPI_OBJECT(operation)->app->bus_name,ATSPI_OBJECT(old_operation)->app->bus_name)) && state(old_operation,ATSPI_STATE_DEFUNCT) && retired_text(held_text));
     CHECK(state(refresh,ATSPI_STATE_FOCUSED));
     if(keyboard){
         puts("OPERATION_KEYBOARD_FOCUS_CLOSE");fflush(stdout);
@@ -117,6 +149,7 @@ cleanup:
     if(responses)fclose(responses);
     for(unsigned i=0;i<2;++i){if(in[i]>=0)close(in[i]);if(out[i]>=0)close(out[i]);}
     if(child>0){kill(child,SIGTERM);waitpid(child,NULL,0);}
+    if(held_text)g_object_unref(held_text);
     if(old_operation)g_object_unref(old_operation);
     if(close_view)g_object_unref(close_view);
     if(refresh)g_object_unref(refresh);
