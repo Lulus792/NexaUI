@@ -76,6 +76,10 @@ belongs to the current enable interval, so a rejected draft cannot later
 complete invisibly. A late event from an earlier interval does not reset the
 new one. The first key may still need retry; see the
 [reset evidence](../../docs/quality/aetheri-adoption-assessment.md#reset-a-rejected-stale-compose-draft-2026-11-06).
+The native context is also retired at the search field's focus edge, even if
+focus returns during the same Wayland dispatch. A controlled wire test observes
+the disable and subsequent fresh enable; see the
+[focus-edge evidence](../../docs/quality/aetheri-adoption-assessment.md#retire-the-native-input-context-at-the-focus-edge-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

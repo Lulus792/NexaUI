@@ -145,6 +145,10 @@ static void advance(struct view *v) {
         CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
         CHECK(intent.kind==AETHERI_DESKTOP_NONE);
     }
+    /* A whole keyboard batch can leave and revisit this field before the
+       outer poll loop. Retire the old native context at the focus edge. */
+    if(v->app->focused==v && v->app->ime_enabled &&
+       nx_focus_id(aetheri_desktop_view_context(v->view))!=20)ime_stop(v->app);
     v->dirty=true;
 }
 static void ime_clear_visible(struct app *a) {

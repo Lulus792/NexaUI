@@ -1,5 +1,33 @@
 # Aetheri adoption: initial source assessment
 
+## Retire the native input context at the focus edge (2026-11-06)
+
+On NexaUI base `b586ccfeafacbb8b1a8a8242243d73765330963c`, the private
+desktop test host now disables the native input context as soon as a processed
+frame moves focus away from its search field. Previously a keyboard batch could
+move focus away and back before the outer poll loop noticed, leaving the old
+enable interval active. A controlled callback regression performs that
+round-trip and checks that a late preedit from the earlier interval does not
+reset the newly enabled one. A mutant with the new focus-edge check removed
+failed that assertion (exit 1).
+
+The controlled Wayland-server test additionally observes the actual native
+disable request before the outer loop and verifies a fresh enable after focus
+returns. GCC static/shared and Clang ASan/UBSan focus, IME-wire, transaction and
+launcher tests passed on Alpine/WSL; independent AT-SPI also passed with the
+sanitized host. Fedora passed the focus and wire tests and the combined Aetheri
+owner/AT-SPI/Compose recovery scenario. The combined scenario still permits a
+lost first Compose key and explicit retry, as documented below; it does not
+independently exercise this new keyboard focus edge on the Aetheri compositor.
+The desktop binary SHA-256 was
+`8443afeb613b79a57de3d69985670f445c65897b3df1298fde02aa109ea56e30`.
+Results are at `D:/NexaUI/out/nexaui-ime-focus-edge-evidence-20261106.tar.gz`,
+SHA-256 `2b5e8b429e7fe392383dcb2442d23710b74370ac321ac31a6d9882918b35e50a`.
+The mutant's local result is `/tmp/nexa-ime-focus-mutant-result.log` on WSL;
+the first shell wrapper accidentally reported success despite the failed test,
+so a direct invocation was repeated and returned exit 1. Physical devices,
+external input methods and general multi-field hosts remain separate gates.
+
 ## Reset a rejected stale Compose draft (2026-11-06)
 
 On NexaUI base `f0dfad0e199e5c1ac87afcd01a000b3edadbfcda`, the private

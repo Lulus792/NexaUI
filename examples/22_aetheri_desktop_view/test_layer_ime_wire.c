@@ -7,7 +7,7 @@
 #include <stdatomic.h>
 #include <wayland-server.h>
 
-struct wire_server {struct wl_display *display;struct wl_resource *surface;uint32_t serial;int enabled;atomic_int caret,surrounding;};
+struct wire_server {struct wl_display *display;struct wl_resource *surface;uint32_t serial;int enabled;atomic_int caret,surrounding,disable_count;};
 static void wire_destroy(struct wl_client *client,struct wl_resource *resource){(void)client;wl_resource_destroy(resource);}
 static void wire_create_surface(struct wl_client *client,struct wl_resource *resource,uint32_t id) {
     struct wire_server *s=wl_resource_get_user_data(resource);
@@ -34,7 +34,7 @@ static void wire_bind_seat(struct wl_client *client,void *data,uint32_t version,
     wl_resource_set_implementation(r,&impl,data,NULL);
 }
 static void wire_enable(struct wl_client *c,struct wl_resource *r){(void)c;((struct wire_server *)wl_resource_get_user_data(r))->enabled=1;}
-static void wire_disable(struct wl_client *c,struct wl_resource *r){(void)c;((struct wire_server *)wl_resource_get_user_data(r))->enabled=0;}
+static void wire_disable(struct wl_client *c,struct wl_resource *r){(void)c;struct wire_server *s=wl_resource_get_user_data(r);s->enabled=0;atomic_fetch_add(&s->disable_count,1);}
 static void wire_content(struct wl_client *c,struct wl_resource *r,uint32_t hint,uint32_t purpose) {
     (void)c;(void)r;CHECK(hint==0 && purpose==0);
 }
@@ -127,6 +127,25 @@ int main(int argc,char **argv) {
     ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0);
     CHECK(!a.ime_enabled && !a.ime_surface && !strcmp(v->model.query,"ABDC"));
     advance(v);CHECK(aetheri_desktop_view_host_ime_caret(v->view,&composing)==NX_OK && composing.x==plain.x);
+    /* Keyboard focus leaving the field must send native disable/commit even
+       before the outer dispatch loop runs again. */
+    ime_enter(&a,NULL,v->surface);ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0 && a.ime_enabled);
+    a.xkb=xkb_context_new(XKB_CONTEXT_NO_FLAGS);CHECK(a.xkb);
+    a.keymap=xkb_keymap_new_from_names(a.xkb,NULL,XKB_KEYMAP_COMPILE_NO_FLAGS);CHECK(a.keymap);
+    a.key_state=xkb_state_new(a.keymap);CHECK(a.key_state);
+    xkb_mod_index_t control=xkb_keymap_mod_get_index(a.keymap,XKB_MOD_NAME_CTRL);
+    xkb_mod_index_t shift=xkb_keymap_mod_get_index(a.keymap,XKB_MOD_NAME_SHIFT);CHECK(control<32 && shift<32);
+    modifiers(&a,NULL,0,(1u<<control)|(1u<<shift),0,0,0);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_PRESSED);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_RELEASED);
+    CHECK(!a.ime_enabled && !a.ime_enable_serial);
+    CHECK(wl_display_roundtrip(a.display)>=0 && atomic_load(&server.disable_count)==1);
+    modifiers(&a,NULL,0,1u<<control,0,0,0);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_PRESSED);
+    key(&a,NULL,0,0,KEY_TAB,WL_KEYBOARD_KEY_STATE_RELEASED);
+    modifiers(&a,NULL,0,0,0,0,0);
+    CHECK(nx_focus_id(aetheri_desktop_view_context(v->view))==20);
+    ime_sync(&a);CHECK(wl_display_roundtrip(a.display)>=0 && a.ime_enabled && a.ime_enable_serial>1);
     ae_desktop_model_search(&v->model,0,true);
     CHECK(ae_desktop_model_window(&v->model,42,"Editor","org.example.Editor",false));++v->revision;
     advance(v);advance(v);
@@ -188,6 +207,7 @@ int main(int argc,char **argv) {
     CHECK(a.unmapped_outputs==2 && !a.outputs[0] && !a.output_names[0] && !v->surface && !v->view && !a.activation_phase);
     capabilities(&a,a.seat,0);
     ime_stop(&a);zwp_text_input_v3_destroy(a.ime_input);zwp_text_input_manager_v3_destroy(a.ime_manager);
+    xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     wl_seat_destroy(a.seat);
     wl_compositor_destroy(a.compositor);wl_registry_destroy(a.registry);free(a.font);
     wl_display_terminate(server.display);wl_display_disconnect(a.display);CHECK(!pthread_join(thread,NULL));
