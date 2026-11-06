@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Localized text-field description (2026-11-06)
+
+Aetheri's newer Files view needs an accessible rejection explanation directly
+on the text field. Based on `df484dae5240c032779469c0766fa444e119f35b`, the
+additive `nx_text_field_widget_described` entry point passes a validated,
+caller-localized description to the existing copied semantic node. The old
+descriptor layout and `nx_text_field_widget` call remain unchanged. Invalid
+UTF-8 and invalid spans fail before registration; a later valid call in the
+same frame succeeds. The example's Files filter supplies a simple description;
+actual Aetheri integration and localization remain owned by Aetheri.
+
+The field test passed static Release, shared Release and static ASan/UBSan on
+the Fedora carrier, covering copied lifetime, replacement, invalid input and
+the old empty-description path. An independent libatspi client queried the
+description on the isolated Aetheri test compositor in Release and ASan/UBSan;
+the old Files host failed the same description assertion. Host binaries were
+`64272bbc180946a75a7260220cb8c1ee15744bfcbe23f4f86363dd68eb894dee` and
+`70f0310455553b73a70c3cf91f2dd1d498f746aa6c5ae0bda4d25a7a91dd9d86`.
+Candidate source, configurations and evidence are archived at
+`D:/NexaUI/out/nexaui-described-field-20261106.tar.gz`, SHA-256
+`b55ae1b9dcedf0e26657e7daaca63678ad1c59389c0eb16528a92c8dcd763456`.
+Native change notifications, Windows/macOS, human screenreader acceptance and
+the separately requested field border, radius and inset styling remain open.
+No Aetheri source, pin or session was changed.
+
 ## Files text-input-v3 on Aetheri's test compositor (2026-11-06)
 
 The [Files IME driver](../../tests/run_aetheri_files_ime.py) exercises the

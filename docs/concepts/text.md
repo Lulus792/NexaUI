@@ -31,6 +31,13 @@ The first rich-text path reuses this layout. `nx_draw_rich_text_layout` accepts 
 
 `nx_text_buffer` owns mutable UTF-8 with selection offsets at extended-grapheme boundaries. Replacement, forward/backward grapheme deletion, default Unicode word-boundary navigation, line/document movement and a byte-budgeted undo/redo operation log are available. `nx_text_buffer_delete_surrounding` applies UTF-8 byte counts around the selection from a v3 IME; `nx_text_buffer_delete_relative` applies a v1 byte range relative to the cursor. Both reject invalid bounds and partial scalars. Edits rebuild text and boundary indexes before committing, so invalid UTF-8 or allocation failure leaves the prior state intact. New edits clear redo; an edit larger than the history budget remains applied but clears history. `nx_text_buffer_create_sensitive` instead creates a no-history buffer whose owned text allocations are overwritten before release. `nx_text_buffer_apply_event` maps normalized key, Unicode text and logical text-command events to editing actions for a focused buffer, while `nx_text_buffer_selected_span` exposes selected bytes for clipboard use. `nx_numeric_parse` and `nx_numeric_input_apply_event` add locale-independent decimal validation and commit-on-Enter behavior for a focused numeric editor buffer. Incomplete drafts do not change the committed number. Rendered numeric and general text fields combine buffers with font layout, clipping, selection/caret drawing and semantic validation state; the password constructor uses a sensitive buffer and masked presentation. This implementation uses contiguous text and linear scans rather than a piece table or rope. Preedit from Windows, X11 callback-style XIM, and Wayland v3/v1 is displayed transiently in focused text fields; AppKit also provides bounded composition and native editor commands. Full-document AppKit replacement/reconversion, installed-IME acceptance, secure control of external copies and interactive Wayland clipboard acceptance remain future work.
 
+`nx_text_field_widget_described` adds an optional accessible description to an
+ordinary text field without changing `nx_text_field_desc` or the existing widget
+entry point. Pass a caller-localized UTF-8 span; it is validated and copied to
+the frame's semantic snapshot. An empty span removes it. The description is
+assistive metadata, not a visible label, and must not contain secret text. Native
+notification and screenreader behavior must be checked on each target platform.
+
 Rendered general text fields use layout caret positions for visual Left/Right,
 word movement, line edges and vertical/page movement, including bidi and soft-wrap
 affinity. Plain `PAGE_UP/DOWN` commands scroll without changing the selection;

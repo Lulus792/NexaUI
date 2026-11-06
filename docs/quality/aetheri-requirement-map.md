@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L04/A04/A06/D01: the additive described text-field call exposes copied localized
+assistive metadata without changing the existing descriptor ABI. Static/shared,
+sanitizer and independent Aetheri-test-compositor AT-SPI checks cover this
+candidate; field styling and wider native acceptance remain open. See
+[description evidence](aetheri-adoption-assessment.md#localized-text-field-description-2026-11-06).
+
 T04/T06/I02/Q04: Files retained its model during controlled v3 preedit and
 native reset, including a keyboard focus transfer, then filtered after a Unicode
 commit on Aetheri's test compositor.

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added an ABI-preserving text-field entry point for a copied, localized accessible description. Existing text-field descriptors and calls remain unchanged.
+
 ## 0.1.1 — Development snapshot
 
 - Added linked core version, compiled platform features and optional builder-declared source revision queries. The declared revision is not a provenance attestation.

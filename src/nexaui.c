@@ -7664,16 +7664,17 @@ static int nx_readonly_edit_event(const nx_event *event) {
         (event->key == NX_KEY_X || event->key == NX_KEY_V || event->key == NX_KEY_Z || event->key == NX_KEY_Y);
 }
 
-nx_result nx_text_field_widget(nx_context *ctx,
+static nx_result nx_text_field_widget_impl(nx_context *ctx,
                                const nx_text_field_desc *desc,
                                nx_text_field *field,
+                               nx_utf8_span description,
                                nx_interaction_state *out_state,
                                int *out_valid, int *out_submitted) {
     if (!out_state || !out_valid || !out_submitted) return NX_ERROR_ARGUMENT;
     *out_state = (nx_interaction_state){0};
     *out_valid = 0;
     *out_submitted = 0;
-    if (!ctx || !desc || !field || !desc->fonts || !desc->name.length ||
+    if (!ctx || !desc || !field || !desc->fonts || !desc->name.length || !nx_valid_span(description) ||
         !nx_valid_rect(desc->bounds) || desc->bounds.width <= 0.0f ||
         desc->bounds.height <= 0.0f ||
         !isfinite(desc->pixels_per_em) || desc->pixels_per_em < 1.0 ||
@@ -7697,6 +7698,7 @@ nx_result nx_text_field_widget(nx_context *ctx,
     widget.semantic.role = NX_ROLE_TEXT_FIELD;
     widget.semantic.bounds = desc->bounds;
     widget.semantic.name = desc->name;
+    widget.semantic.description = description;
     widget.semantic.value = desc->password ? (nx_utf8_span){0} : draft;
     widget.semantic.state = (valid ? 0u : NX_SEM_INVALID) |
                             (desc->disabled ? NX_SEM_DISABLED : 0u) |
@@ -8078,6 +8080,17 @@ rollback:
     nx_region_rollback_last(ctx, desc->id);
     nx_semantics_rollback_last(ctx, desc->id, old_text_count);
     return result;
+}
+
+nx_result nx_text_field_widget(nx_context *ctx, const nx_text_field_desc *desc,
+    nx_text_field *field, nx_interaction_state *out_state, int *out_valid, int *out_submitted) {
+    return nx_text_field_widget_impl(ctx,desc,field,(nx_utf8_span){0},out_state,out_valid,out_submitted);
+}
+
+nx_result nx_text_field_widget_described(nx_context *ctx, const nx_text_field_desc *desc,
+    nx_text_field *field, nx_utf8_span description, nx_interaction_state *out_state,
+    int *out_valid, int *out_submitted) {
+    return nx_text_field_widget_impl(ctx,desc,field,description,out_state,out_valid,out_submitted);
 }
 
 static int nx_compare_u64(const void *left, const void *right) {

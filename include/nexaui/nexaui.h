@@ -2377,6 +2377,15 @@ NX_API nx_result nx_text_field_widget(nx_context *context,
                                       nx_text_field *field,
                                       nx_interaction_state *out_state,
                                       int *out_valid, int *out_submitted);
+/* As above, with an optional localized accessible description. The UTF-8 span
+   is borrowed for this call and copied into the frame's semantic snapshot;
+   embedded NUL or invalid UTF-8 is rejected. Use an empty span to clear it.
+   Do not put passwords or other secret text in the description. */
+NX_API nx_result nx_text_field_widget_described(nx_context *context,
+                                      const nx_text_field_desc *desc,
+                                      nx_text_field *field, nx_utf8_span description,
+                                      nx_interaction_state *out_state,
+                                      int *out_valid, int *out_submitted);
 NX_API nx_result nx_push_clip(nx_context *context, nx_rect rect);
 NX_API nx_result nx_pop_clip(nx_context *context);
 

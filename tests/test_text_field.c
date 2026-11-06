@@ -780,6 +780,30 @@ static int test_native_text_commands(nx_font_collection *fonts) {
     nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
 }
 
+static int test_description(nx_font_collection *fonts) {
+    nx_context *ctx=NULL; nx_text_field *field=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("1",1,0,&field)==NX_OK);
+    nx_text_field_desc desc={0}; desc.id=1; desc.name=(nx_utf8_span){"Filter",6};
+    desc.bounds=(nx_rect){0,0,80,40}; desc.fonts=fonts; desc.pixels_per_em=20; desc.glyph_cache_bytes=65536;
+    nx_interaction_state state; int valid=0,submitted=0; uint32_t index; nx_semantic_view view;
+    char text[]="Hinweis";
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK);
+    CHECK(nx_text_field_widget_described(ctx,&desc,field,(nx_utf8_span){"\xff",1},&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_widget_described(ctx,&desc,field,(nx_utf8_span){NULL,1},&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_widget_described(ctx,&desc,field,(nx_utf8_span){text,7},&state,&valid,&submitted)==NX_OK);
+    text[0]='X';
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_semantics_find(ctx,1,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK);
+    CHECK(view.description.length==7 && !memcmp(view.description.data,"Hinweis",7));
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK);
+    CHECK(nx_text_field_widget_described(ctx,&desc,field,(nx_utf8_span){"Help",4},&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_semantics_find(ctx,1,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK);
+    CHECK(view.description.length==4 && !memcmp(view.description.data,"Help",4));
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget(ctx,&desc,field,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_semantics_find(ctx,1,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK);
+    CHECK(!view.description.length);
+    nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
     uint8_t bytes[512];
     font_fixture(bytes);
@@ -788,6 +812,7 @@ int main(void) {
     CHECK(nx_font_open(bytes, sizeof(bytes), NULL, &font) == NX_OK);
     CHECK(nx_font_collection_create(NULL, &fonts) == NX_OK);
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
+    if (test_description(fonts)) return 1;
     if (test_host_ime_tokens(fonts)) return 1;
     if (test_native_text_commands(fonts)) return 1;
     if (test_clipboard_model_replacement(fonts)) return 1;

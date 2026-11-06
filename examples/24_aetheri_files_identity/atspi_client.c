@@ -93,6 +93,9 @@ int main(int argc,char **argv) {
         if(!first || !second || !filter || !close_button || !clear_button)pause_ms();
     }
     CHECK(first && second && filter && close_button && clear_button);GError *error=NULL;
+    char *description=atspi_accessible_get_description(filter,&error);
+    int description_ok=!error && description && !strcmp(description,"Filters the current folder.");
+    g_free(description);CHECK(description_ok);
     CHECK(atspi_accessible_get_role(first,&error)==ATSPI_ROLE_TREE_ITEM && !error);
     tree=atspi_accessible_get_parent(first,&error);CHECK(tree && !error);
     events.tree_path=g_strdup(ATSPI_OBJECT(tree)->path);CHECK(events.tree_path);
