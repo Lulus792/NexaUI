@@ -1,5 +1,79 @@
 # Aetheri adoption: initial source assessment
 
+## Declared removal-plan review composition (2026-11-06)
+
+Based on `4eed8f0373ba33e490cb4307339e1b8fc338feee`, the external installed
+C17 [removal review example](../../examples/28_removal_review/README.md) composes
+existing text, scrolling, checkbox, button, focus and semantics APIs. A copied
+owner-supplied plan distinguishes removal, shared dependency retention, deliberate
+retention, independent documents, backup/remote copies and unknown/unmanaged state.
+It preserves exact opaque plan/installation/scope/object identities, revision,
+reasons and logical sizes; the latter do not promise physically reclaimed space.
+All six groups remain explicit even when empty. The first bounded composition
+accepts up to 32 declared objects and rejects a larger input without truncation.
+Large inventory paging/virtualization remains an implementation/adoption gap.
+
+Incomplete, unknown, invalidated or empty-removal plans cannot be acknowledged or
+requested. For an eligible plan the user explicitly reviews its scope; the view
+returns one exact request correlation to its retained owner. That is neither
+authorization nor an acceptance/completion receipt. A replaced view remains in
+the unknown-outcome state and cannot emit the request again. Close closes only
+the view. The immutable Aetheri `1fb45c7c21f914a2893457132b609be50ef4280d` ownership
+documents require these distinctions, but its source has no full removal-plan
+API. This example therefore uses declared fixtures, not an actual removal backend.
+
+GCC 16.2.1 static Release, shared Release and static ASan/UBSan Debug each passed
+the standalone CTest with an explicit real-font input. Cases cover copied caller
+data, complete exact request IDs, invalid UTF-8/unterminated fields, duplicate IDs,
+oversized input, stale queued actions, empty/incomplete/unknown plans, 32 objects,
+Tab/Enter/Space, vertical and long-name horizontal scrolling, and view replacement
+without replay. Two mutations (rearming at view creation and allowing unknown
+objects) failed their expected assertions. Dark/light, normal/doubled text and
+640×480/420×320 software matrices rendered with semantic and control-bound checks;
+representative captures were inspected. Visual identity grouping and checkbox
+spacing were corrected after the first image review.
+
+On the isolated Aetheri test compositor from
+`d56d69523c33a48648af343e7d36526f84518c90`, six final native cases passed:
+Release and ASan/UBSan each exercised independent libatspi actions, virtual
+keyboard input verified through native focus/checked state, and an incomplete-plan
+Close path. The client verifies all six groups, all eight declared objects, exact
+plan/installation/scope values, disabled-action rejection, retired native request
+references and no replay after view replacement. Positive hosts exited normally;
+leak detection and sanitizer halt-on-error stayed enabled. A separate provider-
+disabled host mapped, then failed at native review discovery as expected. The
+initial driver invocation selected a Weston-only wrapper and exited 77 before
+mapping; it is retained, and the correct generic private-registry runner is used
+without weakening that wrapper's guards.
+
+Final native Release/ASan host SHA-256 values are
+`5286d40412d0f37da2f02caaa47202388b58ff8c1a901db49b2a5494c4ac0ee7` and
+`dd87d76686663ac4b33e8abfee6535bbfb3dd90e441a2836ce5f0d91a1461acc`;
+the independent client is
+`084807e98a605019924da837d1fe7fa9b1bbd59ea1f42f2115a1b71f070dc135`.
+The native 1920×1080 output capture was inspected and hashes to
+`c9e3c055bdeb83b22630c34c55fba56b228aa5d236a36c097fbfe265420d0772`.
+All 100 production include/src/platform files in the installed SDK's source
+snapshot match the base revision byte-for-byte. No SDK implementation, public API,
+version, dependency, original Aetheri source or consumer pin changed.
+
+Real authenticated plan transport, larger inventories, retention-choice editing,
+service admission/execution, durable recovery and completion reconciliation remain
+open. Native resize/scale/output-loss matrices, real locales, other platforms and
+physical/human acceptance are also open. The standalone CTest and native driver
+are reproducible entry points; the main SDK CI does not run this external example
+automatically. Its source/binaries/build flags, final JUnit/JSON, captures, negative
+and initial logs, source comparison and SHA-256 manifest are archived at
+`D:/NexaUI/out/nexaui-removal-review-20261106.tar.gz`, SHA-256
+`65fcc975e5c50aef5c5aa1929826feebbb28df1cc02ca70d5370aea7167cd844`.
+
+Separately, base [4eed8f0 CI](https://github.com/Lulus792/NexaUI/actions/runs/42275148202)
+finished with five desktop jobs and the sanitizer job successful. The sanitizer
+executed both PTY cases and all 247 tests in both driver orders; the 16 required
+native cases were not skipped. Ubuntu static was cancelled during dependency
+installation, before configure/build/tests; the cancellation's cause is unproven.
+Its retained log is not counted as a successful seventh required job.
+
 ## PTY readiness snapshot in the transfer fixture (2026-11-06)
 
 On base `2a21fbd109499813a0102fa03b00487670562cca`, the

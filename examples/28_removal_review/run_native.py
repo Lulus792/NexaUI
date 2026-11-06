@@ -1,0 +1,134 @@
+"""Check a declared removal preview with an independent native assistive client.
+
+Owns a private Aetheri test compositor, registry, host and optional virtual keys.
+No removal service, catalogue, installation or live Aetheri checkout is touched.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import signal
+import socket
+import subprocess
+import sys
+import time
+
+
+def digest(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ('server', 'host', 'client', 'registry', 'runner', 'font', 'work-dir'):
+        parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--keyboard', action='store_true')
+    parser.add_argument('--incomplete', action='store_true')
+    parser.add_argument('--expect-unavailable', action='store_true')
+    parser.add_argument('--capture', action='store_true')
+    args = parser.parse_args()
+    if args.keyboard and (args.incomplete or args.expect_unavailable):
+        parser.error('--keyboard requires the complete positive fixture')
+    if args.capture and not args.keyboard:
+        parser.error('--capture requires --keyboard')
+    server, host, client, registry, runner, font = [p.resolve(strict=True) for p in
+        (args.server, args.host, args.client, args.registry, args.runner, args.font)]
+    root = args.work_dir.resolve(); root.mkdir(mode=0o700)
+    runtime = root / 'runtime'; runtime.mkdir(mode=0o700)
+    captures = root / 'captures'
+    if args.capture:
+        captures.mkdir(mode=0o700)
+    env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='nexaui-removal',
+               NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_WAYLAND='1',
+               NEXAUI_REMOVAL_FONT=str(font), NEXAUI_REMOVAL_TEST_CONTROL='1')
+    for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS', 'DBUS_SESSION_BUS_ADDRESS',
+                 'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE'):
+        env.pop(name, None)
+    if args.keyboard:
+        env['NEXAUI_REMOVAL_KEYBOARD'] = '1'
+    if args.incomplete:
+        env['NEXAUI_REMOVAL_INCOMPLETE'] = '1'
+    controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    controller.settimeout(5)
+    compositor = test = None
+    result = dict(status='failed', server_sha256=digest(server), host_sha256=digest(host),
+                  client_sha256=digest(client), font_sha256=digest(font), keyboard=args.keyboard,
+                  incomplete=args.incomplete,
+                  scope='Declared preview only; independent AT-SPI and virtual input, no real removal/authorization or physical/human acceptance')
+    try:
+        with (root / 'server.log').open('wb') as server_log, (root / 'atspi.log').open('wb') as test_log:
+            compositor = subprocess.Popen([str(server), '--headless', env['WAYLAND_DISPLAY'], str(captures) if args.capture else '-', str(issuer.fileno())],
+                env=env, stdin=subprocess.DEVNULL, stdout=server_log, stderr=subprocess.STDOUT, pass_fds=(issuer.fileno(),))
+            issuer.close(); deadline = time.monotonic() + 5
+            while 'READY' not in (root / 'server.log').read_text(errors='replace'):
+                if compositor.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError('private compositor did not start')
+                time.sleep(.02)
+            test = subprocess.Popen([sys.executable, str(runner), str(registry), str(client), str(host)],
+                env=env, stdin=subprocess.DEVNULL, stdout=test_log, stderr=subprocess.STDOUT)
+            injected = set(); deadline = time.monotonic() + 50; capture_started = captured = False
+            while test.poll() is None:
+                log = (root / 'atspi.log').read_text(errors='replace')
+                if args.keyboard:
+                    keys = [('REMOVAL_KEY_CHECK', 57), ('REMOVAL_KEY_FOCUS_CLOSE', 15),
+                            ('REMOVAL_KEY_FOCUS_REQUEST', 15), ('REMOVAL_KEY_REQUEST', 28), ('REMOVAL_KEY_CLOSE', 28)]
+                    for marker, code in keys:
+                        if marker + '\n' in log and marker not in injected:
+                            if args.capture and marker == 'REMOVAL_KEY_CHECK' and not captured:
+                                if not capture_started:
+                                    compositor.send_signal(signal.SIGUSR1); capture_started = True
+                                server_output = (root / 'server.log').read_text(errors='replace')
+                                if not all(f'CAPTURE 1 {i}\n' in server_output for i in range(3)):
+                                    continue
+                                picture = (captures / 'capture-1-output-0.ppm').read_bytes()
+                                magic, dimensions, maximum, pixels = picture.split(b'\n', 3)
+                                if (magic, dimensions, maximum) != (b'P6', b'1920 1080', b'255') or len(pixels) != 1920*1080*3:
+                                    raise RuntimeError('unexpected native capture format')
+                                result['capture_sha256'] = hashlib.sha256(picture).hexdigest(); captured = True
+                            for state in (1, 0):
+                                controller.sendall(f'K {code} {state}'.encode('ascii'))
+                                if controller.recv(32) != b'OK':
+                                    raise RuntimeError('private key driver rejected input')
+                            injected.add(marker)
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('native removal test timed out')
+                time.sleep(.02)
+            output = (root / 'atspi.log').read_text(errors='replace')
+            if 'MAP 0\n' not in (root / 'server.log').read_text(errors='replace'):
+                raise RuntimeError('preview was not mapped')
+            if args.expect_unavailable:
+                if test.returncode == 0 or not re.search(r'removal-atspi:\d+: reviewed\n', output):
+                    raise RuntimeError('provider negative did not fail at review discovery')
+                result['status'] = 'expected-unavailable'
+            else:
+                expected = 'HOST REMOVAL_CLOSED requests=0 reopened=0\n' if args.incomplete else 'HOST REMOVAL_CLOSED requests=1 reopened=1\n'
+                if test.returncode or expected not in output:
+                    raise RuntimeError('independent native client failed; see atspi.log')
+                if args.keyboard and len(injected) != 5:
+                    raise RuntimeError('keyboard sequence incomplete')
+                if args.capture and not captured:
+                    raise RuntimeError('native capture incomplete')
+                result['status'] = 'passed'
+    finally:
+        for process in (test, compositor):
+            if process is not None:
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill(); process.wait(timeout=5)
+                else:
+                    process.wait()
+        controller.close(); issuer.close()
+        result['test_exit'] = test.returncode if test is not None else None
+        (root / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
