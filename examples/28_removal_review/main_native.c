@@ -9,7 +9,7 @@
 #define REQUIRE(x) do{if(!(x)){fprintf(stderr,"removal-host:%d: %s\n",__LINE__,#x);okay=0;goto cleanup;}}while(0)
 int main(int argc,char **argv){
     int okay=1,done=0,dirty=1,focus=1,reopened=0;unsigned requests=0;
-    FILE *file=NULL;unsigned char *bytes=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
+    FILE *file=NULL;unsigned char *bytes=NULL;removal_entry *large_entries=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
     removal_owner *owner=NULL;removal_review *view=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     const char *pending="REMOVAL_READY";char input[64]={0};size_t used=0;
     int control=getenv("NEXAUI_REMOVAL_TEST_CONTROL")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
@@ -18,8 +18,18 @@ int main(int argc,char **argv){
     REQUIRE(fread(bytes,1,(size_t)size,file)==(size_t)size);int closed=fclose(file);file=NULL;REQUIRE(!closed);
     REQUIRE(nx_font_open(bytes,(size_t)size,NULL,&font)==NX_OK && nx_font_collection_create(NULL,&fonts)==NX_OK &&
         nx_font_collection_add(fonts,font)==NX_OK);
-    removal_plan plan=removal_fixture();if(getenv("NEXAUI_REMOVAL_INCOMPLETE"))plan.inventory_complete=0;
-    REQUIRE(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
+    removal_entry entries[8];removal_plan plan=removal_fixture(entries);
+    if(getenv("NEXAUI_REMOVAL_LARGE")){
+        large_entries=removal_large_fixture(REMOVAL_MAX_ENTRIES);REQUIRE(large_entries);
+        plan.count=REMOVAL_MAX_ENTRIES;plan.entries=large_entries;
+    }
+    if(getenv("NEXAUI_REMOVAL_INCOMPLETE")){
+        if(large_entries){large_entries[plan.count-1].disposition=REMOVAL_UNKNOWN;
+            strcpy(large_entries[plan.count-1].reason,"Owner cannot establish this object's managed state");}
+        else plan.inventory_complete=0;
+    }
+    REQUIRE(removal_owner_create(&plan,&owner)==NX_OK);free(large_entries);large_entries=NULL;
+    plan.entries=NULL;REQUIRE(removal_review_create(owner,fonts,&view)==NX_OK);
     nx_window_desc desc={"Removal review fixture",640,480,0,{0}};
     REQUIRE(nx_window_create(&desc,&window)==NX_OK && nx_software_view_open(window,&renderer)==NX_OK);
     if(control)REQUIRE(fcntl(STDIN_FILENO,F_SETFL,fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK)==0);
@@ -37,7 +47,9 @@ int main(int argc,char **argv){
                 REQUIRE(removal_review_frame(view,info.width,info.height,&action)==NX_OK && action.kind==REMOVAL_NONE);
             }
             if(focus){
-                uint64_t target=removal_owner_requests(owner) || !plan.inventory_complete?201:200;
+                uint32_t index;nx_semantic_view acknowledgement;
+                REQUIRE(nx_semantics_find(ctx,200,&index)==NX_OK && nx_semantics_get(ctx,index,&acknowledgement)==NX_OK);
+                uint64_t target=acknowledgement.state&NX_SEM_DISABLED?201:200;
                 REQUIRE(nx_focus_set(ctx,target)==NX_OK && removal_review_frame(view,info.width,info.height,&action)==NX_OK && action.kind==REMOVAL_NONE);
                 focus=0;
             }
@@ -82,5 +94,5 @@ cleanup:
     if(fonts)nx_font_collection_destroy(fonts);
     if(font)nx_font_close(font);
     if(file)fclose(file);
-    free(bytes);return okay?0:1;
+    free(large_entries);free(bytes);return okay?0:1;
 }

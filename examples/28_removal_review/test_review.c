@@ -36,14 +36,15 @@ int main(int argc,char **argv){
     CHECK(fread(bytes,1,(size_t)size,file)==(size_t)size && !fclose(file));nx_font *font=NULL;nx_font_collection *fonts=NULL;
     CHECK(nx_font_open(bytes,(size_t)size,NULL,&font)==NX_OK && nx_font_collection_create(NULL,&fonts)==NX_OK &&
         nx_font_collection_add(fonts,font)==NX_OK);
-    removal_plan plan=removal_fixture(),bad=plan;bad.count=REMOVAL_MAX_ENTRIES+1;reject(&bad);
-    bad=plan;bad.entries[1].semantic_id=bad.entries[0].semantic_id;reject(&bad);
-    bad=plan;memcpy(bad.entries[1].object,bad.entries[0].object,16);reject(&bad);
-    bad=plan;bad.entries[0].label[0]=(char)0xff;reject(&bad);
-    bad=plan;memset(bad.entries[0].reason,'X',sizeof(bad.entries[0].reason));reject(&bad);
-    bad=plan;bad.entries[0].disposition=(removal_disposition)6;reject(&bad);
-    bad=plan;bad.revision=0;reject(&bad);
-    bad=plan;memset(bad.scope,0,16);reject(&bad);
+    removal_entry entries[32],bad_entries[8];removal_plan plan=removal_fixture(entries),bad=removal_fixture(bad_entries);
+    bad.count=REMOVAL_MAX_ENTRIES+1;reject(&bad);
+    bad=removal_fixture(bad_entries);bad.entries[1].semantic_id=bad.entries[0].semantic_id;reject(&bad);
+    bad=removal_fixture(bad_entries);memcpy(bad.entries[1].object,bad.entries[0].object,16);reject(&bad);
+    bad=removal_fixture(bad_entries);bad.entries[0].label[0]=(char)0xff;reject(&bad);
+    bad=removal_fixture(bad_entries);memset(bad.entries[0].reason,'X',sizeof(bad.entries[0].reason));reject(&bad);
+    bad=removal_fixture(bad_entries);bad.entries[0].disposition=(removal_disposition)6;reject(&bad);
+    bad=removal_fixture(bad_entries);bad.revision=0;reject(&bad);
+    bad=removal_fixture(bad_entries);memset(bad.scope,0,16);reject(&bad);
     removal_plan expected_plan=plan;removal_owner *owner=NULL;removal_review *view=NULL;
     CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
     strcpy(plan.entries[0].label,"Changed caller draft");plan.revision=99;
@@ -69,7 +70,7 @@ int main(int argc,char **argv){
     CHECK(node(view,202).state&NX_SEM_DISABLED && removal_owner_requests(owner)==1);
     CHECK(nx_semantics_request_action(removal_review_context(view),202,NX_ACTION_PRESS)!=NX_OK);
     removal_review_destroy(view);removal_owner_destroy(owner);view=NULL;owner=NULL;
-    plan=removal_fixture();CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
+    plan=removal_fixture(entries);CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
     CHECK(frame(view,640,480).kind==REMOVAL_NONE);
     CHECK(nx_semantics_request_action(removal_review_context(view),200,NX_ACTION_PRESS)==NX_OK);
     CHECK(frame(view,640,480).kind==REMOVAL_NONE);
@@ -77,7 +78,7 @@ int main(int argc,char **argv){
     removal_owner_invalidate(owner);CHECK(frame(view,640,480).kind==REMOVAL_NONE && !removal_owner_requests(owner));
     CHECK(equals(node(view,10).name,"Plan no longer current; request unavailable"));
     removal_review_destroy(view);removal_owner_destroy(owner);view=NULL;owner=NULL;
-    plan=removal_fixture();plan.entries[plan.count]=plan.entries[7];plan.entries[plan.count].semantic_id=1100;
+    plan=removal_fixture(entries);plan.entries[plan.count]=plan.entries[7];plan.entries[plan.count].semantic_id=1100;
     plan.entries[plan.count].object[15]=99;plan.entries[plan.count++].disposition=REMOVAL_UNKNOWN;
     CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
     for(unsigned theme_index=0;theme_index<2;++theme_index)for(unsigned large=0;large<2;++large){
@@ -102,13 +103,13 @@ int main(int argc,char **argv){
     CHECK(frame(view,420,320).kind==REMOVAL_CLOSE && !removal_owner_requests(owner));
     removal_review_destroy(view);removal_owner_destroy(owner);
     for(unsigned empty=0;empty<2;++empty){
-        plan=removal_fixture();if(empty)plan.count=0;else plan.inventory_complete=0;
+        plan=removal_fixture(entries);if(empty)plan.count=0;else plan.inventory_complete=0;
         CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
         CHECK(frame(view,640,480).kind==REMOVAL_NONE && node(view,202).state&NX_SEM_DISABLED);
         CHECK(equals(node(view,10).name,empty?"No removals listed; request unavailable":"Inventory incomplete; request unavailable"));
         removal_review_destroy(view);removal_owner_destroy(owner);
     }
-    plan=removal_fixture();
+    plan=removal_fixture(entries);
     memset(plan.entries[0].label,'X',sizeof(plan.entries[0].label)-1);plan.entries[0].label[159]=0;
     CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
     CHECK(frame(view,420,320).kind==REMOVAL_NONE && equals(node(view,1000).name,plan.entries[0].label));
@@ -116,13 +117,13 @@ int main(int argc,char **argv){
     key(view,NX_KEY_END);CHECK(frame(view,420,320).kind==REMOVAL_NONE && node(view,1000).bounds.x<before_x);
     capture(view,420,320,argv[2],"long-name-horizontal-end");
     removal_review_destroy(view);removal_owner_destroy(owner);
-    plan=removal_fixture();
-    for(size_t i=plan.count;i<REMOVAL_MAX_ENTRIES;++i){
+    plan=removal_fixture(entries);
+    for(size_t i=plan.count;i<32;++i){
         plan.entries[i]=plan.entries[0];plan.entries[i].semantic_id=1000+i;
         plan.entries[i].object[15]=(unsigned char)(10+i);
         snprintf(plan.entries[i].label,sizeof(plan.entries[i].label),"Additional managed object %zu",i);
     }
-    plan.count=REMOVAL_MAX_ENTRIES;
+    plan.count=32;
     CHECK(removal_owner_create(&plan,&owner)==NX_OK && removal_review_create(owner,fonts,&view)==NX_OK);
     CHECK(frame(view,420,320).kind==REMOVAL_NONE);
     for(size_t i=0;i<plan.count;++i)CHECK(equals(node(view,plan.entries[i].semantic_id).name,plan.entries[i].label));

@@ -1,0 +1,35 @@
+#include "fixture.h"
+#include <stdio.h>
+#include <stdlib.h>
+#define CHECK(x) do{if(!(x)){fprintf(stderr,"removal-allocation:%d: %s\n",__LINE__,#x);exit(1);}}while(0)
+void *__real_malloc(size_t);
+void *__real_calloc(size_t,size_t);
+void __real_free(void *);
+static size_t ordinal,fail_at,live;
+static int fail(void){return fail_at && ++ordinal==fail_at;}
+void *__wrap_malloc(size_t bytes){if(fail())return NULL;void *p=__real_malloc(bytes);if(p)++live;return p;}
+void *__wrap_calloc(size_t count,size_t bytes){if(fail())return NULL;void *p=__real_calloc(count,bytes);if(p)++live;return p;}
+void __wrap_free(void *p){if(p){CHECK(live>0);--live;}__real_free(p);}
+int main(void){
+    removal_entry entries[33],original[8];removal_plan plan=removal_fixture(entries);memcpy(original,entries,sizeof(original));
+    removal_owner *owner=NULL;
+    unsigned rejected=0;
+    for(size_t i=1;i<=5;++i){
+        ordinal=0;fail_at=i;nx_result result=removal_owner_create(&plan,&owner);fail_at=0;
+        CHECK(!memcmp(entries,original,sizeof(original)));
+        if(i<=4){CHECK(result==NX_ERROR_MEMORY && !owner && !live);++rejected;}
+        else {CHECK(result==NX_OK && owner);removal_owner_destroy(owner);owner=NULL;CHECK(!live);}
+    }
+    for(size_t i=8;i<33;++i){entries[i]=entries[0];entries[i].semantic_id=1000+i;entries[i].object[15]=(unsigned char)(10+i);}
+    plan.count=33;CHECK(removal_owner_create(&plan,&owner)==NX_OK);
+    nx_font_collection *fonts=NULL;CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK);size_t baseline=live;
+    int succeeded=0;
+    for(size_t i=1;i<128;++i){
+        removal_review *view=NULL;ordinal=0;fail_at=i;
+        nx_result result=removal_review_create(owner,fonts,&view);fail_at=0;
+        if(result==NX_OK){CHECK(view);removal_review_destroy(view);CHECK(live==baseline);succeeded=1;break;}
+        CHECK(result==NX_ERROR_MEMORY && !view && live==baseline && !removal_owner_requests(owner));++rejected;
+    }
+    CHECK(succeeded);nx_font_collection_destroy(fonts);removal_owner_destroy(owner);CHECK(!live);
+    printf("Rejected %u allocation failures; caller data, owner state and live allocation balance preserved\n",rejected);return 0;
+}

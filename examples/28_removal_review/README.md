@@ -23,11 +23,26 @@ ownership split in `brains/aetheri/knowledge/app-lifecycle.md` and
 therefore supply declared plans; no real inventory, authorization, deletion,
 service reconciliation or durable recovery is claimed. No Aetheri source or
 consumer pin is changed. Real host integration, native assistive clients and
-human/physical acceptance remain separate gates. This first composition accepts
-at most 32 declared inventory objects and rejects oversized inputs in full. It
-does not truncate a larger plan or claim that a partial inventory is complete.
-Large inventory paging/virtualization and a real owner transport remain open;
-the existing SDK virtual-list/index contracts are the intended next foundation.
+human/physical acceptance remain separate gates. The composition accepts up to
+100,000 declared inventory objects and rejects oversized inputs in full. The
+example-only `removal_plan.entries` descriptor is now a borrowed count-element
+input; its metadata and all entries are copied before creation succeeds. The
+installed SDK API/ABI is unchanged. Caller order is preserved within each of the
+six dispositions, with sorted duplicate-identity checks at snapshot creation.
+
+For more than 32 objects, the existing SDK Fenwick index measures visible rows
+on demand. A bounded 256-row cache lasts only through one frame call, including
+its geometry-settling passes. The view publishes the final geometry; a returned
+request is committed to the retained owner only after the complete call succeeds.
+Small previews retain their full semantic tree. Large previews always publish
+the global identities and six group counts, plus visible/overscan object nodes.
+Native scrollbar increment/decrement, arrows, Page Up/Down and Home/End expose
+the full view without an object-sized semantic tree. Hidden unknown entries still
+disable acknowledgement and requests. Logical extent uses estimated heights until
+visited; exact remote offscreen lookup, filtering and real owner transport remain
+open. The record copy occupies `count * sizeof(removal_entry)` bytes, plus indexes,
+view state, fonts and framework resources; total process footprint needs its own
+measurement.
 
 Build against an installed 0.1.23 SDK:
 
@@ -62,5 +77,18 @@ python3 examples/28_removal_review/run_native.py \
 Omit `--keyboard --capture` for native assistive actions; use `--incomplete` for
 the disabled-plan/Close path. `--expect-unavailable` requires a separately built
 host whose SDK has AT-SPI disabled, and checks failure at review discovery.
+Add `--large` for the complete 100,000-object fixture. The keyboard case traverses
+to the scrollbar, reaches the last object with End, returns to acknowledgement,
+requests once and closes a replaced view. The assistive case uses a native
+scrollbar increment and checks a newly visible object. `--large --incomplete`
+places the unknown object at the far end while the initial view remains blocked.
 All fixtures and processes are private. Captures and JSON preserve exact artifact
 hashes and the limited acceptance scope; no human screenreader result is inferred.
+
+With an explicit test font, CTest executes the small-view regression, the 100,000-
+object workload and (on Linux) constructor allocation-failure checks. The large
+workload includes viewport/font changes, 64 wheel-driven frames, offscreen unknown
+state, full-snapshot duplicate detection and a request during geometry settling.
+Printed times cover snapshot creation and frame construction/validation, excluding
+rasterization and presentation. They are local measurements without an agreed
+adoption budget. No terminal/Files stress or whole-catalogue acceptance is implied.

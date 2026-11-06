@@ -1,5 +1,87 @@
 # Aetheri adoption: initial source assessment
 
+## Large declared removal preview (2026-11-06)
+
+On base `4b1e79188f385bc560876a480cfd0d0321898b4c`, the
+[removal composition](../../examples/28_removal_review/README.md) now copies up to
+100,000 declared objects instead of embedding a 32-object array. This is an
+example-only source change: `removal_plan.entries` becomes a borrowed input span;
+the installed SDK API/ABI, development version 0.1.23 and Aetheri remain unchanged.
+The owner validates every copied entry and both identity namespaces, stores global
+disposition counts and preserves caller order within each group. Unknown objects
+outside the viewport still block the request. Oversized or invalid input is
+rejected in full. The record copy occupies 45,600,000 bytes for the declared
+100,000-object Linux/x86-64 corpus; indexes, fonts and total process RSS are separate.
+
+Large views reuse `nx_virtual_list_rebuild`, range/offset queries and measured
+height updates. Text layouts are created for visible/overscan rows, with a hard
+256-row cache through one public frame call. Intermediate geometry settles before
+the call returns; a staged request is committed to its owner only after success.
+The six global counts and exact plan/installation/scope identities remain in the
+native semantic tree, alongside the current object range. Small views keep their
+full tree. The tested workload peaked at 26 semantic nodes, ten row-layout
+constructions per call and four settling passes; these are corpus observations,
+not universal maxima or adopted latency budgets. Estimated heights remain until
+visited; direct offscreen native lookup and filtering are still open.
+
+GCC 16.2.1 static Release, shared Release and static ASan/UBSan Debug each passed
+all three standalone CTests without skips. The 100,000-object case exercises
+Home/End, 20 viewport/font combinations, 64 wheel-driven frames, exact last-object
+identity, whole-snapshot duplicates, an offscreen unknown object, and a once-only
+request during geometry changes followed by view replacement. Nine injected
+owner/view-constructor allocation failures preserve input, operation state and
+live-allocation balance. The original 30/15-second limits remain unchanged;
+leak detection and sanitizer halt-on-error remain enabled.
+
+An independent libatspi client passed six large native cases on Aetheri's isolated
+headless compositor: Release and ASan/UBSan each cover native scrollbar actions,
+virtual Shift-Tab/End/Tab plus request/close keys, and a far-end unknown object
+that blocks the initial view. It verifies the exact last object, fewer than 300
+preview children, retired references and no request replay. Small-view assistive
+regressions passed in both profiles as well. All eight positive hosts exited
+normally. A provider-disabled large host mapped and failed discovery at the
+expected review node. Final native Release/ASan host SHA-256 values are
+`19acef79c6e0c0893ad059f2bd4239bdfd4c46fa5c3e2bb42c69f9108b751bee` and
+`827c063f475fb0254c3fe5a65c7c82793f6c3fbc57c3c81e7e38a0df294f2bec`;
+the independent client is
+`f8c3619e09745371aba9f880177077303bf57ae17c5623cf151ee43d462938ab`.
+The inspected native End capture hashes to
+`0583e71b5fff6a380942cd1b4f95aac092a5e33285b928f4dba32c7c8465d263`.
+An earlier large fixture mixed category and reason templates; image review found
+this and the final fixture uses matching reasons. Initial data/results are retained.
+
+The first geometry-settling implementation reshaped the same rows repeatedly.
+Three fixed alternating before/after process pairs with identical final input
+reduced the maximum row-layout work from 34 to 10. Their 64-frame per-process
+medians ranged 17.032–17.321 ms before and 10.465–10.497 ms after. These QEMU-guest
+frame-construction/validation timings exclude rasterization, presentation and
+assistive IPC; they are not SDL comparisons or end-to-end responsiveness evidence.
+The cache lasts only through the call. Full before/after RGBA and semantic files
+match in 22 pairs, including the actual request-returning frame, two themes,
+normal/doubled text, both viewport ends and reopened state. Eleven original small-
+view images are also byte-identical. Wrong-object indexing and unknown eligibility
+mutants fail their intended large-model assertions; suppressing cached-status
+invalidation changes the request-returning pixels and is detected. The initial
+restoration guard compared whole `.a` files, whose member timestamps vary here;
+the restored object instead matches the separately built/native-tested object
+byte-for-byte. Its hash is
+`4770bf69aa22b958ea19890bc8ace8f9fb8d113c4a03ff4643b365b7896b8326`.
+
+Source, final binaries/flags/JUnit/native JSON, original and final data/results,
+negative variants, paired logs, complete pixel/semantic files, SDK artifacts and
+manifest are archived at `D:/NexaUI/out/nexaui-removal-virtual-20261106-v2.tar.gz`,
+SHA-256 `d9ab0211c58b3f834ba9f58433d63185d34d75fa0f12c8c42b56c58f96c4d498`.
+The test clock retains Linux monotonic timing and has a C17 fallback for platforms
+without that API; the large workload was rebuilt and passed in all three profiles
+after this portability-only test change. Other-platform execution remains open.
+Real authenticated inventory/plan transport, retention editing, actual removal,
+durable recovery, model refresh/filtering, native output/scale/loss, real locales,
+other-platform and physical/human adoption remain open. The Files burst failure
+is unchanged. This external example is not automatically run by the root SDK CI.
+Separately, all seven required [base SDK CI jobs](https://github.com/Lulus792/NexaUI/actions/runs/42281272985)
+passed, with their raw logs retained; the Linux required-native check ran all
+16 cases without skips in both sanitizer driver orders.
+
 ## Declared removal-plan review composition (2026-11-06)
 
 Based on `4eed8f0373ba33e490cb4307339e1b8fc338feee`, the external installed

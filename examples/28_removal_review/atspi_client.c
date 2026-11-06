@@ -12,6 +12,7 @@
 static void pause_briefly(void){struct timespec delay={0,20000000};nanosleep(&delay,NULL);}
 static AtspiAccessible *find(AtspiAccessible *root,const char *name,unsigned depth){
     if(!root || depth>12)return NULL;
+    atspi_accessible_clear_cache(root);
     GError *error=NULL;char *text=atspi_accessible_get_name(root,&error);
     int match=!error && text && !strcmp(text,name);g_free(text);
     if(error){g_error_free(error);error=NULL;}if(match)return g_object_ref(root);
@@ -51,6 +52,17 @@ static int activate(AtspiAccessible *node){
     if(error)g_error_free(error);
     return result;
 }
+static int invoke(AtspiAccessible *node,const char *wanted){
+    GError *error=NULL;AtspiAction *action=atspi_accessible_get_action_iface(node);int okay=0;
+    int count=action?atspi_action_get_n_actions(action,&error):0;
+    for(int i=0;i<count && !error;++i){
+        char *name=atspi_action_get_name(action,i,&error);int match=name && !strcmp(name,wanted);g_free(name);
+        if(match && !error){okay=atspi_action_do_action(action,i,&error) && !error;break;}
+    }
+    if(action)g_object_unref(action);
+    if(error)g_error_free(error);
+    return okay;
+}
 static int response(FILE *stream,const char *expected){
     struct pollfd fd={fileno(stream),POLLIN,0};char line[160];
     if(poll(&fd,1,10000)<=0 || !fgets(line,sizeof(line),stream))return 0;
@@ -62,6 +74,7 @@ int main(int argc,char **argv){
     AtspiAccessible *desktop=NULL,*app=NULL,*reviewed=NULL,*request=NULL,*close_view=NULL,*old_plan=NULL,*status=NULL,*old_request=NULL;
     const char *font=getenv("NEXAUI_REMOVAL_FONT");int incomplete=getenv("NEXAUI_REMOVAL_INCOMPLETE")!=NULL;
     int keyboard=getenv("NEXAUI_REMOVAL_KEYBOARD")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
+    int large=getenv("NEXAUI_REMOVAL_LARGE")!=NULL;
     signal(SIGPIPE,SIG_IGN);
     CHECK(argc==2 && font && !pipe(input) && !pipe(output));child=fork();CHECK(child>=0);
     if(!child){
@@ -88,10 +101,32 @@ int main(int argc,char **argv){
     const char *groups[]={"Remove in this scope","Retained: shared dependency","Retained: explicit choice",
         "Independent documents","Backups or remote copies","Unknown or unmanaged"};
     for(unsigned i=0;i<6;++i){AtspiAccessible *group=find(app,groups[i],0);CHECK(group);
-        CHECK(value(group,i==0?"4 objects":i==5?"0 objects":"1 object"));g_object_unref(group);}
+        const char *expected=large?(i==5?(incomplete?"1 object":"0 objects"):i==4 && incomplete?"19999 objects":"20000 objects"):
+            i==0?"4 objects":i==5?"0 objects":"1 object";
+        CHECK(value(group,expected));g_object_unref(group);}
     const char *objects[]={"Application code","Private settings and cache","Credential registration","Owned background service",
         "Shared support library","Profile deliberately kept","Independent project document","Backup outside this action"};
-    for(unsigned i=0;i<8;++i){AtspiAccessible *object=find(app,objects[i],0);CHECK(object);g_object_unref(object);}
+    if(!large)for(unsigned i=0;i<8;++i){AtspiAccessible *object=find(app,objects[i],0);CHECK(object);g_object_unref(object);}
+    if(large && !incomplete){
+        AtspiAccessible *scroll=find(app,"Vertical scrollbar",0),*object=NULL;CHECK(scroll);
+        if(keyboard){
+            CHECK(state(reviewed,ATSPI_STATE_FOCUSED));puts("REMOVAL_KEY_LARGE_FOCUS_SCROLL");
+            for(unsigned i=0;i<100 && !state(scroll,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+            CHECK(state(scroll,ATSPI_STATE_FOCUSED));puts("REMOVAL_KEY_LARGE_END");
+            for(unsigned i=0;i<100 && !object;++i){object=find(app,"managed-object-099999",0);if(!object)pause_briefly();}
+            CHECK(object && value(object,"Backups or remote copies. This request does not remove backup or remote copies\nObject: 000000000000000000000000000186a0\nLogical bytes: 32768"));
+            puts("REMOVAL_KEY_LARGE_FOCUS_ACK");
+            for(unsigned i=0;i<100 && !state(reviewed,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+            CHECK(state(reviewed,ATSPI_STATE_FOCUSED));
+        } else {
+            CHECK(invoke(scroll,"increment"));
+            for(unsigned i=0;i<100 && !object;++i){object=find(app,"managed-object-000000",0);if(!object)pause_briefly();}
+            CHECK(object);
+        }
+        AtspiAccessible *preview=find(app,"Complete removal preview",0);GError *error=NULL;CHECK(preview);
+        int children=atspi_accessible_get_child_count(preview,&error);CHECK(!error && children>0 && children<300);
+        g_object_unref(preview);g_object_unref(object);g_object_unref(scroll);
+    }
     if(incomplete){
         status=find(app,"Inventory incomplete; request unavailable",0);CHECK(status && !state(reviewed,ATSPI_STATE_ENABLED));
         CHECK(activate(close_view) && response(responses,"REMOVAL_CLOSED requests=0 reopened=0\n"));

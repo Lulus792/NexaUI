@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--incomplete', action='store_true')
     parser.add_argument('--expect-unavailable', action='store_true')
     parser.add_argument('--capture', action='store_true')
+    parser.add_argument('--large', action='store_true')
     args = parser.parse_args()
     if args.keyboard and (args.incomplete or args.expect_unavailable):
         parser.error('--keyboard requires the complete positive fixture')
@@ -45,18 +46,20 @@ def main():
                NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_WAYLAND='1',
                NEXAUI_REMOVAL_FONT=str(font), NEXAUI_REMOVAL_TEST_CONTROL='1')
     for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS', 'DBUS_SESSION_BUS_ADDRESS',
-                 'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE'):
+                 'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE', 'NEXAUI_REMOVAL_LARGE'):
         env.pop(name, None)
     if args.keyboard:
         env['NEXAUI_REMOVAL_KEYBOARD'] = '1'
     if args.incomplete:
         env['NEXAUI_REMOVAL_INCOMPLETE'] = '1'
+    if args.large:
+        env['NEXAUI_REMOVAL_LARGE'] = '1'
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     controller.settimeout(5)
     compositor = test = None
     result = dict(status='failed', server_sha256=digest(server), host_sha256=digest(host),
                   client_sha256=digest(client), font_sha256=digest(font), keyboard=args.keyboard,
-                  incomplete=args.incomplete,
+                  incomplete=args.incomplete, large=args.large,
                   scope='Declared preview only; independent AT-SPI and virtual input, no real removal/authorization or physical/human acceptance')
     try:
         with (root / 'server.log').open('wb') as server_log, (root / 'atspi.log').open('wb') as test_log:
@@ -75,6 +78,9 @@ def main():
                 if args.keyboard:
                     keys = [('REMOVAL_KEY_CHECK', 57), ('REMOVAL_KEY_FOCUS_CLOSE', 15),
                             ('REMOVAL_KEY_FOCUS_REQUEST', 15), ('REMOVAL_KEY_REQUEST', 28), ('REMOVAL_KEY_CLOSE', 28)]
+                    if args.large:
+                        keys = [('REMOVAL_KEY_LARGE_FOCUS_SCROLL', 'backtab'), ('REMOVAL_KEY_LARGE_END', 107),
+                                ('REMOVAL_KEY_LARGE_FOCUS_ACK', 15)] + keys
                     for marker, code in keys:
                         if marker + '\n' in log and marker not in injected:
                             if args.capture and marker == 'REMOVAL_KEY_CHECK' and not captured:
@@ -88,8 +94,9 @@ def main():
                                 if (magic, dimensions, maximum) != (b'P6', b'1920 1080', b'255') or len(pixels) != 1920*1080*3:
                                     raise RuntimeError('unexpected native capture format')
                                 result['capture_sha256'] = hashlib.sha256(picture).hexdigest(); captured = True
-                            for state in (1, 0):
-                                controller.sendall(f'K {code} {state}'.encode('ascii'))
+                            sequence = [(42, 1), (15, 1), (15, 0), (42, 0)] if code == 'backtab' else [(code, 1), (code, 0)]
+                            for key, state in sequence:
+                                controller.sendall(f'K {key} {state}'.encode('ascii'))
                                 if controller.recv(32) != b'OK':
                                     raise RuntimeError('private key driver rejected input')
                             injected.add(marker)
@@ -107,7 +114,7 @@ def main():
                 expected = 'HOST REMOVAL_CLOSED requests=0 reopened=0\n' if args.incomplete else 'HOST REMOVAL_CLOSED requests=1 reopened=1\n'
                 if test.returncode or expected not in output:
                     raise RuntimeError('independent native client failed; see atspi.log')
-                if args.keyboard and len(injected) != 5:
+                if args.keyboard and len(injected) != (8 if args.large else 5):
                     raise RuntimeError('keyboard sequence incomplete')
                 if args.capture and not captured:
                     raise RuntimeError('native capture incomplete')
