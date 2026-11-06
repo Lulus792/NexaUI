@@ -1,5 +1,38 @@
 # Aetheri adoption: initial source assessment
 
+## Independent AT-SPI client with the desktop owner (2026-11-06)
+
+On NexaUI base `8c006556a1bc13174a8075e38ff9950628b76c83`, an independent
+libatspi client attached by the supervisor-observed desktop PID to the running
+private search surface, read back `Terminal` after setting it through
+EditableText, and cleared it. The real Aetheri owner and its test compositor
+were active; a private D-Bus and AT-SPI registry were started solely for the
+test. Two runs then exercised the native Compose cancel/commit case, Aetheri's
+bound own Settings and Terminal start/reuse, and ordered owner shutdown. All
+supervised processes exited 0.
+
+The combined test explicitly waits for a **test-only Wayland roundtrip** after
+the accessibility edit updates the text-input context. Before this barrier,
+two runs observed the accessible edit but did not receive the following Compose
+preedit; the provider update and virtual key injection have independent
+channels. The tests do not establish that an immediately arriving real key is
+handled correctly without this synchronization. Initial setup also exposed
+missing private registry/client runtime libraries; they are now supplied only
+to those processes. The failures are retained with the successful runs.
+
+The successful runner SHA-256 was
+`9806a1b214324122472ee8b9f303be4d5f49cb07ec4b4d3ae16154748aa800e8`, desktop
+binary `71870ca7bf28fff5cc3f9f70e9e8d6029cedce0429727b1d19d985906e21d55b`,
+and independent AT-SPI client
+`16b2157bbc5c31fa7549f3fbb59ffc27daee16deba94ee5aaec24bf325864151`.
+Logs and recorded artifacts are at
+`D:/NexaUI/out/nexaui-owner-atspi-evidence-20261106.tar.gz`, SHA-256
+`e771810ef32851c9645e5025891846b8f4d5c40b74fd19bfeeeb2bc1656f689e`.
+Static/shared GCC and Clang ASan/UBSan independent AT-SPI and layer focus/IME
+tests also passed on Alpine/WSL. These controlled virtual runs do not prove a
+human screenreader workflow, physical input, external IMEs, unsynchronized
+interleavings, or production-shell adoption.
+
 ## Native Compose in owner-managed desktop search (2026-11-06)
 
 On NexaUI base `a92a5422830bf18d81a17367e82bd5a0cb02e364`, the private

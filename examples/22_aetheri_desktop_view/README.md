@@ -62,6 +62,10 @@ With `--compose`, that owner fixture also exercises Aetheri's opt-in native
 Compose provider on the private search surface, including cancellation and an
 exactly-once Unicode commit. See the
 [Compose evidence](../../docs/quality/aetheri-adoption-assessment.md#native-compose-in-owner-managed-desktop-search-2026-11-06).
+An independent AT-SPI client can also attach to that running test desktop and
+edit/read its search field. The combined AT-SPI/Compose test uses an explicit
+test-only Wayland synchronization; the unsynchronized transition remains open.
+See the [owner accessibility evidence](../../docs/quality/aetheri-adoption-assessment.md#independent-at-spi-client-with-the-desktop-owner-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

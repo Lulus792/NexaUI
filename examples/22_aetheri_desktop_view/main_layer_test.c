@@ -57,11 +57,12 @@ struct app {
     struct wl_surface *ime_surface;
     aetheri_ime_transaction ime_transaction;
     uint32_t ime_serial;
+    uint32_t ime_barrier_serial;
     uint64_t ime_revision;
     nx_rect ime_caret;
     char ime_surrounding[AE_DESKTOP_QUERY];
     size_t ime_length,ime_cursor,ime_anchor;
-    bool ime_requested,ime_enabled,ime_defer;
+    bool ime_requested,ime_enabled,ime_defer,ime_test_barrier;
     struct wl_output *outputs[3];
     uint32_t output_names[3];
     struct output_observation observed_outputs[3];
@@ -199,6 +200,7 @@ static void ime_sync(struct app *a) {
     zwp_text_input_v3_set_cursor_rectangle(a->ime_input,(int32_t)x,(int32_t)y,(int32_t)width,(int32_t)height);
     zwp_text_input_v3_commit(a->ime_input);++a->ime_serial;
     CHECK(aetheri_ime_publish(&a->ime_transaction,a->ime_serial,revision)==NX_OK);
+    printf("IME_SYNC %u\n",a->ime_serial);
     a->ime_enabled=true;a->ime_revision=revision;a->ime_caret=caret;
     memcpy(a->ime_surrounding,surrounding,length+1);a->ime_length=length;
     a->ime_cursor=cursor;a->ime_anchor=anchor;
@@ -798,6 +800,7 @@ int main(int argc, char **argv) {
     bool owner_fixture=argc>1 && !strcmp(argv[1],"--font");
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
+                    .ime_test_barrier=getenv("NEXAUI_TEST_IME_BARRIER")!=NULL,
                     .ime_requested=getenv("NEXAUI_TEST_IME")!=NULL,
                     .ax_requested=getenv("NEXAUI_TEST_ATSPI")!=NULL,
                     .ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};
@@ -898,6 +901,11 @@ int main(int argc, char **argv) {
             activation_step(&a);
             for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
             ime_sync(&a);
+            if(a.ime_test_barrier && a.ime_serial && a.ime_serial!=a.ime_barrier_serial) {
+                uint32_t serial=a.ime_serial;
+                CHECK(wl_display_roundtrip(a.display)>=0);a.ime_barrier_serial=serial;
+                printf("IME_BARRIER %u\n",serial);
+            }
             CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
             struct pollfd fds[7] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
             uint32_t wait_ms=accessibility_prepare(&a,&fds[4],owner_fixture?UINT32_MAX:10000u);

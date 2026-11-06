@@ -24,6 +24,8 @@ def main():
     parser.add_argument("--owned-settings-source", type=Path,
                         help="isolated Aetheri source snapshot for its bound NexaUI Settings view")
     parser.add_argument("--compose", action="store_true", help="exercise Aetheri's opt-in native Compose provider")
+    parser.add_argument("--atspi-client", type=Path, help="independent AT-SPI client for the running desktop")
+    parser.add_argument("--atspi-library-dir", type=Path, help="private runtime libraries for the independent client")
     args = parser.parse_args()
     if bool(args.terminal) != bool(args.shell):
         parser.error("--terminal and --shell must be supplied together")
@@ -43,6 +45,12 @@ def main():
     fixture_env = os.environ.copy()
     if args.compose:
         fixture_env["NEXAUI_TEST_IME"] = "1"
+        if args.atspi_client:
+            fixture_env["NEXAUI_TEST_IME_BARRIER"] = "1"
+    if args.atspi_client:
+        if not fixture_env.get("NEXAUI_TEST_ATSPI_ADDRESS"):
+            parser.error("--atspi-client requires a private NEXAUI_TEST_ATSPI_ADDRESS")
+        fixture_env["NEXAUI_TEST_ATSPI"] = "1"
     if args.owned_settings_source:
         # The original owner verifies an ordinary file at its build path.
         # Keep its executable and profile selection inside this fixture.
@@ -69,6 +77,8 @@ def main():
               "server_sha256": digest(server), "desktop_sha256": digest(desktop),
               "settings_sha256": digest(settings)}
     result["settings_ui"] = "nexaui-owned" if args.owned_settings_source else "fixture-default"
+    if args.atspi_client:
+        result["atspi_client_sha256"] = digest(args.atspi_client.resolve(strict=True))
     if args.cmake_cache:
         result["cmake_cache_sha256"] = digest((build / "CMakeCache.txt"))
     result["terminal_case"] = "not-run"
@@ -122,6 +132,25 @@ def main():
                 event("K 125 0")
                 wait(lambda: log().count("desktop: TOGGLE 0\n") > prior, "search toggle")
                 wait(lambda: log().count("desktop: ENTER 0\n") > prior_focus, "search focus")
+                if args.atspi_client and name == "settings" and not result.get("atspi_case"):
+                    pids = re.findall(r"^SPAWN desktop (\d+)$", log(), re.M)
+                    if len(pids) != 1:
+                        raise RuntimeError("missing original desktop process")
+                    before = log().count("desktop: QUERY 0 Terminal\n")
+                    peer_env = fixture_env.copy()
+                    if args.atspi_library_dir:
+                        peer_env["LD_LIBRARY_PATH"] = str(args.atspi_library_dir.resolve(strict=True))
+                    peer = subprocess.run([str(args.atspi_client.resolve(strict=True)), "--attach", pids[0]],
+                                          env=peer_env, capture_output=True, text=True, timeout=20)
+                    (root / "atspi-client.log").write_text(peer.stdout + peer.stderr)
+                    if peer.returncode:
+                        raise RuntimeError("independent AT-SPI client failed: " + peer.stderr)
+                    wait(lambda: log().count("desktop: QUERY 0 Terminal\n") > before and
+                         "desktop: QUERY 0 \n" in log(), "AT-SPI edit and clear")
+                    if args.compose:
+                        wait(lambda: "desktop: IME_BARRIER " in log().rsplit("desktop: QUERY 0 \n", 1)[-1],
+                             "native IME resynchronization after accessible edit")
+                    result["atspi_case"] = "passed"
                 if args.compose and name == "settings" and not result.get("compose_case"):
                     wait(lambda: "compositor: COMPOSE active=1\n" in log(), "native text-input activation")
                     old_queries = log().count("desktop: QUERY 0 ")
