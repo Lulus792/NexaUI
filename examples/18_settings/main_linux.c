@@ -348,6 +348,9 @@ cleanup:
         }
     }
     settings_session_destroy(session);settings_destroy(scene); nx_window_destroy(window); free(font);
+    if (verify_keyboard && getenv("NEXAUI_SETTINGS_TEST_TRACE_CLEANUP")) {
+        puts("SETTINGS_CLEANUP_DONE"); fflush(stdout);
+    }
     if (verify_pending_close) {
         if (okay && pending_close_seen) {puts("SETTINGS_PENDING_CLOSED");fflush(stdout);}
         else okay=0;

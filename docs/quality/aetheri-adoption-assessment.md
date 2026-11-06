@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Ordinary Settings after compositor loss (2026-11-06)
+
+An external software Settings example linked to an installed Wayland-only
+NexaUI SDK built from `861ac665eeb4662b795629bc502e86fb36a5c9e6` ran on the
+isolated Aetheri `d56d69523c33a48648af343e7d36526f84518c90` test compositor.
+After a mapped, captured frame and keyboard-ready marker, the driver killed
+only that compositor. Settings returned failure (exit 1), reported renderer
+retirement incomplete because its connection had failed, and reached a
+test-only marker after destroying its scene, window, worker and font. This is
+local cleanup, not an acknowledged compositor-side retirement.
+
+The case passed once with a release SDK and again with GCC 16.2.1 ASan/UBSan
+instrumenting both Settings and its static SDK, with leak detection enabled
+and no sanitizer report. A normal independent run of that same instrumented
+Settings binary exercised the keyboard workflow and both processes exited 0.
+The instrumented executable SHA-256 was
+`9483f2e95a30e05a7231cf32680469c52b9dba55ad1997b7e9b9ddcba9299e10`
+and its SDK archive was
+`77bc3b03408b6899c2dda0431699f66262a2a5e1668caec101474682b74d6657`.
+Test sources differ from the base only by the cleanup marker and the driver
+option. Logs, captured frames and build configurations are archived at
+`D:/NexaUI/out/nexaui-settings-peer-loss-20261106.tar.gz`, SHA-256
+`006473a8ef9e8af98d17bb8ddf63f93412d83fab35fb33eb5a7bc50c55ce87f9`.
+This does not cover Vulkan, active transfers, an in-flight Apply worker,
+assistive clients, startup, other loss timings, recovery or physical devices.
+
 ## Fullscreen over the Aetheri test dock (2026-11-06)
 
 An installed Wayland-only static NexaUI 0.1.21 SDK built from exact commit

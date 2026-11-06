@@ -28,6 +28,8 @@ def main():
     parser.add_argument('--settings', type=Path, required=True)
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--test-compositor-loss', action='store_true',
+                        help='kill only the isolated compositor and require local Settings cleanup')
     args = parser.parse_args()
     server_binary, app_binary, font = (p.resolve(strict=True) for p in
                                         (args.server, args.settings, args.font))
@@ -37,6 +39,8 @@ def main():
     runtime.mkdir(mode=0o700); captures.mkdir(mode=0o700)
     env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='nexaui-aetheri',
                NEXAUI_PLATFORM='wayland')
+    if args.test_compositor_loss:
+        env['NEXAUI_SETTINGS_TEST_TRACE_CLEANUP'] = '1'
     for key in ('DISPLAY', 'WAYLAND_SOCKET'):
         env.pop(key, None)
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -98,6 +102,18 @@ def main():
             if changed < 2000:
                 raise RuntimeError('captured Settings pixels missing')
             result['output0_sha256'] = hashlib.sha256(picture).hexdigest()
+            if args.test_compositor_loss:
+                server.kill()
+                if server.wait(timeout=10) != -signal.SIGKILL or app.wait(timeout=10) != 1:
+                    raise RuntimeError('unexpected compositor or Settings exit')
+                trace = contents('settings.log')
+                if 'SETTINGS_CLEANUP_DONE\n' not in trace or 'Settings example failed\n' not in trace:
+                    raise RuntimeError('Settings did not complete its failure cleanup')
+                if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:', trace):
+                    raise RuntimeError('sanitizer reported an error during Settings cleanup')
+                result['compositor_loss'] = 'local failure cleanup'
+                result['status'] = 'passed'
+                return
             # Test driver's native input reaches the same wlroots seat used by
             # the compositor. Its ACK only confirms injection, not app state.
             for code in (15, 15, 57, 15, 57):
@@ -112,6 +128,9 @@ def main():
             if not re.search(r'^KEYBOARD_TRACE .*applied_bytes=7 motion=1$', trace, re.M):
                 raise RuntimeError('Settings did not observe the applied model state')
             result['status'] = 'passed'
+    except Exception as exc:
+        result['error'] = str(exc)
+        raise
     finally:
         if app and app.poll() is None:
             app.terminate(); app.wait(timeout=5)
@@ -120,7 +139,8 @@ def main():
         issuer.close(); controller.close()
         result['settings_exit'] = app.returncode if app else None
         result['server_exit'] = server.returncode if server else None
-        if result['settings_exit'] != 0 or result['server_exit'] != 0:
+        expected = (1, -signal.SIGKILL) if args.test_compositor_loss else (0, 0)
+        if (result['settings_exit'], result['server_exit']) != expected:
             result['status'] = 'failed'
         (root / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     if result['status'] != 'passed':

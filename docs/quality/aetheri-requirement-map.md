@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W06/P05/Q04: an ordinary external Settings example reached local cleanup with
+failure after its isolated Aetheri compositor was killed, including an
+instrumented SDK/application run. Renderer retirement was not acknowledged;
+other timings, transfers, Vulkan and assistive clients remain open. See
+[Settings loss evidence](aetheri-adoption-assessment.md#ordinary-settings-after-compositor-loss-2026-11-06).
+
 W07/D05/D10/Q04: an installed 0.1.21 consumer on the Aetheri d56d695 test
 compositor observed fullscreen and restored bounds, with pixel checks that the
 private dock is covered and reappears. An older compositor snapshot failed the
