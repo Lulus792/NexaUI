@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L09/L10/L11/A02/D07/P07/Q04: original-model rename review passed independent
+AT-SPI short/long-name cases on Aetheri's test compositor in Release and
+ASan/UBSan, including an injected unknown outcome and view replacement without
+replay. Real service/restart and human acceptance remain open; see
+[rename evidence](aetheri-adoption-assessment.md#rename-review-on-aetheris-test-compositor-2026-11-06).
+
 A02/A04/A07/D02: the Files example publishes changed rejection descriptions and
 an independent client observes both AT-SPI property-change events on Aetheri's
 test compositor. Real locale switching, production bus and human acceptance

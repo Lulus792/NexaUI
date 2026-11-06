@@ -1,5 +1,36 @@
 # Aetheri adoption: initial source assessment
 
+## Rename review on Aetheri's test compositor (2026-11-06)
+
+The existing `25_aetheri_rename` example from NexaUI
+`efe57295fea1a0bb1aee330582d5d7820f70004d` was built with the unchanged
+Files rename/model/editor sources and test compositor from Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`. Installed static Wayland-only
+0.1.22 SDKs from `7e9f5c71d430670d653df14584533d6037be99e7` supplied the
+Release and GCC 16.2.1 ASan/UBSan hosts. The new
+[driver](../../tests/run_aetheri_rename_atspi.py) owns a private compositor,
+bus and registry and runs the existing independent libatspi client.
+
+Short and 255-byte destination-name cases passed in both profiles. The client
+checks modal blocking, explicit confirmation, the original kernel rename and
+an injected post-rename flush failure, then rediscovers the recreated view's
+unknown status and disabled Confirm. It closes the view and verifies the
+host's exactly-one rename/flush counters. The long-name case additionally
+checks accessible scrolling and review-before-confirmation. A separately
+built AT-SPI-disabled host mapped but failed the expected dialog discovery;
+its forced negative-test teardown is not a clean-close acceptance result.
+The failure is deliberately injected; this does not claim a naturally observed
+filesystem failure, durable restart recovery, an asynchronous service or
+production Aetheri Files adoption. Physical/human and broader platform gates
+remain open. No live Aetheri checkout or SDK pin was changed.
+
+Release and sanitizer host hashes were respectively
+`bc98955ef327e40b050dab017324ced2bc1d6aa7b005f313fbda02976b628973` and
+`198b5e74f39102e5d935fac6ae3dc79c0c95555441110788a1424dce3516d5d5`.
+Source, configurations and positive/negative logs are archived at
+`D:/NexaUI/out/nexaui-rename-aetheri-20261106.tar.gz`, SHA-256
+`0fc1ed4bc3f30cf9a4f0d3bfc0f4db67c8cefe1f5dd1b127dbbe3c1612bc4e1b`.
+
 ## Files description changes over AT-SPI (2026-11-06)
 
 On base `7e9f5c71d430670d653df14584533d6037be99e7`, the original-model Files
