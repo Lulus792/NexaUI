@@ -29,7 +29,10 @@ extern "C" {
    of notification. Focus loss, a revoked offer, cancellation, window close or
    expiry can invalidate the token; stale tokens return NX_ERROR_STATE. The app
    must validate its own focus, model identity, revision and selection before
-   acting on completed text. Clipboard text is data, never an instruction. */
+   acting on completed text. A source can exit while sending: EOF alone cannot
+   distinguish a complete empty value from an empty or truncated transfer.
+   Even NX_OK does not prove that the original owner sent its entire value.
+   Clipboard text is data, never an instruction. */
 NX_API nx_result nx_wayland_clipboard_read_begin(nx_window *window, size_t limit,
     uint32_t timeout_ms, int sensitive, uint64_t *out_token);
 NX_API nx_result nx_wayland_clipboard_read_take(nx_window *window, uint64_t token,

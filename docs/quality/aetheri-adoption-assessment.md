@@ -1,5 +1,44 @@
 # Aetheri adoption: initial source assessment
 
+## External clipboard peers and interrupted read on Aetheri (2026-11-06)
+
+On NexaUI base `8ed604eb222a893be8052929eebdc97d736ce67e`, the isolated
+Aetheri `d56d69523c33a48648af343e7d36526f84518c90` test compositor and
+separate NexaUI test processes exchanged Unicode in both directions with the
+unrelated `wl-clipboard` 2.2.1 tools: `wl-paste` read the exact NexaUI-owned
+selection and NexaUI read a distinct exact value owned by `wl-copy`. A new
+read was rejected after the foreign owner was terminated. The Alpine tool and
+its musl runtime were copied into a private VM directory; no system package or
+live Aetheri worktree was changed. Tool SHA-256 values: `wl-paste`
+`7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356`,
+`wl-copy` `75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921`.
+
+In a separate case, the test stopped its NexaUI source process after it owned
+the selection, observed the recipient's pending read and the compositor's
+`wl_data_source.send`, then killed only that stopped source. The recipient's
+read returned `NX_OK` with zero bytes before a later new read was rejected.
+That EOF is indistinguishable from a legitimate empty value; a partial transfer
+could similarly look like a valid prefix. The public clipboard documentation
+now states this limitation explicitly. This result is not evidence that the
+original value was delivered or that every owner-loss ordering is detectable.
+
+Both directions and the interrupted-read observation passed GCC 16.2.1 Release
+and ASan/UBSan using the installed static Wayland-only SDK based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`. The killed source cannot report
+leaks at exit; the surviving instrumented receiver and normal foreign-peer
+runs exited without sanitizer reports. Instrumented peer SHA-256:
+`4f138eba1cafaa50e155b173f67a6988b32f55a7333ea067e34add3fe4af2865`;
+release peer SHA-256:
+`cdb13ffd19ddf4112540f08193c9fe81570b734d20a58ab660659b5eb92f898f`.
+The first interrupted attempt timed out because its log matcher expected `@`
+instead of the server's `#`; that failed attempt is retained. The RPM download
+attempt did not complete and was stopped; the existing Alpine tool archive was
+used instead. Logs, source and build caches are in
+`D:/NexaUI/out/nexaui-foreign-clipboard-inflight-20261106.tar.gz`, SHA-256
+`7fd4dcb382e785adf44ded5d3eb9c48942fbc96b560b2a1f490db118acd2759b`.
+Production Aetheri application integration, other clipboard managers, physical
+input and human accessibility remain open.
+
 ## Clipboard across independent NexaUI processes on Aetheri (2026-11-06)
 
 On NexaUI base `514c1c485ca132463bf3bd225054f35f12433e54`, two separate

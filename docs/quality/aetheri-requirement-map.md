@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I05/W10/Q04: NexaUI exchanged exact Unicode in both directions with
+`wl-copy`/`wl-paste` on the isolated Aetheri test compositor. Killing the
+owner during an accepted read produced an empty EOF that cannot be
+distinguished from an intentionally empty value; the API contract now states
+that limit. See [foreign and interrupted clipboard evidence](aetheri-adoption-assessment.md#external-clipboard-peers-and-interrupted-read-on-aetheri-2026-11-06).
+
 I05/W10/Q04: two independently running NexaUI test processes exchanged
 Unicode on Aetheri's test compositor and rejected a new read after the source
 exited. The same test also rejects a read before ownership. In-flight source
