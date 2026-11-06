@@ -1,5 +1,40 @@
 # Aetheri adoption: initial source assessment
 
+## Disabled pointer target preserves composition focus (2026-11-06)
+
+On base `ca19ea2b1900876ee2a700f144053f08f67cf586`, primary pointer down on a
+disabled region preserves the existing focus while still blocking activation
+and underlying controls. Previously the pointer path cleared focus; the touch
+path already retained it. Empty-space clicks still clear focus. The behavior and
+previous-frame hit-test boundary are described in the [input contract](../concepts/input.md).
+
+The numeric test view disables Apply after observing IME preedit. With private
+Weston 14.0.2 simple-IME, a virtual pointer click on that disabled button after
+its frame retains focus, apostrophe preedit, the draft and the prior value. The
+IME then commits `á`; the resulting invalid draft is not confirmed when Apply
+is clicked. Static/shared GCC 15.2 and static Clang 22 ASan/UBSan passed; the
+interaction suite also checks disabled overlays, no click-through and the
+unchanged empty-space behavior. Keyboard and non-preedit pointer regressions
+passed in the static profile; numeric-field and text-pointer unit regressions
+passed in shared and sanitized profiles.
+The independent large-text/numeric AT-SPI regression also passed in the static
+profile, including its disabled-action negative.
+
+An isolated archive of the unmodified base, with only the new test fixture
+copied in, failed the same preedit test: `AFTER_CLICK 0 1234 0` rather than
+`AFTER_CLICK 1 1234 1`. Its trace is retained at
+`/tmp/nexaui-preedit-negative-case-20261106/negative.log`; the archive SHA-256
+is `53728bbe0827ec065d0b188220596aaae907be9056000ebe3c29456da9a196d6`.
+The positive static/shared/sanitized runs are under
+`/tmp/nexaui-preedit-guard-fixed-20261106/`,
+`/tmp/nexaui-preedit-fixed-shared-20261106/`, and
+`/tmp/nexaui-preedit-fixed-asan-20261106/`.
+
+This proves a previously published disabled frame under one IME, not a change
+and pointer press in the same event batch. Cross-platform native input, other
+IME providers, accessible action during composition, physical input, human
+assistive review and actual Aetheri integration remain open.
+
 ## Visible numeric Apply with keyboard and IME input (2026-11-06)
 
 On NexaUI base `e7061e5fb5ca167cc5ba7439f5d404053b170bbc`, the existing

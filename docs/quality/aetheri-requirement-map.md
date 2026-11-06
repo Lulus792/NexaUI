@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I01/I02/T05/Q06: pointer presses on a disabled target now retain focus and
+cannot click through. A published disabled Apply frame preserved an active
+simple-IME preedit across a native pointer click; same-batch state transitions,
+other providers and human acceptance remain open. See [candidate evidence](aetheri-adoption-assessment.md#disabled-pointer-target-preserves-composition-focus-2026-11-06).
+
 T05/I01/I02/Q06: a labeled numeric Apply test view accepts native keyboard
 confirmation and, in a separate Weston simple-IME session, a pointer action
 after a verified IME digit. Uncommitted-preedit clicks, keyboard under that IME,

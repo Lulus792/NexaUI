@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){20,20,250,40};
     desc.name=(nx_utf8_span){"Number",6};desc.fonts=fonts;desc.pixels_per_em=16;
     desc.glyph_cache_bytes=65536;desc.minimum=-100000;desc.maximum=100000;
-    char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1;nx_window_info previous_info={0};
+    char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1,composition_active=-1;nx_window_info previous_info={0};
     for(;;) {
         nx_window_info info;size_t routed=0;nx_interaction_state state;
         if(nx_window_poll(window,50)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
@@ -71,10 +71,11 @@ int main(int argc, char **argv) {
         previous_info=info;
         if(!dirty)continue;
         if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK)goto done;
-        const nx_event *events=NULL;size_t event_count=0;int close_requested=0;
+        const nx_event *events=NULL;size_t event_count=0;int close_requested=0,pointer_release=0;
         if(nx_frame_events(ctx,&events,&event_count)!=NX_OK)goto done;
         for(size_t i=0;i<event_count;++i) {
             if(events[i].type==NX_EVENT_KEY_DOWN && events[i].key==NX_KEY_ESCAPE)close_requested=1;
+            if(events[i].type==NX_EVENT_POINTER_UP && events[i].button==NX_BUTTON_LEFT)pointer_release=1;
             if(apply_mode && getenv("NEXAUI_NUMERIC_POINTER_TRACE") && events[i].type==NX_EVENT_POINTER_MOVE)
                 printf("POINTER %.2f %.2f\n",events[i].x,events[i].y);
         }
@@ -84,6 +85,14 @@ int main(int argc, char **argv) {
             nx_control_desc apply={0};apply.id=2;apply.bounds=(nx_rect){20,70,120,36};
             apply.name=(nx_utf8_span){"Apply",5};apply.label_layout=apply_label;
             apply.label_origin=(nx_point){55,78};apply.glyph_cache_bytes=65536;
+            if(ime) {
+                size_t length=0;int32_t begin=0,end=0;
+                if(nx_window_get_ime_preedit(window,NULL,0,&length,&begin,&end)!=NX_OK)goto done;
+                apply.disabled=length!=0;
+                if(apply.disabled!=composition_active) {
+                    composition_active=apply.disabled;printf("COMPOSITION_ACTIVE %d\n",composition_active);
+                }
+            }
             if(nx_button(ctx,&apply,&button_state)!=NX_OK)goto done;
         }
         if(nx_end_frame(ctx)!=NX_OK)goto done;
@@ -112,6 +121,11 @@ int main(int argc, char **argv) {
         }
         nx_utf8_span draft;double value;
         if(nx_numeric_field_text(number,&draft)!=NX_OK || nx_numeric_field_value(number,&value)!=NX_OK || draft.length>80)goto done;
+        if(apply_mode && ime && pointer_release) {
+            size_t length=0;int32_t begin=0,end=0;
+            if(nx_window_get_ime_preedit(window,NULL,0,&length,&begin,&end)!=NX_OK)goto done;
+            printf("AFTER_CLICK %zu %.0f %d\n",length,value,state.focused);
+        }
         if(ime) {
             char preedit[16];size_t preedit_length=0;int32_t begin=0,end=0;
             if(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)!=NX_OK)goto done;

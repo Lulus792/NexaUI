@@ -137,6 +137,27 @@ static int test_disabled_overlay_and_lifetime(void) {
     CHECK(!below.clicked && !above.clicked && !nx_focus_id(ctx));
     CHECK(nx_end_frame(ctx) == NX_OK);
     CHECK(nx_focus_set(ctx, 1) == NX_OK);
+    CHECK(nx_context_queue_event(ctx, &down) == NX_OK);
+    CHECK(nx_context_queue_event(ctx, &up) == NX_OK);
+    CHECK(nx_begin_frame(ctx, 30, 30, 0) == NX_OK);
+    CHECK(nx_interact_region(ctx, 1, area, NX_REGION_FOCUSABLE, &below) == NX_OK);
+    CHECK(nx_interact_region(ctx, 2, area,
+                              NX_REGION_FOCUSABLE | NX_REGION_DISABLED,
+                              &above) == NX_OK);
+    CHECK(!below.clicked && !above.clicked && nx_focus_id(ctx) == 1);
+    CHECK(nx_end_frame(ctx) == NX_OK);
+    nx_event empty_down = pointer(NX_EVENT_POINTER_DOWN, 25, 25);
+    nx_event empty_up = pointer(NX_EVENT_POINTER_UP, 25, 25);
+    CHECK(nx_context_queue_event(ctx, &empty_down) == NX_OK);
+    CHECK(nx_context_queue_event(ctx, &empty_up) == NX_OK);
+    CHECK(nx_begin_frame(ctx, 30, 30, 0) == NX_OK);
+    CHECK(nx_interact_region(ctx, 1, area, NX_REGION_FOCUSABLE, &below) == NX_OK);
+    CHECK(nx_interact_region(ctx, 2, area,
+                              NX_REGION_FOCUSABLE | NX_REGION_DISABLED,
+                              &above) == NX_OK);
+    CHECK(!below.clicked && !above.clicked && !nx_focus_id(ctx));
+    CHECK(nx_end_frame(ctx) == NX_OK);
+    CHECK(nx_focus_set(ctx, 1) == NX_OK);
     CHECK(nx_begin_frame(ctx, 30, 30, 0) == NX_OK);
     CHECK(nx_end_frame(ctx) == NX_OK);
     CHECK(!nx_focus_id(ctx));

@@ -1316,8 +1316,12 @@ static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_ev
                 captured->pointer_x = event->x;
                 captured->pointer_y = event->y;
             }
-            nx_context_change_focus(ctx, hit && (hit->flags & NX_REGION_FOCUSABLE) &&
-                              !(hit->flags & NX_REGION_DISABLED) ? hit->id : 0);
+            /* A disabled control cannot take focus or activate. Keep the
+               existing focus, as touch already does, so an inert click cannot
+               discard an editor's in-progress composition. Empty space and
+               enabled non-focusable regions retain their existing behavior. */
+            if (!hit || !(hit->flags & NX_REGION_DISABLED))
+                nx_context_change_focus(ctx, hit && (hit->flags & NX_REGION_FOCUSABLE) ? hit->id : 0);
             ctx->key_active_id = 0;
         } else if (event->type == NX_EVENT_POINTER_UP &&
                    event->button == NX_BUTTON_LEFT) {
