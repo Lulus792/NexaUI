@@ -80,6 +80,38 @@ at `D:/NexaUI/out/nexaui-files-raster-matrix-20261106.tar.gz`, SHA-256
 An actual solution must keep visible updates, input ordering, focus/IME and
 bounded resource lifetimes while retaining the original stress case.
 
+### Software stroke raster cost
+
+On base `b00fa4451fc4956a4e8f0d0150a1b56844bbf247`, the candidate changes the
+scalar renderer and parity test. A separately instrumented SDK derived from
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`, built with GCC 16.2.1 ASan/UBSan,
+attributed the largest measured command cost in a paced Files run to rectangle
+strokes. The scalar renderer
+now skips the interior pixels of a stroke instead of testing them one by one;
+the same clipped outer pixels still use the original blending operation. A
+reference-renderer comparison includes 240 additional combinations of
+fractional, clipped, extremely thin, thick and translucent strokes. The
+headless parity and renderer backend tests both passed under ASan/UBSan and in
+a separate Release build. Release output is saved at
+`D:/NexaUI/out/nexaui-stroke-release.log`.
+
+Two consecutive diagnostic runs, comparing that instrumented `861ac66` SDK
+before and after substituting the candidate's `headless.c`, with a 2 ms key
+delay measured median
+software-raster times of 5.678 ms (53 frames, unmodified renderer) and
+2.077 ms (66 frames, optimized renderer). They used the same virtual Files
+input, framebuffer and carrier, but naturally produced different frame counts;
+these are scoped diagnostic measurements, not a general performance guarantee.
+Both paced runs passed. The optimized consumer still failed all five separate
+unpaced ASan/UBSan runs with `EPIPE` during presentation: the queue-exhaustion
+stress gate is therefore **not fixed**. The first captured frame in that run
+had the same SHA-256 as the baseline capture. The headless carrier reported
+clock skew between archived source timestamps and its clock during builds;
+these were fresh build directories, and the warning is preserved in the logs.
+The candidate source, configuration, failures, comparisons and test output are
+archived at `D:/NexaUI/out/nexaui-stroke-raster-20261106-complete.tar.gz`,
+SHA-256 `88d0b1914ebf77ba0072f3daa45aad4d2393d850496acdf1be6798de826d563e`.
+
 ## External clipboard peers and interrupted read on Aetheri (2026-11-06)
 
 On NexaUI base `8ed604eb222a893be8052929eebdc97d736ce67e`, the isolated

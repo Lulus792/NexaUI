@@ -143,6 +143,30 @@ static void nx_paint_shape(uint8_t *pixels, uint32_t width, uint32_t height,
     uint32_t y1 = nx_first_pixel(bounds.bottom, height);
     uint8_t src[4] = {nx_byte(cmd->color.r), nx_byte(cmd->color.g),
                       nx_byte(cmd->color.b), nx_byte(cmd->color.a)};
+    if (cmd->type == NX_COMMAND_STROKE_RECT) {
+        nx_bounds outer = nx_rect_bounds(cmd->rect);
+        double left = outer.left + cmd->thickness, right = outer.right - cmd->thickness;
+        double top = outer.top + cmd->thickness, bottom = outer.bottom - cmd->thickness;
+        uint32_t inner0 = nx_first_pixel(left, width), inner1 = nx_first_pixel(right, width);
+        if (inner0 < x0) inner0 = x0;
+        if (inner0 > x1) inner0 = x1;
+        if (inner1 < x0) inner1 = x0;
+        if (inner1 > x1) inner1 = x1;
+        for (uint32_t y = y0; y < y1; ++y) {
+            uint8_t *row = pixels + (size_t)y * stride;
+            double py = (double)y + 0.5;
+            if (left < right && inner0 < inner1 && py >= top && py < bottom) {
+                for (uint32_t x = x0; x < inner0; ++x)
+                    nx_blend(row + (size_t)x * 4u, src);
+                for (uint32_t x = inner1; x < x1; ++x)
+                    nx_blend(row + (size_t)x * 4u, src);
+            } else {
+                for (uint32_t x = x0; x < x1; ++x)
+                    nx_blend(row + (size_t)x * 4u, src);
+            }
+        }
+        return;
+    }
     /* Hoist the rounded contour constants per command and its Y calculation
      * per row. Keep the original floating-point
      * expression for every sample, including tiny-radius boundary rounding. */

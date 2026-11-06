@@ -109,8 +109,27 @@ static void scaled_contract(void) {
     CHECK(nx_headless_render_scaled(&invalid, 1, actual, W, H, STRIDE, clear, 2)==NX_ERROR_COMMAND);
     CHECK(!memcmp(actual, untouched, sizeof(actual)));
 }
+
+static void stroke_boundaries(void) {
+    const float offsets[] = {-12.5f, -0.5f, 0, 0.5f, 3.49999f, 3.5f, 3.50001f, 30.5f};
+    const float widths[] = {0.125f, 1, 7.5f, 32, 90};
+    const float thicknesses[] = {1.0e-30f, 0.125f, 0.5f, 1, 4, 100};
+    nx_command commands[] = {
+        {.type=NX_COMMAND_PUSH_CLIP, .rect={0.5f, 1.5f, 29, 23}},
+        {.type=NX_COMMAND_STROKE_RECT, .color={.7f, .3f, .9f, .45f}},
+        {.type=NX_COMMAND_POP_CLIP}
+    };
+    for (size_t x=0; x<sizeof(offsets)/sizeof(offsets[0]); ++x)
+        for (size_t w=0; w<sizeof(widths)/sizeof(widths[0]); ++w)
+            for (size_t t=0; t<sizeof(thicknesses)/sizeof(thicknesses[0]); ++t) {
+                commands[1].rect=(nx_rect){offsets[x], offsets[7-x], widths[w], widths[4-w]};
+                commands[1].thickness=thicknesses[t];
+                compare(commands, 3, 32, 27, (nx_color){.2f,.4f,.6f,.5f}, NX_OK);
+            }
+}
 int main(void) {
     scaled_contract();
+    stroke_boundaries();
     nx_context *context = NULL;
     CHECK(nx_context_create(NULL, &context) == NX_OK);
     const float radii[] = {0, 0.125f, 0.5f, 1, 2, 7.75f, 8, 16, 1000000};
