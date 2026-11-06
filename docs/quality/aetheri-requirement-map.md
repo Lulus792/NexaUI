@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+A02/A04/A07/D02: the Files example publishes changed rejection descriptions and
+an independent client observes both AT-SPI property-change events on Aetheri's
+test compositor. Real locale switching, production bus and human acceptance
+remain open; see [description event evidence](aetheri-adoption-assessment.md#files-description-changes-over-at-spi-2026-11-06).
+
 B03/B04/Q05: the 0.1.22 development candidate distinguishes the new text-field
 entry points from older 0.1.21 packages. Static/shared installed consumers and
 an old shared-library negative passed on the Fedora carrier; source provenance

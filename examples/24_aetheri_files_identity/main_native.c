@@ -141,7 +141,12 @@ int main(int argc,char **argv) {
         float view_height=fminf(info.height,1800.0f);uint64_t old_focus=nx_focus_id(ctx);
         if(nx_context_set_text_raster_scale(ctx,info.scale)!=NX_OK){okay=0;break;}
         if(info.width>=40 && view_height>=64) {
+            int old_query_valid=files_scene_query_accepted(scene);
             nx_result frame_result=files_scene_frame(scene,info.width,view_height);
+            /* Publish a matching field description in the same update when
+               whole-query admission changes during the first frame. */
+            if(frame_result==NX_OK && old_query_valid!=files_scene_query_accepted(scene))
+                frame_result=files_scene_frame(scene,info.width,view_height);
             if(frame_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_FRAME_ERROR %d\n",(int)frame_result);okay=0;break;}
             if(files_scene_close_requested(scene)){done=1;break;}
         } else if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK || nx_end_frame(ctx)!=NX_OK){okay=0;break;}

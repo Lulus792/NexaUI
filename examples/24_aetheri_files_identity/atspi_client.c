@@ -37,7 +37,8 @@ static int invalid(AtspiAccessible *node) {
     if(!states)return 0;
     int result=atspi_state_set_contains(states,ATSPI_STATE_INVALID_ENTRY);g_object_unref(states);return result;
 }
-typedef struct status_events {char *tree_path,*status_path;GPtrArray *added_paths;unsigned renamed;} status_events;
+typedef struct status_events {char *tree_path,*status_path,*filter_path;GPtrArray *added_paths;
+    unsigned renamed,description_invalid,description_normal;} status_events;
 static int status_added(const status_events *log) {
     if(!log->status_path)return 0;
     for(guint i=0;i<log->added_paths->len;++i)
@@ -58,6 +59,13 @@ static void status_event(AtspiEvent *event,void *user) {
        G_VALUE_HOLDS_STRING(&event->any_data)) {
         const char *name=g_value_get_string(&event->any_data);
         if(name && !strcmp(name,"Invalid filter. Clear it to continue."))++log->renamed;
+    }
+    if(path && log->filter_path && !strcmp(path,log->filter_path) &&
+       !strcmp(event->type,"object:property-change:accessible-description") &&
+       G_VALUE_HOLDS_STRING(&event->any_data)) {
+        const char *description=g_value_get_string(&event->any_data);
+        if(description && !strcmp(description,"Invalid filter. Clear it to continue."))++log->description_invalid;
+        if(description && !strcmp(description,"Filters the current folder."))++log->description_normal;
     }
     g_boxed_free(ATSPI_TYPE_EVENT,event);
 }
@@ -99,10 +107,12 @@ int main(int argc,char **argv) {
     CHECK(atspi_accessible_get_role(first,&error)==ATSPI_ROLE_TREE_ITEM && !error);
     tree=atspi_accessible_get_parent(first,&error);CHECK(tree && !error);
     events.tree_path=g_strdup(ATSPI_OBJECT(tree)->path);CHECK(events.tree_path);
+    events.filter_path=g_strdup(ATSPI_OBJECT(filter)->path);CHECK(events.filter_path);
     events.added_paths=g_ptr_array_new_with_free_func(g_free);CHECK(events.added_paths);
     listener=atspi_event_listener_new(status_event,&events,NULL);CHECK(listener);
     CHECK(atspi_event_listener_register(listener,"object:children-changed",&error) && !error);
     CHECK(atspi_event_listener_register(listener,"object:property-change:accessible-name",&error) && !error);
+    CHECK(atspi_event_listener_register(listener,"object:property-change:accessible-description",&error) && !error);
     CHECK(selected(first) && !selected(second));action=atspi_accessible_get_action_iface(second);CHECK(action);
     int count=atspi_action_get_n_actions(action,&error);CHECK(!error && count>0);int index=-1;
     for(int i=0;i<count;++i){char *name=atspi_action_get_name(action,i,&error);CHECK(!error);
@@ -148,6 +158,11 @@ int main(int argc,char **argv) {
         if(!rejected)pause_ms();
     }
     CHECK(rejected && invalid(filter));
+    for(unsigned attempt=0;attempt<500 && !events.description_invalid;++attempt){while(g_main_context_iteration(NULL,FALSE)){}pause_ms();}
+    CHECK(events.description_invalid>0);
+    atspi_accessible_clear_cache(filter);description=atspi_accessible_get_description(filter,&error);
+    description_ok=!error && description && !strcmp(description,"Invalid filter. Clear it to continue.");
+    g_free(description);CHECK(description_ok);
     for(unsigned attempt=0;attempt<500 && !status_node;++attempt){
         while(g_main_context_iteration(NULL,FALSE)){}atspi_accessible_clear_cache(tree);
         status_node=find(tree,"Invalid filter. Clear it to continue.",0);if(!status_node)pause_ms();}
@@ -166,6 +181,11 @@ int main(int argc,char **argv) {
         if(n>0){used+=(size_t)n;output[used]=0;cleared=strstr(output,"FILES_NATIVE_FILTER 0 2 1\n")!=NULL;}
         if(!cleared)pause_ms();}
     CHECK(cleared);
+    for(unsigned attempt=0;attempt<500 && !events.description_normal;++attempt){while(g_main_context_iteration(NULL,FALSE)){}pause_ms();}
+    CHECK(events.description_normal>0);
+    atspi_accessible_clear_cache(filter);description=atspi_accessible_get_description(filter,&error);
+    description_ok=!error && description && !strcmp(description,"Filters the current folder.");
+    g_free(description);CHECK(description_ok);
     CHECK(atspi_accessible_get_role(close_button,&error)==ATSPI_ROLE_PUSH_BUTTON && !error);
     close_action=atspi_accessible_get_action_iface(close_button);CHECK(close_action);
     CHECK(atspi_action_get_n_actions(close_action,&error)>0 && !error);
@@ -177,8 +197,9 @@ cleanup:
     if(child>0){(void)kill(child,SIGKILL);(void)waitpid(child,NULL,0);}
     if(action)g_object_unref(action);
     if(listener){(void)atspi_event_listener_deregister(listener,"object:children-changed",NULL);
-        (void)atspi_event_listener_deregister(listener,"object:property-change:accessible-name",NULL);g_object_unref(listener);}
-    g_free(events.tree_path);g_free(events.status_path);
+        (void)atspi_event_listener_deregister(listener,"object:property-change:accessible-name",NULL);
+        (void)atspi_event_listener_deregister(listener,"object:property-change:accessible-description",NULL);g_object_unref(listener);}
+    g_free(events.tree_path);g_free(events.status_path);g_free(events.filter_path);
     if(events.added_paths)g_ptr_array_unref(events.added_paths);
     if(close_action)g_object_unref(close_action);
     if(clear_action)g_object_unref(clear_action);

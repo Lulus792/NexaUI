@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Files description changes over AT-SPI (2026-11-06)
+
+On base `7e9f5c71d430670d653df14584533d6037be99e7`, the original-model Files
+example changes the filter's accessible description when a whole query is
+rejected and restores it after Clear. If validation changes during a frame,
+the host rebuilds once before publishing so that the description and current
+admission state are from the same update. This uses the existing styled-field
+and semantic event APIs; it does not add a second model or change Aetheri.
+
+An independent libatspi client on the isolated Aetheri test compositor queried
+the initial, invalid and restored descriptions and observed both
+`accessible-description` property-change events for the same filter object.
+Release and GCC 16.2.1 ASan/UBSan passed, along with scene tests, a controlled
+IME focus-cancel case and the unpaced Release Files regression. A separate
+mutant suppressing only description events failed the event assertion. These
+checks cover English example strings and a private registry; locale switching,
+production accessibility services, Windows/macOS and human review remain open.
+The separate unpaced sanitizer stress gate also remains open.
+
+Release and sanitizer Files host hashes are respectively
+`413e43f3dcdb976c6f2605eef6daa43cf58e9d2fd88cc2a787bb07ba6327ad9d` and
+`0d39e1b18b2575f9afcedbdc0f251a28845d9f4f62b64d44dbc935b79cb286ed`.
+Candidate source, logs, configurations and the event mutant are archived at
+`D:/NexaUI/out/nexaui-files-description-events-20261106.tar.gz`, SHA-256
+`b8b24ae4523014af186d49e675b61ee4ffb9b4edf49f6449af8209b36b4cf241`.
+
 ## Text-field API package version (2026-11-06)
 
 The described and styled field functions were added while development builds
