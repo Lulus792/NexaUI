@@ -20,6 +20,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('server', 'files', 'font', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--focus-cancel', action='store_true',
+                        help='cancel preedit by keyboard focus transfer instead of test-only clear')
     args = parser.parse_args()
     server, binary, font = (path.resolve(strict=True) for path in (args.server, args.files, args.font))
     root = args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -36,7 +38,8 @@ def main():
     controller.settimeout(5)
     compositor = app = None
     result = {'status': 'failed', 'server_sha256': digest(server), 'files_sha256': digest(binary),
-              'font_sha256': digest(font), 'scope': 'Aetheri test-only text-input-v3 producer, virtual input'}
+              'font_sha256': digest(font), 'focus_cancel': args.focus_cancel,
+              'scope': 'Aetheri test-only text-input-v3 producer, virtual input'}
     try:
         with (root / 'server.log').open('wb') as server_log, (root / 'files.log').open('wb') as app_log:
             compositor = subprocess.Popen([str(server), '--headless', env['WAYLAND_DISPLAY'], '-',
@@ -85,11 +88,20 @@ def main():
             wait(lambda: 'FILES_NATIVE_PREEDIT_BYTES 7 0\n' in log('files'), 'uncommitted preedit')
             if re.search(r'^FILES_NATIVE_FILTER [1-9]', log('files'), re.M):
                 raise RuntimeError('preedit altered the model')
-            app.send_signal(signal.SIGUSR1)  # Test-only clear/reset while composing.
-            wait(lambda: 'FILES_NATIVE_TEST_CLEAR\n' in log('files') and
-                 'IME commit enabled=0 ' in log('server'), 'native preedit reset')
+            reset_start = len(log('server'))
+            if args.focus_cancel:
+                key(15)  # Tab moves focus away from the filter.
+            else:
+                app.send_signal(signal.SIGUSR1)  # Test-only clear/reset while composing.
+                wait(lambda: 'FILES_NATIVE_TEST_CLEAR\n' in log('files'), 'test clear')
+            wait(lambda: 'IME commit enabled=0 ' in log('server')[reset_start:], 'native preedit reset')
+            wait(lambda: 'FILES_NATIVE_PREEDIT_BYTES 0 0\n' in log('files'), 'cleared preedit snapshot')
+            if args.focus_cancel:
+                chord(29, 38)  # Return to the filter without replacing its draft.
             wait(lambda: log('server').rfind('IME commit enabled=1 ') >
                  log('server').rfind('IME commit enabled=0 '), 'native input re-enabled')
+            if re.search(r'^FILES_NATIVE_FILTER [1-9]', log('files'), re.M):
+                raise RuntimeError('cancelled preedit altered the model')
             event('I 1')  # Controlled single Unicode commit.
             wait(lambda: 'FILES_NATIVE_FILTER 2 1 1\n' in log('files') and
                  'FILES_NATIVE_VISIBLE é\n' in log('files'), 'committed Unicode filter')

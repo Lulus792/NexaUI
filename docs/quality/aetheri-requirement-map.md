@@ -1,7 +1,8 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
 T04/T06/I02/Q04: Files retained its model during controlled v3 preedit and
-native reset, then filtered after a Unicode commit on Aetheri's test compositor.
+native reset, including a keyboard focus transfer, then filtered after a Unicode
+commit on Aetheri's test compositor.
 Production provider and physical acceptance remain open; see [Files IME evidence](aetheri-adoption-assessment.md#files-text-input-v3-on-aetheris-test-compositor-2026-11-06).
 
 A02/A03/L05/I01/D07/Q04: an independent AT-SPI client exercised original-model

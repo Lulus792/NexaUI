@@ -29,6 +29,19 @@ This is protocol-fixture evidence, not a production IME, installed provider,
 physical input or human acceptance. The separate unpaced stress case remains
 open.
 
+An additional `--focus-cancel` mode, based on driver revision
+`d38b00f5a7b56db36d27f99f732c8d07340238b7`, moves keyboard focus away with
+Tab while the seven-byte preedit is active. Both Release and ASan/UBSan runs
+observed native text-input disable and an empty preedit snapshot, returned to
+the filter with Ctrl+L, and then accepted the fresh Unicode commit without
+changing files. The same updated driver also passed the original test-only clear
+scenario in both profiles. A diagnostic mutant that suppressed Tab failed at
+the required native-disable observation. The same binaries and SDK as above
+were used; this checks a control-focus transition with the test producer, not
+an installed IME or cross-window focus. Logs and the negative mutant are in
+`D:/NexaUI/out/nexaui-files-ime-focus-20261106.tar.gz`, SHA-256
+`473951cffd2f52fe48bcf60f878608e5192c8534e76ff92c8e46b5eb86f33c7a`.
+
 ## Independent Files AT-SPI on Aetheri's test compositor (2026-11-06)
 
 The independent `examples/24_aetheri_files_identity/atspi_client.c` was run
