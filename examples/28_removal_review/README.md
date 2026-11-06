@@ -95,10 +95,38 @@ places the unknown object at the far end while the initial view remains blocked.
 All fixtures and processes are private. Captures and JSON preserve exact artifact
 hashes and the limited acceptance scope; no human screenreader result is inferred.
 
+The Filter button opens a modal name search, using the existing `nx_search_filter`,
+described text field and modal APIs. Enter or Apply commits the draft; Cancel or
+Escape discards it. Empty shows all objects. Matching folds ASCII case and matches
+other UTF-8 bytes exactly. Applied queries have at most 128 UTF-8 bytes, without
+NUL/newlines; an invalid draft disables Apply and leaves the preview unchanged.
+Filtering runs on Apply rather than on each keystroke. A changed filter resets
+scroll and the **Entire plan reviewed** confirmation; applying the same query is
+a no-op. Category captions show matched and complete counts. Hidden unknown
+objects still block a request, and every request retains the original complete
+plan/installation/scope/revision. Filtering never edits retention or authorization.
+
+Native hosts bind the borrowed window with `removal_review_bind_window` and route
+events through `removal_review_queue_event`. Keep every bound window alive until
+view/context destruction. The queue wrapper resolves Escape after earlier queued
+activations: an opening/open filter is cancelled, otherwise the view closes.
+The modal restores focus, blocks background actions and retires old native editor
+references. Replacing the view still retains the once-issued owner intent.
+
+Add `--filter` to the native driver for editing, validation, cancellation, stale
+edits and fully visible filtered-object checks in window-relative coordinates.
+`--filter-ime --keyboard --capture` uses the complete small fixture and the pinned
+Aetheri producer's explicit `I on`/preedit/commit controls. It checks uncommitted
+preedit, cancellation by focus transfer, Unicode commit and explicit Apply. This
+is a controlled protocol test, not installed-IME or human acceptance.
+
 With an explicit test font, CTest executes the small-view regression, the 100,000-
-object workload and (on Linux) constructor allocation-failure checks. The large
+object workload, filter/edit/reflow cases and (on Linux) constructor/filter
+allocation-failure checks. The large
 workload includes viewport/font changes, 64 wheel-driven frames, offscreen unknown
 state, full-snapshot duplicate detection and a request during geometry settling.
 Printed times cover snapshot creation and frame construction/validation, excluding
 rasterization and presentation. They are local measurements without an agreed
-adoption budget. No terminal/Files stress or whole-catalogue acceptance is implied.
+adoption budget. Model refresh/reconciliation, retention editing, actual removal,
+real locales and broader platform/human adoption remain open. No terminal/Files
+stress or whole-catalogue acceptance is implied.

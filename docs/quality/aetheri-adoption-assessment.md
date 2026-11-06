@@ -1,5 +1,99 @@
 # Aetheri adoption: initial source assessment
 
+## Full-plan-safe removal name filtering (2026-11-06)
+
+Implementation [950af924d7aede2533d802fd21753c5073d88beb](https://github.com/Lulus792/NexaUI/commit/950af924d7aede2533d802fd21753c5073d88beb)
+adds a complete name-filter workflow to the existing removal composition, on base
+`6a139f3c1a2b582216d9fdcdfc8b257494d95422`. It reuses `nx_search_filter`, described
+text fields, modal/focus, scrolling and read-only text snapshots. The current
+catalogue's field-description/style concern already has public described/styled
+entry points in this SDK; no duplicate widget or SDK API is added here.
+
+The modal separates draft and applied query. Enter/Apply commits; Cancel/Escape
+discards the draft. Empty shows all. Applied input is bounded at 128 UTF-8 bytes
+without NUL/newlines; invalid drafts disable Apply. Matching follows the existing
+ASCII case-fold/exact-other-UTF-8 contract and searches names only. Matching and
+index replacement happen on Apply, not on every edit. A changed filter clears
+the complete-plan confirmation and resets scroll. A repeated identical query is
+a no-op. Existing object IDs remain stable, while captions expose both shown and
+complete category counts. Eligibility always uses the complete immutable owner
+snapshot: an unknown object hidden by the query still blocks requests. A request
+retains the original plan, installation, scope and revision and is never rearmed
+by clearing the filter or replacing the view. This is presentation, not retention
+editing or an authorization/operation API.
+
+The host binds its existing window for IME/clipboard and routes events through
+the example's queue wrapper. Escape is resolved after earlier queued activations,
+so Enter+Escape in one batch cancels the opening dialog rather than closing the
+app. The modal blocks background actions and restores focus. The active filter
+is visibly labelled; header width is reserved before title layout. Window/context
+borrowing rules are explicit. SDK production source, API/ABI, development version
+0.1.23, dependencies and Aetheri source/models/pin remain unchanged.
+
+Fedora 44/GCC 16.2.1 static Release, shared Release and static ASan/UBSan Debug
+each passed all four standalone CTests without skips. The new test covers 100,000
+objects, exact last identity, empty results, invalid input, Unicode name matching,
+draft cancellation, native edit admission, modal blocking/focus, full-scope
+requests, hidden unknowns and same-batch Escape. Eight modal captures cover
+dark/light, normal/doubled text and 640x480/420x320; the small eager path also
+repeatedly opens/cancels. Constructor/filter allocation failures preserve the
+previous applied state, owner intent and live allocation balance: 21 injected
+failures in each static profile and eight in the shared executable. Executable
+wrapping does not inject allocations inside the DSO. Existing 30/15-second test
+limits, leak detection and sanitizer halt-on-error remain unchanged.
+
+Twelve native positive cases passed on the pinned Aetheri compositor, six each
+in Release and ASan/UBSan: large filter actions, large filter keys/capture,
+hidden-unknown gating, small filter, controlled IME/keys/capture and the unfiltered
+large regression. The independent libatspi client rejects late edits through old
+and closed dialog fields and verifies that drafts do not change applied counts.
+It scrolls until the filtered object is showing and its complete window-relative
+bounds fit the preview, rather than treating an overscan node as visible. Final
+large captures were inspected with the full object/reason/ID/size readable.
+The IME cases explicitly enable the producer's text-input-v3 global, observe
+seven-byte uncommitted preedit, cancel it by Tab focus transfer, return focus,
+commit Unicode and explicitly Apply. Candidate rectangles are nonempty. All
+positive hosts close normally; the provider-disabled negative maps and fails
+discovery as intended, which is not normal-close evidence. The driver still
+requires every original keyboard command, plus all four new controlled IME
+commands where applicable, within the original 50-second limit.
+
+An initial ASan small-dialog run exposed overwritten eager text layouts during
+the added internal focus/close passes. Freeing eager layouts before each rebuild
+and the repeated-small-dialog regression close that leak. Same-batch Escape also
+exposed an invalid second close of an already dismissed scope; dismissal now uses
+the SDK's existing omission contract. A deliberately faulty eligibility build
+using filtered unknown counts fails the hidden-unknown assertion; the normal
+source/library are never replaced by this mutant. Earlier focus-precondition,
+disabled-producer, command-count and unsupported screen-coordinate probe failures
+are retained. Earlier successful overscan-only checks are superseded by the final
+window-relative visibility checks. No deadline, assertion or instrumentation was
+relaxed to obtain these results.
+
+Source/revision archives, flags, final binaries/SDK provenance, JUnit/logs, all
+native campaigns, full images, negative sources and a SHA-256 manifest are stored
+at `D:/NexaUI/out/nexaui-removal-filter-20261106.tar.gz`, SHA-256
+`d05cdcf3f746858b24a84fa2bbc26106b05f1944e7ed2791bff5175ec1af53f3`.
+Twelve compiled consumer/build/runner files match the implementation revision
+after CRLF/LF normalization. The compositor binary remains
+`631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75`.
+Earlier failed host hashes/logs and source archives are retained; overwritten
+earlier host binaries are not claimed to be retained. These standalone examples
+are not automatically executed by root SDK CI. The separate [base CI](https://github.com/Lulus792/NexaUI/actions/runs/42298896089)
+has successful sanitizer and four Windows/macOS jobs, with both Ubuntu jobs
+cancelled; it is not a complete seven-job result and the cancellation cause is
+not established here.
+
+Aetheri can reuse this composition against the tested 0.1.23 SDK with its existing
+owner boundaries while developing independently. Its currently documented 0.1.18
+pin is not upgraded here, and actual application adoption is not declared.
+Model refresh/reconciliation, filtering complete real
+application inventories, retention editing, authenticated plan transport, actual
+removal/recovery, installed IMEs, real locales, other platforms and physical/human
+acceptance remain open. The Files unpaced sanitizer burst failure is unchanged.
+This advances the filter/dialog slice of L04/L05/L09/A04/I01/D07/P02/P04/Q04;
+neither those entire requirements nor the 103-ID catalogue are declared complete.
+
 ## Standard native text in operation and removal views (2026-11-06)
 
 Implementation source [72e756502ed2e68815ee314fe5ece0ae8881287d](https://github.com/Lulus792/NexaUI/commit/72e756502ed2e68815ee314fe5ece0ae8881287d)
