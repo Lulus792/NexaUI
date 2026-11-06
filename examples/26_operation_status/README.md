@@ -39,7 +39,9 @@ phase changes alone should not generate assistive value announcements.
 The scoped checks cover software presentation and core semantics. The separate
 Linux AT-SPI fixture also checks busy/read-only state, description, absence of a
 numeric value/action and replacement with an unknown status at the same identity
-through an independent libatspi client on Aetheri's test compositor. Human
+through an independent libatspi client on Aetheri's test compositor. It also
+requires no object events on a visual-only phase update and one busy-clear event
+on the transition to unknown. Human
 screenreader announcements, other platforms, localization, resizing/scaling and
 real offline installation/recovery integration remain separate acceptance gates.
 Aetheri can adopt this control independently without changing its models.

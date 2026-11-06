@@ -57,6 +57,18 @@ unpaced sanitizer stress failure remains open. Aetheri may adopt the new control
 independently at 0.1.23; no Aetheri source, SDK pin or live session was changed.
 No 1.0.0 release or tag is implied.
 
+On source `1687ea3a4ebe7b7a45a77591223e6d508e040fe2`, a test-only follow-up
+advances visual phase while keeping the semantic status unchanged. The independent
+client receives no object events for that identity, then receives exactly one
+busy-clear event when the host replaces it with the unknown result. Both complete
+native Release and ASan/UBSan suites passed. A separate host mutant that changed
+the description on a phase update failed the zero-event assertion. This covers
+native event traffic for the fixture, not human announcement behavior or measured
+idle/animation performance. SDK implementation and package remain unchanged.
+Sources, native logs/results, binary hashes and mutant are archived at
+`D:/NexaUI/out/nexaui-activity-events-20261106.tar.gz`, SHA-256
+`ec9ae40220d2983a4b8a913d84a8724d4937839a399bf1428522541bb11d30f0`.
+
 ## Rename review on Aetheri's test compositor (2026-11-06)
 
 The existing `25_aetheri_rename` example from NexaUI

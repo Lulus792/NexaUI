@@ -76,6 +76,17 @@ static void event(AtspiEvent *event,void *user) {
     }
     g_boxed_free(ATSPI_TYPE_EVENT,(void *)event);
 }
+
+typedef struct activity_events { const char *path; unsigned changes,busy_clears; } activity_events;
+static void activity_event(AtspiEvent *event,void *user) {
+    activity_events *events=user;
+    if(event->source && !strcmp(ATSPI_OBJECT(event->source)->path,events->path)) {
+        ++events->changes;
+        if(!strcmp(event->type,"object:state-changed:busy") && !event->detail1)
+            ++events->busy_clears;
+    }
+    g_boxed_free(ATSPI_TYPE_EVENT,(void *)event);
+}
 typedef struct native_ref { char *bus,*path; } native_ref;
 static native_ref copy_ref(AtspiAccessible *object) {
     AtspiObject *identity=ATSPI_OBJECT(object);
@@ -156,12 +167,22 @@ int main(int argc,char **argv) {
     GHashTable *activity_attrs=atspi_accessible_get_attributes(activity,&error);
     CHECK(activity_attrs && !error && !g_hash_table_lookup(activity_attrs,"nexaui-value"));
     g_hash_table_unref(activity_attrs);
+    activity_events activity_changes={ATSPI_OBJECT(activity)->path,0,0};
+    AtspiEventListener *activity_listener=atspi_event_listener_new(activity_event,&activity_changes,NULL);
+    CHECK(activity_listener && atspi_event_listener_register(activity_listener,"object:",&error) && !error);
+    pump(100);activity_changes.changes=activity_changes.busy_clears=0;
+    CHECK(command("activityphase"));pump(100);
+    /* Visual animation must not create assistive status/value chatter. */
+    CHECK(!activity_changes.changes);
     CHECK(command("activityunknown"));pump(100);atspi_accessible_clear_cache(activity);
     CHECK(named(activity,"Operation result unknown") && !state(activity,ATSPI_STATE_BUSY));
+    CHECK(activity_changes.busy_clears==1);
     CHECK(state(activity,ATSPI_STATE_READ_ONLY) && !atspi_accessible_get_value_iface(activity));
     activity_description=atspi_accessible_get_description(activity,&error);
     CHECK(activity_description && !error && !strcmp(activity_description,"Reconnect to the original owner"));
-    g_free(activity_description);g_object_unref(activity);
+    g_free(activity_description);
+    CHECK(atspi_event_listener_deregister(activity_listener,"object:",&error) && !error);
+    g_object_unref(activity_listener);g_object_unref(activity);
     AtspiAccessible *disabled_child=find(app,"Disabled group child",0);CHECK(disabled_child);
     CHECK(!state(disabled_child,ATSPI_STATE_ENABLED));
     AtspiAction *disabled_child_action=atspi_accessible_get_action_iface(disabled_child);CHECK(disabled_child_action);
