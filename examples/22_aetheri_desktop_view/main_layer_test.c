@@ -233,6 +233,7 @@ static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial)
        aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)current=0;
     aetheri_ime_result result;
     if(aetheri_ime_done(&a->ime_transaction,serial,current,&result)!=NX_OK)return;
+    printf("IME_BATCH preedit_bytes=%zu commit_scalars=%zu\n",result.preedit_length,result.scalar_count);
     a->ime_defer=!result.can_commit_state;
     size_t lo=a->ime_cursor<a->ime_anchor?a->ime_cursor:a->ime_anchor;
     size_t hi=a->ime_cursor>a->ime_anchor?a->ime_cursor:a->ime_anchor;

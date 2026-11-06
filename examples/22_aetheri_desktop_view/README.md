@@ -58,6 +58,10 @@ An additional isolated run selected Aetheri's own pinned NexaUI Settings through
 the original owner's binding checks, changed its theme with pointer and keyboard,
 and verified state retention across process reuse. See the
 [owned Settings evidence](../../docs/quality/aetheri-adoption-assessment.md#aetheri-owned-settings-with-the-nexaui-desktop-fixture-2026-11-06).
+With `--compose`, that owner fixture also exercises Aetheri's opt-in native
+Compose provider on the private search surface, including cancellation and an
+exactly-once Unicode commit. See the
+[Compose evidence](../../docs/quality/aetheri-adoption-assessment.md#native-compose-in-owner-managed-desktop-search-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

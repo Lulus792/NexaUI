@@ -23,6 +23,7 @@ def main():
                         help="actual Aetheri build cache used to select the fixture profile")
     parser.add_argument("--owned-settings-source", type=Path,
                         help="isolated Aetheri source snapshot for its bound NexaUI Settings view")
+    parser.add_argument("--compose", action="store_true", help="exercise Aetheri's opt-in native Compose provider")
     args = parser.parse_args()
     if bool(args.terminal) != bool(args.shell):
         parser.error("--terminal and --shell must be supplied together")
@@ -40,6 +41,8 @@ def main():
                          ("aetheri-settings", settings)):
         (build / name).symlink_to(target)
     fixture_env = os.environ.copy()
+    if args.compose:
+        fixture_env["NEXAUI_TEST_IME"] = "1"
     if args.owned_settings_source:
         # The original owner verifies an ordinary file at its build path.
         # Keep its executable and profile selection inside this fixture.
@@ -75,7 +78,7 @@ def main():
     try:
         with (root / "owner.log").open("wb") as stream:
             child = subprocess.Popen([sys.executable, str(fixture), str(build), str(root),
-                                      str(issuer.fileno()), str(owner)], cwd=root,
+                                      str(issuer.fileno()), str(owner), *(["compose"] if args.compose else [])], cwd=root,
                                       pass_fds=(issuer.fileno(),), stdin=subprocess.DEVNULL, env=fixture_env,
                                      stdout=stream, stderr=subprocess.STDOUT)
             issuer.close()
@@ -119,6 +122,28 @@ def main():
                 event("K 125 0")
                 wait(lambda: log().count("desktop: TOGGLE 0\n") > prior, "search toggle")
                 wait(lambda: log().count("desktop: ENTER 0\n") > prior_focus, "search focus")
+                if args.compose and name == "settings" and not result.get("compose_case"):
+                    wait(lambda: "compositor: COMPOSE active=1\n" in log(), "native text-input activation")
+                    old_queries = log().count("desktop: QUERY 0 ")
+                    tap(127)
+                    wait(lambda: "desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n" in log(), "Compose preedit")
+                    tap(1)
+                    wait(lambda: "desktop: IME_BATCH preedit_bytes=0 commit_scalars=0\n" in log(), "Compose cancel")
+                    if log().count("desktop: QUERY 0 ") != old_queries:
+                        raise RuntimeError("cancelled preedit mutated the search model")
+                    batches = log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n")
+                    tap(127)
+                    wait(lambda: log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n") > batches,
+                         "second Compose preedit")
+                    tap(40)
+                    wait(lambda: "desktop: IME_BATCH preedit_bytes=3 commit_scalars=0\n" in log(), "Compose accent")
+                    tap(18)
+                    wait(lambda: "desktop: QUERY 0 é\n" in log(), "native composed Unicode commit")
+                    if log().count("desktop: QUERY 0 é\n") != 1:
+                        raise RuntimeError("Compose commit was duplicated")
+                    tap(14)
+                    wait(lambda: "desktop: QUERY 0 \n" in log(), "remove composed query")
+                    result["compose_case"] = "passed"
                 for char in name:
                     tap(codes[char])
                 wait(lambda: log().count(query_line) > prior_query, "search query")

@@ -1,5 +1,29 @@
 # Aetheri adoption: initial source assessment
 
+## Native Compose in owner-managed desktop search (2026-11-06)
+
+On NexaUI base `a92a5422830bf18d81a17367e82bd5a0cb02e364`, the private
+desktop fixture was run twice with text-input-v3 enabled under Aetheri's
+opt-in built-in Compose provider and the original supervisor from Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`. On a focused virtual search
+surface, the test observed a preedit batch, cancelled it without changing the
+query, then composed `é`, observed exactly one query commit and removed it.
+The same runs launched and reused Aetheri's own bound Settings and Terminal,
+changed Settings with pointer and keyboard, and completed ordered shutdown.
+All four supervised processes exited 0. Diagnostics expose only the preedit
+byte and committed scalar counts, not composition contents.
+
+The runner SHA-256 was `eb37771fa6abfff6e1dcee838c3573b87effcf70d26b63672223fb9a3edb0b82`;
+the desktop binary was `72e56338e94680c39be2949ea1dab6217360dc4efa34ecd30e728ab8761f202c`.
+Both isolated runs and their input/artifact hashes are in
+`D:/NexaUI/out/nexaui-owner-compose-evidence-20261106.tar.gz`, SHA-256
+`0df4339ac9b3a55410a9f713297f41a729065e3da86c2c948d81bc1f79a5aad0`.
+Static/shared GCC and Clang ASan/UBSan layer focus, IME-wire and launcher tests
+also passed on Alpine/WSL. The Aetheri test compositor and app binaries were
+pre-existing artifacts, not rebuilt from this source for the run. This verifies
+the built-in Compose provider on virtual input, not external IMEs, physical
+devices, native AT-SPI in this combined run or production-shell adoption.
+
 ## Aetheri-owned Settings with the NexaUI desktop fixture (2026-11-06)
 
 On NexaUI base `815864e5c0e885c7ab913181f69b70e8acd0388c`, the isolated
