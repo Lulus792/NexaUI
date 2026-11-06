@@ -39,7 +39,7 @@ the global identities and six group counts, plus visible/overscan object nodes.
 Native scrollbar increment/decrement, arrows, Page Up/Down and Home/End expose
 the full view without an object-sized semantic tree. Hidden unknown entries still
 disable acknowledgement and requests. Logical extent uses estimated heights until
-visited; exact remote offscreen lookup, filtering and real owner transport remain
+visited; exact remote offscreen lookup and real owner transport remain
 open. The record copy occupies `count * sizeof(removal_entry)` bytes, plus indexes,
 view state, fonts and framework resources; total process footprint needs its own
 measurement.
@@ -113,6 +113,35 @@ activations: an opening/open filter is cancelled, otherwise the view closes.
 The modal restores focus, blocks background actions and retires old native editor
 references. Replacing the view still retains the once-issued owner intent.
 
+The owner can copy a strictly newer revision with `removal_owner_refresh`.
+Plan, installation and scope IDs must stay identical; semantic/object ID mappings
+must agree wherever consecutive snapshots overlap. Same/older revisions and
+changed identities are rejected without changing the current state. Existing
+views retain their immutable older snapshots, disable acknowledgement/requests
+and expose Refresh rather than silently retargeting input. The current snapshot
+and snapshots retained by live views own their records and lookup indexes; there
+is no unbounded historical identity ledger. At 100,000 records on the tested
+x86-64 build, each snapshot copies 45,600,000 record bytes plus 800,000 bytes of
+group order and 1,600,000 bytes of identity lookup pointers. These are source-sized
+allocations, not total process RSS or an accepted memory budget.
+
+Between frames, `removal_review_refresh` stages a replacement context and view.
+It retains the applied filter, query field (including draft, selection and undo),
+theme values, density and reduced motion. It clears scope confirmation and
+cancels old-context queued input and active preedit. Native references retire;
+the host must frame and publish the new context before querying it. A closed
+dialog returns focus to Filter; an open dialog restores its safe current control.
+The first visible object anchors scroll by full object ID through reordering,
+including its intra-row offset; a removed anchor returns Home. Allocation failure
+preserves the old view and publication. The bound window must be the whole-review
+window: do not publish another view into it while this binding is active.
+
+An issued request remains issued with its exact original revision, even after
+several preview updates. Both visible status and its native description identify
+that original revision and unknown outcome; refresh never permits a retry.
+This is a private example snapshot contract, not Aetheri's `PrepareChange(remove)`
+protocol, authenticated revalidation or durable service reconciliation.
+
 Add `--filter` to the native driver for editing, validation, cancellation, stale
 edits and fully visible filtered-object checks in window-relative coordinates.
 `--filter-ime --keyboard --capture` uses the complete small fixture and the pinned
@@ -120,13 +149,21 @@ Aetheri producer's explicit `I on`/preedit/commit controls. It checks uncommitte
 preedit, cancellation by focus transfer, Unicode commit and explicit Apply. This
 is a controlled protocol test, not installed-IME or human acceptance.
 
+The mutually exclusive `--refresh-before`, `--refresh-draft` and
+`--refresh-issued` driver modes exercise a stale preview and explicit Refresh,
+an open editor across automatic refresh, or the original uncertain request across
+two newer revisions. Draft mode also injects controlled preedit and Ctrl+Z.
+These modes require a complete positive fixture and cannot be combined with
+`--filter-ime`, `--incomplete` or `--expect-unavailable`. See the
+[revision evidence](../../docs/quality/aetheri-adoption-assessment.md#revisioned-removal-snapshots-and-native-view-rebinding-2026-11-07).
+
 With an explicit test font, CTest executes the small-view regression, the 100,000-
-object workload, filter/edit/reflow cases and (on Linux) constructor/filter
-allocation-failure checks. The large
+object workload, filter/edit/reflow cases, revision/rebinding and (on Linux)
+constructor/filter/refresh allocation-failure checks. The large
 workload includes viewport/font changes, 64 wheel-driven frames, offscreen unknown
 state, full-snapshot duplicate detection and a request during geometry settling.
 Printed times cover snapshot creation and frame construction/validation, excluding
 rasterization and presentation. They are local measurements without an agreed
-adoption budget. Model refresh/reconciliation, retention editing, actual removal,
+adoption budget. Real model/service reconciliation, retention editing, actual removal,
 real locales and broader platform/human adoption remain open. No terminal/Files
 stress or whole-catalogue acceptance is implied.

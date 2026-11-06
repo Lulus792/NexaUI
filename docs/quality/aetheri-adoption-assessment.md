@@ -1,5 +1,103 @@
 # Aetheri adoption: initial source assessment
 
+## Revisioned removal snapshots and native view rebinding (2026-11-07)
+
+Core implementation [784c484ca8fc7f1f3c73e5b4fcee97cdb8a1758f](https://github.com/Lulus792/NexaUI/commit/784c484ca8fc7f1f3c73e5b4fcee97cdb8a1758f)
+and native consumer/tests [0c4587d52c9e7deba6da85099651941a19489e4d](https://github.com/Lulus792/NexaUI/commit/0c4587d52c9e7deba6da85099651941a19489e4d)
+build on `38430c8c351459e2b2bb428296314418f7d7a27f`. The example owner
+now accepts a copied strictly newer revision of the same plan, installation and
+scope. Duplicate IDs and conflicting semantic/object mappings in overlapping
+consecutive snapshots are rejected. Same/older revisions, changed scope and
+revision wraparound do not replace state. This is an example-owned contract;
+it does not assert that Aetheri exposes such a revision protocol.
+
+Existing views retain their original immutable snapshot. They keep showing its
+exact revision, disable confirmation and omit the old request action, exposing
+Refresh. Rebinding stages a complete view and fresh context before retiring the
+old publication. Allocation or validation failure preserves the old state.
+Queued input admitted against the old context cannot confirm/request the newer
+plan. Native controls/Text references retire rather than changing targets.
+
+The replacement retains the applied name filter, the same query-field object,
+draft/selection/undo, effective theme values, density and reduced motion. Active
+preedit is cancelled. Closed-dialog focus moves to Filter; an open dialog keeps
+its safe current control. The first visible object anchors by its full object
+identity and intra-row offset across reordering and eager/virtual transitions;
+removing that anchor goes Home. The bound window is explicitly a whole-review
+window and must outlive all bound contexts. A successful rebind requires a new
+frame/publication before native queries. No second view may publish into that
+window while the binding is active.
+
+A previously emitted request remains issued with the original exact correlation.
+Even when preview revisions advance from 42 to 43 and 44, visible status and
+standard native Description continue to identify request revision 42 and unknown
+outcome. Refresh, reopen and reaching `UINT64_MAX` never rearm the request. There
+is no backend dispatch, inferred completion or implicit retry.
+
+Fedora 44/GCC 16.2.1 static Release, shared Release and static ASan/UBSan Debug
+each passed all five standalone CTests without skips. The new regression covers
+three concurrent views, immutable older records, admitted-but-unexecuted actions,
+live editor retention and rejected queued edits, exact original request identity,
+empty/re-added snapshots, revision limits, 100,000-object reverse ordering,
+viewport anchoring/removal, eager/virtual transitions and hidden unknown objects.
+Allocation checks reject 39 injected failures in each static profile and 18 in
+the shared executable, retaining caller data, owner/view state and balanced live
+allocations. Executable wrapping does not inject allocations inside the DSO.
+The original 30/15-second limits, leak detection and halt-on-error remain intact.
+
+Fourteen native positive cases passed on the unchanged pinned Aetheri compositor,
+seven each in Release and ASan/UBSan. They include explicit refresh of small and
+filtered large previews, automatic refresh of an open large-view filter, two
+refreshes after an issued request, and unfiltered/IME/incomplete regressions.
+The independent libatspi client has no NexaUI linkage. It reads the old revision
+before refresh and the new one afterwards, rejects retained old references,
+checks draft/selection/focus and Ctrl+Z, observes controlled seven-byte preedit
+then cancellation, and verifies the changed last object's full window-relative
+visibility and exact ID/size. All positive hosts exit normally. A provider-off
+negative maps but fails discovery as intended. Final small/large captures were
+inspected. Issued-case images precede the request; subsequent revisions and
+original-request status are proven through native Text/Description, not those
+earlier captures. Driver timeouts and required original keyboard commands remain
+unchanged, with two additional controlled editor commands for draft refresh.
+
+Sixty complete existing small/filter PPM pairs are byte-identical across the three
+profiles. Baseline source is checked against the base Git archive. Two isolated
+mutants are detected: rearming `issued` fails the retained-request assertion;
+keeping the old context fails the queued-toggle/request assertion on the new
+view. Normal source and library hashes remain unchanged. Initial strict compiler
+failures from misleading indentation are retained and were fixed without
+suppressing warnings. Neither final native campaign had a failing case.
+
+Snapshots retain only the current owner revision and those borrowed by live views;
+there is no unbounded historical identity ledger. On the tested x86-64 build,
+100,000 records occupy 45,600,000 copied bytes, group order 800,000 bytes and the
+two lookup-pointer arrays 1,600,000 bytes per retained snapshot. These are
+source-sized allocations, excluding view/font/framework and process RSS. No
+memory/performance budget or SDL comparison is established.
+
+Evidence is `D:/NexaUI/out/nexaui-removal-refresh-20261107.tar.gz`, SHA-256
+`3441d8f9cfaf064010964c30cb47804e2cd4baf961ecc4fa1f693843b69e2bf7`.
+All 942 manifest entries are independently checked after local transfer. Thirteen
+compiled source/consumer/runner files match the final code revision after CRLF/LF
+normalization; flags, binaries, SDK provenance, JUnit, both native campaigns,
+complete before/after images, negative sources and intermediate source archives
+are retained. Overwritten earlier intermediate binaries are not claimed.
+The compositor SHA remains
+`631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75`.
+The guest clock is earlier than the host collection date; only copied source
+mtimes were normalized to avoid build warnings, without changing system clocks.
+
+SDK production sources, public API/ABI, dependencies and development version
+0.1.23 are unchanged. Aetheri source/models and its documented 0.1.18 pin remain
+independent. Actual `PrepareChange(remove)` transport/authority, real inventory,
+service reconciliation, retention editing, durable recovery, installed IMEs,
+locales, other platforms and physical/human acceptance remain open. The unpaced
+Files sanitizer burst and held-pointer capability-loss issues are unchanged.
+This advances L05/P02/P04/P07/A06 without closing those entire IDs or the catalogue.
+Standalone examples are checked separately from root SDK CI. The [base CI](https://github.com/Lulus792/NexaUI/actions/runs/42304729159)
+finished with six successful platform jobs, while its sanitizer job was cancelled
+during dependency installation; it is not a complete seven-job success.
+
 ## Full-plan-safe removal name filtering (2026-11-06)
 
 Implementation [950af924d7aede2533d802fd21753c5073d88beb](https://github.com/Lulus792/NexaUI/commit/950af924d7aede2533d802fd21753c5073d88beb)
