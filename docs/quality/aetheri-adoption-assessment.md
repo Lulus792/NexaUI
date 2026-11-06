@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Clipboard between two NexaUI windows on Aetheri (2026-11-06)
+
+On consumer base `0fba4aa397fb9f6429e701972c9a2b4dc436a33b`, the external
+two-window C17 test uses public clipboard APIs on the isolated Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90` test compositor. With focus and
+a real input serial on A, it sets a fixed Unicode sample; after focus moves to
+B, B starts and takes an asynchronous read while `nx_window_poll_many` also
+services A's source connection. The bytes match exactly. Both orders of closing
+a window passed. When source A closed, B regained focus and an attempted new
+read returned `NX_ERROR_STATE`, rather than a stale offer. These are two
+separate Wayland connections in one test process, not independent applications.
+
+Both close orders passed GCC 16.2.1 Release and ASan/UBSan with leak detection
+in the consumer and its installed static Wayland-only 0.1.21 SDK based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`. The instrumented consumer
+SHA-256 was `282d6364b280d847dd491c74eaaf4245becf56ef823ce62845c69afa05c4f0bf`;
+the release consumer was
+`c47cc3c252b3ced929ddec6c386b653c424bec065a8695b6fc60fd63aeda85a1`.
+The two existing private Weston two-window tests also passed. Results, logs,
+sources and build caches are in `D:/NexaUI/out/nexaui-two-clipboard-20261106.tar.gz`,
+SHA-256 `22cca44efcae77e331da0681ed6642ba4cae53e6d67cb0950fa33410e6191a00`;
+Weston evidence is `D:/NexaUI/out/nexaui-two-clipboard-weston-20261106.tar.gz`,
+SHA-256 `f67f025c78e630da6aebed2b93e4e5d1e8b31d8b46e228be933c7e495d9e5711`.
+An in-flight read during owner loss, external peers, production applications,
+other formats, physical interaction and human acceptance remain open.
+
 ## Two NexaUI windows on the Aetheri test compositor (2026-11-06)
 
 The unchanged public C17 two-window consumer from NexaUI commit

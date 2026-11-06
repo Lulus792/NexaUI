@@ -22,6 +22,8 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--close-window', choices=('A', 'B'), default='B',
                         help='close the selected focused window and test the survivor')
+    parser.add_argument('--test-clipboard', action='store_true',
+                        help='copy Unicode from A and asynchronously read it in B')
     args = parser.parse_args()
     server, consumer = (p.resolve(strict=True) for p in (args.server, args.consumer))
     root = args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -79,11 +81,19 @@ def main():
             wait(lambda: 'FOCUS A 1\n' in log('consumer'), 'first window focus')
             key(30)
             wait(lambda: 'TEXT A 97\n' in log('consumer'), 'first window input')
+            if args.test_clipboard:
+                os.write(write_fd, b'C')
+                wait(lambda: 'CLIPBOARD_SET A\n' in log('consumer'), 'clipboard ownership')
             start = len(log('consumer'))
             click(1980, 60)
             wait(lambda: 'FOCUS B 1\n' in log('consumer')[start:], 'second window focus')
             key(48)
             wait(lambda: 'TEXT B 98\n' in log('consumer'), 'second window input')
+            if args.test_clipboard:
+                os.write(write_fd, b'P')
+                wait(lambda: 'CLIPBOARD_READ B\n' in log('consumer') and
+                     'CLIPBOARD_MATCH B\n' in log('consumer'), 'cross-window clipboard transfer')
+                result['clipboard'] = 'Unicode copied from A and read by B'
             closed = args.close_window
             survivor = 'A' if closed == 'B' else 'B'
             if closed == 'A':
@@ -95,6 +105,10 @@ def main():
                  f'FOCUS {survivor} 1\n' in log('consumer')[start:], 'surviving window after close')
             key(46)
             wait(lambda: f'TEXT {survivor} 99\n' in log('consumer'), 'survivor input')
+            if args.test_clipboard and closed == 'A':
+                os.write(write_fd, b'L')
+                wait(lambda: 'CLIPBOARD_LOST B\n' in log('consumer'), 'clipboard owner loss')
+                result['clipboard_owner_loss'] = 'read rejected after owner closed'
             os.write(write_fd, b'D')
             if app.wait(timeout=10) != 0:
                 raise RuntimeError('consumer failed during cleanup')

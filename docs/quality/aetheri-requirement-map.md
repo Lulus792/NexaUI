@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I05/W02/W10/Q04: two separately connected NexaUI windows copied and
+asynchronously read Unicode through the Aetheri test compositor; after the
+source closed, a fresh read was rejected. In-flight source loss and independent
+applications remain open; see [clipboard evidence](aetheri-adoption-assessment.md#clipboard-between-two-nexaui-windows-on-aetheri-2026-11-06).
+
 W02/W10/I01/Q04: a public installed two-window consumer on the isolated
 Aetheri test compositor routed distinct native input and retained a responsive
 survivor after either focused window was closed. Compositor-requested close,

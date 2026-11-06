@@ -1,7 +1,9 @@
 #include "nexaui/nexaui.h"
 #include "nexaui/software.h"
+#include "nexaui/wayland_clipboard.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x); return 1; } } while (0)
@@ -36,6 +38,8 @@ int main(void) {
         CHECK(nx_software_view_open(slots[i].window,&slots[i].view)==NX_OK);
     }
     int first_closed=0, ready=0, survivor_presented=0;
+    const char clipboard_sample[]="Gr\xc3\xbc\xc3\x9f" "e \xf0\x9f\x8c\x8d";
+    uint64_t paste_token=0;
     const char *control=getenv("NEXAUI_W02_CONTROL_FD");
     int group=getenv("NEXAUI_W02_POLL_MANY")!=NULL, fd=control?atoi(control):-1, done=0;
     if(group) {
@@ -54,8 +58,22 @@ int main(void) {
             if(events&NX_WINDOW_FD_READABLE) {
                 char command=0;CHECK(read(fd,&command,1)==1);
                 if(command=='D')done=1;
+                else if(command=='C') {
+                    CHECK(!first_closed && slots[0].window && !paste_token);
+                    CHECK(nx_window_clipboard_set_text(slots[0].window,clipboard_sample,sizeof(clipboard_sample)-1)==NX_OK);
+                    puts("CLIPBOARD_SET A");fflush(stdout);
+                } else if(command=='P') {
+                    CHECK(!first_closed && slots[1].window && !paste_token);
+                    CHECK(nx_wayland_clipboard_read_begin(slots[1].window,1024,3000,0,&paste_token)==NX_OK && paste_token);
+                    puts("CLIPBOARD_READ B");fflush(stdout);
+                } else if(command=='L') {
+                    uint64_t token=0;
+                    CHECK(first_closed && !slots[0].window && slots[1].window && !paste_token);
+                    CHECK(nx_wayland_clipboard_read_begin(slots[1].window,1024,3000,0,&token)==NX_ERROR_STATE && !token);
+                    puts("CLIPBOARD_LOST B");fflush(stdout);
+                }
                 else {
-                    CHECK(!first_closed && (command=='A' || command=='B'));
+                    CHECK(!first_closed && !paste_token && (command=='A' || command=='B'));
                     unsigned i=command=='A'?0:1;
                     CHECK(nx_software_view_close(&slots[i].view)==NX_OK);
                     nx_context_destroy(slots[i].context);nx_window_destroy(slots[i].window);
@@ -63,6 +81,15 @@ int main(void) {
                     printf("CLOSED %c\n",command);fflush(stdout);
                 }
             }
+        }
+        if(paste_token) {
+            char *bytes=NULL;size_t length=0;int complete=0;
+            CHECK(nx_wayland_clipboard_read_take(slots[1].window,paste_token,&bytes,&length,&complete)==NX_OK);
+            if(complete) {
+                CHECK(length==sizeof(clipboard_sample)-1 && !memcmp(bytes,clipboard_sample,length));
+                nx_wayland_clipboard_read_release(bytes,length);paste_token=0;
+                puts("CLIPBOARD_MATCH B");fflush(stdout);
+            } else CHECK(!bytes && !length);
         }
         for(unsigned i=0;i<2;++i) if(slots[i].window) {
             if(!group)CHECK(nx_window_poll(slots[i].window,5)==NX_OK);
