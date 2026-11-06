@@ -15,8 +15,9 @@ and contents unchanged. The compositor and consumer exited 0.
 The same unpaced 256-key burst is **not closed under sanitizers**: several
 GCC 16.2.1 ASan/UBSan runs lost the client connection and exited 1 before the
 full draft was processed. A diagnostic run localized the observed failure to
-software rendering returning `NX_ERROR_PLATFORM` with last `errno=EPIPE`;
-the precise server/client cause is not established. Another instrumented run
+software rendering returning `NX_ERROR_PLATFORM` with last `errno=EPIPE`.
+The later isolated investigation below identified server-side queue exhaustion
+in one failing run. Another instrumented run
 with 2 ms between injected keys passed, as did an unpaced Release run. The
 default driver remains unpaced; the paced case is a separate comparison, not
 a replacement for the failing stress case. An intermediate test incorrectly
@@ -33,6 +34,33 @@ Logs, captures, diagnostic attempts, source and build caches are archived at
 This is an example using real model code and a headless test compositor, not
 the production Files application. Resolution of the burst failure, native
 assistive acceptance, physical input and actual Aetheri adoption remain open.
+
+### Burst queue investigation
+
+On the same Aetheri test compositor and input driver, a separately rebuilt
+diagnostic SDK and Files consumer logged `wl_display_flush` failing with
+`EPIPE` while `wl_display_get_error` still returned zero. A preload diagnostic
+on the compositor exposed its normally suppressed libwayland 1.26.0 log:
+`Data too big for buffer (4080 + 24 > 4096)` followed by `error in client
+communication`. The compositor had repeatedly received `EAGAIN` when sending
+events; its client was destroyed before the Files process observed `EPIPE`.
+This establishes exhaustion of the server's 4096-byte connection buffer in
+that run, rather than establishing a general cause for every earlier failure.
+
+For comparison only, another preload diagnostic set the test compositor's
+default per-client buffer to 65536 bytes before client creation. With the
+same unpaced driver and diagnostic consumer, the entire overlong draft was
+processed and both processes exited 0. An explicit 4096-byte comparison also
+passed once, so the outcome is timing dependent. Neither comparison changes the
+normal test, proves production behavior, or closes the sanitizer stress gate;
+larger buffers and a slower input stream are not substituted for a fix. The
+diagnostic consumer SHA-256 was
+`25ec16dffa001089f172da4f9e317302d38d1d158777d3c98c01d2c027a98110`.
+The diagnostic sources, result files and logs are preserved in
+`D:/NexaUI/out/nexaui-files-burst-investigation-20261106.tar.gz`, SHA-256
+`f5a1cd1cb111ac08811e70d57a85bd3f7812e925f5feba6f352afd5a0c0044db`.
+The next step is to investigate event handling and rendering responsiveness
+without altering Aetheri's live compositor or weakening the unpaced test.
 
 ## External clipboard peers and interrupted read on Aetheri (2026-11-06)
 

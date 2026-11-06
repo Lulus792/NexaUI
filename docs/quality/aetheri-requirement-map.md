@@ -3,7 +3,8 @@
 L05/I01/I02/D07/Q04: the Files model/view ran keyboard navigation, refresh and
 whole-query rejection on the Aetheri test compositor. Release passed an
 unpaced burst; ASan/UBSan intermittently lost the connection under that burst,
-although a separate paced comparison passed. The failure remains open; see
+although a separate paced comparison passed. One diagnostic failure exhausted
+the server's 4096-byte event buffer; the unpaced stress gate remains open. See
 [Files evidence](aetheri-adoption-assessment.md#files-modelview-on-the-aetheri-compositor-and-burst-input-finding-2026-11-06).
 
 I05/W10/Q04: NexaUI exchanged exact Unicode in both directions with
