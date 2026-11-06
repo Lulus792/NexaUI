@@ -35,6 +35,12 @@ It used the matching-order outputs advertised by that compositor; the reordered
 case is a controlled callback test, not a physical hotplug. New outputs after
 the initial snapshot remain deliberately unmapped.
 
+On base `c5e36ccacfde12f04adef32c62d52defa8cd973c`, a removal or
+layer-close marks the view unavailable immediately, before deferred teardown.
+Keyboard and IME replies cannot edit it, and a pending pointer-release reply
+cannot activate a window in that interval. Callback and Wayland-wire tests
+exercise this ordering; they do not establish physical hotplug behavior.
+
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
 until Wayland dispatch returns. It cancels a pending pointer release and

@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Input after output retirement is scheduled (2026-11-06)
+
+On base `c5e36ccacfde12f04adef32c62d52defa8cd973c`, the private layer
+test host now rejects input and frame actions as soon as output removal or layer
+close is observed; object destruction remains deferred until dispatch returns.
+A callback regression sent a key and an IME commit after registry removal but
+before teardown and checked that neither changed the app-owned query. Before
+the fix, the key changed `AB` to `ABx` and the test exited 1. A controlled
+Wayland-wire test delivered a pending pointer-sync reply in the same interval
+and checked that no window activation resulted. On Alpine-Dev/WSL, static,
+shared and Clang ASan/UBSan consumers passed the focus, IME-wire and launcher
+tests; an independent AT-SPI client also passed in each profile. The AT-SPI
+harness launched its own registry despite a WSLg runtime-directory ownership
+warning. These tests simulate removal and do not prove physical hotplug or
+integration with the production desktop owner.
+
 ## Desktop output identity and Fedora consumer (2026-11-06)
 
 On NexaUI base `f7fc000ef139e56d6d1d0467ba6b563a76caad5b`, the private

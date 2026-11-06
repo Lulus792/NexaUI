@@ -175,6 +175,10 @@ int main(int argc,char **argv) {
     CHECK(a.pointer_release_barrier && !a.activation_phase);
     a.output_names[0]=77;global_remove(&a,NULL,77);
     CHECK(v->remove_pending && v->surface && v->view);
+    /* The sync reply may arrive in the same dispatch as removal, before the
+       owner loop gets a chance to retire the surface. */
+    CHECK(wl_display_roundtrip(a.display)>=0 && !a.pointer_release_barrier && !a.activation_phase);
+    CHECK(v->remove_pending && v->surface && v->view);
     retire_output(&a,0);
     CHECK(!v->surface && !v->view && !a.pointer_release_barrier && !a.pointer_view && !a.focused);
     CHECK(wl_display_roundtrip(a.display)>=0 && !a.activation_phase);

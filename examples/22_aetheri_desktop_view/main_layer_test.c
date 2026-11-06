@@ -106,6 +106,7 @@ static unsigned char *load_font(const char *path, size_t *length) {
     if(fclose(f)){free(p);p=NULL;}return p;
 }
 static void advance(struct view *v) {
+    if(v->remove_pending)return;
     aetheri_desktop_intent intent;
     CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&intent));
     if(intent.kind==AETHERI_DESKTOP_QUERY) {
@@ -228,7 +229,7 @@ static void ime_delete(void *data,struct zwp_text_input_v3 *input,uint32_t befor
 static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial) {
     struct app *a=data;(void)input;struct view *v=a->focused;uint64_t current=0;
     if(a->ime_enabled && serial==a->ime_serial)a->ime_defer=false;
-    if(!a->ime_enabled || !v || !v->view || !v->expanded || v->surface!=a->ime_surface ||
+    if(!a->ime_enabled || !v || v->remove_pending || !v->view || !v->expanded || v->surface!=a->ime_surface ||
        aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)current=0;
     aetheri_ime_result result;
     if(aetheri_ime_done(&a->ime_transaction,serial,current,&result)!=NX_OK)return;
@@ -361,7 +362,8 @@ static void paint(struct view *v) {
     printf("PAINT %u %u %u\n",v->index,v->width,v->height);
 }
 static void configured(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t serial, uint32_t width, uint32_t height) {
-    struct view *v = data; bool had_view=v->view!=NULL; v->width = width; v->height = height;v->configured=true;
+    struct view *v = data;if(v->remove_pending)return;
+    bool had_view=v->view!=NULL; v->width = width; v->height = height;v->configured=true;
     zwlr_layer_surface_v1_ack_configure(layer, serial); paint(v);
     if(!had_view && v->app->focused==v && v->expanded)
         CHECK(nx_focus_set(aetheri_desktop_view_context(v->view),20)==NX_OK);
@@ -476,7 +478,7 @@ static void keymap(void *data, struct wl_keyboard *keyboard, uint32_t format, in
 }
 static void enter(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
     (void)keyboard; (void)serial; (void)keys; struct app *a = data;
-    for (unsigned i = 0; i < 3; ++i) if (a->views[i].surface == surface) {
+    for (unsigned i = 0; i < 3; ++i) if (!a->views[i].remove_pending && a->views[i].surface == surface) {
         a->focused=&a->views[i];
         if(a->focused->view) {
             CHECK(aetheri_desktop_view_surface_focus(a->focused->view,1)==NX_OK);
@@ -516,7 +518,7 @@ static nx_key logical_key(xkb_keysym_t sym) {
 static void key(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t code, uint32_t state) {
     struct app *a=data;(void)keyboard;(void)serial;(void)time;
     struct view *v=a->focused;
-    if(!v || !v->configured || !v->expanded || !v->view || !a->key_state || code>UINT32_MAX-8u)return;
+    if(!v || v->remove_pending || !v->configured || !v->expanded || !v->view || !a->key_state || code>UINT32_MAX-8u)return;
     uint32_t mods=0;
     if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_SHIFT,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_SHIFT;
     if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_CTRL,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_CONTROL;
@@ -545,7 +547,7 @@ static void repeat(void *data, struct wl_keyboard *keyboard, int32_t rate, int32
 static const struct wl_keyboard_listener keyboard_listener = {
     .keymap = keymap, .enter = enter, .leave = leave, .key = key, .modifiers = modifiers, .repeat_info = repeat};
 static void pointer_event(struct app *a,nx_event_type type,uint32_t button) {
-    struct view *v=a->pointer_view;if(!v || !v->configured || !v->view)return;
+    struct view *v=a->pointer_view;if(!v || v->remove_pending || !v->configured || !v->view)return;
     nx_event event={0};event.type=type;event.x=a->pointer_x;event.y=a->pointer_y;event.button=button;
     CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
 }
@@ -564,7 +566,6 @@ static void pointer_cancel_pending(struct app *a) {
 static void retire_output(struct app *a,unsigned index) {
     CHECK(index<3);struct view *v=&a->views[index];
     if(!v->remove_pending)return;
-    v->remove_pending=false;
     if(a->pointer_release_view==v)pointer_cancel_pending(a);
     if(a->pointer_view==v){
         pointer_event(a,NX_EVENT_POINTER_CANCEL,0);a->pointer_view=NULL;
@@ -586,7 +587,7 @@ static void retire_output(struct app *a,unsigned index) {
     if(v->layer){zwlr_layer_surface_v1_destroy(v->layer);v->layer=NULL;}
     if(v->surface){wl_surface_destroy(v->surface);v->surface=NULL;}
     if(a->outputs[index]){wl_output_destroy(a->outputs[index]);a->outputs[index]=NULL;}
-    a->output_names[index]=0;v->configured=false;v->expanded=false;v->dirty=false;
+    a->output_names[index]=0;v->configured=false;v->expanded=false;v->dirty=false;v->remove_pending=false;
     printf("OUTPUT_REMOVED %u\n",index);
 }
 static void pointer_release_ready(void *data,struct wl_callback *callback,uint32_t serial) {
@@ -595,7 +596,7 @@ static void pointer_release_ready(void *data,struct wl_callback *callback,uint32
     nx_event event=a->pointer_release_event;uint64_t revision=a->pointer_release_revision;
     wl_callback_destroy(callback);a->pointer_release_barrier=NULL;
     a->pointer_release_view=NULL;a->pointer_release_device=NULL;
-    if(v && v->view && v->configured && a->pointer==device && a->pointer_view==v && v->revision==revision) {
+    if(v && !v->remove_pending && v->view && v->configured && a->pointer==device && a->pointer_view==v && v->revision==revision) {
         CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);
     } else if(v && v->view && v->configured) {
         event=(nx_event){0};event.type=NX_EVENT_POINTER_CANCEL;
@@ -606,7 +607,7 @@ static const struct wl_callback_listener pointer_release_listener={.done=pointer
 static void pointer_enter(void *data,struct wl_pointer *pointer,uint32_t serial,
                           struct wl_surface *surface,wl_fixed_t x,wl_fixed_t y) {
     struct app *a=data;(void)pointer;(void)serial;pointer_cancel_pending(a);a->pointer_view=NULL;
-    for(unsigned i=0;i<3;++i)if(a->views[i].surface==surface)a->pointer_view=&a->views[i];
+    for(unsigned i=0;i<3;++i)if(!a->views[i].remove_pending && a->views[i].surface==surface)a->pointer_view=&a->views[i];
     a->pointer_x=(float)wl_fixed_to_double(x);a->pointer_y=(float)wl_fixed_to_double(y);
     pointer_event(a,NX_EVENT_POINTER_MOVE,0);
 }
@@ -631,7 +632,7 @@ static void pointer_button(void *data,struct wl_pointer *pointer,uint32_t serial
         printf("POINTER BUTTON %u\n",state);
         pointer_cancel_pending(a);
         if(state==WL_POINTER_BUTTON_STATE_PRESSED)pointer_event(a,NX_EVENT_POINTER_DOWN,NX_BUTTON_LEFT);
-        else if(state==WL_POINTER_BUTTON_STATE_RELEASED && a->pointer_view && a->pointer_view->view &&
+        else if(state==WL_POINTER_BUTTON_STATE_RELEASED && a->pointer_view && !a->pointer_view->remove_pending && a->pointer_view->view &&
                 a->pointer_view->configured && a->display && a->pointer==pointer) {
             a->pointer_release_view=a->pointer_view;a->pointer_release_device=pointer;
             a->pointer_release_revision=a->pointer_view->revision;
@@ -655,7 +656,7 @@ static void pointer_frame(void *data,struct wl_pointer *pointer) {
     double dy=a->steps_y?a->steps_y:a->axis_y/10.0;
     if(dx || dy)pointer_cancel_pending(a);
     struct view *v=a->pointer_view;
-    if(v && v->configured && v->view && isfinite(dx) && isfinite(dy) &&
+    if(v && !v->remove_pending && v->configured && v->view && isfinite(dx) && isfinite(dy) &&
        fabs(dx)<=1000000 && fabs(dy)<=1000000 && (dx || dy)) {
         nx_event event={0};event.type=NX_EVENT_WHEEL;
         event.x=a->pointer_x;event.y=a->pointer_y;event.delta_x=(float)dx;event.delta_y=(float)dy;

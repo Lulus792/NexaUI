@@ -107,8 +107,18 @@ int main(int argc, char **argv) {
     ime_leave(&a,NULL,v->surface);advance(v);
     CHECK(!a.ime_enabled && aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x==before.x);
     /* The registry callback only schedules teardown; the owner loop performs it. */
-    v->surface=NULL;a.ime_surface=NULL;a.output_names[0]=77;
+    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=5;
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
+    CHECK(aetheri_desktop_view_host_ime_surrounding(v->view,current,a.ime_surrounding,sizeof(a.ime_surrounding),
+          &a.ime_length,&a.ime_cursor,&a.ime_anchor)==NX_OK);
+    CHECK(aetheri_ime_publish(&a.ime_transaction,5,current)==NX_OK);
+    a.output_names[0]=77;
     global_remove(&a,NULL,77);CHECK(v->remove_pending && a.focused==v && v->view);
+    key(&a,NULL,0,0,KEY_X,WL_KEYBOARD_KEY_STATE_PRESSED);
+    CHECK(!strcmp(v->model.query,"AB"));
+    ime_commit(&a,NULL,"Y");ime_done(&a,NULL,5);
+    CHECK(!strcmp(v->model.query,"AB"));
+    v->surface=NULL;a.ime_surface=NULL;
     retire_output(&a,0);CHECK(!v->view && !a.focused && !v->configured && !a.output_names[0]);
     xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     free(a.font);return 0;
