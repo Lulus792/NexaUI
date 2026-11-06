@@ -56,7 +56,7 @@ struct app {
     struct zwp_text_input_v3 *ime_input;
     struct wl_surface *ime_surface;
     aetheri_ime_transaction ime_transaction;
-    uint32_t ime_serial;
+    uint32_t ime_serial,ime_enable_serial;
     uint32_t ime_barrier_serial;
     uint64_t ime_revision;
     nx_rect ime_caret;
@@ -165,7 +165,7 @@ static void ime_stop(struct app *a) {
         }
     }
     aetheri_ime_retire(&a->ime_transaction);
-    a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;
+    a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;a->ime_enable_serial=0;
 }
 static void ime_sync(struct app *a) {
     if(!a->ime_input)return;
@@ -192,6 +192,7 @@ static void ime_sync(struct app *a) {
     }
     if(a->ime_serial==UINT32_MAX) {ime_stop(a);return;}
     if(!a->ime_enabled) {
+        a->ime_enable_serial=a->ime_serial+1;
         zwp_text_input_v3_enable(a->ime_input);
         zwp_text_input_v3_set_content_type(a->ime_input,ZWP_TEXT_INPUT_V3_CONTENT_HINT_NONE,
                                           ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NORMAL);
@@ -213,7 +214,7 @@ static void ime_leave(void *data,struct zwp_text_input_v3 *input,struct wl_surfa
     if(a->ime_surface==surface) {
         ime_clear_visible(a);
         aetheri_ime_retire(&a->ime_transaction);
-        a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;a->ime_surface=NULL;
+        a->ime_enabled=false;a->ime_revision=0;a->ime_defer=false;a->ime_enable_serial=0;a->ime_surface=NULL;
     }
 }
 static void ime_preedit(void *data,struct zwp_text_input_v3 *input,const char *text,int32_t begin,int32_t end) {
@@ -234,10 +235,17 @@ static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial)
     if(!a->ime_enabled || !v || v->remove_pending || !v->view || !v->expanded || v->surface!=a->ime_surface ||
        aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)current=0;
     aetheri_ime_result result;
+    bool stale_preedit=current && a->ime_enable_serial && serial>=a->ime_enable_serial &&
+        serial<a->ime_transaction.first_serial && a->ime_transaction.preedit_length;
     nx_result status=aetheri_ime_done(&a->ime_transaction,serial,current,&result);
     if(status!=NX_OK) {
         if(a->ime_test_trace)printf("IME_REJECT status=%d serial=%u first=%u last=%u current=%llu\n",
             status,serial,a->ime_transaction.first_serial,a->ime_transaction.last_serial,(unsigned long long)current);
+        if(status==NX_ERROR_STATE && stale_preedit) {
+            /* The provider may still be composing the rejected draft. Reset
+               this enable epoch; never reset for a prior focus/enable epoch. */
+            ime_stop(a);puts("IME_STALE_RESET");
+        }
         return;
     }
     printf("IME_BATCH preedit_bytes=%zu commit_scalars=%zu\n",result.preedit_length,result.scalar_count);

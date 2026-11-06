@@ -71,6 +71,11 @@ the compositor can reply to the prior text-input serial after an accessibility
 edit has advanced the field revision. The host rejects that stale preedit;
 this protects the new text but does not yet prevent lost immediate composition.
 See the [serial investigation](../../docs/quality/aetheri-adoption-assessment.md#compose-serial-after-an-accessibility-edit-2026-11-06).
+The test host now resets the native input context when that stale preedit
+belongs to the current enable interval, so a rejected draft cannot later
+complete invisibly. A late event from an earlier interval does not reset the
+new one. The first key may still need retry; see the
+[reset evidence](../../docs/quality/aetheri-adoption-assessment.md#reset-a-rejected-stale-compose-draft-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

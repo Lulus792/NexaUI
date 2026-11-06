@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Reset a rejected stale Compose draft (2026-11-06)
+
+On NexaUI base `f0dfad0e199e5c1ac87afcd01a000b3edadbfcda`, the private
+desktop test host records the serial that enabled its current native input
+context. If a nonempty preedit from that same enable interval is rejected
+because the text revision has advanced, it disables that context, retires the
+transaction and subsequently enables a fresh one. A reply from an earlier
+enable interval does not reset the current context. This prevents a rejected
+draft from remaining invisibly active; it does not replay the lost Compose key.
+
+In the owner/AT-SPI test without the test-only roundtrip, the actual Aetheri
+Compose provider delivered old serial 2 after serial 3. The desktop rejected
+the draft, disabled and re-enabled the provider. Afterward ordinary `'e` stayed
+ordinary text rather than completing the rejected composition; after clearing
+it, a fresh Compose sequence produced `é`. The test allowed bounded retries
+when a second immediate edit itself produced another stale serial. Settings and
+Terminal then completed their owner-managed sequence and all processes exited
+0. A previous test attempt exposed that second race and is retained.
+
+Static/shared GCC and Clang ASan/UBSan layer focus, IME-wire, transaction and
+launcher tests passed on Alpine/WSL. A focus regression checks that an older
+enable interval does not reset the new one, and that the same-interval stale
+preedit does; the pre-fix test failed at the latter assertion. Independent
+AT-SPI with the updated ASan host passed. The combined successful runner was
+`652899a7713740043312631eca9a037a8148273294a2b125b52d808ab7619f32` and
+desktop binary `8d21e00aa6b458fc57fdfc70bbc6247d5e9cd46463b3733284617065f54a7c43`.
+Logs are in `D:/NexaUI/out/nexaui-owner-ime-reset-evidence-20261106.tar.gz`,
+SHA-256 `38315d2efec55b5aaa1df9aa17487ad8c402f62c1890521123689dac6de34583`.
+The first key may still need retry; external input methods, model/field
+replacement beyond this search fixture, production owner adoption, physical
+devices and human accessibility acceptance remain open.
+
 ## Compose serial after an accessibility edit (2026-11-06)
 
 On NexaUI base `5463c68f8157784d13d086c7ef9cb627355440d0`, an opt-in

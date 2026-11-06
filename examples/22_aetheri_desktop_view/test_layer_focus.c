@@ -106,17 +106,28 @@ int main(int argc, char **argv) {
     CHECK(aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x>before.x);
     ime_leave(&a,NULL,v->surface);advance(v);
     CHECK(!a.ime_enabled && aetheri_desktop_view_host_ime_caret(v->view,&after)==NX_OK && after.x==before.x);
+    /* A reply from an earlier enable must not reset the current context.
+       A stale preedit from this enable must stop its invisible composition. */
+    CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK && current>1);
+    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=6;a.ime_enable_serial=6;
+    CHECK(aetheri_ime_publish(&a.ime_transaction,5,current-1)==NX_OK);
+    CHECK(aetheri_ime_publish(&a.ime_transaction,6,current)==NX_OK);
+    ime_preedit(&a,NULL,"x",1,1);ime_done(&a,NULL,5);
+    CHECK(a.ime_enabled && !strcmp(v->model.query,"AB"));
+    a.ime_enable_serial=5;
+    ime_preedit(&a,NULL,"x",1,1);ime_done(&a,NULL,5);
+    CHECK(!a.ime_enabled && !strcmp(v->model.query,"AB"));
     /* The registry callback only schedules teardown; the owner loop performs it. */
-    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=5;
+    a.ime_enabled=true;a.ime_surface=v->surface;a.ime_serial=7;
     CHECK(aetheri_desktop_view_host_ime_revision(v->view,&current)==NX_OK);
     CHECK(aetheri_desktop_view_host_ime_surrounding(v->view,current,a.ime_surrounding,sizeof(a.ime_surrounding),
           &a.ime_length,&a.ime_cursor,&a.ime_anchor)==NX_OK);
-    CHECK(aetheri_ime_publish(&a.ime_transaction,5,current)==NX_OK);
+    CHECK(aetheri_ime_publish(&a.ime_transaction,7,current)==NX_OK);
     a.output_names[0]=77;
     global_remove(&a,NULL,77);CHECK(v->remove_pending && a.focused==v && v->view);
     key(&a,NULL,0,0,KEY_X,WL_KEYBOARD_KEY_STATE_PRESSED);
     CHECK(!strcmp(v->model.query,"AB"));
-    ime_commit(&a,NULL,"Y");ime_done(&a,NULL,5);
+    ime_commit(&a,NULL,"Y");ime_done(&a,NULL,7);
     CHECK(!strcmp(v->model.query,"AB"));
     v->surface=NULL;a.ime_surface=NULL;
     retire_output(&a,0);CHECK(!v->view && !a.focused && !v->configured && !a.output_names[0]);

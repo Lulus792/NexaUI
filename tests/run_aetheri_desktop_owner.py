@@ -25,6 +25,7 @@ def main():
                         help="isolated Aetheri source snapshot for its bound NexaUI Settings view")
     parser.add_argument("--compose", action="store_true", help="exercise Aetheri's opt-in native Compose provider")
     parser.add_argument("--no-ime-barrier", action="store_true", help="diagnose immediate input without the test roundtrip")
+    parser.add_argument("--expect-stale-reset", action="store_true", help="verify recovery after a stale Compose preedit")
     parser.add_argument("--atspi-client", type=Path, help="independent AT-SPI client for the running desktop")
     parser.add_argument("--atspi-library-dir", type=Path, help="private runtime libraries for the independent client")
     args = parser.parse_args()
@@ -32,6 +33,8 @@ def main():
         parser.error("--terminal and --shell must be supplied together")
     if args.owned_settings_source and not args.cmake_cache:
         parser.error("--owned-settings-source requires --cmake-cache")
+    if args.expect_stale_reset and not (args.compose and args.atspi_client and args.no_ime_barrier):
+        parser.error("--expect-stale-reset requires --compose, --atspi-client and --no-ime-barrier")
     fixture, owner, server, desktop, settings = (
         p.resolve(strict=True) for p in (args.fixture, args.owner, args.server, args.desktop, args.settings))
     root = args.work_dir.resolve()
@@ -158,11 +161,43 @@ def main():
                     wait(lambda: "compositor: COMPOSE active=1\n" in log(), "native text-input activation")
                     old_queries = log().count("desktop: QUERY 0 ")
                     old_rejections = log().count("desktop: IME_REJECT ")
+                    old_active = log().count("compositor: COMPOSE active=1\n")
                     tap(127)
                     wait(lambda: "desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n" in log() or
                          (args.no_ime_barrier and log().count("desktop: IME_REJECT ") > old_rejections), "Compose preedit")
                     if args.no_ime_barrier and log().count("desktop: IME_REJECT ") > old_rejections:
-                        raise RuntimeError("Compose preedit rejected after an accessible text revision; see IME_REJECT")
+                        if not args.expect_stale_reset:
+                            raise RuntimeError("Compose preedit rejected after an accessible text revision; see IME_REJECT")
+                        wait(lambda: "desktop: IME_STALE_RESET\n" in log() and
+                             log().count("compositor: COMPOSE active=1\n") > old_active,
+                             "stale composition reset and provider re-enabled")
+                        if log().count("desktop: QUERY 0 ") != old_queries:
+                            raise RuntimeError("stale composition changed the search model")
+                        tap(40);tap(18)
+                        wait(lambda: "desktop: QUERY 0 'e\n" in log(), "plain input after provider reset")
+                        if "desktop: QUERY 0 é\n" in log():
+                            raise RuntimeError("rejected Compose draft remained active")
+                        empty_before = log().count("desktop: QUERY 0 \n")
+                        tap(14);tap(14)
+                        wait(lambda: log().count("desktop: QUERY 0 \n") > empty_before,
+                             "clear plain input after reset")
+                        old_queries = log().count("desktop: QUERY 0 ")
+                        result["stale_reset_case"] = "passed"
+                        for attempt in range(3):
+                            batches = log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n")
+                            resets = log().count("desktop: IME_STALE_RESET\n")
+                            active = log().count("compositor: COMPOSE active=1\n")
+                            tap(127)
+                            wait(lambda: log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n") > batches or
+                                 log().count("desktop: IME_STALE_RESET\n") > resets, "Compose retry after stale reset")
+                            if log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n") > batches:
+                                break
+                            wait(lambda: log().count("compositor: COMPOSE active=1\n") > active,
+                                 "provider re-enabled after retry")
+                        else:
+                            raise RuntimeError("Compose retry did not settle")
+                    elif args.expect_stale_reset:
+                        raise RuntimeError("stale input race did not occur")
                     tap(1)
                     wait(lambda: "desktop: IME_BATCH preedit_bytes=0 commit_scalars=0\n" in log(), "Compose cancel")
                     if log().count("desktop: QUERY 0 ") != old_queries:
