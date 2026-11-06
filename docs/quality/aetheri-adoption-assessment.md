@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Numeric valid draft and IME confirmation gap (2026-11-06)
+
+On NexaUI base `d799663d28886f567d096dbe4bf27a94c2542ef3`, the expanded
+private Weston 14.0.2 simple-IME test sends a real virtual `5` into the numeric
+field. The v1 wire trace reports `commit_string` for that digit; the field
+reports the valid draft `12345` while its last confirmed value remains `1234`.
+The existing apostrophe preedit, invalid `á` commit and observed Ctrl+Z path
+then still pass. The independent Wayland clipboard peer regression also passed
+in the same GCC 15.2 Alpine/WSL Debug, static Wayland-only build.
+
+A separate stricter experimental run attempted Enter after the valid draft and
+waited for confirmed value `12345`. It failed: Weston simple-IME sent a v1
+`commit_string` containing a newline and no confirmation was observed. Its
+JUnit and complete protocol trace are retained in
+`/tmp/nexaui-numeric-valid-run-20261106/simple-ime.xml`; the passing case is
+`/tmp/nexaui-numeric-valid-run-20261106-b/simple-ime.xml`. The failed experiment
+used the same base and changed only the numeric test host and driver, including
+the wider test range. This does not prove that all providers handle Enter this
+way, or that a text commit can safely be treated as a command. A reliable
+keyboard confirmation path with this provider, other IMEs, actual Aetheri and
+human/physical acceptance remain open. No public SDK behavior changed.
+
 ## Aetheri-owned Settings on the Aetheri test compositor (2026-11-06)
 
 The unchanged Aetheri Settings model, view, native host and compositor test from

@@ -53,6 +53,7 @@ def main():
         subprocess.run([xdotool, 'windowfocus', windows[0]], env=env, check=True, timeout=5)
         time.sleep(1.2)
         key('Tab');wait_for('STATE 1234 1234 1 1')
+        key('5');wait_for('STATE 12345 1234 1 1')
         key('108');time.sleep(.15);key('apostrophe');wait_for('PREEDIT')
         key('a');wait_for('INVALID')
         key('ctrl+z');shortcut=wait_for(('SHORTCUT_AS_TEXT','UNDONE'))
@@ -61,11 +62,12 @@ def main():
         for thread in threads:
             thread.join(timeout=2)
         trace=''.join(errors)
-        if (not re.search(r'preedit_string\(\d+, "\'", "\'"\)',trace) or
+        if (not re.search(r'commit_string\(\d+, "5"\)',trace) or
+                not re.search(r'preedit_string\(\d+, "\'", "\'"\)',trace) or
                 not re.search(r'commit_string\(\d+, "á"\)',trace) or
                 (shortcut=='SHORTCUT_AS_TEXT' and not re.search(r'commit_string\(\d+, "z"\)',trace))):
             raise RuntimeError('Expected native IME preedit and corresponding text commits on the wire')
-        print('Numeric simple-IME preedit and invalid commit passed; ' +
+        print('Numeric simple-IME valid draft, preedit and invalid commit passed; ' +
               ('Ctrl+Z was committed as z, not undo.' if shortcut=='SHORTCUT_AS_TEXT' else 'Ctrl+Z undid the commit.'))
         return 0
     except (RuntimeError, subprocess.SubprocessError) as problem:

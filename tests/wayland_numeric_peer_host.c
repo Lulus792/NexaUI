@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     setvbuf(stdout,NULL,_IOLBF,0);
     nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){20,20,250,40};
     desc.name=(nx_utf8_span){"Number",6};desc.fonts=fonts;desc.pixels_per_em=16;
-    desc.glyph_cache_bytes=65536;desc.minimum=-10000;desc.maximum=10000;
+    desc.glyph_cache_bytes=65536;desc.minimum=-100000;desc.maximum=100000;
     char previous[128]="";int ime_stage=0,dirty=1;nx_window_info previous_info={0};
     for(;;) {
         nx_window_info info;size_t routed=0;nx_interaction_state state;
@@ -52,14 +52,14 @@ int main(int argc, char **argv) {
             char preedit[16];size_t preedit_length=0;int32_t begin=0,end=0;
             if(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)!=NX_OK)goto done;
             if(!ime_stage && state.focused && preedit_length==1 && preedit[0]=='\'' &&
-               draft.length==4 && !memcmp(draft.data,"1234",4) && value==1234) {
+               draft.length==5 && !memcmp(draft.data,"12345",5) && value==1234) {
                 puts("PREEDIT");ime_stage=1;
-            } else if(ime_stage==1 && !preedit_length && draft.length==6 &&
-                      !memcmp(draft.data,"1234\xc3\xa1",6) && value==1234 && !valid) {
+            } else if(ime_stage==1 && !preedit_length && draft.length==7 &&
+                      !memcmp(draft.data,"12345\xc3\xa1",7) && value==1234 && !valid) {
                 puts("INVALID");ime_stage=2;
-            } else if(ime_stage==2 && draft.length==7 && !memcmp(draft.data,"1234\xc3\xa1z",7) &&
+            } else if(ime_stage==2 && draft.length==8 && !memcmp(draft.data,"12345\xc3\xa1z",8) &&
                       value==1234 && !valid) {puts("SHORTCUT_AS_TEXT");okay=1;break;}
-            else if(ime_stage==2 && draft.length==4 && !memcmp(draft.data,"1234",4) &&
+            else if(ime_stage==2 && draft.length==5 && !memcmp(draft.data,"12345",5) &&
                     value==1234 && valid) {puts("UNDONE");okay=1;break;}
         }
         char current[128];int n=snprintf(current,sizeof(current),"STATE %.*s %.0f %d %d",(int)draft.length,draft.data,value,valid,state.focused);

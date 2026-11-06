@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I02/Q06: the numeric simple-IME test on base
+`d799663d28886f567d096dbe4bf27a94c2542ef3` now checks a native valid digit
+and preservation of the previous confirmed value before preedit and invalid
+commit. A separate strict Enter-to-confirm attempt failed with this provider;
+see [candidate evidence](aetheri-adoption-assessment.md#numeric-valid-draft-and-ime-confirmation-gap-2026-11-06).
+Reliable keyboard confirmation under that IME remains open.
+
 B03/W01/W04/I01/A02/A10/Q04: the unchanged Aetheri-owned Settings host and
 native test passed on Aetheri's headless test compositor with an isolated
 0.1.19 SDK built from `874ebfd6afb5f4f95f3e047ea8219ec251b17a8a`, including
