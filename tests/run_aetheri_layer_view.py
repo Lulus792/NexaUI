@@ -129,13 +129,13 @@ def main():
                          for i, width in enumerate((1920, 2560, 3840))), "three docks")
         if args.test_invalid_launch:
             if args.test_invalid_launch == "uncorrelated":
-                launch_owner.sendall(b"A2T")
+                launch_owner.sendall(b"A3T")
             elif args.test_invalid_launch == "oversized":
-                launch_owner.sendall(b"X2T-too-long")
+                launch_owner.sendall(b"X3T-too-long")
             elif args.test_invalid_launch == "ancillary":
                 fd = os.open("/dev/null", os.O_RDONLY)
                 try:
-                    launch_owner.sendmsg([b"X2T"], [(socket.SOL_SOCKET, socket.SCM_RIGHTS,
+                    launch_owner.sendmsg([b"X3T"], [(socket.SOL_SOCKET, socket.SCM_RIGHTS,
                                                       array.array("i", [fd]))])
                 finally:
                     os.close(fd)
@@ -200,7 +200,7 @@ def main():
         key(28)
         wait(lambda: "INTENT 0 2 2 0\n" in log("desktop"), "terminal launch intent")
         if launch_owner:
-            if launch_owner.recv(16) != b"L2T":
+            if launch_owner.recv(16) != b"L3T":
                 raise RuntimeError("wrong terminal launch packet")
             key(28)
             launch_owner.settimeout(.3)
@@ -213,7 +213,7 @@ def main():
             if duplicate is not None:
                 raise RuntimeError("pending terminal request was duplicated")
             paints = log("desktop").count("PAINT 0 1920 1080\n")
-            launch_owner.sendall(b"E2T")
+            launch_owner.sendall(b"E3T")
             wait(lambda: "LAUNCH_REPLY E T\n" in log("desktop") and
                  log("desktop").count("PAINT 0 1920 1080\n") > paints, "terminal rejection applied")
         event("M 60 90")
@@ -221,11 +221,11 @@ def main():
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 2, "terminal pointer intent")
         if launch_owner:
-            if launch_owner.recv(16) != b"L2T":
+            if launch_owner.recv(16) != b"L3T":
                 raise RuntimeError("wrong terminal retry packet")
-            launch_owner.sendall(b"A2T")
+            launch_owner.sendall(b"A3T")
             wait(lambda: "LAUNCH_REPLY A T\n" in log("desktop"), "terminal process acknowledged")
-            launch_owner.sendall(b"X2T")
+            launch_owner.sendall(b"X3T")
             wait(lambda: "LAUNCH_REPLY X T\n" in log("desktop"), "terminal process reaped")
         event("M 10 200")
         event("B 272 1")
@@ -252,16 +252,16 @@ def main():
         event("B 272 0")
         wait(lambda: log("desktop").count("INTENT 0 2 2 0\n") == 3, "replacement pointer click")
         if launch_owner:
-            if launch_owner.recv(16) != b"L2T":
+            if launch_owner.recv(16) != b"L3T":
                 raise RuntimeError("wrong terminal re-request packet")
-            launch_owner.sendall(b"E2T")
+            launch_owner.sendall(b"E3T")
             wait(lambda: log("desktop").count("LAUNCH_REPLY E T\n") >= 2, "second terminal rejection")
             event("M 700 1030")
             event("B 272 1")
             event("B 272 0")
-            if launch_owner.recv(16) != b"L2S":
+            if launch_owner.recv(16) != b"L3S":
                 raise RuntimeError("wrong settings launch packet")
-            launch_owner.sendall(b"E2S")
+            launch_owner.sendall(b"E3S")
             wait(lambda: "LAUNCH_REPLY E S\n" in log("desktop"), "settings rejection applied")
             result["launch_channel"] = "passed"
         if app_client:

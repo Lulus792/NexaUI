@@ -74,7 +74,7 @@ struct app {
     unsigned char *font; size_t font_size;
     unsigned output_count,unmapped_outputs;
     uint32_t control_name, layer_name, first_id;
-    bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested;
+    bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested, closing;
     int toggle_output;
     struct xkb_context *xkb;
     struct xkb_keymap *keymap;
@@ -118,7 +118,7 @@ static void advance(struct view *v) {
         printf("SELECT %u %d %u\n",v->index,intent.app,intent.window);
     } else if(intent.kind==AETHERI_DESKTOP_LAUNCH || intent.kind==AETHERI_DESKTOP_ACTIVATE || intent.kind==AETHERI_DESKTOP_SEARCH) {
         printf("INTENT %u %d %d %u\n",v->index,intent.kind,intent.app,intent.window);
-        if(intent.kind==AETHERI_DESKTOP_LAUNCH && v->app->launcher>=0) {
+        if(intent.kind==AETHERI_DESKTOP_LAUNCH && v->app->launcher>=0 && !v->app->closing) {
             struct app *a=v->app;enum ae_desktop_app target=intent.app;
             char selector=ae_desktop_app_selector(target);CHECK(selector);
             for(unsigned i=0;i<3;++i)CHECK(!a->views[i].model.pending[target] && a->views[i].revision<UINT64_MAX);
@@ -126,7 +126,7 @@ static void advance(struct view *v) {
                 CHECK(ae_desktop_model_request(&a->views[i].model,target));++a->views[i].revision;
                 if(a->views[i].view)a->views[i].dirty=true;
             }
-            char packet[3]={'L','2',selector};
+            char packet[3]={'L','3',selector};
             ssize_t sent;do {sent=send(a->launcher,packet,sizeof(packet),MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
             CHECK(sent==(ssize_t)sizeof(packet));printf("LAUNCH_REQUEST %c\n",packet[2]);
             aetheri_desktop_intent reconciled;
@@ -281,7 +281,7 @@ static void launcher_reply(struct app *a) {
             for(size_t i=0;i<count;++i) {int fd;memcpy(&fd,(unsigned char *)CMSG_DATA(h)+i*sizeof(fd),sizeof(fd));close(fd);}
         }
     }
-    CHECK(n==3 && !extra && !(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) && bytes[1]=='2' &&
+    CHECK(n==3 && !extra && !(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) && bytes[1]=='3' &&
           (bytes[0]=='A' || bytes[0]=='E' || bytes[0]=='X'));
     enum ae_desktop_app target=ae_desktop_app_from_selector(bytes[2]);CHECK(target!=AE_DESKTOP_APP_NONE);
     for(unsigned i=0;i<3;++i) {
@@ -515,6 +515,13 @@ static nx_key logical_key(xkb_keysym_t sym) {
     default:return NX_KEY_UNKNOWN;
     }
 }
+/* The owner fences new launches and drains its children before signalling us. */
+static void request_owner_close(struct app *a) {
+    if(a->closing)return;
+    a->closing=true;
+    ssize_t sent;do {sent=send(a->launcher,"Q30",3,MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
+    CHECK(sent==3);puts("CLOSE_REQUEST");
+}
 static void key(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t code, uint32_t state) {
     struct app *a=data;(void)keyboard;(void)serial;(void)time;
     struct view *v=a->focused;
@@ -525,6 +532,9 @@ static void key(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint3
     if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_ALT,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_ALT;
     if(xkb_state_mod_name_is_active(a->key_state,XKB_MOD_NAME_LOGO,XKB_STATE_MODS_EFFECTIVE)>0)mods|=NX_MOD_SUPER;
     xkb_keycode_t xcode=code+8u;nx_key logical=logical_key(xkb_state_key_get_one_sym(a->key_state,xcode));
+    if(a->owner_fixture && state==WL_KEYBOARD_KEY_STATE_PRESSED && mods==NX_MOD_CONTROL && logical==NX_KEY_Q) {
+        request_owner_close(a);return;
+    }
     if(logical!=NX_KEY_UNKNOWN) {
         nx_event event={0};event.type=state==WL_KEYBOARD_KEY_STATE_PRESSED?NX_EVENT_KEY_DOWN:NX_EVENT_KEY_UP;
         event.key=logical;event.modifiers=mods;CHECK(aetheri_desktop_view_queue_event(v->view,&event)==NX_OK);advance(v);

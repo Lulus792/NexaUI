@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Current desktop owner protocol (2026-11-06)
+
+On NexaUI base `6ec56009c4115082e5bc3aef32a403945f2e22a6`, the private
+desktop test host adopts version 3 of the fixed owner channel documented at
+Aetheri `d56d69523c33a48648af343e7d36526f84518c90`: `L3S/T/F` requests and
+`A3/E3/X3` replies. A version-2 reply now fails closed. In owner mode Ctrl+Q
+sends one `Q30`, blocks later launch requests, and leaves the desktop alive
+for the owner's signal after child shutdown. Existing search/window activation
+is not blocked. A socketpair regression tests the version, rejected old reply,
+duplicate close request and a later ignored launch, using GCC static/shared and
+Clang ASan/UBSan builds. The layer focus and IME-wire regressions also passed.
+
+An independent peer on the isolated Fedora Aetheri test compositor exercised
+the updated Settings and Terminal launch messages, pending/retry/exit handling,
+window observation, input and three virtual docks; all three processes exited
+0. Results are in `/tmp/nexaui-shell-map-f7fc-9NHe0df8/layer-run-v3/` on the
+carrier; desktop binary SHA-256 is
+`eff18402f96792ab9b2b70d0f5b9b84b29005030fffc36c2f0e0c72e48b65bf9`.
+This uses the previously recorded `c1c85ae` model snapshot and test compositor,
+not the current original supervisor; actual current-owner launch, reuse and
+ordered shutdown remain open. No Aetheri checkout or pinned SDK was modified.
+
 ## Input after output retirement is scheduled (2026-11-06)
 
 On base `c5e36ccacfde12f04adef32c62d52defa8cd973c`, the private layer

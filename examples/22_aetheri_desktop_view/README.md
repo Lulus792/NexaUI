@@ -41,6 +41,16 @@ Keyboard and IME replies cannot edit it, and a pending pointer-release reply
 cannot activate a window in that interval. Callback and Wayland-wire tests
 exercise this ordering; they do not establish physical hotplug behavior.
 
+On NexaUI base `6ec56009c4115082e5bc3aef32a403945f2e22a6`, the test
+host follows the current Aetheri version-3 owner protocol: `L3S`, `L3T`,
+`L3F` and their `A3`/`E3`/`X3` replies. In owner mode Ctrl+Q sends `Q30`
+once and blocks further launch requests while the owner drains children. A
+socketpair test covers these messages and rejects a version-2 reply. The
+version-2 results below describe historical runs with an older owner; they do
+not demonstrate compatibility with the current owner. The new protocol was
+also exercised with an independent test peer on the Aetheri test compositor,
+not yet with the current original supervisor.
+
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
 until Wayland dispatch returns. It cancels a pending pointer release and
