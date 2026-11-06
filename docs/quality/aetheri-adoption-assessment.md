@@ -1,5 +1,32 @@
 # Aetheri adoption: initial source assessment
 
+## Settings text-input-v3 on the Aetheri test compositor (2026-11-06)
+
+On example base `a95d949b87817cf0540984129359f0563e289b01`, an external
+Settings example using the installed Wayland-only 0.1.21 SDK based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6` ran on the isolated Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90` test compositor. Its test-only
+text-input-v3 producer sent a Unicode preedit with byte cursor bounds 2..6 and
+then committed `é` into the focused field. Settings checked that preedit did
+not modify the draft, that the committed draft became `Aetherié`, and that the
+applied value remained `Aetheri`; it then closed normally. The compositor log
+also recorded an enabled text input and candidate rectangle. This producer is
+a controlled protocol fixture, not a production or installed input method.
+
+The case passed GCC 16.2.1 Release and ASan/UBSan with leak detection on both
+the Settings executable and static SDK. The instrumented executable SHA-256
+was `a5bf49e1d5d0895d12b9c20402c950501ce509b0b60348e9755a509d91ef5a80`.
+A separate normal keyboard workflow passed using that same executable. All
+four existing private Weston simple-IME tests also passed, including focus
+cancellation and replacement. Aetheri logs, frame captures and build caches
+are in `D:/NexaUI/out/nexaui-settings-ime-aetheri-20261106.tar.gz`, SHA-256
+`6ea41f36a07cd61099455e0c812d4805824e5bc4ffda0df4d3d0ff5b2b1e0674`;
+the Weston regression evidence is in
+`D:/NexaUI/out/nexaui-settings-ime-weston-regression-20261106.tar.gz`, SHA-256
+`09a8ef7d89c938e7ab207e471d38fc92f82d9e605d4d48ab82a35b79c3541cec`.
+The Aetheri fixture does not establish production IME admission, human input,
+accessibility, focus-loss behavior on Aetheri or other IME providers.
+
 ## Settings Apply worker during compositor loss (2026-11-06)
 
 On example base `c4027c2b34973f99435951d8958d7fd967815c82`, a test-only

@@ -32,9 +32,13 @@ def main():
                         help='kill only the isolated compositor and require local Settings cleanup')
     parser.add_argument('--test-apply-inflight', action='store_true',
                         help='hold a submitted Apply worker across compositor loss')
+    parser.add_argument('--test-ime-v3', action='store_true',
+                        help='exercise the compositor test-only text-input-v3 producer')
     args = parser.parse_args()
     if args.test_apply_inflight and not args.test_compositor_loss:
         parser.error('--test-apply-inflight requires --test-compositor-loss')
+    if args.test_ime_v3 and args.test_compositor_loss:
+        parser.error('--test-ime-v3 cannot be combined with compositor-loss mode')
     server_binary, app_binary, font = (p.resolve(strict=True) for p in
                                         (args.server, args.settings, args.font))
     root = args.work_dir.resolve()
@@ -86,13 +90,17 @@ def main():
                 event(f'K {code} 1'); event(f'K {code} 0')
 
             wait(lambda: 'READY ' in contents('server.log'), 'compositor readiness', False)
-            app = subprocess.Popen([str(app_binary), str(font), '--verify-keyboard-controls'],
+            if args.test_ime_v3:
+                event('I on')
+            mode = '--verify-ime-aetheri' if args.test_ime_v3 else '--verify-keyboard-controls'
+            app = subprocess.Popen([str(app_binary), str(font), mode],
                                    env=env, stdin=subprocess.DEVNULL, stdout=app_log,
                                    stderr=subprocess.STDOUT,
                                    pass_fds=(gate_read,) if gate_read is not None else ())
             if gate_read is not None:
                 os.close(gate_read); gate_read = None
-            wait(lambda: 'SETTINGS_KEYBOARD_READY' in contents('settings.log') and
+            ready_marker = 'SETTINGS_IME_READY' if args.test_ime_v3 else 'SETTINGS_KEYBOARD_READY'
+            wait(lambda: ready_marker in contents('settings.log') and
                  'MAP 0\n' in contents('server.log'), 'mapped Settings frame')
             server.send_signal(signal.SIGUSR1)
             wait(lambda: all(f'CAPTURE 1 {i}\n' in contents('server.log') for i in range(3)),
@@ -113,6 +121,23 @@ def main():
             if changed < 2000:
                 raise RuntimeError('captured Settings pixels missing')
             result['output0_sha256'] = hashlib.sha256(picture).hexdigest()
+            if args.test_ime_v3:
+                key(15)
+                wait(lambda: 'SETTINGS_IME_FOCUSED\n' in contents('settings.log') and
+                     'IME commit enabled=1 ' in contents('server.log'), 'focused native text input')
+                event('I 0')
+                wait(lambda: 'SETTINGS_IME_PREEDIT\n' in contents('settings.log'), 'unicode preedit')
+                event('I 1')
+                if app.wait(timeout=10) != 0:
+                    raise RuntimeError('IME Settings example failed')
+                trace = contents('settings.log')
+                if 'SETTINGS_IME_COMMITTED\n' not in trace or 'SETTINGS_IME_CLOSED\n' not in trace:
+                    raise RuntimeError('IME commit or clean closure missing')
+                if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:', trace):
+                    raise RuntimeError('sanitizer reported an IME error')
+                result['ime_v3'] = 'unicode preedit and commit without applying the draft'
+                result['status'] = 'passed'
+                return
             if args.test_compositor_loss:
                 if args.test_apply_inflight:
                     for code in (15, 15, 57, 15, 57):

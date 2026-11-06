@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T04/I02/B03/Q04: the installed Settings example accepted controlled Unicode
+text-input-v3 preedit and commit on the Aetheri test compositor while retaining
+its unapplied model; existing Weston simple-IME regressions also passed.
+Production IMEs, Aetheri focus-loss cases and human acceptance remain open; see
+[IME evidence](aetheri-adoption-assessment.md#settings-text-input-v3-on-the-aetheri-test-compositor-2026-11-06).
+
 W06/I07/P05/P07/Q04: the Settings example joins a deliberately held Apply
 worker after its isolated Aetheri compositor is killed, without publishing a
 successful Apply state; normal keyboard operation also passed. This test does

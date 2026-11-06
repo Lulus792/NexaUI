@@ -77,7 +77,8 @@ int main(int argc, char **argv) {
     int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
     int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
     int verify_ime_replace=argc==3 && !strcmp(argv[2],"--verify-ime-replace");
-    int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace;
+    int verify_ime_aetheri=argc==3 && !strcmp(argv[2],"--verify-ime-aetheri");
+    int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace || verify_ime_aetheri;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small || verify_pending_close;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
@@ -275,7 +276,9 @@ int main(int argc, char **argv) {
                 !settings_applied(scene,&applied,&motion) ||
                 nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&preedit_length,&begin,&end)!=NX_OK ||
                 applied.length!=7 || memcmp(applied.data,"Aetheri",7) || motion) { okay=0; break; }
-            if (!ime_stage && ime_focus==3 && preedit_length==1 && preedit[0]=='\'') {
+            if (!ime_stage && ime_focus==3 &&
+                ((verify_ime_aetheri && preedit_length==7 && !memcmp(preedit,"Gr\xc3\xbc\xc3\x9f" "e",7) && begin==2 && end==6) ||
+                 (!verify_ime_aetheri && preedit_length==1 && preedit[0]=='\''))) {
                 if (view.value.length!=7 || memcmp(view.value.data,"Aetheri",7)) { okay=0; break; }
                 puts("SETTINGS_IME_PREEDIT"); fflush(stdout); ime_stage=1;
             } else if ((verify_ime_cancel || (verify_ime_control && ime_focus==4)) && ime_stage==1 && !preedit_length &&
@@ -288,8 +291,9 @@ int main(int argc, char **argv) {
                        view.value.length==8 && !memcmp(view.value.data,"Aetheria",8)) {
                     puts("SETTINGS_IME_AFTER_RETURN"); fflush(stdout); ime_stage=verify_ime_control?4:3; break;
                 }
-            } else if ((verify_ime_compose || verify_ime_replace) && ime_stage==1 && !preedit_length &&
+            } else if ((verify_ime_compose || verify_ime_replace || verify_ime_aetheri) && ime_stage==1 && !preedit_length &&
                        ((verify_ime_compose && view.value.length==9 && !memcmp(view.value.data,"Aetheri\xc3\xa1",9)) ||
+                        (verify_ime_aetheri && view.value.length==9 && !memcmp(view.value.data,"Aetheri\xc3\xa9",9)) ||
                         (verify_ime_replace && view.value.length==6 && !memcmp(view.value.data,"A\xc3\xa1" "eri",6)))) {
                 puts("SETTINGS_IME_COMMITTED"); fflush(stdout); ime_stage=2; break;
             }
@@ -370,7 +374,7 @@ cleanup:
         if (okay && pending_close_seen) {puts("SETTINGS_PENDING_CLOSED");fflush(stdout);}
         else okay=0;
     }
-    if (verify_ime && okay && (((verify_ime_compose || verify_ime_replace) && ime_stage==2) ||
+    if (verify_ime && okay && (((verify_ime_compose || verify_ime_replace || verify_ime_aetheri) && ime_stage==2) ||
                                (verify_ime_cancel && ime_stage==3) ||
                                (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
     else if (verify_ime) okay=0;
