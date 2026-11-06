@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Q02/Q03/P05: the private X11 fixture now preserves its server across an interval
+without clients. An independent root-property guard rejects the old runner;
+native AT-SPI regressions pass with the candidate. The earlier intermittent CI
+window-creation failure is retained and its precise cause remains unproven. See
+[fixture lifetime evidence](aetheri-adoption-assessment.md#private-x11-server-lifetime-during-accessibility-tests-2026-11-06).
+
 D07/D11/L11/A02: additive `nx_activity` (development 0.1.23) presents observed
 activity without a numeric completion estimate. The installed C17 software
 example separates measured progress, busy activity and unknown results; core

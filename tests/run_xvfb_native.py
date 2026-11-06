@@ -22,6 +22,9 @@ def main() -> int:
         server = subprocess.Popen(
             [os.environ.get("NEXAUI_XVFB", "Xvfb"), "-displayfd", "1",
              "-screen", "0", "1024x768x24", "-auth", authority,
+             # Window-lifetime tests may temporarily have no X11 clients. Keep
+             # their private server alive without an implicit server reset.
+             "-noreset",
              "-nolisten", "unix", "-listen", "tcp"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

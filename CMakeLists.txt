@@ -848,6 +848,16 @@ if(NEXAUI_BUILD_TESTS)
         endif()
         find_program(NEXAUI_XVFB_EXECUTABLE Xvfb)
         find_program(NEXAUI_XAUTH_EXECUTABLE xauth)
+        if(NEXAUI_ENABLE_X11 AND NEXAUI_XVFB_EXECUTABLE AND NEXAUI_XAUTH_EXECUTABLE AND Python3_Interpreter_FOUND)
+            add_executable(nexaui_xvfb_lifetime_probe tests/xvfb_lifetime_probe.c)
+            target_link_libraries(nexaui_xvfb_lifetime_probe PRIVATE X11::X11)
+            set_target_properties(nexaui_xvfb_lifetime_probe PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            add_test(NAME nexaui_xvfb_fixture_lifetime
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_xvfb_native.py
+                    $<TARGET_FILE:nexaui_xvfb_lifetime_probe>)
+            set_tests_properties(nexaui_xvfb_fixture_lifetime PROPERTIES TIMEOUT 30
+                ENVIRONMENT "NEXAUI_XVFB=${NEXAUI_XVFB_EXECUTABLE};NEXAUI_XAUTH=${NEXAUI_XAUTH_EXECUTABLE}")
+        endif()
         find_program(NEXAUI_NUMERIC_PEER_XDOTOOL xdotool)
         find_program(NEXAUI_NUMERIC_PEER_COPY wl-copy)
         find_program(NEXAUI_NUMERIC_PEER_PASTE wl-paste)

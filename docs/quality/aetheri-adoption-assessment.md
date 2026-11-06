@@ -1,5 +1,48 @@
 # Aetheri adoption: initial source assessment
 
+## Private X11 server lifetime during accessibility tests (2026-11-06)
+
+The Ubuntu static job in [run 42256285606](https://github.com/Lulus792/NexaUI/actions/runs/42256285606)
+on `1687ea3a4ebe7b7a45a77591223e6d508e040fe2` failed
+`nexaui_atspi_multi_session_discovery_private`: the host could not create a new
+native window after a callback destroyed the previous one. Its other 242 tests
+passed. The original Linux artifact is retained at
+`D:/NexaUI/out/activity-1687-ci-linux-static.zip`, SHA-256
+`20b62062f746d03def52034f3a67491eca176ce5bb46f5aff192b083decc6a9c`.
+
+On Alpine-Dev, the unchanged test from current source
+`060e2fe394394e984fd3c495647bae8010337eb4` passed five consecutive runs.
+Thus the original window-creation failure has not been reproduced locally and
+its precise cause remains unproven. The subsequent Ubuntu static CI job on
+060e2fe also passed. Neither result erases the earlier failure.
+
+A separate Xlib probe showed that the private Xvfb fixture resets its root
+property state whenever its last client closes. This was unwanted during tests
+that deliberately destroy their sole window and immediately create another.
+The fixture now requests `-noreset`; it still owns and terminates that private
+server. The [new native guard](../../tests/xvfb_lifetime_probe.c) makes 64
+independent connections and verifies the same root property survives between
+client lifetimes. The old runner fails this guard at cycle 1; the candidate
+passes. No SDK retry, application assertion or existing timeout was changed.
+This demonstrates correction of the fixture reset, not proof that it caused the
+intermittent CI window-creation error.
+
+On the Debug static X11 build, the original multiselection test passed five runs
+with the candidate fixture. The ordinary native AT-SPI, session discovery,
+disabled bridge and missing-runtime-ABI cases passed 4/4. An initial neighboring
+run lacked the unbuilt fake D-Bus ABI library and failed that case; building the
+existing fixture dependency and rerunning the same four tests passed. The
+original failed output is retained. A preliminary 500-cycle exploratory probe
+exceeded the fixture's existing 60-second limit and was not used as a pass;
+the final guard has the bounded 64-cycle contract above.
+
+Source changes from 060e2fe, CMake cache, baseline/candidate/negative logs and
+the original CI ZIP are archived at
+`D:/NexaUI/out/nexaui-xvfb-lifetime-20261106.tar.gz`, SHA-256
+`89316a5b3c2047caf41f2d0630c1a5ba70bc12220155c63c1b6be13cb5982fed`.
+This is Q02/Q03/P05 test-infrastructure evidence; no new UI capability,
+production X11 change, Aetheri change or Files stress fix is claimed.
+
 ## Unquantified operation activity (2026-11-06)
 
 Based on NexaUI `7998ca5d95ece2b7440020434f025f5aa7291a49`, this 0.1.23
