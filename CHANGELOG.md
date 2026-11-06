@@ -2,6 +2,7 @@
 
 ## 0.1.23 — Development snapshot
 
+- Added an external original-model Aetheri catalogue observer experiment, covering exact target identity, query failure and uncertain view replacement without replay. Its private metadata tests do not establish actual installation or native composition acceptance.
 - Added `nx_activity` for observed activity without a completion estimate: a read-only busy status with no numeric value, caller-controlled visual phase and no timer or operation dispatch. An external C17 software example distinguishes measured progress, activity and an unknown result.
 
 ## 0.1.22 — Development snapshot

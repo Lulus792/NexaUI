@@ -1,5 +1,73 @@
 # Aetheri adoption: initial source assessment
 
+## Original catalogue operation observer (2026-11-06)
+
+Based on NexaUI `762ae4c1602948579fd3c945aa7460587b125b80`, the standalone
+[C17 observer](../../examples/27_aetheri_operation/README.md) reuses Aetheri
+`1fb45c7c21f914a2893457132b609be50ef4280d`'s unchanged catalogue/core libraries,
+schema generator, frozen manifest vector and original intent encoder. The view
+copies its exact request binding and calls only `ae_catalogue_fixture_get` on
+explicit refresh. It presents operation/install/scope/generation/storage/artifact
+identities, component and observed revision, with complete semantic hex values
+and wrapping visual groups. An unqueried view, failed query, busy observation and
+uncertain outcome remain distinct. Historical activation evidence and current
+installation state are separate. The busy band has fixed phase and no timer.
+
+The test owner creates a private catalogue and performs original metadata
+acceptance/transitions. No payload is installed, published or activated. Tests
+cover a missing operation, active metadata, staging-ready without installation
+completion, an injected read failure after an
+active observation, uncertainty across view replacement, caller draft mutation,
+another unaccepted operation and keyboard Refresh/Tab/Close/scroll-End. They
+assert one owner acceptance, one operation and unchanged catalogue revision
+through view-only work. Isolated mutants that accept on read or retain a fresh
+busy presentation after query failure each fail their intended assertion.
+
+On Fedora/GCC 16.2.1/CMake 4.3.0, the existing installed Wayland-only software
+0.1.23 static Release, shared Release and static ASan/UBSan SDK profiles each
+built and ran the external consumer. Aetheri's external dependencies were
+OpenSSL 3.5.9 and SQLite 3.51.2; neither becomes a new NexaUI core dependency.
+`ldd` resolved the shared core from the selected 0.1.23 prefix. The profiles
+produced matching software frames at 640×480 and 420×320 with dark/light themes
+and doubled theme font size. Inspected PNGs are under
+`D:/NexaUI/out/nexa-observer-release-layout-run/`. The narrow large-text viewport
+is small and scrollable; final density/minimum-size policy remains open. An
+initial compiler rejection of an imprecisely bounded formatting call is retained;
+the final code formats the fixed-size fields with explicit bounds and passes
+`-Wall -Wextra -Wpedantic -Werror`.
+
+Final static/shared/sanitizer executable hashes are respectively
+`38c6c20f35ea919909e508746e7a02f0d83cbcde84e74f39ebea3df302643f60`,
+`be3fee4d429be6dee367342040703ca036ce759afe83ccee827dc8775d50ac05` and
+`5d3c645114e013a28e5d98e31a46bfbfdd82ede53d1a11799ef48c2f08ab0584`.
+Consumer source, caches, logs/results, images and final negative mutants are in
+`D:/NexaUI/out/nexaui-original-operation-20261106-v3.tar.gz`, SHA-256
+`899f7cf8bffefe93c6d085f03dffb3603565bda8107a21fe18c36eca16fce3d9`.
+The immutable original source archive is
+`D:/NexaUI/out/aetheri-1fb45c7-operation-observer.tar`, SHA-256
+`576831fbe06ac5e4518c4387fcedd04a5c61b09ecaff5eb7d30a038a08137339`.
+Its extraction timestamps were adjusted for the carrier clock; source contents
+were not changed. SDK provenance remains that of the earlier 0.1.23 activity
+profile; no new core or installed API is introduced by this example.
+
+This advances D07/D11/L11/P07/B07 as an original-model presentation experiment,
+not production installation/recovery acceptance. Native window/input and composed
+AT-SPI, publication/activation-specific UI branches, real asynchronous services, trusted routing, durable recovery, locales,
+other platforms and human/physical acceptance remain open. The activity control's
+separate native checks do not prove the new composition. Aetheri may reuse this
+view pattern within its authorized owner; an ordinary UI app must not open an
+internal authority catalogue just to render it. No live Aetheri source, SDK pin,
+user catalogue or ongoing work was modified.
+
+Separately, [060e2fe CI](https://github.com/Lulus792/NexaUI/actions/runs/42256940805)
+passed six desktop jobs but its sanitizer reverse-driver pass failed an existing
+`test_wayland_multi_failure.c:70` stalled-descriptor assertion. The subsequent
+[762ae4c CI](https://github.com/Lulus792/NexaUI/actions/runs/42258866616) passed
+sanitizers and five desktop jobs; Ubuntu static was cancelled during dependency
+installation before configure/build. These are not complete seven-job acceptance
+results, and neither proves resolution of the intermittent descriptor failure.
+The separate unpaced Files sanitizer stress gate also remains open.
+
 ## Private X11 server lifetime during accessibility tests (2026-11-06)
 
 The Ubuntu static job in [run 42256285606](https://github.com/Lulus792/NexaUI/actions/runs/42256285606)

@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/D11/L11/P07/B07: an external C17 view now reads an original Aetheri catalogue
+operation at a copied request identity. Static/shared/sanitizer core-event and
+software checks cover query failure, uncertain view replacement and no request
+replay, including negative mutants. These are private metadata observations;
+real services, installation/recovery, native composed input/AT-SPI and human
+acceptance remain open. See [original observer evidence](aetheri-adoption-assessment.md#original-catalogue-operation-observer-2026-11-06).
+
 Q02/Q03/P05: the private X11 fixture now preserves its server across an interval
 without clients. An independent root-property guard rejects the old runner;
 native AT-SPI regressions pass with the candidate. The earlier intermittent CI
