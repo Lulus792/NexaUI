@@ -1,10 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Q02/P05/I05/W10: the PTY transfer fixture now accepts and validates descriptor
+readiness changing before its queued write. The new early-writable case rejects
+the old assumption; all five group-poll cases pass in static/shared/sanitizer
+profiles on Aetheri's isolated test compositor, with no skips. SDK behavior is
+unchanged. Files burst stress and full consumer adoption remain open. See
+[PTY fixture evidence](aetheri-adoption-assessment.md#pty-readiness-snapshot-in-the-transfer-fixture-2026-11-06).
+
 Q02/P05/I05/W10: two clipboard fixture assertion races are reproduced by delaying
 producer FD publication after bytes become readable, with an unchanged SDK.
 Explicit producer synchronization and server-client teardown pass 33/33 selected
 cases in static/shared/sanitizer profiles. Delayed cases are required in CI;
-the separate PTY backpressure and unpaced Files stress failures remain open. See
+at that revision, the separate PTY backpressure and unpaced Files stress failures were still open. See
 [fixture synchronization evidence](aetheri-adoption-assessment.md#clipboard-fixture-producer-synchronization-2026-11-06).
 
 D07/D11/L11/P07/B07/A02/I01/W10/Q04: the original-operation observer now has

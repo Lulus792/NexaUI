@@ -108,10 +108,40 @@ static void check_pty_backpressure(nx_window **windows) {
     queue_write_error=EINTR;CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
     queue_write_error=EAGAIN;CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
     queue_write_error=EIO;CHECK(terminal_pty_queue_write(&q,master)==-1 && q.length==sizeof(expected)-1);
-    CHECK(terminal_pty_queue_write(&q,master)==0 && q.length==sizeof(expected)-1);
+    if(getenv("NEXAUI_TEST_PTY_EARLY_WRITABLE")) {
+        /* Make the initially full descriptor writable before the queue attempt.
+         * Account for every removed filler byte in the later stream check. */
+        size_t removed=0;
+        do {
+            struct pollfd input={slave,POLLIN,0};int ready=poll(&input,1,100);
+            if(ready<0 && errno==EINTR)continue;
+            CHECK(ready>=0 && !(input.revents&(POLLERR|POLLNVAL|POLLHUP)));
+            if(input.revents&POLLIN) {
+                char bytes[4096];ssize_t n=read(slave,bytes,sizeof(bytes));
+                if(n<0 && (errno==EINTR || errno==EAGAIN || errno==EWOULDBLOCK))continue;
+                CHECK(n>0 && (size_t)n<=total-removed);
+                for(ssize_t i=0;i<n;++i)CHECK(bytes[i]=='F');
+                removed+=(size_t)n;
+            }
+            CHECK(nx_window_poll_many_with_fd_events(windows,2,100,master,NX_WINDOW_FD_WRITABLE,&flags)==NX_OK);
+            drain(windows[0]);drain(windows[1]);
+            CHECK(now_seconds()<deadline);
+        } while(!(flags&NX_WINDOW_FD_WRITABLE));
+        CHECK(removed>0);total-=removed;
+    }
+    /* Readiness is a snapshot: the PTY can gain room after the fill/poll above.
+     * Limit the attempt so either legitimate result leaves bytes to resume. */
+    queue_write_limit=3;
+    int initial_result=terminal_pty_queue_write(&q,master);
+    CHECK(initial_result==0 || initial_result==1);
+    if(initial_result==0)CHECK(!q.offset && q.length==sizeof(expected)-1);
+    else CHECK(q.offset>0 && q.offset<=queue_write_limit && q.length==sizeof(expected)-1-q.offset);
+    if(getenv("NEXAUI_TEST_PTY_EARLY_WRITABLE"))CHECK(initial_result==1);
+    for(size_t i=0;i<q.offset;++i)CHECK(!q.bytes[i]);
+    CHECK(!memcmp(q.bytes+q.offset,expected+q.offset,q.length));
     pty_reader reader={.fd=slave,.filler=total,.payload=expected,.payload_length=sizeof(expected)-1};
     pthread_t thread;CHECK(!pthread_create(&thread,NULL,read_pty,&reader));
-    double start=now_seconds();queue_write_limit=3;unsigned writes=0;
+    double start=now_seconds();unsigned writes=(unsigned)initial_result;
     while(q.length && now_seconds()-start<5) {
         CHECK(nx_window_poll_many_with_fd_events(windows,2,1000,master,NX_WINDOW_FD_WRITABLE,&flags)==NX_OK);
         drain(windows[0]);drain(windows[1]);
@@ -120,6 +150,8 @@ static void check_pty_backpressure(nx_window **windows) {
     CHECK(!pthread_join(thread,NULL));
     queue_write_limit=0;
     CHECK(!q.length && writes>1 && !reader.error && reader.received==total+sizeof(expected)-1);
+    CHECK(!q.offset);
+    for(size_t i=0;i<sizeof(q.bytes);++i)CHECK(!q.bytes[i]);
     CHECK(now_seconds()-start>=.08 && now_seconds()-start<5);
     CHECK(terminal_pty_queue_push(&q,first,sizeof(first)-1));terminal_pty_queue_clear(&q);
     CHECK(!q.length && !q.offset);

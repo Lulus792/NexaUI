@@ -1,5 +1,47 @@
 # Aetheri adoption: initial source assessment
 
+## PTY readiness snapshot in the transfer fixture (2026-11-06)
+
+On base `2a21fbd109499813a0102fa03b00487670562cca`, the
+[Ubuntu static CI job](https://github.com/Lulus792/NexaUI/actions/runs/42272333944/job/128079788438)
+failed the transfer fixture's assertion that a later queued write must still make
+no progress after filling a PTY and observing it as non-writable. The original
+fixture passed 20 consecutive local runs. A diagnostic retaining the original
+assertion but delaying that later attempt by 5ms reproduced the failure: the
+initial SDK readiness flags were zero, a fresh raw poll reported `POLLOUT`, and
+the actual write accepted all 26 bytes before any slave reader was started.
+The SDK's earlier readiness observation does not promise an unchanged descriptor
+state at a later write; see the Linux [poll contract](https://man7.org/linux/man-pages/man2/poll.2.html).
+
+The test now limits its first real queue attempt to three bytes, checks either
+no progress or a valid partial write including offset, remaining bytes and cleared
+prefix, then resumes and verifies the complete byte stream through the actual
+PTY. A new `nexaui_wayland_poll_many_transfer_pty_early_writable` variant explicitly
+reads and validates filler bytes before that attempt, waits for writable readiness,
+and requires progress. Its later stream check accounts for every early-read byte.
+Restoring the old no-progress assertion rejects this variant while the SDK archive
+remains byte-identical. Both default and early-writable cases are required by the
+CI result checker. Existing error injection, bounded queue, delayed reader, socket
+backpressure, transfer deadlines and the 15-second CTest limit are retained.
+
+GCC 16.2.1 static Release, shared Release and static ASan/UBSan Debug each passed
+all five `poll_many` cases on the isolated Aetheri headless test compositor:
+the two transfer cases, ordinary group wait, allocator reentry and peer destruction.
+There were no skips. Leak detection and sanitizer halt-on-error remained enabled;
+the two ASan/UBSan transfer cases additionally passed five repetitions each.
+An initial run without a compositor skipped the three native neighbors; those
+results are retained separately and are not acceptance. Builds initially reported
+the carrier's source timestamp skew; only the extracted private source file times
+were normalized for subsequent builds, without changing its clock or source bytes.
+
+No production source, public API, version, dependency or Aetheri file changed.
+This closes the demonstrated PTY test assumption, not the separate unpaced Files
+queue-exhaustion stress failure or complete terminal/performance adoption.
+Source snapshot, candidate patch, original/diagnostic/negative logs, binaries,
+build flags, JUnit and SHA-256 manifest are archived at
+`D:/NexaUI/out/nexaui-pty-fixture-race-20261106.tar.gz`, SHA-256
+`a953371d2cae847b0413ce137eb093b802e32a506dd9bf2cc7f17b3013a5f7a7`.
+
 ## Clipboard fixture producer synchronization (2026-11-06)
 
 Based on `962b3f5ce54a3de36c71083a458828abe85ed6cd`, two retained CI failures

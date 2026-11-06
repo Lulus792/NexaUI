@@ -14,6 +14,8 @@ REQUIRED = (
     'nexaui_atspi_multi_wayland_private',
     'nexaui_wayland_clipboard_self_destroy_stall_delayed_record',
     'nexaui_settings_keyboard_clipboard_timeout_poll_many_delayed_record',
+    'nexaui_wayland_poll_many_transfer',
+    'nexaui_wayland_poll_many_transfer_pty_early_writable',
 )
 
 

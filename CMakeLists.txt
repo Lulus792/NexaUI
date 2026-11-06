@@ -699,6 +699,9 @@ if(NEXAUI_BUILD_TESTS)
                 PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
             add_test(NAME nexaui_wayland_poll_many_transfer COMMAND nexaui_wayland_poll_many_transfer_tests)
             set_tests_properties(nexaui_wayland_poll_many_transfer PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_poll_many_transfer_pty_early_writable COMMAND nexaui_wayland_poll_many_transfer_tests)
+            set_tests_properties(nexaui_wayland_poll_many_transfer_pty_early_writable PROPERTIES
+                TIMEOUT 15 ENVIRONMENT "NEXAUI_TEST_PTY_EARLY_WRITABLE=1")
             add_executable(nexaui_wayland_clipboard_send_tests tests/test_wayland_clipboard_send.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
