@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T04/I01/I02/Q04: the Settings example on the Aetheri test compositor clears a
+controlled v3 preedit when focus moves to another control and accepts new
+typing after focus returns. Window-focus loss, late replies and production IME
+acceptance remain open; see [focus cancellation evidence](aetheri-adoption-assessment.md#settings-ime-control-focus-cancellation-on-aetheri-2026-11-06).
+
 T04/I02/B03/Q04: the installed Settings example accepted controlled Unicode
 text-input-v3 preedit and commit on the Aetheri test compositor while retaining
 its unapplied model; existing Weston simple-IME regressions also passed.

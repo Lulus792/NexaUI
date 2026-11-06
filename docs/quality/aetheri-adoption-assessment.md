@@ -1,5 +1,31 @@
 # Aetheri adoption: initial source assessment
 
+## Settings IME control-focus cancellation on Aetheri (2026-11-06)
+
+On example base `1a4fea0aba79046013e0bd67b465ef4224e6fcb8`, the external
+Settings example on the isolated Aetheri `d56d69523c33a48648af343e7d36526f84518c90`
+test compositor receives a controlled Unicode text-input-v3 preedit in its
+focused name field. Tab moves focus to another control; Settings observes the
+preedit clear without changing draft or applied value, and the compositor
+observes text input disabled. Shift-Tab returns focus and re-enables input; a
+native `a` key then changes the draft to `Aetheria` without applying it.
+Settings and compositor exit 0. This is a control-focus change within one
+window, not a window-focus or compositor-restart test.
+
+The case passed on GCC 16.2.1 Release and with ASan/UBSan and leak detection
+in both the application and installed static Wayland-only SDK based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`. The same instrumented application
+also passed the earlier v3 commit case. All four private Weston simple-IME
+regressions passed. Instrumented executable SHA-256:
+`390d4b857219d00c4a7b49ee6f501d108e2e86683ce7d320fd99b0297680be3a`.
+The Aetheri evidence archive is
+`D:/NexaUI/out/nexaui-settings-ime-focus-final-20261106.tar.gz`, SHA-256
+`8f63be30d7bbf372dffe169defbe053734050491a5736ce98e831e5b8d79aefa`;
+the Weston archive is `D:/NexaUI/out/nexaui-settings-ime-focus-weston-20261106.tar.gz`,
+SHA-256 `b53140ca80f560dad0b07d9e2754a7d1dd40cce46b854c098757b565ac4b5c1b`.
+Production IMEs, late native replies, independent assistive operation, physical
+input and human acceptance remain open.
+
 ## Settings text-input-v3 on the Aetheri test compositor (2026-11-06)
 
 On example base `a95d949b87817cf0540984129359f0563e289b01`, an external

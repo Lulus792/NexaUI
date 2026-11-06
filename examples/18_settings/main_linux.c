@@ -75,9 +75,10 @@ int main(int argc, char **argv) {
     int verify_keyboard_small=(argc==3 && !strcmp(argv[2],"--verify-keyboard-small")) || verify_keyboard_minimum;
     int verify_ime_compose=argc==3 && !strcmp(argv[2],"--verify-ime-compose");
     int verify_ime_cancel=argc==3 && !strcmp(argv[2],"--verify-ime-focus-cancel");
-    int verify_ime_control=argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel");
+    int verify_ime_aetheri_focus=argc==3 && !strcmp(argv[2],"--verify-ime-aetheri-focus");
+    int verify_ime_control=(argc==3 && !strcmp(argv[2],"--verify-ime-control-cancel")) || verify_ime_aetheri_focus;
     int verify_ime_replace=argc==3 && !strcmp(argv[2],"--verify-ime-replace");
-    int verify_ime_aetheri=argc==3 && !strcmp(argv[2],"--verify-ime-aetheri");
+    int verify_ime_aetheri=(argc==3 && !strcmp(argv[2],"--verify-ime-aetheri")) || verify_ime_aetheri_focus;
     int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace || verify_ime_aetheri;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small || verify_pending_close;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;

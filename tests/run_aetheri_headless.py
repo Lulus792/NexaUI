@@ -34,11 +34,15 @@ def main():
                         help='hold a submitted Apply worker across compositor loss')
     parser.add_argument('--test-ime-v3', action='store_true',
                         help='exercise the compositor test-only text-input-v3 producer')
+    parser.add_argument('--test-ime-v3-focus', action='store_true',
+                        help='cancel preedit by moving focus to another control')
     args = parser.parse_args()
     if args.test_apply_inflight and not args.test_compositor_loss:
         parser.error('--test-apply-inflight requires --test-compositor-loss')
     if args.test_ime_v3 and args.test_compositor_loss:
         parser.error('--test-ime-v3 cannot be combined with compositor-loss mode')
+    if args.test_ime_v3_focus and not args.test_ime_v3:
+        parser.error('--test-ime-v3-focus requires --test-ime-v3')
     server_binary, app_binary, font = (p.resolve(strict=True) for p in
                                         (args.server, args.settings, args.font))
     root = args.work_dir.resolve()
@@ -92,7 +96,8 @@ def main():
             wait(lambda: 'READY ' in contents('server.log'), 'compositor readiness', False)
             if args.test_ime_v3:
                 event('I on')
-            mode = '--verify-ime-aetheri' if args.test_ime_v3 else '--verify-keyboard-controls'
+            mode = ('--verify-ime-aetheri-focus' if args.test_ime_v3_focus else
+                    '--verify-ime-aetheri' if args.test_ime_v3 else '--verify-keyboard-controls')
             app = subprocess.Popen([str(app_binary), str(font), mode],
                                    env=env, stdin=subprocess.DEVNULL, stdout=app_log,
                                    stderr=subprocess.STDOUT,
@@ -127,15 +132,27 @@ def main():
                      'IME commit enabled=1 ' in contents('server.log'), 'focused native text input')
                 event('I 0')
                 wait(lambda: 'SETTINGS_IME_PREEDIT\n' in contents('settings.log'), 'unicode preedit')
-                event('I 1')
+                if args.test_ime_v3_focus:
+                    key(15)
+                    wait(lambda: 'SETTINGS_IME_CANCELLED\n' in contents('settings.log') and
+                         'IME commit enabled=0 ' in contents('server.log'), 'cancelled preedit and disabled text input')
+                    before_refocus = len(contents('server.log'))
+                    event('K 42 1'); key(15); event('K 42 0')
+                    wait(lambda: 'SETTINGS_IME_REFOCUSED\n' in contents('settings.log') and
+                         'IME commit enabled=1 ' in contents('server.log')[before_refocus:], 'refocused text input')
+                    key(30)
+                else:
+                    event('I 1')
                 if app.wait(timeout=10) != 0:
                     raise RuntimeError('IME Settings example failed')
                 trace = contents('settings.log')
-                if 'SETTINGS_IME_COMMITTED\n' not in trace or 'SETTINGS_IME_CLOSED\n' not in trace:
+                expected = 'SETTINGS_IME_AFTER_RETURN\n' if args.test_ime_v3_focus else 'SETTINGS_IME_COMMITTED\n'
+                if expected not in trace or 'SETTINGS_IME_CLOSED\n' not in trace:
                     raise RuntimeError('IME commit or clean closure missing')
                 if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:', trace):
                     raise RuntimeError('sanitizer reported an IME error')
-                result['ime_v3'] = 'unicode preedit and commit without applying the draft'
+                result['ime_v3'] = ('preedit cancelled on control focus change; typing resumed' if args.test_ime_v3_focus
+                                    else 'unicode preedit and commit without applying the draft')
                 result['status'] = 'passed'
                 return
             if args.test_compositor_loss:
