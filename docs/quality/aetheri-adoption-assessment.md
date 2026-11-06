@@ -1,5 +1,26 @@
 # Aetheri adoption: initial source assessment
 
+## Native Compose across a desktop focus edge (2026-11-06)
+
+On NexaUI base `6b1876f1788dfe30da75112a83dc519ef02cb53a`, the owner
+integration driver exercised the field focus transition with the actual
+Aetheri test compositor and its opt-in Compose provider. During a visible
+preedit, virtual Ctrl+Shift+Tab and Ctrl+Tab moved focus away and back. The
+desktop reported the field blur; the compositor observed its provider become
+inactive and active again. The old preedit did not modify the search model,
+and a fresh composition subsequently committed `é` once. Aetheri-owned
+Settings and Terminal launch/reuse and ordered owner shutdown also passed.
+Two runs exited 0 for all supervised children.
+
+Runner SHA-256 was `88fd9f912acd915f1867e4ec7f2458c43787e49c133b51ec1c4e69ecce165c69`;
+desktop binary was `75d2d46b1a00f051786f3d912d6681d433a6b7676b057d1f96919d8073aad65d`.
+Results are at `D:/NexaUI/out/nexaui-ime-native-focus-evidence-20261106.tar.gz`,
+SHA-256 `5a10fed662da99483be6c322e0d0b5e26e913ac65be32c52aff208985a46b0f9`.
+The ASan/UBSan focus, IME-wire and launcher regressions also passed on Alpine/WSL.
+This is virtual input against pre-existing test compositor and app binaries,
+not physical input or an external IME; the separate immediate input race after
+AT-SPI edits may still lose the first Compose key.
+
 ## Retire the native input context at the focus edge (2026-11-06)
 
 On NexaUI base `b586ccfeafacbb8b1a8a8242243d73765330963c`, the private

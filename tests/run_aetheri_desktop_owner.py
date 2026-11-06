@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--compose", action="store_true", help="exercise Aetheri's opt-in native Compose provider")
     parser.add_argument("--no-ime-barrier", action="store_true", help="diagnose immediate input without the test roundtrip")
     parser.add_argument("--expect-stale-reset", action="store_true", help="verify recovery after a stale Compose preedit")
+    parser.add_argument("--focus-edge", action="store_true", help="exercise native focus loss and return during Compose")
     parser.add_argument("--atspi-client", type=Path, help="independent AT-SPI client for the running desktop")
     parser.add_argument("--atspi-library-dir", type=Path, help="private runtime libraries for the independent client")
     args = parser.parse_args()
@@ -35,6 +36,8 @@ def main():
         parser.error("--owned-settings-source requires --cmake-cache")
     if args.expect_stale_reset and not (args.compose and args.atspi_client and args.no_ime_barrier):
         parser.error("--expect-stale-reset requires --compose, --atspi-client and --no-ime-barrier")
+    if args.focus_edge and (not args.compose or args.expect_stale_reset):
+        parser.error("--focus-edge requires --compose and cannot be combined with --expect-stale-reset")
     fixture, owner, server, desktop, settings = (
         p.resolve(strict=True) for p in (args.fixture, args.owner, args.server, args.desktop, args.settings))
     root = args.work_dir.resolve()
@@ -198,6 +201,19 @@ def main():
                             raise RuntimeError("Compose retry did not settle")
                     elif args.expect_stale_reset:
                         raise RuntimeError("stale input race did not occur")
+                    if args.focus_edge:
+                        active = log().count("compositor: COMPOSE active=1\n")
+                        batches = log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n")
+                        event("K 29 1");event("K 42 1");tap(15);event("K 42 0");tap(15);event("K 29 0")
+                        wait(lambda: "desktop: IME_FIELD_BLUR\n" in log() and
+                             log().count("compositor: COMPOSE active=1\n") > active,
+                             "field focus edge and native re-enable")
+                        if log().count("desktop: QUERY 0 ") != old_queries:
+                            raise RuntimeError("focus transition committed the previous preedit")
+                        tap(127)
+                        wait(lambda: log().count("desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n") > batches,
+                             "fresh preedit after focus return")
+                        result["focus_edge_case"] = "passed"
                     tap(1)
                     wait(lambda: "desktop: IME_BATCH preedit_bytes=0 commit_scalars=0\n" in log(), "Compose cancel")
                     if log().count("desktop: QUERY 0 ") != old_queries:

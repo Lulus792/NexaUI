@@ -80,6 +80,9 @@ The native context is also retired at the search field's focus edge, even if
 focus returns during the same Wayland dispatch. A controlled wire test observes
 the disable and subsequent fresh enable; see the
 [focus-edge evidence](../../docs/quality/aetheri-adoption-assessment.md#retire-the-native-input-context-at-the-focus-edge-2026-11-06).
+The subsequent owner test exercises this focus transition with Aetheri's native
+Compose provider; see the
+[native focus evidence](../../docs/quality/aetheri-adoption-assessment.md#native-compose-across-a-desktop-focus-edge-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

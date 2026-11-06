@@ -148,7 +148,9 @@ static void advance(struct view *v) {
     /* A whole keyboard batch can leave and revisit this field before the
        outer poll loop. Retire the old native context at the focus edge. */
     if(v->app->focused==v && v->app->ime_enabled &&
-       nx_focus_id(aetheri_desktop_view_context(v->view))!=20)ime_stop(v->app);
+       nx_focus_id(aetheri_desktop_view_context(v->view))!=20) {
+        ime_stop(v->app);puts("IME_FIELD_BLUR");
+    }
     v->dirty=true;
 }
 static void ime_clear_visible(struct app *a) {
