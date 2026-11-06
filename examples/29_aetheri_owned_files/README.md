@@ -90,5 +90,6 @@ deployment record. Its assertions remain intact. This consumer instead selects
 and records its own experimental SDK and reuses the original client/fault tests.
 Normal owner launch, document/Terminal integration, actual pickers/authorities,
 installed IMEs, broader native chrome/scale/loss cases, other platforms and human/
-physical acceptance remain open. See the linked quality report for exact tested
-revisions, binaries and acceptance boundaries.
+physical acceptance remain open. See the
+[quality report](../../docs/quality/aetheri-adoption-assessment.md#original-aetheri-owned-files-on-the-candidate-sdk-2026-11-07)
+for exact tested revisions, binaries and acceptance boundaries.

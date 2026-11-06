@@ -1,5 +1,97 @@
 # Aetheri adoption: initial source assessment
 
+## Original Aetheri-owned Files on the candidate SDK (2026-11-07)
+
+Consumer implementation [973f228efd07dc55282502eb7623f001e196c9cd](https://github.com/Lulus792/NexaUI/commit/973f228efd07dc55282502eb7623f001e196c9cd)
+adds an external build of Aetheri's original Files composition and controller,
+selected from immutable Aetheri `27de5cb228da0f37264fad64d964ad7a660d210d`.
+Its original list/grid, held-folder sidebar, filter, naming/rename/move dialogs,
+information and worker/unknown-state models are reused; no competing model or
+application UI is introduced. Thirty-eight original inputs are hashed at
+configure and before native execution. A changed original input also forces
+reconfiguration: an isolated post-configure edit is rejected before compilation.
+The selected original Git archive hashes to
+`ab6f36cf98b45fb36f006173e7432a6e676f2ed53003e3747d2839d33421e812`.
+
+This standalone project deliberately selects an installed SDK >=0.1.23. It does
+not execute, alter or claim satisfaction of Aetheri's own exact-0.1.18 package
+policy. The original full native runner additionally requires that selected pin,
+a particular shared-library map and deployment metadata; it is not reported as
+passing here. Its original assertions remain intact. Instead, this candidate
+builds original application sources and reuses the unmodified controller/view
+tests, independent client and native fault runner with its own explicit artifacts.
+Aetheri's working changes, source, package selection and runtime remain untouched.
+
+On Fedora 44/GCC 16.2.1, static Release AT-SPI on, shared Release AT-SPI off and
+static Debug ASan/UBSan AT-SPI on each passed all three standalone CTests without
+skips. They are the original controller test and original view tests at raster
+density 1 and 2. Each view test checks 128 combinations of list/grid, locale,
+contrast, text size and geometry, plus stale selection/dialog/sidebar requests,
+Unicode editing, whole-commit rejection, modal bounds and the minimum-size hint.
+The original 10/30-second limits and strict C17 warnings, including conversion/
+shadow diagnostics and Werror, remain enabled. Sanitizers retain leak detection
+and halt-on-error. These are application-view checks, not timing/memory budgets.
+
+The unchanged original `test_files_view_fault.py` passed all three profiles on
+the pinned private Aetheri compositor: nine create/rename/move cases in total.
+Its separate fault host performs actual ordinary-user effects in new private
+folders, holds the worker acknowledgement and then injects the original error.
+The script checks one syscall attempt, retained inode/content, truthful unknown
+state, blocked new mutation and original close/wait behavior. No document child
+starts. The supplied existing Terminal/editor binaries are not exercised by these
+cases. The normal host contains none of the fault hooks. These are not managed
+removal, hostile-writer exclusion or power-loss/durable recovery results.
+
+The original independent libatspi client then passed six modes against the normal
+original host in Release and ASan/UBSan: initial Grid/selection, dialog, text,
+cancel, query and query-clear. It links neither NexaUI nor Aetheri. Native Unicode
+Text/EditableText, grapheme-valid caret/selection, deletion/insertion, oversized
+draft rejection, retired references, cancellation/focus restoration and actual
+filtered-entry changes are checked. View-only actions leave the original two
+entries unchanged and launch no document. Virtual Ctrl+Q closes both hosts with
+exit 0. A shared provider-off build renders the same app, fails registration at
+the expected client boundary and still closes normally by keyboard. The private
+compositor/bus/registry all terminate without forced-kill escalation. Process
+maps contain no SDL, X11, EGL or Vulkan presentation libraries in these hosts.
+
+Final native Grid/selection and rejected-draft images were inspected. The single
+Liberation Sans test font shows the combining accent but uses a replacement glyph
+for the emoji; exact Unicode remains readable to the independent Text client.
+Font fallback, final styling and human reading acceptance remain open. Native
+three-output captures are transport/geometry evidence on virtual outputs, not a
+physical three-monitor or GPU acceptance result.
+
+The reused installed SDK binaries are unchanged. Their 100 declared production
+files match source `4eed8f0373ba33e490cb4307339e1b8fc338feee` and current base
+`f29323671e2b044ac98fe3e4b4c414274393d140` after CRLF/LF normalization. Static
+Release library SHA-256 is
+`0352059138691aa8af9b12fa30648ed63ce82b8a253a91caad37a03276bb57e7`,
+shared Release is
+`cf121501ac7a95660ab74b147545857db51fc35a64e2afa9a1c64c49b26772f3`
+and static sanitizer is
+`478a49d28db72610c611d5a15355804899941f64fcd2e0cbd2ce3266ca5cceb6`.
+Compositor SHA remains
+`631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75`.
+No new core dependency, public API/ABI, SDK version or 1.0.0 release is introduced.
+
+Evidence is `D:/NexaUI/out/nexaui-owned-files-20261107.tar.gz`, SHA-256
+`6c345e6c3241f747445524288beeacdf11eb944453126cf1dd6d42a2861f37fe`.
+Its 706 manifest files are independently checked after transfer. Four consumer
+files match the implementation revision; original archives/input hashes, SDK
+binaries/configs/provenance, strict build logs, JUnit, both assistive campaigns,
+all native fault cases, full PPMs and the changed-source negative are retained.
+Guest/host clock differences are documented; only copied source mtimes were
+normalized for builds. Original test assertions/deadlines were not relaxed.
+
+This advances the original Files portions of B07/L05/L06/L09/T11/A06/D07/P05/P07/Q04.
+It does not close full pickers, asynchronous hierarchy loading, trusted grants,
+device/software authorities, actual document/Terminal owner integration, durable
+reconciliation, installed IMEs, full native chrome/scale/loss coverage, other
+platforms, physical input or human accessibility. Earlier unpaced Files sanitizer
+burst and held-pointer capability-loss findings remain open; these scoped tests
+do not repeat or supersede them. Aetheri may independently evaluate this candidate,
+but its current SDK pin and app migration decision are not changed here.
+
 ## Revisioned removal snapshots and native view rebinding (2026-11-07)
 
 Core implementation [784c484ca8fc7f1f3c73e5b4fcee97cdb8a1758f](https://github.com/Lulus792/NexaUI/commit/784c484ca8fc7f1f3c73e5b4fcee97cdb8a1758f)
