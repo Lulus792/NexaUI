@@ -2,9 +2,9 @@
 
 W04/W05/D05/R01/Q04: the private test host applies the mapped output's committed
 integer scale to its backing buffer and text density. A 2x virtual output and
-logical pointer hit passed with an altered compositor fixture; the unchanged
-Aetheri 2x layout, dynamic changes, fractional scaling and physical/human
-acceptance remain open. See [scale evidence](aetheri-adoption-assessment.md#integer-output-scale-in-the-private-desktop-host-2026-11-06).
+logical pointer hit and a live 2x → 1x → 2x transition passed with an altered
+compositor fixture; the unchanged Aetheri 2x layout, fractional scaling and
+physical/human acceptance remain open. See [scale evidence](aetheri-adoption-assessment.md#dynamic-output-scale-and-configure-ordering-2026-11-06).
 
 D05/W05/Q04: the private desktop test host matches initial compositor output
 names to `wl_output.name` instead of trusting registry order. Controlled

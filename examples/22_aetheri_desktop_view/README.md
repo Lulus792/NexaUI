@@ -89,6 +89,10 @@ its buffer and text density while retaining logical input/semantic geometry.
 A 2x virtual output was checked with a modified compositor fixture; unchanged
 Aetheri 2x layout and fractional scaling remain open. See the
 [scale evidence](../../docs/quality/aetheri-adoption-assessment.md#integer-output-scale-in-the-private-desktop-host-2026-11-06).
+The follow-up test changes that virtual output 2x → 1x → 2x while live; the
+host defers redraw until the configure and scale events have settled and
+retires pending refresh callbacks with the output. See the
+[dynamic scale evidence](../../docs/quality/aetheri-adoption-assessment.md#dynamic-output-scale-and-configure-ordering-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

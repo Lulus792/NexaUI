@@ -201,6 +201,14 @@ int main(int argc,char **argv) {
     retire_output(&a,0);
     CHECK(!v->surface && !v->view && !a.pointer_release_barrier && !a.pointer_view && !a.focused);
     CHECK(wl_display_roundtrip(a.display)>=0 && !a.activation_phase);
+    /* A deferred redraw barrier can still be in flight when its output is
+       retired. The callback must not reach the destroyed view or surface. */
+    struct view *other=&a.views[1];other->app=&a;other->index=1;
+    other->surface=wl_compositor_create_surface(a.compositor);CHECK(other->surface);
+    defer_refresh(other);CHECK(other->refresh_barrier && other->dirty);
+    other->remove_pending=true;retire_output(&a,1);
+    CHECK(!other->refresh_barrier && !other->surface && !other->dirty);
+    CHECK(wl_display_roundtrip(a.display)>=0);
     /* A new output after the initial three cannot be assigned an Aetheri
        desktop index from registry order; it must not recreate the old view. */
     a.output_count=3;global(&a,NULL,88,"wl_output",4);

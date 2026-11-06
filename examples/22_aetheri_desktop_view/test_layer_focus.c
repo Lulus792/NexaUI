@@ -156,6 +156,18 @@ int main(int argc, char **argv) {
     CHECK(!strcmp(v->model.query,"AB"));
     v->surface=NULL;a.ime_surface=NULL;
     retire_output(&a,0);CHECK(!v->view && !a.focused && !v->configured && !a.output_names[0]);
+    /* Keyboard enter may precede a deferred expanded-frame presentation.
+       The newly built search field must receive the first subsequent key. */
+    ae_desktop_model_init(&v->model);v->revision=1;v->width=640;v->height=480;
+    v->surface=(struct wl_surface *)(uintptr_t)1;v->configured=true;v->expanded=false;
+    CHECK(aetheri_desktop_view_create(&v->model,a.font,a.font_size,&v->view));advance(v);
+    ae_desktop_model_search(&v->model,0,true);++v->revision;v->expanded=true;
+    v->refresh_barrier=(struct wl_callback *)(uintptr_t)1;
+    enter(&a,NULL,0,v->surface,&keys);
+    CHECK(!v->focus_search_pending && nx_focus_id(aetheri_desktop_view_context(v->view))==20);
+    key(&a,NULL,0,0,KEY_X,WL_KEYBOARD_KEY_STATE_PRESSED);
+    CHECK(!strcmp(v->model.query,"x"));
+    v->refresh_barrier=NULL;v->surface=NULL;aetheri_desktop_view_destroy(v->view);v->view=NULL;
     xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     free(a.font);return 0;
 }

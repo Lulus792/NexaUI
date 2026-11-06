@@ -36,8 +36,9 @@ struct view {
     bool expanded;
     struct ae_desktop_model model; uint64_t revision;
     aetheri_desktop_view *view; nx_wayland_shm_host *presenter;
+    struct wl_callback *refresh_barrier;
     nx_linux_accessibility_host *accessibility;
-    bool dirty, configured, remove_pending;
+    bool dirty, configured, remove_pending, focus_search_pending;
 };
 struct app {
     struct wl_display *display;
@@ -340,6 +341,19 @@ static void accessibility_publish(struct view *v) {
         CHECK(result==NX_OK || result==NX_ERROR_UNSUPPORTED);
     }
 }
+static void refresh_ready(void *data,struct wl_callback *callback,uint32_t serial) {
+    struct view *v=data;(void)serial;CHECK(v->refresh_barrier==callback);
+    wl_callback_destroy(callback);v->refresh_barrier=NULL;
+}
+static const struct wl_callback_listener refresh_listener={.done=refresh_ready};
+/* Configure and output scale can be delivered on separate protocol objects.
+   Wait asynchronously until the compositor has processed this event batch. */
+static void defer_refresh(struct view *v) {
+    v->dirty=true;
+    if(!v->app || !v->app->display || !v->surface || v->refresh_barrier || v->remove_pending)return;
+    v->refresh_barrier=wl_display_sync(v->app->display);CHECK(v->refresh_barrier);
+    CHECK(wl_callback_add_listener(v->refresh_barrier,&refresh_listener,v)==0);
+}
 static uint32_t accessibility_prepare(struct app *a,struct pollfd *fds,uint32_t wait_ms) {
     for(unsigned i=0;i<3;++i) {
         struct view *v=&a->views[i];fds[i].fd=-1;fds[i].events=fds[i].revents=0;
@@ -381,6 +395,10 @@ static void paint(struct view *v) {
     const nx_command *commands=NULL; size_t count=0;
     nx_wayland_shm_outcome outcome;
     advance(v);
+    if(v->focus_search_pending && a->focused==v && v->expanded) {
+        CHECK(nx_focus_set(aetheri_desktop_view_context(v->view),20)==NX_OK);
+        v->focus_search_pending=false;advance(v);
+    }
     if(a->ime_requested && a->focused==v && v->expanded &&
        nx_focus_id(aetheri_desktop_view_context(v->view))==20) {
         uint64_t revision=0;
@@ -400,7 +418,8 @@ static void paint(struct view *v) {
 static void configured(void *data, struct zwlr_layer_surface_v1 *layer, uint32_t serial, uint32_t width, uint32_t height) {
     struct view *v = data;if(v->remove_pending)return;
     bool had_view=v->view!=NULL; v->width = width; v->height = height;v->configured=true;
-    zwlr_layer_surface_v1_ack_configure(layer, serial); paint(v);
+    zwlr_layer_surface_v1_ack_configure(layer, serial);
+    if(had_view)defer_refresh(v);else paint(v);
     if(!had_view && v->app->focused==v && v->expanded)
         CHECK(nx_focus_set(aetheri_desktop_view_context(v->view),20)==NX_OK);
     if(v->app->owner_fixture && !v->app->ready_reported &&
@@ -518,8 +537,17 @@ static void enter(void *data, struct wl_keyboard *keyboard, uint32_t serial, str
         a->focused=&a->views[i];
         if(a->focused->view) {
             CHECK(aetheri_desktop_view_surface_focus(a->focused->view,1)==NX_OK);
-            if(a->focused->expanded) CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
-            if(a->focused->configured)advance(a->focused);
+            if(a->focused->expanded) {
+                if(!a->focused->configured || a->focused->refresh_barrier)a->focused->focus_search_pending=true;
+                else CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
+            }
+            if(a->focused->configured) {
+                advance(a->focused);
+                if(a->focused->focus_search_pending) {
+                    CHECK(nx_focus_set(aetheri_desktop_view_context(a->focused->view),20)==NX_OK);
+                    a->focused->focus_search_pending=false;advance(a->focused);
+                }
+            }
         }
         printf("ENTER %u\n", i);
     }
@@ -528,6 +556,7 @@ static void leave(void *data, struct wl_keyboard *keyboard, uint32_t serial, str
     struct app *a=data;(void)keyboard;(void)serial;
     if(a->focused && a->focused->surface==surface) {
         struct view *v=a->focused;
+        v->focus_search_pending=false;
         ime_stop(a);
         if(v->view) {
             CHECK(aetheri_desktop_view_surface_focus(v->view,0)==NX_OK);
@@ -627,6 +656,7 @@ static void retire_output(struct app *a,unsigned index) {
         a->activation_phase=0;a->activation_enabled=false;
     }
     if(a->toggle_output==(int)index)a->toggle_output=-1;
+    if(v->refresh_barrier){wl_callback_destroy(v->refresh_barrier);v->refresh_barrier=NULL;}
     if(v->accessibility)CHECK(nx_linux_accessibility_host_destroy(&v->accessibility)==NX_OK);
     if(v->presenter)CHECK(nx_wayland_shm_host_destroy(&v->presenter)==NX_OK);
     aetheri_desktop_view_destroy(v->view);v->view=NULL;
@@ -634,7 +664,7 @@ static void retire_output(struct app *a,unsigned index) {
     if(v->surface){wl_surface_destroy(v->surface);v->surface=NULL;}
     if(a->outputs[index]){wl_output_destroy(a->outputs[index]);a->outputs[index]=NULL;}
     a->output_names[index]=0;a->mapped_observations[index]=NULL;
-    v->configured=false;v->expanded=false;v->dirty=false;v->remove_pending=false;
+    v->configured=false;v->expanded=false;v->dirty=false;v->remove_pending=false;v->focus_search_pending=false;
     printf("OUTPUT_REMOVED %u\n",index);
 }
 static void pointer_release_ready(void *data,struct wl_callback *callback,uint32_t serial) {
@@ -767,7 +797,7 @@ static void output_done(void *data,struct wl_output *output) {
     o->scale=o->next_scale;
     if(o->app && o->app->output_mapping_done)for(unsigned i=0;i<3;++i)
         if(o->app->mapped_observations[i]==o && !o->app->views[i].remove_pending)
-            o->app->views[i].dirty=true;
+            defer_refresh(&o->app->views[i]);
 }
 static void output_scale(void *data,struct wl_output *output,int32_t scale) {
     struct output_observation *o=data;(void)output;CHECK(scale>=1 && scale<=8);
@@ -948,7 +978,7 @@ int main(int argc, char **argv) {
                 for(unsigned i=0;i<3;++i)if(a.views[i].expanded)view_state(&a.views[i],false);
             }
             activation_step(&a);
-            for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured)paint(&a.views[i]);
+            for(unsigned i=0;i<3;++i)if(a.views[i].dirty && a.views[i].configured && !a.views[i].refresh_barrier)paint(&a.views[i]);
             ime_sync(&a);
             if(a.ime_test_barrier && a.ime_serial && a.ime_serial!=a.ime_barrier_serial) {
                 uint32_t serial=a.ime_serial;
@@ -1026,6 +1056,7 @@ int main(int argc, char **argv) {
     if(a.ime_input)zwp_text_input_v3_destroy(a.ime_input);
     if(a.ime_manager)zwp_text_input_manager_v3_destroy(a.ime_manager);
     for (unsigned i = 0; i < 3; ++i) {
+        if(a.views[i].refresh_barrier)wl_callback_destroy(a.views[i].refresh_barrier);
         if(a.views[i].accessibility)CHECK(nx_linux_accessibility_host_destroy(&a.views[i].accessibility)==NX_OK);
         if (a.views[i].presenter) CHECK(nx_wayland_shm_host_destroy(&a.views[i].presenter)==NX_OK);
         aetheri_desktop_view_destroy(a.views[i].view);

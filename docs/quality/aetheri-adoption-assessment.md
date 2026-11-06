@@ -1,5 +1,42 @@
 # Aetheri adoption: initial source assessment
 
+## Dynamic output scale and configure ordering (2026-11-06)
+
+On NexaUI base `20456229184ded9ad4d015dd47862a16614567bd`, a controlled
+test changed the second virtual output from 2x to 1x and back while its dock
+was live. The first run exposed a real ordering issue: a configure for the new
+logical width arrived before the corresponding output scale, and the host
+submitted a 5120×168 buffer for a 2560×84 logical dock. The host now coalesces
+configure and scale changes behind an asynchronous Wayland sync and redraws
+afterward. A queued refresh is destroyed when its output is retired.
+
+Deferring the frame also exposed a focus race in the first owner regression:
+keyboard enter arrived before the expanded field was built and a first key was
+lost. The host now builds and focuses the field at that edge even while the
+presentation is deferred. A callback regression checks the first key, and a
+controlled Wayland wire test retires an output with its refresh callback pending.
+
+The final Fedora run checked 2x → 1x → 2x backing dimensions, rejected the
+previous mixed scale/geometry combinations, captured expected dock pixels after
+both transitions, and exercised a 2x logical pointer hit. A separate original
+owner run passed Settings, Terminal and native Compose focus/reuse/shutdown on
+the unchanged 1x compositor. Static/shared GCC and Clang ASan/UBSan focus,
+IME-wire and launcher regressions passed on Alpine/WSL; independent AT-SPI
+passed with the sanitizer build. The final test desktop SHA-256 was
+`df94c7eed16fa5853a8f15dd170764b0c75dbd9fbfa5b17abcfaa262ff9fb710` and
+the modified test compositor was
+`01cf280d25f3832b835fd26a3d6d2711ee1a8bc2faad14c811d2f05df1250982`.
+
+The 2x compositor was an isolated Aetheri source fixture with logical layout
+and an extra test-only scale command; it is not the unchanged Aetheri
+compositor. The initial wrong-buffer run, intermediate focus failure, two
+capture assertions affected by the hovered button, final pass, modified fixture
+sources and logs are preserved in
+`D:/NexaUI/out/nexaui-output-dynamic-evidence-20261106.tar.gz`, SHA-256
+`497970cf66958cb88ed07beb119937ba20403ab636584a556099609972724c30`.
+Native fractional scale, physical hotplug, the real Aetheri 2x compositor and
+broader reconfiguration orderings remain open.
+
 ## Integer output scale in the private desktop host (2026-11-06)
 
 On NexaUI base `25db24712ab1466f2a7fc0f8275063f3eb8ed2a2`, the private

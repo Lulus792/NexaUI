@@ -30,11 +30,15 @@ def main():
                         help="exercise the fixed three-byte launch protocol with a test owner")
     parser.add_argument("--second-output-scale2", action="store_true",
                         help="expect a controlled test compositor with its second virtual output at 2x")
+    parser.add_argument("--dynamic-output-scale", action="store_true",
+                        help="use the test-only Z command to change the second output scale")
     parser.add_argument("--test-invalid-launch", choices=("uncorrelated", "oversized", "ancillary", "peer-loss"),
                         help="require the test host to reject an invalid owner response")
     args = parser.parse_args()
     if args.test_invalid_launch and not args.test_launch_channel:
         parser.error("--test-invalid-launch requires --test-launch-channel")
+    if args.dynamic_output_scale and not args.second_output_scale2:
+        parser.error("--dynamic-output-scale requires --second-output-scale2")
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
     app_client = args.app_client.resolve(strict=True) if args.app_client else None
     root = args.work_dir.resolve()
@@ -204,6 +208,33 @@ def main():
             event("B 272 0")
             wait(lambda: "INTENT 1 1 0 0\n" in log("desktop"), "2x logical dock hit")
             result["second_output_logical_hit"] = "passed"
+        if args.dynamic_output_scale:
+            event("M 100 100")  # Remove hover before comparing the dock color.
+            def second_dock_pixel(number, scale):
+                raw = (captures / f"capture-{number}-output-1.ppm").read_bytes()
+                magic, dimensions, maximum, pixels = raw.split(b"\n", 3)
+                if magic != b"P6" or dimensions != b"2560 1440" or maximum != b"255" or len(pixels) != 2560*1440*3:
+                    raise RuntimeError("invalid dynamic-scale output capture")
+                # The first button may retain hover after the pointer leaves;
+                # sample the separate last button at the same logical inset.
+                offset = ((1440 - 65 * scale) * 2560 + 2560 - 20 * scale) * 3
+                return tuple(pixels[offset:offset+3])
+            for number, scale, expected, inconsistent in (
+                    (3, 1, "BACKING 1 1 2560 84\n", "BACKING 1 2 5120 168\n"),
+                    (4, 2, "BACKING 1 2 2560 168\n", "BACKING 1 1 1280 84\n")):
+                before = log("desktop").count(expected)
+                before_inconsistent = log("desktop").count(inconsistent)
+                event(f"Z 1 {scale}")
+                wait(lambda: log("desktop").count(expected) > before, f"second output scale {scale}")
+                syncs = log("desktop").count("SYNC b\n")
+                command(client, "b")
+                wait(lambda: log("desktop").count("SYNC b\n") > syncs, "scaled dock buffer processed")
+                if log("desktop").count(inconsistent) != before_inconsistent:
+                    raise RuntimeError("presented a buffer with mixed scale and configure state")
+                capture(number)
+                if second_dock_pixel(number, scale) != (128, 175, 255):
+                    raise RuntimeError(f"dock pixels missing after scale {scale}")
+            result["dynamic_output_scale"] = "passed"
         for code in (20, 18, 19, 50, 23, 49, 30, 38):
             key(code)
         wait(lambda: "QUERY 0 terminal\n" in log("desktop"), "typed search")
