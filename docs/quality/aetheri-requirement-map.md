@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I02/Q06: `nx_numeric_field_commit` in the 0.1.20 candidate provides an
+explicit application-controlled confirmation path for a validated draft. A
+test-only owner action passed after native simple-IME input in static/shared/
+sanitized profiles; keyboard access under that provider and composition policy
+remain open. See [candidate evidence](aetheri-adoption-assessment.md#explicit-numeric-confirmation-after-native-input-2026-11-06).
+
 T05/I02/Q06: the numeric simple-IME test on base
 `d799663d28886f567d096dbe4bf27a94c2542ef3` now checks a native valid digit
 and preservation of the previous confirmed value before preedit and invalid

@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 19
+#define NX_VERSION_PATCH 20
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2283,6 +2283,15 @@ NX_API nx_result nx_numeric_field_set_value(nx_numeric_field *field,
                                             double value);
 NX_API nx_result nx_numeric_field_value(const nx_numeric_field *field,
                                         double *out_value);
+/* Explicitly confirm the current draft using the widget's finite inclusive
+   bounds. Call on the UI thread after processing the relevant frame. Invalid
+   drafts return NX_OK with *out_valid=0 and preserve the value; invalid
+   arguments return NX_ERROR_ARGUMENT and preserve it. A valid draft updates
+   the value without replacing text or undo history. This does not commit or
+   cancel an active native IME composition. */
+NX_API nx_result nx_numeric_field_commit(nx_numeric_field *field,
+                                         double minimum, double maximum,
+                                         int *out_valid);
 NX_API nx_result nx_numeric_field_text(const nx_numeric_field *field,
                                        nx_utf8_span *out_text);
 NX_API nx_result nx_numeric_field_widget(nx_context *context,

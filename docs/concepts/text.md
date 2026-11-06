@@ -48,7 +48,7 @@ input path. A numeric field can opt into the borrowed-window IME path with
 `nx_numeric_field_set_ime_window`; preedit and revision-checked native
 replacement then use the same transport and painting as general fields. IME
 commits may produce an invalid visible draft, which never updates the committed
-number until a valid Enter. Numeric fields reuse the general-field visual
+number until explicitly confirmed. Numeric fields reuse the general-field visual
 navigation and selection logic, including caret affinity for bidirectional
 drafts. `nx_numeric_field_set_clipboard` copies optional clipboard callbacks;
 numeric fields use the same bounded asynchronous native Wayland paste as text
@@ -57,6 +57,28 @@ The callback data and any borrowed native window must remain alive until the
 field is destroyed or the callbacks are removed. Other native IME
 implementations and interactive acceptance need their own checks.
 See the [native command report](../quality/macos-input-commands-report.md).
+
+An application can confirm the already processed numeric draft independently of
+keyboard delivery with `nx_numeric_field_commit(field, minimum, maximum,
+&valid)`. Use the same bounds as the field descriptor, after processing its
+events and before acting on the result. A valid draft updates the committed
+value without replacing the draft or its undo history; an invalid draft leaves
+the value unchanged. For example, after an accessible Apply action has been
+activated and the field's frame processed:
+
+```c
+int valid = 0;
+double value = 0;
+nx_result result = nx_numeric_field_commit(number, minimum, maximum, &valid);
+if (result == NX_OK && valid)
+    result = nx_numeric_field_value(number, &value);
+/* The application handles errors or invalid drafts before using value. */
+```
+
+The function does not accept or cancel an unfinished IME composition; an
+application must handle that state separately. This action does not make an
+IME-forwarded newline into a keyboard command or establish keyboard access to
+the action.
 
 General and numeric text fields now support left-button drag selection and
 Shift-click extension. The moving endpoint follows layout hit testing while the

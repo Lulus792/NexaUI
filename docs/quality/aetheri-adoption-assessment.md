@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Explicit numeric confirmation after native input (2026-11-06)
+
+The 0.1.20 development candidate on base
+`99f6dc1373aad73ff942b0571f06bbdd7969180f` adds
+`nx_numeric_field_commit`: an application action can validate and confirm the
+processed draft using the same bounds and existing commit logic as Enter. It
+does not replace the draft or undo history, commit active preedit, or interpret
+IME text as a command. Invalid and out-of-range drafts preserve the value;
+null and non-finite/reversed bounds are rejected. The
+[text contract](../concepts/text.md) includes an example.
+
+On Alpine/WSL, GCC 15.2 static/shared and Clang 22 ASan/UBSan static Debug
+numeric-field tests passed, including invalid arguments, invalid/out-of-range
+drafts and undo/redo after explicit confirmation. With Weston 14.0.2 simple-IME
+the same three profiles passed a real virtual `5` text commit, followed by a
+test-only signal representing the application action; the confirmed value changed
+from 1234 to 12345 before preedit and invalid composition were checked. The
+independent clipboard regression passed in the GCC static profile. This does
+not demonstrate an accessible Apply control, keyboard access to one, Enter
+delivery from this IME, a decision about active composition, other providers,
+actual Aetheri integration or human/physical acceptance. Those remain open.
+The Wayland-only installed-package probe also built and ran its C17 consumer
+against static and shared Release SDKs, including the new public symbol and
+the expected Vulkan-component negative; log:
+`/tmp/nexaui-commit-package-20261106.log`.
+
+Static/shared/sanitized library SHA-256 respectively:
+`9b75e596955b514e15babd37ef1de6d606ae601e07b37e2076e277f26f7c7ae7`,
+`71acb70a65da34cd741f7f134defe9ee34fb644932955e3095b319decc8a51ad`,
+`a6ca453465f78fb57bc2fd3aad0c3b914ef0502c13482ebcce3b543a4aeb5f0b`.
+The candidate is a pre-1.0 SDK change; Aetheri's reviewed pin is unchanged.
+
 ## Numeric valid draft and IME confirmation gap (2026-11-06)
 
 On NexaUI base `d799663d28886f567d096dbe4bf27a94c2542ef3`, the expanded

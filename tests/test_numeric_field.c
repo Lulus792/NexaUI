@@ -1,5 +1,6 @@
 #include "nexaui/nexaui.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -333,10 +334,20 @@ static int test_native_text_commands(void) {
     CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'-') &&
           queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,0));
     CHECK(expect_field(field,"-",5) && semantic_draft(ctx,"-",1));
+    int accepted=7;
+    CHECK(nx_numeric_field_commit(field,-10,10,&accepted)==NX_OK && !accepted && expect_field(field,"-",5));
+    CHECK(nx_numeric_field_commit(NULL,-10,10,&accepted)==NX_ERROR_ARGUMENT && !accepted);
+    CHECK(nx_numeric_field_commit(field,10,-10,&accepted)==NX_ERROR_ARGUMENT && !accepted && expect_field(field,"-",5));
+    CHECK(nx_numeric_field_commit(field,NAN,10,&accepted)==NX_ERROR_ARGUMENT && !accepted && expect_field(field,"-",5));
+    CHECK(nx_numeric_field_commit(field,-10,INFINITY,&accepted)==NX_ERROR_ARGUMENT && !accepted && expect_field(field,"-",5));
+    CHECK(nx_numeric_field_commit(field,-10,10,NULL)==NX_ERROR_ARGUMENT && expect_field(field,"-",5));
     CHECK(queue_command(ctx,NX_TEXT_COMMAND_SELECT_ALL) && queue_text(ctx,'1'));
     nx_event consumed={0};consumed.type=NX_EVENT_KEY_DOWN_CONSUMED;consumed.key=NX_KEY_ENTER;
     CHECK(nx_context_queue_event(ctx,&consumed)==NX_OK && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",5));
-    CHECK(queue_command(ctx,NX_TEXT_COMMAND_NEWLINE) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
+    CHECK(nx_numeric_field_commit(field,2,10,&accepted)==NX_OK && !accepted && expect_field(field,"1",5));
+    CHECK(nx_numeric_field_commit(field,-10,10,&accepted)==NX_OK && accepted && expect_field(field,"1",1));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_UNDO) && numeric_frame(ctx,field,&desc,0) && expect_field(field,"-",1));
+    CHECK(queue_command(ctx,NX_TEXT_COMMAND_REDO) && numeric_frame(ctx,field,&desc,1) && expect_field(field,"1",1));
     nx_event stale={0};stale.type=NX_EVENT_TEXT_COMMAND;stale.text_command=NX_TEXT_COMMAND_SELECT_ALL;
     stale.ime_target=1;stale.ime_revision=1;
     CHECK(nx_context_queue_event(ctx,&stale)==NX_OK);

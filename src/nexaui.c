@@ -6529,6 +6529,20 @@ nx_result nx_numeric_field_value(const nx_numeric_field *field,
     return NX_OK;
 }
 
+nx_result nx_numeric_field_commit(nx_numeric_field *field,
+                                  double minimum, double maximum,
+                                  int *out_valid) {
+    if (!out_valid) return NX_ERROR_ARGUMENT;
+    *out_valid = 0;
+    if (!field) return NX_ERROR_ARGUMENT;
+    nx_event event = {0};
+    event.type = NX_EVENT_TEXT_COMMAND;
+    event.text_command = NX_TEXT_COMMAND_NEWLINE;
+    int handled = 0;
+    return nx_numeric_input_apply_event(field->buffer, &event, minimum, maximum,
+                                        &field->committed, &handled, out_valid);
+}
+
 nx_result nx_numeric_field_text(const nx_numeric_field *field,
                                 nx_utf8_span *out_text) {
     if (!out_text) return NX_ERROR_ARGUMENT;
