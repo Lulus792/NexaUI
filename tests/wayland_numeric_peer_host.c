@@ -27,18 +27,23 @@ done:
     if(output && fclose(output))okay=0;
     free(pixels);return okay;
 }
-/* Publish the currently observed preedit guard before routing a waiting input
-   batch. This fixture has no published AT-SPI tree and no pending UI events. */
+/* Submit every fixture control during the guard frame, including unrelated
+   actions which may already have been admitted to the context. */
 static int publish_preedit_guard(nx_context *ctx,const nx_numeric_field_desc *number_desc,
                                  nx_numeric_field *number,const nx_text_layout *label,
-                                 const nx_window_info *info) {
-    nx_interaction_state state;int valid;
+                                 const nx_window_info *info,int ax,unsigned *other_count) {
+    nx_interaction_state state,other_state={0};int valid;
     nx_control_desc apply={0};apply.id=2;apply.bounds=(nx_rect){20,70,120,36};
     apply.name=(nx_utf8_span){"Apply",5};apply.label_layout=label;
     apply.label_origin=(nx_point){55,78};apply.glyph_cache_bytes=65536;apply.disabled=1;
-    return nx_begin_frame(ctx,info->width,info->height,0)==NX_OK &&
-        nx_numeric_field_widget(ctx,number_desc,number,&state,&valid)==NX_OK &&
-        nx_button(ctx,&apply,&state)==NX_OK && nx_end_frame(ctx)==NX_OK;
+    nx_control_desc other={0};other.id=3;other.bounds=(nx_rect){160,70,140,36};
+    other.name=(nx_utf8_span){"Other action",12};
+    if(nx_begin_frame(ctx,info->width,info->height,0)!=NX_OK ||
+       nx_numeric_field_widget(ctx,number_desc,number,&state,&valid)!=NX_OK ||
+       nx_button(ctx,&apply,&state)!=NX_OK || (ax && nx_button(ctx,&other,&other_state)!=NX_OK) ||
+       nx_end_frame(ctx)!=NX_OK)return 0;
+    if(other_state.clicked) { *other_count+=other_state.clicked;printf("OTHER_ACTION %u\n",*other_count); }
+    return 1;
 }
 int main(int argc, char **argv) {
     int ime=(argc==2 && !strcmp(argv[1],"--ime")) || (argc==3 && !strcmp(argv[1],"--apply-ime"));
@@ -75,7 +80,7 @@ int main(int argc, char **argv) {
     nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){20,20,250,40};
     desc.name=(nx_utf8_span){"Number",6};desc.fonts=fonts;desc.pixels_per_em=16;
     desc.glyph_cache_bytes=65536;desc.minimum=-100000;desc.maximum=100000;
-    char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1,composition_active=-1;nx_window_info previous_info={0};
+    char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1,composition_active=-1;unsigned other_count=0;nx_window_info previous_info={0};
     for(;;) {
         nx_window_info info;size_t routed=0;nx_interaction_state state;
         if(nx_window_poll(window,50)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK)goto done;
@@ -83,7 +88,7 @@ int main(int argc, char **argv) {
             size_t length=0;int32_t begin=0,end=0;
             if(nx_window_get_ime_preedit(window,NULL,0,&length,&begin,&end)!=NX_OK)goto done;
             if(length && nx_focus_id(ctx)==desc.id) {
-                if(!publish_preedit_guard(ctx,&desc,number,apply_label,&info))goto done;
+                if(!publish_preedit_guard(ctx,&desc,number,apply_label,&info,ax,&other_count))goto done;
                 if(ax && nx_window_publish_semantics(window,ctx)!=NX_OK)goto done;
                 puts("PREEDIT_GUARD_PUBLISHED");puts("COMPOSITION_ACTIVE 1");composition_active=1;dirty=1;
             }
@@ -106,7 +111,7 @@ int main(int argc, char **argv) {
         }
         if(apply_mode && ime && preedit_event && pointer_press)puts("SAME_BATCH");
         if(nx_numeric_field_widget(ctx,&desc,number,&state,&valid)!=NX_OK)goto done;
-        nx_interaction_state button_state={0};
+        nx_interaction_state button_state={0},other_state={0};
         if(apply_mode) {
             nx_control_desc apply={0};apply.id=2;apply.bounds=(nx_rect){20,70,120,36};
             apply.name=(nx_utf8_span){"Apply",5};apply.label_layout=apply_label;
@@ -120,8 +125,14 @@ int main(int argc, char **argv) {
                 }
             }
             if(nx_button(ctx,&apply,&button_state)!=NX_OK)goto done;
+            if(ax) {
+                nx_control_desc other={0};other.id=3;other.bounds=(nx_rect){160,70,140,36};
+                other.name=(nx_utf8_span){"Other action",12};
+                if(nx_button(ctx,&other,&other_state)!=NX_OK)goto done;
+            }
         }
         if(nx_end_frame(ctx)!=NX_OK)goto done;
+        if(other_state.clicked) {other_count+=other_state.clicked;printf("OTHER_ACTION %u\n",other_count);}
         if(ax && nx_window_publish_semantics(window,ctx)!=NX_OK)goto done;
         if(apply_mode && button_state.focused!=button_focused) {
             button_focused=button_state.focused;printf("BUTTON_FOCUS %d\n",button_focused);

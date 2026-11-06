@@ -10,10 +10,10 @@ static void pump(void) {
     while(g_main_context_iteration(NULL,FALSE)){}
     struct timespec delay={0,10000000};nanosleep(&delay,NULL);
 }
-static AtspiAccessible *find(AtspiAccessible *node,unsigned depth) {
+static AtspiAccessible *find(AtspiAccessible *node,const char *wanted,unsigned depth) {
     if(!node || depth>20)return NULL;
     GError *error=NULL;char *name=atspi_accessible_get_name(node,&error);
-    int found=!error && name && !strcmp(name,"Apply");g_clear_error(&error);g_free(name);
+    int found=!error && name && !strcmp(name,wanted);g_clear_error(&error);g_free(name);
     if(found) {
         AtspiRole role=atspi_accessible_get_role(node,&error);
         found=!error && role==ATSPI_ROLE_PUSH_BUTTON;g_clear_error(&error);
@@ -24,7 +24,7 @@ static AtspiAccessible *find(AtspiAccessible *node,unsigned depth) {
     for(int i=0;i<count;++i) {
         AtspiAccessible *child=atspi_accessible_get_child_at_index(node,i,&error);
         if(error){g_clear_error(&error);continue;}
-        AtspiAccessible *result=find(child,depth+1);if(child)g_object_unref(child);
+        AtspiAccessible *result=find(child,wanted,depth+1);if(child)g_object_unref(child);
         if(result)return result;
     }
     return NULL;
@@ -47,13 +47,15 @@ int main(int argc,char **argv) {
     char *end=NULL;unsigned long pid=strtoul(argv[1],&end,10);
     const char *address=getenv("NEXAUI_TEST_ATSPI_ADDRESS");
     if(!pid || !end || *end || !address || atspi_init()!=0)return 2;
-    atspi_set_timeout(1000,1000);AtspiAccessible *desktop=atspi_get_desktop(0),*button=NULL;
-    for(unsigned i=0;desktop && i<300 && !button;++i) {
+    atspi_set_timeout(1000,1000);AtspiAccessible *desktop=atspi_get_desktop(0),*button=NULL,*other=NULL;
+    for(unsigned i=0;desktop && i<300 && (!button || !other);++i) {
         AtspiAccessible *app=find_app(desktop,pid);
-        if(app){button=find(app,0);g_object_unref(app);}if(!button)pump();
+        if(app){if(!button)button=find(app,"Apply",0);if(!other)other=find(app,"Other action",0);g_object_unref(app);}
+        if(!button || !other)pump();
     }
-    if(!button){fputs("Apply not found\n",stderr);return 1;}
+    if(!button || !other){fputs("Required buttons not found\n",stderr);return 1;}
     AtspiObject *object=ATSPI_OBJECT(button);
+    AtspiObject *other_object=ATSPI_OBJECT(other);
     DBusError error;dbus_error_init(&error);
     DBusConnection *bus=dbus_connection_open_private(address,&error);
     if(!bus || !dbus_bus_register(bus,&error))return 1;
@@ -62,9 +64,14 @@ int main(int argc,char **argv) {
     char input[16];if(!fgets(input,sizeof(input),stdin) || strcmp(input,"GO\n"))return 1;
     DBusMessage *request=dbus_message_new_method_call(object->app->bus_name,object->path,
         "org.a11y.atspi.Action","DoAction");
-    DBusPendingCall *pending=NULL;dbus_int32_t index=0;
+    DBusPendingCall *pending=NULL,*other_pending=NULL;dbus_int32_t index=0;
     if(!request || !dbus_message_append_args(request,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID) ||
        !dbus_connection_send_with_reply(bus,request,&pending,8000) || !pending)return 1;
+    dbus_message_unref(request);
+    request=dbus_message_new_method_call(other_object->app->bus_name,other_object->path,
+        "org.a11y.atspi.Action","DoAction");
+    if(!request || !dbus_message_append_args(request,DBUS_TYPE_INT32,&index,DBUS_TYPE_INVALID) ||
+       !dbus_connection_send_with_reply(bus,request,&other_pending,8000) || !other_pending)return 1;
     dbus_message_unref(request);dbus_connection_flush(bus);
     /* A round trip to the bus on the same connection establishes that the
        preceding action was routed before we tell the parent to resume host. */
@@ -75,6 +82,12 @@ int main(int argc,char **argv) {
     if(okay)printf("RESULT %d\n",accepted?1:0);
     if(reply)dbus_message_unref(reply);
     dbus_pending_call_unref(pending);
+    dbus_pending_call_block(other_pending);
+    reply=dbus_pending_call_steal_reply(other_pending);dbus_bool_t other_accepted=FALSE;
+    okay=okay && reply && dbus_message_get_args(reply,&error,DBUS_TYPE_BOOLEAN,&other_accepted,DBUS_TYPE_INVALID);
+    if(okay)printf("OTHER_RESULT %d\n",other_accepted?1:0);
+    if(reply)dbus_message_unref(reply);
+    dbus_pending_call_unref(other_pending);
     int disabled=0;
     for(unsigned i=0;okay && i<200 && !disabled;++i) {
         atspi_accessible_clear_cache(button);
@@ -88,6 +101,6 @@ int main(int argc,char **argv) {
     if(action)g_object_unref(action);
     if(okay)puts("DISABLED");
     dbus_connection_close(bus);dbus_connection_unref(bus);
-    g_object_unref(button);if(desktop)g_object_unref(desktop);atspi_exit();
+    g_object_unref(button);g_object_unref(other);if(desktop)g_object_unref(desktop);atspi_exit();
     return okay?0:1;
 }

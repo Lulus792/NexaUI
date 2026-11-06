@@ -38,7 +38,8 @@ def main():
         for line in host.stdout:
             transcript.append(line.strip())
             messages.put(line.strip())
-    threading.Thread(target=read_output, daemon=True).start()
+    output_thread = threading.Thread(target=read_output, daemon=True)
+    output_thread.start()
     error_thread = threading.Thread(target=lambda: errors.extend(host.stderr), daemon=True)
     error_thread.start()
     probe = None
@@ -140,10 +141,15 @@ def main():
                 wait_for('AFTER_CLICK 1 1234 1')
                 if ax:
                     result=probe_line()
-                    if result != 'RESULT 1' or probe_line() != 'DISABLED' or probe.wait(timeout=5):
+                    if result != 'RESULT 1' or probe_line() != 'OTHER_RESULT 1' or probe_line() != 'DISABLED' or probe.wait(timeout=5):
                         raise RuntimeError('AT-SPI queued action or disabled-state check failed: '+result)
                     if any(line.startswith('APPLY ') for line in transcript):
                         raise RuntimeError('A pending AT-SPI action changed the draft during preedit')
+                    deadline=time.monotonic()+5
+                    while 'OTHER_ACTION 1' not in transcript and time.monotonic()<deadline:
+                        time.sleep(.01)
+                    if [line for line in transcript if line.startswith('OTHER_ACTION ')] != ['OTHER_ACTION 1']:
+                        raise RuntimeError('Unrelated AT-SPI action was lost or repeated: '+repr(transcript[-25:]))
                     print('Pending AT-SPI action reply: '+result)
                 key('a'); wait_for('STATE 12345á 1234 0 1')
                 subprocess.run([xdotool, 'click', '1'], env=env, check=True, timeout=5)
@@ -160,7 +166,10 @@ def main():
         key('Escape')
         if host.wait(timeout=5):
             raise RuntimeError('Numeric host failed during close')
+        output_thread.join(timeout=2)
         error_thread.join(timeout=2)
+        if ax and [line for line in transcript if line.startswith('OTHER_ACTION ')] != ['OTHER_ACTION 1']:
+            raise RuntimeError('Unrelated AT-SPI action did not execute exactly once')
         if ime and not re.search(r'commit_string\(\d+, "5"\)', ''.join(errors)):
             raise RuntimeError('The IME did not commit the expected digit')
         if preedit and (not re.search(r'preedit_string\(\d+, "\'", "\'"\)', ''.join(errors)) or

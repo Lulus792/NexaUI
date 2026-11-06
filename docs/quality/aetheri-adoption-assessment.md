@@ -1,5 +1,32 @@
 # Aetheri adoption: initial source assessment
 
+## Preserving an unrelated AT-SPI action across the guard (2026-11-06)
+
+On base `57d1b74afa92babca0e598bf5b892eff3629af13`, the numeric test host
+submits both Apply and an independent `Other action` in the preedit guard
+frame and handles the latter's activation in that frame as well as in normal
+frames. The independent client queues both native AT-SPI actions against the
+old enabled snapshot while the host is stopped. Weston simple-IME preedit and
+a pointer press are also queued before it resumes. Both action calls report
+accepted; the guarded Apply does not update the value, while `Other action`
+executes exactly once through clean close. The client subsequently sees Apply
+disabled and its new activation rejected.
+
+GCC 15.2 static/shared and Clang 22 ASan/UBSan static Debug passed under
+private Weston 14.0.2, a private AT-SPI registry and virtual input, with leak
+detection for the sanitizer run. The pointer-only batch regression passed in
+static Debug. An isolated negative omitted only `Other action` from the guard
+frame; the new check failed because that action was lost. Its log is
+`/tmp/nexaui-other-action-negative-20261106/negative.log`. Positive JUnit
+evidence is in `/tmp/nexaui-other-action-{static,shared,asan}-close-20261106/`.
+
+This validates two queued button actions in this complete test scene, not an
+arbitrary application's event loop. A guard frame may also consume keyboard,
+text, clipboard, other accessibility work or application state transitions;
+every such operation needs correct processing and lifetime handling. Multiple
+preedit snapshots, production Aetheri, other IMEs and human assistive acceptance
+remain open. No SDK public API or Aetheri source/pin changed.
+
 ## Pending AT-SPI action and IME preedit in one batch (2026-11-06)
 
 On base `816e5a9cb9fd37c2664152bc266512f16ac4bba7`, the visible numeric

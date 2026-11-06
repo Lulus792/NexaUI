@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I02/I07/T05/A02/Q06: the private numeric host retains an unrelated queued
+AT-SPI button action exactly once while blocking Apply during IME preedit. A
+negative guard missing that control loses the action. Other queued event kinds
+and a general host contract remain open; see [candidate evidence](aetheri-adoption-assessment.md#preserving-an-unrelated-at-spi-action-across-the-guard-2026-11-06).
+
 I02/T05/A02/Q06: a pending independent AT-SPI Apply request and Wayland IME
 preedit were exercised together in a private numeric host. The request was
 accepted against the old snapshot but not applied after the guard frame; a
