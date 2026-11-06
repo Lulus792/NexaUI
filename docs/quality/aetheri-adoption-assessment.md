@@ -28,6 +28,17 @@ Real application integration, full input/resize/scaling combinations,
 Windows/macOS and human accessibility/design acceptance remain open. Aetheri's
 checkout and pinned SDK were not changed.
 
+On source `9dc222f242d249e0e6d827b096e085a4c23f944e`, an additional
+multiline test exercises a styled wrapped field, visual line commands, an
+IME-host caret and a subsequent width/inset change without losing the text.
+Static Release, shared Release and static ASan/UBSan all passed. A mutant
+that used the old fixed wrap width for keyboard navigation failed the expected
+cursor-position check. This is a controlled font/geometry case, not a native
+multi-platform IME or physical resize acceptance. The test source, configurations
+and positive/negative logs are archived at
+`D:/NexaUI/out/nexaui-field-style-multiline-20261106.tar.gz`, SHA-256
+`b2fe9fbab10cc3540d4d8301ef9642686a6d583ae475e35b2ce71c49879eb85d`.
+
 ## Localized text-field description (2026-11-06)
 
 Aetheri's newer Files view needs an accessible rejection explanation directly

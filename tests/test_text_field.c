@@ -850,6 +850,48 @@ static int test_styled_field(nx_font_collection *fonts) {
     nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
 }
 
+static int styled_frame(nx_context *ctx, nx_text_field_desc *desc,
+                        nx_text_field *field, const nx_text_field_style *style) {
+    nx_interaction_state state; int valid=0,submitted=0;
+    return nx_begin_frame(ctx,200,120,0)==NX_OK &&
+        nx_text_field_widget_styled(ctx,desc,field,(nx_utf8_span){0},style,&state,&valid,&submitted)==NX_OK &&
+        nx_end_frame(ctx)==NX_OK;
+}
+
+static int styled_command(nx_context *ctx, nx_text_field_desc *desc,
+                          nx_text_field *field, const nx_text_field_style *style, uint32_t command) {
+    nx_event event={0}; event.type=NX_EVENT_TEXT_COMMAND; event.text_command=command;
+    return nx_context_queue_event(ctx,&event)==NX_OK && styled_frame(ctx,desc,field,style);
+}
+
+static int test_styled_multiline(nx_font_collection *fonts) {
+    nx_context *ctx=NULL; nx_text_field *field=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("1 1 1",5,4096,&field)==NX_OK);
+    nx_text_field_desc desc={0}; desc.id=1; desc.name=(nx_utf8_span){"Text",4};
+    desc.bounds=(nx_rect){0,0,44,100}; desc.fonts=fonts; desc.pixels_per_em=20;
+    desc.glyph_cache_bytes=65536; desc.multiline=1;
+    nx_text_field_style style={8,2,10};
+    CHECK(styled_frame(ctx,&desc,field,&style) && nx_focus_set(ctx,1)==NX_OK);
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_LINE_START));
+    size_t anchor=0,cursor=0; CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==4);
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_MOVE_UP));
+    CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && cursor==2);
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_LINE_END));
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_MOVE_RIGHT));
+    float x=0,y=0; CHECK(field_caret(ctx,&x,&y) && x==10 && y==50);
+    CHECK(nx_text_field_set_host_ime(field,1)==NX_OK);
+    nx_event focus={0}; focus.type=NX_EVENT_FOCUS; focus.focused=1;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK && styled_frame(ctx,&desc,field,&style));
+    nx_rect caret={0}; CHECK(nx_text_field_host_ime_caret(ctx,1,field,&caret)==NX_OK && caret.x==x && caret.y==y);
+    desc.bounds.width=56; style.inset=4;
+    CHECK(styled_frame(ctx,&desc,field,&style) && field_caret(ctx,&x,&y));
+    CHECK(nx_text_field_host_ime_caret(ctx,1,field,&caret)==NX_OK && caret.x==x && caret.y==y);
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_MOVE_RIGHT));
+    CHECK(styled_command(ctx,&desc,field,&style,NX_TEXT_COMMAND_MOVE_LEFT));
+    CHECK(expect_text(field,"1 1 1"));
+    nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
     uint8_t bytes[512];
     font_fixture(bytes);
@@ -860,6 +902,7 @@ int main(void) {
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
     if (test_description(fonts)) return 1;
     if (test_styled_field(fonts)) return 1;
+    if (test_styled_multiline(fonts)) return 1;
     if (test_host_ime_tokens(fonts)) return 1;
     if (test_native_text_commands(fonts)) return 1;
     if (test_clipboard_model_replacement(fonts)) return 1;
