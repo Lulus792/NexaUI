@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Compose serial after an accessibility edit (2026-11-06)
+
+On NexaUI base `5463c68f8157784d13d086c7ef9cb627355440d0`, an opt-in
+`--no-ime-barrier` diagnostic reproduced the combined-owner failure without
+waiting for the full timeout. After AT-SPI changed and cleared the query, the
+desktop had published text-input serial 3 for the new field revision. The
+compositor's subsequent preedit arrived with serial 2 and was rejected as
+`NX_ERROR_STATE` (first accepted serial 3). This was observed twice. The trace
+records serials, result code and opaque revision only, not input content.
+
+A deterministic transaction regression checks that an old-revision preedit is
+discarded, and a fresh preedit and Unicode commit remain admissible. Static and
+shared GCC and Clang ASan/UBSan transaction, focus and IME-wire tests passed on
+Alpine/WSL. The combined Aetheri owner/AT-SPI/Compose run also passed with its
+test-only Wayland barrier. Test logs, including both failing unsynchronized
+runs and the barrier pass, are in
+`D:/NexaUI/out/nexaui-owner-ime-trace-evidence-20261106.tar.gz`, SHA-256
+`cf434cfc4d458cf6584261f3b535a4fde535db5762181e39fe4a968179f66a29`.
+The pass used runner SHA-256
+`ccb1f091b6da1fdf91d3f1a63d708b3476e6355784b552943ea54e61cf1fdd7c` and
+desktop binary `9a281340939a0e41c5b6ec633e6dfe92dd05b24b739b7cb7f7a35d27b783f8b7`.
+
+The old serial is insufficient evidence to safely apply a composition to a new
+text revision or field. Therefore this does not relax rejection or claim the
+input-loss problem fixed. A reliable unsynchronized handoff needs a reviewed
+contract for provider ordering/reset and field identity, including late replies
+and focus replacement. The recorded run uses virtual input and pre-existing
+Aetheri test binaries; physical and production-provider acceptance remains open.
+
 ## Independent AT-SPI client with the desktop owner (2026-11-06)
 
 On NexaUI base `8c006556a1bc13174a8075e38ff9950628b76c83`, an independent

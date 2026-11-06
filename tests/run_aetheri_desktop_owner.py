@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--owned-settings-source", type=Path,
                         help="isolated Aetheri source snapshot for its bound NexaUI Settings view")
     parser.add_argument("--compose", action="store_true", help="exercise Aetheri's opt-in native Compose provider")
+    parser.add_argument("--no-ime-barrier", action="store_true", help="diagnose immediate input without the test roundtrip")
     parser.add_argument("--atspi-client", type=Path, help="independent AT-SPI client for the running desktop")
     parser.add_argument("--atspi-library-dir", type=Path, help="private runtime libraries for the independent client")
     args = parser.parse_args()
@@ -45,8 +46,10 @@ def main():
     fixture_env = os.environ.copy()
     if args.compose:
         fixture_env["NEXAUI_TEST_IME"] = "1"
-        if args.atspi_client:
+        if args.atspi_client and not args.no_ime_barrier:
             fixture_env["NEXAUI_TEST_IME_BARRIER"] = "1"
+        if args.no_ime_barrier:
+            fixture_env["NEXAUI_TEST_IME_TRACE"] = "1"
     if args.atspi_client:
         if not fixture_env.get("NEXAUI_TEST_ATSPI_ADDRESS"):
             parser.error("--atspi-client requires a private NEXAUI_TEST_ATSPI_ADDRESS")
@@ -147,15 +150,19 @@ def main():
                         raise RuntimeError("independent AT-SPI client failed: " + peer.stderr)
                     wait(lambda: log().count("desktop: QUERY 0 Terminal\n") > before and
                          "desktop: QUERY 0 \n" in log(), "AT-SPI edit and clear")
-                    if args.compose:
+                    if args.compose and not args.no_ime_barrier:
                         wait(lambda: "desktop: IME_BARRIER " in log().rsplit("desktop: QUERY 0 \n", 1)[-1],
                              "native IME resynchronization after accessible edit")
                     result["atspi_case"] = "passed"
                 if args.compose and name == "settings" and not result.get("compose_case"):
                     wait(lambda: "compositor: COMPOSE active=1\n" in log(), "native text-input activation")
                     old_queries = log().count("desktop: QUERY 0 ")
+                    old_rejections = log().count("desktop: IME_REJECT ")
                     tap(127)
-                    wait(lambda: "desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n" in log(), "Compose preedit")
+                    wait(lambda: "desktop: IME_BATCH preedit_bytes=2 commit_scalars=0\n" in log() or
+                         (args.no_ime_barrier and log().count("desktop: IME_REJECT ") > old_rejections), "Compose preedit")
+                    if args.no_ime_barrier and log().count("desktop: IME_REJECT ") > old_rejections:
+                        raise RuntimeError("Compose preedit rejected after an accessible text revision; see IME_REJECT")
                     tap(1)
                     wait(lambda: "desktop: IME_BATCH preedit_bytes=0 commit_scalars=0\n" in log(), "Compose cancel")
                     if log().count("desktop: QUERY 0 ") != old_queries:

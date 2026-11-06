@@ -62,7 +62,7 @@ struct app {
     nx_rect ime_caret;
     char ime_surrounding[AE_DESKTOP_QUERY];
     size_t ime_length,ime_cursor,ime_anchor;
-    bool ime_requested,ime_enabled,ime_defer,ime_test_barrier;
+    bool ime_requested,ime_enabled,ime_defer,ime_test_barrier,ime_test_trace;
     struct wl_output *outputs[3];
     uint32_t output_names[3];
     struct output_observation observed_outputs[3];
@@ -234,7 +234,12 @@ static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial)
     if(!a->ime_enabled || !v || v->remove_pending || !v->view || !v->expanded || v->surface!=a->ime_surface ||
        aetheri_desktop_view_host_ime_revision(v->view,&current)!=NX_OK)current=0;
     aetheri_ime_result result;
-    if(aetheri_ime_done(&a->ime_transaction,serial,current,&result)!=NX_OK)return;
+    nx_result status=aetheri_ime_done(&a->ime_transaction,serial,current,&result);
+    if(status!=NX_OK) {
+        if(a->ime_test_trace)printf("IME_REJECT status=%d serial=%u first=%u last=%u current=%llu\n",
+            status,serial,a->ime_transaction.first_serial,a->ime_transaction.last_serial,(unsigned long long)current);
+        return;
+    }
     printf("IME_BATCH preedit_bytes=%zu commit_scalars=%zu\n",result.preedit_length,result.scalar_count);
     a->ime_defer=!result.can_commit_state;
     size_t lo=a->ime_cursor<a->ime_anchor?a->ime_cursor:a->ime_anchor;
@@ -801,6 +806,7 @@ int main(int argc, char **argv) {
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
                     .ime_test_barrier=getenv("NEXAUI_TEST_IME_BARRIER")!=NULL,
+                    .ime_test_trace=getenv("NEXAUI_TEST_IME_TRACE")!=NULL,
                     .ime_requested=getenv("NEXAUI_TEST_IME")!=NULL,
                     .ax_requested=getenv("NEXAUI_TEST_ATSPI")!=NULL,
                     .ordinary = argc > 1 && (!strcmp(argv[1], "--ordinary") || !strcmp(argv[1], "--forge"))};

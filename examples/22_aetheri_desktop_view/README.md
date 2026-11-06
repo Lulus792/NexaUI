@@ -66,6 +66,11 @@ An independent AT-SPI client can also attach to that running test desktop and
 edit/read its search field. The combined AT-SPI/Compose test uses an explicit
 test-only Wayland synchronization; the unsynchronized transition remains open.
 See the [owner accessibility evidence](../../docs/quality/aetheri-adoption-assessment.md#independent-at-spi-client-with-the-desktop-owner-2026-11-06).
+The optional `--no-ime-barrier` diagnostic reproduces the open transition:
+the compositor can reply to the prior text-input serial after an accessibility
+edit has advanced the field revision. The host rejects that stale preedit;
+this protects the new text but does not yet prevent lost immediate composition.
+See the [serial investigation](../../docs/quality/aetheri-adoption-assessment.md#compose-serial-after-an-accessibility-edit-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

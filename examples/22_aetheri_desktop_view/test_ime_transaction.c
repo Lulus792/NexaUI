@@ -38,6 +38,17 @@ int main(void) {
     CHECK(aetheri_ime_publish(&s,5,11)==NX_ERROR_STATE);
     CHECK(aetheri_ime_publish(&s,6,11)==NX_OK);
     CHECK(aetheri_ime_done(&s,6,11,&out)==NX_OK && !out.scalar_count);
+    /* An AT-SPI edit can advance the text model while a compositor has only
+       seen the preceding commit. Reject its old preedit, then admit a fresh
+       batch without transferring an old composition to the new revision. */
+    CHECK(aetheri_ime_publish(&s,7,20)==NX_OK);
+    CHECK(aetheri_ime_publish(&s,8,21)==NX_OK);
+    CHECK(aetheri_ime_preedit(&s,"\xc2\xb7",2,2,2)==NX_OK);
+    CHECK(aetheri_ime_done(&s,7,21,&out)==NX_ERROR_STATE && !out.preedit_length && !out.scalar_count);
+    CHECK(aetheri_ime_preedit(&s,"\xc2\xb7",2,2,2)==NX_OK);
+    CHECK(aetheri_ime_done(&s,8,21,&out)==NX_OK && out.preedit_length==2);
+    CHECK(aetheri_ime_commit(&s,"\xc3\xa9",2)==NX_OK);
+    CHECK(aetheri_ime_done(&s,8,21,&out)==NX_OK && out.scalar_count==1 && out.scalars[0]==0xe9);
     CHECK(aetheri_ime_publish(&s,UINT32_MAX,11)==NX_OK);
     CHECK(aetheri_ime_publish(&s,1,11)==NX_ERROR_STATE);
     return 0;
