@@ -21,9 +21,13 @@ def main():
     parser.add_argument("--shell", type=Path)
     parser.add_argument("--cmake-cache", type=Path,
                         help="actual Aetheri build cache used to select the fixture profile")
+    parser.add_argument("--owned-settings-source", type=Path,
+                        help="isolated Aetheri source snapshot for its bound NexaUI Settings view")
     args = parser.parse_args()
     if bool(args.terminal) != bool(args.shell):
         parser.error("--terminal and --shell must be supplied together")
+    if args.owned_settings_source and not args.cmake_cache:
+        parser.error("--owned-settings-source requires --cmake-cache")
     fixture, owner, server, desktop, settings = (
         p.resolve(strict=True) for p in (args.fixture, args.owner, args.server, args.desktop, args.settings))
     root = args.work_dir.resolve()
@@ -35,6 +39,13 @@ def main():
     for name, target in (("test_compositor_server", server), ("aetheri-desktop", desktop),
                          ("aetheri-settings", settings)):
         (build / name).symlink_to(target)
+    fixture_env = os.environ.copy()
+    if args.owned_settings_source:
+        # The original owner verifies an ordinary file at its build path.
+        # Keep its executable and profile selection inside this fixture.
+        shutil.copy2(settings, build / "aetheri-settings-nexaui")
+        fixture_env.update(AETHERI_TEST_SETTINGS_UI="nexaui-owned",
+                           AETHERI_TEST_SETTINGS_SOURCE=str(args.owned_settings_source.resolve(strict=True)))
     if args.terminal:
         terminal = args.terminal.resolve(strict=True)
         shell = args.shell.resolve(strict=True)
@@ -54,6 +65,7 @@ def main():
               "fixture_sha256": digest(fixture), "owner_sha256": digest(owner),
               "server_sha256": digest(server), "desktop_sha256": digest(desktop),
               "settings_sha256": digest(settings)}
+    result["settings_ui"] = "nexaui-owned" if args.owned_settings_source else "fixture-default"
     if args.cmake_cache:
         result["cmake_cache_sha256"] = digest((build / "CMakeCache.txt"))
     result["terminal_case"] = "not-run"
@@ -64,7 +76,7 @@ def main():
         with (root / "owner.log").open("wb") as stream:
             child = subprocess.Popen([sys.executable, str(fixture), str(build), str(root),
                                       str(issuer.fileno()), str(owner)], cwd=root,
-                                     pass_fds=(issuer.fileno(),), stdin=subprocess.DEVNULL,
+                                      pass_fds=(issuer.fileno(),), stdin=subprocess.DEVNULL, env=fixture_env,
                                      stdout=stream, stderr=subprocess.STDOUT)
             issuer.close()
             def log():
@@ -123,10 +135,36 @@ def main():
             first = int(re.findall(r"^SPAWN settings (\d+)$", log(), re.M)[0])
             wait(lambda: "desktop: WINDOW " in log() and "org.aetheri.Settings" in log(), "Settings window observation")
             wait_app_focus("org.aetheri.Settings", "S")
+            if args.owned_settings_source:
+                def current_settings_model():
+                    rows = re.findall(r"^settings: MODEL theme=(\d+) german=(\d+) text=(\d+) page=(\d+)$", log(), re.M)
+                    return tuple(map(int, rows[-1])) if rows else None
+                def click_settings(identifier):
+                    def controls():
+                        return re.findall(r"^settings: CONTROL " + str(identifier) +
+                                          r" ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) (\d+)$", log(), re.M)
+                    wait(lambda: controls() and not (int(controls()[-1][4]) & 1),
+                         "enabled Settings control " + str(identifier))
+                    rows = controls()
+                    x, y, width, height = map(float, rows[-1][:4])
+                    event(f"M {40+x+width/2} {40+y+height/2}")
+                    event("B 272 1")
+                    event("B 272 0")
+                wait(lambda: current_settings_model() == (0, 0, 100, 0), "own Settings initial model")
+                click_settings(51)
+                wait(lambda: current_settings_model() == (0, 0, 100, 1), "own Settings Appearance page")
+                click_settings(101)
+                wait(lambda: current_settings_model() == (1, 0, 100, 1), "own Settings Light theme")
+                tap(15)
+                wait(lambda: "settings: FOCUS 102\n" in log(), "own Settings keyboard focus")
+                tap(57)
+                wait(lambda: current_settings_model() == (2, 0, 100, 1), "own Settings keyboard contrast")
             replies = log().count("desktop: LAUNCH_REPLY A S\n")
             launch("settings")
             wait(lambda: log().count("desktop: LAUNCH_REPLY A S\n") > replies, "existing process acknowledgement")
             wait_app_focus("org.aetheri.Settings", "S")
+            if args.owned_settings_source and current_settings_model() != (2, 0, 100, 1):
+                raise RuntimeError("reusing Settings lost its in-memory model")
             if len(re.findall(r"^SPAWN settings \d+$", log(), re.M)) != 1:
                 raise RuntimeError("owner created a duplicate Settings process")
             event("K 29 1")
@@ -202,8 +240,10 @@ def main():
             stopping_at = log().rfind("\nSTOPPING\n")
             settings_at = log().rfind("settings: SHUTDOWN signal\n")
             desktop_at = log().rfind("desktop: RETIRED\n")
+            # Desktop stdout and owner stdout are independent streams; the
+            # owner can observe Q30 before its reader drains CLOSE_REQUEST.
             if min(close_at, stopping_at, settings_at, desktop_at) < 0 or not (
-                    close_at < stopping_at < settings_at < desktop_at):
+                    close_at < settings_at and stopping_at < settings_at < desktop_at):
                 raise RuntimeError("owner did not fence and drain apps before desktop retirement")
             summary = json.loads(ending[1])
             expected_children = {"compositor": 0, "desktop": 0, "settings": 0}

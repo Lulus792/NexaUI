@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Aetheri-owned Settings with the NexaUI desktop fixture (2026-11-06)
+
+On NexaUI base `815864e5c0e885c7ab913181f69b70e8acd0388c`, the isolated
+owner test selected `nexaui-owned` through the unmodified owner and its existing
+binding checks, using the Aetheri source archive at
+`d56d69523c33a48648af343e7d36526f84518c90`. The fixture copied the existing
+owned Settings executable and build cache into its private build directory;
+the selected SDK and source snapshot were only read. This is Aetheri's own
+three-page Settings presentation, using its pinned NexaUI 0.1.18 SDK, while
+the separate desktop fixture uses the previously recorded 0.1.20 SDK.
+
+The first run covered launch, process reuse, close/reopen, Terminal launch and
+reuse, and ordered Ctrl+Q owner shutdown. Later runs additionally used
+virtual pointer input to open Appearance and select Light, then Tab and Space
+to select high contrast. Reopening the existing Settings process preserved that
+model state. Terminal, Settings, desktop and compositor exited 0. The exact
+runner SHA-256 for the final runs was
+`ce5729106f9be97ff973a4218bfd59d380746b8ee6577b5a032ca8af2e43a782`, and the
+Settings executable SHA-256 was
+`fb65795b5e242bb6fb7214710ecec8c3bf1b1fdbd95d35780b9944f536e098ec`.
+Result files and logs are preserved at
+`D:/NexaUI/out/nexaui-owner-owned-v3-final-evidence-20261106.tar.gz`, SHA-256
+`3093d3bde0a5a6f03baf96ba0ca57d3766c41e019088e44a9e3389e8aaea0c1c`.
+The archive retains two intermediate test failures: an assertion assumed the
+relative ordering of independent owner/desktop output streams, and a click
+was attempted before the new page's controls appeared. The final runner waits
+for the control and checks only ordering supported by the observed streams;
+both the owned Settings run and the previous model-consumer regression passed.
+The existing binaries were not rebuilt from source for this run. This evidence
+does not prove native IME/AT-SPI in this combined owner run, production shell
+adoption, physical input/output, persisted settings or human acceptance.
+
 ## Version-3 shell with the current owner (2026-11-06)
 
 On NexaUI base `1eeb035799affe2bdaf4c1a9bb01b76ef70e83b9`, the updated

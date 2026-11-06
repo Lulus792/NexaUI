@@ -54,6 +54,10 @@ covered Settings and Terminal launch/reuse, Settings reopen and Ctrl+Q owner
 shutdown ordering. It used the Settings model consumer and existing test
 binaries; production adoption and actual output hotplug remain open. See the
 [evidence record](../../docs/quality/aetheri-adoption-assessment.md#version-3-shell-with-the-current-owner-2026-11-06).
+An additional isolated run selected Aetheri's own pinned NexaUI Settings through
+the original owner's binding checks, changed its theme with pointer and keyboard,
+and verified state retention across process reuse. See the
+[owned Settings evidence](../../docs/quality/aetheri-adoption-assessment.md#aetheri-owned-settings-with-the-nexaui-desktop-fixture-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
