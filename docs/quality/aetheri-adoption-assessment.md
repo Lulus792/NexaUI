@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## AT-SPI search geometry across output scale changes (2026-11-06)
+
+On NexaUI base `89e9c017eb58e714656c10878e2685554896b16d`, an independent
+libatspi client attached to the private desktop host on the modified Aetheri
+virtual compositor fixture described below. On its second output, the expanded
+search had window-relative logical bounds `(16,16,1248,44)` at 2x; its
+physical capture showed the search field at the corresponding doubled pixel
+position. The client set, read and cleared its text. While the search remained
+open, the fixture switched 2x → 1x → 2x; the client independently observed
+`(16,16,2528,44)` at 1x and `(16,16,1248,44)` again at 2x, and repeated the
+text operation at each scale. The later compact dock transition and logical
+pointer-hit checks also passed. A mutant expecting a 2496-pixel semantic width
+at 2x failed the independent geometry assertion (exit 1).
+
+The final desktop binary SHA-256 was
+`5fedafb1091eae2b7f9dd5ce2a435bae77fb68636d9942626e1079ce37b59839`, the
+independent client was
+`1816e4fbca6e941e9d24b3130066e8298dba58f13098d669cf15be0f3094a56d`, and the
+modified test compositor was
+`01cf280d25f3832b835fd26a3d6d2711ee1a8bc2faad14c811d2f05df1250982`.
+The successful runs, negative geometry run, 1x unchanged-compositor
+regression, fixture sources and captures are in
+`D:/NexaUI/out/nexaui-output-scale-atspi-evidence-20261106.tar.gz`, SHA-256
+`3393299db3f9636e37a59f223b416bffc1c10f0453b540ad37f6b456c328433a`.
+The existing independent multi-view AT-SPI and focus tests also passed under
+ASan/UBSan on Alpine/WSL. Window-relative geometry does not establish screen
+position, screenreader usability, fractional scale, physical output or the
+unchanged Aetheri compositor's 2x behavior.
+
 ## Dynamic output scale and configure ordering (2026-11-06)
 
 On NexaUI base `20456229184ded9ad4d015dd47862a16614567bd`, a controlled

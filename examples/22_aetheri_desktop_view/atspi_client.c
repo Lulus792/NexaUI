@@ -58,7 +58,22 @@ static int attach_existing(const char *value) {
         atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);
         if(!field)pump(10);
     }
-    CHECK(field);AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
+    CHECK(field);
+    const char *expected=getenv("NEXAUI_AX_EXPECT_WINDOW_RECT");
+    if(expected) {
+        int x=0,y=0,w=0,h=0,n=0;CHECK(sscanf(expected,"%d,%d,%d,%d%n",&x,&y,&w,&h,&n)==4 && expected[n]==0);
+        AtspiComponent *component=atspi_accessible_get_component_iface(field);CHECK(component);
+        int matched=0;
+        for(unsigned i=0;i<300 && !matched;++i) {
+            pump(10);atspi_accessible_clear_cache(field);GError *geometry_error=NULL;
+            AtspiRect *rect=atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,&geometry_error);
+            if(rect && !geometry_error && rect->x==x && rect->y==y && rect->width==w && rect->height==h)matched=1;
+            if(geometry_error)g_error_free(geometry_error);
+            if(rect)g_boxed_free(ATSPI_TYPE_RECT,rect);
+        }
+        CHECK(matched);printf("AT-SPI window rect %d %d %d %d\n",x,y,w,h);g_object_unref(component);
+    }
+    AtspiEditableText *editable=atspi_accessible_get_editable_text_iface(field);CHECK(editable);
     GError *error=NULL;CHECK(atspi_editable_text_set_text_contents(editable,"Terminal",&error) && !error);
     int matched=0;
     for(unsigned n=0;n<300 && !matched;++n) {

@@ -93,6 +93,9 @@ The follow-up test changes that virtual output 2x → 1x → 2x while live; the
 host defers redraw until the configure and scale events have settled and
 retires pending refresh callbacks with the output. See the
 [dynamic scale evidence](../../docs/quality/aetheri-adoption-assessment.md#dynamic-output-scale-and-configure-ordering-2026-11-06).
+An independent AT-SPI client also checked and edited the expanded search while
+the same virtual output changed 2x → 1x → 2x; its window-relative bounds stayed
+logical. See the [accessibility scale evidence](../../docs/quality/aetheri-adoption-assessment.md#at-spi-search-geometry-across-output-scale-changes-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

@@ -32,6 +32,8 @@ def main():
                         help="expect a controlled test compositor with its second virtual output at 2x")
     parser.add_argument("--dynamic-output-scale", action="store_true",
                         help="use the test-only Z command to change the second output scale")
+    parser.add_argument("--atspi-client", type=Path, help="independent AT-SPI client for the 2x search")
+    parser.add_argument("--atspi-library-dir", type=Path, help="private runtime libraries for the AT-SPI client")
     parser.add_argument("--test-invalid-launch", choices=("uncorrelated", "oversized", "ancillary", "peer-loss"),
                         help="require the test host to reject an invalid owner response")
     args = parser.parse_args()
@@ -39,6 +41,8 @@ def main():
         parser.error("--test-invalid-launch requires --test-launch-channel")
     if args.dynamic_output_scale and not args.second_output_scale2:
         parser.error("--dynamic-output-scale requires --second-output-scale2")
+    if args.atspi_client and not args.second_output_scale2:
+        parser.error("--atspi-client requires --second-output-scale2")
     server, desktop, font = (p.resolve(strict=True) for p in (args.server, args.desktop, args.font))
     app_client = args.app_client.resolve(strict=True) if args.app_client else None
     root = args.work_dir.resolve()
@@ -48,6 +52,10 @@ def main():
     captures.mkdir(mode=0o700)
     env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY="nexaui-layer",
                NEXAUI_DESKTOP_FONT=str(font))
+    if args.atspi_client:
+        if not env.get("NEXAUI_TEST_ATSPI_ADDRESS"):
+            parser.error("--atspi-client requires a private NEXAUI_TEST_ATSPI_ADDRESS")
+        env["NEXAUI_TEST_ATSPI"] = "1"
     for key in ("DISPLAY", "WAYLAND_SOCKET"):
         env.pop(key, None)
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -181,17 +189,6 @@ def main():
             if tuple(pixels[offset:offset + 3]) != (128, 175, 255):
                 raise RuntimeError("dock pixels missing on output " + str(index))
             result[f"dock_output_{index}_sha256"] = hashlib.sha256(raw).hexdigest()
-        command(client, "e")
-        wait(lambda: "PAINT 0 1920 1080\n" in log("desktop"), "expanded search")
-        wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
-        # The configure callback may submit its buffer after the sync requested
-        # by 'e'. Submit a focused frame and roundtrip it before capture.
-        command(client, "b")
-        wait(lambda: "SYNC b\n" in log("desktop"), "focused search buffer processed")
-        search = capture(2)
-        result["search_field"] = search(20, 20)
-        if search(20, 20) != (38, 44, 54):
-            raise RuntimeError("search field pixels missing")
         controller.settimeout(5)
         def event(value):
             controller.sendall(value.encode("ascii"))
@@ -200,6 +197,55 @@ def main():
         def key(code):
             for down in (1, 0):
                 event(f"K {code} {down}")
+        if args.atspi_client:
+            command(client, "h")
+            wait(lambda: "PAINT 1 1280 720\n" in log("desktop") and "ENTER 1\n" in log("desktop"),
+                 "2x expanded search and native focus")
+            syncs = log("desktop").count("SYNC b\n");command(client, "b")
+            wait(lambda: log("desktop").count("SYNC b\n") > syncs, "2x search buffer processed")
+            capture(2)
+            raw = (captures / "capture-2-output-1.ppm").read_bytes()
+            magic, dimensions, maximum, pixels = raw.split(b"\n", 3)
+            offset = (40 * 2560 + 40) * 3
+            if magic != b"P6" or dimensions != b"2560 1440" or maximum != b"255" or tuple(pixels[offset:offset+3]) != (38, 44, 54):
+                raise RuntimeError("2x physical search field pixels missing")
+            def accessible_search(width):
+                before_text = log("desktop").count("QUERY 1 Terminal\n")
+                before_empty = log("desktop").count("QUERY 1 \n")
+                peer_env = env.copy();peer_env["NEXAUI_AX_EXPECT_WINDOW_RECT"] = f"16,16,{width},44"
+                if args.atspi_library_dir:
+                    peer_env["LD_LIBRARY_PATH"] = str(args.atspi_library_dir.resolve(strict=True))
+                peer = subprocess.run([str(args.atspi_client.resolve(strict=True)), "--attach", str(client.pid)],
+                                      env=peer_env, capture_output=True, text=True, timeout=20)
+                with (root / "atspi-client.log").open("a") as output:
+                    output.write(peer.stdout + peer.stderr)
+                if peer.returncode:
+                    raise RuntimeError("independent AT-SPI client failed: " + peer.stderr)
+                wait(lambda: log("desktop").count("QUERY 1 Terminal\n") > before_text and
+                     log("desktop").count("QUERY 1 \n") > before_empty, "accessible edit and clear")
+            accessible_search(1248)
+            if args.dynamic_output_scale:
+                for scale, backing, width in ((1,"BACKING 1 1 2560 1440\n",2528),
+                                               (2,"BACKING 1 2 2560 1440\n",1248)):
+                    before = log("desktop").count(backing);event(f"Z 1 {scale}")
+                    wait(lambda: log("desktop").count(backing) > before, f"expanded output scale {scale}")
+                    accessible_search(width)
+                result["accessible_dynamic_scale"] = "passed"
+            command(client, "j")
+            wait(lambda: log("desktop").count("PAINT 1 1280 84\n") >= 2, "2x search closed")
+            result["second_output_atspi"] = "passed"
+            result["atspi_client_sha256"] = digest(args.atspi_client.resolve(strict=True))
+        command(client, "e")
+        wait(lambda: "PAINT 0 1920 1080\n" in log("desktop"), "expanded search")
+        wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
+        # The configure callback may submit its buffer after the sync requested
+        # by 'e'. Submit a focused frame and roundtrip it before capture.
+        command(client, "b")
+        wait(lambda: "SYNC b\n" in log("desktop"), "focused search buffer processed")
+        search = capture(3 if args.atspi_client else 2)
+        result["search_field"] = search(20, 20)
+        if search(20, 20) != (38, 44, 54):
+            raise RuntimeError("search field pixels missing")
         if args.second_output_scale2:
             # The compositor's pointer coordinates remain logical; the
             # second output begins at x=1920 and is 720 logical pixels high.
@@ -219,9 +265,11 @@ def main():
                 # sample the separate last button at the same logical inset.
                 offset = ((1440 - 65 * scale) * 2560 + 2560 - 20 * scale) * 3
                 return tuple(pixels[offset:offset+3])
+            capture_offset = 1 if args.atspi_client else 0
             for number, scale, expected, inconsistent in (
                     (3, 1, "BACKING 1 1 2560 84\n", "BACKING 1 2 5120 168\n"),
                     (4, 2, "BACKING 1 2 2560 168\n", "BACKING 1 1 1280 84\n")):
+                number += capture_offset
                 before = log("desktop").count(expected)
                 before_inconsistent = log("desktop").count(inconsistent)
                 event(f"Z 1 {scale}")

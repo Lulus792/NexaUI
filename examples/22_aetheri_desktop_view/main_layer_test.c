@@ -1000,8 +1000,13 @@ int main(int argc, char **argv) {
                 if(strchr("enpzwfiurb",c) && !a.views[0].layer) {
                     printf("IGNORED_REMOVED_OUTPUT %c\n",c);continue;
                 }
+                if((c=='h' || c=='j') && !a.views[1].layer) {
+                    printf("IGNORED_REMOVED_OUTPUT %c\n",c);continue;
+                }
                 if (c == 'e') view_state(&a.views[0], true);
                 else if (c == 'n') view_state(&a.views[0], false);
+                else if (c == 'h') view_state(&a.views[1], true);
+                else if (c == 'j') view_state(&a.views[1], false);
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);
                 else if (c == 's') aetheri_development_desktop_v1_activate(a.control, UINT32_MAX);
                 else if (c == 'g') a.activation_hold=false;
