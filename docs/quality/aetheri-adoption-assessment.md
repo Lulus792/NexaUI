@@ -1,5 +1,40 @@
 # Aetheri adoption: initial source assessment
 
+## Unexpected compositor loss in the running desktop fixture (2026-11-06)
+
+On NexaUI base `ec43b1c29a61393c0da44209fcea8959ff65734b`, the private
+desktop test host treats failure of its running Wayland dispatch, flush or
+roundtrip as unexpected peer loss. It returns failure after retiring local
+views, presenters, pending callbacks and accessibility hosts; it does not
+claim an acknowledged desktop retirement. The normal explicit retirement path
+remains successful. This covers the event-loop paths exercised here, not every
+startup, protocol-error or callback failure path.
+
+With a focused search on an isolated Aetheri test compositor, the driver killed
+only that compositor process. Before the change the host exited with an
+assertion and did not reach its cleanup marker. Afterward the host reported
+the loss and completed local teardown with exit 1. A second test used the
+modified 2x compositor fixture, a private AT-SPI registry and an independent
+libatspi client that held a search accessible: after peer loss and host
+teardown, the old accessible returned an error. The GCC ASan/UBSan-instrumented
+host exited 1 with leak detection enabled and no sanitizer report; the SDK
+shared library itself was the previously built noninstrumented artifact.
+The normal 1x test with independent window and launch peers passed with all
+three processes exiting 0. Alpine/WSL focus, IME-wire and launcher regressions
+and a separate Clang ASan/UBSan multi-view AT-SPI regression passed.
+
+The sanitized host SHA-256 was
+`5942b925a40a42b0a3750db09f776d3d3ac981fb968cae66b0a469a368ed420f`;
+the release host was
+`bc2d018ba4338f0891ccc891437eed2a9020ceda691f68074c49b371f174888b`.
+Logs, the pre-fix failure, an initial attempt where SIGTERM caused a normal
+compositor exit, and both successful loss cases are in
+`D:/NexaUI/out/nexaui-compositor-loss-evidence-20261106.tar.gz`, SHA-256
+`c5525e12322f1774b7a140de1f5fff50f5d8938b1807cca9ffc3fd86b9ee8e2d`.
+This intentionally killed a test-owned isolated compositor, not the running
+Aetheri carrier session. Production supervisor recovery, all failure timing
+windows and physical/human acceptance remain open.
+
 ## AT-SPI search geometry across output scale changes (2026-11-06)
 
 On NexaUI base `89e9c017eb58e714656c10878e2685554896b16d`, an independent

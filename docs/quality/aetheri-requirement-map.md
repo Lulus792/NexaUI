@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/D10/P05/Q04: unexpected Wayland loss in the running private desktop test
+host reaches local teardown with failure and invalidates an independently held
+accessible. Normal retirement remains a separate passing case. Startup,
+other callback-failure timings and production supervisor recovery remain open;
+see [peer-loss evidence](aetheri-adoption-assessment.md#unexpected-compositor-loss-in-the-running-desktop-fixture-2026-11-06).
+
 W04/W05/D05/R01/A02/Q04: the private test host applies the mapped output's committed
 integer scale to its backing buffer and text density. A 2x virtual output and
 logical pointer hit and a live 2x → 1x → 2x transition passed with an altered

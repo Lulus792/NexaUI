@@ -96,6 +96,10 @@ retires pending refresh callbacks with the output. See the
 An independent AT-SPI client also checked and edited the expanded search while
 the same virtual output changed 2x → 1x → 2x; its window-relative bounds stayed
 logical. See the [accessibility scale evidence](../../docs/quality/aetheri-adoption-assessment.md#at-spi-search-geometry-across-output-scale-changes-2026-11-06).
+Unexpected Wayland peer loss during the running test host now reports failure
+and performs local teardown rather than claiming clean retirement. An independent
+AT-SPI client observed the old search accessible become unavailable. See the
+[peer-loss evidence](../../docs/quality/aetheri-adoption-assessment.md#unexpected-compositor-loss-in-the-running-desktop-fixture-2026-11-06).
 
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close

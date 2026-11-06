@@ -20,6 +20,8 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--test-held-removal", action="store_true",
                         help="expose the currently unresolved pressed-device removal case")
+    parser.add_argument("--test-compositor-loss", action="store_true",
+                        help="stop the isolated compositor and require a nonzero clean host teardown")
     parser.add_argument("--app-client", type=Path,
                         help="independent Aetheri compositor test client")
     parser.add_argument("--test-stale-activation", action="store_true",
@@ -144,6 +146,39 @@ def main():
                          for i, width in enumerate(logical_widths)), "three docks")
         if args.second_output_scale2:
             wait(lambda: "BACKING 1 2 2560 168\n" in log("desktop"), "second output 2x buffer")
+        if args.test_compositor_loss:
+            command(client, "e")
+            wait(lambda: "PAINT 0 1920 1080\n" in log("desktop") and "ENTER 0\n" in log("desktop"),
+                 "focused search before peer loss")
+            watch = None
+            if args.atspi_client:
+                watch_env=env.copy()
+                if args.atspi_library_dir:
+                    watch_env["LD_LIBRARY_PATH"]=str(args.atspi_library_dir.resolve(strict=True))
+                watch_stream=(root / "atspi-watch.log").open("wb");streams.append(watch_stream)
+                watch=subprocess.Popen([str(args.atspi_client.resolve(strict=True)),"--watch",str(client.pid)],
+                                       env=watch_env,stdin=subprocess.PIPE,stdout=watch_stream,stderr=subprocess.STDOUT)
+                processes.append(watch)
+                wait(lambda: "WATCH_READY\n" in log("atspi-watch"), "independent accessible before loss")
+            expected_exits.add(compositor)
+            compositor.kill()
+            if compositor.wait(timeout=10) != -signal.SIGKILL:
+                raise RuntimeError("isolated compositor did not stop as requested")
+            if client.wait(timeout=10) != 1:
+                raise RuntimeError("peer loss did not produce the expected failure status")
+            if "WAYLAND_PEER_LOST " not in log("desktop") or "CLOSED_AFTER_PEER_LOSS\n" not in log("desktop"):
+                raise RuntimeError("missing peer-loss cleanup evidence")
+            if "RETIRED\n" in log("desktop"):
+                raise RuntimeError("unexpected peer loss was reported as clean retirement")
+            if re.search(r"AddressSanitizer|LeakSanitizer|runtime error:", log("desktop")):
+                raise RuntimeError("sanitizer reported an error during peer-loss teardown")
+            if watch:
+                watch.stdin.write(b"q\n");watch.stdin.flush()
+                if watch.wait(timeout=10) or "WATCH_DEFUNCT\n" not in log("atspi-watch"):
+                    raise RuntimeError("independent accessible did not become defunct")
+                result["accessible_after_loss"]="defunct"
+            result.update(status="passed", compositor_loss="nonzero host exit after local cleanup")
+            return
         if args.test_invalid_launch:
             if args.test_invalid_launch == "uncorrelated":
                 launch_owner.sendall(b"A3T")

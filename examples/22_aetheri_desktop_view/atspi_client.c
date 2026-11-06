@@ -88,6 +88,24 @@ static int attach_existing(const char *value) {
     g_object_unref(editable);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);
     atspi_exit();puts("Attached AT-SPI search edit and read passed");return 0;
 }
+static int watch_existing(const char *value) {
+    char *end=NULL;long parsed=strtol(value,&end,10);
+    CHECK(*value && end && !*end && parsed>0 && (long)(pid_t)parsed==parsed);
+    CHECK(atspi_init()==0);atspi_set_timeout(1000,1000);
+    AtspiAccessible *desktop=atspi_get_desktop(0);CHECK(desktop);
+    AtspiAccessible *app=app_for_pid(desktop,(pid_t)parsed);CHECK(app);
+    AtspiAccessible *field=NULL;
+    for(unsigned n=0;n<200 && !field;++n) {
+        atspi_accessible_clear_cache(app);field=find(app,"Search",ATSPI_ROLE_ENTRY,0);
+        if(!field)pump(10);
+    }
+    CHECK(field);puts("WATCH_READY");fflush(stdout);
+    CHECK(getchar()=='q');atspi_accessible_clear_cache(field);
+    GError *error=NULL;char *name=atspi_accessible_get_name(field,&error);
+    CHECK(error);g_error_free(error);g_free(name);
+    g_object_unref(field);g_object_unref(app);g_object_unref(desktop);atspi_exit();
+    puts("WATCH_DEFUNCT");return 0;
+}
 static int wait_output(int fd,char *buffer,size_t capacity,size_t *used,const char *needle) {
     for(unsigned n=0;n<100;++n) {
         if(strstr(buffer,needle))return 1;
@@ -103,6 +121,7 @@ static int wait_output(int fd,char *buffer,size_t capacity,size_t *used,const ch
 }
 int main(int argc,char **argv) {
     if(argc==3 && !strcmp(argv[1],"--attach"))return attach_existing(argv[2]);
+    if(argc==3 && !strcmp(argv[1],"--watch"))return watch_existing(argv[2]);
     CHECK(argc==2);const char *font=getenv("NEXAUI_DESKTOP_FONT");CHECK(font && *font);
     int pipes[2];CHECK(!pipe(pipes));child=fork();CHECK(child>=0);
     if(!child){dup2(pipes[1],STDOUT_FILENO);close(pipes[0]);close(pipes[1]);execl(argv[1],argv[1],"--diagnostics",font,(char *)NULL);_exit(127);}

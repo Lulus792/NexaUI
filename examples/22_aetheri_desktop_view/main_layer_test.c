@@ -877,6 +877,7 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     bool owner_fixture=argc>1 && !strcmp(argv[1],"--font");
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
+    int exit_status=0;
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
                     .ime_test_barrier=getenv("NEXAUI_TEST_IME_BARRIER")!=NULL,
                     .ime_test_trace=getenv("NEXAUI_TEST_IME_TRACE")!=NULL,
@@ -961,11 +962,12 @@ int main(int argc, char **argv) {
         }
         bool stop = false;
         while (!stop) {
-            CHECK(wl_display_dispatch_pending(a.display) >= 0);
+            if(wl_display_dispatch_pending(a.display)<0){exit_status=1;goto peer_lost;}
             for(unsigned i=0;i<3;++i)retire_output(&a,i);
             if(stop_requested) {
                 aetheri_development_desktop_v1_retire(a.control);
-                CHECK(wl_display_roundtrip(a.display)>=0 && a.retired);stop=true;break;
+                if(wl_display_roundtrip(a.display)<0){exit_status=1;goto peer_lost;}
+                CHECK(a.retired);stop=true;break;
             }
             if(a.toggle_output>=0) {
                 unsigned output=(unsigned)a.toggle_output;a.toggle_output=-1;
@@ -982,17 +984,18 @@ int main(int argc, char **argv) {
             ime_sync(&a);
             if(a.ime_test_barrier && a.ime_serial && a.ime_serial!=a.ime_barrier_serial) {
                 uint32_t serial=a.ime_serial;
-                CHECK(wl_display_roundtrip(a.display)>=0);a.ime_barrier_serial=serial;
+                if(wl_display_roundtrip(a.display)<0){exit_status=1;goto peer_lost;}
+                a.ime_barrier_serial=serial;
                 printf("IME_BARRIER %u\n",serial);
             }
-            CHECK(wl_display_flush(a.display) >= 0 || errno == EAGAIN);
+            if(wl_display_flush(a.display)<0 && errno!=EAGAIN){exit_status=1;goto peer_lost;}
             struct pollfd fds[7] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
             uint32_t wait_ms=accessibility_prepare(&a,&fds[4],owner_fixture?UINT32_MAX:10000u);
             int wait=wait_ms>(uint32_t)INT32_MAX?-1:(int)wait_ms;
             int ready; do { ready = poll(fds, 7, wait); } while (ready < 0 && errno == EINTR && !stop_requested);
             if(stop_requested)continue;
             CHECK(ready >= 0);
-            if (fds[0].revents) CHECK(wl_display_dispatch(a.display) >= 0);
+            if (fds[0].revents && wl_display_dispatch(a.display)<0){exit_status=1;goto peer_lost;}
             for(unsigned i=0;i<3;++i)retire_output(&a,i);
             if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
             if (fds[1].revents) {
@@ -1050,14 +1053,22 @@ int main(int argc, char **argv) {
                 else if (c == 'r') view_state(&a.views[0], false);
                 else if (c == 'q') {
                     aetheri_development_desktop_v1_retire(a.control);
-                    CHECK(wl_display_roundtrip(a.display) >= 0 && a.retired); stop = true;
+                    if(wl_display_roundtrip(a.display)<0){exit_status=1;goto peer_lost;}
+                    CHECK(a.retired); stop = true;
                 } else CHECK(false);
-                CHECK(wl_display_roundtrip(a.display) >= 0); printf("SYNC %c\n", c);
+                if(wl_display_roundtrip(a.display)<0){exit_status=1;goto peer_lost;}
+                printf("SYNC %c\n", c);
             }
         }
     }
+    goto cleanup;
+peer_lost:
+    {int saved_errno=errno;fprintf(stderr,"WAYLAND_PEER_LOST display=%d errno=%d\n",wl_display_get_error(a.display),saved_errno);}
+    for(unsigned i=0;i<3;++i)a.views[i].remove_pending=true;
+cleanup:
     pointer_cancel_pending(&a);
-    ime_stop(&a);
+    if(exit_status){aetheri_ime_retire(&a.ime_transaction);a.ime_enabled=false;}
+    else ime_stop(&a);
     if(a.ime_input)zwp_text_input_v3_destroy(a.ime_input);
     if(a.ime_manager)zwp_text_input_manager_v3_destroy(a.ime_manager);
     for (unsigned i = 0; i < 3; ++i) {
@@ -1079,5 +1090,5 @@ int main(int argc, char **argv) {
     if (a.pointer) wl_pointer_release(a.pointer);
     if (a.seat) wl_seat_release(a.seat);
     wl_shm_destroy(a.shm); wl_compositor_destroy(a.compositor); wl_registry_destroy(a.registry);
-    wl_display_disconnect(a.display); puts("CLOSED"); return 0;
+    wl_display_disconnect(a.display); puts(exit_status?"CLOSED_AFTER_PEER_LOSS":"CLOSED"); return exit_status;
 }
