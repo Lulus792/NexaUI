@@ -684,6 +684,10 @@ nx_result nx_window_maximize(nx_window *w) {
         nx_mac_report_state(w); return w->events.error;
     }
 }
+nx_result nx_window_fullscreen(nx_window *w) {
+    nx_result result = nx_mac_management_ready(w);
+    return result == NX_OK ? NX_ERROR_UNSUPPORTED : result;
+}
 nx_result nx_window_restore(nx_window *w) {
     nx_result result = nx_mac_management_ready(w); if (result != NX_OK) return result;
     @autoreleasepool {

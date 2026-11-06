@@ -823,6 +823,11 @@ nx_result nx_window_maximize(nx_window *window) {
     return window->event_queue.error;
 }
 
+nx_result nx_window_fullscreen(nx_window *window) {
+    nx_result result = nx_window_management_ready(window);
+    return result == NX_OK ? NX_ERROR_UNSUPPORTED : result;
+}
+
 nx_result nx_window_restore(nx_window *window) {
     nx_result result = nx_window_management_ready(window);
     if (result != NX_OK) return result;

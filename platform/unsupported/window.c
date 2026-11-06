@@ -56,6 +56,7 @@ nx_result nx_window_get_status(nx_window *window, nx_window_status *out) {
 }
 nx_result nx_window_minimize(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
 nx_result nx_window_maximize(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
+nx_result nx_window_fullscreen(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
 nx_result nx_window_restore(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
 nx_result nx_window_begin_move(nx_window *window) { return window ? NX_ERROR_UNSUPPORTED : NX_ERROR_ARGUMENT; }
 nx_result nx_window_begin_resize(nx_window *window, nx_window_resize_edge edge) {

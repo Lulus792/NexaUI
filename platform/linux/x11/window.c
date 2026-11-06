@@ -1309,6 +1309,8 @@ nx_result nx_x11_window_get_status(nx_x11_window *window, nx_window_status *out)
         out->capabilities |= NX_WINDOW_CAP_MAXIMIZE;
     if (nx_x11_supported(window, "_NET_WM_MOVERESIZE"))
         out->capabilities |= NX_WINDOW_CAP_MOVE | NX_WINDOW_CAP_RESIZE;
+    if (nx_x11_supported(window, "_NET_WM_STATE_FULLSCREEN"))
+        out->capabilities |= NX_WINDOW_CAP_FULLSCREEN;
     Atom values[512]; size_t count = 0;
     Atom wm_state = XInternAtom(window->display, "WM_STATE", False);
     if (nx_x11_atoms(window, window->xid, "WM_STATE", wm_state, values, 2, &count) && count) {
@@ -1373,6 +1375,15 @@ nx_result nx_x11_window_maximize(nx_x11_window *window) {
     return nx_x11_send_management(window, "_NET_WM_STATE", 1,
         (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False),
         (long)XInternAtom(window->display, "_NET_WM_STATE_MAXIMIZED_VERT", False), 1, 0);
+}
+
+nx_result nx_x11_window_fullscreen(nx_x11_window *window) {
+    nx_window_status status;
+    nx_result result = nx_x11_window_get_status(window, &status);
+    if (result != NX_OK) return result;
+    if (!(status.capabilities & NX_WINDOW_CAP_FULLSCREEN)) return NX_ERROR_UNSUPPORTED;
+    return nx_x11_send_management(window, "_NET_WM_STATE", 1,
+        (long)XInternAtom(window->display, "_NET_WM_STATE_FULLSCREEN", False), 0, 1, 0);
 }
 
 nx_result nx_x11_window_restore(nx_x11_window *window) {

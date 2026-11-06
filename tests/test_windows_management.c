@@ -48,7 +48,7 @@ int main(void) {
     nx_window_status s; memset(&s,0xff,sizeof(s));
     CHECK(nx_window_get_status(NULL,&s) == NX_ERROR_ARGUMENT && !s.state && !s.known && !s.capabilities && !s.client_chrome);
     CHECK(nx_window_get_status(NULL,NULL) == NX_ERROR_ARGUMENT);
-    CHECK(nx_window_minimize(NULL) == NX_ERROR_ARGUMENT && nx_window_maximize(NULL) == NX_ERROR_ARGUMENT && nx_window_restore(NULL) == NX_ERROR_ARGUMENT);
+    CHECK(nx_window_minimize(NULL) == NX_ERROR_ARGUMENT && nx_window_maximize(NULL) == NX_ERROR_ARGUMENT && nx_window_fullscreen(NULL) == NX_ERROR_ARGUMENT && nx_window_restore(NULL) == NX_ERROR_ARGUMENT);
     CHECK(nx_window_begin_move(NULL) == NX_ERROR_ARGUMENT && nx_window_begin_resize(NULL,NX_WINDOW_RESIZE_LEFT) == NX_ERROR_ARGUMENT);
     nx_window_desc d = {0}; d.title_utf8="NexaUI management native test"; d.width=360; d.height=240; d.flags=NX_WINDOW_HIDDEN;
     nx_window *normal=NULL,*client=NULL;
@@ -97,6 +97,7 @@ int main(void) {
         CHECK(!available || e.type!=NX_EVENT_TEXT);
     } while (available);
     unsigned changes=0;
+    CHECK(nx_window_fullscreen(client)==NX_ERROR_UNSUPPORTED);
     CHECK(nx_window_maximize(client)==NX_OK && IsZoomed(h));
     CHECK(nx_window_get_status(client,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MAXIMIZED));
     MONITORINFO mi={0}; mi.cbSize=sizeof(mi); CHECK(GetMonitorInfoW(MonitorFromWindow(h,MONITOR_DEFAULTTONEAREST),&mi));

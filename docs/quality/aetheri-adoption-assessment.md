@@ -1,5 +1,35 @@
 # Aetheri adoption: initial source assessment
 
+## Explicit fullscreen request (2026-11-06)
+
+The 0.1.21 candidate on base `3aead3ab3d931af136284d075a515ce82201e4e7`
+adds `nx_window_fullscreen` and `NX_WINDOW_CAP_FULLSCREEN`. A successful
+request does not assert an observed transition. Wayland requests the
+compositor's chosen output and X11 requires the advertised EWMH fullscreen
+capability. Windows and macOS return `NX_ERROR_UNSUPPORTED` for a live window;
+their fullscreen request implementation and native tests remain open. The
+existing restore operation also leaves fullscreen. A restore sent before a
+Wayland fullscreen configure sends an explicit fullscreen cancellation.
+
+Alpine/WSL GCC 15.2 static dual-backend tests passed 4/4: private Wayland and
+X11 protocol peers plus native Weston and Openbox management tests. They cover
+request versus observed state, rejected Wayland request, fullscreen and
+restore geometry, and Wayland restore before the first confirmation. A GCC
+15.2 Wayland-only shared Release build passed its 2/2 management tests; an
+external installed C17 consumer linked and ran with the new symbol. Clang
+22.1.3 ASan/UBSan with leak detection passed all 4 dual-backend management
+tests. The shared SDK SHA-256 was
+`575f10c4ee2333a360ae6e3525efcb124cdb4c3616e96706fb6bc2229a024e3a`;
+the sanitized Wayland wire executable was
+`52ed995965dcf50819719cf78937d5e3cf9af6c8b87682e2332d3e1d06f5aa4d`.
+CTest logs and build caches are archived in
+`D:/NexaUI/out/nexaui-fullscreen-evidence-20261106.tar.gz`, SHA-256
+`d0a4f5330498617dfa5cccc634e196273c750b0aa4906e7a2808643d446e0708`.
+The installed consumer result was separately run with exit 0. Tests use virtual
+desktops; actual Aetheri compositor,
+physical displays and Windows/macOS builds and human acceptance remain open.
+No 1.0.0 release is implied.
+
 ## Owner-channel failure in the running desktop fixture (2026-11-06)
 
 On NexaUI base `fedecf21ce1fce006e8086e07fd876e20f273ab9`, the private

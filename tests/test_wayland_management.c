@@ -18,7 +18,7 @@ typedef struct server {
     int configured,reject,bounds_case;
     uint32_t serial,state;
     atomic_int command,moves,resizes,minimizes,decorations,attaches,acks;
-    atomic_int buffer_width,buffer_height,app_requests,app_matches;
+    atomic_int buffer_width,buffer_height,app_requests,app_matches,reject_fullscreen;
 } server;
 static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_resource_destroy(r); }
 static void configure(server *s) {
@@ -108,6 +108,7 @@ static void app_id(struct wl_client *c,struct wl_resource *r,const char *text) {
 }
 static void maximize(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state|=1; configure(s); }
 static void restore(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); if(!(s->state&2u)) s->state&=~1u; configure(s); }
+static void fullscreen(struct wl_client *c,struct wl_resource *r,struct wl_resource *output) { (void)c; CHECK(!output); server *s=wl_resource_get_user_data(r); if(!atomic_load(&s->reject_fullscreen)) s->state|=2; configure(s); }
 static void unfullscreen(struct wl_client *c,struct wl_resource *r) { (void)c; server *s=wl_resource_get_user_data(r); s->state&=~2u; configure(s); }
 static void minimize(struct wl_client *c,struct wl_resource *r) { (void)c; atomic_fetch_add(&((server *)wl_resource_get_user_data(r))->minimizes,1); }
 static void move(struct wl_client *c,struct wl_resource *r,struct wl_resource *seat,uint32_t serial) {
@@ -118,7 +119,7 @@ static void resize(struct wl_client *c,struct wl_resource *r,struct wl_resource 
     int i=atomic_fetch_add(&s->resizes,1); CHECK(seat==s->seat && serial==0 && i<8 && edge==expected[i]);
 }
 static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=app_id,
-    .set_maximized=maximize,.unset_maximized=restore,.unset_fullscreen=unfullscreen,.set_minimized=minimize,.move=move,.resize=resize};
+    .set_maximized=maximize,.unset_maximized=restore,.set_fullscreen=fullscreen,.unset_fullscreen=unfullscreen,.set_minimized=minimize,.move=move,.resize=resize};
 static void top(struct wl_client *c,struct wl_resource *r,uint32_t id) {
     server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,wl_resource_get_version(r),id); CHECK(s->top);
     wl_resource_set_implementation(s->top,&top_impl,s,NULL);
@@ -205,6 +206,17 @@ static void test(int client_mode,int reject) {
         }
         nx_window_status status; CHECK(nx_window_get_status(w,&status)==NX_OK && status.known==14u && status.state==NX_WINDOW_STATE_ACTIVE && status.client_chrome==client_mode);
         CHECK(!(status.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
+        CHECK((status.capabilities&NX_WINDOW_CAP_FULLSCREEN) && nx_window_fullscreen(NULL)==NX_ERROR_ARGUMENT);
+        atomic_store(&s.reject_fullscreen,1); CHECK(nx_window_fullscreen(w)==NX_OK); roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_FULLSCREEN));
+        atomic_store(&s.reject_fullscreen,0);
+        CHECK(nx_window_fullscreen(w)==NX_OK && nx_window_restore(w)==NX_OK);
+        roundtrip(w); roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_FULLSCREEN));
+        CHECK(nx_window_fullscreen(w)==NX_OK && nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_FULLSCREEN));
+        roundtrip(w); CHECK(nx_window_get_status(w,&status)==NX_OK && (status.state&NX_WINDOW_STATE_FULLSCREEN));
+        CHECK(nx_window_restore(w)==NX_OK); roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_FULLSCREEN));
         CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)9)==NX_ERROR_ARGUMENT);
         CHECK(nx_window_maximize(w)==NX_OK && nx_window_get_status(w,&status)==NX_OK && !(status.state&NX_WINDOW_STATE_MAXIMIZED));
         roundtrip(w); CHECK(nx_window_get_status(w,&status)==NX_OK && (status.state&NX_WINDOW_STATE_MAXIMIZED));
@@ -232,6 +244,7 @@ static void test(int client_mode,int reject) {
         send(&s,w,1); send(&s,w,2); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
         send(&s,w,1); send(&s,w,5); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
         send(&s,w,3); CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && (status.capabilities&NX_WINDOW_CAP_FULLSCREEN));
         nx_event e; int available; unsigned states=0,cancels=0;
         do { CHECK(nx_window_next_event(w,&e,&available)==NX_OK); if(available && e.type==NX_EVENT_WINDOW_STATE) ++states; if(available && e.type==NX_EVENT_POINTER_CANCEL) ++cancels; } while(available);
         CHECK((client_mode ? states>=3 : states==0) && cancels==9);

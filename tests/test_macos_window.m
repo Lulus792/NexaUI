@@ -255,6 +255,7 @@ static int test_management(void) {
     [view keyDown:[NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint modifierFlags:0 timestamp:0
         windowNumber:[native windowNumber] context:nil characters:@"\033" charactersIgnoringModifiers:@"\033" isARepeat:NO keyCode:53]];
     CHECK(NSEqualRects([native frame],base) && nx_window_begin_move(w)==NX_ERROR_STATE);
+    CHECK(nx_window_fullscreen(w)==NX_ERROR_UNSUPPORTED);
     CHECK(nx_window_maximize(w)==NX_OK); for(int i=0;i<100 && ![native isZoomed];++i) CHECK(nx_window_poll(w,10)==NX_OK);
     CHECK([native isZoomed] && nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MAXIMIZED));
     CHECK(nx_window_restore(w)==NX_OK); for(int i=0;i<100 && [native isZoomed];++i) CHECK(nx_window_poll(w,10)==NX_OK);

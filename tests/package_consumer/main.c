@@ -36,6 +36,7 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 static void consumer_release(void *user) { (void)user; }
 
 int main(int argc, char **argv) {
+    if (nx_window_fullscreen(NULL) != NX_ERROR_ARGUMENT) return 31;
     if (nx_numeric_field_set_ime_window(NULL, NULL) != NX_ERROR_ARGUMENT) return 28;
     if (nx_numeric_field_set_clipboard(NULL, NULL) != NX_ERROR_ARGUMENT) return 29;
     int numeric_valid = 1;

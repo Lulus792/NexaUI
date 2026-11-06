@@ -69,6 +69,11 @@ int main(void) {
     CHECK(nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_MAXIMIZED));
     CHECK(nx_window_restore(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_MAXIMIZED,0)==0);
     CHECK(wait_geometry(w,0)==0);
+    CHECK(nx_window_get_status(w,&s)==NX_OK && (s.capabilities&NX_WINDOW_CAP_FULLSCREEN));
+    CHECK(nx_window_fullscreen(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_FULLSCREEN,1)==0);
+    CHECK(wait_geometry(w,1)==0);
+    CHECK(nx_window_restore(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_FULLSCREEN,0)==0);
+    CHECK(wait_geometry(w,0)==0);
     nx_window_info restored; CHECK(nx_window_get_info(w,&restored)==NX_OK && restored.width>0 && restored.height>0);
     nx_context *context=NULL; CHECK(nx_context_create(NULL,&owned_context)==NX_OK); context=owned_context;
     size_t routed; CHECK(nx_window_route_events(w,context,&routed)==NX_OK && routed>0);

@@ -1,4 +1,4 @@
-# Core API (0.1.20)
+# Core API (0.1.21)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -22,7 +22,10 @@ scopes require 0.1.8 or newer; Wayland IME commit-boundary flags require
 newer; Linux descriptor interest selection requires 0.1.18 or newer. Read-only
 text snapshots up to 512 KiB require 0.1.19 or newer; writable-text requests
 remain limited to 64 KiB. Explicit `nx_numeric_field_commit` requires 0.1.20
-or newer. This does not declare a
+or newer. `nx_window_fullscreen` and `NX_WINDOW_CAP_FULLSCREEN` require
+0.1.21 or newer. The capability indicates request availability, not compositor
+acceptance; the observed state remains separate. Windows and macOS currently
+return unsupported. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full

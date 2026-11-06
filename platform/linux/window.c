@@ -387,6 +387,12 @@ nx_result nx_window_maximize(nx_window *window) {
     return NX_LINUX_DISPATCH(nx_wayland_window_maximize(window->native.wayland),
         nx_x11_window_maximize(window->native.x11));
 }
+nx_result nx_window_fullscreen(nx_window *window) {
+    if (!window) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_fullscreen(window->native.wayland),
+        nx_x11_window_fullscreen(window->native.x11));
+}
 nx_result nx_window_restore(nx_window *window) {
     if (!window) return NX_ERROR_ARGUMENT;
     if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;

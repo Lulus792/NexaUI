@@ -19,6 +19,7 @@ nx_result nx_x11_window_set_cursor(nx_x11_window *window, nx_cursor_shape shape)
 nx_result nx_x11_window_get_status(nx_x11_window *window, nx_window_status *out);
 nx_result nx_x11_window_minimize(nx_x11_window *window);
 nx_result nx_x11_window_maximize(nx_x11_window *window);
+nx_result nx_x11_window_fullscreen(nx_x11_window *window);
 nx_result nx_x11_window_restore(nx_x11_window *window);
 nx_result nx_x11_window_begin_move(nx_x11_window *window);
 nx_result nx_x11_window_begin_resize(nx_x11_window *window, nx_window_resize_edge edge);

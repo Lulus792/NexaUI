@@ -29,7 +29,7 @@ static int pump(nx_window *w, int events) {
 static void *wrong(void *arg) {
     nx_window_status s; memset(&s,0xff,sizeof(s));
     int ok=nx_window_get_status(arg,&s)==NX_ERROR_STATE && !s.state && !s.known && !s.capabilities && !s.client_chrome &&
-        nx_window_minimize(arg)==NX_ERROR_STATE && nx_window_maximize(arg)==NX_ERROR_STATE && nx_window_restore(arg)==NX_ERROR_STATE &&
+        nx_window_minimize(arg)==NX_ERROR_STATE && nx_window_maximize(arg)==NX_ERROR_STATE && nx_window_fullscreen(arg)==NX_ERROR_STATE && nx_window_restore(arg)==NX_ERROR_STATE &&
         nx_window_begin_move(arg)==NX_ERROR_STATE && nx_window_begin_resize(arg,NX_WINDOW_RESIZE_LEFT)==NX_ERROR_STATE;
     return (void *)(uintptr_t)!ok;
 }
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     size_t output_count=1; uint64_t revision=1;
     CHECK(nx_window_get_wayland_outputs(w,NULL,0,&output_count,&revision)==NX_ERROR_UNSUPPORTED && !output_count && !revision);
     nx_window_status s; CHECK(nx_window_get_status(w,&s)==NX_OK && s.client_chrome && !s.known && s.capabilities==NX_WINDOW_CAP_CLIENT_CHROME);
-    CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED && nx_window_restore(w)==NX_ERROR_UNSUPPORTED);
+    CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_fullscreen(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED && nx_window_restore(w)==NX_ERROR_UNSUPPORTED);
     CHECK(nx_window_begin_move(w)==NX_ERROR_STATE && nx_window_begin_resize(w,(nx_window_resize_edge)0)==NX_ERROR_ARGUMENT);
     Window xid=nx_window_x11_id(w); Display *client=nx_window_x11_display(w);
     Atom motif=XInternAtom(wm,"_MOTIF_WM_HINTS",False),actual; int format; unsigned long count,remaining; unsigned char *data=NULL;
@@ -61,13 +61,20 @@ int main(int argc, char **argv) {
     Atom netstate=XInternAtom(wm,"_NET_WM_STATE",False),active=XInternAtom(wm,"_NET_ACTIVE_WINDOW",False),supported=XInternAtom(wm,"_NET_SUPPORTED",False);
     Atom atoms[]={maxh,maxv,moveresize,full}; XChangeProperty(wm,root,supported,XA_ATOM,32,PropModeReplace,(unsigned char *)atoms,4);
     XSync(wm,False);
-    CHECK(nx_window_get_status(w,&s)==NX_OK && s.capabilities==127u && !(s.known&NX_WINDOW_STATE_MAXIMIZED));
+    CHECK(nx_window_get_status(w,&s)==NX_OK && s.capabilities==(127u|NX_WINDOW_CAP_FULLSCREEN) && !(s.known&NX_WINDOW_STATE_MAXIMIZED));
     Atom wmstate=XInternAtom(wm,"WM_STATE",False); unsigned long normal[]={NormalState,None};
     XChangeProperty(wm,xid,wmstate,wmstate,32,PropModeReplace,(unsigned char *)normal,2);
     XChangeProperty(wm,xid,netstate,XA_ATOM,32,PropModeReplace,NULL,0);
     XChangeProperty(wm,root,active,XA_WINDOW,32,PropModeReplace,(unsigned char *)&xid,1); XSync(wm,False);
-    CHECK(nx_window_get_status(w,&s)==NX_OK && s.known==15u && s.state==NX_WINDOW_STATE_ACTIVE && s.capabilities==127u);
+    CHECK(nx_window_get_status(w,&s)==NX_OK && s.known==15u && s.state==NX_WINDOW_STATE_ACTIVE && s.capabilities==(127u|NX_WINDOW_CAP_FULLSCREEN));
     CHECK(pump(w,1)==0);
+    CHECK(nx_window_fullscreen(w)==NX_OK); XSync(client,False); CHECK(message(wm,netstate,xid,1,(long)full,0)==0);
+    CHECK(nx_window_get_status(w,&s)==NX_OK && !(s.state&NX_WINDOW_STATE_FULLSCREEN));
+    XChangeProperty(wm,xid,netstate,XA_ATOM,32,PropModeReplace,(unsigned char *)&full,1); XSync(wm,False);
+    CHECK(pump(w,1)==0 && nx_window_get_status(w,&s)==NX_OK && (s.state&NX_WINDOW_STATE_FULLSCREEN));
+    CHECK(nx_window_restore(w)==NX_OK); XSync(client,False);
+    CHECK(message(wm,netstate,xid,0,(long)maxh,(long)maxv)==0); CHECK(message(wm,netstate,xid,0,(long)full,0)==0);
+    XChangeProperty(wm,xid,netstate,XA_ATOM,32,PropModeReplace,NULL,0); XSync(wm,False); CHECK(pump(w,1)==0);
     CHECK(nx_window_maximize(w)==NX_OK); XSync(client,False); CHECK(message(wm,netstate,xid,1,(long)maxh,(long)maxv)==0);
     CHECK(nx_window_get_status(w,&s)==NX_OK && !(s.state&NX_WINDOW_STATE_MAXIMIZED)); /* request isn't confirmation */
     XChangeProperty(wm,xid,netstate,XA_ATOM,32,PropModeReplace,(unsigned char *)atoms,2); XSync(wm,False);

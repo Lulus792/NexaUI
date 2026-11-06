@@ -31,6 +31,7 @@ nx_result nx_wayland_window_get_outputs(nx_wayland_window *window,
     nx_wayland_output_info *items, size_t capacity, size_t *count, uint64_t *revision);
 nx_result nx_wayland_window_minimize(nx_wayland_window *window);
 nx_result nx_wayland_window_maximize(nx_wayland_window *window);
+nx_result nx_wayland_window_fullscreen(nx_wayland_window *window);
 nx_result nx_wayland_window_restore(nx_wayland_window *window);
 nx_result nx_wayland_window_begin_move(nx_wayland_window *window);
 nx_result nx_wayland_window_begin_resize(nx_wayland_window *window, nx_window_resize_edge edge);

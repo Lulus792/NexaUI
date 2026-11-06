@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 20
+#define NX_VERSION_PATCH 21
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -398,6 +398,7 @@ typedef struct nx_interaction_state {
 #define NX_WINDOW_CAP_MOVE 16u
 #define NX_WINDOW_CAP_RESIZE 32u
 #define NX_WINDOW_CAP_RESTORE_MINIMIZED 64u
+#define NX_WINDOW_CAP_FULLSCREEN 128u
 
 typedef enum nx_window_resize_edge {
     NX_WINDOW_RESIZE_TOP_LEFT = 1,
@@ -529,6 +530,11 @@ NX_API nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_
 NX_API nx_result nx_window_get_status(nx_window *window, nx_window_status *out_status);
 NX_API nx_result nx_window_minimize(nx_window *window);
 NX_API nx_result nx_window_maximize(nx_window *window);
+/* Request fullscreen on the compositor's chosen output. NX_OK confirms only
+   submission; inspect known/state or state events for the observed outcome.
+   RESTORE leaves fullscreen as well as maximization. Check
+   NX_WINDOW_CAP_FULLSCREEN; Windows and macOS currently return unsupported. */
+NX_API nx_result nx_window_fullscreen(nx_window *window);
 NX_API nx_result nx_window_restore(nx_window *window);
 /* Begin a native interaction from the latest still-held left pointer press in
    this window. The backend owns serial/event provenance; callers cannot supply

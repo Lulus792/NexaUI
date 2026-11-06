@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W07/B04/W12/Q03/Q05: the 0.1.21 candidate adds an explicit fullscreen
+request and capability, independently of maximize and observed state. Linux
+Wayland/X11 wire and Weston/Openbox runs passed; Windows and macOS return
+unsupported, and native builds on those platforms and actual Aetheri and
+physical acceptance remain open. See [fullscreen evidence](aetheri-adoption-assessment.md#explicit-fullscreen-request-2026-11-06).
+
 D05/D10/I07/P05/Q04: the private desktop host rejects invalid owner replies
 atomically across its view models and tears down locally on channel loss or
 uncertain sends. An independent AT-SPI client observed a held accessible become
