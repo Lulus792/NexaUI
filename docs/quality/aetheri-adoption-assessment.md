@@ -31,6 +31,20 @@ Source, configurations and positive/negative logs are archived at
 `D:/NexaUI/out/nexaui-rename-aetheri-20261106.tar.gz`, SHA-256
 `0fc1ed4bc3f30cf9a4f0d3bfc0f4db67c8cefe1f5dd1b127dbbe3c1612bc4e1b`.
 
+The [keyboard driver](../../tests/run_aetheri_rename_keyboard.py), based on
+`814813dccc38090cb69e4300a36bc80078f5b1bf`, independently exercises the same
+binaries with Aetheri's inherited virtual-key socket. Cancel, short-name
+confirmation and 255-byte-name scroll/review each passed in Release and
+ASan/UBSan. It checks no file effect before confirmation, unchanged original
+bytes after Cancel, preserved bytes after rename, disabled Confirm after the
+unknown-result view replacement and final zero/one operation counters. An
+isolated mutant that re-enabled Confirm after the unknown result failed its
+intended assertion. This is virtual-keyboard and injected-failure evidence;
+physical keyboards, other layouts, real service failures and production
+adoption remain open. Logs, the driver and mutant source are archived at
+`D:/NexaUI/out/nexaui-rename-keyboard-aetheri-20261106.tar.gz`, SHA-256
+`d56c0d1a6a650e4c16b49b0cfa270e41069af5679cf72532ce00f542a3298faf`.
+
 ## Files description changes over AT-SPI (2026-11-06)
 
 On base `7e9f5c71d430670d653df14584533d6037be99e7`, the original-model Files
