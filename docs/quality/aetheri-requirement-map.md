@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/W05/Q04: the private desktop test host matches initial compositor output
+names to `wl_output.name` instead of trusting registry order. Controlled
+reordering/negative cases and an isolated Aetheri compositor run passed; dynamic
+output re-addition and physical/mixed-scale acceptance remain open. See
+[candidate evidence](aetheri-adoption-assessment.md#desktop-output-identity-and-fedora-consumer-2026-11-06).
+
 I02/I07/T05/A02/Q06: the private numeric host retains an unrelated queued
 AT-SPI button action exactly once while blocking Apply during IME preedit. A
 negative guard missing that control loses the action. Other queued event kinds

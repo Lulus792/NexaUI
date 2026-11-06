@@ -8,7 +8,7 @@ static void remove_output(int sig){(void)sig;remove_requested=1;}
 int main(int argc,char **argv) {
     CHECK(argc==3 && !strcmp(argv[1],"--diagnostics"));
     setvbuf(stdout,NULL,_IOLBF,0);
-    struct app a={.launcher=-1,.toggle_output=-1};
+    struct app a={.launcher=-1,.toggle_output=-1,.output_mapping_done=true};
     a.font=load_font(argv[2],&a.font_size);CHECK(a.font);
     struct view *v=&a.views[0];v->app=&a;v->width=640;v->height=480;
     v->configured=v->expanded=true;v->revision=1;

@@ -173,11 +173,15 @@ def main():
             result[f"dock_output_{index}_sha256"] = hashlib.sha256(raw).hexdigest()
         command(client, "e")
         wait(lambda: "PAINT 0 1920 1080\n" in log("desktop"), "expanded search")
+        wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
+        # The configure callback may submit its buffer after the sync requested
+        # by 'e'. Submit a focused frame and roundtrip it before capture.
+        command(client, "b")
+        wait(lambda: "SYNC b\n" in log("desktop"), "focused search buffer processed")
         search = capture(2)
         result["search_field"] = search(20, 20)
         if search(20, 20) != (38, 44, 54):
             raise RuntimeError("search field pixels missing")
-        wait(lambda: "ENTER 0\n" in log("desktop"), "search keyboard focus")
         controller.settimeout(5)
         def event(value):
             controller.sendall(value.encode("ascii"))

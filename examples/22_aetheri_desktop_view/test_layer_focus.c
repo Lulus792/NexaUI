@@ -5,7 +5,27 @@
 
 int main(int argc, char **argv) {
     CHECK(argc==2);
-    struct app a={.launcher=-1,.toggle_output=-1};
+    struct app mapping={.output_count=3};
+    for(unsigned i=0;i<3;++i){mapping.outputs[i]=(struct wl_output *)(uintptr_t)(i+1u);mapping.output_names[i]=100u+i;}
+    output_name(&mapping.observed_outputs[0],NULL,"HDMI");
+    output_name(&mapping.observed_outputs[1],NULL,"DP-2");
+    output_name(&mapping.observed_outputs[2],NULL,"eDP");
+    desktop_output(&mapping,NULL,0,"eDP");desktop_output(&mapping,NULL,1,"HDMI");desktop_output(&mapping,NULL,2,"DP-2");
+    desktop_done(&mapping,NULL);
+    struct app bad=mapping;
+    strcpy(bad.observed_outputs[1].name,"HDMI");
+    CHECK(!map_initial_outputs(&bad) && bad.outputs[0]==mapping.outputs[0] && bad.output_names[0]==100);
+    bad=mapping;bad.observed_outputs[1].name[0]=0;CHECK(!map_initial_outputs(&bad));
+    bad=mapping;output_name(&bad.observed_outputs[1],NULL,"DP-2");CHECK(!map_initial_outputs(&bad));
+    bad=mapping;strcpy(bad.desktop_output_names[1],"eDP");CHECK(!map_initial_outputs(&bad));
+    bad=mapping;global_remove(&bad,NULL,101);CHECK(bad.initial_output_removed && !map_initial_outputs(&bad));
+    CHECK(map_initial_outputs(&mapping) && mapping.output_mapping_done);
+    CHECK(mapping.output_names[0]==102 && mapping.output_names[1]==100 && mapping.output_names[2]==101);
+    CHECK(mapping.outputs[0]==(struct wl_output *)(uintptr_t)3 && mapping.outputs[1]==(struct wl_output *)(uintptr_t)1 &&
+          mapping.outputs[2]==(struct wl_output *)(uintptr_t)2);
+    CHECK(!map_initial_outputs(&mapping) && mapping.output_names[0]==102);
+    global_remove(&mapping,NULL,100);CHECK(mapping.views[1].remove_pending && !mapping.views[0].remove_pending);
+    struct app a={.launcher=-1,.toggle_output=-1,.output_mapping_done=true};
     a.font=load_font(argv[1],&a.font_size);CHECK(a.font);
     struct view *v=&a.views[0];
     v->app=&a;v->index=0;v->width=640;v->height=480;

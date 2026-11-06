@@ -96,7 +96,7 @@ int main(int argc,char **argv) {
     CHECK(wl_global_create(server.display,&wl_output_interface,1,&server,wire_bind_extra_output));
     int sockets[2];CHECK(socketpair(AF_UNIX,SOCK_STREAM,0,sockets)==0);CHECK(wl_client_create(server.display,sockets[0]));
     pthread_t thread;CHECK(!pthread_create(&thread,NULL,wire_run,&server));
-    struct app a={.launcher=-1,.toggle_output=-1,.ime_requested=true,.output_count=3};
+    struct app a={.launcher=-1,.toggle_output=-1,.ime_requested=true,.output_count=3,.output_mapping_done=true};
     a.display=wl_display_connect_to_fd(sockets[1]);CHECK(a.display);a.registry=wl_display_get_registry(a.display);CHECK(a.registry);
     CHECK(!wl_registry_add_listener(a.registry,&wire_registry_listener,&a));CHECK(wl_display_roundtrip(a.display)>=0);
     CHECK(a.compositor && a.seat && a.ime_manager && a.unmapped_outputs==1);

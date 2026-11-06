@@ -18,6 +18,23 @@ rejected during CMake configuration. The tested immutable model is from Aetheri
 `7374f381719397abc100dcb784becf59c86d1462`. This requirement applies to the
 example consumer; it does not change the SDK's ABI or Aetheri's source pin.
 
+The private layer test host now matches the desktop protocol's initial output
+names to `wl_output.name`, rather than assuming registry order is the desktop
+index. It rejects missing, duplicate or ambiguous names and an output removed
+before mapping; the same registry IDs are retained for later retirement. The
+layer host requires Wayland client headers 1.20 or newer and a compositor
+advertising `wl_output` version 4. The regular view and borrowed-window targets
+do not inherit that layer-host requirement. The Linux static consumer also
+declares its math-library dependency.
+
+The mapping callback test covers reordered outputs, missing/duplicate names,
+initial removal, repeated mapping and retirement after reordering. An isolated
+Fedora Aetheri test-compositor run on three virtual outputs additionally checked
+the actual initial mapping, search, input, window observations and activation.
+It used the matching-order outputs advertised by that compositor; the reordered
+case is a controlled callback test, not a physical hotplug. New outputs after
+the initial snapshot remain deliberately unmapped.
+
 On the candidate based on `c3dc49068f54a969edf78473341591fabf4894c6`,
 the test layer host defers a known output's registry removal or layer close
 until Wayland dispatch returns. It cancels a pending pointer release and

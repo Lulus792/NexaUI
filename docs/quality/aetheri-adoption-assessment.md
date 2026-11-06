@@ -1,5 +1,48 @@
 # Aetheri adoption: initial source assessment
 
+## Desktop output identity and Fedora consumer (2026-11-06)
+
+On NexaUI base `f7fc000ef139e56d6d1d0467ba6b563a76caad5b`, the private
+desktop layer test host matches the Aetheri protocol's initial output names to
+`wl_output.name` version 4, instead of using registry order as an output index.
+It rejects incomplete, ambiguous or repeated mappings and initial removal;
+later retirement uses the correctly remapped registry ID. Callback tests cover
+reordered outputs, duplicate/missing names, removal and repeat mapping. An
+isolated mutant that again selects registry-order objects failed the reordered
+assertion at `/tmp/nexaui-shell-map-f7fc-9NHe0df8/mutant.log` on the guest.
+
+The standalone desktop consumer now declares its Linux math-library link;
+the initial Fedora/glibc shared-SDK build failed on `fmaxf` without it, while
+Alpine's C library had masked that omission. Layer targets require Wayland
+client headers >=1.20 and a version-4 output global; this does not change the
+core SDK's dependencies. GCC 15.2 Alpine static/shared and Clang 22 ASan/UBSan
+static consumer callback, model, launcher and IME wire tests passed, as did the
+independent layer AT-SPI regression in static and sanitizer profiles.
+
+On the isolated Fedora/glibc carrier, GCC 16.2.1 and Wayland client 1.26,
+the unchanged Aetheri model snapshot `c1c85aef51f464f560790f71ca759fab7eeff353`
+and installed shared 0.1.20 SDK built; the model, focus/mapping and IME wire
+tests passed. The existing Aetheri test compositor and independent window
+client then passed three virtual docks, search, keyboard/pointer input, window
+observation, activation and scrolling; all three processes exited zero.
+Outputs in that run happened to be announced in matching order, so only the
+controlled callback test demonstrates reordered mapping. The original
+pre-existing compositor binary was copied and hashed; its source provenance was
+not independently rebuilt for this run. This is not normal owner adoption,
+physical output/hotplug, mixed-scale, native private-surface IME/AT-SPI or human
+acceptance. Aetheri's checkout and SDK pin were not changed.
+
+The first native run captured the old dock image after the search configure and
+failed its unchanged pixel assertion (`layer-run/result.json`). A focused
+paint plus Wayland roundtrip was added before capture; the assertion was kept.
+The final run is `/tmp/nexaui-shell-map-f7fc-9NHe0df8/layer-run-profile-final/`
+on the guest. SHA-256: SDK library
+`d3067c4d026e45959d56f2aa5f42a3612a7a3c8ddbe26c9951baa03fb52ec05b`,
+desktop host `24e37da65121b2638a934ab8ea4821a3373ffad45f1f39a0d374c25d595208b6`,
+compositor `5d6757df4e2a8417369bb2f81074be96e557ccb6fd4d2e140d3571c0c58e7dab`,
+window client `a2498a02b2c40645da99dfb27ff88f7ae430d9f9cce4d827691921691488f3a9`,
+and Aetheri source archive `a2577a6c9635c9133c1bc97d916154263cbb8d9f19f2ad975555cde5bc6db0af`.
+
 ## Preserving an unrelated AT-SPI action across the guard (2026-11-06)
 
 On base `57d1b74afa92babca0e598bf5b892eff3629af13`, the numeric test host

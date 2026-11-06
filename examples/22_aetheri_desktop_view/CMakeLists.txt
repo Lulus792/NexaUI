@@ -14,6 +14,9 @@ add_library(aetheri_desktop_model STATIC "${AETHERI_SOURCE_DIR}/src/desktop/mode
 target_include_directories(aetheri_desktop_model PUBLIC "${AETHERI_SOURCE_DIR}/src/desktop")
 add_library(aetheri_desktop_view STATIC view.c)
 target_link_libraries(aetheri_desktop_view PUBLIC NexaUI::NexaUI aetheri_desktop_model)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(aetheri_desktop_view PRIVATE m)
+endif()
 add_executable(aetheri_desktop_view_test test_view.c)
 target_link_libraries(aetheri_desktop_view_test PRIVATE aetheri_desktop_view)
 add_executable(aetheri_desktop_ime_transaction_test test_ime_transaction.c ime_transaction.c)
@@ -57,7 +60,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             target_include_directories(aetheri_desktop_borrowed PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
             target_link_libraries(aetheri_desktop_borrowed PRIVATE aetheri_desktop_view aetheri_desktop_xdg_protocol Threads::Threads)
             set_target_properties(aetheri_desktop_borrowed PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
-            if(XKBCOMMON_FOUND AND EXISTS "${AETHERI_SOURCE_DIR}/protocols/wlr-layer-shell-unstable-v1.xml" AND
+            # The private layer host identifies outputs using wl_output.name (v4).
+            if(XKBCOMMON_FOUND AND WAYLAND_CLIENT_VERSION VERSION_GREATER_EQUAL "1.20" AND
+               EXISTS "${AETHERI_SOURCE_DIR}/protocols/wlr-layer-shell-unstable-v1.xml" AND
                EXISTS "${AETHERI_SOURCE_DIR}/protocols/aetheri-development-desktop-v1.xml")
                 set(TEXT_INPUT_XML "${WAYLAND_PROTOCOLS_DIR}/unstable/text-input/text-input-unstable-v3.xml")
                 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/text-input-v3-client.h"

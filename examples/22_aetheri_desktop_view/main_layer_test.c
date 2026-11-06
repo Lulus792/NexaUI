@@ -27,6 +27,7 @@
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 struct app;
+struct output_observation { char name[128]; bool invalid; };
 struct view {
     struct app *app; unsigned index;
     struct wl_surface *surface;
@@ -63,6 +64,10 @@ struct app {
     bool ime_requested,ime_enabled,ime_defer;
     struct wl_output *outputs[3];
     uint32_t output_names[3];
+    struct output_observation observed_outputs[3];
+    char desktop_output_names[3][128];
+    unsigned desktop_output_count;
+    bool desktop_snapshot_done,output_mapping_done,initial_output_removed;
     struct aetheri_development_desktop_v1 *control;
     struct zwlr_layer_shell_v1 *layers;
     struct view views[3];
@@ -416,7 +421,11 @@ static void activation_step(struct app *a) {
     }
 }
 static void desktop_output(void *data, struct aetheri_development_desktop_v1 *control, uint32_t index, const char *name) {
-    (void)data; (void)control; printf("OUTPUT %u %s\n", index, name);
+    struct app *a=data;(void)control;
+    CHECK(!a->desktop_snapshot_done && index==a->desktop_output_count && index<3 && name && *name &&
+          strlen(name)<sizeof(a->desktop_output_names[0]));
+    memcpy(a->desktop_output_names[index],name,strlen(name)+1);++a->desktop_output_count;
+    printf("OUTPUT %u %s\n", index, name);
 }
 static void desktop_window(void *data, struct aetheri_development_desktop_v1 *control, uint32_t id,
         const char *title, const char *app_id, uint32_t active) {
@@ -450,7 +459,9 @@ static void desktop_activated(void *data, struct aetheri_development_desktop_v1 
 static void desktop_retired(void *data, struct aetheri_development_desktop_v1 *control) {
     (void)control; struct app *a = data; a->retired = true; puts("RETIRED");
 }
-static void desktop_done(void *data, struct aetheri_development_desktop_v1 *control) { (void)data; (void)control; puts("DONE"); }
+static void desktop_done(void *data, struct aetheri_development_desktop_v1 *control) {
+    struct app *a=data;(void)control;CHECK(!a->desktop_snapshot_done);a->desktop_snapshot_done=true;puts("DONE");
+}
 static const struct aetheri_development_desktop_v1_listener desktop_listener = {
     .output = desktop_output, .window = desktop_window, .closed = desktop_closed, .toggle = desktop_toggle,
     .activated = desktop_activated, .retired = desktop_retired, .done = desktop_done};
@@ -693,6 +704,42 @@ static void capabilities(void *data, struct wl_seat *seat, uint32_t caps) {
 }
 static void seat_name(void *data, struct wl_seat *seat, const char *name) { (void)data; (void)seat; (void)name; }
 static const struct wl_seat_listener seat_listener = {.capabilities = capabilities, .name = seat_name};
+static void output_geometry(void *data,struct wl_output *output,int32_t x,int32_t y,int32_t pw,int32_t ph,
+                            int32_t subpixel,const char *make,const char *model,int32_t transform) {
+    (void)data;(void)output;(void)x;(void)y;(void)pw;(void)ph;(void)subpixel;(void)make;(void)model;(void)transform;
+}
+static void output_mode(void *data,struct wl_output *output,uint32_t flags,int32_t width,int32_t height,int32_t refresh) {
+    (void)data;(void)output;(void)flags;(void)width;(void)height;(void)refresh;
+}
+static void output_done(void *data,struct wl_output *output) {(void)data;(void)output;}
+static void output_scale(void *data,struct wl_output *output,int32_t scale) {(void)data;(void)output;(void)scale;}
+static void output_name(void *data,struct wl_output *output,const char *name) {
+    struct output_observation *o=data;(void)output;
+    if(!name || !*name || strlen(name)>=sizeof(o->name) || o->name[0]){o->invalid=true;return;}
+    memcpy(o->name,name,strlen(name)+1);
+}
+static void output_description(void *data,struct wl_output *output,const char *description) {(void)data;(void)output;(void)description;}
+static const struct wl_output_listener output_listener={.geometry=output_geometry,.mode=output_mode,
+    .done=output_done,.scale=output_scale,.name=output_name,.description=output_description};
+/* Preserve the original arrays on failure. No registry order is treated as a
+   physical output identity. The compositor snapshot remains authoritative. */
+static bool map_initial_outputs(struct app *a) {
+    if(a->output_mapping_done || !a->desktop_snapshot_done || a->desktop_output_count!=3 ||
+       a->output_count!=3 || a->initial_output_removed)return false;
+    struct wl_output *mapped[3]={0};uint32_t names[3]={0};bool used[3]={0};
+    for(unsigned i=0;i<3;++i) {
+        if(!a->desktop_output_names[i][0])return false;
+        unsigned matches=0,slot=0;
+        for(unsigned j=0;j<3;++j) {
+            if(a->observed_outputs[j].invalid || !a->observed_outputs[j].name[0] || !a->outputs[j] || !a->output_names[j])return false;
+            if(!strcmp(a->desktop_output_names[i],a->observed_outputs[j].name)){++matches;slot=j;}
+        }
+        if(matches!=1 || used[slot])return false;
+        used[slot]=true;mapped[i]=a->outputs[slot];names[i]=a->output_names[slot];
+    }
+    memcpy(a->outputs,mapped,sizeof(mapped));memcpy(a->output_names,names,sizeof(names));
+    a->output_mapping_done=true;return true;
+}
 static void global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) {
     (void)version; struct app *a = data;
     if (!strcmp(interface, "aetheri_development_desktop_v1")) {
@@ -716,8 +763,11 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
             if(a->unmapped_outputs<UINT32_MAX)++a->unmapped_outputs;
             printf("OUTPUT_UNMAPPED %u\n",name);return;
         }
-        a->output_names[a->output_count]=name;
-        a->outputs[a->output_count++] = wl_registry_bind(registry, name, &wl_output_interface, 1);
+        CHECK(a->ordinary || version>=4);
+        unsigned slot=a->output_count++;
+        a->output_names[slot]=name;
+        a->outputs[slot] = wl_registry_bind(registry, name, &wl_output_interface, version>=4?4:version);
+        CHECK(a->outputs[slot] && wl_output_add_listener(a->outputs[slot],&output_listener,&a->observed_outputs[slot])==0);
     } else if (!strcmp(interface, "wl_seat")) {
         a->seat = wl_registry_bind(registry, name, &wl_seat_interface, 5); CHECK(a->seat);
         CHECK(wl_seat_add_listener(a->seat, &seat_listener, a) == 0);
@@ -725,7 +775,10 @@ static void global(void *data, struct wl_registry *registry, uint32_t name, cons
 }
 static void global_remove(void *data, struct wl_registry *registry, uint32_t name) {
     struct app *a=data;(void)registry;
-    for(unsigned i=0;i<3;++i)if(a->output_names[i]==name && name)a->views[i].remove_pending=true;
+    for(unsigned i=0;i<3;++i)if(a->output_names[i]==name && name){
+        if(!a->output_mapping_done)a->initial_output_removed=true;
+        else a->views[i].remove_pending=true;
+    }
 }
 static const struct wl_registry_listener registry_listener = {.global = global, .global_remove = global_remove};
 int main(int argc, char **argv) {
@@ -796,6 +849,7 @@ int main(int argc, char **argv) {
         CHECK(a.control && a.layers);
         printf("GLOBALS %u %u\n", a.control_name, a.layer_name);
         CHECK(wl_display_roundtrip(a.display) >= 0);
+        CHECK(map_initial_outputs(&a));
         if (argc == 2 && !strcmp(argv[1], "--duplicate")) {
             struct wl_proxy *duplicate = wl_registry_bind(a.registry, a.control_name, &aetheri_development_desktop_v1_interface, 1);
             CHECK(duplicate); CHECK(wl_display_roundtrip(a.display) >= 0);
@@ -844,7 +898,7 @@ int main(int argc, char **argv) {
             if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
             if (fds[1].revents) {
                 char c; CHECK(read(STDIN_FILENO, &c, 1) == 1);
-                if(strchr("enpzwfiur",c) && !a.views[0].layer) {
+                if(strchr("enpzwfiurb",c) && !a.views[0].layer) {
                     printf("IGNORED_REMOVED_OUTPUT %c\n",c);continue;
                 }
                 if (c == 'e') view_state(&a.views[0], true);
@@ -852,7 +906,7 @@ int main(int argc, char **argv) {
                 else if (c == 'a') aetheri_development_desktop_v1_activate(a.control, a.first_id);
                 else if (c == 's') aetheri_development_desktop_v1_activate(a.control, UINT32_MAX);
                 else if (c == 'g') a.activation_hold=false;
-                else if (c == 'p') paint(&a.views[0]);
+                else if (c == 'p' || c == 'b') paint(&a.views[0]);
                 else if (c == 'z') {
                     struct view *v=&a.views[0];ae_desktop_model_search(&v->model,0,true);
                     CHECK(v->revision<UINT64_MAX);++v->revision;paint(v);
