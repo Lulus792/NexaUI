@@ -30,7 +30,7 @@ typedef struct test_server {
     atomic_int activation_count, deactivation_count, caret_ok;
     atomic_int send_keysyms;
     atomic_int send_old_commit;
-    atomic_int send_race_preedit, send_real_leave;
+    atomic_int send_race_preedit, send_real_leave, send_old_preedit;
     atomic_int normal_content, password_content;
     char surrounding[64];
     uint32_t surrounding_cursor, surrounding_anchor;
@@ -270,6 +270,11 @@ static void text_commit_state(struct wl_client *client,
     if (atomic_exchange(&server->send_real_leave, 0)) {
         zwp_text_input_v1_send_leave(resource);
         zwp_text_input_v1_send_commit_string(resource, serial, "x");
+        return;
+    }
+    if (atomic_exchange(&server->send_old_preedit, 0)) {
+        zwp_text_input_v1_send_preedit_cursor(resource, 1);
+        zwp_text_input_v1_send_preedit_string(resource, serial, "'", "");
         return;
     }
     if (atomic_exchange(&server->send_old_commit, 0)) {
@@ -541,6 +546,38 @@ int main(void) {
     /* A caret-only update can overtake an IME commit without changing its
        editor or text revision. A newer surrounding snapshot must still veto
        an old commit, even when both were queued before dispatch. */
+    atomic_store(&server.send_old_preedit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 20, "safe", 4, 4, 4) == NX_OK);
+    CHECK(nx_window_set_ime_rect(window, (nx_rect){24, 34, 2, 18}) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_get_ime_preedit(window, preedit, sizeof(preedit), &length, &begin, &end) == NX_OK &&
+          length == 1 && preedit[0] == '\'');
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_IME_PREEDIT_CHANGED && event.ime_target == 91 && event.ime_revision == 20);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_old_preedit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 21, "old", 3, 3, 3) == NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 22, "new", 3, 3, 3) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_get_ime_preedit_for(window, 91, 22, NULL, 0, &length, &begin, &end) == NX_ERROR_STATE && length == 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    CHECK(nx_window_set_ime_surrounding_text(window, 92, 2, "clean", 5, 5, 5) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available &&
+          event.type == NX_EVENT_IME_PREEDIT_CHANGED);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_old_preedit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 23, "old", 3, 3, 3) == NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window, 92, 3, "new", 3, 3, 3) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_get_ime_preedit(window, NULL, 0, &length, &begin, &end) == NX_OK && length == 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
+    atomic_store(&server.send_old_preedit, 1);
+    CHECK(nx_window_set_ime_surrounding_text(window, 91, 24, "old", 3, 3, 3) == NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window, 0, 0, NULL, 0, 0, 0) == NX_OK);
+    CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    CHECK(nx_window_get_ime_preedit(window, NULL, 0, &length, &begin, &end) == NX_OK && length == 0);
+    CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
     atomic_store(&server.send_old_commit, 1);
     CHECK(nx_window_set_ime_surrounding_text(window, 91, 10, "safe", 4, 4, 4) == NX_OK);
     CHECK(nx_window_set_ime_rect(window, (nx_rect){22, 34, 2, 18}) == NX_OK);

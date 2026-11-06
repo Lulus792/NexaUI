@@ -2,6 +2,7 @@
 import os
 import queue
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -15,8 +16,9 @@ def main():
             os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test'):
         return 77
     host_path, xdotool, font = sys.argv[1:4]
-    ime = len(sys.argv) == 5 and sys.argv[4] in ('--ime', '--preedit')
-    preedit = ime and sys.argv[4] == '--preedit'
+    ime = len(sys.argv) == 5 and sys.argv[4] in ('--ime', '--preedit', '--batch')
+    preedit = ime and sys.argv[4] in ('--preedit', '--batch')
+    batch = ime and sys.argv[4] == '--batch'
     if len(sys.argv) == 5 and not ime:
         return 2
     if ime and os.environ.get('NEXAUI_TEST_SIMPLE_IME') != '1':
@@ -60,7 +62,7 @@ def main():
         time.sleep(1)
         key('Tab'); wait_for('STATE 1234 1234 1 1')
         key('5'); wait_for('STATE 12345 1234 1 1')
-        if preedit:
+        if preedit and not batch:
             key('108'); key('apostrophe'); wait_for('COMPOSITION_ACTIVE 1')
         if ime:
             pointer = None
@@ -84,9 +86,34 @@ def main():
             if not pointer:
                 raise RuntimeError('Could not locate numeric surface on private output')
             x, y, local_x, local_y = pointer
+            if batch:
+                log_path = env['NEXAUI_TEST_WESTON_LOG']
+                deadline = time.monotonic()+5
+                while time.monotonic() < deadline:
+                    with open(log_path, encoding='utf-8', errors='replace') as log:
+                        if 'Surrounding text updated: 12345' in log.read():
+                            break
+                    time.sleep(.01)
+                else:
+                    raise RuntimeError('IME did not acknowledge the current numeric draft')
+                offset = os.path.getsize(log_path)
+                host.send_signal(signal.SIGSTOP)
+                key('108'); key('apostrophe')
+                deadline = time.monotonic()+5
+                while time.monotonic() < deadline:
+                    with open(log_path, encoding='utf-8', errors='replace') as log:
+                        log.seek(offset)
+                        if re.search(r'-> zwp_text_input_v1#\d+\.preedit_string\(\d+, "\'", "\'"\)', log.read()):
+                            break
+                    time.sleep(.01)
+                else:
+                    raise RuntimeError('IME did not send preedit before the pointer press')
             subprocess.run([xdotool, 'mousemove', '--window', windows[0],
                             str(round(x+80-local_x)), str(round(y+88-local_y)), 'click', '1'],
                            env=env, check=True, timeout=5)
+            if batch:
+                host.send_signal(signal.SIGCONT)
+                wait_for('SAME_BATCH')
             if preedit:
                 wait_for('AFTER_CLICK 1 1234 1')
                 key('a'); wait_for('STATE 12345á 1234 0 1')
@@ -119,6 +146,8 @@ def main():
         return 0
     finally:
         if host.poll() is None:
+            if batch:
+                host.send_signal(signal.SIGCONT)
             host.terminate()
             try:
                 host.wait(timeout=5)

@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I02/T04/T05/Q06: v1 preedit now tolerates caret-only serial advances while
+checking the editor snapshot. An isolated numeric host demonstrated a guard
+frame when observed preedit and pointer press share a native input batch; this
+does not establish a general host/AT-SPI event barrier. See [candidate evidence](aetheri-adoption-assessment.md#wayland-v1-preedit-serial-and-queued-pointer-input-2026-11-06).
+
 I01/I02/T05/Q06: pointer presses on a disabled target now retain focus and
 cannot click through. A published disabled Apply frame preserved an active
 simple-IME preedit across a native pointer click; same-batch state transitions,

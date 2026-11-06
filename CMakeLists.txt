@@ -889,6 +889,11 @@ if(NEXAUI_BUILD_TESTS)
                         $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL} ${_nested_keyboard_font} --preedit)
                 set_tests_properties(nexaui_wayland_numeric_apply_preedit_guard PROPERTIES
                     TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_wayland_numeric_apply_preedit_batch
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_numeric_apply.py
+                        $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL} ${_nested_keyboard_font} --batch)
+                set_tests_properties(nexaui_wayland_numeric_apply_preedit_batch PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
             endif()
         endif()
         if(TARGET nexaui_wayland_numeric_peer_host AND NEXAUI_NUMERIC_PEER_COPY AND NEXAUI_NUMERIC_PEER_PASTE)

@@ -30,6 +30,7 @@ def main():
     group.add_argument('--numeric', action='store_true', help='Run the numeric-field IME case')
     group.add_argument('--numeric-apply', action='store_true', help='Run the numeric Apply pointer/IME case')
     group.add_argument('--numeric-preedit', action='store_true', help='Run the numeric Apply preedit guard case')
+    group.add_argument('--numeric-batch', action='store_true', help='Run the numeric preedit/pointer batch case')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
     build, work = args.build_dir.resolve(), args.work_dir.resolve()
@@ -45,6 +46,8 @@ def main():
             command.append('--numeric-apply')
         if args.numeric_preedit:
             command.append('--numeric-preedit')
+        if args.numeric_batch:
+            command.append('--numeric-batch')
         return subprocess.run(command, env=env, check=False, timeout=60).returncode
     if os.environ.get('NEXAUI_TEST_PRIVATE_X11') != '1' or not os.environ.get('DISPLAY'):
         parser.error('internal invocation requires the owned Xvfb fixture')
@@ -54,8 +57,14 @@ def main():
                     '-option', '', '-option', 'compose:ralt'], check=True, timeout=10)
     env = dict(os.environ, NEXAUI_WESTON_INPUT_METHOD='weston-simple-im',
                NEXAUI_TEST_SIMPLE_IME='1', XKB_DEFAULT_OPTIONS='compose:ralt')
+    if args.numeric_batch:
+        # Observe the provider-to-client protocol event before sending the
+        # pointer press while the client is deliberately stopped.
+        env['WAYLAND_DEBUG'] = '1'
     junit = work / 'simple-ime.xml'
-    if args.numeric_preedit:
+    if args.numeric_batch:
+        pattern, expected = '^nexaui_wayland_numeric_apply_preedit_batch$', {'nexaui_wayland_numeric_apply_preedit_batch'}
+    elif args.numeric_preedit:
         pattern, expected = '^nexaui_wayland_numeric_apply_preedit_guard$', {'nexaui_wayland_numeric_apply_preedit_guard'}
     elif args.numeric_apply:
         pattern, expected = '^nexaui_wayland_numeric_apply_simple_ime$', {'nexaui_wayland_numeric_apply_simple_ime'}

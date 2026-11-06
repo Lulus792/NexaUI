@@ -27,6 +27,19 @@ done:
     if(output && fclose(output))okay=0;
     free(pixels);return okay;
 }
+/* Publish the currently observed preedit guard before routing a waiting input
+   batch. This fixture has no published AT-SPI tree and no pending UI events. */
+static int publish_preedit_guard(nx_context *ctx,const nx_numeric_field_desc *number_desc,
+                                 nx_numeric_field *number,const nx_text_layout *label,
+                                 const nx_window_info *info) {
+    nx_interaction_state state;int valid;
+    nx_control_desc apply={0};apply.id=2;apply.bounds=(nx_rect){20,70,120,36};
+    apply.name=(nx_utf8_span){"Apply",5};apply.label_layout=label;
+    apply.label_origin=(nx_point){55,78};apply.glyph_cache_bytes=65536;apply.disabled=1;
+    return nx_begin_frame(ctx,info->width,info->height,0)==NX_OK &&
+        nx_numeric_field_widget(ctx,number_desc,number,&state,&valid)==NX_OK &&
+        nx_button(ctx,&apply,&state)==NX_OK && nx_end_frame(ctx)==NX_OK;
+}
 int main(int argc, char **argv) {
     int ime=(argc==2 && !strcmp(argv[1],"--ime")) || (argc==3 && !strcmp(argv[1],"--apply-ime"));
     int apply_mode=argc==3 && (!strcmp(argv[1],"--apply") || !strcmp(argv[1],"--apply-ime"));
@@ -64,21 +77,32 @@ int main(int argc, char **argv) {
     char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1,composition_active=-1;nx_window_info previous_info={0};
     for(;;) {
         nx_window_info info;size_t routed=0;nx_interaction_state state;
-        if(nx_window_poll(window,50)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
-           nx_window_route_events(window,ctx,&routed)!=NX_OK)goto done;
+        if(nx_window_poll(window,50)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK)goto done;
+        if(apply_mode && ime && composition_active!=1) {
+            size_t length=0;int32_t begin=0,end=0;
+            if(nx_window_get_ime_preedit(window,NULL,0,&length,&begin,&end)!=NX_OK)goto done;
+            if(length && nx_focus_id(ctx)==desc.id) {
+                if(!publish_preedit_guard(ctx,&desc,number,apply_label,&info))goto done;
+                puts("PREEDIT_GUARD_PUBLISHED");puts("COMPOSITION_ACTIVE 1");composition_active=1;dirty=1;
+            }
+        }
+        if(nx_window_route_events(window,ctx,&routed)!=NX_OK)goto done;
         if(info.should_close){okay=1;break;}
         if(routed || confirm_requested || info.width!=previous_info.width || info.height!=previous_info.height || info.scale!=previous_info.scale)dirty=1;
         previous_info=info;
         if(!dirty)continue;
         if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK)goto done;
-        const nx_event *events=NULL;size_t event_count=0;int close_requested=0,pointer_release=0;
+        const nx_event *events=NULL;size_t event_count=0;int close_requested=0,pointer_release=0,preedit_event=0,pointer_press=0;
         if(nx_frame_events(ctx,&events,&event_count)!=NX_OK)goto done;
         for(size_t i=0;i<event_count;++i) {
             if(events[i].type==NX_EVENT_KEY_DOWN && events[i].key==NX_KEY_ESCAPE)close_requested=1;
             if(events[i].type==NX_EVENT_POINTER_UP && events[i].button==NX_BUTTON_LEFT)pointer_release=1;
+            if(events[i].type==NX_EVENT_POINTER_DOWN && events[i].button==NX_BUTTON_LEFT)pointer_press=1;
+            if(events[i].type==NX_EVENT_IME_PREEDIT_CHANGED)preedit_event=1;
             if(apply_mode && getenv("NEXAUI_NUMERIC_POINTER_TRACE") && events[i].type==NX_EVENT_POINTER_MOVE)
                 printf("POINTER %.2f %.2f\n",events[i].x,events[i].y);
         }
+        if(apply_mode && ime && preedit_event && pointer_press)puts("SAME_BATCH");
         if(nx_numeric_field_widget(ctx,&desc,number,&state,&valid)!=NX_OK)goto done;
         nx_interaction_state button_state={0};
         if(apply_mode) {

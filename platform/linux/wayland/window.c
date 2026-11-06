@@ -1250,7 +1250,16 @@ static void nx_wayland_ime_preedit(void *data,
     int cursor_set = window->ime_v1_preedit_cursor_set;
     int32_t cursor = window->ime_v1_preedit_cursor;
     window->ime_v1_preedit_cursor_set = 0;
-    if (!nx_wayland_ime_v1_serial_valid(window, serial) || !value) return;
+    /* Cursor-rectangle commits may overtake a preedit reply. As for committed
+       text, accept the earlier serial only while its editor snapshot remains
+       current; a withdrawn, replaced or untagged snapshot stays strict. */
+    int snapshot_current = window->ime_surrounding_target &&
+        window->ime_surrounding_sent && !window->ime_surrounding_withdrawn &&
+        (uint32_t)(serial - window->ime_surrounding_serial) <=
+        (uint32_t)(window->ime_serial - window->ime_surrounding_serial);
+    if (!value || !nx_wayland_ime_serial_valid(window, serial) ||
+        (serial != window->ime_serial && !snapshot_current) ||
+        (window->ime_surrounding_target && !snapshot_current)) return;
     size_t length = strnlen(value, 1048577u);
     if (length > 1048576u) {
         window->event_queue.error = NX_ERROR_LIMIT;

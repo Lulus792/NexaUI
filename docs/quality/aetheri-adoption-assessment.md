@@ -1,5 +1,48 @@
 # Aetheri adoption: initial source assessment
 
+## Wayland v1 preedit serial and queued pointer input (2026-11-06)
+
+On base `9416e2a5e81e15783ea716c05decc5fef18b2dd8`, Wayland text-input-v1
+now accepts an older preedit serial after a caret-only state update if it remains
+within the current activation and the advertised editor/surrounding revision is
+unchanged. A changed editor, changed or withdrawn snapshot, old activation and
+untagged old serial remain rejected. This aligns preedit with the existing
+revision-guarded commit path. The controlled v1 server checks the accepted old
+reply and changed-revision, changed-target and withdrawn-snapshot negatives;
+the v1/v3 tests pass in GCC 15.2 static/shared and Clang 22 ASan/UBSan static.
+An unmodified-base negative failed the new accepted-preedit assertion at
+`/tmp/nexaui-preedit-batch-negative-20261106/serial-negative.log`.
+
+The numeric test host also experiments with publishing an IME-preedit-disabled
+Apply frame *before* routing the next native event batch. It has no pending UI
+events or published AT-SPI tree at that point. A private Weston simple-IME
+test stops only its own client, observes the provider's preedit on the protocol,
+queues a pointer click, and resumes it. It requires both events in one routed
+frame and checks that preedit and focus survive, followed by an invalid commit
+that does not update the numeric value. Static/shared/sanitized builds passed;
+the sanitized case passed twice. With the serial fix retained but the host guard
+disabled in an isolated copy, the same batch lost focus and preedit:
+`/tmp/nexaui-preedit-batch-negative-20261106/barrier-only-negative.log`.
+The base archive SHA-256 is
+`a18c60f25d2f2dd85267dd3a23054fc5d8047ba0fc0360ca42db04854250e9ca`.
+
+Earlier attempts using fixed sleeps were intermittent: an ASan run discarded
+preedit before the click. Logs are retained in
+`/tmp/nexaui-preedit-batch-asan-20261106/` and
+`/tmp/nexaui-preedit-batch-asan-final-20261106/`. The final test waits for
+observable provider and surrounding-text protocol state and does not treat a
+missing batch as a pass. Separate preedit, pointer and keyboard regressions and
+the four Settings simple-IME cases pass in static Debug. The first Settings
+attempt had two missing test executables; after building the existing focus
+client, all four passed at `/tmp/nexaui-preedit-settings-complete-20261106/`.
+
+This is one host experiment, not a new general event-loop API: an extra frame
+can consume queued context work and affect accessibility publication in other
+hosts. The window query exposes the latest preedit snapshot, not historical
+snapshots for every queued event. Multiple preedit changes in one poll, other
+IMEs, AT-SPI actions in the same batch, actual Aetheri, physical input and human
+acceptance remain open. No Aetheri pin or worktree was changed.
+
 ## Disabled pointer target preserves composition focus (2026-11-06)
 
 On base `ca19ea2b1900876ee2a700f144053f08f67cf586`, primary pointer down on a
