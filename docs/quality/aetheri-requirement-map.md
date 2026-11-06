@@ -1,5 +1,13 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/D11/L11/P07/B07/A02/I01/W10/Q04: the original-operation observer now has
+installed public Wayland/software hosting with native AT-SPI and virtual-keyboard
+Release/ASan/UBSan evidence. Current operation identity, busy-to-uncertain view
+replacement, retired references, restored focus and clean Close are checked;
+the disabled provider fails discovery. Real services, production recovery and
+broader native/physical/human acceptance remain open. See
+[native observer evidence](aetheri-adoption-assessment.md#native-original-operation-observer-2026-11-06).
+
 D07/D11/L11/P07/B07: an external C17 view now reads an original Aetheri catalogue
 operation at a copied request identity. Static/shared/sanitizer core-event and
 software checks cover query failure, uncertain view replacement and no request

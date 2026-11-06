@@ -1,5 +1,82 @@
 # Aetheri adoption: initial source assessment
 
+## Native original-operation observer (2026-11-06)
+
+On base `eff6efecea02c8a7584a5696116d5be0e94806e0`, the
+[external observer](../../examples/27_aetheri_operation/README.md) adds a public
+Wayland/software host and an independent C17 libatspi client. The host waits on
+native/accessibility work and a borrowed test-control pipe using
+`nx_window_poll_with_fd`; it creates no activity animation timer. A fixture
+command transitions the same original operation to uncertain, detaches the old
+semantics and recreates only the view. Catalogue, request, manifest and fonts
+stay with the original test owner. No SDK core or Aetheri source changed.
+
+The catalogue/core libraries remain Aetheri
+`1fb45c7c21f914a2893457132b609be50ef4280d`. The isolated headless compositor is
+the unchanged test binary from Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`, SHA-256
+`631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75`.
+The existing GCC 16.2.1 AT-SPI-enabled static Release and ASan/UBSan 0.1.23
+software SDK builds were installed into separate test prefixes. The native
+consumer uses installed public NexaUI headers; the separate libatspi client uses
+no NexaUI/Aetheri headers or libraries. Its C17 compile used
+`-Wall -Wextra -Wpedantic -Werror` and the existing private AT-SPI development
+prefix. No system packages, live session, SDK pin or authority were changed.
+
+Four final positive cases passed: native AT-SPI Refresh/Close and virtual
+Space/Tab/Enter input, each in Release and ASan/UBSan. The independent client
+queries complete operation-ID and component values, status role, busy/read-only
+states, absent numeric value/action, cleared busy after view replacement,
+rediscovered current objects, a defunct old reference and restored focus. The
+host checks one acceptance, one operation and unchanged catalogue revision
+during view-only work. The Python driver independently reads the final original
+`blocked/stage` operation with no completed outcome. Both client and private
+compositor exit zero. This is controlled metadata uncertainty, not a real failed
+installation or a production service transaction.
+
+An AT-SPI-disabled installed host maps and fails the expected status discovery;
+its forced negative teardown is not a clean-close pass. The first new client
+incorrectly retained the old application object after unpublication and failed
+rediscovery. It now follows the registry again and compares bus plus object
+identity, as required across re-registration; the original failure is retained.
+An initial attempt to build the new disabled-host target before reconfiguring
+its old build tree also failed and is retained. Neither fixture issue implied an
+SDK correction. The shared/static/sanitizer headless tests also passed after
+factoring their original input seeding for reuse by the native driver.
+
+A separate keyboard run captured all three private outputs. Output 0's
+1920×1080 PPM has SHA-256
+`3cce7bbd578b395e36b1e6a34b18cffc945bba313834a24766fa5d00d63a2ab7`;
+the inspected conversion is `D:/NexaUI/out/nexaui-operation-native-output0.png`.
+The view is readable with the initial Refresh focus and full target fields. This
+is a Pixman/headless capture, not physical multi-monitor or human visual approval.
+
+Native Release and sanitizer host hashes are respectively
+`d17646619c2583260b429acdc1aa62d2c5845eb6b3437183f33a100faf5d5505` and
+`3b13106d162ea4d1e3764365ec128552402d230021a35d3c1b1350f785ab57dc`;
+the independent client is
+`87782e989bc9df6551e0799af215b9bd9b65b4016726868bf39d103314f578ca`.
+Sources, SDK/consumer caches, flags/link commands, logs/results, private catalogue
+snapshots, capture and disabled-provider result are archived at
+`D:/NexaUI/out/nexaui-operation-native-20261106.tar.gz`, SHA-256
+`1f379aa7e8f3711efd1a5b9c4f84326b8b71400f53aee3e7224ed5774a571410`.
+The builder-declared SDK revision remains empty; this is the cited candidate's
+artifact evidence, not a release attestation.
+
+This advances D07/D11/L11/P07/B07/A02/I01/W10/Q04 for the selected composition.
+Real asynchronous services, privileged routing, durable recovery, publication/
+activation UI branches, broader native resize/scale/loss, other platforms,
+locales and physical/human assistive acceptance remain open. Read-only controls
+here do not test IME. Aetheri may reuse the authorized-owner view/host pattern
+independently; no completed production installer is claimed.
+
+Separately, [eff6efe CI](https://github.com/Lulus792/NexaUI/actions/runs/42263483748)
+reported `nexaui_settings_keyboard_clipboard_timeout_poll_many` failing the
+existing `examples/18_settings/test_ime_v3.c:212` stalled-descriptor/read-count
+assertion in the Ubuntu shared job. This native observer work does not resolve
+that intermittent test, the earlier clipboard self-destroy descriptor assertion
+or the unpaced Files sanitizer stress gate. Full CI acceptance remains separate.
+
 ## Original catalogue operation observer (2026-11-06)
 
 Based on NexaUI `762ae4c1602948579fd3c945aa7460587b125b80`, the standalone

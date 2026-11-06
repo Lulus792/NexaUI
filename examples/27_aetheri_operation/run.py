@@ -11,15 +11,8 @@ from pathlib import Path
 import subprocess
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('aetheri-source', 'executable', 'font', 'work-dir'):
-        parser.add_argument('--' + name, type=Path, required=True)
-    args = parser.parse_args()
-    source, executable, font = (p.resolve(strict=True) for p in
-                                (args.aetheri_source, args.executable, args.font))
-    work = args.work_dir.resolve()
-    work.mkdir(mode=0o700)
+def seed(source, work):
+    """Seed inputs for either host; only the selected test owner opens the DB."""
     spec = importlib.util.spec_from_file_location('aetheri_runtime_reference', source / 'tools/runtime_contracts.py')
     reference = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(reference)
@@ -40,6 +33,19 @@ def main():
     manifest.write_bytes(bytes.fromhex(frozen['hex']))
     expected.write_bytes(hashlib.sha256(reference.intent(intent)).digest())
     catalogue.mkdir(mode=0o700)
+    return manifest, expected, catalogue
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ('aetheri-source', 'executable', 'font', 'work-dir'):
+        parser.add_argument('--' + name, type=Path, required=True)
+    args = parser.parse_args()
+    source, executable, font = (p.resolve(strict=True) for p in
+                                (args.aetheri_source, args.executable, args.font))
+    work = args.work_dir.resolve()
+    work.mkdir(mode=0o700)
+    manifest, expected, catalogue = seed(source, work)
     command = [str(executable), str(manifest), str(expected), str(catalogue), str(font), str(work)]
     result = {'status': 'failed', 'command': command,
               'executable_sha256': hashlib.sha256(executable.read_bytes()).hexdigest(),

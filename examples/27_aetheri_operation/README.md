@@ -64,9 +64,56 @@ at 640×480 and 420×320, with dark/light themes and doubled theme font size. At
 large text and the minimum height the content viewport is small and scrollable;
 final density/minimum-size choices remain open.
 
-Keyboard events here use the core event queue; native input and composed AT-SPI
-acceptance have not been executed for this view. Real services, durable recovery,
-other platforms, locale changes, physical/human accessibility and final visual
-acceptance remain open. The separate activity-control AT-SPI evidence does not
-close those composition gates. Aetheri's live source, ongoing changes and SDK pin
-are untouched. No 1.0.0 release is implied.
+The tests above use the core event queue. The separate native host below covers
+selected actual Wayland input and AT-SPI cases for the composed view.
+
+## Native Wayland and independent AT-SPI
+
+`operation_observer_native` uses public software presentation, semantic
+publication and `nx_window_poll_with_fd` with its borrowed test-control pipe.
+It draws when input, model/view changes or pending presentation require work;
+the fixed activity band creates no animation timer. Its test owner seeds an
+executing operation once. An explicit `uncertain` fixture command updates that
+same operation, retires the old semantics and recreates the view. It never
+reaccepts the request. The original owner/manifest/fonts outlive both views.
+
+Build against an installed AT-SPI-enabled SDK. With the optional libatspi/GObject
+development packages discoverable by pkg-config, CMake also builds the independent
+client; that executable links neither NexaUI nor Aetheri:
+
+```sh
+cmake --build out/operation-observer --target \
+  operation_observer_native operation_observer_atspi_client
+python3 tests/run_aetheri_operation.py \
+  --server /absolute/path/to/aetheri/test_compositor_server \
+  --host out/operation-observer/operation_observer_native \
+  --client out/operation-observer/operation_observer_atspi_client \
+  --registry /absolute/path/to/at-spi2-registryd \
+  --runner tests/run_atspi_native.py \
+  --font /absolute/path/to/licensed-font.ttf \
+  --aetheri-source /absolute/path/to/aetheri-snapshot \
+  --work-dir out/operation-observer/native-result --keyboard --capture
+```
+
+The driver owns a new private compositor, D-Bus/registry and catalogue. Its
+compositor is supplied independently from the reviewed Aetheri test build; it
+does not start or change a live desktop. PATH must provide dbus-daemon/dbus-send
+and any private runtime libraries must already be available. Omitting
+`--keyboard` uses native AT-SPI actions instead. `--capture` requires the keyboard
+mode and captures the private outputs before Refresh. `--expect-unavailable`
+checks an AT-SPI-disabled host's intended status-discovery failure; its forced
+negative teardown is not clean-close evidence.
+
+Release and ASan/UBSan native action and virtual-keyboard cases passed. The client
+checks complete operation-ID/component values, busy/read-only status without a numeric
+value/action, Refresh, rediscovery after view replacement, cleared busy state,
+retired old reference, restored focus and clean Close. The host verifies one
+acceptance, one operation and unchanged catalogue revision during view-only work;
+the driver independently reads the final original operation metadata. The
+headless software cases remain separate regressions.
+
+Real asynchronous services, durable recovery, other platforms, locale changes,
+physical/human accessibility, broader native resize/scale/loss cases and final
+visual acceptance remain open. Read-only controls here do not exercise IME.
+Aetheri's live source, ongoing changes and SDK pin are untouched. No 1.0.0 release
+is implied.
