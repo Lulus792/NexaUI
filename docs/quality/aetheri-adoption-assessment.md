@@ -1,5 +1,40 @@
 # Aetheri adoption: initial source assessment
 
+## Independent Files AT-SPI on Aetheri's test compositor (2026-11-06)
+
+The independent `examples/24_aetheri_files_identity/atspi_client.c` was run
+against the original Files model and test compositor from Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`, using an installed static,
+Wayland-only, software SDK built from NexaUI
+`a03637a97d1ad21f3ae7df49e6ca522c59b689c7` with AT-SPI enabled. Separate
+GCC 16.2.1 Release and ASan/UBSan hosts passed with a private D-Bus bus and
+real AT-SPI registry. The independent libatspi client checked tree-item role
+and selected state, invoked selection and verified the original model, edited
+the filter, observed no-match and invalid status/notifications, invoked Clear
+filter and Close, and waited for clean host exit. These checks use a temporary
+two-file directory, not the production Files application.
+
+The same client against a mapped host built with AT-SPI disabled failed at the
+expected accessibility discovery check; the fixture recorded that negative
+result. This negative host was based on
+`b00fa4451fc4956a4e8f0d0150a1b56844bbf247` with the same stroke optimization
+as `a03637a`; it used ASan/UBSan and was forcibly retired by the client after
+the expected discovery failure, so its clean shutdown is not claimed. The
+independent client and registry use the previously verified private Fedora
+AT-SPI dependencies, including X11 client libraries; the NexaUI window build
+remains Wayland-only. No system package or Aetheri checkout was changed.
+
+The reusable driver is [run_aetheri_files_atspi.py](../../tests/run_aetheri_files_atspi.py).
+It records executable, runner and font hashes and requires actual mapping and
+the intended positive or negative client result; requesting an unavailable
+provider while using the working host was rejected. Release, sanitizer and negative
+logs/configurations are archived at
+`D:/NexaUI/out/nexaui-files-atspi-aetheri-20261106-v2.tar.gz`, SHA-256
+`66c3546ef4543c625026aa43077a7d91c07dda2b64210af2dd0380fd7f8d7a40`.
+This is headless test-compositor and private-registry evidence; production
+session admission, offscreen semantics, physical input, human screenreader
+acceptance and the separate unpaced burst failure remain open.
+
 ## Files model/view on the Aetheri compositor and burst-input finding (2026-11-06)
 
 The external Files experiment, based on NexaUI

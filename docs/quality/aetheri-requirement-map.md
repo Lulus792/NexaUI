@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+A02/A03/L05/I01/D07/Q04: an independent AT-SPI client exercised original-model
+Files selection, filter states and close on Aetheri's headless test compositor
+in Release and ASan/UBSan, with a disabled-provider negative. Production session,
+offscreen and human acceptance remain open; see [Files AT-SPI evidence](aetheri-adoption-assessment.md#independent-files-at-spi-on-aetheris-test-compositor-2026-11-06).
+
 L05/I01/I02/D07/Q04: the Files model/view ran keyboard navigation, refresh and
 whole-query rejection on the Aetheri test compositor. Release passed an
 unpaced burst; ASan/UBSan intermittently lost the connection under that burst,
