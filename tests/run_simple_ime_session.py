@@ -26,7 +26,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--numeric', action='store_true', help='Run the numeric-field IME case')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--numeric', action='store_true', help='Run the numeric-field IME case')
+    group.add_argument('--numeric-apply', action='store_true', help='Run the numeric Apply pointer/IME case')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
     build, work = args.build_dir.resolve(), args.work_dir.resolve()
@@ -38,6 +40,8 @@ def main():
                    sys.executable, __file__, '--inside', '--build-dir', str(build), '--work-dir', str(work)]
         if args.numeric:
             command.append('--numeric')
+        if args.numeric_apply:
+            command.append('--numeric-apply')
         return subprocess.run(command, env=env, check=False, timeout=60).returncode
     if os.environ.get('NEXAUI_TEST_PRIVATE_X11') != '1' or not os.environ.get('DISPLAY'):
         parser.error('internal invocation requires the owned Xvfb fixture')
@@ -48,8 +52,12 @@ def main():
     env = dict(os.environ, NEXAUI_WESTON_INPUT_METHOD='weston-simple-im',
                NEXAUI_TEST_SIMPLE_IME='1', XKB_DEFAULT_OPTIONS='compose:ralt')
     junit = work / 'simple-ime.xml'
-    pattern = '^nexaui_wayland_numeric_simple_ime$' if args.numeric else '^nexaui_settings_wayland_simple_ime'
-    expected = {'nexaui_wayland_numeric_simple_ime'} if args.numeric else CASES
+    if args.numeric_apply:
+        pattern, expected = '^nexaui_wayland_numeric_apply_simple_ime$', {'nexaui_wayland_numeric_apply_simple_ime'}
+    elif args.numeric:
+        pattern, expected = '^nexaui_wayland_numeric_simple_ime$', {'nexaui_wayland_numeric_simple_ime'}
+    else:
+        pattern, expected = '^nexaui_settings_wayland_simple_ime', CASES
     command = [sys.executable, str(ROOT / 'tests/run_weston_native.py'), '--work-dir', str(work),
                '--', 'dbus-run-session', '--', 'ctest', '--test-dir', str(build),
                '-R', pattern, '--no-tests=error',

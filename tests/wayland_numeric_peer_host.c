@@ -3,6 +3,7 @@
 #include "fixture_font.h"
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* A visible native fixture: the driver sends actual keyboard input. */
@@ -11,28 +12,56 @@ static void request_confirm(int signal_number) {
     (void)signal_number;
     confirm_requested=1;
 }
+static int capture_commands(const char *path,const nx_command *commands,size_t count,
+                            uint32_t width,uint32_t height) {
+    if(!width || !height || width>4096 || height>4096)return 0;
+    size_t stride=(size_t)width*4u, size=stride*height;
+    unsigned char *pixels=malloc(size);if(!pixels)return 0;
+    FILE *output=NULL;int okay=0;
+    if(nx_headless_render(commands,count,pixels,width,height,stride,(nx_color){1,1,1,1})!=NX_OK)goto done;
+    output=fopen(path,"wb");if(!output || fprintf(output,"P6\n%u %u\n255\n",width,height)<0)goto done;
+    for(size_t i=0;i<(size_t)width*height;++i)
+        if(fwrite(pixels+4u*i,1,3,output)!=3)goto done;
+    okay=1;
+done:
+    if(output && fclose(output))okay=0;
+    free(pixels);return okay;
+}
 int main(int argc, char **argv) {
-    int ime=argc==2 && !strcmp(argv[1],"--ime");
-    if(argc!=1 && !ime)return 2;
+    int ime=(argc==2 && !strcmp(argv[1],"--ime")) || (argc==3 && !strcmp(argv[1],"--apply-ime"));
+    int apply_mode=argc==3 && (!strcmp(argv[1],"--apply") || !strcmp(argv[1],"--apply-ime"));
+    if(argc!=1 && !ime && !apply_mode)return 2;
     if(ime && signal(SIGUSR1,request_confirm)==SIG_ERR)return 2;
     nx_window *window=NULL; nx_context *ctx=NULL; nx_font *font=NULL;
     nx_font_collection *fonts=NULL; nx_numeric_field *number=NULL;
-    nx_software_view *view=NULL; int okay=0,ready=0,valid=0;
+    nx_software_view *view=NULL; nx_text_layout *apply_label=NULL;
+    unsigned char *font_data=NULL; FILE *font_file=NULL;
+    int okay=0,ready=0,valid=0;
     uint8_t bytes[512]; font_fixture(bytes);
+    const void *font_source=bytes; size_t font_length=sizeof(bytes);
+    if(apply_mode) {
+        font_file=fopen(argv[2],"rb");long length=0;
+        if(!font_file || fseek(font_file,0,SEEK_END) || (length=ftell(font_file))<=0 ||
+           length>64*1024*1024 || fseek(font_file,0,SEEK_SET))goto done;
+        font_data=malloc((size_t)length);
+        if(!font_data || fread(font_data,1,(size_t)length,font_file)!=(size_t)length)goto done;
+        font_source=font_data;font_length=(size_t)length;
+    }
     nx_window_desc window_desc={"Numeric clipboard peer",320,120,0,{0}};
     nx_text_clipboard clipboard={0};
     if(nx_window_create(&window_desc,&window)!=NX_OK || nx_context_create(NULL,&ctx)!=NX_OK ||
-       nx_font_open(bytes,sizeof(bytes),NULL,&font)!=NX_OK || nx_font_collection_create(NULL,&fonts)!=NX_OK ||
+       nx_font_open(font_source,font_length,NULL,&font)!=NX_OK || nx_font_collection_create(NULL,&fonts)!=NX_OK ||
        nx_font_collection_add(fonts,font)!=NX_OK || nx_numeric_field_create(1234,1024,&number)!=NX_OK ||
        nx_text_clipboard_for_window(window,&clipboard)!=NX_OK ||
        nx_numeric_field_set_clipboard(number,&clipboard)!=NX_OK ||
        (ime && nx_numeric_field_set_ime_window(number,window)!=NX_OK) ||
-       nx_software_view_open(window,&view)!=NX_OK) goto done;
+       nx_software_view_open(window,&view)!=NX_OK ||
+       (apply_mode && nx_text_layout_create(fonts,"Apply",5,NX_BIDI_LTR,16,100,&apply_label)!=NX_OK)) goto done;
     setvbuf(stdout,NULL,_IOLBF,0);
     nx_numeric_field_desc desc={0};desc.id=1;desc.bounds=(nx_rect){20,20,250,40};
     desc.name=(nx_utf8_span){"Number",6};desc.fonts=fonts;desc.pixels_per_em=16;
     desc.glyph_cache_bytes=65536;desc.minimum=-100000;desc.maximum=100000;
-    char previous[128]="";int ime_stage=0,dirty=1;nx_window_info previous_info={0};
+    char previous[128]="";int ime_stage=0,dirty=1,button_focused=-1;nx_window_info previous_info={0};
     for(;;) {
         nx_window_info info;size_t routed=0;nx_interaction_state state;
         if(nx_window_poll(window,50)!=NX_OK || nx_window_get_info(window,&info)!=NX_OK ||
@@ -44,9 +73,29 @@ int main(int argc, char **argv) {
         if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK)goto done;
         const nx_event *events=NULL;size_t event_count=0;int close_requested=0;
         if(nx_frame_events(ctx,&events,&event_count)!=NX_OK)goto done;
-        for(size_t i=0;i<event_count;++i)
+        for(size_t i=0;i<event_count;++i) {
             if(events[i].type==NX_EVENT_KEY_DOWN && events[i].key==NX_KEY_ESCAPE)close_requested=1;
-        if(nx_numeric_field_widget(ctx,&desc,number,&state,&valid)!=NX_OK || nx_end_frame(ctx)!=NX_OK)goto done;
+            if(apply_mode && getenv("NEXAUI_NUMERIC_POINTER_TRACE") && events[i].type==NX_EVENT_POINTER_MOVE)
+                printf("POINTER %.2f %.2f\n",events[i].x,events[i].y);
+        }
+        if(nx_numeric_field_widget(ctx,&desc,number,&state,&valid)!=NX_OK)goto done;
+        nx_interaction_state button_state={0};
+        if(apply_mode) {
+            nx_control_desc apply={0};apply.id=2;apply.bounds=(nx_rect){20,70,120,36};
+            apply.name=(nx_utf8_span){"Apply",5};apply.label_layout=apply_label;
+            apply.label_origin=(nx_point){55,78};apply.glyph_cache_bytes=65536;
+            if(nx_button(ctx,&apply,&button_state)!=NX_OK)goto done;
+        }
+        if(nx_end_frame(ctx)!=NX_OK)goto done;
+        if(apply_mode && button_state.focused!=button_focused) {
+            button_focused=button_state.focused;printf("BUTTON_FOCUS %d\n",button_focused);
+        }
+        if(apply_mode && button_state.clicked) {
+            int accepted=0;double applied_value=0;
+            if(nx_numeric_field_commit(number,desc.minimum,desc.maximum,&accepted)!=NX_OK ||
+               nx_numeric_field_value(number,&applied_value)!=NX_OK)goto done;
+            printf("APPLY %d %.0f\n",accepted,applied_value);
+        }
         if(confirm_requested) {
             int accepted=0;confirm_requested=0;
             if(nx_numeric_field_commit(number,desc.minimum,desc.maximum,&accepted)!=NX_OK || !accepted)goto done;
@@ -56,7 +105,11 @@ int main(int argc, char **argv) {
         if(nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
            nx_software_view_render(view,commands,count,(nx_color){1,1,1,1},&outcome)!=NX_OK)goto done;
         dirty=outcome!=NX_SOFTWARE_VIEW_READY;
-        if(outcome==NX_SOFTWARE_VIEW_READY && !ready){puts("READY");ready=1;}
+        if(outcome==NX_SOFTWARE_VIEW_READY && !ready){
+            const char *capture=getenv("NEXAUI_NUMERIC_CAPTURE");
+            if(apply_mode && capture && !capture_commands(capture,commands,count,info.width,info.height))goto done;
+            puts("READY");ready=1;
+        }
         nx_utf8_span draft;double value;
         if(nx_numeric_field_text(number,&draft)!=NX_OK || nx_numeric_field_value(number,&value)!=NX_OK || draft.length>80)goto done;
         if(ime) {
@@ -79,6 +132,7 @@ int main(int argc, char **argv) {
     }
 done:
     nx_software_view_close(&view);nx_numeric_field_destroy(number);nx_context_destroy(ctx);
-    nx_font_collection_destroy(fonts);nx_font_close(font);nx_window_destroy(window);
+    nx_text_layout_destroy(apply_label);nx_font_collection_destroy(fonts);nx_font_close(font);nx_window_destroy(window);
+    if(font_file)fclose(font_file);free(font_data);
     return okay?0:1;
 }

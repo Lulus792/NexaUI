@@ -873,6 +873,18 @@ if(NEXAUI_BUILD_TESTS)
                     $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL})
             set_tests_properties(nexaui_wayland_numeric_simple_ime PROPERTIES
                 TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            if(_nested_keyboard_font)
+                add_test(NAME nexaui_wayland_numeric_apply_keyboard
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_numeric_apply.py
+                        $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL} ${_nested_keyboard_font})
+                set_tests_properties(nexaui_wayland_numeric_apply_keyboard PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+                add_test(NAME nexaui_wayland_numeric_apply_simple_ime
+                    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_wayland_numeric_apply.py
+                        $<TARGET_FILE:nexaui_wayland_numeric_peer_host> ${NEXAUI_NUMERIC_PEER_XDOTOOL} ${_nested_keyboard_font} --ime)
+                set_tests_properties(nexaui_wayland_numeric_apply_simple_ime PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            endif()
         endif()
         if(TARGET nexaui_wayland_numeric_peer_host AND NEXAUI_NUMERIC_PEER_COPY AND NEXAUI_NUMERIC_PEER_PASTE)
             add_test(NAME nexaui_wayland_numeric_clipboard_peer

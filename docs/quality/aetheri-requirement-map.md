@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/I01/I02/Q06: a labeled numeric Apply test view accepts native keyboard
+confirmation and, in a separate Weston simple-IME session, a pointer action
+after a verified IME digit. Uncommitted-preedit clicks, keyboard under that IME,
+actual Aetheri and human acceptance remain open. See [candidate evidence](aetheri-adoption-assessment.md#visible-numeric-apply-with-keyboard-and-ime-input-2026-11-06).
+
 T05/A02/Q06: a separate libatspi client invokes a numeric Apply button in the
 private Wayland semantics fixture, including invalid draft and disabled-action
 negatives. The case is not a visible or IME-driven user workflow; keyboard,

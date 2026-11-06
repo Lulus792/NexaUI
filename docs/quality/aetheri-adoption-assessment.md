@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Visible numeric Apply with keyboard and IME input (2026-11-06)
+
+On NexaUI base `e7061e5fb5ca167cc5ba7439f5d404053b170bbc`, the existing
+native numeric host has an opt-in 320x120 test view with a real-font `Apply`
+button using `nx_numeric_field_commit`. On private Weston 14.0.2/Xvfb, virtual
+keyboard input focuses the number, enters `5`, tabs to Apply, confirms 12345,
+returns to the field, enters the invalid draft `-`, and verifies a second
+activation preserves 12345. GCC 15.2 static/shared and Clang 22 ASan/UBSan
+static Debug profiles passed; leak detection was enabled for the latter.
+
+A separate composed test starts Weston simple-IME, verifies its v1
+`commit_string` for `5`, and uses an actual virtual pointer click on the
+visible button to confirm 12345. All three profiles passed. The previous
+independent clipboard and numeric preedit regressions also passed in static
+Debug. This pointer run does not click during an uncommitted preedit and does
+not prove keyboard navigation when that IME consumes Tab or Enter. It uses a
+test host rather than an Aetheri production surface; other IMEs, physical input,
+full accessibility and human review remain open.
+
+The initial command-stream capture, inspected locally, is
+`/tmp/nexaui-numeric-apply-20261106.ppm` (SHA-256
+`c86dc9337540c1a94dccb96e40d13bcf31a42632feb1abc8964e07c9b82241f2`),
+using DejaVu Sans SHA-256
+`7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954`.
+It is a headless rendering of the same draw commands, not a physical display
+screenshot. Executed evidence is retained under
+`/tmp/nexaui-apply-composed-{static,shared,asan}-20261106/` and
+`/tmp/nexaui-apply-keyboard-final-20261106/`. No SDK implementation changed.
+
 ## Native accessibility action for numeric confirmation (2026-11-06)
 
 On base `73b0a208130794475d9499a7aa99075f091d69c0`, the existing private
