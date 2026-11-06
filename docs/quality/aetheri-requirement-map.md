@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I02/T05/A02/Q06: a pending independent AT-SPI Apply request and Wayland IME
+preedit were exercised together in a private numeric host. The request was
+accepted against the old snapshot but not applied after the guard frame; a
+subsequent disabled action was rejected. This is not a general event-loop
+barrier or human assistive acceptance. See [candidate evidence](aetheri-adoption-assessment.md#pending-at-spi-action-and-ime-preedit-in-one-batch-2026-11-06).
+
 I02/T04/T05/Q06: v1 preedit now tolerates caret-only serial advances while
 checking the editor snapshot. An isolated numeric host demonstrated a guard
 frame when observed preedit and pointer press share a native input batch; this

@@ -16,9 +16,10 @@ def main():
             os.environ.get('WAYLAND_DISPLAY') != 'nexaui-test'):
         return 77
     host_path, xdotool, font = sys.argv[1:4]
-    ime = len(sys.argv) == 5 and sys.argv[4] in ('--ime', '--preedit', '--batch')
-    preedit = ime and sys.argv[4] in ('--preedit', '--batch')
-    batch = ime and sys.argv[4] == '--batch'
+    ime = len(sys.argv) == 5 and sys.argv[4] in ('--ime', '--preedit', '--batch', '--batch-ax')
+    preedit = ime and sys.argv[4] in ('--preedit', '--batch', '--batch-ax')
+    batch = ime and sys.argv[4] in ('--batch', '--batch-ax')
+    ax = ime and sys.argv[4] == '--batch-ax'
     if len(sys.argv) == 5 and not ime:
         return 2
     if ime and os.environ.get('NEXAUI_TEST_SIMPLE_IME') != '1':
@@ -26,6 +27,8 @@ def main():
     env = dict(os.environ, NEXAUI_PLATFORM='wayland')
     if ime:
         env.update(NEXAUI_NUMERIC_POINTER_TRACE='1', WAYLAND_DEBUG='1')
+    if ax:
+        env['NEXAUI_NUMERIC_ATSPI']='1'
     host = subprocess.Popen([host_path, '--apply-ime' if ime else '--apply', font], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     messages = queue.Queue()
@@ -38,6 +41,14 @@ def main():
     threading.Thread(target=read_output, daemon=True).start()
     error_thread = threading.Thread(target=lambda: errors.extend(host.stderr), daemon=True)
     error_thread.start()
+    probe = None
+    probe_messages = queue.Queue()
+
+    def probe_line():
+        try:
+            return probe_messages.get(timeout=8)
+        except queue.Empty:
+            raise RuntimeError('AT-SPI probe timed out')
 
     def wait_for(expected):
         deadline = time.monotonic() + 8
@@ -54,6 +65,13 @@ def main():
 
     try:
         wait_for('READY')
+        if ax:
+            probe = subprocess.Popen([env['NEXAUI_NUMERIC_ATSPI_PROBE'], str(host.pid)], env=env,
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+            threading.Thread(target=lambda: [probe_messages.put(line.strip()) for line in probe.stdout],
+                             daemon=True).start()
+            if probe_line() != 'READY':
+                raise RuntimeError('AT-SPI probe did not find Apply')
         with open(env['NEXAUI_TEST_WESTON_LOG'], encoding='utf-8', errors='replace') as log:
             windows = re.findall(r'x11 output .*?window id (\d+)', log.read())
         if len(windows) != 1:
@@ -108,6 +126,10 @@ def main():
                     time.sleep(.01)
                 else:
                     raise RuntimeError('IME did not send preedit before the pointer press')
+                if ax:
+                    probe.stdin.write('GO\n');probe.stdin.flush()
+                    if probe_line() != 'SENT':
+                        raise RuntimeError('AT-SPI request was not routed')
             subprocess.run([xdotool, 'mousemove', '--window', windows[0],
                             str(round(x+80-local_x)), str(round(y+88-local_y)), 'click', '1'],
                            env=env, check=True, timeout=5)
@@ -116,6 +138,13 @@ def main():
                 wait_for('SAME_BATCH')
             if preedit:
                 wait_for('AFTER_CLICK 1 1234 1')
+                if ax:
+                    result=probe_line()
+                    if result != 'RESULT 1' or probe_line() != 'DISABLED' or probe.wait(timeout=5):
+                        raise RuntimeError('AT-SPI queued action or disabled-state check failed: '+result)
+                    if any(line.startswith('APPLY ') for line in transcript):
+                        raise RuntimeError('A pending AT-SPI action changed the draft during preedit')
+                    print('Pending AT-SPI action reply: '+result)
                 key('a'); wait_for('STATE 12345á 1234 0 1')
                 subprocess.run([xdotool, 'click', '1'], env=env, check=True, timeout=5)
                 wait_for('APPLY 0 1234')
@@ -153,6 +182,8 @@ def main():
                 host.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 host.kill(); host.wait()
+        if probe and probe.poll() is None:
+            probe.terminate();probe.wait(timeout=5)
 
 
 if __name__ == '__main__':

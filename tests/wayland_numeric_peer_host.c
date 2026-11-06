@@ -43,6 +43,7 @@ static int publish_preedit_guard(nx_context *ctx,const nx_numeric_field_desc *nu
 int main(int argc, char **argv) {
     int ime=(argc==2 && !strcmp(argv[1],"--ime")) || (argc==3 && !strcmp(argv[1],"--apply-ime"));
     int apply_mode=argc==3 && (!strcmp(argv[1],"--apply") || !strcmp(argv[1],"--apply-ime"));
+    int ax=apply_mode && getenv("NEXAUI_NUMERIC_ATSPI")!=NULL;
     if(argc!=1 && !ime && !apply_mode)return 2;
     if(ime && signal(SIGUSR1,request_confirm)==SIG_ERR)return 2;
     nx_window *window=NULL; nx_context *ctx=NULL; nx_font *font=NULL;
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
             if(nx_window_get_ime_preedit(window,NULL,0,&length,&begin,&end)!=NX_OK)goto done;
             if(length && nx_focus_id(ctx)==desc.id) {
                 if(!publish_preedit_guard(ctx,&desc,number,apply_label,&info))goto done;
+                if(ax && nx_window_publish_semantics(window,ctx)!=NX_OK)goto done;
                 puts("PREEDIT_GUARD_PUBLISHED");puts("COMPOSITION_ACTIVE 1");composition_active=1;dirty=1;
             }
         }
@@ -120,6 +122,7 @@ int main(int argc, char **argv) {
             if(nx_button(ctx,&apply,&button_state)!=NX_OK)goto done;
         }
         if(nx_end_frame(ctx)!=NX_OK)goto done;
+        if(ax && nx_window_publish_semantics(window,ctx)!=NX_OK)goto done;
         if(apply_mode && button_state.focused!=button_focused) {
             button_focused=button_state.focused;printf("BUTTON_FOCUS %d\n",button_focused);
         }
@@ -169,6 +172,7 @@ int main(int argc, char **argv) {
         if(strcmp(current,previous)){puts(current);memcpy(previous,current,(size_t)n+1);}
     }
 done:
+    if(ax && window)nx_window_publish_semantics(window,NULL);
     nx_software_view_close(&view);nx_numeric_field_destroy(number);nx_context_destroy(ctx);
     nx_text_layout_destroy(apply_label);nx_font_collection_destroy(fonts);nx_font_close(font);nx_window_destroy(window);
     if(font_file)fclose(font_file);free(font_data);

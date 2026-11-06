@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Pending AT-SPI action and IME preedit in one batch (2026-11-06)
+
+On base `816e5a9cb9fd37c2664152bc266512f16ac4bba7`, the visible numeric
+test host optionally publishes its semantic tree and publishes the disabled
+Apply state in its existing preedit guard frame. A separate libatspi/D-Bus
+client discovers the real button by host PID. While the test-owned host is
+stopped, Weston simple-IME sends preedit, the client sends `DoAction` and
+confirms its bus routing, and a pointer click is queued. The resumed host
+observes preedit and pointer press in the same routed frame.
+
+The client receives `true` for the action that was queued against the earlier
+enabled snapshot. The host does not apply it: focus, preedit, draft and prior
+value remain intact. The client then independently observes Apply disabled and
+confirms another action is rejected. After the IME commits invalid text, a
+pointer activation leaves the previous numeric value unchanged. GCC 15.2
+static/shared and Clang 22 ASan/UBSan static Debug passed under private Weston
+14.0.2, a private AT-SPI registry and virtual input; leak detection was enabled
+for the sanitizer run. The existing pointer-only batch test passed again.
+
+In an isolated copy with only the guard disabled, the same test lost preedit
+and executed `APPLY 1 12345`, despite the composition. Its failing log is
+`/tmp/nexaui-pending-atspi-negative-20261106/negative.log`; the base archive
+SHA-256 is `51b58ced23d2b7084ea30aaff34dd205450ca62c2a38842c1b98cc70f2a5ca8c`.
+Positive JUnit evidence is in `/tmp/nexaui-pending-atspi-{static,shared,asan}-final-20261106/`.
+
+The `true` reply means the old snapshot accepted the request, not that the
+application completed it. This fixture discards the blocked action; its extra
+frame could consume other pending UI work and is not a general host barrier.
+Multiple preedit changes per poll, other actions, other IMEs, actual Aetheri,
+physical input and human assistive acceptance remain open. No SDK API or
+Aetheri source/pin changed.
+
 ## Wayland v1 preedit serial and queued pointer input (2026-11-06)
 
 On base `9416e2a5e81e15783ea716c05decc5fef18b2dd8`, Wayland text-input-v1

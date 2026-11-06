@@ -927,6 +927,21 @@ if(NEXAUI_BUILD_TESTS)
         if(NEXAUI_DBUS_FOUND AND NEXAUI_ATSPI_FOUND AND NEXAUI_ATSPI_REGISTRY
                 AND NEXAUI_DBUS_DAEMON AND NEXAUI_DBUS_SEND AND Python3_Interpreter_FOUND)
             find_program(NEXAUI_NESTED_DBUS_SESSION dbus-run-session)
+            if(TARGET nexaui_wayland_numeric_peer_host AND _nested_keyboard_font AND NEXAUI_NESTED_DBUS_SESSION)
+                add_executable(nexaui_atspi_numeric_pending_action tests/atspi_numeric_pending_action.c)
+                target_link_libraries(nexaui_atspi_numeric_pending_action PRIVATE PkgConfig::NEXAUI_ATSPI)
+                target_compile_features(nexaui_atspi_numeric_pending_action PRIVATE c_std_17)
+                target_compile_options(nexaui_atspi_numeric_pending_action PRIVATE -Wall -Wextra -Wpedantic)
+                add_test(NAME nexaui_numeric_preedit_pending_atspi
+                    COMMAND ${CMAKE_COMMAND} -E env
+                        NEXAUI_NUMERIC_ATSPI_PROBE=$<TARGET_FILE:nexaui_atspi_numeric_pending_action>
+                        NEXAUI_NUMERIC_FONT=${_nested_keyboard_font}
+                        NEXAUI_NUMERIC_XDOTOOL=${NEXAUI_NUMERIC_PEER_XDOTOOL}
+                        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_native.py
+                        ${NEXAUI_ATSPI_REGISTRY} --numeric-ime-ax $<TARGET_FILE:nexaui_wayland_numeric_peer_host>)
+                set_tests_properties(nexaui_numeric_preedit_pending_atspi PROPERTIES
+                    TIMEOUT 60 SKIP_RETURN_CODE 77 RESOURCE_LOCK native_display)
+            endif()
             if(TARGET nexaui_wayland_nested_keyboard_host AND _nested_keyboard_font AND NEXAUI_NESTED_DBUS_SESSION)
                 add_executable(nexaui_wayland_nested_atspi_probe tests/wayland_nested_atspi_probe.c)
                 target_link_libraries(nexaui_wayland_nested_atspi_probe PRIVATE PkgConfig::NEXAUI_ATSPI)

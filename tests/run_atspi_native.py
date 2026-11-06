@@ -104,6 +104,10 @@ def main():
                 arguments = [sys.executable, str(Path(__file__).resolve().parent /
                              'aetheri_settings_candidate/native_keyboard.py'), host,
                              os.environ['NEXAUI_AETHERI_SETTINGS_FONT'], os.environ['NEXAUI_SETTINGS_XDOTOOL']]
+            elif client == "--numeric-ime-ax":
+                arguments = [sys.executable, str(Path(__file__).resolve().parent /
+                             'run_wayland_numeric_apply.py'), host,
+                             os.environ['NEXAUI_NUMERIC_XDOTOOL'], os.environ['NEXAUI_NUMERIC_FONT'], '--batch-ax']
             else:
                 arguments = [host, "--optional"] if client == "--optional" else [client, host]
             client_env = env.copy()
