@@ -1,0 +1,158 @@
+{
+  "aetheri_revision": "27de5cb228da0f37264fad64d964ad7a660d210d",
+  "archive_sha256": "ab6f36cf98b45fb36f006173e7432a6e676f2ed53003e3747d2839d33421e812",
+  "files": [
+    {
+      "path": "CMakeLists.txt",
+      "sha256": "b662881637c1bc3c7195392dedef4fcd66c9aca1fdeae867ffdec11c87577850"
+    },
+    {
+      "path": "spec/nexaui-inputs.json",
+      "sha256": "7301563d7232ed6cc75bcf54e7a603ccf2556977ade588f13741ddad7a0dbf91"
+    },
+    {
+      "path": "spec/ui-inputs.json",
+      "sha256": "460825fff8079964dd20f135f3104d20f8dd64e49c75207fe1e316aefe10285f"
+    },
+    {
+      "path": "src/editor/document.c",
+      "sha256": "887c0c49daf07225371581c7f0d3bf3ccd13acb2f1dba96ade958aa7c2082bc7"
+    },
+    {
+      "path": "src/editor/document.h",
+      "sha256": "92831167eb9bfed78a75c80c7daef478f547b7a55cd3a1842502902e394da3e2"
+    },
+    {
+      "path": "src/editor/file.c",
+      "sha256": "debb14a3a43bd39a8d2b6ab2a828153ffedd59f7c5c3198317dccb069a8896e5"
+    },
+    {
+      "path": "src/editor/file.h",
+      "sha256": "ccfb5cb49fda5b9bf32f8c1f07e7231199900b2371da7cce94b57147de411c47"
+    },
+    {
+      "path": "src/editor/main.c",
+      "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556"
+    },
+    {
+      "path": "src/editor/modal.c",
+      "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721"
+    },
+    {
+      "path": "src/editor/modal.h",
+      "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642"
+    },
+    {
+      "path": "src/editor/view.c",
+      "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4"
+    },
+    {
+      "path": "src/editor/view.h",
+      "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5"
+    },
+    {
+      "path": "src/files/create.c",
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+    },
+    {
+      "path": "src/files/create.h",
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60"
+    },
+    {
+      "path": "src/files/launch.c",
+      "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28"
+    },
+    {
+      "path": "src/files/launch.h",
+      "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83"
+    },
+    {
+      "path": "src/files/layout.c",
+      "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c"
+    },
+    {
+      "path": "src/files/layout.h",
+      "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f"
+    },
+    {
+      "path": "src/files/main.c",
+      "sha256": "b2d8af2d6051abcd1675274ff3f842470870524c8a83fe0ad2984a8abce86a4f"
+    },
+    {
+      "path": "src/files/model.c",
+      "sha256": "a4ce9a9e9035f4d0aae53d4f3511eeeec36ec18c77012b0ee1a52fe0ea0b2ef3"
+    },
+    {
+      "path": "src/files/model.h",
+      "sha256": "70a7298064afa822f4f45f13c3dae04f61bbfe6b8290f99a7ca2d9e0164e70f0"
+    },
+    {
+      "path": "src/files/nexaui_main.c",
+      "sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d"
+    },
+    {
+      "path": "src/files/nexaui_view.c",
+      "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc"
+    },
+    {
+      "path": "src/files/nexaui_view.h",
+      "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649"
+    },
+    {
+      "path": "src/files/rename.c",
+      "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72"
+    },
+    {
+      "path": "src/files/rename.h",
+      "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99"
+    },
+    {
+      "path": "src/files/session.c",
+      "sha256": "bc4d93fed3a86d7382fe5ee6494d9859be50d0d213667b2a12d6c9a3eeeb0358"
+    },
+    {
+      "path": "src/files/session.h",
+      "sha256": "9d58aa9e756695cfa1d64284c182d96cdc489b3c79b4a0446dc72c4de71f3512"
+    },
+    {
+      "path": "src/text/UNICODE-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "tests/files_create_fault.c",
+      "sha256": "6cf3fb55f14e9e5804ea0da8b20ca7909f59056da2a4390eeea9ed5e69857cae"
+    },
+    {
+      "path": "tests/files_view_atspi.c",
+      "sha256": "4ba47dbf47388364fcf4a957ee09e77cbfeb7d7707181a5006a2f26da1759360"
+    },
+    {
+      "path": "tests/test_files_session.c",
+      "sha256": "d9acd56adf5cf9590184a04feca8bf461f5dcce5164e72c30d8d3f40bc191277"
+    },
+    {
+      "path": "tests/test_files_view.c",
+      "sha256": "f1cb96285b16e6ca3a451570225aaba268d85c07cc10235924c109c6e789222a"
+    },
+    {
+      "path": "tools/test_files_view.py",
+      "sha256": "b7345c8d44aff34ea950f4ed0efc2642aff7f81010852f97df2b914c7bac72e8"
+    },
+    {
+      "path": "tools/test_files_view_fault.py",
+      "sha256": "9e8cd0930163b56982306ecb9a67fc678a1d42920a39e9b187c4a71b7d75b3a0"
+    }
+  ]
+}
