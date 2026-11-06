@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Files text-input-v3 on Aetheri's test compositor (2026-11-06)
+
+The [Files IME driver](../../tests/run_aetheri_files_ime.py) exercises the
+unchanged Aetheri `d56d69523c33a48648af343e7d36526f84518c90` headless test
+compositor and its **test-only controlled** text-input-v3 producer, using the
+original Files model, a private two-file directory and virtual keyboard input.
+The Files example is based on NexaUI `ba9796473ba4321df7ff0b61ae1758ab93065b13`
+with the opt-in trace change in this candidate, and uses the installed static
+Wayland-only SDK from `a03637a97d1ad21f3ae7df49e6ca522c59b689c7`.
+
+Release and GCC 16.2.1 ASan/UBSan runs each passed: Ctrl+L focused the filter,
+the server observed a nonempty candidate rectangle, a seven-byte preedit left
+the model query empty, and a test-only clear disabled and re-enabled the native
+text-input context. A subsequent controlled `é` commit produced the expected
+two-byte query and matching file, and Ctrl+Q closed cleanly with file names and
+contents unchanged. A separate mutant of the earlier driver replaced the
+commit with an empty preedit and failed waiting for the matching filtered row.
+The opt-in example trace records lengths, not composition contents.
+
+The release and sanitizer Files executable hashes are respectively
+`0a449f5a6a2b4b96350cd227d4ae1b8b6eb1ac6f353b986c3a8f10910a1a7664` and
+`69ef083b3c391c0bcddcfc84d991ff70a5be09532ba19d8f0eaa8dc0ca556c24`.
+Sources, configurations and positive/negative logs are archived at
+`D:/NexaUI/out/nexaui-files-ime-aetheri-20261106.tar.gz`, SHA-256
+`d32e7deb9560abdd44c8ba60accf14db857787ff4dace7fbb102bc9f57a40e12`.
+This is protocol-fixture evidence, not a production IME, installed provider,
+physical input or human acceptance. The separate unpaced stress case remains
+open.
+
 ## Independent Files AT-SPI on Aetheri's test compositor (2026-11-06)
 
 The independent `examples/24_aetheri_files_identity/atspi_client.c` was run

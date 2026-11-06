@@ -72,8 +72,11 @@ int main(int argc,char **argv) {
             if(event.type==NX_EVENT_RESIZE)dirty=1;
             if(trace && getenv("NEXAUI_FILES_IME_TEST") && event.type==NX_EVENT_IME_PREEDIT_CHANGED) {
                 char preedit[16];size_t length=0;int32_t begin=0,end=0;
-                if(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&length,&begin,&end)==NX_OK && length==1 && preedit[0]=='\'') {
-                    printf("FILES_NATIVE_PREEDIT %zu %zu\n",length,strlen(ae_files_query(model)));fflush(stdout);
+                if(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&length,&begin,&end)==NX_OK) {
+                    printf("FILES_NATIVE_PREEDIT_BYTES %zu %zu\n",length,strlen(ae_files_query(model)));
+                    if(length==1 && preedit[0]=='\'')
+                        printf("FILES_NATIVE_PREEDIT %zu %zu\n",length,strlen(ae_files_query(model)));
+                    fflush(stdout);
                 }
             }
             if(event.type==NX_EVENT_KEY_DOWN && focused && event.key==NX_KEY_Q &&
