@@ -180,6 +180,19 @@ def main():
             result.update(status="passed", compositor_loss="nonzero host exit after local cleanup")
             return
         if args.test_invalid_launch:
+            watch = None
+            if args.atspi_client:
+                command(client, "e")
+                wait(lambda: "PAINT 0 1920 1080\n" in log("desktop") and "ENTER 0\n" in log("desktop"),
+                     "focused search before owner failure")
+                watch_env=env.copy()
+                if args.atspi_library_dir:
+                    watch_env["LD_LIBRARY_PATH"]=str(args.atspi_library_dir.resolve(strict=True))
+                watch_stream=(root / "atspi-watch.log").open("wb");streams.append(watch_stream)
+                watch=subprocess.Popen([str(args.atspi_client.resolve(strict=True)),"--watch",str(client.pid)],
+                                       env=watch_env,stdin=subprocess.PIPE,stdout=watch_stream,stderr=subprocess.STDOUT)
+                processes.append(watch)
+                wait(lambda: "WATCH_READY\n" in log("atspi-watch"), "independent accessible before owner failure")
             if args.test_invalid_launch == "uncorrelated":
                 launch_owner.sendall(b"A3T")
             elif args.test_invalid_launch == "oversized":
@@ -193,18 +206,27 @@ def main():
                     os.close(fd)
             else:
                 launch_owner.close()
-            if client.wait(timeout=10) == 0:
-                raise RuntimeError("invalid owner response did not fail the test host")
+            if client.wait(timeout=10) != 1:
+                raise RuntimeError("invalid owner response did not exit through failure teardown")
             expected = {
-                "uncorrelated": "ae_desktop_model_reply(&v->model,target,bytes[0])",
-                "oversized": "n==3 && !extra",
-                "ancillary": "n==3 && !extra",
-                "peer-loss": "fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)",
+                "uncorrelated": "OWNER_REPLY_REJECTED state",
+                "oversized": "OWNER_REPLY_REJECTED packet",
+                "ancillary": "OWNER_REPLY_REJECTED packet",
+                "peer-loss": "OWNER_CHANNEL_LOST",
             }[args.test_invalid_launch]
             if expected not in log("desktop"):
                 raise RuntimeError("host failed for a different reason")
+            if "CLOSED_AFTER_OWNER_LOSS\n" not in log("desktop") or "RETIRED\n" in log("desktop"):
+                raise RuntimeError("invalid owner response did not reach failure teardown")
+            if re.search(r"AddressSanitizer|LeakSanitizer|runtime error:", log("desktop")):
+                raise RuntimeError("sanitizer reported an error during owner-channel teardown")
             if "LAUNCH_REPLY " in log("desktop"):
                 raise RuntimeError("invalid owner response changed model state")
+            if watch:
+                watch.stdin.write(b"q\n");watch.stdin.flush()
+                if watch.wait(timeout=10) or "WATCH_DEFUNCT\n" not in log("atspi-watch"):
+                    raise RuntimeError("independent accessible did not become defunct")
+                result["accessible_after_owner_loss"]="defunct"
             result["invalid_launch_case"] = args.test_invalid_launch
             result["status"] = "passed"
             return

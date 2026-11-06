@@ -77,7 +77,7 @@ struct app {
     unsigned char *font; size_t font_size;
     unsigned output_count,unmapped_outputs;
     uint32_t control_name, layer_name, first_id;
-    bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested, closing;
+    bool ordinary, retired, owner_fixture, ready_reported, close_search, ax_requested, closing, launcher_failed;
     int toggle_output;
     struct xkb_context *xkb;
     struct xkb_keymap *keymap;
@@ -131,7 +131,8 @@ static void advance(struct view *v) {
             }
             char packet[3]={'L','3',selector};
             ssize_t sent;do {sent=send(a->launcher,packet,sizeof(packet),MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
-            CHECK(sent==(ssize_t)sizeof(packet));printf("LAUNCH_REQUEST %c\n",packet[2]);
+            if(sent!=(ssize_t)sizeof(packet)){a->launcher_failed=true;return;}
+            printf("LAUNCH_REQUEST %c\n",packet[2]);
             aetheri_desktop_intent reconciled;
             CHECK(aetheri_desktop_view_frame(v->view,(float)v->width,(float)v->height,v->revision,&reconciled));
             CHECK(reconciled.kind==AETHERI_DESKTOP_NONE);
@@ -292,7 +293,8 @@ static void ime_done(void *data,struct zwp_text_input_v3 *input,uint32_t serial)
 static const struct zwp_text_input_v3_listener ime_listener={
     .enter=ime_enter,.leave=ime_leave,.preedit_string=ime_preedit,
     .commit_string=ime_commit,.delete_surrounding_text=ime_delete,.done=ime_done};
-static void launcher_reply(struct app *a) {
+enum launcher_result { LAUNCHER_OK, LAUNCHER_PACKET, LAUNCHER_STATE };
+static enum launcher_result launcher_reply(struct app *a) {
     char bytes[8];union {struct cmsghdr align;char bytes[CMSG_SPACE(sizeof(int)*4)];} ancillary;
     struct iovec io={.iov_base=bytes,.iov_len=sizeof(bytes)};
     struct msghdr message={.msg_iov=&io,.msg_iovlen=1,.msg_control=ancillary.bytes,.msg_controllen=sizeof(ancillary.bytes)};
@@ -305,9 +307,15 @@ static void launcher_reply(struct app *a) {
             for(size_t i=0;i<count;++i) {int fd;memcpy(&fd,(unsigned char *)CMSG_DATA(h)+i*sizeof(fd),sizeof(fd));close(fd);}
         }
     }
-    CHECK(n==3 && !extra && !(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) && bytes[1]=='3' &&
-          (bytes[0]=='A' || bytes[0]=='E' || bytes[0]=='X'));
-    enum ae_desktop_app target=ae_desktop_app_from_selector(bytes[2]);CHECK(target!=AE_DESKTOP_APP_NONE);
+    if(n!=3 || extra || (message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) || bytes[1]!='3' ||
+       (bytes[0]!='A' && bytes[0]!='E' && bytes[0]!='X'))return LAUNCHER_PACKET;
+    enum ae_desktop_app target=ae_desktop_app_from_selector(bytes[2]);
+    if(target==AE_DESKTOP_APP_NONE)return LAUNCHER_PACKET;
+    /* Validate every independent view before mutating any of them. */
+    for(unsigned i=0;i<3;++i) {
+        struct ae_desktop_model candidate=a->views[i].model;
+        if(a->views[i].revision==UINT64_MAX || !ae_desktop_model_reply(&candidate,target,bytes[0]))return LAUNCHER_STATE;
+    }
     for(unsigned i=0;i<3;++i) {
         struct view *v=&a->views[i];CHECK(v->revision<UINT64_MAX);
         CHECK(ae_desktop_model_reply(&v->model,target,bytes[0]));++v->revision;
@@ -331,6 +339,7 @@ static void launcher_reply(struct app *a) {
         }
         if(!a->activation_phase)a->close_search=true;
     }
+    return LAUNCHER_OK;
 }
 static void accessibility_publish(struct view *v) {
     struct app *a=v->app;
@@ -585,7 +594,8 @@ static void request_owner_close(struct app *a) {
     if(a->closing)return;
     a->closing=true;
     ssize_t sent;do {sent=send(a->launcher,"Q30",3,MSG_NOSIGNAL|MSG_DONTWAIT);} while(sent<0 && errno==EINTR);
-    CHECK(sent==3);puts("CLOSE_REQUEST");
+    if(sent!=3){a->launcher_failed=true;return;}
+    puts("CLOSE_REQUEST");
 }
 static void key(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t code, uint32_t state) {
     struct app *a=data;(void)keyboard;(void)serial;(void)time;
@@ -877,7 +887,7 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     bool owner_fixture=argc>1 && !strcmp(argv[1],"--font");
     CHECK(owner_fixture || argc == 1 || argc == 2 || argc == 4);
-    int exit_status=0;
+    int exit_status=0,failure_kind=0;
     struct app a = {.launcher=-1,.toggle_output=-1,.owner_fixture=owner_fixture,
                     .ime_test_barrier=getenv("NEXAUI_TEST_IME_BARRIER")!=NULL,
                     .ime_test_trace=getenv("NEXAUI_TEST_IME_TRACE")!=NULL,
@@ -963,6 +973,7 @@ int main(int argc, char **argv) {
         bool stop = false;
         while (!stop) {
             if(wl_display_dispatch_pending(a.display)<0){exit_status=1;goto peer_lost;}
+            if(a.launcher_failed){exit_status=1;goto owner_lost;}
             for(unsigned i=0;i<3;++i)retire_output(&a,i);
             if(stop_requested) {
                 aetheri_development_desktop_v1_retire(a.control);
@@ -991,13 +1002,20 @@ int main(int argc, char **argv) {
             if(wl_display_flush(a.display)<0 && errno!=EAGAIN){exit_status=1;goto peer_lost;}
             struct pollfd fds[7] = {{wl_display_get_fd(a.display), POLLIN, 0}, {owner_fixture?-1:STDIN_FILENO, POLLIN, 0}, {a.launcher,POLLIN,0}, {signal_fds[0],POLLIN,0}};
             uint32_t wait_ms=accessibility_prepare(&a,&fds[4],owner_fixture?UINT32_MAX:10000u);
+            if(a.launcher_failed){exit_status=1;goto owner_lost;}
             int wait=wait_ms>(uint32_t)INT32_MAX?-1:(int)wait_ms;
             int ready; do { ready = poll(fds, 7, wait); } while (ready < 0 && errno == EINTR && !stop_requested);
             if(stop_requested)continue;
             CHECK(ready >= 0);
             if (fds[0].revents && wl_display_dispatch(a.display)<0){exit_status=1;goto peer_lost;}
+            if(a.launcher_failed){exit_status=1;goto owner_lost;}
             for(unsigned i=0;i<3;++i)retire_output(&a,i);
-            if(fds[2].revents) {CHECK(!(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)));launcher_reply(&a);}
+            if(fds[2].revents) {
+                if(fds[2].revents&(POLLERR|POLLHUP|POLLNVAL)){exit_status=1;goto owner_lost;}
+                enum launcher_result reply=launcher_reply(&a);
+                if(reply!=LAUNCHER_OK){fprintf(stderr,"OWNER_REPLY_REJECTED %s\n",reply==LAUNCHER_STATE?"state":"packet");
+                    exit_status=1;goto owner_lost;}
+            }
             if (fds[1].revents) {
                 char c; CHECK(read(STDIN_FILENO, &c, 1) == 1);
                 if(strchr("enpzwfiurb",c) && !a.views[0].layer) {
@@ -1063,7 +1081,12 @@ int main(int argc, char **argv) {
     }
     goto cleanup;
 peer_lost:
+    failure_kind=1;
     {int saved_errno=errno;fprintf(stderr,"WAYLAND_PEER_LOST display=%d errno=%d\n",wl_display_get_error(a.display),saved_errno);}
+    for(unsigned i=0;i<3;++i)a.views[i].remove_pending=true;
+    goto cleanup;
+owner_lost:
+    failure_kind=2;fprintf(stderr,"OWNER_CHANNEL_LOST%s\n",a.launcher_failed?" send-uncertain":"");
     for(unsigned i=0;i<3;++i)a.views[i].remove_pending=true;
 cleanup:
     pointer_cancel_pending(&a);
@@ -1090,5 +1113,6 @@ cleanup:
     if (a.pointer) wl_pointer_release(a.pointer);
     if (a.seat) wl_seat_release(a.seat);
     wl_shm_destroy(a.shm); wl_compositor_destroy(a.compositor); wl_registry_destroy(a.registry);
-    wl_display_disconnect(a.display); puts(exit_status?"CLOSED_AFTER_PEER_LOSS":"CLOSED"); return exit_status;
+    wl_display_disconnect(a.display);
+    puts(failure_kind==1?"CLOSED_AFTER_PEER_LOSS":failure_kind==2?"CLOSED_AFTER_OWNER_LOSS":"CLOSED");return exit_status;
 }

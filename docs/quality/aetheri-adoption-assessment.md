@@ -1,5 +1,37 @@
 # Aetheri adoption: initial source assessment
 
+## Owner-channel failure in the running desktop fixture (2026-11-06)
+
+On NexaUI base `fedecf21ce1fce006e8086e07fd876e20f273ab9`, the private
+desktop test host rejects malformed or uncorrelated version-3 owner replies
+before changing any of its three view models. A failed nonblocking launch or
+close send is treated as uncertain: it is not retried and no successful result
+is invented. Owner-channel failure reaches local teardown with exit 1, without
+claiming acknowledged desktop retirement. Startup and all other failure timing
+windows are not covered by this result.
+
+On an isolated Aetheri virtual compositor, uncorrelated, oversized and
+ancillary-data replies and owner disconnection all reached the expected
+failure teardown. The GCC ASan/UBSan-instrumented host used leak detection;
+its shared SDK was not instrumented. An independent AT-SPI client held a
+search accessible until owner disconnection and observed it become defunct.
+The latter run used a modified 2x compositor fixture. A socketpair regression
+also checks divergent view correlation, uncertain sends and normal replies;
+the original Aetheri owner, Settings and Terminal passed a separate normal
+launch/focus/close run. Before the fix the negative fixture failed to observe
+the cleanup marker. The mistaken scale configuration in the evidence archive
+timed out and is not counted as a passing test.
+
+The instrumented host SHA-256 is
+`a0eb30ab18145cb74f9df4b94135f3a83cd563c2af88599718bfe6c0f2ab4fa9`;
+the normal owner run's host SHA-256 is
+`2835d5dc0e0aa42d2bf06a75ca16e4cc980be56d6cf50df5726726265ef2e8ea`.
+Logs and results are in `D:/NexaUI/out/nexaui-owner-channel-loss-evidence-20261106.tar.gz`,
+SHA-256 `67110e4895caf42377955896b906634768394f973b43def60068cbf800807f7d`.
+This is test-host evidence, not production supervisor recovery, physical
+hardware or human accessibility acceptance. Aetheri's live worktree was not
+changed.
+
 ## Unexpected compositor loss in the running desktop fixture (2026-11-06)
 
 On NexaUI base `ec43b1c29a61393c0da44209fcea8959ff65734b`, the private

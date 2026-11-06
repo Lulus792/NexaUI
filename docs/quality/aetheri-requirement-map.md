@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D05/D10/I07/P05/Q04: the private desktop host rejects invalid owner replies
+atomically across its view models and tears down locally on channel loss or
+uncertain sends. An independent AT-SPI client observed a held accessible become
+defunct. Startup, other failure timings and production supervisor recovery
+remain open; see [owner-channel evidence](aetheri-adoption-assessment.md#owner-channel-failure-in-the-running-desktop-fixture-2026-11-06).
+
 D05/D10/P05/Q04: unexpected Wayland loss in the running private desktop test
 host reaches local teardown with failure and invalidates an independently held
 accessible. Normal retirement remains a separate passing case. Startup,

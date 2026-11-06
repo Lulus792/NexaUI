@@ -1,5 +1,9 @@
 # Aetheri desktop model: initial dock view
 
+The private layer test host handles invalid owner replies and owner-channel
+loss through local failure teardown without claiming acknowledged retirement;
+see the [scope and test evidence](../../docs/quality/aetheri-adoption-assessment.md#owner-channel-failure-in-the-running-desktop-fixture-2026-11-06).
+
 This separate C17 consumer builds against an installed NexaUI SDK and an
 explicit Aetheri source snapshot. It borrows the original desktop model and
 font bytes; it returns Search, Settings, Terminal and Files intents to the caller.

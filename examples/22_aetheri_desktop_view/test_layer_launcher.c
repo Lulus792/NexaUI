@@ -2,7 +2,6 @@
 #define main aetheri_desktop_layer_program_main
 #include "main_layer_test.c"
 #undef main
-#include <sys/wait.h>
 
 int main(int argc,char **argv) {
     CHECK(argc==2);struct app a={.launcher=-1,.toggle_output=-1};
@@ -19,19 +18,25 @@ int main(int argc,char **argv) {
         char packet[3];CHECK(recv(sockets[1],packet,sizeof(packet),0)==3 && !memcmp(packet,"L3F",3));
         for(unsigned i=0;i<3;++i)CHECK(a.views[i].model.pending[AE_DESKTOP_FILES]);
         CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_ERROR_STATE);
-        const char *reply=attempt?"E3F":"A3F";CHECK(send(sockets[1],reply,3,0)==3);launcher_reply(&a);
+        const char *reply=attempt?"E3F":"A3F";CHECK(send(sockets[1],reply,3,0)==3);CHECK(launcher_reply(&a)==LAUNCHER_OK);
         for(unsigned i=0;i<3;++i)CHECK(!a.views[i].model.pending[AE_DESKTOP_FILES] &&
             a.views[i].model.process[AE_DESKTOP_FILES]==!attempt && a.views[i].model.launch_error[AE_DESKTOP_FILES]==!!attempt);
         advance(v);
-        if(!attempt){CHECK(send(sockets[1],"X3F",3,0)==3);launcher_reply(&a);
+        if(!attempt){CHECK(send(sockets[1],"X3F",3,0)==3);CHECK(launcher_reply(&a)==LAUNCHER_OK);
             for(unsigned i=0;i<3;++i)CHECK(!a.views[i].model.process[AE_DESKTOP_FILES]);advance(v);}
     }
-    /* Old protocol replies must fail closed, without mutating the parent. */
+    /* Reject old protocol and divergent correlation without partial mutation. */
     CHECK(send(sockets[1],"A2F",3,0)==3);
-    pid_t child=fork();CHECK(child>=0);
-    if(!child){launcher_reply(&a);_exit(0);}
-    int status=0;CHECK(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==1);
+    CHECK(launcher_reply(&a)==LAUNCHER_PACKET);
     CHECK(!a.views[0].model.pending[AE_DESKTOP_FILES] && !a.views[0].model.process[AE_DESKTOP_FILES]);
+    CHECK(ae_desktop_model_request(&a.views[0].model,AE_DESKTOP_FILES));
+    CHECK(ae_desktop_model_request(&a.views[1].model,AE_DESKTOP_FILES));
+    uint64_t before0=a.views[0].revision,before1=a.views[1].revision;
+    CHECK(send(sockets[1],"A3F",3,0)==3 && launcher_reply(&a)==LAUNCHER_STATE);
+    CHECK(a.views[0].model.pending[AE_DESKTOP_FILES] && a.views[1].model.pending[AE_DESKTOP_FILES] &&
+          !a.views[0].model.process[AE_DESKTOP_FILES] && !a.views[1].model.process[AE_DESKTOP_FILES] &&
+          a.views[0].revision==before0 && a.views[1].revision==before1);
+    a.views[0].model.pending[AE_DESKTOP_FILES]=false;a.views[1].model.pending[AE_DESKTOP_FILES]=false;
     /* Ctrl+Q sends the owner's shutdown fence once, without retiring the
        desktop or submitting later launch actions while children drain. */
     a.owner_fixture=true;a.focused=v;v->configured=v->expanded=true;
@@ -46,6 +51,15 @@ int main(int argc,char **argv) {
     CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_OK);advance(v);
     CHECK(recv(sockets[1],packet,sizeof(packet),MSG_DONTWAIT)<0 && (errno==EAGAIN || errno==EWOULDBLOCK));
     CHECK(a.closing && !a.retired && !a.views[0].model.pending[AE_DESKTOP_FILES]);
+    /* A failed nonblocking send has uncertain effect and must not retry or
+       fabricate an accepted/rejected process result. */
+    int dead[2];CHECK(!socketpair(AF_UNIX,SOCK_SEQPACKET,0,dead));CHECK(!close(dead[1]));
+    a.launcher=dead[0];a.launcher_failed=false;a.closing=false;
+    CHECK(nx_semantics_request_action(ctx,13,NX_ACTION_PRESS)==NX_OK);advance(v);
+    CHECK(a.launcher_failed && a.views[0].model.pending[AE_DESKTOP_FILES] &&
+          !a.views[0].model.process[AE_DESKTOP_FILES]);
+    a.launcher_failed=false;request_owner_close(&a);
+    CHECK(a.launcher_failed && a.closing);CHECK(!close(dead[0]));a.launcher=sockets[0];
     xkb_state_unref(a.key_state);xkb_keymap_unref(a.keymap);xkb_context_unref(a.xkb);
     aetheri_desktop_view_destroy(v->view);free(a.font);close(sockets[0]);close(sockets[1]);
     puts("Files dock launch packet, pending, accepted, exit and error replies passed");return 0;
