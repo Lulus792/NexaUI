@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.22 — Development snapshot
 
 - Added optional text-field border, corner radius and content inset styling with consistent text, pointer, navigation and IME geometry; existing widget calls retain their defaults.
 - Added an ABI-preserving text-field entry point for a copied, localized accessible description. Existing text-field descriptors and calls remain unchanged.

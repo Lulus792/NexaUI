@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Text-field API package version (2026-11-06)
+
+The described and styled field functions were added while development builds
+still reported 0.1.21, so that number alone could not establish their presence.
+This candidate based on `f62810e2962d4522afbbe954256832546138a876` advances
+the CMake package and public header to development version 0.1.22. Applications
+can require `find_package(NexaUI 0.1.22 CONFIG REQUIRED)` and compare the linked
+version before invoking the new entry points. Some earlier 0.1.21 development
+builds happen to contain one or both APIs; they are deliberately not a reliable
+minimum. Version numbers do not establish source provenance or prove all future
+pre-1.0 builds ABI compatible.
+
+On the Fedora carrier, fresh static and shared Wayland-only software builds
+with AT-SPI disabled installed successfully. The new independent C17 consumer
+built, linked and ran against each installation, and CMake rejected the older
+0.1.21 package. The shared negative also confirmed via `ldd` that the loader
+selected the old same-SONAME library and that the consumer rejected its linked
+version. The existing installed-package consumer independently passed on both
+new profiles. The new static and shared core hashes were respectively
+`90b4e1aed0f16e67b9d3822b305cb898dc58907f6b661ac0d03f45a51372e47f` and
+`24b4f03b1e00f76607da5842e4898fcc169d7d0e0932c810b5cd6284b10279cf`.
+The builder-declared source revision was left empty; these artifacts are a
+candidate from the cited base plus the version and test changes, not an
+attestation or published release. Logs, source and CMake caches are archived at
+`D:/NexaUI/out/nexaui-text-field-version-20261106.tar.gz`, SHA-256
+`8b6484bce0d021c3eee91bcd7eda2b8f75d794ea1913c9c9bda3a8cc04f5b1e3`.
+Native and other-platform acceptance and Aetheri's pin remain separate. No
+1.0.0 release or Git tag is implied.
+
 ## Text-field border, radius and inset (2026-11-06)
 
 On base `6aa9bc5c91bf9502713cd7f5715ea49cd052bbb9`, the additive

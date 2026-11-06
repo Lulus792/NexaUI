@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/B04/Q05: the 0.1.22 development candidate distinguishes the new text-field
+entry points from older 0.1.21 packages. Static/shared installed consumers and
+an old shared-library negative passed on the Fedora carrier; source provenance
+and broader platform acceptance remain open. See [package evidence](aetheri-adoption-assessment.md#text-field-api-package-version-2026-11-06).
+
 L04/A04/A06/D01: additive described and styled text-field calls expose copied
 localized assistive metadata and configurable radius, border and inset without
 changing the existing descriptor ABI. Static/shared, sanitizer and independent
