@@ -1,5 +1,44 @@
 # Aetheri adoption: initial source assessment
 
+## Fullscreen over the Aetheri test dock (2026-11-06)
+
+An installed Wayland-only static NexaUI 0.1.21 SDK built from exact commit
+`861ac665eeb4662b795629bc502e86fb36a5c9e6` ran an external C17 consumer
+on the isolated Aetheri test compositor and private test dock. Both compositor
+and test dock were built from the Aetheri snapshot
+`d56d69523c33a48648af343e7d36526f84518c90`; the consumer uses public APIs.
+On the 1920x1080 virtual output the test observed normal 1840x916, maximized
+1920x996, restored 1840x916, fullscreen 1920x1080 and restored 1840x916. It
+checks the native fullscreen state and its subsequent exit, captures output
+pixels over the dock during fullscreen and verifies the dock reappears after
+restore. The consumer, private dock and compositor all exited 0. The original
+non-fullscreen dock test also passed. This used GCC 16.2.1, wlroots 0.20.2,
+Wayland 1.26.0 and software/pixman rendering, with X11, Vulkan and AT-SPI
+disabled in the SDK.
+
+The older Aetheri snapshot `d621c9bba1df8ffd1083999300bcff742022b9dc`
+reported fullscreen and the same frame extent, but its dock remained visible
+at the sampled bottom pixel; the strict test failed. This is a compositor
+version-dependent integration result, not a claim that the SDK controls shell
+stacking. Two later attempts on the newer snapshot failed before the fullscreen
+check: one compositor reported capture failure and another consumer exited on
+SIGBUS while `/tmp` had 800 MiB free. After moving previously captured test
+images from tmpfs to the VM disk, the final run passed. Resource pressure is
+plausible but the precise cause of those failures was not established.
+
+The tested SDK archive SHA-256 was
+`87a8db871377d3423c037523568544593f2ff8f8b011467b6bab95e7d0c6f91c`,
+the consumer executable was
+`a8e68bd4d0f8c656886998a46cb83f5bdfd7a4366fa6e81a0559e8772f9de260`,
+and the final driver source was
+`083c37abd9c7edbbd82cce69ad567c15c8ee992ead530368956ae0eac885b5ec`.
+Logs, output captures, failed attempts and configuration caches are archived
+at `D:/NexaUI/out/nexaui-aetheri-fullscreen-final-20261106.tar.gz`, SHA-256
+`d8eff76ff18b4baac61060ef5ab682409decea38d3250ea700b5495113c78a27`.
+The test dock is a private solid-color fixture, not the production shell.
+Physical displays, human acceptance, Windows/macOS native fullscreen and the
+live Aetheri worktree remain outside this result.
+
 ## Explicit fullscreen request (2026-11-06)
 
 The 0.1.21 candidate on base `3aead3ab3d931af136284d075a515ce82201e4e7`

@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W07/D05/D10/Q04: an installed 0.1.21 consumer on the Aetheri d56d695 test
+compositor observed fullscreen and restored bounds, with pixel checks that the
+private dock is covered and reappears. An older compositor snapshot failed the
+coverage check. Production shell, physical and human acceptance remain open;
+see [Aetheri fullscreen evidence](aetheri-adoption-assessment.md#fullscreen-over-the-aetheri-test-dock-2026-11-06).
+
 W07/B04/W12/Q03/Q05: the 0.1.21 candidate adds an explicit fullscreen
 request and capability, independently of maximize and observed state. Linux
 Wayland/X11 wire and Weston/Openbox runs passed; Windows and macOS return

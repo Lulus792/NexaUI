@@ -11,6 +11,7 @@ int main(void) {
     int okay = nx_window_create(&desc, &window) == NX_OK &&
                nx_software_view_open(window, &view) == NX_OK;
     float previous_width = 0, previous_height = 0;
+    uint32_t previous_state = UINT32_MAX, previous_known = UINT32_MAX;
     int running = 1;
     while (okay && running) {
         uint32_t events = 0;
@@ -31,10 +32,18 @@ int main(void) {
             fflush(stdout);
             previous_width = info.width; previous_height = info.height;
         }
+        nx_window_status status;
+        if (nx_window_get_status(window, &status) != NX_OK) { okay = 0; break; }
+        if (status.state != previous_state || status.known != previous_known) {
+            printf("STATE %u %u %u\n", status.state, status.known, status.capabilities);
+            fflush(stdout);
+            previous_state = status.state; previous_known = status.known;
+        }
         if (events & NX_WINDOW_FD_READABLE) {
             char command;
             if (read(STDIN_FILENO, &command, 1) != 1) { okay = 0; break; }
             if (command == 'm') okay = nx_window_maximize(window) == NX_OK;
+            else if (command == 'f') okay = nx_window_fullscreen(window) == NX_OK;
             else if (command == 'r') okay = nx_window_restore(window) == NX_OK;
             else if (command == 'q') running = 0;
             else okay = 0;

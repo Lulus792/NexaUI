@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import socket
 import subprocess
@@ -23,6 +24,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('server', 'desktop', 'consumer', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--test-fullscreen', action='store_true',
+                        help='check observed fullscreen and dock occlusion before restoring')
     args = parser.parse_args()
     server_binary, desktop_binary, consumer_binary = [p.resolve(strict=True) for p in
                                                        (args.server, args.desktop, args.consumer)]
@@ -105,6 +108,35 @@ def main():
         capture(2, 990, (51, 102, 204))
         command(consumer, 'r'); frame(1840, 916, normal_count)
         capture(3, 960, (16, 20, 28))
+        if args.test_fullscreen:
+            def observed_fullscreen(after, enabled):
+                return any(bool(int(m.group(1)) & 4) == enabled and
+                           (int(m.group(2)) & 4) and (int(m.group(3)) & 128)
+                           for m in re.finditer(r'^STATE (\d+) (\d+) (\d+)$',
+                                                log('consumer')[after:], re.M))
+            before_full = len(log('consumer'))
+            command(consumer, 'f')
+            frame(1920, 1080)
+            wait(lambda: observed_fullscreen(before_full, True),
+                 'observed fullscreen', live)
+            server.send_signal(signal.SIGUSR1)
+            wait(lambda: all(f'CAPTURE 4 {i}\n' in log('server') for i in range(3)),
+                 'fullscreen composed output', live)
+            image = (captures / 'capture-4-output-0.ppm').read_bytes()
+            magic, dimensions, maximum, pixels = image.split(b'\n', 3)
+            if (magic, dimensions, maximum) != (b'P6', b'1920 1080', b'255') or len(pixels) != 1920 * 1080 * 3:
+                raise RuntimeError('unexpected fullscreen capture format')
+            for x, y in ((50, 50), (100, 1070)):
+                offset = (y * 1920 + x) * 3
+                if tuple(pixels[offset:offset + 3]) != (51, 102, 204):
+                    raise RuntimeError('fullscreen does not cover expected output pixel')
+            result['capture_4_sha256'] = hashlib.sha256(image).hexdigest()
+            normal_count = log('consumer').count('FRAME 1840 916 1840 916\n')
+            before_restore = len(log('consumer'))
+            command(consumer, 'r'); frame(1840, 916, normal_count)
+            wait(lambda: observed_fullscreen(before_restore, False), 'observed fullscreen exit', live)
+            capture(5, 960, (16, 20, 28))
+            result['fullscreen'] = 'observed and restored'
         command(consumer, 'q')
         if consumer.wait(timeout=10) != 0:
             raise RuntimeError('consumer cleanup failed')
@@ -114,6 +146,9 @@ def main():
         if 'RETIRED\n' not in log('desktop') or (runtime / env['WAYLAND_DISPLAY']).exists():
             raise RuntimeError('shell retirement or socket cleanup missing')
         result['status'] = 'passed'
+    except Exception as exc:
+        result['error'] = str(exc)
+        raise
     finally:
         for child in reversed(processes):
             if child.poll() is None:
