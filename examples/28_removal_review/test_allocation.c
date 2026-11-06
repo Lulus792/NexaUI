@@ -30,6 +30,17 @@ int main(void){
         if(result==NX_OK){CHECK(view);removal_review_destroy(view);CHECK(live==baseline);succeeded=1;break;}
         CHECK(result==NX_ERROR_MEMORY && !view && live==baseline && !removal_owner_requests(owner));++rejected;
     }
-    CHECK(succeeded);nx_font_collection_destroy(fonts);removal_owner_destroy(owner);CHECK(!live);
+    CHECK(succeeded);removal_review *filtered=NULL;CHECK(removal_review_create(owner,fonts,&filtered)==NX_OK);
+    size_t filter_baseline=live;succeeded=0;
+    for(size_t i=1;i<128;++i){
+        ordinal=0;fail_at=i;nx_result result=removal_review_filter(filtered,(nx_utf8_span){"Application",11});fail_at=0;
+        if(result==NX_OK){succeeded=1;break;}
+        CHECK(result==NX_ERROR_MEMORY && live==filter_baseline && !removal_owner_requests(owner));++rejected;
+        /* Empty was the previous applied filter and must still be a no-op. */
+        ordinal=0;fail_at=1;result=removal_review_filter(filtered,(nx_utf8_span){0});fail_at=0;
+        CHECK(result==NX_OK && !ordinal && live==filter_baseline);
+    }
+    CHECK(succeeded);removal_review_destroy(filtered);CHECK(live==baseline);
+    nx_font_collection_destroy(fonts);removal_owner_destroy(owner);CHECK(!live);
     printf("Rejected %u allocation failures; caller data, owner state and live allocation balance preserved\n",rejected);return 0;
 }

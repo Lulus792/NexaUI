@@ -99,6 +99,102 @@ static int response(FILE *stream,const char *expected){
     printf("HOST %s",line);return !strcmp(line,expected);
 }
 #define CHECK(x) do{if(!(x)){fprintf(stderr,"removal-atspi:%d: %s\n",__LINE__,#x);goto cleanup;}}while(0)
+static int edit(AtspiAccessible *node,const char *value){
+    GError *error=NULL;AtspiEditableText *text=atspi_accessible_get_editable_text_iface(node);
+    int result=text && atspi_editable_text_set_text_contents(text,value,&error) && !error;
+    if(text)g_object_unref(text);
+    if(error)g_error_free(error);
+    return result;
+}
+static int text_is(AtspiAccessible *node,const char *expected){
+    GError *error=NULL;atspi_accessible_clear_cache(node);AtspiText *text=atspi_accessible_get_text_iface(node);
+    char *value=text?atspi_text_get_text(text,0,-1,&error):NULL;
+    int result=!error && value && !strcmp(value,expected);g_free(value);
+    if(text)g_object_unref(text);
+    if(error)g_error_free(error);
+    return result;
+}
+static int focus(AtspiAccessible *node){
+    GError *error=NULL;AtspiComponent *component=atspi_accessible_get_component_iface(node);
+    int result=component && atspi_component_grab_focus(component,&error) && !error;
+    if(component)g_object_unref(component);
+    if(error)g_error_free(error);
+    return result;
+}
+static int contained(AtspiAccessible *child,AtspiAccessible *parent){
+    GError *error=NULL;AtspiComponent *a=atspi_accessible_get_component_iface(child),*b=atspi_accessible_get_component_iface(parent);
+    AtspiRect *inner=a?atspi_component_get_extents(a,ATSPI_COORD_TYPE_WINDOW,&error):NULL;
+    AtspiRect *outer=b && !error?atspi_component_get_extents(b,ATSPI_COORD_TYPE_WINDOW,&error):NULL;
+    int result=!error && inner && outer && inner->width>0 && inner->height>0 && inner->x>=outer->x && inner->y>=outer->y &&
+        inner->x+inner->width<=outer->x+outer->width && inner->y+inner->height<=outer->y+outer->height;
+    if(!result && inner && outer && getenv("NEXAUI_REMOVAL_BOUNDS_TRACE"))
+        fprintf(stderr,"FILTER_BOUNDS child=%d,%d,%d,%d viewport=%d,%d,%d,%d\n",inner->x,inner->y,inner->width,inner->height,outer->x,outer->y,outer->width,outer->height);
+    g_free(inner);g_free(outer);if(a)g_object_unref(a);if(b)g_object_unref(b);if(error)g_error_free(error);
+    return result;
+}
+static int filter_preview(AtspiAccessible *app,AtspiAccessible *reviewed,int large,int incomplete,int ime,FILE *responses){
+    int okay=0;AtspiAccessible *button=NULL,*field=NULL,*old_field=NULL,*apply=NULL,*cancel=NULL,*object=NULL,*scroll=NULL,*group=NULL,*preview=NULL;
+    button=find(app,"Filter preview",0);CHECK(button && focus(button));
+    for(unsigned i=0;i<100 && !state(button,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+    CHECK(state(button,ATSPI_STATE_FOCUSED) && activate(button));
+    for(unsigned i=0;i<150 && !field;++i){field=find(app,"Object name filter",0);if(!field)pause_briefly();}
+    CHECK(field && state(field,ATSPI_STATE_FOCUSED) && edit(field,"discarded draft"));
+    cancel=find(app,"Cancel",0);CHECK(cancel && activate(cancel));old_field=field;field=NULL;
+    for(unsigned i=0;i<100 && !state(old_field,ATSPI_STATE_DEFUNCT);++i)pause_briefly();
+    CHECK(state(old_field,ATSPI_STATE_DEFUNCT) && state(button,ATSPI_STATE_FOCUSED) && activate(button));
+    g_object_unref(cancel);cancel=NULL;
+    for(unsigned i=0;i<150 && !field;++i){field=find(app,"Object name filter",0);if(!field)pause_briefly();}
+    CHECK(field && !edit(old_field,"late old edit") && text_is(field,"") && state(field,ATSPI_STATE_FOCUSED));
+    apply=find(app,"Apply filter",0);CHECK(apply && !activate(reviewed));
+    group=find(app,"Remove in this scope",0);CHECK(group && value(group,large?"20000 objects":"4 objects"));
+    if(ime){
+        puts("REMOVAL_FILTER_PREEDIT");CHECK(response(responses,"REMOVAL_PREEDIT 7\n") && text_is(field,""));
+        puts("REMOVAL_FILTER_CANCEL_PREEDIT");CHECK(response(responses,"REMOVAL_PREEDIT 0\n") && text_is(field,""));
+        puts("REMOVAL_FILTER_REFOCUS");
+        for(unsigned i=0;i<100 && !state(field,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+        CHECK(state(field,ATSPI_STATE_FOCUSED));puts("REMOVAL_FILTER_COMMIT");
+        for(unsigned i=0;i<100 && !text_is(field,"\xc3\xa9");++i)pause_briefly();
+        CHECK(text_is(field,"\xc3\xa9"));
+    } else {
+        char oversized[130];memset(oversized,'x',129);oversized[129]=0;CHECK(edit(field,oversized));
+        for(unsigned i=0;i<100 && !state(field,ATSPI_STATE_INVALID_ENTRY);++i)pause_briefly();
+        CHECK(state(field,ATSPI_STATE_INVALID_ENTRY) && !state(apply,ATSPI_STATE_ENABLED) && !activate(apply));
+        const char *query=large?(incomplete?"managed-object-000000":"MANAGED-OBJECT-099999"):"Application code";
+        CHECK(edit(field,query));
+        for(unsigned i=0;i<100 && !state(apply,ATSPI_STATE_ENABLED);++i)pause_briefly();
+        CHECK(text_is(field,query) && state(apply,ATSPI_STATE_ENABLED));
+    }
+    CHECK(value(group,large?"20000 objects":"4 objects"));g_object_unref(group);group=NULL;
+    CHECK(activate(apply));
+    for(unsigned i=0;i<100 && !state(field,ATSPI_STATE_DEFUNCT);++i)pause_briefly();
+    CHECK(state(field,ATSPI_STATE_DEFUNCT) && !edit(field,"late closed edit"));
+    const char *name=ime?"\xc3\xa9":large?(incomplete?"managed-object-000000":"managed-object-099999"):"Application code";
+    preview=find(app,"Complete removal preview",0);CHECK(preview);scroll=find(app,"Vertical scrollbar",0);
+    for(unsigned i=0;i<32;++i){
+        if(!object)object=find(app,name,0);
+        if(object && contained(object,preview))break;
+        CHECK(scroll && invoke(scroll,"increment"));pause_briefly();
+    }
+    CHECK(object && state(object,ATSPI_STATE_SHOWING) && contained(object,preview));
+    group=find(app,incomplete?"Unknown or unmanaged":large?"Backups or remote copies":"Remove in this scope",0);CHECK(group);
+    CHECK(value(group,incomplete?"0 of 1 objects shown":large?"1 of 20000 objects shown":"1 of 4 objects shown"));
+    if(!incomplete){
+        CHECK(focus(reviewed));for(unsigned i=0;i<100 && !state(reviewed,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+        CHECK(state(reviewed,ATSPI_STATE_FOCUSED));
+    }
+    okay=1;
+cleanup:
+    if(preview)g_object_unref(preview);
+    if(group)g_object_unref(group);
+    if(scroll)g_object_unref(scroll);
+    if(object)g_object_unref(object);
+    if(cancel)g_object_unref(cancel);
+    if(apply)g_object_unref(apply);
+    if(old_field)g_object_unref(old_field);
+    if(field)g_object_unref(field);
+    if(button)g_object_unref(button);
+    return okay;
+}
 int main(int argc,char **argv){
     int okay=0,input[2]={-1,-1},output[2]={-1,-1};pid_t child=-1;FILE *commands=NULL,*responses=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*reviewed=NULL,*request=NULL,*close_view=NULL,*old_plan=NULL,*status=NULL,*old_request=NULL;
@@ -106,6 +202,7 @@ int main(int argc,char **argv){
     const char *font=getenv("NEXAUI_REMOVAL_FONT");int incomplete=getenv("NEXAUI_REMOVAL_INCOMPLETE")!=NULL;
     int keyboard=getenv("NEXAUI_REMOVAL_KEYBOARD")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
     int large=getenv("NEXAUI_REMOVAL_LARGE")!=NULL;
+    int filtering=getenv("NEXAUI_REMOVAL_FILTER")!=NULL,ime=getenv("NEXAUI_REMOVAL_FILTER_IME")!=NULL;
     signal(SIGPIPE,SIG_IGN);
     CHECK(argc==2 && font && !pipe(input) && !pipe(output));child=fork();CHECK(child>=0);
     if(!child){
@@ -119,7 +216,7 @@ int main(int argc,char **argv){
     CHECK(response(responses,"REMOVAL_READY\n") && atspi_init()==0);desktop=atspi_get_desktop(0);CHECK(desktop);
     for(unsigned i=0;i<150 && !reviewed;++i){
         if(app){g_object_unref(app);app=NULL;}app=by_pid(desktop,child);
-        if(app)reviewed=find(app,"Scope reviewed",0);
+        if(app)reviewed=find(app,"Entire plan reviewed",0);
         if(!reviewed)pause_briefly();
     }
     CHECK(reviewed);request=find(app,"Request removal",0);close_view=find(app,"Close view",0);old_plan=find(app,"Plan",0);
@@ -136,7 +233,7 @@ int main(int argc,char **argv){
         const char *expected=large?(i==5?(incomplete?"1 object":"0 objects"):i==4 && incomplete?"19999 objects":"20000 objects"):
             i==0?"4 objects":i==5?"0 objects":"1 object";
         CHECK(value(group,expected));g_object_unref(group);}
-    const char *objects[]={"Application code","Private settings and cache","Credential registration","Owned background service",
+    const char *objects[]={ime?"\xc3\xa9":"Application code","Private settings and cache","Credential registration","Owned background service",
         "Shared support library","Profile deliberately kept","Independent project document","Backup outside this action"};
     const char *reasons[]={"Owned by this installation","Managed private state in the selected user scope",
         "Revoke the app-owned credential registration","Stop and unregister only this app's background work",
@@ -168,6 +265,7 @@ int main(int argc,char **argv){
         int children=atspi_accessible_get_child_count(preview,&error);CHECK(!error && children>0 && children<300);
         g_object_unref(preview);g_object_unref(object);g_object_unref(scroll);
     }
+    if(filtering)CHECK(filter_preview(app,reviewed,large,incomplete,ime,responses));
     if(incomplete){
         status=find(app,"Inventory incomplete; request unavailable",0);CHECK(status && !state(reviewed,ATSPI_STATE_ENABLED));
         CHECK(activate(close_view) && response(responses,"REMOVAL_CLOSED requests=0 reopened=0\n"));

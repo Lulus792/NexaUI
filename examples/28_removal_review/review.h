@@ -47,6 +47,19 @@ unsigned removal_owner_requests(const removal_owner *owner);
 nx_result removal_review_create(removal_owner *owner,nx_font_collection *fonts,removal_review **out);
 void removal_review_destroy(removal_review *view);
 nx_context *removal_review_context(removal_review *view);
+/* Presentation-only name filter, using nx_search_filter's matching rules.
+ * At most 128 UTF-8 bytes, no NUL/newline. Empty clears it. Failure preserves
+ * the applied filter and confirmation. A changed filter clears confirmation,
+ * resets scroll and never narrows the request's complete owner-supplied plan. */
+nx_result removal_review_filter(removal_review *view,nx_utf8_span query);
+/* Borrowed native window for the built-in field's IME/clipboard. Every bound
+ * window must outlive the view/context. NULL disables future native binding;
+ * it does not retire a previous frame's borrowed window. */
+void removal_review_bind_window(removal_review *view,nx_window *window);
+int removal_review_filter_open(const removal_review *view);
+/* Queue native input. Escape is resolved after earlier queued activations:
+ * cancel an open/opening filter, otherwise close this view. */
+nx_result removal_review_queue_event(removal_review *view,const nx_event *event);
 /* Owner and fonts outlive the view; all calls stay on their owner thread.
  * REQUEST is returned once, with exact identity, and performs no backend call.
  * Neither acceptance nor completion is inferred from returning this action. */

@@ -13,6 +13,7 @@ int main(int argc,char **argv){
     removal_owner *owner=NULL;removal_review *view=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     const char *pending="REMOVAL_READY";char input[64]={0};size_t used=0;
     int control=getenv("NEXAUI_REMOVAL_TEST_CONTROL")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
+    int ime_test=getenv("NEXAUI_REMOVAL_FILTER_IME")!=NULL;size_t last_preedit=0;
     REQUIRE(argc==2);file=fopen(argv[1],"rb");REQUIRE(file && !fseek(file,0,SEEK_END));long size=ftell(file);
     REQUIRE(size>0 && size<64000000 && !fseek(file,0,SEEK_SET));bytes=malloc((size_t)size);REQUIRE(bytes);
     REQUIRE(fread(bytes,1,(size_t)size,file)==(size_t)size);int closed=fclose(file);file=NULL;REQUIRE(!closed);
@@ -28,10 +29,12 @@ int main(int argc,char **argv){
             strcpy(large_entries[plan.count-1].reason,"Owner cannot establish this object's managed state");}
         else plan.inventory_complete=0;
     }
+    if(ime_test)strcpy(plan.entries[0].label,"\xc3\xa9");
     REQUIRE(removal_owner_create(&plan,&owner)==NX_OK);free(large_entries);large_entries=NULL;
     plan.entries=NULL;REQUIRE(removal_review_create(owner,fonts,&view)==NX_OK);
     nx_window_desc desc={"Removal review fixture",640,480,0,{0}};
     REQUIRE(nx_window_create(&desc,&window)==NX_OK && nx_software_view_open(window,&renderer)==NX_OK);
+    removal_review_bind_window(view,window);
     if(control)REQUIRE(fcntl(STDIN_FILENO,F_SETFL,fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK)==0);
     while(!done){
         nx_window_info info;REQUIRE(nx_window_get_info(window,&info)==NX_OK);if(info.should_close)break;
@@ -59,12 +62,16 @@ int main(int argc,char **argv){
                 nx_software_view_render(renderer,commands,count,background,&outcome)==NX_OK);
             dirty=outcome!=NX_SOFTWARE_VIEW_READY;if(!dirty && pending){puts(pending);pending=NULL;}
         }
+        if(ime_test){
+            char preedit[32];size_t length=0;int32_t begin=0,end=0;
+            REQUIRE(nx_window_get_ime_preedit(window,preedit,sizeof(preedit),&length,&begin,&end)==NX_OK);
+            if(length!=last_preedit){printf("REMOVAL_PREEDIT %zu\n",length);last_preedit=length;}
+        }
         uint32_t ready=0;REQUIRE(nx_window_poll_with_fd(window,UINT32_MAX,control?STDIN_FILENO:-1,&ready)==NX_OK);
         nx_event event;int available;
         do{REQUIRE(nx_window_next_event(window,&event,&available)==NX_OK);
             if(available){
-                if(event.type==NX_EVENT_KEY_DOWN && event.key==NX_KEY_ESCAPE){done=1;break;}
-                REQUIRE(nx_context_queue_event(ctx,&event)==NX_OK);dirty=1;
+                REQUIRE(removal_review_queue_event(view,&event)==NX_OK);dirty=1;
             }
         }while(available);
         size_t routed=0;REQUIRE(nx_window_route_events(window,ctx,&routed)==NX_OK);if(routed)dirty=1;
@@ -80,6 +87,7 @@ int main(int argc,char **argv){
                     nx_result detached=nx_window_publish_semantics(window,NULL);REQUIRE(detached==NX_OK || detached==NX_ERROR_UNSUPPORTED);
                     removal_review_destroy(view);view=NULL;
                     REQUIRE(removal_review_create(owner,fonts,&view)==NX_OK);
+                    removal_review_bind_window(view,window);
                     reopened=1;dirty=1;focus=1;pending="REMOVAL_REOPENED";
                 }
                 used-=length+1;memmove(input,end+1,used);

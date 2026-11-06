@@ -14,6 +14,8 @@ struct removal_review {
     removal_owner *owner;nx_font_collection *fonts;nx_context *ctx;int reviewed,again,pending;
     float x,y,index_width,index_em,wide;nx_virtual_list *index;review_row *scratch;size_t capacity,cached;
     removal_work work;
+    size_t *matches,match_count,match_counts[6],starts[6];char filter[129];
+    nx_text_field *query;nx_window *window;int filter_open,filter_error,escape;
 };
 static const char *const group_names[]={"Remove in this scope","Retained: shared dependency","Retained: explicit choice",
     "Independent documents","Backups or remote copies","Unknown or unmanaged"};
@@ -94,10 +96,22 @@ nx_result removal_review_create(removal_owner *owner,nx_font_collection *fonts,r
         result=nx_virtual_list_create(0,1,NULL,&view->index);
         if(result!=NX_OK){free(view->scratch);nx_context_destroy(view->ctx);free(view);return result;}
     }
-    view->owner=owner;view->fonts=fonts;*out=view;return NX_OK;
+    view->owner=owner;view->fonts=fonts;view->match_count=owner->plan.count;
+    memcpy(view->match_counts,owner->counts,sizeof(view->match_counts));memcpy(view->starts,owner->starts,sizeof(view->starts));
+    result=nx_text_field_create("",0,4096,&view->query);
+    if(result!=NX_OK){removal_review_destroy(view);return result;}
+    *out=view;return NX_OK;
 }
-void removal_review_destroy(removal_review *view){if(view){clear_rows(view);nx_virtual_list_destroy(view->index);free(view->scratch);nx_context_destroy(view->ctx);free(view);}}
+void removal_review_destroy(removal_review *view){if(view){clear_rows(view);nx_text_field_destroy(view->query);free(view->matches);nx_virtual_list_destroy(view->index);free(view->scratch);nx_context_destroy(view->ctx);free(view);}}
 nx_context *removal_review_context(removal_review *view){return view?view->ctx:NULL;}
+void removal_review_bind_window(removal_review *view,nx_window *window){if(view)view->window=window;}
+int removal_review_filter_open(const removal_review *view){return view && view->filter_open;}
+nx_result removal_review_queue_event(removal_review *view,const nx_event *event){
+    if(!view || !event)return NX_ERROR_ARGUMENT;
+    nx_result result=nx_context_queue_event(view->ctx,event);
+    if(result==NX_OK && event->type==NX_EVENT_KEY_DOWN && event->key==NX_KEY_ESCAPE && !event->repeat)view->escape=1;
+    return result;
+}
 void removal_review_last_work(const removal_review *view,removal_work *out){if(out)*out=view?view->work:(removal_work){0};}
 static void metadata(review_row *row,uint64_t id,const char *name,const char *value){
     row->id=id;row->role=NX_ROLE_TEXT;row->name=name;
@@ -109,10 +123,11 @@ static uint64_t row_key(const removal_review *view,size_t index,unsigned *group,
     static const uint64_t fixed[]={10,30,31,32,33,34};
     if(index<6)return fixed[index];
     for(unsigned g=0;g<6;++g){
-        size_t header=6+view->owner->starts[g]+g;
+        size_t header=6+view->starts[g]+g;
         if(index==header){if(group)*group=g;return 100+g;}
-        if(index>header && index<=header+view->owner->counts[g]){
-            size_t position=view->owner->order[view->owner->starts[g]+index-header-1];
+        if(index>header && index<=header+view->match_counts[g]){
+            size_t ordinal=view->starts[g]+index-header-1;
+            size_t position=view->owner->order[view->matches?view->matches[ordinal]:ordinal];
             if(group)*group=g;
             if(item)*item=position;
             return view->owner->plan.entries[position].semantic_id;
@@ -124,10 +139,48 @@ static nx_result indexed_row(void *user,size_t index,uint64_t *key,double *heigh
     removal_review *view=user;*key=row_key(view,index,NULL,NULL);*height=view->index_em*6+12;
     return *key?NX_OK:NX_ERROR_ARGUMENT;
 }
+static int valid_query(nx_utf8_span query,void *unused){
+    (void)unused;
+    if(query.length>128 || (!query.data && query.length) || nx_utf8_validate(query.data,query.length,NULL)!=NX_OK)return 0;
+    for(size_t i=0;i<query.length;++i)if(!query.data[i] || query.data[i]=='\n' || query.data[i]=='\r')return 0;
+    return 1;
+}
+nx_result removal_review_filter(removal_review *view,nx_utf8_span query){
+    if(!view)return NX_ERROR_ARGUMENT;
+    if(!valid_query(query,NULL))return query.length>128?NX_ERROR_LIMIT:NX_ERROR_ARGUMENT;
+    if(strlen(view->filter)==query.length && (!query.length || !memcmp(view->filter,query.data,query.length)))return NX_OK;
+    nx_search_option *options=NULL;size_t *matches=NULL,count=view->owner->plan.count,found=count;
+    nx_result result=NX_ERROR_MEMORY;removal_review next=*view;nx_virtual_list *index=NULL;
+    memset(next.match_counts,0,sizeof(next.match_counts));memset(next.starts,0,sizeof(next.starts));
+    if(query.length && count){
+        options=calloc(count,sizeof(*options));matches=malloc(count*sizeof(*matches));
+        if(!options || !matches)goto failed;
+        for(size_t i=0;i<count;++i){const removal_entry *entry=&view->owner->plan.entries[view->owner->order[i]];
+            options[i].id=entry->semantic_id;options[i].name=span(entry->label);}
+        result=nx_search_filter(options,count,query,matches,count,&found);if(result!=NX_OK)goto failed;
+    }
+    for(size_t i=0;i<found;++i){size_t at=view->owner->order[matches?matches[i]:i];
+        ++next.match_counts[view->owner->plan.entries[at].disposition];}
+    for(unsigned group=1;group<6;++group)next.starts[group]=next.starts[group-1]+next.match_counts[group-1];
+    next.matches=matches;next.match_count=found;
+    if(view->index){
+        result=nx_virtual_list_create(0,1,NULL,&index);if(result!=NX_OK)goto failed;
+        double offset=0;if(next.index_em<=0)next.index_em=16;
+        result=nx_virtual_list_rebuild(index,found+12,indexed_row,&next,128,&offset);if(result!=NX_OK)goto failed;
+    }
+    free(options);free(view->matches);nx_virtual_list_destroy(view->index);clear_rows(view);
+    view->matches=matches;view->index=index;view->match_count=found;
+    memcpy(view->match_counts,next.match_counts,sizeof(view->match_counts));memcpy(view->starts,next.starts,sizeof(view->starts));
+    if(query.length)memcpy(view->filter,query.data,query.length);
+    view->filter[query.length]=0;
+    view->reviewed=0;view->x=view->y=0;view->index_width=0;view->again=1;return NX_OK;
+failed:
+    free(options);free(matches);nx_virtual_list_destroy(index);return result;
+}
 static void format_row(removal_review *view,size_t index,const char *status,review_row *row){
     const removal_plan *plan=&view->owner->plan;char identity[33],value[256];unsigned group=0;size_t item=0;
     row->index=index;row->id=row_key(view,index,&group,&item);row->role=NX_ROLE_TEXT;
-    if(index==0){row->role=NX_ROLE_STATUS;row->name=status;snprintf(row->visual,sizeof(row->visual),"%s",status);}
+    if(index==0){row->role=NX_ROLE_STATUS;snprintf(row->visual,sizeof(row->visual),"%s",status);row->name=row->visual;}
     else if(index==1)metadata(row,30,"Component",plan->component);
     else if(index==2){
         hex(plan->plan,identity);snprintf(value,sizeof(value),"%s / revision %" PRIu64,identity,plan->revision);
@@ -140,7 +193,9 @@ static void format_row(removal_review *view,size_t index,const char *status,revi
         snprintf(row->visual,sizeof(row->visual),"Scope: %s (%.16s %.16s)",plan->scope_label,identity,identity+16);
     } else if(index==5)metadata(row,34,"Storage limits","Logical sizes do not promise reclaimed space, secure erasure, or deletion of backups or remote copies.");
     else if(row->id<1000){
-        size_t count=view->owner->counts[group];snprintf(value,sizeof(value),"%zu %s",count,count==1?"object":"objects");
+        size_t count=view->owner->counts[group];
+        if(view->filter[0])snprintf(value,sizeof(value),"%zu of %zu objects shown",view->match_counts[group],count);
+        else snprintf(value,sizeof(value),"%zu %s",count,count==1?"object":"objects");
         metadata(row,100+group,group_names[group],value);
     } else {
         const removal_entry *entry=&plan->entries[item];row->name=entry->label;hex(entry->object,identity);
@@ -194,7 +249,7 @@ static nx_result virtual_body(removal_review *view,float top,float viewport_heig
             view->again=1;
         }
     }
-    double total,new_anchor;result=nx_virtual_list_offset_at(view->index,view->owner->plan.count+12,&total);
+    double total,new_anchor;result=nx_virtual_list_offset_at(view->index,view->match_count+12,&total);
     if(result==NX_OK)result=nx_virtual_list_offset_at(view->index,anchor.first,&new_anchor);
     if(result!=NX_OK)return result;
     double maximum=total>viewport_height?total-viewport_height:0;
@@ -204,7 +259,7 @@ static nx_result virtual_body(removal_review *view,float top,float viewport_heig
     /* Global identities and all six counts stay queryable without publishing an
      * object-sized semantic tree. Object nodes belong to the visible range. */
     for(unsigned i=0;i<12;++i){
-        review_row summary={0};size_t index=i<6?i:6+view->owner->starts[i-6]+i-6;
+        review_row summary={0};size_t index=i<6?i:6+view->starts[i-6]+i-6;
         format_row(view,index,status,&summary);result=row_semantics(view,&summary,top,view->wide);
         if(result!=NX_OK)return result;
     }
@@ -217,6 +272,60 @@ static nx_result virtual_body(removal_review *view,float top,float viewport_heig
     }
     return NX_OK;
 }
+static nx_result filter_panel(removal_review *view,float width,float height,float em,nx_color text){
+    float wide=width-32;if(wide>560)wide=560;
+    const char *strings[]={"Filter preview",view->filter_error?"Filter unavailable; try again.":
+        "Names only. Empty shows all. Full plan stays in scope.","Apply filter","Cancel"};
+    nx_text_layout *layouts[4]={0};nx_result result=NX_OK;
+    for(unsigned i=0;i<4 && result==NX_OK;++i)
+        result=nx_text_layout_create(view->fonts,strings[i],strlen(strings[i]),NX_BIDI_LTR,em,i<2?wide-24:(wide-36)/2-16,&layouts[i]);
+    if(result!=NX_OK)goto done;
+    float title_height=(float)nx_text_layout_height(layouts[0]),help_height=(float)nx_text_layout_height(layouts[1]);
+    float button=em+20,panel_height=title_height+help_height+2*button+60;
+    if(panel_height>height-16){result=NX_ERROR_LIMIT;goto done;}
+    float x=(width-wide)/2,y=(height-panel_height)/2;
+    nx_overlay_desc modal={0};modal.panel.id=300;modal.panel.parent_id=1;modal.backdrop_id=304;
+    modal.panel.bounds=(nx_rect){x,y,wide,panel_height};modal.panel.name=span(strings[0]);modal.dismiss_on_escape=1;
+    int dismissed=0,opened=0,apply=0,cancel=0,submitted=0,valid=0;
+    result=nx_modal_begin(view->ctx,&modal,&dismissed);opened=result==NX_OK;
+    if(result==NX_OK)result=nx_draw_text_layout(view->ctx,layouts[0],(nx_point){x+12,y+12},text,1024*1024);
+    nx_text_field_desc field={0};field.id=301;field.parent_id=300;field.name=span("Object name filter");
+    field.bounds=(nx_rect){x+12,y+20+title_height,wide-24,button};field.fonts=view->fonts;
+    field.pixels_per_em=em;field.glyph_cache_bytes=1024*1024;field.validate=valid_query;field.ime_window=view->window;
+    if(view->window && result==NX_OK)result=nx_text_clipboard_for_window(view->window,&field.clipboard);
+    nx_interaction_state state;
+    const char *description="At most 128 UTF-8 bytes. Apply to filter names; empty shows all. Requests always cover the entire plan.";
+    if(result==NX_OK)result=nx_text_field_widget_described(view->ctx,&field,view->query,span(description),&state,&valid,&submitted);
+    float help_y=field.bounds.y+button+8;
+    nx_semantic_desc help={305,300,NX_ROLE_TEXT,{x+12,help_y,wide-24,help_height},span(strings[1]),{0},{0},NX_SEM_READONLY,0};
+    if(result==NX_OK)result=nx_semantics_add(view->ctx,&help,NULL);
+    if(result==NX_OK)result=nx_draw_text_layout(view->ctx,layouts[1],(nx_point){x+12,help_y},text,1024*1024);
+    for(unsigned i=0;i<2 && result==NX_OK;++i){
+        nx_control_desc control={0};control.id=302+i;control.parent_id=300;control.name=span(strings[2+i]);
+        control.bounds=(nx_rect){x+12+(wide-12)/2*(float)i,y+panel_height-button-12,(wide-36)/2,button};
+        control.label_layout=layouts[2+i];control.label_origin=(nx_point){control.bounds.x+8,control.bounds.y+10};
+        control.glyph_cache_bytes=1024*1024;control.disabled=i==0 && !valid;
+        result=nx_button(view->ctx,&control,&state);if(result==NX_OK && state.clicked){if(i)cancel=1;else apply=1;}
+    }
+    if(opened){nx_result end=nx_overlay_end(view->ctx);if(result==NX_OK)result=end;}
+    if(result==NX_OK && !dismissed && !cancel && valid && (apply || submitted)){
+        nx_utf8_span query;result=nx_text_field_text(view->query,&query);
+        if(result==NX_OK){
+            nx_result filtered=removal_review_filter(view,query);
+            if(filtered==NX_OK)cancel=1;
+            else {view->filter_error=1;view->again=1;}
+        }
+    }
+    if(result==NX_OK && (dismissed || cancel)){
+        /* A dismissed scope is already absent from the SDK's active path;
+           it may have opened and dismissed within this same input batch. */
+        if(!dismissed)result=nx_overlay_close(view->ctx);
+        if(result==NX_OK){view->filter_open=0;view->again=1;}
+    }
+done:
+    for(unsigned i=0;i<4;++i)if(layouts[i])nx_text_layout_destroy(layouts[i]);
+    return result;
+}
 static nx_result frame_once(removal_review *view,float width,float height,removal_action *action){
     if(!view || !action)return NX_ERROR_ARGUMENT;
     *action=(removal_action){0};if(width<420 || height<320)return NX_ERROR_LIMIT;
@@ -224,19 +333,27 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
     const size_t *counts=view->owner->counts;
     int eligible=!view->owner->issued && !view->pending && !view->owner->invalidated && plan->inventory_complete &&
         !counts[REMOVAL_UNKNOWN] && counts[REMOVAL_REMOVE]>0;
+    char filtered_status[160];
+    if(view->match_count)snprintf(filtered_status,sizeof(filtered_status),"Showing %zu of %zu objects; request covers the entire plan",view->match_count,plan->count);
+    else strcpy(filtered_status,"No matching objects; request covers the entire plan");
     const char *status=view->owner->issued || view->pending?"Request handed to owner; outcome unknown":
         view->owner->invalidated?"Plan no longer current; request unavailable":
         !plan->inventory_complete || counts[REMOVAL_UNKNOWN]?"Inventory incomplete; request unavailable":
-        !counts[REMOVAL_REMOVE]?"No removals listed; request unavailable":"Preview only; no removal has started";
+        !counts[REMOVAL_REMOVE]?"No removals listed; request unavailable":view->filter[0]?filtered_status:"Preview only; no removal has started";
     int large=view->index!=NULL;review_row *rows=view->scratch;size_t count=0;
     view->again=0;
     if(!large){
-        for(size_t index=0;index<plan->count+12;++index)format_row(view,index,status,&rows[count++]);
+        /* Modal focus/close may need another internal frame. Eager layouts
+           are rebuilt per pass, unlike the measured virtual-row cache. */
+        clear_rows(view);
+        for(size_t index=0;index<view->match_count+12;++index)format_row(view,index,status,&rows[count++]);
         view->cached=count;
     }
-    nx_text_layout *title=NULL,*labels[3]={0};float em=0,total=0,content_width=width-56;
+    nx_text_layout *title=NULL,*filter_label=NULL,*labels[3]={0};float em=0,total=0,content_width=width-56;
     nx_result result=nx_theme_metric(view->ctx,NX_METRIC_FONT_SIZE,&em);
-    if(result==NX_OK)result=nx_text_layout_create(view->fonts,"Removal review",14,NX_BIDI_LTR,em,width-32,&title);
+    const char *filter_text=view->filter[0]?"Filter active":"Filter";
+    if(result==NX_OK)result=nx_text_layout_create(view->fonts,filter_text,strlen(filter_text),NX_BIDI_LTR,em,width-32,&filter_label);
+    if(result==NX_OK)result=nx_text_layout_create(view->fonts,"Removal review",14,NX_BIDI_LTR,em,width-64-nx_text_layout_width(filter_label),&title);
     for(size_t i=0;i<count && result==NX_OK;++i){
         result=nx_text_layout_create(view->fonts,rows[i].visual,strlen(rows[i].visual),NX_BIDI_LTR,em,width-56,&rows[i].layout);
         if(result==NX_OK){
@@ -245,23 +362,24 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
             if(nx_text_layout_width(rows[i].layout)>content_width)content_width=(float)nx_text_layout_width(rows[i].layout);
         }
     }
-    const char *names[]={"Scope reviewed","Close view","Request removal"};
+    const char *names[]={"Entire plan reviewed","Close view","Request removal"};
     for(unsigned i=0;i<3 && result==NX_OK;++i)
         result=nx_text_layout_create(view->fonts,names[i],strlen(names[i]),NX_BIDI_LTR,em,width-64,&labels[i]);
     if(result!=NX_OK)goto cleanup;
     float button_height=em+20,half=(width-44)/2;
     int stacked=nx_text_layout_width(labels[1])+16>half || nx_text_layout_width(labels[2])+16>half;
     float footer=button_height+(stacked?2*button_height+12:button_height)+36;
-    float top=24+(float)nx_text_layout_height(title);
+    float header=(float)nx_text_layout_height(title);if(header<em+12)header=em+12;
+    float top=24+header;
     if(height-top-footer<24){result=NX_ERROR_LIMIT;goto cleanup;}
     if(large){
         if(view->index_width!=width || view->index_em!=em){
             double offset=view->y;view->index_width=width;view->index_em=em;view->wide=width-56;
-            result=nx_virtual_list_rebuild(view->index,plan->count+12,indexed_row,view,height-top-footer,&offset);
+            result=nx_virtual_list_rebuild(view->index,view->match_count+12,indexed_row,view,height-top-footer,&offset);
             if(result!=NX_OK){view->index_width=0;goto cleanup;}
             view->y=(float)offset;
         }
-        double extent;result=nx_virtual_list_offset_at(view->index,plan->count+12,&extent);
+        double extent;result=nx_virtual_list_offset_at(view->index,view->match_count+12,&extent);
         if(result!=NX_OK)goto cleanup;
         total=(float)extent;content_width=view->wide;
     }
@@ -271,6 +389,19 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
         span("Owner-supplied preview. Requesting does not authorize, accept or complete removal."),{0},0,0};
     if(result==NX_OK)result=nx_semantics_add(view->ctx,&root,NULL);
     if(result==NX_OK)result=nx_draw_text_layout(view->ctx,title,(nx_point){16,8},text,1024*1024);
+    nx_control_desc filter={0};filter.id=250;filter.parent_id=1;filter.name=span("Filter preview");
+    float filter_width=(float)nx_text_layout_width(filter_label)+16;
+    filter.bounds=(nx_rect){width-16-filter_width,8,filter_width,em+12};filter.label_layout=filter_label;
+    filter.label_origin=(nx_point){filter.bounds.x+8,filter.bounds.y+6};filter.glyph_cache_bytes=1024*1024;
+    nx_interaction_state filter_state;
+    if(result==NX_OK)result=nx_button(view->ctx,&filter,&filter_state);
+    if(result==NX_OK && filter_state.clicked){
+        result=nx_text_field_set_text(view->query,view->filter,strlen(view->filter));
+        if(result==NX_OK){view->filter_open=1;view->filter_error=0;view->again=1;}
+    }
+    if(result==NX_OK && view->escape){
+        view->escape=0;if(!view->filter_open)action->kind=REMOVAL_CLOSE;
+    }
     nx_scroll_area_desc area={0};area.id=20;area.parent_id=1;area.name=span("Complete removal preview");
     area.viewport=(nx_rect){16,top,width-32,height-top-footer};area.content_size=(nx_size){content_width,total};
     area.thumb_x_id=22;area.thumb_y_id=21;area.axes=NX_SCROLL_X|NX_SCROLL_Y;nx_scroll_info info;int opened=0;
@@ -288,14 +419,14 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
     nx_control_desc control={0};control.id=200;control.parent_id=1;
     control.bounds=(nx_rect){16,height-footer+12,width-32,button_height};control.name=span(names[0]);
     control.label_layout=labels[0];control.label_origin=(nx_point){control.bounds.x+button_height+8,control.bounds.y+10};
-    control.glyph_cache_bytes=1024*1024;control.disabled=!eligible;
+    control.glyph_cache_bytes=1024*1024;control.disabled=!eligible || view->filter_open;
     nx_interaction_state state;
     if(result==NX_OK)result=nx_checkbox(view->ctx,&control,&view->reviewed,&state);
     for(unsigned i=1;i<3 && result==NX_OK;++i){
         control.id=200+i;control.name=span(names[i]);control.label_layout=labels[i];
         control.bounds=stacked?(nx_rect){16,height-footer+24+button_height+(button_height+12)*(float)(i-1),width-32,button_height}:
             (nx_rect){16+(half+12)*(float)(i-1),height-footer+24+button_height,half,button_height};
-        control.label_origin=(nx_point){control.bounds.x+8,control.bounds.y+10};control.disabled=i==2 && (!eligible || !view->reviewed);
+        control.label_origin=(nx_point){control.bounds.x+8,control.bounds.y+10};control.disabled=view->filter_open || (i==2 && (!eligible || !view->reviewed));
         result=nx_button(view->ctx,&control,&state);
         if(result==NX_OK && state.clicked){
             if(i==1)action->kind=REMOVAL_CLOSE;
@@ -306,11 +437,13 @@ static nx_result frame_once(removal_review *view,float width,float height,remova
             }
         }
     }
+    if(result==NX_OK && view->filter_open)result=filter_panel(view,width,height,em,text);
     {nx_result end=nx_end_frame(view->ctx);if(result==NX_OK)result=end;}
     if(result==NX_OK && action->kind==REMOVAL_REQUEST)view->pending=1;
 cleanup:
     if(result!=NX_OK)*action=(removal_action){0};
     if(title)nx_text_layout_destroy(title);
+    if(filter_label)nx_text_layout_destroy(filter_label);
     for(unsigned i=0;i<3;++i)if(labels[i])nx_text_layout_destroy(labels[i]);
     return result;
 }

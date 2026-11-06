@@ -30,11 +30,17 @@ def main():
     parser.add_argument('--expect-unavailable', action='store_true')
     parser.add_argument('--capture', action='store_true')
     parser.add_argument('--large', action='store_true')
+    parser.add_argument('--filter', action='store_true', help='edit/apply/cancel the native name filter')
+    parser.add_argument('--filter-ime', action='store_true', help='controlled text-input-v3 preedit/cancel/commit in the small filter')
     args = parser.parse_args()
     if args.keyboard and (args.incomplete or args.expect_unavailable):
         parser.error('--keyboard requires the complete positive fixture')
     if args.capture and not args.keyboard:
         parser.error('--capture requires --keyboard')
+    if args.filter_ime and (args.large or args.incomplete or args.expect_unavailable):
+        parser.error('--filter-ime requires a complete small positive fixture')
+    if args.filter_ime:
+        args.filter = True
     server, host, client, registry, runner, font = [p.resolve(strict=True) for p in
         (args.server, args.host, args.client, args.registry, args.runner, args.font)]
     root = args.work_dir.resolve(); root.mkdir(mode=0o700)
@@ -46,7 +52,8 @@ def main():
                NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_WAYLAND='1',
                NEXAUI_REMOVAL_FONT=str(font), NEXAUI_REMOVAL_TEST_CONTROL='1')
     for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS', 'DBUS_SESSION_BUS_ADDRESS',
-                 'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE', 'NEXAUI_REMOVAL_LARGE'):
+                 'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE', 'NEXAUI_REMOVAL_LARGE',
+                 'NEXAUI_REMOVAL_FILTER', 'NEXAUI_REMOVAL_FILTER_IME'):
         env.pop(name, None)
     if args.keyboard:
         env['NEXAUI_REMOVAL_KEYBOARD'] = '1'
@@ -54,12 +61,16 @@ def main():
         env['NEXAUI_REMOVAL_INCOMPLETE'] = '1'
     if args.large:
         env['NEXAUI_REMOVAL_LARGE'] = '1'
+    if args.filter:
+        env['NEXAUI_REMOVAL_FILTER'] = '1'
+    if args.filter_ime:
+        env['NEXAUI_REMOVAL_FILTER_IME'] = '1'
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     controller.settimeout(5)
     compositor = test = None
     result = dict(status='failed', server_sha256=digest(server), host_sha256=digest(host),
                   client_sha256=digest(client), font_sha256=digest(font), keyboard=args.keyboard,
-                  incomplete=args.incomplete, large=args.large,
+                  incomplete=args.incomplete, large=args.large, filter=args.filter, filter_ime=args.filter_ime,
                   scope='Declared preview only; independent AT-SPI and virtual input, no real removal/authorization or physical/human acceptance')
     try:
         with (root / 'server.log').open('wb') as server_log, (root / 'atspi.log').open('wb') as test_log:
@@ -70,11 +81,37 @@ def main():
                 if compositor.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError('private compositor did not start')
                 time.sleep(.02)
+            if args.filter_ime:
+                # Advertise text-input-v3 before the host binds, using the
+                # pinned producer's explicit test-only switch.
+                controller.sendall(b'I on')
+                if controller.recv(32) != b'OK':
+                    raise RuntimeError('test producer rejected IME enable')
             test = subprocess.Popen([sys.executable, str(runner), str(registry), str(client), str(host)],
                 env=env, stdin=subprocess.DEVNULL, stdout=test_log, stderr=subprocess.STDOUT)
             injected = set(); deadline = time.monotonic() + 50; capture_started = captured = False
             while test.poll() is None:
                 log = (root / 'atspi.log').read_text(errors='replace')
+                if args.filter_ime:
+                    ime_commands = [('REMOVAL_FILTER_PREEDIT', [('I', 0)]),
+                                    ('REMOVAL_FILTER_CANCEL_PREEDIT', [('K', 15)]),
+                                    ('REMOVAL_FILTER_REFOCUS', [('K', 'backtab')]),
+                                    ('REMOVAL_FILTER_COMMIT', [('I', 1)])]
+                    for marker, commands in ime_commands:
+                        if marker + '\n' not in log or marker in injected:
+                            continue
+                        for kind, code in commands:
+                            if kind == 'I':
+                                messages = [f'I {code}']
+                            elif code == 'backtab':
+                                messages = ['K 42 1', 'K 15 1', 'K 15 0', 'K 42 0']
+                            else:
+                                messages = [f'K {code} 1', f'K {code} 0']
+                            for message in messages:
+                                controller.sendall(message.encode('ascii'))
+                                if controller.recv(32) != b'OK':
+                                    raise RuntimeError('test producer rejected ' + message)
+                        injected.add(marker)
                 if args.keyboard:
                     keys = [('REMOVAL_KEY_CHECK', 57), ('REMOVAL_KEY_FOCUS_CLOSE', 15),
                             ('REMOVAL_KEY_FOCUS_REQUEST', 15), ('REMOVAL_KEY_REQUEST', 28), ('REMOVAL_KEY_CLOSE', 28)]
@@ -114,7 +151,8 @@ def main():
                 expected = 'HOST REMOVAL_CLOSED requests=0 reopened=0\n' if args.incomplete else 'HOST REMOVAL_CLOSED requests=1 reopened=1\n'
                 if test.returncode or expected not in output:
                     raise RuntimeError('independent native client failed; see atspi.log')
-                if args.keyboard and len(injected) != (8 if args.large else 5):
+                expected_inputs = ((8 if args.large else 5) if args.keyboard else 0) + (4 if args.filter_ime else 0)
+                if len(injected) != expected_inputs:
                     raise RuntimeError('keyboard sequence incomplete')
                 if args.capture and not captured:
                     raise RuntimeError('native capture incomplete')
