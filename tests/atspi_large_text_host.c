@@ -12,7 +12,7 @@
 typedef struct fixture {
     nx_window *window; nx_context *context; nx_font *font;
     nx_font_collection *fonts; nx_text_field *field; nx_numeric_field *number;
-    int disabled, omitted;
+    int disabled, omitted, apply_count, apply_valid, apply_disabled;
     int clipboard_mode;
     char copied[64];
 } fixture;
@@ -42,12 +42,22 @@ static int draw(fixture *f) {
     number.name=(nx_utf8_span){"Numeric field",13}; number.bounds=(nx_rect){8,48,300,32};
     number.fonts=f->fonts; number.pixels_per_em=16; number.glyph_cache_bytes=65536;
     number.minimum=-10000; number.maximum=10000;
+    nx_control_desc apply={0}; apply.id=4; apply.parent_id=1;
+    apply.name=(nx_utf8_span){"Apply number",12}; apply.bounds=(nx_rect){8,84,120,28};
+    apply.disabled=f->apply_disabled;
     nx_interaction_state state; int valid,submitted;
-    return nx_begin_frame(f->context,320,120,0)==NX_OK &&
-        nx_semantics_add(f->context,&root,NULL)==NX_OK &&
-        (f->omitted || nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)==NX_OK) &&
-        nx_numeric_field_widget(f->context,&number,f->number,&state,&valid)==NX_OK &&
-        nx_end_frame(f->context)==NX_OK;
+    if(nx_begin_frame(f->context,320,120,0)!=NX_OK ||
+       nx_semantics_add(f->context,&root,NULL)!=NX_OK ||
+       (!f->omitted && nx_text_field_widget(f->context,&d,f->field,&state,&valid,&submitted)!=NX_OK) ||
+       nx_numeric_field_widget(f->context,&number,f->number,&state,&valid)!=NX_OK ||
+       nx_button(f->context,&apply,&state)!=NX_OK) return 0;
+    int clicked=state.clicked;
+    if(nx_end_frame(f->context)!=NX_OK)return 0;
+    if(clicked) {
+        ++f->apply_count;
+        if(nx_numeric_field_commit(f->number,number.minimum,number.maximum,&f->apply_valid)!=NX_OK)return 0;
+    }
+    return 1;
 }
 static int frame(fixture *f) {return draw(f) && nx_window_publish_semantics(f->window,f->context)==NX_OK;}
 int main(void) {
@@ -82,6 +92,20 @@ int main(void) {
             if(nx_numeric_field_value(f.number,&value)!=NX_OK || value!=1234 ||
                nx_numeric_field_text(f.number,&draft)!=NX_OK || draft.length!=3 || memcmp(draft.data,"bad",3))goto done;
             puts("ACK numeric-invalid");
+        } else if (!strcmp(input,"numeric-apply-disable")) {
+            f.apply_disabled=1;if(!frame(&f))goto done;
+            puts("ACK numeric-apply-disable");
+        } else if (!strcmp(input,"numeric-apply-enable")) {
+            f.apply_disabled=0;if(!frame(&f))goto done;
+            puts("ACK numeric-apply-enable");
+        } else if (!strcmp(input,"numeric-apply-invalid")) {
+            double value=0;
+            if(f.apply_count!=1 || f.apply_valid || nx_numeric_field_value(f.number,&value)!=NX_OK || value!=1234)goto done;
+            puts("ACK numeric-apply-invalid");
+        } else if (!strcmp(input,"numeric-apply-valid")) {
+            double value=0;
+            if(f.apply_count!=2 || !f.apply_valid || nx_numeric_field_value(f.number,&value)!=NX_OK || value!=42)goto done;
+            puts("ACK numeric-apply-valid");
         } else if (!strcmp(input,"numeric-enter")) {
             nx_event event={0};event.type=NX_EVENT_TEXT_COMMAND;event.text_command=NX_TEXT_COMMAND_NEWLINE;
             double value=0;

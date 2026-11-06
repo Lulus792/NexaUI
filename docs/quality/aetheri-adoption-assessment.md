@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Native accessibility action for numeric confirmation (2026-11-06)
+
+On base `73b0a208130794475d9499a7aa99075f091d69c0`, the existing private
+Wayland AT-SPI integration fixture now submits an `Apply number` button and
+uses the 0.1.20 `nx_numeric_field_commit` API for its action. An independent
+libatspi client verifies the native push-button role, changes the numeric draft
+through EditableText and activates the button. An invalid `bad` draft leaves
+the prior value 1234 unchanged; a valid `42` updates it to 42. The same client
+checks that an explicitly disabled button rejects the action before reenabling
+it. Host-side action counts and values are checked independently of the client.
+
+GCC 15.2 static/shared and Clang 22 ASan/UBSan static Debug tests passed on
+Alpine/WSL under private Weston 14.0.2 and a private AT-SPI registry, with leak
+detection for the sanitizer run. This semantic fixture does not paint a visible
+Apply label or combine the action with a live IME; it does not establish keyboard
+access when an IME consumes Tab/Enter, active-composition policy, an Aetheri
+app integration or human screenreader and physical-input acceptance. No SDK
+implementation or public API changed in this step.
+
 ## Explicit numeric confirmation after native input (2026-11-06)
 
 The 0.1.20 development candidate on base

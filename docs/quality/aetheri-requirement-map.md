@@ -1,5 +1,10 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T05/A02/Q06: a separate libatspi client invokes a numeric Apply button in the
+private Wayland semantics fixture, including invalid draft and disabled-action
+negatives. The case is not a visible or IME-driven user workflow; keyboard,
+active composition and human acceptance remain open. See [candidate evidence](aetheri-adoption-assessment.md#native-accessibility-action-for-numeric-confirmation-2026-11-06).
+
 T05/I02/Q06: `nx_numeric_field_commit` in the 0.1.20 candidate provides an
 explicit application-controlled confirmation path for a validated draft. A
 test-only owner action passed after native simple-IME input in static/shared/
