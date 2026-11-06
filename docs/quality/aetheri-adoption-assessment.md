@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Clipboard across independent NexaUI processes on Aetheri (2026-11-06)
+
+On NexaUI base `514c1c485ca132463bf3bd225054f35f12433e54`, two separate
+instances of a small public C17 consumer ran against the isolated Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90` test compositor. The receiver
+first confirmed that a missing selection rejects a read. The source then
+acquired a native input serial and set a fixed Unicode selection; after focus
+changed, the other process read the exact bytes asynchronously. Once the
+source exited cleanly, the receiver remained responsive and a new read was
+rejected. Both peers and the compositor exited 0. The two processes run the
+same NexaUI-based test consumer; this does not establish interoperability with
+an unrelated application's clipboard implementation.
+
+GCC 16.2.1 Release and ASan/UBSan with leak detection passed using installed
+static Wayland-only 0.1.21 SDKs based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`. Instrumented peer SHA-256:
+`cbb28c0528e1135f8b9f019478ae54b63c99a417acd89dd33ee8bb8ca5806099`;
+release peer SHA-256:
+`dded0ad46f2d2dc67567395888a21efb8bb67bc257e9d7dc304dc6132fc2890d`.
+Logs, sources and build caches are in
+`D:/NexaUI/out/nexaui-clipboard-peers-20261106.tar.gz`, SHA-256
+`c7ee8efeb46d35feb7c16fd5e66fb64e7069ba92e6085d9234a6ccedc0d251c7`.
+Owner loss during a read, unrelated applications, real Aetheri app adoption,
+physical input and human acceptance remain open.
+
 ## Clipboard between two NexaUI windows on Aetheri (2026-11-06)
 
 On consumer base `0fba4aa397fb9f6429e701972c9a2b4dc436a33b`, the external

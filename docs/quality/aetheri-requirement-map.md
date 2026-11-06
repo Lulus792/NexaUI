@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+I05/W10/Q04: two independently running NexaUI test processes exchanged
+Unicode on Aetheri's test compositor and rejected a new read after the source
+exited. The same test also rejects a read before ownership. In-flight source
+loss and unrelated clipboard implementations remain open; see
+[separate-process evidence](aetheri-adoption-assessment.md#clipboard-across-independent-nexaui-processes-on-aetheri-2026-11-06).
+
 I05/W02/W10/Q04: two separately connected NexaUI windows copied and
 asynchronously read Unicode through the Aetheri test compositor; after the
 source closed, a fresh read was rejected. In-flight source loss and independent
