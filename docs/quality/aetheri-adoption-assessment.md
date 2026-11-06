@@ -62,6 +62,24 @@ The diagnostic sources, result files and logs are preserved in
 The next step is to investigate event handling and rendering responsiveness
 without altering Aetheri's live compositor or weakening the unpaced test.
 
+An alternating ten-run diagnostic matrix narrowed the delay to the software
+presentation path. With the same unpaced driver, Aetheri test compositor and
+ASan/UBSan diagnostic SDK, all five runs of the ordinary Files consumer failed
+with `EPIPE` at render. A deliberately nonfunctional mutant that presented its
+first frame but skipped every later `nx_software_view_render` call passed all
+five runs, including the whole-draft and unchanged-file checks. This removes
+buffer creation, rasterization and submission together, so it does not isolate
+one of those operations and is not a candidate fix or evidence of visible
+updates. No preload hook or enlarged buffer was used in this matrix. The
+ordinary and mutant executable hashes were respectively
+`25ec16dffa001089f172da4f9e317302d38d1d158777d3c98c01d2c027a98110` and
+`4015d2416d8cc9447c0549eb75c8ff3d5bf2ebc33a9fdbee69639e37dffed651`.
+The scripts, mutated source, build cache and all ten logs/results are archived
+at `D:/NexaUI/out/nexaui-files-raster-matrix-20261106.tar.gz`, SHA-256
+`791d94dc5fbd38df211f3a7a60762251a6edc937bdd03fd7f48d0eea0ec47fa6`.
+An actual solution must keep visible updates, input ordering, focus/IME and
+bounded resource lifetimes while retaining the original stress case.
+
 ## External clipboard peers and interrupted read on Aetheri (2026-11-06)
 
 On NexaUI base `8ed604eb222a893be8052929eebdc97d736ce67e`, the isolated
