@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W06/I07/P05/P07/Q04: the Settings example joins a deliberately held Apply
+worker after its isolated Aetheri compositor is killed, without publishing a
+successful Apply state; normal keyboard operation also passed. This test does
+not establish real service cancellation, timeout or restart reconciliation.
+See [in-flight loss evidence](aetheri-adoption-assessment.md#settings-apply-worker-during-compositor-loss-2026-11-06).
+
 W06/P05/Q04: an ordinary external Settings example reached local cleanup with
 failure after its isolated Aetheri compositor was killed, including an
 instrumented SDK/application run. Renderer retirement was not acknowledged;

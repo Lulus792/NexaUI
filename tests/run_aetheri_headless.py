@@ -30,7 +30,11 @@ def main():
     parser.add_argument('--work-dir', type=Path, required=True)
     parser.add_argument('--test-compositor-loss', action='store_true',
                         help='kill only the isolated compositor and require local Settings cleanup')
+    parser.add_argument('--test-apply-inflight', action='store_true',
+                        help='hold a submitted Apply worker across compositor loss')
     args = parser.parse_args()
+    if args.test_apply_inflight and not args.test_compositor_loss:
+        parser.error('--test-apply-inflight requires --test-compositor-loss')
     server_binary, app_binary, font = (p.resolve(strict=True) for p in
                                         (args.server, args.settings, args.font))
     root = args.work_dir.resolve()
@@ -46,6 +50,10 @@ def main():
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     controller.settimeout(5)
     server = app = None
+    gate_read = gate_write = None
+    if args.test_apply_inflight:
+        gate_read, gate_write = os.pipe()
+        env['NEXAUI_SETTINGS_TEST_APPLY_GATE_FD'] = str(gate_read)
     result = {'status': 'failed', 'server_sha256': sha256(server_binary),
               'settings_sha256': sha256(app_binary), 'font_sha256': sha256(font),
               'scope': 'private headless Aetheri test compositor; virtual input; no physical or accessibility acceptance'}
@@ -80,7 +88,10 @@ def main():
             wait(lambda: 'READY ' in contents('server.log'), 'compositor readiness', False)
             app = subprocess.Popen([str(app_binary), str(font), '--verify-keyboard-controls'],
                                    env=env, stdin=subprocess.DEVNULL, stdout=app_log,
-                                   stderr=subprocess.STDOUT)
+                                   stderr=subprocess.STDOUT,
+                                   pass_fds=(gate_read,) if gate_read is not None else ())
+            if gate_read is not None:
+                os.close(gate_read); gate_read = None
             wait(lambda: 'SETTINGS_KEYBOARD_READY' in contents('settings.log') and
                  'MAP 0\n' in contents('server.log'), 'mapped Settings frame')
             server.send_signal(signal.SIGUSR1)
@@ -103,14 +114,32 @@ def main():
                 raise RuntimeError('captured Settings pixels missing')
             result['output0_sha256'] = hashlib.sha256(picture).hexdigest()
             if args.test_compositor_loss:
+                if args.test_apply_inflight:
+                    for code in (15, 15, 57, 15, 57):
+                        key(code); time.sleep(.15)
+                    wait(lambda: 'SETTINGS_APPLY_WORKER_BLOCKED\n' in contents('settings.log'),
+                         'held Apply worker')
                 server.kill()
-                if server.wait(timeout=10) != -signal.SIGKILL or app.wait(timeout=10) != 1:
+                if server.wait(timeout=10) != -signal.SIGKILL:
+                    raise RuntimeError('unexpected compositor exit')
+                if args.test_apply_inflight:
+                    deadline = time.monotonic() + 10
+                    while 'SETTINGS_CLEANUP_WAIT_WORKER\n' not in contents('settings.log'):
+                        if app.poll() is not None or time.monotonic() >= deadline:
+                            raise RuntimeError('Settings did not wait for the held worker')
+                        time.sleep(.02)
+                    os.write(gate_write, b'g'); os.close(gate_write); gate_write = None
+                if app.wait(timeout=10) != 1:
                     raise RuntimeError('unexpected compositor or Settings exit')
                 trace = contents('settings.log')
                 if 'SETTINGS_CLEANUP_DONE\n' not in trace or 'Settings example failed\n' not in trace:
                     raise RuntimeError('Settings did not complete its failure cleanup')
                 if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:', trace):
                     raise RuntimeError('sanitizer reported an error during Settings cleanup')
+                if args.test_apply_inflight:
+                    if trace.count('SETTINGS_APPLY_WORKER_BLOCKED\n') != 1 or re.search(r'^KEYBOARD_TRACE .*motion=1$', trace, re.M):
+                        raise RuntimeError('Apply was replayed or reported completed')
+                    result['apply_inflight'] = 'one held worker joined after compositor loss'
                 result['compositor_loss'] = 'local failure cleanup'
                 result['status'] = 'passed'
                 return
@@ -132,6 +161,10 @@ def main():
         result['error'] = str(exc)
         raise
     finally:
+        if gate_write is not None:
+            os.close(gate_write)
+        if gate_read is not None:
+            os.close(gate_read)
         if app and app.poll() is None:
             app.terminate(); app.wait(timeout=5)
         if server and server.poll() is None:

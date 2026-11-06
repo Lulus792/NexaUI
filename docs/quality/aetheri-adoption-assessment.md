@@ -1,5 +1,28 @@
 # Aetheri adoption: initial source assessment
 
+## Settings Apply worker during compositor loss (2026-11-06)
+
+On example base `c4027c2b34973f99435951d8958d7fd967815c82`, a test-only
+inherited pipe holds the Settings example's Apply worker after one keyboard
+submission. The isolated Aetheri d56d695 compositor is killed while that
+worker is blocked. The driver observes Settings enter cleanup and wait for the
+worker, then releases it. Settings joins the worker, destroys its local view
+and window, and exits 1. The trace contains one worker start and no published
+successful Apply state. This is an example worker and an induced sequence, not
+proof of cancellation or durable backend reconciliation after a restart. The
+example's worker join is not a general timeout for an unresponsive service.
+
+The case passed with GCC 16.2.1 Release and with ASan/UBSan plus leak detection
+on the application and its static Wayland-only 0.1.21 SDK based on
+`861ac665eeb4662b795629bc502e86fb36a5c9e6`. The normal keyboard workflow
+also passed with the same instrumented binary and exited 0. The instrumented
+application SHA-256 was
+`71a9e2e246e7b134930926965a3b54e4ce2f42eca08b1da5324b1f7a12753374`.
+Results, logs, captures, source files and build caches are in
+`D:/NexaUI/out/nexaui-settings-inflight-loss-20261106.tar.gz`, SHA-256
+`87756352f0c27a3bff3afac637d8c5b0b21550ccf86d567ae51ae56e90d9e9c5`.
+Actual services, other event ordering, Vulkan and accessibility remain open.
+
 ## Ordinary Settings after compositor loss (2026-11-06)
 
 An external software Settings example linked to an installed Wayland-only

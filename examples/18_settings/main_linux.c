@@ -13,11 +13,18 @@
 #include <unistd.h>
 
 typedef struct apply_reply { uint64_t token; int success; } apply_reply;
-typedef struct apply_worker { pthread_t thread; int read_fd, write_fd, running; settings_apply_request request; apply_reply reply; } apply_worker;
+typedef struct apply_worker { pthread_t thread; int read_fd, write_fd, running, test_gate_fd; settings_apply_request request; apply_reply reply; } apply_worker;
 /* The worker owns only its write end and a copied reply; it never sees a UI or
    window. A fresh pipe bounds this example to one small result per request. */
 static void *apply_worker_run(void *data) {
     apply_worker *worker=data;
+    if (worker->test_gate_fd>=0) {
+        char token; ssize_t n;
+        puts("SETTINGS_APPLY_WORKER_BLOCKED"); fflush(stdout);
+        do {n=read(worker->test_gate_fd,&token,1);} while(n<0 && errno==EINTR);
+        close(worker->test_gate_fd);
+        if(n!=1 || token!='g') {close(worker->write_fd); return worker;}
+    }
     struct timespec delay={0,250000000};
     while(nanosleep(&delay,&delay)<0 && errno==EINTR) {}
     ssize_t n; do {n=write(worker->write_fd,&worker->reply,sizeof(worker->reply));} while(n<0 && errno==EINTR);
@@ -96,6 +103,13 @@ int main(int argc, char **argv) {
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0, renderer_waiting=0;
     apply_worker worker={0}; worker.read_fd=-1;
+    worker.test_gate_fd=-1;
+    const char *test_gate=verify_keyboard?getenv("NEXAUI_SETTINGS_TEST_APPLY_GATE_FD"):NULL;
+    if(test_gate) {
+        char *end=NULL;errno=0;long fd=strtol(test_gate,&end,10);
+        if(errno || !*test_gate || *end || fd<0 || fd>INT_MAX) goto cleanup;
+        worker.test_gate_fd=(int)fd;
+    }
     nx_window_info previous={0};
     nx_window_desc desc={german?"Einstellungsbeispiel":"Settings example",640,360,0,{0}};
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
@@ -334,6 +348,7 @@ int main(int argc, char **argv) {
     }
     if (smoke && !presented) okay=0;
 cleanup:
+    if(worker.running && worker.test_gate_fd>=0) {puts("SETTINGS_CLEANUP_WAIT_WORKER");fflush(stdout);}
     if (!apply_worker_join(&worker)) okay=0;
     if (opened) {
         nx_result r=settings_renderer_close(&renderer);
