@@ -32,6 +32,10 @@ def main():
     parser.add_argument('--large', action='store_true')
     parser.add_argument('--filter', action='store_true', help='edit/apply/cancel the native name filter')
     parser.add_argument('--filter-ime', action='store_true', help='controlled text-input-v3 preedit/cancel/commit in the small filter')
+    refresh = parser.add_mutually_exclusive_group()
+    refresh.add_argument('--refresh-before', action='store_true', help='review a newer snapshot before requesting')
+    refresh.add_argument('--refresh-draft', action='store_true', help='preserve editor/undo and cancel preedit across refresh')
+    refresh.add_argument('--refresh-issued', action='store_true', help='refresh after an issued request without rearming it')
     args = parser.parse_args()
     if args.keyboard and (args.incomplete or args.expect_unavailable):
         parser.error('--keyboard requires the complete positive fixture')
@@ -40,6 +44,11 @@ def main():
     if args.filter_ime and (args.large or args.incomplete or args.expect_unavailable):
         parser.error('--filter-ime requires a complete small positive fixture')
     if args.filter_ime:
+        args.filter = True
+    refresh_mode = 'draft' if args.refresh_draft else 'before' if args.refresh_before else 'issued' if args.refresh_issued else ''
+    if refresh_mode and (args.incomplete or args.expect_unavailable or args.filter_ime):
+        parser.error('refresh modes require a complete positive fixture without --filter-ime')
+    if args.refresh_draft:
         args.filter = True
     server, host, client, registry, runner, font = [p.resolve(strict=True) for p in
         (args.server, args.host, args.client, args.registry, args.runner, args.font)]
@@ -53,7 +62,8 @@ def main():
                NEXAUI_REMOVAL_FONT=str(font), NEXAUI_REMOVAL_TEST_CONTROL='1')
     for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS', 'DBUS_SESSION_BUS_ADDRESS',
                  'NEXAUI_REMOVAL_KEYBOARD', 'NEXAUI_REMOVAL_INCOMPLETE', 'NEXAUI_REMOVAL_LARGE',
-                 'NEXAUI_REMOVAL_FILTER', 'NEXAUI_REMOVAL_FILTER_IME'):
+                 'NEXAUI_REMOVAL_FILTER', 'NEXAUI_REMOVAL_FILTER_IME',
+                 'NEXAUI_REMOVAL_REFRESH_MODE', 'NEXAUI_REMOVAL_REFRESH_PREEDIT'):
         env.pop(name, None)
     if args.keyboard:
         env['NEXAUI_REMOVAL_KEYBOARD'] = '1'
@@ -65,12 +75,16 @@ def main():
         env['NEXAUI_REMOVAL_FILTER'] = '1'
     if args.filter_ime:
         env['NEXAUI_REMOVAL_FILTER_IME'] = '1'
+    if refresh_mode:
+        env['NEXAUI_REMOVAL_REFRESH_MODE'] = refresh_mode
+    if args.refresh_draft:
+        env['NEXAUI_REMOVAL_REFRESH_PREEDIT'] = '1'
     controller, issuer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     controller.settimeout(5)
     compositor = test = None
     result = dict(status='failed', server_sha256=digest(server), host_sha256=digest(host),
                   client_sha256=digest(client), font_sha256=digest(font), keyboard=args.keyboard,
-                  incomplete=args.incomplete, large=args.large, filter=args.filter, filter_ime=args.filter_ime,
+                  incomplete=args.incomplete, large=args.large, filter=args.filter, filter_ime=args.filter_ime, refresh=refresh_mode,
                   scope='Declared preview only; independent AT-SPI and virtual input, no real removal/authorization or physical/human acceptance')
     try:
         with (root / 'server.log').open('wb') as server_log, (root / 'atspi.log').open('wb') as test_log:
@@ -81,7 +95,7 @@ def main():
                 if compositor.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError('private compositor did not start')
                 time.sleep(.02)
-            if args.filter_ime:
+            if args.filter_ime or args.refresh_draft:
                 # Advertise text-input-v3 before the host binds, using the
                 # pinned producer's explicit test-only switch.
                 controller.sendall(b'I on')
@@ -92,6 +106,15 @@ def main():
             injected = set(); deadline = time.monotonic() + 50; capture_started = captured = False
             while test.poll() is None:
                 log = (root / 'atspi.log').read_text(errors='replace')
+                if args.refresh_draft:
+                    for marker, messages in [('REMOVAL_REFRESH_PREEDIT', ['I 0']),
+                                             ('REMOVAL_REFRESH_UNDO', ['K 29 1', 'K 44 1', 'K 44 0', 'K 29 0'])]:
+                        if marker + '\n' in log and marker not in injected:
+                            for message in messages:
+                                controller.sendall(message.encode('ascii'))
+                                if controller.recv(32) != b'OK':
+                                    raise RuntimeError('test producer rejected ' + message)
+                            injected.add(marker)
                 if args.filter_ime:
                     ime_commands = [('REMOVAL_FILTER_PREEDIT', [('I', 0)]),
                                     ('REMOVAL_FILTER_CANCEL_PREEDIT', [('K', 15)]),
@@ -151,7 +174,7 @@ def main():
                 expected = 'HOST REMOVAL_CLOSED requests=0 reopened=0\n' if args.incomplete else 'HOST REMOVAL_CLOSED requests=1 reopened=1\n'
                 if test.returncode or expected not in output:
                     raise RuntimeError('independent native client failed; see atspi.log')
-                expected_inputs = ((8 if args.large else 5) if args.keyboard else 0) + (4 if args.filter_ime else 0)
+                expected_inputs = ((8 if args.large else 5) if args.keyboard else 0) + (4 if args.filter_ime else 0) + (2 if args.refresh_draft else 0)
                 if len(injected) != expected_inputs:
                     raise RuntimeError('keyboard sequence incomplete')
                 if args.capture and not captured:

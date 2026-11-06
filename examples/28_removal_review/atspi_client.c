@@ -195,6 +195,113 @@ cleanup:
     if(button)g_object_unref(button);
     return okay;
 }
+static int refresh_refs(AtspiAccessible *desktop,pid_t pid,unsigned revision,AtspiAccessible **app,
+                        AtspiAccessible **reviewed,AtspiAccessible **request,AtspiAccessible **close_view){
+    char expected[96];snprintf(expected,sizeof(expected),"00000000000000000000000000000001 / revision %u",revision);
+    for(unsigned i=0;i<150;++i){
+        AtspiAccessible *next=by_pid(desktop,pid),*plan=next?find(next,"Plan",0):NULL;
+        AtspiAccessible *a=NULL,*b=NULL,*c=NULL;
+        if(plan && value(plan,expected)){a=find(next,"Entire plan reviewed",0);b=find(next,"Request removal",0);c=find(next,"Close view",0);}
+        if(plan)g_object_unref(plan);
+        if(a && b && c){
+            if(*app)g_object_unref(*app);
+            if(*reviewed)g_object_unref(*reviewed);
+            if(*request)g_object_unref(*request);
+            if(*close_view)g_object_unref(*close_view);
+            *app=next;*reviewed=a;*request=b;*close_view=c;return 1;
+        }
+        if(a)g_object_unref(a);
+        if(b)g_object_unref(b);
+        if(c)g_object_unref(c);
+        if(next)g_object_unref(next);
+        pause_briefly();
+    }
+    return 0;
+}
+static int selection_is(AtspiAccessible *node){
+    GError *error=NULL;AtspiText *text=atspi_accessible_get_text_iface(node);
+    AtspiRange *range=text?atspi_text_get_selection(text,0,&error):NULL;
+    int okay=!error && range && range->start_offset==0 && range->end_offset==1;
+    g_free(range);if(text)g_object_unref(text);if(error)g_error_free(error);return okay;
+}
+static int refresh_before(AtspiAccessible *desktop,pid_t pid,FILE *commands,FILE *responses,int draft,int large,int filtered,
+                          AtspiAccessible **app,AtspiAccessible **reviewed,AtspiAccessible **request,AtspiAccessible **close_view,AtspiAccessible *old_plan){
+    int okay=0;AtspiAccessible *field=NULL,*next_field=NULL,*retired_request=g_object_ref(*request),*refresh=NULL,*cancel=NULL,*object=NULL,*preview=NULL;
+    AtspiText *text=NULL;GError *error=NULL;
+    if(draft){
+        AtspiAccessible *button=find(*app,"Filter preview",0);CHECK(button && focus(button));
+        for(unsigned i=0;i<100 && !state(button,ATSPI_STATE_FOCUSED);++i)pause_briefly();
+        int opened=activate(button);g_object_unref(button);CHECK(opened);
+        for(unsigned i=0;i<100 && !field;++i){field=find(*app,"Object name filter",0);if(!field)pause_briefly();}CHECK(field && edit(field,"before"));
+        for(unsigned i=0;i<100 && !text_is(field,"before");++i)pause_briefly();
+        CHECK(text_is(field,"before") && edit(field,"draft"));
+        for(unsigned i=0;i<100 && !text_is(field,"draft");++i)pause_briefly();
+        CHECK(text_is(field,"draft"));
+        text=atspi_accessible_get_text_iface(field);CHECK(text && atspi_text_add_selection(text,0,1,&error) && !error);
+        for(unsigned i=0;i<100 && !selection_is(field);++i)pause_briefly();
+        CHECK(selection_is(field));
+        puts("REMOVAL_REFRESH_PREEDIT");CHECK(response(responses,"REMOVAL_PREEDIT 7\n") && text_is(field,"draft"));
+        CHECK(fputs("refresh\n",commands)>=0 && !fflush(commands) && response(responses,"REMOVAL_REFRESHED revision=43\n") &&
+              response(responses,"REMOVAL_PREEDIT 0\n"));
+    } else {
+        CHECK(fputs("revise\n",commands)>=0 && !fflush(commands) && response(responses,"REMOVAL_REVISION_READY revision=43\n"));
+        CHECK(value(old_plan,"00000000000000000000000000000001 / revision 42") && state(retired_request,ATSPI_STATE_DEFUNCT) && !activate(retired_request));
+        refresh=find(*app,"Refresh preview",0);CHECK(refresh && activate(refresh) && response(responses,"REMOVAL_REFRESHED revision=43\n"));
+    }
+    CHECK(refresh_refs(desktop,pid,43,app,reviewed,request,close_view));
+    CHECK(state(retired_request,ATSPI_STATE_DEFUNCT) && !activate(retired_request) && state(old_plan,ATSPI_STATE_DEFUNCT) &&
+          !state(*reviewed,ATSPI_STATE_CHECKED) && !state(*request,ATSPI_STATE_ENABLED));
+    if(draft){
+        next_field=find(*app,"Object name filter",0);CHECK(next_field && text_is(next_field,"draft") && selection_is(next_field) &&
+            state(next_field,ATSPI_STATE_FOCUSED) && state(field,ATSPI_STATE_DEFUNCT) && !edit(field,"late edit") && retired_text(text));
+        puts("REMOVAL_REFRESH_UNDO");for(unsigned i=0;i<100 && !text_is(next_field,"before");++i)pause_briefly();CHECK(text_is(next_field,"before"));
+        cancel=find(*app,"Cancel",0);CHECK(cancel && activate(cancel));
+        for(unsigned i=0;i<100 && !state(next_field,ATSPI_STATE_DEFUNCT);++i)pause_briefly();
+        CHECK(state(next_field,ATSPI_STATE_DEFUNCT));
+    }
+    if(large && filtered){
+        object=find(*app,"managed-object-099999",0);preview=find(*app,"Complete removal preview",0);
+        CHECK(object && preview && contained(object,preview) && value(object,"Backups or remote copies. This request does not remove backup or remote copies\nObject: 000000000000000000000000000186a0\nLogical bytes: 65536"));
+    }
+    CHECK(focus(*reviewed));for(unsigned i=0;i<100 && !state(*reviewed,ATSPI_STATE_FOCUSED);++i)pause_briefly();CHECK(state(*reviewed,ATSPI_STATE_FOCUSED));
+    okay=1;
+cleanup:
+    if(error)g_error_free(error);
+    if(text)g_object_unref(text);
+    if(preview)g_object_unref(preview);
+    if(object)g_object_unref(object);
+    if(cancel)g_object_unref(cancel);
+    if(refresh)g_object_unref(refresh);
+    if(retired_request)g_object_unref(retired_request);
+    if(next_field)g_object_unref(next_field);
+    if(field)g_object_unref(field);
+    return okay;
+}
+static int refresh_issued(AtspiAccessible *desktop,pid_t pid,FILE *commands,FILE *responses,AtspiAccessible **app,
+                          AtspiAccessible **reviewed,AtspiAccessible **request,AtspiAccessible **close_view){
+    int okay=0;AtspiAccessible *old_request=g_object_ref(*request),*plan=NULL,*refresh=NULL,*status=NULL;AtspiText *text=NULL;
+    CHECK(fputs("refresh\n",commands)>=0 && !fflush(commands) && response(responses,"REMOVAL_REFRESHED revision=43\n") &&
+          refresh_refs(desktop,pid,43,app,reviewed,request,close_view));
+    CHECK(state(old_request,ATSPI_STATE_DEFUNCT) && !activate(old_request) && !state(*reviewed,ATSPI_STATE_ENABLED) && !activate(*request));
+    plan=find(*app,"Plan",0);CHECK(plan);text=atspi_accessible_get_text_iface(plan);CHECK(text);
+    CHECK(fputs("revise\n",commands)>=0 && !fflush(commands) && response(responses,"REMOVAL_REVISION_READY revision=44\n") &&
+        value(plan,"00000000000000000000000000000001 / revision 43"));
+    refresh=find(*app,"Refresh preview",0);CHECK(refresh && activate(refresh) && response(responses,"REMOVAL_REFRESHED revision=44\n") &&
+        refresh_refs(desktop,pid,44,app,reviewed,request,close_view));
+    CHECK(state(plan,ATSPI_STATE_DEFUNCT) && retired_text(text) && !activate(*reviewed) && !activate(*request));
+    status=find(*app,"Request revision 42 handed to owner; outcome unknown",0);CHECK(status && !state(status,ATSPI_STATE_BUSY));
+    GError *error=NULL;char *description=atspi_accessible_get_description(status,&error);
+    int described=!error && description && strstr(description,"Original request revision 42;");g_free(description);if(error)g_error_free(error);CHECK(described);
+    CHECK(focus(*close_view));for(unsigned i=0;i<100 && !state(*close_view,ATSPI_STATE_FOCUSED);++i)pause_briefly();CHECK(state(*close_view,ATSPI_STATE_FOCUSED));
+    okay=1;
+cleanup:
+    if(status)g_object_unref(status);
+    if(text)g_object_unref(text);
+    if(refresh)g_object_unref(refresh);
+    if(plan)g_object_unref(plan);
+    if(old_request)g_object_unref(old_request);
+    return okay;
+}
 int main(int argc,char **argv){
     int okay=0,input[2]={-1,-1},output[2]={-1,-1};pid_t child=-1;FILE *commands=NULL,*responses=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*reviewed=NULL,*request=NULL,*close_view=NULL,*old_plan=NULL,*status=NULL,*old_request=NULL;
@@ -203,6 +310,7 @@ int main(int argc,char **argv){
     int keyboard=getenv("NEXAUI_REMOVAL_KEYBOARD")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
     int large=getenv("NEXAUI_REMOVAL_LARGE")!=NULL;
     int filtering=getenv("NEXAUI_REMOVAL_FILTER")!=NULL,ime=getenv("NEXAUI_REMOVAL_FILTER_IME")!=NULL;
+    const char *refresh_mode=getenv("NEXAUI_REMOVAL_REFRESH_MODE");unsigned requested_revision=42;
     signal(SIGPIPE,SIG_IGN);
     CHECK(argc==2 && font && !pipe(input) && !pipe(output));child=fork();CHECK(child>=0);
     if(!child){
@@ -266,6 +374,9 @@ int main(int argc,char **argv){
         g_object_unref(preview);g_object_unref(object);g_object_unref(scroll);
     }
     if(filtering)CHECK(filter_preview(app,reviewed,large,incomplete,ime,responses));
+    if(refresh_mode && strcmp(refresh_mode,"issued")){
+        CHECK(refresh_before(desktop,child,commands,responses,!strcmp(refresh_mode,"draft"),large,filtering,&app,&reviewed,&request,&close_view,old_plan));requested_revision=43;
+    }
     if(incomplete){
         status=find(app,"Inventory incomplete; request unavailable",0);CHECK(status && !state(reviewed,ATSPI_STATE_ENABLED));
         CHECK(activate(close_view) && response(responses,"REMOVAL_CLOSED requests=0 reopened=0\n"));
@@ -282,7 +393,7 @@ int main(int argc,char **argv){
             for(unsigned i=0;i<100 && !state(request,ATSPI_STATE_FOCUSED);++i)pause_briefly();
             CHECK(state(request,ATSPI_STATE_FOCUSED));puts("REMOVAL_KEY_REQUEST");
         } else CHECK(activate(request));
-        CHECK(response(responses,"REMOVAL_REQUESTED revision=42\n"));
+        char requested[96];snprintf(requested,sizeof(requested),"REMOVAL_REQUESTED revision=%u\n",requested_revision);CHECK(response(responses,requested));
         CHECK(fputs("reopen\n",commands)>=0 && !fflush(commands) && response(responses,"REMOVAL_REOPENED\n"));
         g_object_unref(app);app=NULL;old_request=request;request=NULL;g_object_unref(close_view);close_view=NULL;
         for(unsigned i=0;i<150 && !request;++i){
@@ -294,6 +405,7 @@ int main(int argc,char **argv){
         CHECK(!activate(request) && state(old_request,ATSPI_STATE_DEFUNCT) && !activate(old_request));
         status=find(app,"Request handed to owner; outcome unknown",0);CHECK(status && !state(status,ATSPI_STATE_BUSY));
         close_view=find(app,"Close view",0);CHECK(close_view);
+        if(refresh_mode && !strcmp(refresh_mode,"issued"))CHECK(refresh_issued(desktop,child,commands,responses,&app,&reviewed,&request,&close_view));
         if(keyboard){CHECK(state(close_view,ATSPI_STATE_FOCUSED));puts("REMOVAL_KEY_CLOSE");}
         else CHECK(activate(close_view));
         CHECK(response(responses,"REMOVAL_CLOSED requests=1 reopened=1\n"));

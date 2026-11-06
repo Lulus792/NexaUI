@@ -2,18 +2,34 @@
 #include "fixture.h"
 #include <nexaui/software.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #define REQUIRE(x) do{if(!(x)){fprintf(stderr,"removal-host:%d: %s\n",__LINE__,#x);okay=0;goto cleanup;}}while(0)
+static nx_result revise(removal_owner *owner){
+    uint64_t revision=removal_owner_revision(owner);if(revision==UINT64_MAX)return NX_ERROR_LIMIT;
+    removal_entry entries[8];removal_plan plan=removal_fixture(entries);removal_entry *large=NULL;
+    if(getenv("NEXAUI_REMOVAL_LARGE")){
+        large=removal_large_fixture(REMOVAL_MAX_ENTRIES);if(!large)return NX_ERROR_MEMORY;
+        plan.entries=large;plan.count=REMOVAL_MAX_ENTRIES;
+    }
+    plan.revision=revision+1;plan.entries[plan.count-1].logical_bytes=65536;
+    if(getenv("NEXAUI_REMOVAL_INCOMPLETE")){
+        if(large){plan.entries[plan.count-1].disposition=REMOVAL_UNKNOWN;strcpy(plan.entries[plan.count-1].reason,"Owner cannot establish this object's managed state");}
+        else plan.inventory_complete=0;
+    }
+    if(getenv("NEXAUI_REMOVAL_FILTER_IME"))strcpy(plan.entries[0].label,"\xc3\xa9");
+    nx_result result=removal_owner_refresh(owner,&plan);free(large);return result;
+}
 int main(int argc,char **argv){
     int okay=1,done=0,dirty=1,focus=1,reopened=0;unsigned requests=0;
     FILE *file=NULL;unsigned char *bytes=NULL;removal_entry *large_entries=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
     removal_owner *owner=NULL;removal_review *view=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
-    const char *pending="REMOVAL_READY";char input[64]={0};size_t used=0;
+    const char *pending="REMOVAL_READY";char pending_text[128],input[64]={0};size_t used=0;
     int control=getenv("NEXAUI_REMOVAL_TEST_CONTROL")!=NULL;setvbuf(stdout,NULL,_IONBF,0);
-    int ime_test=getenv("NEXAUI_REMOVAL_FILTER_IME")!=NULL;size_t last_preedit=0;
+    int ime_test=getenv("NEXAUI_REMOVAL_FILTER_IME")!=NULL || getenv("NEXAUI_REMOVAL_REFRESH_PREEDIT")!=NULL;size_t last_preedit=0;
     REQUIRE(argc==2);file=fopen(argv[1],"rb");REQUIRE(file && !fseek(file,0,SEEK_END));long size=ftell(file);
     REQUIRE(size>0 && size<64000000 && !fseek(file,0,SEEK_SET));bytes=malloc((size_t)size);REQUIRE(bytes);
     REQUIRE(fread(bytes,1,(size_t)size,file)==(size_t)size);int closed=fclose(file);file=NULL;REQUIRE(!closed);
@@ -29,7 +45,7 @@ int main(int argc,char **argv){
             strcpy(large_entries[plan.count-1].reason,"Owner cannot establish this object's managed state");}
         else plan.inventory_complete=0;
     }
-    if(ime_test)strcpy(plan.entries[0].label,"\xc3\xa9");
+    if(getenv("NEXAUI_REMOVAL_FILTER_IME"))strcpy(plan.entries[0].label,"\xc3\xa9");
     REQUIRE(removal_owner_create(&plan,&owner)==NX_OK);free(large_entries);large_entries=NULL;
     plan.entries=NULL;REQUIRE(removal_review_create(owner,fonts,&view)==NX_OK);
     nx_window_desc desc={"Removal review fixture",640,480,0,{0}};
@@ -44,10 +60,15 @@ int main(int argc,char **argv){
             if(action.kind==REMOVAL_CLOSE)break;
             if(action.kind==REMOVAL_REQUEST){
                 /* Test owner receives a correlation only: no backend is called. */
-                REQUIRE(!requests && action.request.revision==42 && !memcmp(action.request.plan,plan.plan,16) &&
+                REQUIRE(!requests && action.request.revision==removal_owner_revision(owner) && !memcmp(action.request.plan,plan.plan,16) &&
                     !memcmp(action.request.installation,plan.installation,16) && !memcmp(action.request.scope,plan.scope,16));
-                ++requests;pending="REMOVAL_REQUESTED revision=42";
+                ++requests;snprintf(pending_text,sizeof(pending_text),"REMOVAL_REQUESTED revision=%" PRIu64,action.request.revision);pending=pending_text;
                 REQUIRE(removal_review_frame(view,info.width,info.height,&action)==NX_OK && action.kind==REMOVAL_NONE);
+            }
+            if(action.kind==REMOVAL_REFRESH){
+                REQUIRE(removal_review_refresh(view)==NX_OK);ctx=removal_review_context(view);focus=0;
+                REQUIRE(removal_review_frame(view,info.width,info.height,&action)==NX_OK && action.kind==REMOVAL_NONE);
+                snprintf(pending_text,sizeof(pending_text),"REMOVAL_REFRESHED revision=%" PRIu64,removal_review_revision(view));pending=pending_text;
             }
             if(focus){
                 uint32_t index;nx_semantic_view acknowledgement;
@@ -82,6 +103,12 @@ int main(int argc,char **argv){
             if(end){
                 size_t length=(size_t)(end-input);
                 if(length==5 && !memcmp(input,"close",5))done=1;
+                else if((length==6 && !memcmp(input,"revise",6)) || (length==7 && !memcmp(input,"refresh",7))){
+                    REQUIRE(revise(owner)==NX_OK);
+                    if(length==7){REQUIRE(removal_review_refresh(view)==NX_OK);focus=0;}
+                    snprintf(pending_text,sizeof(pending_text),"%s revision=%" PRIu64,length==7?"REMOVAL_REFRESHED":"REMOVAL_REVISION_READY",removal_owner_revision(owner));
+                    pending=pending_text;dirty=1;
+                }
                 else {
                     REQUIRE(!reopened && length==6 && !memcmp(input,"reopen",6));
                     nx_result detached=nx_window_publish_semantics(window,NULL);REQUIRE(detached==NX_OK || detached==NX_ERROR_UNSUPPORTED);
