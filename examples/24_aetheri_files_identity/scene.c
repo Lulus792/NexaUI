@@ -231,8 +231,9 @@ nx_result files_scene_frame(files_scene *s,float width,float height) {
         if(r==NX_OK && s->window)r=nx_text_clipboard_for_window(s->window,&field.clipboard);
         nx_interaction_state state;int valid=0,submitted=0;
         static const char filter_description[]="Filters the current folder.";
-        if(r==NX_OK)r=nx_text_field_widget_described(s->ctx,&field,s->query,
-            (nx_utf8_span){filter_description,sizeof(filter_description)-1},&state,&valid,&submitted);
+        const nx_text_field_style field_style={6,1,8};
+        if(r==NX_OK)r=nx_text_field_widget_styled(s->ctx,&field,s->query,
+            (nx_utf8_span){filter_description,sizeof(filter_description)-1},&field_style,&state,&valid,&submitted);
         nx_utf8_span draft={0};if(r==NX_OK)r=nx_text_field_text(s->query,&draft);
         if(r==NX_OK && simulation) {
             const char *bytes=NULL;size_t length=0;r=nx_text_buffer_text(simulation,&bytes,&length);

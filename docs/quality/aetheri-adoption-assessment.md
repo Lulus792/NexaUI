@@ -1,5 +1,33 @@
 # Aetheri adoption: initial source assessment
 
+## Text-field border, radius and inset (2026-11-06)
+
+On base `6aa9bc5c91bf9502713cd7f5715ea49cd052bbb9`, the additive
+`nx_text_field_widget_styled` accepts an accessible description and a separate
+logical-pixel radius, border width and inset. The old descriptor and entry
+points keep their original layout and painting. The new path uses theme colors
+for normal, focused, invalid and disabled states and applies one inset to
+layout, clipping, pointer hit testing, scrolling, keyboard navigation and IME
+caret placement. Invalid or too-large insets fail before widget registration.
+
+Text-field and numeric-field tests passed in static Release, shared Release
+and static GCC 16.2.1 ASan/UBSan. Targeted checks cover invalid geometry,
+rounded outer/inner commands, content clip, description, pointer selection and
+host-IME caret. The original-model Files example uses a six-pixel radius,
+one-pixel border and eight-pixel inset; its scene, controlled v3 focus-cancel
+IME and independent AT-SPI tests passed in Release and ASan/UBSan on the
+isolated Aetheri compositor. The compositor observed the empty caret at x=8.
+The separate unpaced native Release Files run passed and produced a captured
+frame; the unpaced sanitizer stress gate remains open. The inspected crop is
+`D:/NexaUI/out/nexaui-field-style-crop.png`; it is not final visual acceptance.
+
+Source, build configurations and logs are archived at
+`D:/NexaUI/out/nexaui-field-style-20261106-v2.tar.gz`, SHA-256
+`20f7135d24b4d7663caa4de642d0a68ea94dc38d87eecc9547435eeef14788ea`.
+Real application integration, full input/resize/scaling combinations,
+Windows/macOS and human accessibility/design acceptance remain open. Aetheri's
+checkout and pinned SDK were not changed.
+
 ## Localized text-field description (2026-11-06)
 
 Aetheri's newer Files view needs an accessible rejection explanation directly
@@ -21,8 +49,8 @@ the old Files host failed the same description assertion. Host binaries were
 Candidate source, configurations and evidence are archived at
 `D:/NexaUI/out/nexaui-described-field-20261106.tar.gz`, SHA-256
 `b55ae1b9dcedf0e26657e7daaca63678ad1c59389c0eb16528a92c8dcd763456`.
-Native change notifications, Windows/macOS, human screenreader acceptance and
-the separately requested field border, radius and inset styling remain open.
+At that candidate native change notifications, Windows/macOS, human screenreader
+acceptance and field styling remained open; the later styling work is reported above.
 No Aetheri source, pin or session was changed.
 
 ## Files text-input-v3 on Aetheri's test compositor (2026-11-06)

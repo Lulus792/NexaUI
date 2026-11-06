@@ -6128,6 +6128,7 @@ static size_t nx_password_mask_nearest(const nx_password_mask *mask,
 static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
                                 const nx_font_collection *fonts, double ppem,
                                 size_t glyph_cache_bytes,
+                                const nx_text_field_style *style,
                                 nx_text_buffer *buffer, int multiline,
                                 int disabled, int invalid, int focused,
                                 const nx_password_mask *mask,
@@ -6195,7 +6196,8 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
         layout_mask = &composed_mask;
     }
     nx_text_layout *layout = NULL;
-    double max_width = multiline ? fmax(1.0, (double)bounds.width - 8.0) :
+    double inset = style ? style->inset : 4.0;
+    double max_width = multiline ? fmax(1.0, (double)bounds.width - 2.0 * inset) :
                                   1000000000.0;
     result = nx_text_layout_create(fonts,
                                    layout_mask ? layout_mask->text : bytes,
@@ -6234,8 +6236,8 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
             else { anchor = hi; cursor = lo; }
         }
     }
-    double inner_width = fmax(1.0, (double)bounds.width - 8.0);
-    double inner_height = fmax(1.0, (double)bounds.height - 8.0);
+    double inner_width = fmax(1.0, (double)bounds.width - 2.0 * inset);
+    double inner_height = fmax(1.0, (double)bounds.height - 2.0 * inset);
     double max_scroll_x = multiline ? 0.0 :
                           fmax(0.0, nx_text_layout_width(layout) - inner_width);
     double max_scroll_y = multiline ?
@@ -6287,8 +6289,8 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
             }
         }
     }
-    double ox = (double)bounds.x + 4.0 - *scroll_x;
-    double oy = multiline ? (double)bounds.y + 4.0 - *scroll_y :
+    double ox = (double)bounds.x + inset - *scroll_x;
+    double oy = multiline ? (double)bounds.y + inset - *scroll_y :
                 (double)bounds.y +
                 ((double)bounds.height - nx_text_layout_height(layout)) * 0.5;
     if (!isfinite(ox) || !isfinite(oy) || fabs(ox) > FLT_MAX ||
@@ -6310,9 +6312,12 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
         result = NX_ERROR_STATE;
         goto done;
     }
-    result = nx_fill_round_rect(ctx, bounds, radius, background);
+    result = style ? nx_draw_surface(ctx,bounds,&(nx_surface_style){background,border,style->radius,style->border_width}) :
+                     nx_fill_round_rect(ctx, bounds, radius, background);
     if (result != NX_OK) goto done;
-    result = nx_push_clip(ctx, bounds);
+    nx_rect content_clip = style ? (nx_rect){bounds.x+style->inset,bounds.y+style->inset,
+        bounds.width-2*style->inset,bounds.height-2*style->inset} : bounds;
+    result = nx_push_clip(ctx, content_clip);
     if (result != NX_OK) goto done;
     if (anchor != cursor) {
         size_t start = anchor < cursor ? anchor : cursor;
@@ -6384,12 +6389,12 @@ static nx_result nx_field_paint(nx_context *ctx, nx_rect bounds,
         if (result != NX_OK) goto done;
         drawn_caret = (nx_rect){a.x, a.y, 1.0f,
                                 (float)cursor_caret.height};
-        caret_drawn = a.x>=bounds.x && a.x<=bounds.x+bounds.width &&
-            b.y>bounds.y && a.y<bounds.y+bounds.height;
+        caret_drawn = a.x>=content_clip.x && a.x<=content_clip.x+content_clip.width &&
+            b.y>content_clip.y && a.y<content_clip.y+content_clip.height;
     }
     result = nx_pop_clip(ctx);
     if (result != NX_OK) goto done;
-    result = nx_stroke_rect(ctx, bounds, border_width, border);
+    if (!style) result = nx_stroke_rect(ctx, bounds, border_width, border);
 done:
     if (result == NX_OK) {
         if (out_caret_rect) *out_caret_rect = drawn_caret;
@@ -6561,13 +6566,13 @@ nx_result nx_numeric_field_text(const nx_numeric_field *field,
 static nx_result nx_field_pointer_hit(nx_context *ctx,
     const nx_text_field_desc *desc, nx_text_buffer *buffer,
     nx_field_pointer *pointer, double *scroll_x, double *scroll_y,
-    double x, double y, int press, int extend, int tick,
+    double x, double y, int press, int extend, int tick, double inset,
     nx_text_caret *out_caret, int *out_applied) {
     *out_applied=0;
     if (tick && pointer->tick_serial==ctx->frame_serial) return NX_OK;
-    double x0=(double)desc->bounds.x+4, y0=(double)desc->bounds.y+4;
-    double width=fmax(1.0,(double)desc->bounds.width-8);
-    double height=fmax(1.0,(double)desc->bounds.height-8);
+    double x0=(double)desc->bounds.x+inset, y0=(double)desc->bounds.y+inset;
+    double width=fmax(1.0,(double)desc->bounds.width-2*inset);
+    double height=fmax(1.0,(double)desc->bounds.height-2*inset);
     double x1=x0+width, y1=y0+height;
     nx_region *region=nx_region_find(&ctx->current_regions,desc->id);
     if (region && region->has_clip) {
@@ -6608,8 +6613,8 @@ static nx_result nx_field_pointer_hit(nx_context *ctx,
     if (tick && next_x==*scroll_x && next_y==*scroll_y) {
         pointer->tick_serial=ctx->frame_serial; goto done;
     }
-    double ox=(double)desc->bounds.x+4-next_x;
-    double oy=desc->multiline?(double)desc->bounds.y+4-next_y:
+    double ox=(double)desc->bounds.x+inset-next_x;
+    double oy=desc->multiline?(double)desc->bounds.y+inset-next_y:
         (double)desc->bounds.y+((double)desc->bounds.height-nx_text_layout_height(layout))*.5;
     nx_text_caret hit;
     result=nx_text_layout_hit_test(layout,fmax(x0,fmin(x1,x))-ox,
@@ -6639,7 +6644,7 @@ static int nx_field_pointer_event(const nx_event *event) {
 
 static uint32_t nx_field_key_command(const nx_event *event);
 static nx_result nx_field_visual_command(const nx_text_field_desc *desc,
-                                         nx_text_field *field,uint32_t value);
+                                         nx_text_field *field,uint32_t value,double inset);
 static int nx_field_is_visual_command(uint32_t value) {
     uint32_t command=nx_text_command_base(value);
     return command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_RIGHT ||
@@ -6664,7 +6669,7 @@ static nx_result nx_numeric_visual_command(const nx_text_field_desc *desc,
         visual.suppress_caret_reveal=0;
     if ((value&NX_TEXT_COMMAND_EXTEND_SELECTION) &&
         (command==NX_TEXT_COMMAND_PAGE_UP || command==NX_TEXT_COMMAND_PAGE_DOWN)) visual.suppress_caret_reveal=0;
-    nx_result result=nx_field_visual_command(desc,&visual,value);
+    nx_result result=nx_field_visual_command(desc,&visual,value,4.0);
     if (result==NX_OK) {
         field->vertical_x=visual.vertical_x; field->vertical_x_valid=visual.vertical_x_valid;
         field->scroll_x=visual.scroll_x; field->scroll_y=visual.scroll_y;
@@ -6776,7 +6781,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                     nx_text_caret hit; int applied=0;
                     result=nx_field_pointer_hit(ctx,&pointer_desc,field->buffer,&field->pointer,
                         &field->scroll_x,&field->scroll_y,event->x,event->y,press,
-                        (event->modifiers&NX_MOD_SHIFT)!=0,0,&hit,&applied);
+                        (event->modifiers&NX_MOD_SHIFT)!=0,0,4.0,&hit,&applied);
                     if (result!=NX_OK) goto rollback;
                     if (applied) {
                         field->suppress_caret_reveal=1;
@@ -6900,7 +6905,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             nx_text_caret hit; int applied=0;
             result=nx_field_pointer_hit(ctx,&pointer_desc,field->buffer,&field->pointer,
                 &field->scroll_x,&field->scroll_y,ctx->input.pointer_x,ctx->input.pointer_y,
-                0,0,1,&hit,&applied);
+                0,0,1,4.0,&hit,&applied);
             if (result!=NX_OK) goto rollback;
             if (applied) {
                 field->suppress_caret_reveal=1;
@@ -6948,7 +6953,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     }
     nx_rect caret_rect={0}; int caret_visible=0;
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
-                            desc->pixels_per_em, desc->glyph_cache_bytes,
+                            desc->pixels_per_em, desc->glyph_cache_bytes,NULL,
                             field->buffer, 0, desc->disabled, !valid,
                             state.focused, NULL, ime_preedit, ime_begin, ime_end,
                             field->command_caret_valid?&field->command_caret:NULL, !field->suppress_caret_reveal,
@@ -7331,7 +7336,7 @@ static uint32_t nx_field_key_command(const nx_event *event) {
 /* Visual commands use the very same layout and mask as drawing. Keep the
    chosen affinity through soft-wrap/bidi boundaries instead of reducing a
    caret to a byte offset before painting it. */
-static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_field *field,uint32_t value) {
+static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_field *field,uint32_t value,double inset) {
     uint32_t command=nx_text_command_base(value);
     int extend=(value&NX_TEXT_COMMAND_EXTEND_SELECTION)!=0;
     int left=command==NX_TEXT_COMMAND_MOVE_LEFT || command==NX_TEXT_COMMAND_MOVE_WORD_LEFT;
@@ -7361,7 +7366,7 @@ static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_
     }
     result=nx_text_layout_create(desc->fonts,desc->password?mask.text:source.data,
         desc->password?mask.count:source.length,NX_BIDI_LTR,desc->pixels_per_em,
-        desc->multiline?fmax(1.0,(double)desc->bounds.width-8.0):1000000000.0,&layout);
+        desc->multiline?fmax(1.0,(double)desc->bounds.width-2.0*inset):1000000000.0,&layout);
     if (result!=NX_OK) goto done;
     nx_text_caret current={0},target={0}; int found=0;
     for (size_t i=0;i<nx_text_layout_caret_count(layout);++i) {
@@ -7378,7 +7383,7 @@ static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_
         command==NX_TEXT_COMMAND_MOVE_PAGE_UP || command==NX_TEXT_COMMAND_MOVE_PAGE_DOWN;
     int scrolling=command>=NX_TEXT_COMMAND_SCROLL_LINE_UP && command<=NX_TEXT_COMMAND_SCROLL_DOCUMENT_END;
     if (page_command || scrolling) {
-        double page=fmax(1.0,(double)desc->bounds.height-8.0);
+        double page=fmax(1.0,(double)desc->bounds.height-2.0*inset);
         double limit=desc->multiline?fmax(0.0,nx_text_layout_height(layout)-page):0;
         double amount=scrolling?current.height:page;
         int backward=command==NX_TEXT_COMMAND_PAGE_UP || command==NX_TEXT_COMMAND_MOVE_PAGE_UP || command==NX_TEXT_COMMAND_SCROLL_LINE_UP;
@@ -7386,7 +7391,7 @@ static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_
         if (command==NX_TEXT_COMMAND_SCROLL_DOCUMENT_START) page_scroll=0;
         if (command==NX_TEXT_COMMAND_SCROLL_DOCUMENT_END) page_scroll=limit;
         if (command==NX_TEXT_COMMAND_SCROLL_DOCUMENT_START || command==NX_TEXT_COMMAND_SCROLL_DOCUMENT_END) {
-            double horizontal=desc->multiline?0:fmax(0.0,nx_text_layout_width(layout)-fmax(1.0,(double)desc->bounds.width-8.0));
+            double horizontal=desc->multiline?0:fmax(0.0,nx_text_layout_width(layout)-fmax(1.0,(double)desc->bounds.width-2.0*inset));
             field->scroll_x=command==NX_TEXT_COMMAND_SCROLL_DOCUMENT_START?0:horizontal;
         }
     }
@@ -7414,7 +7419,7 @@ static nx_result nx_field_visual_command(const nx_text_field_desc *desc,nx_text_
         double x=field->vertical_x_valid?field->vertical_x:current.x;
         double y=current.top+current.height*.5+(backward?-current.height:current.height);
         if (page_command) {
-            double page=fmax(1.0,(double)desc->bounds.height-8.0),margin=fmin(page*.5,current.height*.5);
+            double page=fmax(1.0,(double)desc->bounds.height-2.0*inset),margin=fmin(page*.5,current.height*.5);
             double relative=fmax(margin,fmin(page-margin,current.top+current.height*.5-field->scroll_y));
             y=page_scroll+relative;
         }
@@ -7452,7 +7457,7 @@ done:
     nx_text_layout_destroy(layout); nx_password_mask_destroy(&mask); return result;
 }
 
-static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc *desc,nx_text_field *field,const nx_event *event) {
+static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc *desc,nx_text_field *field,const nx_event *event,double inset) {
     uint32_t command=nx_text_command_base(event->text_command);
     int scrolling=command>=NX_TEXT_COMMAND_SCROLL_LINE_UP && command<=NX_TEXT_COMMAND_SCROLL_DOCUMENT_END;
     if (command!=NX_TEXT_COMMAND_COPY && command!=NX_TEXT_COMMAND_PAGE_UP && command!=NX_TEXT_COMMAND_PAGE_DOWN && !scrolling)
@@ -7469,7 +7474,7 @@ static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc 
         return result;
     }
     if (nx_field_is_visual_command(event->text_command))
-        return nx_field_visual_command(desc,field,event->text_command);
+        return nx_field_visual_command(desc,field,event->text_command,inset);
     int handled=0; nx_result result=nx_text_buffer_apply_event(field->buffer,event,&handled);
     if (result==NX_OK && handled) field->command_caret_valid=field->vertical_x_valid=0;
     return result;
@@ -7668,6 +7673,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                                const nx_text_field_desc *desc,
                                nx_text_field *field,
                                nx_utf8_span description,
+                               const nx_text_field_style *style,
                                nx_interaction_state *out_state,
                                int *out_valid, int *out_submitted) {
     if (!out_state || !out_valid || !out_submitted) return NX_ERROR_ARGUMENT;
@@ -7683,6 +7689,12 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
         (!!desc->password != !!field->sensitive) ||
         (field->host_ime_enabled && desc->ime_window))
         return NX_ERROR_ARGUMENT;
+    if (style && (!isfinite(style->radius) || style->radius<0 ||
+        !isfinite(style->border_width) || style->border_width<0 ||
+        !isfinite(style->inset) || style->inset<0 ||
+        (double)desc->bounds.width-(double)style->inset*2.0<1.0 ||
+        (double)desc->bounds.height-(double)style->inset*2.0<1.0)) return NX_ERROR_ARGUMENT;
+    double inset=style ? style->inset : 4.0;
     nx_utf8_span draft;
     nx_result result = nx_text_field_text(field, &draft);
     if (result != NX_OK) return result;
@@ -7779,7 +7791,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                     nx_text_caret hit; int applied=0;
                     result=nx_field_pointer_hit(ctx,desc,field->buffer,&field->pointer,
                         &field->scroll_x,&field->scroll_y,event->x,event->y,press,
-                        (event->modifiers&NX_MOD_SHIFT)!=0,0,&hit,&applied);
+                        (event->modifiers&NX_MOD_SHIFT)!=0,0,inset,&hit,&applied);
                     if (result!=NX_OK) goto rollback;
                     if (applied) {
                         field->command_caret=hit; field->command_caret_valid=1;
@@ -7824,7 +7836,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                     if (result!=NX_OK) goto rollback;
                 }
 #endif
-                result=paste_handled ? NX_OK : nx_field_text_command(ctx,desc,field,event);
+                result=paste_handled ? NX_OK : nx_field_text_command(ctx,desc,field,event,inset);
                 if (result!=NX_OK) goto rollback;
             } else if (!desc->multiline && event->type == NX_EVENT_KEY_DOWN &&
                 event->key == NX_KEY_ENTER &&
@@ -7855,7 +7867,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
             } else if (event->type==NX_EVENT_KEY_DOWN && nx_field_key_command(event)) {
                 nx_event action=*event; action.type=NX_EVENT_TEXT_COMMAND;
                 action.text_command=nx_field_key_command(event);
-                result=nx_field_text_command(ctx,desc,field,&action);
+                result=nx_field_text_command(ctx,desc,field,&action,inset);
                 if (result!=NX_OK) goto rollback;
             } else if (event->type == NX_EVENT_IME_DELETE_SURROUNDING ||
                        event->type == NX_EVENT_IME_DELETE_RANGE) {
@@ -7937,7 +7949,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
             nx_text_caret hit; int applied=0;
             result=nx_field_pointer_hit(ctx,desc,field->buffer,&field->pointer,
                 &field->scroll_x,&field->scroll_y,ctx->input.pointer_x,ctx->input.pointer_y,
-                0,0,1,&hit,&applied);
+                0,0,1,inset,&hit,&applied);
             if (result!=NX_OK) goto rollback;
             if (applied) {
                 field->command_caret=hit; field->command_caret_valid=1;
@@ -8015,7 +8027,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
     nx_rect caret_rect = {0};
     int caret_visible = 0;
     result = nx_field_paint(ctx, desc->bounds, desc->fonts,
-                            desc->pixels_per_em, desc->glyph_cache_bytes,
+                            desc->pixels_per_em, desc->glyph_cache_bytes,style,
                             field->buffer, desc->multiline, desc->disabled,
                             !valid, state.focused,
                             desc->password ? &mask : NULL,
@@ -8084,13 +8096,25 @@ rollback:
 
 nx_result nx_text_field_widget(nx_context *ctx, const nx_text_field_desc *desc,
     nx_text_field *field, nx_interaction_state *out_state, int *out_valid, int *out_submitted) {
-    return nx_text_field_widget_impl(ctx,desc,field,(nx_utf8_span){0},out_state,out_valid,out_submitted);
+    return nx_text_field_widget_impl(ctx,desc,field,(nx_utf8_span){0},NULL,out_state,out_valid,out_submitted);
 }
 
 nx_result nx_text_field_widget_described(nx_context *ctx, const nx_text_field_desc *desc,
     nx_text_field *field, nx_utf8_span description, nx_interaction_state *out_state,
     int *out_valid, int *out_submitted) {
-    return nx_text_field_widget_impl(ctx,desc,field,description,out_state,out_valid,out_submitted);
+    return nx_text_field_widget_impl(ctx,desc,field,description,NULL,out_state,out_valid,out_submitted);
+}
+
+nx_result nx_text_field_widget_styled(nx_context *ctx, const nx_text_field_desc *desc,
+    nx_text_field *field, nx_utf8_span description, const nx_text_field_style *style,
+    nx_interaction_state *out_state, int *out_valid, int *out_submitted) {
+    if (!style) {
+        if (out_state) *out_state=(nx_interaction_state){0};
+        if (out_valid) *out_valid=0;
+        if (out_submitted) *out_submitted=0;
+        return NX_ERROR_ARGUMENT;
+    }
+    return nx_text_field_widget_impl(ctx,desc,field,description,style,out_state,out_valid,out_submitted);
 }
 
 static int nx_compare_u64(const void *left, const void *right) {

@@ -38,6 +38,16 @@ the frame's semantic snapshot. An empty span removes it. The description is
 assistive metadata, not a visible label, and must not contain secret text. Native
 notification and screenreader behavior must be checked on each target platform.
 
+`nx_text_field_widget_styled` accepts the same description plus a separate
+`nx_text_field_style` in logical pixels. Radius, border width and inset must be
+finite and nonnegative; the inset must leave at least one logical pixel in each
+dimension. The field takes its colors from the active theme, including focus,
+invalid and disabled states. The inset controls clipping, text layout, pointer
+selection, scrolling, keyboard movement and candidate caret geometry. Existing
+widget calls retain their former geometry and painting. The style is borrowed
+only for the call; applications remain responsible for choosing accessible
+colors and dimensions and for checking their own resize and scaling behavior.
+
 Rendered general text fields use layout caret positions for visual Left/Right,
 word movement, line edges and vertical/page movement, including bidi and soft-wrap
 affinity. Plain `PAGE_UP/DOWN` commands scroll without changing the selection;

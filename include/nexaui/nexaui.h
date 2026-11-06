@@ -1601,6 +1601,12 @@ typedef struct nx_text_field_desc {
                             Both must share the widget's UI thread. */
 } nx_text_field_desc;
 
+/* Logical-pixel geometry for nx_text_field_widget_styled. Colors and focus,
+   invalid and disabled states continue to come from the active theme. */
+typedef struct nx_text_field_style {
+    float radius, border_width, inset;
+} nx_text_field_style;
+
 typedef struct nx_search_popup_desc {
     nx_overlay_desc overlay;
     nx_text_field_desc query; /* A single-line child of overlay.panel. */
@@ -2384,6 +2390,15 @@ NX_API nx_result nx_text_field_widget(nx_context *context,
 NX_API nx_result nx_text_field_widget_described(nx_context *context,
                                       const nx_text_field_desc *desc,
                                       nx_text_field *field, nx_utf8_span description,
+                                      nx_interaction_state *out_state,
+                                      int *out_valid, int *out_submitted);
+/* Style and description are borrowed for this call. All style values must be
+   finite and nonnegative; the inset must leave at least one logical pixel in
+   each dimension. The same inset controls layout, caret and pointer hit testing. */
+NX_API nx_result nx_text_field_widget_styled(nx_context *context,
+                                      const nx_text_field_desc *desc,
+                                      nx_text_field *field, nx_utf8_span description,
+                                      const nx_text_field_style *style,
                                       nx_interaction_state *out_state,
                                       int *out_valid, int *out_submitted);
 NX_API nx_result nx_push_clip(nx_context *context, nx_rect rect);

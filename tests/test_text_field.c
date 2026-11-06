@@ -1,6 +1,7 @@
 #include "nexaui/nexaui.h"
 
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -804,6 +805,51 @@ static int test_description(nx_font_collection *fonts) {
     nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
 }
 
+static int test_styled_field(nx_font_collection *fonts) {
+    nx_context *ctx=NULL; nx_text_field *field=NULL;
+    CHECK(nx_context_create(NULL,&ctx)==NX_OK && nx_text_field_create("11",2,0,&field)==NX_OK);
+    nx_text_field_desc desc={0}; desc.id=1; desc.name=(nx_utf8_span){"Filter",6};
+    desc.bounds=(nx_rect){0,0,80,40}; desc.fonts=fonts; desc.pixels_per_em=20; desc.glyph_cache_bytes=65536;
+    nx_text_field_style style={8,2,10},bad=style;
+    nx_interaction_state state; int valid=0,submitted=0; uint32_t index; nx_semantic_view view;
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK);
+    bad.inset=NAN;
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&bad,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    bad=style; bad.inset=20;
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&bad,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    bad=style; bad.radius=-1;
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&bad,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    bad=style; bad.border_width=INFINITY;
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&bad,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},NULL,&state,&valid,&submitted)==NX_ERROR_ARGUMENT);
+    CHECK(nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){"Help",4},&style,&state,&valid,&submitted)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK && nx_semantics_find(ctx,1,&index)==NX_OK && nx_semantics_get(ctx,index,&view)==NX_OK);
+    CHECK(view.description.length==4 && !memcmp(view.description.data,"Help",4));
+    const nx_command *commands=NULL; size_t count=0; int outer=0,inner=0,clip=0;
+    CHECK(nx_frame_commands(ctx,&commands,&count)==NX_OK);
+    for(size_t i=0;i<count;++i) {
+        const nx_command *c=&commands[i];
+        if(c->type==NX_COMMAND_FILL_ROUND_RECT && c->radius==8 && c->rect.width==80) outer=1;
+        if(c->type==NX_COMMAND_FILL_ROUND_RECT && c->radius==6 && c->rect.width==76) inner=1;
+        if(c->type==NX_COMMAND_PUSH_CLIP && c->rect.x==10 && c->rect.y==10 && c->rect.width==60 && c->rect.height==20) clip=1;
+    }
+    CHECK(outer && inner && clip);
+    CHECK(nx_focus_set(ctx,1)==NX_OK && nx_text_field_set_selection(field,0,0)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&style,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    float x=0,y=0; CHECK(field_caret(ctx,&x,&y) && x==10);
+    CHECK(nx_text_field_set_host_ime(field,1)==NX_OK);
+    nx_event focus={0}; focus.type=NX_EVENT_FOCUS; focus.focused=1;
+    CHECK(nx_context_queue_event(ctx,&focus)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&style,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    nx_rect caret={0}; CHECK(nx_text_field_host_ime_caret(ctx,1,field,&caret)==NX_OK && caret.x==10 && caret.height>0);
+    CHECK(nx_text_field_set_selection(field,2,2)==NX_OK);
+    nx_event press={0}; press.type=NX_EVENT_POINTER_DOWN; press.button=NX_BUTTON_LEFT; press.x=10; press.y=20;
+    CHECK(nx_context_queue_event(ctx,&press)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,80,0)==NX_OK && nx_text_field_widget_styled(ctx,&desc,field,(nx_utf8_span){0},&style,&state,&valid,&submitted)==NX_OK && nx_end_frame(ctx)==NX_OK);
+    size_t anchor=9,cursor=9; CHECK(nx_text_field_selection(field,&anchor,&cursor)==NX_OK && anchor==0 && cursor==0);
+    nx_text_field_destroy(field); nx_context_destroy(ctx); return 0;
+}
+
 int main(void) {
     uint8_t bytes[512];
     font_fixture(bytes);
@@ -813,6 +859,7 @@ int main(void) {
     CHECK(nx_font_collection_create(NULL, &fonts) == NX_OK);
     CHECK(nx_font_collection_add(fonts, font) == NX_OK);
     if (test_description(fonts)) return 1;
+    if (test_styled_field(fonts)) return 1;
     if (test_host_ime_tokens(fonts)) return 1;
     if (test_native_text_commands(fonts)) return 1;
     if (test_clipboard_model_replacement(fonts)) return 1;
