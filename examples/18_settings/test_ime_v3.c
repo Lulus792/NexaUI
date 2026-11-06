@@ -11,6 +11,23 @@ static nx_result fixture_poll(nx_window *window,uint32_t timeout) {
     return nx_window_poll(window,timeout);
 }
 
+static int wait_stalled_offer(test_server *server,nx_window *window) {
+    /* The old 20 * 100ms setup loop could finish immediately while native
+       events remained queued. Keep its two-second setup budget in real time
+       and let the fixture producer run, while still pumping the tested API. */
+    struct timespec start,now;
+    if(clock_gettime(CLOCK_MONOTONIC,&start)!=0)return 0;
+    for(;;) {
+        if(clock_gettime(CLOCK_MONOTONIC,&now)!=0)return 0;
+        double elapsed=(double)(now.tv_sec-start.tv_sec)+(now.tv_nsec-start.tv_nsec)/1e9;
+        if(elapsed>=2.0)return 0;
+        if(atomic_load(&server->stalled_fd))return 1;
+        if(fixture_poll(window,0)!=NX_OK)return 0;
+        struct timespec yield={0,1000000};
+        while(nanosleep(&yield,&yield)!=0)if(errno!=EINTR)return 0;
+    }
+}
+
 typedef struct paste_ticket { int refs,calls,applied,deferred,revoked; uint32_t timeout; } paste_ticket;
 typedef struct delayed_allocator { int armed,delayed; } delayed_allocator;
 static void *delayed_allocate(void *p,size_t size) {
@@ -160,7 +177,7 @@ int main(int argc,char **argv) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed<1.0 && ticket.deferred && ticket.refs==1 && !ticket.calls);
             if(!ax_once) {
-                for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)CHECK(fixture_poll(window,100)==NX_OK);
+                CHECK(wait_stalled_offer(&server,window));
                 CHECK(atomic_load(&server.stalled_fd) && value_is(ctx,"Aethericaf\xc3\xa9"));
                 if(ax_input) {
                     nx_event event={0};event.type=NX_EVENT_TEXT;event.scalar='X';
@@ -207,8 +224,7 @@ int main(int argc,char **argv) {
         } else if(keyboard_stall || keyboard_focus || keyboard_model || keyboard_selection || keyboard_timeout || keyboard_abandoned || keyboard_ime || keyboard_revert || keyboard_window_focus) {
             double elapsed=(double)(finish.tv_sec-start.tv_sec)+(finish.tv_nsec-start.tv_nsec)/1e9;
             CHECK(elapsed<1.0 && value_is(ctx,"Aethericaf\xc3\xa9"));
-            for(unsigned i=0;i<20 && !atomic_load(&server.stalled_fd);++i)
-                CHECK(fixture_poll(window,100)==NX_OK);
+            CHECK(wait_stalled_offer(&server,window));
             CHECK(atomic_load(&server.stalled_fd) && atomic_load(&server.offer_reads)==1);
             if(keyboard_abandoned) {
                 settings_destroy(scene); scene=NULL;

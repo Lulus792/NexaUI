@@ -67,8 +67,11 @@ int main(int argc,char **argv) {
         CHECK(clock_gettime(CLOCK_MONOTONIC,&end)==0);
         CHECK((double)(end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1e9<1.5);
         CHECK(closing.closed && !closing.heap.live && length==0);
-        if(self_stall) {int fd=atomic_exchange(&healthy.stalled_fd,0);CHECK(fd>0 && close(fd-1)==0);}
         wl_display_terminate(healthy.display);CHECK(pthread_join(healthy_thread,NULL)==0);
+        /* The reader can return before offer_receive records the writer. Join
+           the fixture producer before inspecting or closing its retained FD. */
+        if(self_stall) {int fd=atomic_exchange(&healthy.stalled_fd,0);CHECK(fd>0 && close(fd-1)==0);}
+        wl_display_destroy_clients(healthy.display);
         wl_display_destroy(healthy.display);
         CHECK(unlink(healthy_path)==0 || access(healthy_path,F_OK)!=0);CHECK(rmdir(runtime)==0);
         puts("Window destruction during clipboard allocation is deferred safely");return 0;

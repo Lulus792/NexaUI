@@ -1,5 +1,64 @@
 # Aetheri adoption: initial source assessment
 
+## Clipboard fixture producer synchronization (2026-11-06)
+
+Based on `962b3f5ce54a3de36c71083a458828abe85ed6cd`, two retained CI failures
+were reproduced without changing the SDK: the stalled self-destroy descriptor
+assertion from [060e2fe](https://github.com/Lulus792/NexaUI/actions/runs/42256940805)
+and the Settings stalled-descriptor/read-count assertion from
+[eff6efe](https://github.com/Lulus792/NexaUI/actions/runs/42263483748).
+The private producer writes bytes before recording its retained writer FD. A
+reader can consume those bytes and return while the producer is preempted before
+that atomic store. A test-only 50ms delay at exactly that point made both original
+assertions fail in 0.00/0.01 seconds. The original non-delayed baseline passed.
+Before and after the diagnostic/candidate test changes, the static SDK archive
+remained byte-identical, SHA-256
+`504ce46a1f8dfed604e4bd4cb3c538409b2df424af29fae7a12df7bb8060cf9b`.
+
+The self-destroy test now joins its already terminating producer before checking
+and closing the retained FD. It explicitly destroys remaining server-side clients
+before destroying the display. The first sanitizer run of the delayed case
+exposed a 19,192-byte/31-allocation private-server leak when teardown stopped the
+loop before it processed client disconnect; that failed output is retained.
+Explicit fixture client destruction removed it, with leak checking still enabled.
+The SDK window allocator's zero-live check and the original FD-close assertion
+are unchanged.
+
+Settings' old twenty 100ms polls could all return immediately with queued events;
+iteration count was not elapsed time or producer completion. Its setup now waits
+on the actual atomic producer state within the same intended two-second budget,
+pumps the selected poll API nonblocking and yields briefly to the producer.
+The existing <1.0/<1.5-second call checks, five-second SDK transfer deadline,
+model values, exact read counts, ticket/lease assertions and CTest limits remain
+unchanged. The fix does not add SDK retries or extend a transfer deadline.
+
+Two permanent delayed-record cases exercise the scheduling edge and are required
+by `check_wayland_results.py`. Fedora/GCC 16.2.1/CMake 4.3.0/Wayland 1.26.0/
+xkbcommon 1.13.1 static Release, shared Release and static ASan/UBSan each passed
+33 selected Settings clipboard/async and multi-window lifecycle cases: 33/33,
+zero failures and zero skips per final JUnit. The new delayed self-destroy case
+also passed five consecutive sanitizer runs. `ASAN_OPTIONS` retained
+`detect_leaks=1:halt_on_error=1`; UBSan halted on errors. Release assertions use
+the existing explicit `CHECK` macro. No production source, public API, package
+version or Aetheri source/pin was changed.
+
+Full candidate source, configurations, compiler/link flags, baseline and delayed
+failures, initial sanitizer leak, final logs/JUnit, binary hashes and parsed
+summary are archived at
+`D:/NexaUI/out/nexaui-clipboard-fixture-race-20261106.tar.gz`, SHA-256
+`f973c90505026bd0672e6315f05dbdca725b6df7ded249caabe209b117f01a27`.
+The builder-declared source revision was empty; this identifies the cited base
+plus these test changes, not a release attestation.
+
+This advances Q02/P05/I05/W10 evidence reliability for those two race assertions.
+Full CI remains a separate gate. In particular,
+[962b3f5 CI](https://github.com/Lulus792/NexaUI/actions/runs/42267766951) separately
+failed the PTY backpressure assertion at
+`tests/test_wayland_poll_many_transfer.c:111`; it is not corrected by this change.
+The unpaced Files sanitizer stress gate and physical/human acceptance remain
+open. The earlier X11 window-creation failure's precise cause also remains
+unproven; this producer race must not be used to explain unrelated failures.
+
 ## Native original-operation observer (2026-11-06)
 
 On base `eff6efecea02c8a7584a5696116d5be0e94806e0`, the

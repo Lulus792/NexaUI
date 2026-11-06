@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Q02/P05/I05/W10: two clipboard fixture assertion races are reproduced by delaying
+producer FD publication after bytes become readable, with an unchanged SDK.
+Explicit producer synchronization and server-client teardown pass 33/33 selected
+cases in static/shared/sanitizer profiles. Delayed cases are required in CI;
+the separate PTY backpressure and unpaced Files stress failures remain open. See
+[fixture synchronization evidence](aetheri-adoption-assessment.md#clipboard-fixture-producer-synchronization-2026-11-06).
+
 D07/D11/L11/P07/B07/A02/I01/W10/Q04: the original-operation observer now has
 installed public Wayland/software hosting with native AT-SPI and virtual-keyboard
 Release/ASan/UBSan evidence. Current operation identity, busy-to-uncertain view

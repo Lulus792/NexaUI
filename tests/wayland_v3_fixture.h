@@ -8,6 +8,8 @@
 #include "fixture_font.h"
 
 #include <pthread.h>
+#include <errno.h>
+#include <time.h>
 #include <linux/input-event-codes.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -113,6 +115,12 @@ static void offer_receive(struct wl_client *client,struct wl_resource *resource,
         return;
     }
     if (atomic_load(&server->offer_stall)) {
+        /* Bytes can already reach the client before this thread records its
+           retained writer. Exercise that scheduling edge deterministically. */
+        if(getenv("NEXAUI_TEST_DELAY_STALL_RECORD")) {
+            struct timespec delay={0,50000000};
+            while(nanosleep(&delay,&delay)!=0)CHECK(errno==EINTR);
+        }
         atomic_store(&server->stalled_fd, fd + 1);
         return;
     }
