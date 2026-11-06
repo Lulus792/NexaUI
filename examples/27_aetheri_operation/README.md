@@ -9,6 +9,11 @@ snapshot is Aetheri `1fb45c7c21f914a2893457132b609be50ef4280d`.
 The view copies its exact request identity and shows operation, install, scope,
 generation, storage slot, artifact, component and observed revision. Visual hex
 groups can wrap; semantic values retain all original unseparated digits.
+Metadata rows use the existing read-only text-snapshot API without a caret.
+On Linux their complete values are readable through standard AT-SPI Text, as
+well as the existing diagnostic attribute. This grants no editing or selection
+authority; native cursor/selection changes are rejected. Held Text references
+are retired when the view is replaced.
 Refresh calls the original read API explicitly. Painting, opening and closing
 never accept a request, publish an artifact or activate an installation. An
 unavailable query supersedes old busy information. An uncertain outcome retains
@@ -106,8 +111,9 @@ negative teardown is not clean-close evidence.
 
 Release and ASan/UBSan native action and virtual-keyboard cases passed. The client
 checks complete operation-ID/component values, busy/read-only status without a numeric
-value/action, Refresh, rediscovery after view replacement, cleared busy state,
-retired old reference, restored focus and clean Close. The host verifies one
+value/action, standard Text reads without a caret or editable interface, rejected
+cursor/selection changes, Refresh, rediscovery after view replacement, cleared
+busy state, retired accessible/Text references, restored focus and clean Close. The host verifies one
 acceptance, one operation and unchanged catalogue revision during view-only work;
 the driver independently reads the final original operation metadata. The
 headless software cases remain separate regressions.

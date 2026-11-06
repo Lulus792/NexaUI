@@ -1,5 +1,81 @@
 # Aetheri adoption: initial source assessment
 
+## Standard native text in operation and removal views (2026-11-06)
+
+Implementation source [72e756502ed2e68815ee314fe5ece0ae8881287d](https://github.com/Lulus792/NexaUI/commit/72e756502ed2e68815ee314fe5ece0ae8881287d)
+builds on `5190a8d2193d65f9113917850232e3cfa94dc402`. Inspection found that
+operation metadata and removal-plan/object values were published only as ordinary
+semantic values: Linux exposed them through `nexaui-value`, without a standard
+Text interface. This was an example-composition gap; the installed SDK already
+provides `nx_semantics_add_readonly_text_snapshot_without_caret`.
+
+Both examples now reuse that API. The operation view publishes its nine metadata
+rows; small and virtualized removal views publish metadata, six category counts
+and current object values. Names remain labels, values retain exact unseparated
+identities and complete reasons/sizes, and status nodes keep their existing status
+contract. Snapshot identities follow the stable row IDs within each view. No
+caret, editable interface, operation permission or writable selection is invented.
+View replacement retires the original context and its native text references.
+SDK implementation, public API/ABI, version 0.1.23, dependencies, original Aetheri
+source/model and consumer pin remain unchanged.
+
+On the isolated Fedora 44/GCC 16.2.1 guest, static Release, shared Release and
+static ASan/UBSan Debug each passed the three removal CTests and the original-
+catalogue observer regression. This includes the 100,000-object workload and nine
+constructor-allocation failure points. Existing 30/15-second CTest deadlines,
+leak detection and sanitizer halt-on-error remain unchanged. These are standalone
+installed consumers, not newly added root SDK CI tests.
+
+Independent libatspi clients, without NexaUI linkage, read complete standard Text
+alongside the existing diagnostic attributes. They check character count, caret
+offset -1, no selections, no EditableText interface, rejected caret/selection
+changes and unchanged text afterward. The removal client checks all eight small
+objects' exact reasons, IDs and logical sizes, global large-plan counts/identities
+and the final object reached with native keys. Both clients retain a Text
+reference across view replacement and require an error with no old/new text from
+that retired reference.
+
+All twelve positive native cases passed on the pinned Aetheri headless compositor:
+Release and ASan/UBSan each cover removal native actions, large-list keys,
+offscreen unknown-state gating and small-view actions, plus observer actions and
+keys. Existing exact request/no-replay, busy-to-unknown, focus, original catalogue
+invariants and normal-close checks remain in force. Two AT-SPI-disabled hosts map
+but fail their original discovery gate as expected. The two pre-change hosts
+instead fail the strengthened clients specifically because standard Text is
+missing. These four deliberate negatives do not count as normal-close evidence.
+
+There are 63 complete byte-identical PPM pairs: 51 software captures across the
+three profiles and twelve native output captures. For the software comparison,
+the exact base view sources were compiled with each candidate's flags and linked
+against the same unchanged test objects and SDK; all six baseline executables
+passed. Native captures match the pinned preceding removal/observer captures.
+Thirteen original consumer source/header files were checked against the exact
+base archive. All nineteen compiled consumer/build/runner source files match the
+implementation revision after CRLF/LF normalization. An initial comparison used
+an older historical observer image and differed; it was replaced by the exact-base
+comparison, with the mismatch retained. A long output path also prevented one
+private compositor startup: the measured 108-byte socket name fails AF_UNIX bind.
+Short, isolated evidence paths resolved that harness issue without changing SDK,
+compositor, deadlines or user configuration.
+
+Compiled source, exact revision/base archives, flags, SDK binaries/provenance,
+JUnit/logs, final and earlier native campaigns, full images, comparisons and SHA-256
+manifest are archived at `D:/NexaUI/out/nexaui-standard-text-20261106-v2.tar.gz`,
+SHA-256 `8124f10fb0550accbcb095319155145b49d48d1d5303f7daf41b02e7941062bb`.
+The original Aetheri catalogue is still pinned at
+`1fb45c7c21f914a2893457132b609be50ef4280d`; the compositor binary remains
+`631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75`.
+Separately, all seven required [base SDK CI jobs](https://github.com/Lulus792/NexaUI/actions/runs/42294824411)
+completed successfully. That run does not execute these standalone examples.
+
+Aetheri can reuse this read-only presentation pattern with the existing installed
+SDK, while its owner/service work proceeds independently. Real locales, actual
+screenreader reading tasks/human acceptance, other-platform example acceptance,
+authenticated inventory/operation transport, filtering/refresh, real removal and
+durable recovery remain open. The Files burst failure and broader output/scale/
+session acceptance are unchanged. No complete catalogue or 1.0.0 acceptance is
+implied.
+
 ## Large declared removal preview (2026-11-06)
 
 On base `4b1e79188f385bc560876a480cfd0d0321898b4c`, the

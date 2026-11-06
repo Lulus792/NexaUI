@@ -63,6 +63,16 @@ cleans up semantics, renderer, view, window, owner and fonts on Close/Escape.
 The private control pipe is enabled only by the test driver. Native resize below
 420×320, output scale/loss, real locales and other platforms are not accepted here.
 
+Metadata, category counts and object reasons/identities/sizes use the existing
+read-only text-snapshot API without a caret, in both small and virtualized views.
+Their complete values are readable through standard AT-SPI Text on Linux;
+`nexaui-value` remains available as a diagnostic attribute. Native cursor/selection
+changes are rejected and no editable text interface is exposed. The independent
+client checks all eight small object values, large-view metadata and the final
+object, plus retirement of a held Text reference after view replacement. This is
+transport evidence, not human screenreader acceptance. See the
+[native text evidence](../../docs/quality/aetheri-adoption-assessment.md#standard-native-text-in-operation-and-removal-views-2026-11-06).
+
 When libatspi development files are available, CMake also builds an independent
 `removal_review_atspi_client` without linking NexaUI. Run it through the driver:
 
