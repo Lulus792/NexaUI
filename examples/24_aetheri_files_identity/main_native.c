@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "scene.h"
 #include <nexaui/software.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <math.h>
 #include <signal.h>
@@ -45,7 +46,8 @@ int main(int argc,char **argv) {
        files_scene_enable_filter(scene,window)!=NX_OK)goto cleanup;
     nx_context *ctx=files_scene_context(scene);nx_event deferred_event={0};int has_deferred=0;okay=1;
     while(okay && !done) {
-        if(nx_window_poll(window,has_deferred?0:(dirty?16:1000))!=NX_OK){okay=0;break;}
+        nx_result poll_result=nx_window_poll(window,has_deferred?0:(dirty?16:1000));
+        if(poll_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_POLL_ERROR %d\n",(int)poll_result);okay=0;break;}
         if(stop_requested){done=1;break;}
         if(test_clear_requested){test_clear_requested=0;
             if(files_scene_focus_filter(scene,1)!=NX_OK){okay=0;break;}
@@ -56,7 +58,10 @@ int main(int argc,char **argv) {
         nx_event event;int available,queued=0;
         do {
             if(has_deferred){event=deferred_event;has_deferred=0;available=1;}
-            else if(nx_window_next_event(window,&event,&available)!=NX_OK){okay=0;break;}
+            else {
+                nx_result next_result=nx_window_next_event(window,&event,&available);
+                if(next_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_NEXT_ERROR %d\n",(int)next_result);okay=0;break;}
+            }
             if(!available)break;
             /* A pending Tab, pointer or other UI event can change focus in the
                next frame. Decide list navigation only after that frame. */
@@ -113,12 +118,14 @@ int main(int argc,char **argv) {
                event.type==NX_EVENT_IME_PREEDIT_CHANGED || event.type==NX_EVENT_IME_DELETE_SURROUNDING ||
                event.type==NX_EVENT_IME_DELETE_RANGE)) ||
                event.type==NX_EVENT_FOCUS) {
-                if(nx_context_queue_event(ctx,&event)!=NX_OK){okay=0;break;}dirty=1;queued=1;
+                nx_result queue_result=nx_context_queue_event(ctx,&event);
+                if(queue_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_QUEUE_ERROR %d\n",(int)queue_result);okay=0;break;}dirty=1;queued=1;
             }
         } while(available);
         if(!okay || done)break;
         size_t routed=0;
-        if(nx_window_route_events(window,ctx,&routed)!=NX_OK){okay=0;break;}
+        nx_result route_result=nx_window_route_events(window,ctx,&routed);
+        if(route_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_ROUTE_ERROR %d\n",(int)route_result);okay=0;break;}
         if(routed)dirty=1;
         if(!dirty) {
             if(ax_unavailable) {
@@ -131,15 +138,18 @@ int main(int argc,char **argv) {
         float view_height=fminf(info.height,1800.0f);uint64_t old_focus=nx_focus_id(ctx);
         if(nx_context_set_text_raster_scale(ctx,info.scale)!=NX_OK){okay=0;break;}
         if(info.width>=40 && view_height>=64) {
-            if(files_scene_frame(scene,info.width,view_height)!=NX_OK){okay=0;break;}
+            nx_result frame_result=files_scene_frame(scene,info.width,view_height);
+            if(frame_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_FRAME_ERROR %d\n",(int)frame_result);okay=0;break;}
             if(files_scene_close_requested(scene)){done=1;break;}
         } else if(nx_begin_frame(ctx,info.width,info.height,0)!=NX_OK || nx_end_frame(ctx)!=NX_OK){okay=0;break;}
         nx_result ax=nx_window_publish_semantics(window,ctx);
         if(ax!=NX_OK && ax!=NX_ERROR_UNSUPPORTED){okay=0;break;}
         ax_unavailable=ax==NX_ERROR_UNSUPPORTED;
         const nx_command *commands=NULL;size_t count=0;nx_software_view_outcome outcome;
-        if(nx_frame_commands(ctx,&commands,&count)!=NX_OK ||
-           nx_software_view_render(renderer,commands,count,(nx_color){.08f,.1f,.14f,1},&outcome)!=NX_OK){okay=0;break;}
+        nx_result commands_result=nx_frame_commands(ctx,&commands,&count);
+        if(commands_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_COMMAND_ERROR %d\n",(int)commands_result);okay=0;break;}
+        nx_result render_result=nx_software_view_render(renderer,commands,count,(nx_color){.08f,.1f,.14f,1},&outcome);
+        if(render_result!=NX_OK){if(trace)fprintf(stderr,"FILES_NATIVE_RENDER_ERROR %d errno=%d\n",(int)render_result,errno);okay=0;break;}
         dirty=outcome!=NX_SOFTWARE_VIEW_READY || old_focus!=nx_focus_id(ctx);
         if(outcome==NX_SOFTWARE_VIEW_READY && !shown){if(trace){puts("FILES_NATIVE_READY");fflush(stdout);}shown=1;}
         if(trace && shown) {

@@ -1,5 +1,39 @@
 # Aetheri adoption: initial source assessment
 
+## Files model/view on the Aetheri compositor and burst-input finding (2026-11-06)
+
+The external Files experiment, based on NexaUI
+`6d8df09131a5728b165036147cf5b4398de6b893`, was built against the installed
+static Wayland-only SDK from `861ac665eeb4662b795629bc502e86fb36a5c9e6`
+and the unchanged Files model and test compositor from Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`. On a private 20-file directory,
+the Release run rendered a frame, used native keyboard navigation and refresh,
+filtered to `item01`, rejected an overlong query without adopting its rejected
+suffix, retained the last accepted model query, and closed with all file names
+and contents unchanged. The compositor and consumer exited 0.
+
+The same unpaced 256-key burst is **not closed under sanitizers**: several
+GCC 16.2.1 ASan/UBSan runs lost the client connection and exited 1 before the
+full draft was processed. A diagnostic run localized the observed failure to
+software rendering returning `NX_ERROR_PLATFORM` with last `errno=EPIPE`;
+the precise server/client cause is not established. Another instrumented run
+with 2 ms between injected keys passed, as did an unpaced Release run. The
+default driver remains unpaced; the paced case is a separate comparison, not
+a replacement for the failing stress case. An intermediate test incorrectly
+expected the original six-byte filter rather than the most recently accepted
+prefix and timed out; that harness failure is also preserved.
+
+The final Release consumer SHA-256 was
+`5d0ff070eac5d0c48d72f776ecc3fbd9fc5b904756e5bf586b5a36614d4b3c9d`,
+and the final instrumented consumer was
+`9fa46ed33615c8f2c292b6eac785b855216d0e3b7143827ae3527c14c446f14d`.
+Logs, captures, diagnostic attempts, source and build caches are archived at
+`D:/NexaUI/out/nexaui-files-native-aetheri-20261106.tar.gz`, SHA-256
+`cc9410841050475e650cd820109512d5bc60c4833544511ba313bd472ab4c952`.
+This is an example using real model code and a headless test compositor, not
+the production Files application. Resolution of the burst failure, native
+assistive acceptance, physical input and actual Aetheri adoption remain open.
+
 ## External clipboard peers and interrupted read on Aetheri (2026-11-06)
 
 On NexaUI base `8ed604eb222a893be8052929eebdc97d736ce67e`, the isolated
