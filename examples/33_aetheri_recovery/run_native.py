@@ -19,13 +19,17 @@ def main():
     for name in ('server','registry','host','client','font','source','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--kind',choices=('system','user'),default='system')
     p.add_argument('--held',choices=('wake','close'),help='Test-only held host and lifecycle OS peer')
-    for name in ('german','large','small','contrast','light','ime','navigation'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','ime','navigation','resize','capture'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
+    if a.resize:a.navigation=True
+    if a.capture and not a.resize:p.error('Capture is attached to the native resize workflow')
     if a.held and a.ime:p.error('The held-transaction workflow has its own lifecycle peer; run IME separately')
     if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
+    captures=work/'captures';images=[]
+    if a.capture:captures.mkdir(mode=0o700)
     sys.dont_write_bytecode=True;sys.path.insert(0,str(paths['source']/'tools'))
     import catalogue_contracts as cc
     from test_contracts import legacy,rows,plan,accept
@@ -50,13 +54,13 @@ def main():
     for name in ('german','large','small','contrast','light'):
         env.pop('RVG_'+name.upper(),None)
         if getattr(a,name):env['RVG_'+name.upper()]='1'
-    if a.ime:env['WAYLAND_DEBUG']='client'
+    if a.ime or a.resize:env['WAYLAND_DEBUG']='client'
     gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
     if a.held:env['RVG_TEST_GATE_FD']=str(gate_read)
     else:env.pop('RVG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
-            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation')},'checks':[],'expected_records':len(reference)}
+            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation','resize','capture')},'checks':[],'expected_records':len(reference),'images':images}
     def start(command,name,fds=(),input_pipe=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
         child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if input_pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True)
@@ -77,6 +81,33 @@ def main():
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
         return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',lines[-1])} if lines else {}
+    def resize(width,height):
+        before=view();count=log('host').count('RESIZE_REQUEST status=0\n')
+        def configures(size):return list(re.finditer(r'xdg_toplevel#\d+\.configure\([^\n]*array\['+str(size)+r'\]\)',log('host')))
+        admitted=len(configures(8))
+        # Pinned original compositor: client origin (40,40), active+resizing
+        # states during its real grab, active alone after pointer release.
+        event(f'M {40+before["width"]-6} {40+before["height"]-6}');event('B 272 1')
+        wait(lambda:log('host').count('RESIZE_REQUEST status=0\n')>count,'native resize grip request')
+        wait(lambda:len(configures(8))>admitted,'compositor admitted native resize')
+        until=time.monotonic()+7
+        while view().get('width')!=width or view().get('height')!=height:
+            if host.poll() is not None or time.monotonic()>=until:raise RuntimeError('Native resize did not reach requested geometry')
+            event(f'M {40+width-6} {40+height-6}');time.sleep(.01)
+        released=len(configures(4));event('B 272 0');wait(lambda:len(configures(4))>released,'compositor released resize')
+        boundary=configures(4)[-1].end()
+        wait(lambda:re.search(r'^VIEW [^\n]*width='+str(width)+r' height='+str(height)+r' [^\n]*\nRECOVERY_READY\n',log('host')[boundary:],re.M) is not None,'submitted frame after released configure')
+        after=view()
+        if any(after.get(k)!=before.get(k) for k in ('state','epoch','count','mode','request')):raise RuntimeError('Resize changed owner/filter state')
+        result.setdefault('resizes',[]).append({'before':before,'after':after,'requested':[width,height]})
+    def capture(label):
+        if not a.capture:return
+        sequence=len(images)//3+1;server.send_signal(signal.SIGUSR1)
+        wait(lambda:all(f'CAPTURE {sequence} {i}\n' in log('server') for i in range(3)),'native capture '+label)
+        for i in range(3):
+            path=captures/f'capture-{sequence}-output-{i}.ppm';data=path.read_bytes();magic,extent,maximum,pixels=data.split(b'\n',3);width,height=map(int,extent.split())
+            if magic!=b'P6' or maximum!=b'255' or len(pixels)!=width*height*3:raise RuntimeError('Incomplete native PPM')
+            images.append({'label':label,'file':path.name,'width':width,'height':height,'sha256':hashlib.sha256(data).hexdigest(),'view':view()})
     def ime_barrier(bytes_count):
         marker=f'PREEDIT bytes={bytes_count}\n';wait(lambda:marker in log('host'),'native preedit change')
         wait(lambda:re.search(r'^VIEW ',log('host')[log('host').rfind(marker)+len(marker):],re.M) is not None,'field frame after preedit')
@@ -109,7 +140,7 @@ def main():
             result['native_wait_witness']={'syscall':raw,'descriptors':descriptors,'worker_fd':wake_fd,'view':view()};return True
         except (FileNotFoundError,ProcessLookupError):return False
     try:
-        server=start([paths['server'],'--headless','recovery','-',right.fileno()],'server',(right.fileno(),));right.close()
+        server=start([paths['server'],'--headless','recovery',captures if a.capture else '-',right.fileno()],'server',(right.fileno(),));right.close()
         wait(lambda:'READY ' in log('server'),'compositor')
         if a.ime:event('I on')
         start(['dbus-daemon','--session','--nofork','--address='+address],'bus');wait(lambda:(runtime/'bus').exists(),'private bus')
@@ -123,7 +154,7 @@ def main():
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else []),'client',input_pipe=True)
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         if a.held:
             for step in (0,1):
@@ -150,7 +181,7 @@ def main():
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
         else:
-            for step in range(25 if a.navigation else 10):
+            for step in range(30 if a.resize else 25 if a.navigation else 10):
                 peer_line('STEP '+str(step))
                 if step==1:key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'logical End')
                 if step==2:
@@ -183,6 +214,13 @@ def main():
                 if step==19:reverse_tab();wait(lambda:view().get('focus')==43,'reverse Tab Close to Back')
                 if step in (20,22,24):
                     key(28 if step==20 else 1);wait(lambda:view().get('mode')==0 and view().get('focus')==40 and view().get('count')==len(reference),'Cancel preserves applied results and restores Filter focus')
+                if step==25:key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter before native resize')
+                if step==26:
+                    result['resize_origin']=view();resize(64,64);wait(lambda:view().get('focus')==42,'compact Close focus')
+                if step==27:resize(240,96);wait(lambda:view().get('focus')==42,'second compact Close focus')
+                if step==28:
+                    origin=result['resize_origin'];resize(origin['width'],origin['height']);wait(lambda:view().get('focus')==origin['focus'],'native restored field focus')
+                if step==29:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40 and view().get('count')==len(reference),'Cancel after native restore')
                 peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
                 if step==2:
                     wait(lambda:re.search(r'^READ_PAGES (\d+)$',log('client'),re.M) is not None,'detail geometry',(peer,))
@@ -200,10 +238,12 @@ def main():
                     matches=re.findall(r'^FILTER_SCROLLBAR ([01])$',log('client'),re.M)
                     if len(matches)!=1:raise RuntimeError('Missing independent filter-scrollbar inventory')
                     result['filter_scrollbar']=bool(int(matches[0]))
+                if step in (25,26,27,28):capture(('filter','tiny','compact','restored')[step-25])
         peer.wait(timeout=7)
         marker=('RECOVERY_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'RECOVERY_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK'
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.navigation and 'RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Missing independent native navigation checks')
+        if a.resize and 'RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
         if view().get('request')!=(3 if a.navigation else 2):raise RuntimeError('Local inspection/filtering posted backend work')
         if a.held=='close':
             if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Held worker ended before retirement peer finished')

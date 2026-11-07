@@ -19,6 +19,9 @@ static int replace_text(AtspiAccessible *node,const char *text){
 static int has_focus(AtspiAccessible *app,const char *name,AtspiRole role){
     AtspiAccessible *node=lookup(app,name,role);int yes=node&&state(node,ATSPI_STATE_FOCUSED);if(node)g_object_unref(node);return yes;
 }
+static int absent(AtspiAccessible *app,const char *name,AtspiRole role){
+    AtspiAccessible *node=lookup(app,name,role);int yes=!node&&!scan_failed;if(node)g_object_unref(node);return yes;
+}
 static int rectangle(AtspiAccessible *node,AtspiRect *out){
     AtspiComponent *c=node?atspi_accessible_get_component_iface(node):NULL;GError *error=NULL;AtspiRect *r=c?atspi_component_get_extents(c,ATSPI_COORD_TYPE_WINDOW,&error):NULL;
     int yes=!error&&r;if(yes)*out=*r;if(error)g_error_free(error);if(r)g_boxed_free(ATSPI_TYPE_RECT,r);if(c)g_object_unref(c);return yes;
@@ -44,8 +47,9 @@ cleanup:
     g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
 }
 int main(int argc,char **argv){
-    int okay=0,initialized=0,ime=0,navigation=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
-    CHECK(argc>=4&&argc<=7);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else CHECK(0);}
+    int okay=0,initialized=0,ime=0,navigation=0,resizing=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
+    CHECK(argc>=4&&argc<=8);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else if(!strcmp(argv[i],"--resize"))resizing=1;else CHECK(0);}
+    CHECK(!resizing||navigation);
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
@@ -96,8 +100,27 @@ int main(int argc,char **argv){
             if(cycle==2)break;
             CHECK(checkpoint(back+1));field=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"x")&&state(field,ATSPI_STATE_FOCUSED));printf("ACK %u\n",back+1);
         }
-        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));
+        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&(resizing||focus(button)));
         puts("RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK");
+    }
+    if(resizing){
+        CHECK(checkpoint(25));field=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"x")&&state(field,ATSPI_STATE_FOCUSED));
+        CHECK(retired(last)&&retired(button));g_object_unref(button);button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&!retired(button));puts("ACK 25");
+        for(unsigned step=26;step<=27;++step){
+            CHECK(checkpoint(step));CHECK(retired(field)&&!replace_text(field,"late compact edit")&&state(button,ATSPI_STATE_FOCUSED));
+            CHECK(absent(app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY));AtspiRect bounds;CHECK(rectangle(button,&bounds));
+            int width=step==26?64:240,height=step==26?64:96;
+            CHECK(bounds.x>=0&&bounds.y>=0&&bounds.width>0&&bounds.height>0&&bounds.x+bounds.width<=width&&bounds.y+bounds.height<=height);
+            printf("ACK %u\n",step);
+        }
+        CHECK(checkpoint(28));CHECK(retired(field)&&!replace_text(field,"late restored edit"));g_object_unref(button);button=NULL;
+        button=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(button&&state(button,ATSPI_STATE_FOCUSED)&&text_equal(button,"x")&&!retired(button));
+        g_object_unref(field);field=button;button=NULL;puts("ACK 28");
+        CHECK(checkpoint(29));CHECK(retired(field)&&!replace_text(field,"late cancel edit"));g_object_unref(field);field=NULL;
+        button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));g_object_unref(button);button=NULL;
+        g_object_unref(last);last=lookup(app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_SELECTED));
+        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 29");
+        puts("RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK");
     }
     puts("RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK");okay=1;
 cleanup:

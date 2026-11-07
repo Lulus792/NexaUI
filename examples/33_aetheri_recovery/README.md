@@ -189,7 +189,7 @@ Read refresh, editable local filtering, Enter refusal during native preedit,
 commit/application, selection restoration and keyboard Close. It requires the
 same original database bytes/rows and normal host/peer exits. `--kind user`
 selects User v8 instead of Root v10. These virtual-input checks are not human
-screenreader or physical-display acceptance. Native resize/output migration,
+screenreader or physical-display acceptance. Output migration,
 clipboard and production owner transport remain separate open gates. The
 test-only lifecycle host below checks held-read close/wakeup and selected
 whole-window retained references.
@@ -240,3 +240,25 @@ through it when present; ordinary layouts also check the direct path without a
 scrollbar. Each Tab stop and Cancel result is checked explicitly.
 Combine `--navigation` with the ordinary `--ime`
 case as needed; held-transaction checks use their own peer separately.
+
+## Native resize and compact restoration
+
+Add `--resize` to the ordinary workflow; it includes `--navigation` and extends
+the sequence to thirty checkpoints. Native pointer presses on the bottom-right
+grip call the public window resize API. The original test compositor must admit
+and release each gesture, reaching 64×64, 240×96 and the original window size.
+The driver requires a submitted frame after the release configure. Its fixed
+origin and state-array observations belong to this pinned test compositor.
+
+The independent peer verifies compact Close focus and in-window bounds, removal
+of the filter field, retained draft and restored field focus after enlargement,
+and selected full record identity after Escape. Retained old fields must refuse
+edits both while absent and after a fresh field with the same ID appears. The
+pointer-only grip preserves the previous key focus without adding a Tab stop.
+Only the same three original reads occur; all resize/filter work stays local.
+
+With `--resize --capture`, a compatible compositor saves four scenes on each of
+its three virtual outputs. The driver records complete PPM hashes and view sizes.
+Compact mode exposes only Close and an accessible enlargement explanation; it
+does not display record/filter content. These captures and OS queries do not
+establish mixed-scale output migration, physical display or human acceptance.

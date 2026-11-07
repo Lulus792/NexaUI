@@ -203,6 +203,7 @@ static void detail_body(rvg_view *v){
         d->identity.kind==AE_CATALOGUE_SYSTEM?"Root":"User",owner,epoch,boot,runtime,d->schema_version,d->context.revision);
 }
 static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *intent,int *transition){
+    uint64_t focus_before=nx_focus_id(v->ctx);
     const char *labels[3];uint64_t ids[3];size_t buttons=0;int clicked[3]={0};float top=12,button_height=0;nx_result r=NX_OK;
     int apply_valid=1;size_t active_preedit=0;
     if(v->mode==RVG_FILTER){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)apply_valid=valid_query(query,NULL);
@@ -286,6 +287,8 @@ static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *int
         if(r==NX_OK)r=nx_draw_line(v->ctx,(nx_point){width-side+2,height-2},(nx_point){width-2,height-side+2},1,color);}
     if(r==NX_OK)r=nx_end_frame(v->ctx);
     if(r!=NX_OK)return r;
+    /* The pointer-only window grip must not discard the content's key focus. */
+    if(intent->resize&&!v->restore)v->restore=focus_before;
     if(v->restore){uint32_t node;if(nx_semantics_find(v->ctx,v->restore,&node)==NX_OK){r=nx_focus_set(v->ctx,v->restore);if(r!=NX_OK)return r;v->restore=0;v->again=1;}}
     for(size_t i=0;i<buttons;++i)if(clicked[i]){if(ids[i]==RVG_CLOSE)intent->close=1;else if(ids[i]==RVG_REFRESH)intent->refresh=1;else if(ids[i]==RVG_FILTER_BUTTON)*transition=1;else if(ids[i]==RVG_BACK)*transition=4;}
     if(v->escape){v->escape=0;if(v->mode!=RVG_LIST)*transition=4;else intent->close=1;}return NX_OK;
