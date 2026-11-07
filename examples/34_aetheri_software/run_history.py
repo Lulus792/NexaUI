@@ -4,6 +4,7 @@ from contextlib import closing
 from pathlib import Path
 p=argparse.ArgumentParser(description=__doc__)
 for name in ('source','fixture','model','test','work'):p.add_argument('--'+name,type=Path,required=True)
+p.add_argument('--prepare-only',choices=('history','replacement','unsupported','corrupt'))
 a=p.parse_args();a.work.mkdir(exist_ok=True);root=Path(tempfile.mkdtemp(prefix='run-',dir=a.work))
 sys.dont_write_bytecode=True;sys.path.insert(0,str(a.source.resolve()/'tools'))
 import runtime_contracts as reference
@@ -29,12 +30,16 @@ def run(name,command):
     assert not any(s in done.stderr for s in ('AddressSanitizer','LeakSanitizer','runtime error:'))
     return done
 for mode,scenario in (('history','exec-process-fresh'),('replacement','exec-process-root-replace'),('unsupported',None),('corrupt','exec-process-corrupt')):
+    if a.prepare_only and a.prepare_only!=mode:continue
     if scenario:
         case=root/mode;case.mkdir(mode=0o700);system=case/'system';user=case/'user';system.mkdir(mode=0o700);user.mkdir(mode=0o700)
         run(mode+'-original-fixture',[a.fixture,system,user,expected,scenario])
     else:
         prepared=run('unsupported-original-fixture',[sys.executable,Path(__file__).with_name('run_model.py'),'--source',a.source,'--test',a.model,'--work',root/'unsupported','--prepare-only'])
         fixture=Path(next(line.removeprefix('PREPARED ') for line in prepared.stdout.splitlines() if line.startswith('PREPARED ')));paths=json.loads(fixture.read_text());system=Path(paths['system']);user=Path(paths['user'])
+    if a.prepare_only:
+        prepared=root/'prepared.json';prepared.write_text(json.dumps(dict(system=str(system),user=str(user),profile=str(root/'profile.bin'),profile_hex=profile.hex(),commands=commands,mode=mode),indent=2)+'\n')
+        print('PREPARED '+str(prepared));sys.exit(0)
     versions=range(4,11) if mode=='history' else (2,3) if mode=='unsupported' else (4,)
     for version in versions:
         if (mode=='history' and version>4) or (mode=='unsupported' and version>2):

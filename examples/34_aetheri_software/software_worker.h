@@ -1,12 +1,17 @@
 #ifndef EXAMPLE_SOFTWARE_WORKER_H
 #define EXAMPLE_SOFTWARE_WORKER_H
 #include "software_components.h"
+#include "software_history.h"
 /* Application-private trusted Root adapter following example33's owner-worker
    pattern. Source configuration and jobs are copied; no GUI object or callback
    enters the worker. Thread separation is not an authority/IPC boundary. */
 typedef struct sww_worker sww_worker;
 typedef struct sww_key { uint64_t view,request; } sww_key;
-typedef struct sww_reply { sww_key key; int original_error; sw_result *result; nx_result components_status;sw_components *components; } sww_reply;
+typedef struct sww_reply { sww_key key; int original_error; sw_result *result; nx_result components_status;sw_components *components; int history_error;swh_batch *history; } sww_reply;
+typedef struct sww_metadata {
+    const sw_manifest_source *manifests;size_t manifest_count;
+    const struct ae_execution_profile *profiles;size_t profile_count;
+} sww_metadata;
 /* Copy the explicit protected source path/Root identity. Only the worker opens,
    queries and closes the original catalogue. Wait only for open/get-info here;
    no selected-app scan runs during this handshake. Context changes on success. */
@@ -18,6 +23,13 @@ nx_result sww_start(const char *,const struct ae_catalogue_identity *,sww_worker
    empty inventory or invalidates the separately valid app observation. */
 nx_result sww_start_with_manifests(const char *,const struct ae_catalogue_identity *,
     const sw_manifest_source *,size_t,sww_worker **,struct ae_catalogue_info *,int *original_error);
+/* Copies all immutable source/profile configuration before thread start.
+   Historical reads run only after a successful selected-app observation, on
+   that same original owner thread. A separate negative history_error retains
+   unavailable history without invalidating the separately valid app result.
+   No original process getter runs during the open/get-info handshake. */
+nx_result sww_start_with_metadata(const char *,const struct ae_catalogue_identity *,
+    const sww_metadata *,sww_worker **,struct ae_catalogue_info *,int *original_error);
 /* Owner-thread calls. Two S02 slots reserve completions until receive takes
    them. Copy the complete scope and selected IDs before waking the worker.
    Scope/target validation errors complete as original producer errors; bound,
@@ -30,6 +42,9 @@ int sww_wake_fd(const sww_worker *);
 nx_result sww_receive(sww_worker *,nx_sim_message *);
 sww_reply *sww_reply_get(const nx_sim_message *);
 nx_result sww_reply_take(sww_reply *,sw_result **);
+/* Detach successful history once; every other remaining payload is disposed
+   with its message. History and app result have independent owned lifetimes. */
+nx_result sww_reply_take_history(sww_reply *,swh_batch **);
 /* Stop rejects new work and completes queued jobs as cancelled. A dequeued
    original batch can finish without GUI access. Retire GUI first; join has no
    filesystem deadline. Destroy drains owned replies before channel/pipe free. */

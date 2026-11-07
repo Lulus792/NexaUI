@@ -20,9 +20,37 @@ cmake -S examples/34_aetheri_software -B build-software \
   -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri \
   -DSWG_TEST_FONT=/path/to/font.ttf
 cmake --build build-software --target software_model_test software_worker_test \
-  software_view_test software_components_test software_native
+  software_view_test software_components_test software_history_test \
+  software_history_fixture software_history_worker_test software_native
 ctest --test-dir build-software --output-on-failure
 ```
+
+The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
+alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
+selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical
+original execution profile, decoded by `ae_execution_decode` before any window
+is opened. It is supplied by the owner, not selected or constructed by the UI.
+The worker copies it before starting and reads original historical process
+metadata after each successful selected-app observation. No GUI file read,
+process lookup or current-process capability is introduced.
+
+The History button opens full launch/profile identities and read-only details
+for both historical roles, with the original revisions, digests, timestamps and
+64-bit recorded identifiers. Enter opens a profile; Escape/Back restores its
+tree focus, then the History button. Page Up/Down reaches all detail text.
+Historical enrollment never establishes a current process, image, resource,
+ownership or permission state. Missing configuration and unavailable observations
+remain explicit, and do not become an empty process inventory. Unexpected
+history errors leave the independently valid selected-app result usable.
+
+`software_history_worker` exercises four unchanged original fixture scenarios,
+copied inputs, independently owned replies, bounded admission, cancellation and
+GUI retirement, plus three view styles and maximum-profile/string stress.
+`run_history_native.py` uses `software_history_atspi` as an independent OS peer
+with a private compositor/bus; its available, unavailable, corrupt and unconfigured
+cases verify native keyboard focus, full read-only text, paging, retired objects,
+explicit refresh and normal close. These fixtures contain synthetic historical
+metadata. They do not establish live processes or human/physical acceptance.
 
 The original Aetheri inputs reuse example 33's 67-input check at
 `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`, normalizing only CRLF to LF.
@@ -304,9 +332,9 @@ and exact return to the top.
 
 `software_history.h` adds an owner-side read adapter for explicitly supplied
 original `ae_execution_profile` values, using only
-`ae_catalogue_get_execution_process`. It is a data foundation for the next worker/
-view integration; this increment adds no native process page, inventory or live
-process observer. Do not call it from a GUI frame. The trusted owner retains the
+`ae_catalogue_get_execution_process`. The existing worker and native History
+view compose this adapter; no full inventory or live process observer is added.
+Do not call it from a GUI frame. The trusted owner retains the
 serialized original Root handle and admits the source, account and profiles.
 
 `swh_read` copies at most 64 complete profiles, current scope and selected row

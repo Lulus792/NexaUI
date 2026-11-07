@@ -13,10 +13,11 @@ struct sww_worker {
     pthread_t thread;pthread_mutex_t lock;pthread_cond_t changed;nx_sim_channel *channel;
     int wake[2],ready,initial_error,stop,joined,failed;size_t hints;
     sw_manifest_source *sources;size_t source_count;
+    struct ae_execution_profile *profiles;size_t profile_count;
 };
 static void free_job(void *unused,void *p,size_t n){(void)unused;(void)n;free(p);}
-static void free_reply(void *unused,void *p,size_t n){(void)unused;(void)n;sww_reply *r=p;if(r){sw_components_free(&r->components);sw_result_free(&r->result);free(r);}}
-static void free_sources(sww_worker *w){for(size_t i=0;i<w->source_count;++i)free((void *)w->sources[i].path);free(w->sources);}
+static void free_reply(void *unused,void *p,size_t n){(void)unused;(void)n;sww_reply *r=p;if(r){swh_free(&r->history);sw_components_free(&r->components);sw_result_free(&r->result);free(r);}}
+static void free_sources(sww_worker *w){for(size_t i=0;i<w->source_count;++i)free((void *)w->sources[i].path);free(w->sources);free(w->profiles);}
 static void failed(sww_worker *w){pthread_mutex_lock(&w->lock);w->failed=1;pthread_mutex_unlock(&w->lock);}
 static void *run(void *p){
     sww_worker *w=p;struct ae_catalogue *catalogue=NULL;
@@ -43,6 +44,7 @@ static void *run(void *p){
                 reply->key=job->key;
                 reply->original_error=stopping?-ECANCELED:sw_read(catalogue,&job->scope,job->targets,job->count,&reply->result);
                 if(!reply->original_error&&w->source_count)reply->components_status=sw_components_read(reply->result,w->sources,w->source_count,&reply->components);
+                if(!reply->original_error&&w->profile_count)reply->history_error=swh_read(catalogue,reply->result,w->profiles,w->profile_count,&reply->history);
             }
         }
         uint64_t ticket=message.ticket;nx_sim_message_dispose(&message);
@@ -59,15 +61,23 @@ nx_result sww_start(const char *path,const struct ae_catalogue_identity *identit
     return sww_start_with_manifests(path,identity,NULL,0,out,context,original_error);
 }
 nx_result sww_start_with_manifests(const char *path,const struct ae_catalogue_identity *identity,const sw_manifest_source *sources,size_t count,sww_worker **out,struct ae_catalogue_info *context,int *original_error){
+    sww_metadata metadata={sources,count,NULL,0};return sww_start_with_metadata(path,identity,&metadata,out,context,original_error);
+}
+nx_result sww_start_with_metadata(const char *path,const struct ae_catalogue_identity *identity,const sww_metadata *metadata,sww_worker **out,struct ae_catalogue_info *context,int *original_error){
     if(!out||*out||!context||!original_error)return NX_ERROR_ARGUMENT;
     *original_error=0;
+    if(!metadata||(metadata->profile_count&&!metadata->profiles))return NX_ERROR_ARGUMENT;
+    const sw_manifest_source *sources=metadata->manifests;size_t count=metadata->manifest_count,n=metadata->profile_count;
     if(!path||!identity||identity->kind!=AE_CATALOGUE_SYSTEM||path[0]!='/'||strlen(path)>=PATH_MAX||(count&&!sources))return NX_ERROR_ARGUMENT;
-    if(count>SW_MAX_TARGETS||count>SIZE_MAX/sizeof(*sources))return NX_ERROR_LIMIT;
+    if(count>SW_MAX_TARGETS||count>SIZE_MAX/sizeof(*sources)||n>SWH_MAX_PROFILES)return NX_ERROR_LIMIT;
     for(size_t i=0;i<count;++i)if(!sources[i].path||sources[i].path[0]!='/'||strlen(sources[i].path)>=PATH_MAX||
         (sources[i].install.bytes[6]&0xf0)!=0x40||(sources[i].install.bytes[8]&0xc0)!=0x80)return NX_ERROR_ARGUMENT;
+    for(size_t i=0;i<n;++i){uint8_t raw[AE_EXECUTION_BYTES];if(ae_execution_encode(&metadata->profiles[i],raw))return NX_ERROR_ARGUMENT;
+        for(size_t j=0;j<i;++j)if(!memcmp(metadata->profiles[i].launch,metadata->profiles[j].launch,16))return NX_ERROR_ARGUMENT;}
     sww_worker *w=calloc(1,sizeof(*w));if(!w)return NX_ERROR_MEMORY;
     strcpy(w->path,path);w->identity=*identity;w->wake[0]=w->wake[1]=-1;
     int mutex=0,cond=0,started=0;nx_result r=NX_ERROR_MEMORY;
+    if(n){w->profiles=calloc(n,sizeof(*w->profiles));if(!w->profiles)goto fail;memcpy(w->profiles,metadata->profiles,n*sizeof(*w->profiles));w->profile_count=n;}
     if(count){w->sources=calloc(count,sizeof(*w->sources));if(!w->sources)goto fail;w->source_count=count;
         for(size_t i=0;i<count;++i){w->sources[i].install=sources[i].install;w->sources[i].path=strdup(sources[i].path);if(!w->sources[i].path)goto fail;}}
     r=NX_ERROR_PLATFORM;
@@ -115,13 +125,18 @@ sww_reply *sww_reply_get(const nx_sim_message *message){
     if(!message||!message->ticket||message->status!=NX_OK||message->bytes!=sizeof(sww_reply)||!message->data)return NULL;
     sww_reply *r=message->data;
     return r->key.view&&r->key.request&&r->original_error<=0&&((r->original_error==0)==(r->result!=NULL))&&
-        (!r->original_error||(!r->components&&r->components_status==NX_OK))&&
-        (r->components_status==NX_OK||!r->components)?r:NULL;
+        (!r->original_error||(!r->components&&r->components_status==NX_OK&&!r->history&&!r->history_error))&&
+        (r->components_status==NX_OK||!r->components)&&r->history_error<=0&&(!r->history_error||!r->history)?r:NULL;
 }
 nx_result sww_reply_take(sww_reply *reply,sw_result **out){
     if(!out||*out)return NX_ERROR_ARGUMENT;
     if(!reply||reply->original_error||!reply->result)return NX_ERROR_STATE;
     *out=reply->result;reply->result=NULL;return NX_OK;
+}
+nx_result sww_reply_take_history(sww_reply *reply,swh_batch **out){
+    if(!out||*out)return NX_ERROR_ARGUMENT;
+    if(!reply||reply->original_error||reply->history_error||!reply->history)return NX_ERROR_STATE;
+    *out=reply->history;reply->history=NULL;return NX_OK;
 }
 nx_result sww_stop(sww_worker *w){if(!w)return NX_ERROR_ARGUMENT;pthread_mutex_lock(&w->lock);w->stop=1;pthread_cond_signal(&w->changed);pthread_mutex_unlock(&w->lock);return NX_OK;}
 nx_result sww_join(sww_worker *w){

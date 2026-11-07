@@ -6,17 +6,19 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-enum { ROW_BUDGET=192,BODY_PARAGRAPHS=256,CONTENT_ROWS=2+AE_FIXTURE_FILES+AE_FIXTURE_ACTIONS };
+enum { ROW_BUDGET=192,BODY_PARAGRAPHS=256,CONTENT_ROWS=SWH_MAX_PROFILES };
+_Static_assert(CONTENT_ROWS>=2+AE_FIXTURE_FILES+AE_FIXTURE_ACTIONS,"manifest cache capacity");
 typedef struct row_cache {size_t index;char text[256];nx_text_layout *layout;float height;} row_cache;
 typedef struct paragraph_cache {nx_text_layout *layout;float y,height;} paragraph_cache;
 typedef struct content_cache {uint64_t id,parent;char name[257];nx_text_layout *layout;float height;} content_cache;
 struct swg_view {
     sw_owner *owner;sw_snapshot *snapshot;nx_font_collection *fonts;nx_window *window;
     const sw_components *components;nx_result components_status;
+    const swh_batch *history;int history_error;
     nx_context *ctx;nx_text_field *query;nx_virtual_list *index;size_t *matches,count;
     swg_style style;swg_mode mode;sw_id detail;
     uint64_t epoch,restore,resume_focus;sw_state state;int error;
-    char filter[129],status[192],body[8192];nx_text_layout *status_layout,*body_layout,*buttons[3];
+    char filter[129],status[192],body[8192];nx_text_layout *status_layout,*body_layout,*buttons[4];
     row_cache rows[ROW_BUDGET];size_t cached,measured;double cache_width;
     paragraph_cache paragraphs[BODY_PARAGRAPHS];size_t paragraph_count;float body_height;
     content_cache contents[CONTENT_ROWS];size_t content_count;uint64_t item,tree_selection,tree_focus;
@@ -35,7 +37,7 @@ static void clear_rows(swg_view *v){for(size_t i=0;i<v->cached;++i)nx_text_layou
 static void clear_paragraphs(swg_view *v){for(size_t i=0;i<v->paragraph_count;++i)nx_text_layout_destroy(v->paragraphs[i].layout);v->paragraph_count=0;v->body_height=0;}
 static void clear_layouts(swg_view *v){
     clear_rows(v);clear_paragraphs(v);nx_text_layout_destroy(v->status_layout);v->status_layout=NULL;nx_text_layout_destroy(v->body_layout);v->body_layout=NULL;
-    for(unsigned i=0;i<3;++i){nx_text_layout_destroy(v->buttons[i]);v->buttons[i]=NULL;}
+    for(unsigned i=0;i<4;++i){nx_text_layout_destroy(v->buttons[i]);v->buttons[i]=NULL;}
     for(size_t i=0;i<v->content_count;++i)nx_text_layout_destroy(v->contents[i].layout);
     v->content_count=0;v->tree_focus=0;v->cache_width=0;
 }
@@ -43,6 +45,11 @@ static const amh_document *manifest(const swg_view *v){
     const amh_document *d=NULL;
     return v->components_status==NX_OK&&sw_components_get(v->components,v->snapshot,v->detail,&d)==NX_OK?d:NULL;
 }
+static nx_result histories(const swg_view *v,const swh_record **records,size_t *count){
+    if(v->history_error)return NX_ERROR_STATE;
+    return swh_get(v->history,v->snapshot,v->detail,records,count);
+}
+static int have_history(const swg_view *v){const swh_record *records=NULL;size_t count=0;return histories(v,&records,&count)==NX_OK&&count;}
 static nx_result context(swg_view *v,nx_context **out){
     nx_result r=nx_context_create(NULL,out);nx_theme theme;
     if(r==NX_OK)r=nx_theme_preset(v->style.theme,&theme);
@@ -103,13 +110,18 @@ nx_result swg_set_raster_scale(swg_view *v,float scale){
     nx_result r=nx_context_set_text_raster_scale(v->ctx,scale);if(r==NX_OK)v->style.raster_scale=scale;return r;
 }
 nx_result swg_set_components(swg_view *v,const sw_components *components,nx_result status_value){
-    if(!v||(components&&status_value!=NX_OK))return NX_ERROR_ARGUMENT;
-    if(v->components==components&&v->components_status==status_value)return NX_OK;
+    return v?swg_set_metadata(v,components,status_value,v->history,v->history_error):NX_ERROR_ARGUMENT;
+}
+nx_result swg_set_metadata(swg_view *v,const sw_components *components,nx_result status_value,const swh_batch *history,int history_error){
+    if(!v||(components&&status_value!=NX_OK)||history_error>0||(history&&history_error))return NX_ERROR_ARGUMENT;
+    if(v->components==components&&v->components_status==status_value&&v->history==history&&v->history_error==history_error)return NX_OK;
     uint64_t focus=nx_focus_id(v->ctx);nx_context *next=NULL;nx_result r=context(v,&next);
     if(r==NX_OK)r=retire(v,next);
     if(r!=NX_OK){nx_context_destroy(next);return r;}
     v->components=components;v->components_status=status_value;
-    if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION){v->mode=SWG_DETAIL;focus=SWG_BACK;v->body_scroll=0;v->item=0;v->tree_selection=0;}
+    v->history=history;v->history_error=history_error;
+    if(v->mode==SWG_DETAIL&&(focus==SWG_CONTENTS_BUTTON||focus==SWG_HISTORY_BUTTON))focus=SWG_BACK;
+    if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL){v->mode=SWG_DETAIL;focus=SWG_BACK;v->body_scroll=0;v->item=0;v->tree_selection=0;}
     v->restore=focus?focus:v->mode==SWG_FILTER?SWG_QUERY:v->mode==SWG_DETAIL?SWG_BACK:SWG_FILTER_BUTTON;return NX_OK;
 }
 nx_result swg_sync(swg_view *v){
@@ -127,7 +139,7 @@ nx_result swg_sync(swg_view *v){
         if(r!=NX_OK){nx_context_destroy(next);nx_virtual_list_destroy(index);free(matches);sw_snapshot_release(&s);return r;}
         sw_snapshot_release(&v->snapshot);nx_virtual_list_destroy(v->index);free(v->matches);
         v->snapshot=s;v->matches=matches;v->count=count;v->index=index;v->epoch=epoch;v->scroll=0;
-        if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION){v->mode=SWG_DETAIL;v->body_scroll=0;v->item=0;v->tree_selection=0;}
+        if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL){v->mode=SWG_DETAIL;v->body_scroll=0;v->item=0;v->tree_selection=0;}
         if(v->mode==SWG_DETAIL&&sw_snapshot_find(s,v->detail)==SIZE_MAX)v->mode=SWG_LIST;
         v->restore=v->mode==SWG_FILTER?SWG_QUERY:v->mode==SWG_DETAIL?SWG_BACK:SWG_FILTER_BUTTON;
         if(v->mode==SWG_LIST){
@@ -160,9 +172,9 @@ nx_result swg_queue_event(swg_view *v,const nx_event *e){
     if(!v||!e)return NX_ERROR_ARGUMENT;
     if(e->type==NX_EVENT_KEY_DOWN&&!e->modifiers){
         if(e->key==NX_KEY_ESCAPE){v->escape=1;return NX_OK;}
-        if((v->mode==SWG_DETAIL||v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION)&&(e->key==NX_KEY_PAGE_DOWN||e->key==NX_KEY_PAGE_UP)){
+        if((v->mode==SWG_DETAIL||v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL)&&(e->key==NX_KEY_PAGE_DOWN||e->key==NX_KEY_PAGE_UP)){
             v->body_scroll+=v->viewport_height*.5f*(e->key==NX_KEY_PAGE_DOWN?1.f:-1.f);if(v->body_scroll<0)v->body_scroll=0;return NX_OK;}
-        if(v->mode==SWG_CONTENTS&&v->content_count){
+        if((v->mode==SWG_CONTENTS||v->mode==SWG_HISTORY)&&v->content_count){
             uint64_t focused=nx_focus_id(v->ctx),wanted=0;size_t at=SIZE_MAX;
             for(size_t i=0;i<v->content_count;++i)if(v->contents[i].id==focused)at=i;
             if(e->key==NX_KEY_HOME)wanted=v->contents[0].id;
@@ -288,6 +300,41 @@ static nx_result append(swg_view *v,const char *format,...){
     int n=vsnprintf(v->body+used,sizeof v->body-used,format,args);va_end(args);
     return n<0||(size_t)n>=sizeof v->body-used?NX_ERROR_LIMIT:NX_OK;
 }
+static nx_result history_summary(swg_view *v){
+    const swh_record *records=NULL;size_t count=0;nx_result r=histories(v,&records,&count);
+    if(r!=NX_OK)return append(v,word(v,"\n\nHistorical process observations unavailable (%d). Current process/resource/ownership state: unknown.","\n\nHistorische Prozessbeobachtungen nicht verfügbar (%d). Aktueller Prozess-/Ressourcen-/Besitzstatus: unbekannt."),v->history_error?v->history_error:(int)r);
+    if(!count)return append(v,"%s",word(v,"\n\nNo historical profiles selected for this installation. This is not an empty process inventory. Current process/resource/ownership state: unknown.","\n\nKeine historischen Profile für diese Installation ausgewählt. Dies ist kein leeres Prozessinventar. Aktueller Prozess-/Ressourcen-/Besitzstatus: unbekannt."));
+    return append(v,word(v,"\n\nSelected historical profiles: %zu. Enrollment metadata only; not current processes. Current process/resource/ownership state: unknown.","\n\nAusgewählte historische Profile: %zu. Nur registrierte Metadaten; keine aktuellen Prozesse. Aktueller Prozess-/Ressourcen-/Besitzstatus: unbekannt."),count);
+}
+static nx_result history_process(swg_view *v,const char *name,int error,const struct ae_execution_process_snapshot *snapshot){
+    if(error)return append(v,word(v,"\nHistorical %s: unavailable (%d). Current process state remains unknown.\n","\nHistorisch %s: nicht verfügbar (%d). Aktueller Prozesszustand bleibt unbekannt.\n"),name,error);
+    const struct ae_execution_process *p=&snapshot->process;char boot[33],invocation[33],evidence[65],profile[65];
+    hex_text(p->boot,16,boot);hex_text(p->invocation,16,invocation);hex_text(p->evidence_digest,32,evidence);hex_text(p->profile_digest,32,profile);
+    return append(v,word(v,
+        "\nHistorical %s enrollment\nRecorded Unix ms: %" PRId64 "\nRecorded PID: %" PRIu32 "\nRecorded UID: %" PRIu32 "\nRecorded pidfs ID: %" PRIu64 "\nRecorded cgroup ID: %" PRIu64 "\nRecorded unit: %s\nRecorded label: %s\nRecorded cgroup: %s\nRecorded boot: %s\nRecorded invocation: %s\nRecorded evidence SHA-256: %s\nRecorded profile SHA-256: %s\n",
+        "\nHistorische Registrierung %s\nAufgezeichnete Unix-ms: %" PRId64 "\nAufgezeichnete PID: %" PRIu32 "\nAufgezeichnete UID: %" PRIu32 "\nAufgezeichnete pidfs-ID: %" PRIu64 "\nAufgezeichnete cgroup-ID: %" PRIu64 "\nAufgezeichnete Unit: %s\nAufgezeichnetes Label: %s\nAufgezeichnete cgroup: %s\nAufgezeichneter Boot: %s\nAufgezeichnete Invocation: %s\nAufgezeichneter Nachweis-SHA-256: %s\nAufgezeichneter Profil-SHA-256: %s\n"),
+        name,snapshot->recorded_unix_ms,p->pid,p->uid,p->pidfd_id,p->cgroup_id,p->unit,p->label,p->cgroup,boot,invocation,evidence,profile);
+}
+static nx_result history_body(swg_view *v){
+    const swh_record *records=NULL;size_t count=0;nx_result r=histories(v,&records,&count);
+    if(r!=NX_OK||v->item<SWG_HISTORY_ROWS||v->item-SWG_HISTORY_ROWS>=count)return NX_ERROR_STATE;
+    const swh_record *record=&records[v->item-SWG_HISTORY_ROWS];const struct ae_execution_profile *p=&record->profile;
+    char install[33],generation[33],artifact[65],digest[65];hex_text(v->detail.bytes,16,install);hex_text(record->observed.value.generation,16,generation);hex_text(record->observed.value.artifact,32,artifact);hex_text(record->digest,32,digest);v->body[0]=0;
+    r=append(v,word(v,
+        "Historical enrollment metadata only. Current process, image, resources, ownership and permission state: unknown. No process is opened, started or stopped.\n\nSelected installation: %s\nCurrent observed generation: %s\nCurrent observed artifact: %s\nCurrent catalogue revision: %" PRId64 "\nHistorical profile SHA-256: %s\n\n",
+        "Nur historische Registrierungsmetadaten. Aktueller Prozess-, Image-, Ressourcen-, Besitz- und Berechtigungsstatus: unbekannt. Kein Prozess wird geöffnet, gestartet oder gestoppt.\n\nAusgewählte Installation: %s\nAktuell beobachtete Generation: %s\nAktuell beobachtetes Artefakt: %s\nAktuelle Katalogrevision: %" PRId64 "\nHistorischer Profil-SHA-256: %s\n\n"),install,generation,artifact,record->observed.value.catalogue_revision,digest);
+    const uint8_t *ids[]={p->system_epoch,p->system_runtime,p->broker_epoch,p->broker_runtime,p->boot,p->account,p->install,p->generation,p->data,p->storage,p->launch,p->lease,p->root_operation,p->user_operation};
+    const char *en[]={"Root epoch","Root runtime","Broker epoch","Broker runtime","Boot","Account","Install","Generation","Data","Storage","Launch","Lease","Root operation","User operation"};
+    const char *de[]={"Root-Epoche","Root-Runtime","Broker-Epoche","Broker-Runtime","Boot","Konto","Installation","Generation","Daten","Speicher","Launch","Lease","Root-Operation","User-Operation"};
+    for(size_t i=0;i<14&&r==NX_OK;++i){char text[33];hex_text(ids[i],16,text);r=append(v,"%s %s: %s\n",word(v,"Historical","Historisch"),word(v,en[i],de[i]),text);}
+    if(r==NX_OK)r=append(v,word(v,"Historical install revision: %" PRId64 "\nHistorical install gate revision: %" PRId64 "\nHistorical data gate revision: %" PRId64 "\n","Historische Installationsrevision: %" PRId64 "\nHistorische Installationssperrrevision: %" PRId64 "\nHistorische Datensperrrevision: %" PRId64 "\n"),p->install_revision,p->install_gate_revision,p->data_gate_revision);
+    const uint8_t *hashes[]={p->artifact,p->starter_digest,p->request_digest,p->allocation_digest};
+    const char *hash_en[]={"Artifact","Starter","Request","Allocation"},*hash_de[]={"Artefakt","Starter","Anfrage","Allokation"};
+    for(size_t i=0;i<4&&r==NX_OK;++i){char text[65];hex_text(hashes[i],32,text);r=append(v,"%s %s SHA-256: %s\n",word(v,"Historical","Historisch"),word(v,hash_en[i],hash_de[i]),text);}
+    if(r==NX_OK)r=history_process(v,"Starter",record->starter_error,&record->starter);
+    if(r==NX_OK)r=history_process(v,"App",record->app_error,&record->app);
+    return r;
+}
 static nx_result declaration_body(swg_view *v){
     const amh_document *document=manifest(v);if(!document)return NX_ERROR_STATE;
     const struct ae_fixture *d=amh_document_data(document);uint32_t file=0;int is_action=0;
@@ -313,10 +360,17 @@ static nx_result content_row(swg_view *v,uint64_t id,uint64_t parent,const char 
     if(v->content_count==CONTENT_ROWS||n>256)return NX_ERROR_LIMIT;
     content_cache *c=&v->contents[v->content_count];*c=(content_cache){.id=id,.parent=parent};
     /* Reserve the expander/indent, scrollbar and both label insets. */
-    memcpy(c->name,s,n);c->name[n]=0;nx_result r=layout(v,c->name,width-(parent==SWG_SCROLL?52:68),&c->layout);
+    memcpy(c->name,s,n);c->name[n]=0;nx_result r=layout(v,c->name,width-((id==SWG_FILES||id==SWG_ACTIONS)?52:68),&c->layout);
     if(r==NX_OK){c->height=fmaxf(v->style.text_size+16,(float)nx_text_layout_height(c->layout)+16);++v->content_count;}return r;
 }
 static nx_result content_layout(swg_view *v,double width){
+    if(v->mode==SWG_HISTORY){
+        const swh_record *records=NULL;size_t count=0;nx_result r=histories(v,&records,&count);if(r!=NX_OK||!count)return NX_ERROR_STATE;
+        for(size_t i=0;i<count&&r==NX_OK;++i){char launch[33],digest[65],name[257];hex_text(records[i].profile.launch,16,launch);hex_text(records[i].digest,32,digest);
+            int n=snprintf(name,sizeof name,"%s\n%s\n%s",word(v,"Historical launch","Historischer Launch"),launch,digest);
+            r=n<0||(size_t)n>=sizeof name?NX_ERROR_LIMIT:content_row(v,SWG_HISTORY_ROWS+i,SWG_SCROLL,name,(size_t)n,width);}
+        if(r!=NX_OK){for(size_t i=0;i<v->content_count;++i)nx_text_layout_destroy(v->contents[i].layout);v->content_count=0;}return r;
+    }
     const amh_document *document=manifest(v);if(!document)return NX_ERROR_STATE;
     const struct ae_fixture *d=amh_document_data(document);nx_result r=NX_OK;
     char name[80];snprintf(name,sizeof name,word(v,"Declared files (%" PRIu32 ")","Deklarierte Dateien (%" PRIu32 ")"),d->file_count);r=content_row(v,SWG_FILES,SWG_SCROLL,name,strlen(name),width);
@@ -334,10 +388,10 @@ static nx_result content_tree(swg_view *v,nx_rect bounds,int *transition){
         if(target<v->body_scroll||target_height>bounds.height)v->body_scroll=target;
         else if(target+target_height>v->body_scroll+bounds.height)v->body_scroll=target+target_height-bounds.height;
     }
-    v->tree_focus=focused;nx_container_desc tree={0};tree.id=SWG_CONTENT_TREE;tree.parent_id=SWG_ROOT;tree.bounds=bounds;tree.name=sp(word(v,"Declared manifest contents","Deklarierter Manifestinhalt"));
+    v->tree_focus=focused;nx_container_desc tree={0};tree.id=v->mode==SWG_HISTORY?SWG_HISTORY_TREE:SWG_CONTENT_TREE;tree.parent_id=SWG_ROOT;tree.bounds=bounds;tree.name=sp(v->mode==SWG_HISTORY?word(v,"Historical enrollment profiles","Historische Registrierungsprofile"):word(v,"Declared manifest contents","Deklarierter Manifestinhalt"));
     if(r==NX_OK)r=nx_tree(v->ctx,&tree);
-    nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=SWG_CONTENT_TREE;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;
-    area.name=sp(word(v,"Manifest entries","Manifesteinträge"));area.viewport=bounds;area.content_size=(nx_size){bounds.width,total};area.wheel_step=v->style.text_size*3;
+    nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=tree.id;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;
+    area.name=sp(v->mode==SWG_HISTORY?word(v,"Historical profile entries","Historische Profileinträge"):word(v,"Manifest entries","Manifesteinträge"));area.viewport=bounds;area.content_size=(nx_size){bounds.width,total};area.wheel_step=v->style.text_size*3;
     float x=0;nx_scroll_info info;if(r==NX_OK)r=nx_scroll_area_begin(v->ctx,&area,&x,&v->body_scroll,&info);
     float y=bounds.y-v->body_scroll;int changed=0;
     for(size_t i=0;i<v->content_count&&r==NX_OK;++i){content_cache *c=&v->contents[i];int *expanded=c->id==SWG_FILES?&v->files_expanded:c->id==SWG_ACTIONS?&v->actions_expanded:NULL;int before=expanded?*expanded:0;
@@ -373,7 +427,7 @@ static nx_result detail_layout(swg_view *v,double width){
 }
 static nx_result frame_once(swg_view *v,float width,float height,swg_intent *intent,int *transition){
     uint64_t focus_before=nx_focus_id(v->ctx);
-    const char *labels[3];uint64_t ids[3];size_t buttons=0;int clicked[3]={0};float top=12,button_height=0;nx_result r=NX_OK;
+    const char *labels[4];uint64_t ids[4];size_t buttons=0;int clicked[4]={0};float top=12,button_height=0;nx_result r=NX_OK;
     int apply_valid=1;size_t active_preedit=0;
     if(v->mode==SWG_FILTER){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)apply_valid=valid_query(query,NULL);
         if(v->window&&r==NX_OK){int32_t start=0,end=0;nx_result ime=nx_window_get_ime_preedit(v->window,NULL,0,&active_preedit,&start,&end);if(ime!=NX_OK&&ime!=NX_ERROR_UNSUPPORTED)r=ime;}}
@@ -382,7 +436,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     if(v->compact){labels[0]="X";ids[0]=SWG_CLOSE;buttons=1;}
     else if(v->mode==SWG_LIST){labels[0]=word(v,"Filter","Filter");ids[0]=SWG_FILTER_BUTTON;labels[1]=word(v,"Read","Lesen");ids[1]=SWG_REFRESH;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else if(v->mode==SWG_FILTER){labels[0]=word(v,"Apply","Anwenden");ids[0]=SWG_APPLY;labels[1]=word(v,"Back","Zurück");ids[1]=SWG_BACK;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
-    else if(v->mode==SWG_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Contents","Inhalt");ids[1]=SWG_CONTENTS_BUTTON;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
+    else if(v->mode==SWG_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Contents","Inhalt");ids[1]=SWG_CONTENTS_BUTTON;labels[2]=word(v,"History","Historie");ids[2]=SWG_HISTORY_BUTTON;labels[3]=word(v,"Close","Schließen");ids[3]=SWG_CLOSE;buttons=4;}
     else {labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Close","Schließen");ids[1]=SWG_CLOSE;buttons=2;}
     float margin=v->compact?4:12,gap=8,cell=(width-margin*2-gap*(float)(buttons-1))/(float)buttons;
     if(v->cache_width!=width){clear_layouts(v);v->cache_width=width;}
@@ -410,6 +464,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     r=nx_semantics_add(v->ctx,&root,NULL);
     for(size_t i=0;i<buttons&&r==NX_OK;++i){int disabled=(ids[i]==SWG_REFRESH&&v->state==SW_READING)||(ids[i]==SWG_APPLY&&(!apply_valid||active_preedit));
         disabled=disabled||(ids[i]==SWG_CONTENTS_BUTTON&&!manifest(v));
+        disabled=disabled||(ids[i]==SWG_HISTORY_BUTTON&&!have_history(v));
         r=button(v,ids[i],(nx_rect){margin+(cell+gap)*(float)i,margin,cell,button_height},ids[i]==SWG_CLOSE?word(v,"Close","Schließen"):labels[i],v->buttons[i],disabled,&clicked[i]);}
     if(v->compact){
         if(r==NX_OK)r=text(v,SWG_STATUS,SWG_ROOT,(nx_rect){4,button_height+8,width-8,fmaxf(0,height-button_height-12)},word(v,"Enlarge the window to inspect targets","Fenster zum Prüfen der Ziele vergrößern"),v->status,NULL,0);
@@ -452,13 +507,13 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
             if(r==NX_OK)r=nx_scroll_area_begin(v->ctx,&hint,&x,&v->body_scroll,&info);
             if(r==NX_OK)r=text(v,SWG_STATUS,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,hint.content_size.height},help,help,v->body_layout,valid?0:NX_SEM_INVALID);
             if(r==NX_OK)r=nx_scroll_area_end(v->ctx);
-        }else if(v->mode==SWG_CONTENTS){
+        }else if(v->mode==SWG_CONTENTS||v->mode==SWG_HISTORY){
             if(r==NX_OK)r=content_tree(v,(nx_rect){12,y,width-24,available},transition);
         }else{
-            if(!v->paragraph_count){if(v->mode==SWG_DECLARATION)r=declaration_body(v);else{detail_body(v);if(r==NX_OK)r=component_details(v);}if(r==NX_OK)r=detail_layout(v,width-44);}
+            if(!v->paragraph_count){if(v->mode==SWG_DECLARATION)r=declaration_body(v);else if(v->mode==SWG_HISTORY_DETAIL)r=history_body(v);else{detail_body(v);if(r==NX_OK)r=component_details(v);if(r==NX_OK)r=history_summary(v);}if(r==NX_OK)r=detail_layout(v,width-44);}
             nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=SWG_ROOT;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;area.name=sp(word(v,"App observation details","App-Beobachtungsdetails"));area.viewport=(nx_rect){12,y,width-24,available};area.content_size=(nx_size){width-24,v->body_height+16};
             float x=0;nx_scroll_info info;if(r==NX_OK)r=nx_scroll_area_begin(v->ctx,&area,&x,&v->body_scroll,&info);
-            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},v->mode==SWG_DECLARATION?word(v,"Declared entry details","Details des deklarierten Eintrags"):word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,NULL,0);
+            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},v->mode==SWG_DECLARATION?word(v,"Declared entry details","Details des deklarierten Eintrags"):v->mode==SWG_HISTORY_DETAIL?word(v,"Historical enrollment details","Historische Registrierungsdetails"):word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,NULL,0);
             nx_color color;if(r==NX_OK)r=nx_theme_color(v->ctx,NX_COLOR_TEXT,&color);
             for(size_t i=0;i<v->paragraph_count&&r==NX_OK;++i){const paragraph_cache *p=&v->paragraphs[i];float py=info.viewport.y-v->body_scroll+p->y;
                 if(py+p->height>info.viewport.y&&py<info.viewport.y+info.viewport.height)r=nx_draw_text_layout(v->ctx,p->layout,(nx_point){info.viewport.x+4,py},color,1024*1024);}
@@ -475,7 +530,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     /* The pointer-only window grip must not discard the content's key focus. */
     if(intent->resize&&!v->restore)v->restore=focus_before;
     if(v->restore){uint32_t node;if(nx_semantics_find(v->ctx,v->restore,&node)==NX_OK){r=nx_focus_set(v->ctx,v->restore);if(r!=NX_OK)return r;v->restore=0;v->again=1;}}
-    for(size_t i=0;i<buttons;++i)if(clicked[i]){if(ids[i]==SWG_CLOSE)intent->close=1;else if(ids[i]==SWG_REFRESH)intent->refresh=1;else if(ids[i]==SWG_FILTER_BUTTON)*transition=1;else if(ids[i]==SWG_BACK)*transition=4;else if(ids[i]==SWG_CONTENTS_BUTTON)*transition=5;}
+    for(size_t i=0;i<buttons;++i)if(clicked[i]){if(ids[i]==SWG_CLOSE)intent->close=1;else if(ids[i]==SWG_REFRESH)intent->refresh=1;else if(ids[i]==SWG_FILTER_BUTTON)*transition=1;else if(ids[i]==SWG_BACK)*transition=4;else if(ids[i]==SWG_CONTENTS_BUTTON)*transition=5;else if(ids[i]==SWG_HISTORY_BUTTON)*transition=7;}
     if(v->escape){v->escape=0;if(v->mode!=SWG_LIST)*transition=4;else intent->close=1;}return NX_OK;
 }
 nx_result swg_frame(swg_view *v,float width,float height,swg_intent *out){
@@ -494,7 +549,10 @@ nx_result swg_frame(swg_view *v,float width,float height,swg_intent *out){
             else if(transition==2){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)r=swg_filter(v,query);}
             else if(transition==3){if(v->epoch!=sw_owner_epoch(v->owner))return NX_ERROR_STATE;r=sw_owner_select(v->owner,v->detail);if(r==NX_OK)r=mode(v,SWG_DETAIL,SWG_BACK);}
             else if(transition==5){if(!manifest(v))return NX_ERROR_STATE;r=mode(v,SWG_CONTENTS,SWG_FILES);if(r==NX_OK){v->files_expanded=1;v->actions_expanded=1;v->tree_selection=0;v->item=0;}}
-            else if(transition==6)r=mode(v,SWG_DECLARATION,SWG_BACK);
+            else if(transition==6)r=mode(v,v->mode==SWG_HISTORY?SWG_HISTORY_DETAIL:SWG_DECLARATION,SWG_BACK);
+            else if(transition==7){if(!have_history(v))return NX_ERROR_STATE;r=mode(v,SWG_HISTORY,SWG_HISTORY_ROWS);if(r==NX_OK){v->tree_selection=0;v->item=0;}}
+            else if(v->mode==SWG_HISTORY_DETAIL)r=mode(v,SWG_HISTORY,v->item);
+            else if(v->mode==SWG_HISTORY)r=mode(v,SWG_DETAIL,SWG_HISTORY_BUTTON);
             else if(v->mode==SWG_DECLARATION)r=mode(v,SWG_CONTENTS,v->item);
             else if(v->mode==SWG_CONTENTS)r=mode(v,SWG_DETAIL,SWG_CONTENTS_BUTTON);
             else {uint64_t restore=SWG_FILTER_BUTTON;if(v->mode==SWG_DETAIL){size_t i=sw_snapshot_find(v->snapshot,v->detail);if(i!=SIZE_MAX&&focused_index(v,SWG_ROWS+i)!=SIZE_MAX)restore=SWG_ROWS+i;}r=mode(v,SWG_LIST,restore);}

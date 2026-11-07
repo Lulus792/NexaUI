@@ -10,10 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 #define REQUIRE(x) do{if(!(x)){fprintf(stderr,"software native %d: %s\n",__LINE__,#x);okay=0;goto cleanup;}}while(0)
-static int parse_id(const char *s,uint8_t out[16]){
-    if(strlen(s)!=32||strspn(s,"0123456789abcdefABCDEF")!=32)return 0;
-    for(size_t i=0;i<16;++i){char pair[3]={s[2*i],s[2*i+1],0},*end;unsigned long n=strtoul(pair,&end,16);if(*end||n>255)return 0;out[i]=(uint8_t)n;}return 1;
+static int parse_hex(const char *s,size_t bytes,uint8_t *out){
+    if(strlen(s)!=bytes*2||strspn(s,"0123456789abcdefABCDEF")!=bytes*2)return 0;
+    for(size_t i=0;i<bytes;++i){char pair[3]={s[2*i],s[2*i+1],0},*end;unsigned long n=strtoul(pair,&end,16);if(*end||n>255)return 0;out[i]=(uint8_t)n;}return 1;
 }
+static int parse_id(const char *s,uint8_t out[16]){return parse_hex(s,16,out);}
 static int request(sww_worker *worker,sw_owner *owner,const sw_scope *scope,const sw_id *targets,size_t count,uint64_t *sequence,sww_key *current){
     if(*sequence==UINT64_MAX)return 0;
     sww_key key={1,*sequence+1};uint64_t ticket=0;nx_result r=sww_submit(worker,key,scope,targets,count,&ticket);
@@ -23,7 +24,7 @@ static int request(sww_worker *worker,sw_owner *owner,const sw_scope *scope,cons
 int main(int argc,char **argv){
     int okay=1,done=0,dirty=1;sww_worker *worker=NULL;sw_owner *owner=NULL;swg_view *view=NULL;
     nx_window *window=NULL;nx_software_view *renderer=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
-    sw_components *components=NULL;sw_manifest_source *sources=NULL;
+    sw_components *components=NULL;sw_manifest_source *sources=NULL;swh_batch *history=NULL;struct ae_execution_profile *profiles=NULL;
     sw_id *targets=NULL;unsigned char *font_bytes=NULL;FILE *file=NULL;uint64_t sequence=0,frames=0,polls=0,keys=0,adopted=0,ignored=0;sww_key current={0};nx_sim_message message={0};
     setvbuf(stdout,NULL,_IONBF,0);
     REQUIRE(argc>=6);struct ae_catalogue_identity identity={.kind=AE_CATALOGUE_SYSTEM};
@@ -31,13 +32,20 @@ int main(int argc,char **argv){
     REQUIRE(parse_id(argv[4],scope.account));
     REQUIRE(*argv[5]&&strspn(argv[5],"0123456789")==strlen(argv[5]));errno=0;char *uid_end=NULL;uintmax_t uid=strtoumax(argv[5],&uid_end,10);
     REQUIRE(!errno&&uid_end&&!*uid_end&&uid<UINT32_MAX);scope.os_uid=(uint32_t)uid;
-    int manifest_at=6;while(manifest_at<argc&&strcmp(argv[manifest_at],"--manifest"))++manifest_at;
-    size_t count=(size_t)(manifest_at-6);REQUIRE(count<=SW_MAX_TARGETS);targets=count?calloc(count,sizeof(*targets)):NULL;REQUIRE(!count||targets);
+    int options_at=6;while(options_at<argc&&strcmp(argv[options_at],"--manifest")&&strcmp(argv[options_at],"--history"))++options_at;
+    size_t count=(size_t)(options_at-6);REQUIRE(count<=SW_MAX_TARGETS);targets=count?calloc(count,sizeof(*targets)):NULL;REQUIRE(!count||targets);
     for(size_t i=0;i<count;++i)REQUIRE(parse_id(argv[i+6],targets[i].bytes));
-    REQUIRE((argc-manifest_at)%3==0);size_t source_count=(size_t)(argc-manifest_at)/3;REQUIRE(source_count<=SW_MAX_TARGETS);
+    size_t source_count=0,profile_count=0;
+    for(int at=options_at;at<argc;){if(!strcmp(argv[at],"--manifest")){REQUIRE(argc-at>=3);++source_count;at+=3;}
+        else{REQUIRE(!strcmp(argv[at],"--history")&&argc-at>=2);++profile_count;at+=2;}}
+    REQUIRE(source_count<=SW_MAX_TARGETS&&profile_count<=SWH_MAX_PROFILES);
     sources=source_count?calloc(source_count,sizeof(*sources)):NULL;REQUIRE(!source_count||sources);
-    for(size_t i=0;i<source_count;++i){size_t at=(size_t)manifest_at+i*3;REQUIRE(!strcmp(argv[at],"--manifest")&&parse_id(argv[at+1],sources[i].install.bytes));sources[i].path=argv[at+2];}
-    int original_error=0;nx_result started=sww_start_with_manifests(argv[2],&identity,sources,source_count,&worker,&scope.context,&original_error);
+    profiles=profile_count?calloc(profile_count,sizeof(*profiles)):NULL;REQUIRE(!profile_count||profiles);
+    size_t source_index=0,profile_index=0;
+    for(int at=options_at;at<argc;){if(!strcmp(argv[at],"--manifest")){REQUIRE(parse_id(argv[at+1],sources[source_index].install.bytes));sources[source_index++].path=argv[at+2];at+=3;}
+        else{uint8_t raw[AE_EXECUTION_BYTES];REQUIRE(parse_hex(argv[at+1],sizeof raw,raw)&&ae_execution_decode(raw,sizeof raw,&profiles[profile_index++])==0);at+=2;}}
+    sww_metadata metadata={sources,source_count,profiles,profile_count};
+    int original_error=0;nx_result started=sww_start_with_metadata(argv[2],&identity,&metadata,&worker,&scope.context,&original_error);
     printf("OWNER_OPEN status=%d original_error=%d selected=%zu\n",(int)started,original_error,count);REQUIRE(started==NX_OK);
     REQUIRE(sw_owner_create(&scope,targets,count,&owner)==NX_OK);
     REQUIRE((file=fopen(argv[1],"rb"))&&!fseek(file,0,SEEK_END));long length=ftell(file);REQUIRE(length>0&&length<64000000&&!fseek(file,0,SEEK_SET));
@@ -58,7 +66,11 @@ int main(int argc,char **argv){
                 nx_result r;
                 if(reply&&reply->key.view==current.view&&reply->key.request==current.request){
                     r=sw_owner_complete(owner,message.ticket,reply->original_error,&reply->result);
-                    if(r==NX_OK){accepted=1;if(!reply->original_error){REQUIRE(swg_set_components(view,reply->components,reply->components_status)==NX_OK);sw_components_free(&components);components=reply->components;reply->components=NULL;}}
+                    if(r==NX_OK){accepted=1;if(!reply->original_error){
+                        REQUIRE(swg_set_metadata(view,reply->components,reply->components_status,reply->history,reply->history_error)==NX_OK);
+                        sw_components_free(&components);components=reply->components;reply->components=NULL;
+                        swh_free(&history);if(reply->history)REQUIRE(sww_reply_take_history(reply,&history)==NX_OK);
+                    }}
                     else error=r==NX_ERROR_MEMORY?-ENOMEM:r==NX_ERROR_STATE?-ESTALE:-EBADMSG;
                 }
                 if(!accepted){REQUIRE(sw_owner_complete(owner,message.ticket,error,NULL)==NX_OK);accepted=1;}
@@ -95,8 +107,8 @@ cleanup:
     if(view&&swg_close(&view)!=NX_OK)okay=0;
     if(renderer&&nx_software_view_close(&renderer)!=NX_OK)okay=0;
     if(window)nx_window_destroy(window);
-    sw_owner_destroy(&owner);sw_components_free(&components);puts("SOFTWARE_GUI_GONE");
+    sw_owner_destroy(&owner);sw_components_free(&components);swh_free(&history);puts("SOFTWARE_GUI_GONE");
     if(worker){if(sww_stop(worker)!=NX_OK||sww_join(worker)!=NX_OK)okay=0;if(sww_destroy(&worker)!=NX_OK)okay=0;}
-    nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);free(targets);free(sources);if(file)fclose(file);
+    nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);free(targets);free(sources);free(profiles);if(file)fclose(file);
     printf("SOFTWARE_CLOSED requests=%" PRIu64 " adopted=%" PRIu64 " ignored=%" PRIu64 " failed=%d\n",sequence,adopted,ignored,!okay);return okay?0:1;
 }
