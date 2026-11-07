@@ -1,0 +1,27 @@
+{
+  "path": "/mnt/d/NexaUI/out/nexaui-software-contents-attempts-20261107.tar.gz",
+  "size": 22804594,
+  "sha256": "a8a77be15a84839255c4424b0be0e539ea18ee300c3a10acd7283bd2c610df59",
+  "verification": {
+    "sha256": "a8a77be15a84839255c4424b0be0e539ea18ee300c3a10acd7283bd2c610df59",
+    "files": 839,
+    "links": 3,
+    "directories": 404,
+    "verified": true
+  },
+  "retirement": {
+    "retired_verified_duplicates": [
+      "software-contents-1-release",
+      "software-contents-2-release",
+      "software-contents-3-release",
+      "software-contents-3-shared",
+      "software-contents-3-asan"
+    ],
+    "available_bytes": 1248051200
+  },
+  "excluded_special": [
+    "software-contents-2-release/components-test/run-s2w4jfsx/fifo",
+    "software-contents-3-release/components-test/run-dc8s4ho5/fifo",
+    "software-contents-3-shared/components-test/run-f9ey7yx7/fifo"
+  ]
+}

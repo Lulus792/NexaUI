@@ -1,5 +1,10 @@
 # Observed app to original manifest/dependencies — 2026-11-07
 
+Continuation: source `de18e96e57a3bd0cbdedf2042fbfe1eec8ed4398` integrates
+[declared file/action inspection](software-contents-report.md) into this exact
+observation binding. The results and remaining work below retain their original
+`865f21c` scope; later inspection does not establish actual ownership/process state.
+
 Consumer source: `865f21c8f4a42ea62293b39f06f092863bbab99b`.
 Software original: Aetheri `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Standalone manifest regression original: `1fb45c7c21f914a2893457132b609be50ef4280d`.

@@ -1,0 +1,25 @@
+{
+  "name": "nexaui-software-contents-20261107.tar.gz",
+  "size": 31149685,
+  "sha256": "274d79b7662db62ec74b556c25ffdfe47396361f5bf7ede174ac57ac2eb73a0d",
+  "files": 2048,
+  "links": 17,
+  "directories": 496,
+  "excluded_special": [
+    "software-contents-4-asan/components-test/run-10s0oajp/fifo",
+    "software-contents-4-asan/components-test/run-6zdnck_q/fifo",
+    "software-contents-4-asan/components-test/run-x7c74g31/fifo",
+    "software-contents-4-release/components-test/run-pqzqyd2s/fifo",
+    "software-contents-4-release/components-test/run-pz0lj13k/fifo",
+    "software-contents-4-shared/components-test/run-kkll6dt_/fifo",
+    "software-contents-4-shared/components-test/run-r2gwyrqt/fifo",
+    "swc6-release-good/manifests/fifo",
+    "swc7-release-good/manifests/fifo",
+    "swc8-asan-bad/manifests/fifo",
+    "swc8-asan-good/manifests/fifo",
+    "swc8-release-bad/manifests/fifo",
+    "swc8-release-good/manifests/fifo",
+    "swc8-shared-bad/manifests/fifo",
+    "swc8-shared-good/manifests/fifo"
+  ]
+}
