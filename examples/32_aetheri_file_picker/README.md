@@ -45,9 +45,20 @@ German, 200%-text, 360x300, high-contrast and light configurations. Default is
 English/dark at 720x580. Colors, focus, reduced motion, fields, clipboard,
 IME placement and semantic actions reuse installed public APIs. Rows have full
 original escaped labels; directory icons use the existing portable vector API.
-This composition currently requires at least 180x160 logical pixels; smaller
-configure handling and complete native error/Retry workflows remain acceptance
-work. These are not approved final Aetheri visual variants.
+Measured labels determine whether the normal controls and fixed footer fit.
+Smaller sizes use a compact, scrollable size hint and Cancel (a close icon when
+text would crowd the hint). Folder, page, selection and query draft survive.
+The native bottom-right grip uses the existing public resize API with a real
+pointer gesture. These are not approved final Aetheri visual variants.
+
+Errors distinguish an unread root from a retained previous folder. An explicit
+Retry repeats the failed READ/Enter/Refresh against the worker's current state;
+it does not silently substitute a parent refresh. Unknown/malformed completion
+recovery observes with READ instead of replaying an uncertain operation.
+Changed entries require an explicit Refresh folder. At the 64-level path limit,
+the adjacent recovery action goes Up rather than repeating an unchanged Enter.
+Error actions receive safe focus beside their message. PageUp/PageDown can read
+long messages while retaining that focus; ordinary scroll does not snap back.
 
 The host retires native publication/context before a request or admitted result
 can rebind old controls, and on page changes (including return to a prior page).
@@ -136,6 +147,18 @@ the original Refresh until after actual keyboard Cancel and GUI retirement.
 The production target contains no gate. Release-active assertions, strict C17
 profiles and sanitizers do not replace installed input methods or human review.
 
-Directory/multiple/save selection, richer sorting/file-type policy, complete
-native error/Retry and resize coverage, other platforms, real services/grants,
+The same native runner accepts `--recovery` with `recovery_atspi.c` as its
+independent peer. It starts with 4,097 root entries, retries after the real
+filesystem reaches 4,096, repeats a failed Enter into another overfull folder,
+reads the retained error using PageUp, and navigates to the last child. Real
+pointer drags resize through 64x64, 240x96 and back, checking preserved draft,
+selection/focus and retired controls. It then replaces the selected inode,
+verifies refused selection, explicitly refreshes and selects the new witness.
+Scoped Wayland client traces wait for compositor resize admission/release;
+merely flushing a client request is not treated as an accepted grab. The pinned
+fixture's first ordinary window origin is (40,40). This is controlled native
+input, not physical output or human acceptance.
+
+Directory/multiple/save selection, richer sorting/file-type policy, additional
+I/O/permission/allocation failures and resize/scale configurations, other platforms, real services/grants,
 performance, physical/human acceptance and normal Aetheri integration stay open.

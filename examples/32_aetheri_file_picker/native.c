@@ -61,13 +61,23 @@ int main(int argc,char **argv) {
         }
         if(done)break;
         nx_window_info info;REQUIRE(nx_window_get_info(window,&info)==NX_OK);if(info.should_close)break;
+        if(fp_picker_prepare_size(&picker,nx_focus_id(ctx),info.width,info.height,&pending)) {
+            REQUIRE(replace_context(window,&ctx,theme));dirty=1;
+        }
         if(dirty) {
+            uint64_t frame_focus=nx_focus_id(ctx);
             REQUIRE(nx_context_set_text_raster_scale(ctx,info.scale)==NX_OK);
             REQUIRE(nx_begin_frame(ctx,info.width,info.height,0)==NX_OK);
             nx_semantic_desc main={0};main.id=1;main.role=NX_ROLE_WINDOW;main.name=(nx_utf8_span){desc.title_utf8,strlen(desc.title_utf8)};main.bounds=(nx_rect){0,0,info.width,info.height};
             REQUIRE(nx_semantics_add(ctx,&main,NULL)==NX_OK);int redraw;
             REQUIRE(fp_picker_build(&picker,ctx,window,info.width,info.height,&pending,&redraw)==NX_OK&&nx_end_frame(ctx)==NX_OK);
             if(pending.cancel){done=1;break;}
+            if(pending.resize) {
+                pending.resize=0;nx_result resize=nx_window_begin_resize(window,NX_WINDOW_RESIZE_BOTTOM_RIGHT);
+                REQUIRE(resize==NX_OK||resize==NX_ERROR_UNSUPPORTED||resize==NX_ERROR_STATE);
+                if(resize==NX_OK)picker.restore=frame_focus;
+                printf("RESIZE_REQUEST status=%d\n",(int)resize);
+            }
             if(pending.requested) {
                 nx_result result=fp_picker_request(&picker,&pending.command);pending=(fp_intent){0};
                 REQUIRE(result==NX_OK||result==NX_ERROR_LIMIT||result==NX_ERROR_MEMORY);
@@ -85,8 +95,8 @@ int main(int argc,char **argv) {
             REQUIRE(nx_frame_commands(ctx,&commands,&count)==NX_OK&&nx_theme_color(ctx,NX_COLOR_BACKGROUND,&background)==NX_OK&&nx_software_view_render(renderer,commands,count,background,&outcome)==NX_OK);
             dirty=outcome!=NX_SOFTWARE_VIEW_READY;++frames;
             const fp_reply *r=fp_picker_snapshot(&picker);
-            printf("VIEW busy=%d state=%"PRIu64" depth=%u count=%zu page=%zu selected=%"PRIu64" focus=%"PRIu64" frames=%"PRIu64" keys=%"PRIu64"\n",
-                picker.busy,r?r->state:0,r?r->depth:0,r?r->count:0,picker.page,picker.selected,nx_focus_id(ctx),frames,keys);
+            printf("VIEW busy=%d state=%"PRIu64" depth=%u count=%zu page=%zu selected=%"PRIu64" focus=%"PRIu64" frames=%"PRIu64" keys=%"PRIu64" width=%.0f height=%.0f compact=%d\n",
+                picker.busy,r?r->state:0,r?r->depth:0,r?r->count:0,picker.page,picker.selected,nx_focus_id(ctx),frames,keys,(double)info.width,(double)info.height,picker.compact);
         }
         uint32_t ready=0;REQUIRE(nx_window_poll_with_fd(window,UINT32_MAX,fp_worker_wake_fd(worker),&ready)==NX_OK&&!(ready&NX_WINDOW_FD_ERROR));
         nx_event event;int available;
@@ -95,7 +105,9 @@ int main(int argc,char **argv) {
             if(event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP)++keys;
             if(event.type==NX_EVENT_KEY_DOWN&&event.key==NX_KEY_ESCAPE&&!event.repeat){done=1;break;}
             if(event.type==NX_EVENT_KEY_DOWN&&(event.key==NX_KEY_PAGE_UP||event.key==NX_KEY_PAGE_DOWN)&&!event.modifiers&&nx_focus_id(ctx)!=FP_QUERY) {
-                picker.scroll_y+=event.key==NX_KEY_PAGE_DOWN?info.height*0.4f:-info.height*0.4f;
+                uint32_t area_index;nx_semantic_view area;float step=info.height*0.25f;
+                if(nx_semantics_find(ctx,FP_SCROLL,&area_index)==NX_OK&&nx_semantics_get(ctx,area_index,&area)==NX_OK)step=area.bounds.height*0.5f;
+                picker.scroll_y+=event.key==NX_KEY_PAGE_DOWN?step:-step;
                 if(picker.scroll_y<0)picker.scroll_y=0;
                 dirty=1;continue;
             }

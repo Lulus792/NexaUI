@@ -14,19 +14,29 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.pending_cancel:a.cancel=True
+    if a.recovery and (a.cancel or a.maximum):p.error('Recovery has its own complete initial/child-overflow workflow')
     if os.getuid()==0:p.error('Run as an unprivileged private test owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
-    captures=work/'captures';captures.mkdir(mode=0o700);files=work/'files';files.mkdir();folder=files/'folder';folder.mkdir()
+    captures=work/'captures';captures.mkdir(mode=0o700);files=work/'files';files.mkdir()
+    folder=files/('large' if a.recovery else 'folder');folder.mkdir()
     file_count=4095 if a.maximum else 40
-    for i in range(file_count):(files/f'snapshot-{i:04d}.txt').write_text(f'exact original {i}\n')
-    (folder/'é.txt').write_text('selected Unicode\n');(folder/'other.txt').write_text('other\n')
+    if a.recovery:
+        for i in range(4095):(files/f'root-{i:04d}').write_text(f'root entry {i}\n')
+        (files/'document.txt').write_text('retained parent file\n')
+        for i in range(4097):(folder/f'item-{i:04d}').write_text(f'original child {i}\n')
+    else:
+        for i in range(file_count):(files/f'snapshot-{i:04d}.txt').write_text(f'exact original {i}\n')
+        (folder/'é.txt').write_text('selected Unicode\n');(folder/'other.txt').write_text('other\n')
     address='unix:path='+str(runtime/'bus')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY='picker',NEXAUI_PLATFORM='wayland',
              DBUS_SESSION_BUS_ADDRESS=address,AT_SPI_BUS_ADDRESS=address,ASAN_OPTIONS='detect_leaks=1:halt_on_error=1',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
+    # The recovery fixture observes actual resize admission/release configures.
+    # A flushed client request alone does not prove the compositor began its grab.
+    if a.recovery:env['WAYLAND_DEBUG']='client'
     for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE'):env.pop(name,None)
     for name in ('german','large','small','contrast','light'):
         env.pop('FP_'+name.upper(),None)
@@ -36,7 +46,7 @@ def main():
     if a.pending_cancel:
         gate_read,gate_write=os.pipe2(os.O_CLOEXEC);env['FP_TEST_REFRESH_GATE']=str(gate_read)
     result=dict(status='failed',inputs={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items()},checks=checks,images=images,
-                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime')})
+                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery')})
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def start(command,name,pass_fds=(),interactive=False):
         stream=(work/(name+'.log')).open('xb');streams.append(stream)
@@ -52,6 +62,28 @@ def main():
         left.sendall(command.encode('ascii'))
         if left.recv(64)!=b'OK':raise RuntimeError('Rejected compositor command: '+command)
     def key(code):event(f'K {code} 1');event(f'K {code} 0')
+    def view():
+        frames=re.findall(r'^VIEW (.+)$',log('host'),re.M)
+        return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',frames[-1])} if frames else {}
+    def resize(width,height):
+        before=view();count=log('host').count('RESIZE_REQUEST status=0\n')
+        def configure_count(bytes_count):return len(re.findall(r'xdg_toplevel#\d+\.configure\([^\n]*array\['+str(bytes_count)+r'\]\)',log('host')))
+        admitted=configure_count(8)
+        # The pinned test compositor places its first ordinary client at (40,40).
+        # Genuine pointer presses drive the production grip and public resize API.
+        event(f'M {40+before["width"]-6} {40+before["height"]-6}');event('B 272 1')
+        wait(lambda:log('host').count('RESIZE_REQUEST status=0\n')>count,'native resize gesture')
+        # The pinned ordinary active window has two states while resizing
+        # (activated/resizing), and one after release. No other window/state
+        # transition occurs in this fixture; raw protocol traces are retained.
+        wait(lambda:configure_count(8)>admitted,'compositor admitted resize')
+        until=time.monotonic()+7
+        while view().get('width')!=width or view().get('height')!=height:
+            if host.poll() is not None or time.monotonic()>=until:raise RuntimeError('Native configure did not reach requested size')
+            event(f'M {40+width-6} {40+height-6}');time.sleep(.01)
+        released=configure_count(4);event('B 272 0')
+        wait(lambda:configure_count(4)>released,'compositor released resize')
+        result.setdefault('resizes',[]).append(dict(before=before,after=view(),requested=[width,height]))
     def capture(label):
         if not a.capture:return
         sequence=len(images)//3+1;server.send_signal(signal.SIGUSR1)
@@ -72,25 +104,59 @@ def main():
         wait(registered,'registry')
         host=start([paths['host'],paths['font'],files],'host',(gate_read,) if a.pending_cancel else ())
         if gate_read is not None:os.close(gate_read);gate_read=None
-        wait(lambda:re.search(rf'^VIEW busy=0 state=1 depth=0 count={file_count+1} ',log('host'),re.M),'initial complete observation')
+        initial=r'^VIEW busy=0 state=0 depth=0 count=0 ' if a.recovery else rf'^VIEW busy=0 state=1 depth=0 count={file_count+1} '
+        wait(lambda:re.search(initial,log('host'),re.M),'initial observation')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected native presentation dependency')
-        peer=start([paths['client'],host.pid]+(['--german'] if a.german else [])+(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else []),'client',interactive=True)
-        for step in range(9):
+        peer_args=[paths['client'],host.pid]+(['--german'] if a.german else [])
+        if not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
+        peer=start(peer_args,'client',interactive=True)
+        error_pages=0
+        for step in range(7 if a.recovery else 9):
             wait(lambda:f'STEP {step}\n' in log('client'),f'peer step {step}')
-            if step in (0,4,5,6):key(28)
-            if step==1 and not a.no_ime:event('I 0');wait(lambda:'PREEDIT bytes=7\n' in log('host'),'native preedit')
-            if step==2:
-                key(15)
-                if not a.no_ime:wait(lambda:'PREEDIT bytes=0\n' in log('host'),'focus-loss preedit cancellation')
-            if step==3 and not a.no_ime:event('I 1')
-            if step==7:key(107)
+            if a.recovery:
+                if step==0:capture('initial-error')
+                if step==0:(files/'root-4094').unlink()
+                if step==2:
+                    for _ in range(error_pages):key(109)
+                    (folder/'item-4096').unlink()
+                if step==4:
+                    (folder/'item-4095').rename(work/'retired-item-4095')
+                    (folder/'item-4095').write_text('replacement inode\n')
+                key(107 if step in (3,6) else 28)
+            else:
+                if step in (0,4,5,6):key(28)
+                if step==1 and not a.no_ime:event('I 0');wait(lambda:'PREEDIT bytes=7\n' in log('host'),'native preedit')
+                if step==2:
+                    key(15)
+                    if not a.no_ime:wait(lambda:'PREEDIT bytes=0\n' in log('host'),'focus-loss preedit cancellation')
+                if step==3 and not a.no_ime:event('I 1')
+                if step==7:key(107)
             peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
+            if a.recovery and step==1:
+                wait(lambda:re.search(r'^ERROR_READ \d+$',log('client'),re.M),'retained error reading',allowed=peer)
+                error_pages=int(re.search(r'^ERROR_READ (\d+)$',log('client'),re.M)[1])
+                if not 0<=error_pages<=64:raise RuntimeError('Invalid error reading page count')
+                result['error_read_pages']=error_pages;before_keys=view()['keys']
+                for _ in range(error_pages):key(104)
+                wait(lambda:view().get('keys',0)>=before_keys+2*error_pages,'published error PageUp')
+                peer.stdin.write(b'READ_ERROR\n');peer.stdin.flush()
             wait(lambda:f'ACK {step}\n' in log('client'),f'native check {step}',allowed=peer)
             checks.append(dict(step=step))
-            if step in (0,4,7):capture('step-'+str(step))
+            if step in ((0,1,4) if a.recovery else (0,4,7)):capture('step-'+str(step))
+            if a.recovery and step==3:
+                original_size=(view()['width'],view()['height']);original_state=view()
+                for phase,size in [('TINY',(64,64)),('SMALL',(240,96)),('RESTORE',original_size)]:
+                    wait(lambda:f'RESIZE_{phase}\n' in log('client'),'peer resize phase '+phase)
+                    resize(*size)
+                    peer.stdin.write(f'SIZE_{phase}\n'.encode());peer.stdin.flush()
+                    wait(lambda:f'SIZE_ACK_{phase}\n' in log('client'),'native size check '+phase,allowed=peer)
+                    current=view()
+                    if any(current.get(k)!=original_state.get(k) for k in ('state','depth','count','page','selected')):raise RuntimeError('Window size changed model or selection')
+                    capture('resize-'+phase.lower())
         expected.add(peer);wait(lambda:peer.poll() is not None,'peer exit',allowed=peer)
-        if peer.returncode or 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED' not in log('client'):raise RuntimeError('Independent peer failed')
+        marker='PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
+        if peer.returncode or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.pending_cancel:wait(lambda:'ORIGINAL_REFRESH_HELD\n' in log('host'),'held original refresh')
         key(28)
         if a.pending_cancel:
@@ -98,10 +164,11 @@ def main():
             if host.poll() is not None:raise RuntimeError('Worker ended before its original read was released')
             os.write(gate_write,b'R');os.close(gate_write);gate_write=None
         wait(lambda:host.poll() is not None,'selected or cancelled close',allowed=host);expected.add(host)
-        if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={6 if a.pending_cancel or not a.cancel else 5} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
+        requests=7 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
+        if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
         if not a.cancel:
-            leaf=f'snapshot-{file_count-1:04d}.txt';selected=(files/leaf).stat()
+            leaf='item-4095' if a.recovery else f'snapshot-{file_count-1:04d}.txt';selected=((folder if a.recovery else files)/leaf).stat()
             wanted=f'PICKED leaf_hex={leaf.encode().hex()} device={selected.st_dev} inode={selected.st_ino}\n'
             if wanted not in log('host'):raise RuntimeError('Wrong ordinary-file witness')
         for path in work.glob('*.log'):
