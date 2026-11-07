@@ -6,6 +6,10 @@ version 0.1.23. The original Files model remains Aetheri `27de5cb`; the native
 fixture uses the previously frozen Aetheri compositor from `d56d695`.
 No SDK API/ABI, dependency, version, live Aetheri source or consumer pin changes.
 
+The subsequent [keyboard-reading step](file-picker-owner-reading-report.md)
+adds native evidence for a complete maximum escaped owner result. The executions
+and remaining scope below describe this report's original source.
+
 ## Result and adoption boundary
 
 The optional installed C17 [picker example](../../examples/32_aetheri_file_picker/README.md)

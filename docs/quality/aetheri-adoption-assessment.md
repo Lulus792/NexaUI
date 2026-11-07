@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Complete owner-result keyboard reading (2026-11-07)
+
+Consumer `68908d0822d39ce3748160be20c670c45532bc42` adds owner PageUp/PageDown
+reading without moving focus or intercepting the note editor/active modal.
+Three strict installed profiles pass 3/3 CTests. Five current native workflows
+read the original 1,020-byte escaped result of an actual 255-byte non-UTF-8
+filename down and back up, including German 200%/small/high contrast/4,096
+entries, controlled IME and held-work GUI teardown. A disabled-key core mutant
+and the previous published native host both fail the current checks. See the
+[reading report](file-picker-owner-reading-report.md) for exact evidence and
+retained preliminary fixture/ACK failures. Native parenting/active OS close,
+multi/save/services and the earlier peer heap incident remain open. No SDK
+API/version, live Aetheri or pin changes.
+
 ## Persistent picker owner and modal selection (2026-11-07)
 
 Consumer `951e8d2aba147de6fe8c75f0077613380dadfd78` composes the existing
