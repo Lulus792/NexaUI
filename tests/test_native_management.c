@@ -82,14 +82,16 @@ int main(void) {
     CHECK(nx_frame_events(context,&events,&count)==NX_OK);
     for(size_t i=0;i<count;++i) if(events[i].type==NX_EVENT_WINDOW_STATE) ++states;
     CHECK(states>=2 && nx_end_frame(context)==NX_OK);
-    CHECK(nx_window_get_status(w,&s)==NX_OK && (s.capabilities&NX_WINDOW_CAP_MINIMIZE));
-    CHECK(nx_window_minimize(w)==NX_OK);
-    if(s.known&NX_WINDOW_STATE_MINIMIZED) {
-        CHECK(wait_state(w,NX_WINDOW_STATE_MINIMIZED,1)==0 && (s.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
-        CHECK(nx_window_restore(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_MINIMIZED,0)==0);
-    } else CHECK(!(s.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
+    CHECK(nx_window_get_status(w,&s)==NX_OK);
+    if(s.capabilities&NX_WINDOW_CAP_MINIMIZE) {
+        CHECK(nx_window_minimize(w)==NX_OK);
+        if(s.known&NX_WINDOW_STATE_MINIMIZED) {
+            CHECK(wait_state(w,NX_WINDOW_STATE_MINIMIZED,1)==0 && (s.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
+            CHECK(nx_window_restore(w)==NX_OK && wait_state(w,NX_WINDOW_STATE_MINIMIZED,0)==0);
+        } else CHECK(!(s.capabilities&NX_WINDOW_CAP_RESTORE_MINIMIZED));
+    } else CHECK(nx_window_minimize(w)==NX_ERROR_UNSUPPORTED);
     nx_context_destroy(context); owned_context=NULL; nx_window_destroy(w); owned_window=NULL;
-    printf("Native WM: confirmed maximize %.0fx%.0f, restore %.0fx%.0f, %u state events; minimize observability=%u. Physical/visual acceptance remains separate.\n",
-        maximized.width,maximized.height,restored.width,restored.height,states,!!(s.known&NX_WINDOW_STATE_MINIMIZED));
+    printf("Native WM: confirmed maximize %.0fx%.0f, restore %.0fx%.0f, %u state events; minimize capability=%u observability=%u. Physical/visual acceptance remains separate.\n",
+        maximized.width,maximized.height,restored.width,restored.height,states,!!(s.capabilities&NX_WINDOW_CAP_MINIMIZE),!!(s.known&NX_WINDOW_STATE_MINIMIZED));
     return 0;
 }
