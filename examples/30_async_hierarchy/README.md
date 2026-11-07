@@ -45,8 +45,12 @@ Right while Loading does not submit more work.
 The command contains only a copied `{view epoch, request generation, branch}`
 key. A producer takes/disposes that command exactly once and publishes one
 completion using its ticket. A successful payload contains the same copied key
-and at most 16 child records; this response bound belongs to this example, not
-to NexaUI's tree API. The owner takes the completion, calls `ah_observe`, then
+and at most 32 child records with 256-byte names. These bounds belong to this
+example, not to NexaUI's tree API. They cover the complete original manifest
+schema used by [example 31](../31_aetheri_manifest/README.md). Wrapped child
+labels determine row heights; a focused label taller than the viewport can be
+scrolled without focus reveal continually returning it to the top.
+The owner takes the completion, calls `ah_observe`, then
 disposes the message exactly once even when the view ignores it. Publication
 requires its current ticket, generation, epoch and expanded/loading state.
 An unrelated/retired ticket is ignored. A malformed active reply, including a

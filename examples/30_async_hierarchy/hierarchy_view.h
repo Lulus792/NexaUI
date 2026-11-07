@@ -6,8 +6,8 @@
 /* Example presentation contract, not a filesystem/component/service model.
    One owner thread uses a view. Channel and fonts outlive it. Workers receive
    only copied keys and immutable response bytes, never this object or a context. */
-#define AH_CHILD_LIMIT 16u
-#define AH_NAME_BYTES 96u
+#define AH_CHILD_LIMIT 32u
+#define AH_NAME_BYTES 257u
 typedef struct ah_key { uint64_t view, generation, branch; } ah_key;
 typedef struct ah_child { uint64_t id; char name[AH_NAME_BYTES]; } ah_child;
 typedef struct ah_response {
@@ -34,6 +34,8 @@ typedef struct ah_view {
     int layout_german, layout_exhausted;
     ah_phase layout_phase;
     uint64_t layout_revision, revision;
+    uint64_t revealed_focus;
+    double reveal_height;
 } ah_view;
 
 enum { AH_TREE = 10, AH_BRANCH = 11, AH_EXPANDER = 12, AH_STATUS = 13,

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(NexaUIAsyncHierarchy LANGUAGES C)
 find_package(NexaUI 0.1.23 CONFIG REQUIRED)
-add_library(async_hierarchy_view STATIC hierarchy_view.c)
+add_library(async_hierarchy_view STATIC hierarchy_view.c ../common/text_wrap.c)
 target_link_libraries(async_hierarchy_view PUBLIC NexaUI::NexaUI)
 target_include_directories(async_hierarchy_view PUBLIC .)
 add_executable(async_hierarchy_core ../../tests/test_async_hierarchy.c)

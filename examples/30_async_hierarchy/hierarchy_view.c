@@ -1,4 +1,5 @@
 #include "hierarchy_view.h"
+#include "../common/text_wrap.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,8 +104,8 @@ static nx_result layouts(ah_view *v, double width) {
     nx_result result = NX_OK;
     for (size_t i = 0; i < 4u + v->count && result == NX_OK; ++i) {
         const char *s = i < 4 ? labels[i] : v->children[i - 4].name;
-        result = nx_text_layout_create(v->fonts, s, strlen(s), NX_BIDI_LTR,
-            v->text_size, width, &next[i]);
+        if (!nx_example_small_text_layout(v->fonts, s, strlen(s), v->text_size, width, &next[i]))
+            result = NX_ERROR_STATE;
     }
     if (result != NX_OK) {
         for (size_t i = 0; i < AH_CHILD_LIMIT + 4u; ++i) nx_text_layout_destroy(next[i]);
@@ -136,10 +137,19 @@ nx_result ah_build(ah_view *v, nx_context *ctx, uint64_t parent, nx_rect box,
         v->text_size < 12 || v->text_size > 32 || !isfinite(box.width) ||
         !isfinite(box.height) || box.width < 280 || box.height < 160) return NX_ERROR_ARGUMENT;
     *intent = AH_INTENT_NONE; *redraw = 0;
-    nx_result result = layouts(v, box.width - 56);
+    int reflow = v->layout_width != box.width - 76 || v->layout_text_size != v->text_size;
+    nx_result result = layouts(v, box.width - 76);
     if (result != NX_OK) return result;
     float row_height = v->text_size >= 16 ? v->text_size + 16 : 32;
+    float heights[AH_CHILD_LIMIT], children_height = 0;
+    for (size_t i = 0; i < v->count; ++i) {
+        float label_height = v->layouts[4 + i] ? (float)nx_text_layout_height(v->layouts[4 + i]) + 8 : 0;
+        heights[i] = label_height > row_height ? label_height : row_height;
+        children_height += heights[i];
+    }
     uint64_t focused = nx_focus_id(ctx);
+    int reveal = focused != v->revealed_focus || reflow || v->reveal_height != box.height;
+    v->revealed_focus = focused; v->reveal_height = box.height;
     int child_still_present = 0, child_was_present = 0;
     for (size_t i = 0; i < v->count; ++i) if (focused == v->children[i].id) child_still_present = 1;
     for (size_t i = 0; i < v->previous_count; ++i) if (focused == v->previous_ids[i]) child_was_present = 1;
@@ -172,16 +182,18 @@ nx_result ah_build(ah_view *v, nx_context *ctx, uint64_t parent, nx_rect box,
     nx_scroll_area_desc scroll = {0}; scroll.id = AH_SCROLL; scroll.parent_id = AH_BRANCH;
     scroll.thumb_y_id = AH_THUMB; scroll.axes = NX_SCROLL_Y; scroll.name = span(v->german ? "Unterelemente" : "Children");
     scroll.viewport = (nx_rect){box.x + 24, viewport_y, box.width - 40, box.y + box.height - 8 - viewport_y};
-    scroll.content_size = (nx_size){scroll.viewport.width, status_height + 8 + button_height + row_height * (float)v->count};
+    scroll.content_size = (nx_size){scroll.viewport.width, status_height + 8 + button_height + children_height};
     scroll.wheel_step = row_height;
-    float target_y = -1;
+    float target_y = -1, target_height = row_height, child_y = status_height + 8 + button_height;
     if (focused == AH_RETRY || focused == AH_REFRESH) target_y = status_height + 8;
-    for (size_t i = 0; i < v->count; ++i)
-        if (focused == v->children[i].id) target_y = status_height + 8 + button_height + row_height * (float)i;
-    if (target_y >= 0) {
-        if (target_y < v->scroll_y) v->scroll_y = target_y;
-        else if (target_y + row_height > v->scroll_y + scroll.viewport.height)
-            v->scroll_y = target_y + row_height - scroll.viewport.height;
+    for (size_t i = 0; i < v->count; ++i) {
+        if (focused == v->children[i].id) { target_y = child_y; target_height = heights[i]; }
+        child_y += heights[i];
+    }
+    if (target_y >= 0 && (target_height <= scroll.viewport.height || reveal)) {
+        if (target_height > scroll.viewport.height || target_y < v->scroll_y) v->scroll_y = target_y;
+        else if (target_height <= scroll.viewport.height && target_y + target_height > v->scroll_y + scroll.viewport.height)
+            v->scroll_y = target_y + target_height - scroll.viewport.height;
     }
     float offset_x = 0; nx_scroll_info scroll_info;
     result = nx_scroll_area_begin(ctx, &scroll, &offset_x, &v->scroll_y, &scroll_info);
@@ -217,10 +229,10 @@ nx_result ah_build(ah_view *v, nx_context *ctx, uint64_t parent, nx_rect box,
     }
     for (size_t i = 0; i < v->count; ++i) {
         result = row(v, ctx, v->children[i].id, AH_SCROLL,
-            (nx_rect){content.x, y, content.width, row_height}, v->children[i].name, v->layouts[4 + i], NULL);
+            (nx_rect){content.x, y, content.width, heights[i]}, v->children[i].name, v->layouts[4 + i], NULL);
         if (result != NX_OK) return result;
         v->previous_ids[v->previous_count++] = v->children[i].id;
-        y += row_height;
+        y += heights[i];
     }
     return nx_scroll_area_end(ctx);
 }

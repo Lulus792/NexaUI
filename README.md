@@ -186,6 +186,7 @@ Start with a small example, then explore the parts your application needs.
 | [Text raster density](examples/16_text_density/README.md) | Low-density versus density-matched cached masks |
 | [Widget text density](examples/17_widget_text_density/README.md) | Editable text, passwords and numeric fields at equal logical sizes |
 | [Async hierarchy](examples/30_async_hierarchy/README.md) | Loading/error/retry, correlated worker results and native focus/close lifetime |
+| [Original Aetheri manifest](examples/31_aetheri_manifest/README.md) | Original manifest verification, complete declared paths and asynchronous native hierarchy |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
 | [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows/Linux runners |
 

@@ -10,9 +10,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef AH_MANIFEST
+#include "manifest_source.h"
+#endif
 
-/* Deterministic test producer: two real workers, held by explicit driver
-   permits. No worker reads a view/context/window or performs an app operation. */
+/* Two real workers, never given a view/context/window. The neutral fixture
+   uses driver-selected observations. AH_MANIFEST reads the original manifest
+   contract automatically; optional test permits only hold its real result. */
 typedef struct job { uint64_t ticket; ah_key key; int released; nx_result status; size_t count; } job;
 typedef struct producer {
     nx_sim_channel *channel;
@@ -21,6 +25,11 @@ typedef struct producer {
     job jobs[2];
     unsigned hints, posted;
     int stop, failed, wake;
+#ifdef AH_MANIFEST
+    const char *manifest;
+    unsigned char expected[32];
+    int controlled;
+#endif
 } producer;
 static void payload_free(void *user, void *data, size_t bytes) { (void)user; (void)bytes; free(data); }
 static void *worker(void *data) {
@@ -38,15 +47,27 @@ static void *worker(void *data) {
         int valid = command.bytes == sizeof(key) && command.data;
         if (valid) memcpy(&key, command.data, sizeof(key));
         nx_sim_message_dispose(&command);
+#ifdef AH_MANIFEST
+        ah_response *response = calloc(1, sizeof(*response));
+        nx_result loaded = !response ? NX_ERROR_MEMORY : !valid ? NX_ERROR_ARGUMENT :
+            amh_read(p->manifest, p->expected, key, response);
+#endif
         pthread_mutex_lock(&p->lock);
         unsigned slot = p->jobs[0].ticket ? 1u : 0u;
         if (p->jobs[slot].ticket) { p->failed = 1; pthread_mutex_unlock(&p->lock); break; }
         p->jobs[slot] = (job){ticket, key, !valid, NX_ERROR_ARGUMENT, 0};
+#ifdef AH_MANIFEST
+        p->jobs[slot].released = !p->controlled;
+        p->jobs[slot].status = loaded;
+        printf("MANIFEST ticket=%" PRIu64 " status=%d count=%zu\n", ticket, (int)loaded,
+            loaded == NX_OK ? response->count : 0);
+#endif
         printf("TAKEN ticket=%" PRIu64 " view=%" PRIu64 " generation=%" PRIu64 "\n", ticket, key.view, key.generation);
         while (!p->stop && !p->jobs[slot].released) pthread_cond_wait(&p->changed, &p->lock);
         nx_result status = p->stop ? NX_ERROR_STATE : p->jobs[slot].status;
         size_t count = p->stop ? 0 : p->jobs[slot].count;
         p->jobs[slot] = (job){0}; pthread_mutex_unlock(&p->lock);
+#ifndef AH_MANIFEST
         ah_response *response = calloc(1, sizeof(*response));
         if (!response) status = NX_ERROR_MEMORY;
         else {
@@ -56,6 +77,9 @@ static void *worker(void *data) {
                 (void)snprintf(response->children[i].name, AH_NAME_BYTES, "Child %c", (int)('A' + i));
             }
         }
+#else
+        (void)count;
+#endif
         nx_result sent = nx_sim_channel_post_completion(p->channel, ticket, status, response,
             response ? sizeof(*response) : 0, response ? payload_free : NULL, NULL);
         if (sent != NX_OK) free(response);
@@ -75,14 +99,22 @@ static void *worker(void *data) {
 }
 static int permission(producer *p, const char *line) {
     if (!strcmp(line, "W")) return 1;
-    unsigned long long ticket; char outcome[8], extra; size_t count;
+    unsigned long long ticket; char extra;
+#ifndef AH_MANIFEST
+    char outcome[8]; size_t count;
     if (sscanf(line, "F %llu %7s %zu %c", &ticket, outcome, &count, &extra) != 3 ||
         !ticket || (strcmp(outcome, "ok") && strcmp(outcome, "fail")) || count > 2) return 0;
     nx_result status = !strcmp(outcome, "ok") ? NX_OK : NX_ERROR_PLATFORM;
+#else
+    if (sscanf(line, "F %llu %c", &ticket, &extra) != 1 || !ticket || !p->controlled) return 0;
+#endif
     int found = 0;
     pthread_mutex_lock(&p->lock);
     for (unsigned i = 0; i < 2; ++i) if (p->jobs[i].ticket == ticket && !p->jobs[i].released) {
-        p->jobs[i].released = 1; p->jobs[i].status = status; p->jobs[i].count = count; found = 1;
+        p->jobs[i].released = 1; found = 1;
+#ifndef AH_MANIFEST
+        p->jobs[i].status = status; p->jobs[i].count = count;
+#endif
     }
     if (found) pthread_cond_broadcast(&p->changed);
     pthread_mutex_unlock(&p->lock);
@@ -121,8 +153,20 @@ int main(int argc, char **argv) {
     int small = getenv("AH_TEST_SMALL") != NULL;
     char pending[256]; size_t used = 0;
     setvbuf(stdout, NULL, _IONBF, 0);
+#ifndef AH_MANIFEST
     REQUIRE(argc == 4 && (read_fd = fd_argument(argv[2])) >= 0 &&
         (write_fd = fd_argument(argv[3])) >= 0 && read_fd != write_fd);
+#else
+    REQUIRE((argc == 4 || argc == 6) && amh_digest(argv[3], p.expected));
+    p.manifest = argv[2]; p.controlled = argc == 6;
+    if (p.controlled) {
+        REQUIRE((read_fd = fd_argument(argv[4])) >= 0 && (write_fd = fd_argument(argv[5])) >= 0 && read_fd != write_fd);
+    } else {
+        int wake_pipe[2]; REQUIRE(pipe(wake_pipe) == 0);
+        read_fd = wake_pipe[0]; write_fd = wake_pipe[1];
+        REQUIRE(fcntl(read_fd, F_SETFD, FD_CLOEXEC) == 0 && fcntl(write_fd, F_SETFD, FD_CLOEXEC) == 0);
+    }
+#endif
     REQUIRE(fcntl(read_fd, F_SETFL, fcntl(read_fd, F_GETFL) | O_NONBLOCK) == 0 &&
         fcntl(write_fd, F_SETFL, fcntl(write_fd, F_GETFL) | O_NONBLOCK) == 0);
     REQUIRE((file = fopen(argv[1], "rb")) != NULL && !fseek(file, 0, SEEK_END));
@@ -134,6 +178,9 @@ int main(int argc, char **argv) {
     REQUIRE(nx_sim_channel_create(2, NULL, &channel) == NX_OK && nx_context_create(NULL, &ctx) == NX_OK && set_theme(ctx, theme));
     REQUIRE(ah_init(&view, channel, fonts, epoch) == NX_OK); view.german = german; view.text_size = large ? 32 : 16;
     nx_window_desc desc = {"NexaUI asynchronous hierarchy", small ? 360 : 680, small ? 260 : 400, 0, {0}};
+#ifdef AH_MANIFEST
+    desc.title_utf8 = "Aetheri manifest declared file paths";
+#endif
     REQUIRE(nx_window_create(&desc, &window) == NX_OK && nx_software_view_open(window, &renderer) == NX_OK);
     p.channel = channel; p.wake = write_fd;
     REQUIRE(pthread_mutex_init(&p.lock, NULL) == 0); lock_ready = 1;

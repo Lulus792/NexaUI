@@ -1,0 +1,26 @@
+{
+  "revision": "1fb45c7c21f914a2893457132b609be50ef4280d",
+  "normalization": "CRLF to LF only",
+  "files": {
+    "CMakeLists.txt": "5ef6820ad6d837c6320283974ce840863ef30256377c39bbadd99a6e259ceb1c",
+    "tools/runtime_contracts.py": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b",
+    "spec/runtime.md": "af0d6ba0da5e9d6fafb1b92242beba1d2d0ed6ce1e652f569a111ea13b1e9d4f",
+    "spec/vectors/runtime-v1.json": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4",
+    "src/core/allocation.c": "cab4e9d44650813bb00af16f20032a78894a6ccac69713233ca39e173e3bc968",
+    "src/core/allocation.h": "402f0c36ed06537f73ded1fb0902d1bdd5da8b4f6e4fa1f7c9fefac044b373ae",
+    "src/core/digest.c": "8e52909e6f61b3c753df6312c05fcb2f93c53d1c96a35aabd8467bf95539b8ee",
+    "src/core/digest.h": "03c846e4f179c42eaf9cde56a6b2c8bb69a93c16e68a1ad0ae1157192f5d5eea",
+    "src/core/fixture.c": "15fd6ce5a251a94669bb07dd868ebd991db1d47c9a3684b5c275e9514f0bc21d",
+    "src/core/fixture.h": "ea1ac801587ebfc912b3ee2882f400fb43a8b916e4c2bf553af56df5b141b410",
+    "src/core/import.c": "da0b53b68607bbcf9d94d5403d4388ed6ce018a39223a2014ad263e16a81f146",
+    "src/core/import.h": "96ab5c665cba7f15d03f0d1676bb4347a06665ffdaf5fe6ee5a5c4c0378ae039",
+    "src/core/owner.c": "e4990af56e85666c8140e21ce80ab528b37718a072d547cbebbdb3f0dc936a1e",
+    "src/core/owner.h": "3ae5b9d8e9f69ce1bd09e26bdcebfa185a7d37e3bd837d6e22db45e207f03c9a",
+    "src/core/publish.c": "145825c8413e8c9df31bb17119636eb097d753e9e71b214257d64d0e62419441",
+    "src/core/publish.h": "bde78ba0072f3951b4d224c3e29f12f9bd9519806eec2d874fb10caa30e206de",
+    "src/core/root.c": "5f77d34c80361a1c2dd36da255c74f3b04163d5789f0d359ed2f16d5b44345c2",
+    "src/core/root.h": "4067cd1152e702d65c12c8152436d261da612c96c2ff2502afe49ddce7c96253",
+    "src/core/storage.c": "f8370ed48bdfd877d27b0f3c26b2f2680c75927e852ca8f1789e307391a553b9",
+    "src/core/storage.h": "95c76b632093fa9160f7723fd824f4a8d57d97ecdb9b0f150983992e9dec45fe"
+  }
+}
