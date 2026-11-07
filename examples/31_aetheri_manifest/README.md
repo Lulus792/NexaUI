@@ -22,6 +22,26 @@ ctest --test-dir build-manifest --output-on-failure
 build-manifest/manifest_hierarchy_native FONT.ttf MANIFEST LOWERCASE_EXPECTED_SHA256
 ```
 
+Append `--source MANIFEST EXPECTED_SHA256` for additional caller-selected sources.
+Previous/Next buttons then choose among that immutable ordered input set; the
+ordinal and complete expected SHA-256 are exposed through native read-only Text.
+The input set is copied and outlives every worker. Each accepted ticket is bound
+to its selected immutable source before a worker is woken. It never consults a
+later UI selection. A source change retires the old context/provider, creates a
+new view epoch, clears artifact-local selection and explicitly loads the new
+source. It preserves focus on an enabled chooser button. Pending old work retains
+its channel reservation and its result is ignored when it arrives. Returning to
+a previously visited source creates fresh native objects, without retargeting
+held Text/Action references. F4 and F5 retain the current source.
+
+For controlled multi-source tests use `--test-control READ_FD WRITE_FD` after the
+sources. The legacy single-source two-FD test invocation remains supported.
+`run_source_switch.py` and `source_switch_atspi.c` check actual keyboard/native
+source selection, two real held workers, full exact identities, stale results,
+retained references through A→B→A→B and close. `--automatic` executes the same
+source workflow without a release gate. This is an artifact-input selector, not
+a filesystem picker, inventory or authenticated catalogue discovery service.
+
 The expected digest identifies the exact bytes selected by the caller. Its
 provenance and authentication remain caller responsibilities. This view offers
 read-only metadata inspection, with no admission or operation capability.

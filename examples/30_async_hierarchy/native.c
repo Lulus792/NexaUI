@@ -12,6 +12,8 @@
 #include <unistd.h>
 #ifdef AH_MANIFEST
 #include "manifest_source.h"
+#include "source_binding.h"
+#include "../common/text_wrap.h"
 #endif
 
 /* Two real workers, never given a view/context/window. The neutral fixture
@@ -26,8 +28,7 @@ typedef struct producer {
     unsigned hints, posted;
     int stop, failed, wake;
 #ifdef AH_MANIFEST
-    const char *manifest;
-    unsigned char expected[32];
+    amh_sources *sources;
     int controlled;
 #endif
 } producer;
@@ -48,9 +49,12 @@ static void *worker(void *data) {
         if (valid) memcpy(&key, command.data, sizeof(key));
         nx_sim_message_dispose(&command);
 #ifdef AH_MANIFEST
+        pthread_mutex_lock(&p->lock);
+        const amh_source *source = amh_sources_take(p->sources, ticket);
+        pthread_mutex_unlock(&p->lock);
         ah_response *response = calloc(1, sizeof(*response));
-        nx_result loaded = !response ? NX_ERROR_MEMORY : !valid ? NX_ERROR_ARGUMENT :
-            amh_read(p->manifest, p->expected, key, response);
+        nx_result loaded = !response ? NX_ERROR_MEMORY : !valid || !source ? NX_ERROR_ARGUMENT :
+            amh_read(source->manifest, source->expected, key, response);
 #endif
         pthread_mutex_lock(&p->lock);
         unsigned slot = p->jobs[0].ticket ? 1u : 0u;
@@ -120,11 +124,20 @@ static int permission(producer *p, const char *line) {
     pthread_mutex_unlock(&p->lock);
     return found;
 }
-static int request(ah_view *v, producer *p, unsigned *submitted) {
+static int request(ah_view *v, producer *p, unsigned *submitted, size_t selected_source) {
+#ifndef AH_MANIFEST
+    (void)selected_source;
+#endif
     nx_result r = ah_request(v);
     if (r == NX_OK) {
         ++*submitted;
-        pthread_mutex_lock(&p->lock); ++p->hints; pthread_cond_broadcast(&p->changed); pthread_mutex_unlock(&p->lock);
+        pthread_mutex_lock(&p->lock);
+#ifdef AH_MANIFEST
+        if (amh_sources_bind(p->sources, v->ticket, selected_source) != NX_OK) {
+            p->failed = 1; pthread_mutex_unlock(&p->lock); return 0;
+        }
+#endif
+        ++p->hints; pthread_cond_broadcast(&p->changed); pthread_mutex_unlock(&p->lock);
     }
     printf("REQUEST ticket=%" PRIu64 " view=%" PRIu64 " generation=%" PRIu64 " status=%d submitted=%u\n",
         v->ticket, v->epoch, v->generation, (int)r, *submitted);
@@ -134,6 +147,79 @@ static int fd_argument(const char *s) {
     char *end; errno = 0; long value = strtol(s, &end, 10);
     return !errno && *s && !*end && value >= 0 && value <= INT_MAX ? (int)value : -1;
 }
+#ifdef AH_MANIFEST
+/* Caller-selected immutable sources, never discovered from a declared path.
+   Keep the original single-source/FD invocation for existing native fixtures. */
+static int source_arguments(int argc, char **argv, producer *p, int *read_fd, int *write_fd) {
+    if (argc < 4) return 0;
+    size_t count = 1; int end = 4;
+    while (end < argc && !strcmp(argv[end], "--source")) {
+        if (argc - end < 3) return 0;
+        ++count; end += 3;
+    }
+    if (end != argc) {
+        int offset = !strcmp(argv[end], "--test-control") ? 1 : 0;
+        if ((!offset && (argc != 6 || end != 4)) || argc - end != offset + 2) return 0;
+        *read_fd = fd_argument(argv[end + offset]); *write_fd = fd_argument(argv[end + offset + 1]);
+        if (*read_fd < 0 || *write_fd < 0 || *read_fd == *write_fd) return 0;
+        p->controlled = 1;
+    }
+    amh_source *sources = calloc(count, sizeof(*sources)); if (!sources) return 0;
+    int okay = 1;
+    for (size_t i = 0; i < count; ++i) {
+        int index = i ? 5 + 3 * (int)(i - 1) : 2;
+        sources[i].manifest = argv[index];
+        if (!amh_digest(argv[index + 1], sources[i].expected)) { okay = 0; break; }
+    }
+    if (okay) okay = amh_sources_create(sources, count, &p->sources) == NX_OK;
+    free(sources); return okay;
+}
+static nx_result source_selector(nx_context *ctx, nx_font_collection *fonts,
+    nx_text_layout *labels[3], size_t *label_source, float *label_width, size_t selected, const amh_sources *sources,
+    float em, int german, float width, size_t *choice, float *height) {
+    *choice = selected;
+    nx_result r = NX_OK;
+    const char *marks[2] = {"\xe2\x80\xb9", "\xe2\x80\xba"};
+    for (size_t i = 0; i < 2 && r == NX_OK; ++i) if (!labels[i])
+        r = nx_text_layout_create(fonts, marks[i], strlen(marks[i]), NX_BIDI_LTR, em, 48, &labels[i]);
+    char number[64]; int n = snprintf(number, sizeof number, "%zu / %zu", selected + 1, amh_sources_count(sources));
+    if (n < 0 || (size_t)n >= sizeof number) return NX_ERROR_LIMIT;
+    if (r == NX_OK && (!labels[2] || *label_source != selected || *label_width != width)) {
+        nx_text_layout *next = NULL;
+        if (!nx_example_small_text_layout(fonts, number, (size_t)n, em, width - 160, &next)) r = NX_ERROR_STATE;
+        else { nx_text_layout_destroy(labels[2]); labels[2] = next; *label_source = selected; *label_width = width; }
+    }
+    if (r != NX_OK) return r;
+    float row = (float)nx_text_layout_height(labels[2]) + 12;
+    if (row < em + 16) row = em + 16;
+    *height = row + 8;
+    for (size_t i = 0; i < 2 && r == NX_OK; ++i) {
+        nx_control_desc button = {0}; button.id = 50 + i; button.parent_id = 1;
+        const char *name = i ? (german ? "Nächstes Manifest" : "Next manifest") :
+            (german ? "Vorheriges Manifest" : "Previous manifest");
+        button.name = (nx_utf8_span){name, strlen(name)};
+        button.bounds = (nx_rect){i ? width - 64 : 8, 8, 56, row};
+        button.disabled = i ? selected + 1 == amh_sources_count(sources) : selected == 0;
+        button.label_layout = labels[i]; button.label_origin = (nx_point){button.bounds.x + 16, 12};
+        button.glyph_cache_bytes = 1024u * 1024u;
+        nx_interaction_state state; r = nx_button(ctx, &button, &state);
+        if (r == NX_OK && state.clicked && *choice == selected) *choice = i ? selected + 1 : selected - 1;
+    }
+    const amh_source *source = amh_sources_at(sources, selected); char hex[65];
+    static const char digits[] = "0123456789abcdef";
+    for (size_t i = 0; i < 32; ++i) { hex[2*i] = digits[source->expected[i] >> 4]; hex[2*i+1] = digits[source->expected[i] & 15]; }
+    hex[64] = 0;
+    const char *name = german ? "Ausgewähltes Manifest: erwartete SHA-256" : "Selected manifest: expected SHA-256";
+    nx_semantic_desc metadata = {0}; metadata.id = 52; metadata.parent_id = 1; metadata.role = NX_ROLE_TEXT;
+    metadata.name = (nx_utf8_span){name, strlen(name)}; metadata.value = (nx_utf8_span){hex, 64};
+    metadata.state = NX_SEM_READONLY; metadata.bounds = (nx_rect){80, 8, width - 160, row};
+    if (r == NX_OK) r = nx_semantics_add_readonly_text_snapshot_without_caret(ctx, &metadata, 52, NULL);
+    nx_color color;
+    if (r == NX_OK) r = nx_theme_color(ctx, NX_COLOR_TEXT, &color);
+    if (r == NX_OK) r = nx_draw_text_layout(ctx, labels[2], (nx_point){80, 14}, color, 1024u * 1024u);
+    return r;
+}
+#endif
 static int set_theme(nx_context *ctx, int kind) {
     nx_theme theme;
     return nx_theme_preset((nx_theme_kind)kind, &theme) == NX_OK &&
@@ -152,16 +238,19 @@ int main(int argc, char **argv) {
     int theme = getenv("AH_TEST_CONTRAST") ? NX_THEME_HIGH_CONTRAST : getenv("AH_TEST_LIGHT") ? NX_THEME_LIGHT : NX_THEME_DARK;
     int small = getenv("AH_TEST_SMALL") != NULL;
     char pending[256]; size_t used = 0;
+    size_t selected_source = 0;
+    uint64_t restore_source_focus = 0;
+#ifdef AH_MANIFEST
+    nx_text_layout *source_labels[3] = {0}; size_t label_source = SIZE_MAX;
+    float source_label_width = 0;
+#endif
     setvbuf(stdout, NULL, _IONBF, 0);
 #ifndef AH_MANIFEST
     REQUIRE(argc == 4 && (read_fd = fd_argument(argv[2])) >= 0 &&
         (write_fd = fd_argument(argv[3])) >= 0 && read_fd != write_fd);
 #else
-    REQUIRE((argc == 4 || argc == 6) && amh_digest(argv[3], p.expected));
-    p.manifest = argv[2]; p.controlled = argc == 6;
-    if (p.controlled) {
-        REQUIRE((read_fd = fd_argument(argv[4])) >= 0 && (write_fd = fd_argument(argv[5])) >= 0 && read_fd != write_fd);
-    } else {
+    REQUIRE(source_arguments(argc, argv, &p, &read_fd, &write_fd));
+    if (!p.controlled) {
         int wake_pipe[2]; REQUIRE(pipe(wake_pipe) == 0);
         read_fd = wake_pipe[0]; write_fd = wake_pipe[1];
         REQUIRE(fcntl(read_fd, F_SETFD, FD_CLOEXEC) == 0 && fcntl(write_fd, F_SETFD, FD_CLOEXEC) == 0);
@@ -204,9 +293,33 @@ int main(int argc, char **argv) {
             nx_semantic_desc root = {0}; root.id = 1; root.role = NX_ROLE_WINDOW;
             root.name = (nx_utf8_span){desc.title_utf8, strlen(desc.title_utf8)}; root.bounds = (nx_rect){0, 0, info.width, info.height};
             int intent, redraw;
-            REQUIRE(nx_semantics_add(ctx, &root, NULL) == NX_OK &&
-                ah_build(&view, ctx, 1, (nx_rect){8, 8, info.width - 16, info.height - 16}, &intent, &redraw) == NX_OK && nx_end_frame(ctx) == NX_OK);
-            if (intent) { REQUIRE(request(&view, &p, &submitted)); continue; }
+            REQUIRE(nx_semantics_add(ctx, &root, NULL) == NX_OK);
+            float header = 0; size_t source_choice = selected_source;
+#ifdef AH_MANIFEST
+            if (amh_sources_count(p.sources) > 1)
+                REQUIRE(source_selector(ctx, fonts, source_labels, &label_source, &source_label_width, selected_source, p.sources,
+                    view.text_size, german, info.width, &source_choice, &header) == NX_OK);
+#endif
+            REQUIRE(ah_build(&view, ctx, 1, (nx_rect){8, 8 + header, info.width - 16, info.height - 16 - header}, &intent, &redraw) == NX_OK && nx_end_frame(ctx) == NX_OK);
+            if (source_choice != selected_source) {
+                restore_source_focus = source_choice > selected_source ? 51 : 50;
+#ifdef AH_MANIFEST
+                if (!source_choice) restore_source_focus = 51;
+                else if (source_choice + 1 == amh_sources_count(p.sources)) restore_source_focus = 50;
+#endif
+                REQUIRE(epoch != UINT64_MAX && nx_window_publish_semantics(window, NULL) == NX_OK);
+                ah_destroy(&view); nx_context_destroy(ctx); ctx = NULL; selected_source = source_choice;
+                REQUIRE(nx_context_create(NULL, &ctx) == NX_OK && set_theme(ctx, theme));
+                REQUIRE(ah_init(&view, channel, fonts, ++epoch) == NX_OK);
+                view.german = german; view.text_size = large ? 32 : 16; view.expanded = 1;
+                REQUIRE(request(&view, &p, &submitted, selected_source));
+                printf("SOURCE source=%zu view=%" PRIu64 "\n", selected_source + 1, epoch);
+                continue;
+            }
+            if (restore_source_focus) {
+                REQUIRE(nx_focus_set(ctx, restore_source_focus) == NX_OK); restore_source_focus = 0; continue;
+            }
+            if (intent) { REQUIRE(request(&view, &p, &submitted, selected_source)); continue; }
             if (redraw) continue;
             REQUIRE(nx_window_publish_semantics(window, ctx) == NX_OK);
             const nx_command *commands; size_t count; nx_color background; nx_software_view_outcome outcome;
@@ -217,6 +330,9 @@ int main(int argc, char **argv) {
                 " count=%zu selected=%" PRIu64 " focus=%" PRIu64 " frames=%" PRIu64 " polls=%" PRIu64 " keys=%" PRIu64 "\n",
                 (int)view.phase, view.expanded, view.ticket, view.epoch, view.generation, view.revision,
                 view.count, view.selected, nx_focus_id(ctx), frames, polls, keys);
+#ifdef AH_MANIFEST
+            printf("SOURCE_VIEW source=%zu view=%" PRIu64 "\n", selected_source + 1, epoch);
+#endif
             if (!dirty && !announced) { puts("ASYNC_READY"); announced = 1; }
         }
         uint32_t ready = 0; ++polls;
@@ -244,7 +360,7 @@ int main(int argc, char **argv) {
                 REQUIRE(ah_init(&view, channel, fonts, ++epoch) == NX_OK); view.german = german; view.text_size = large ? 32 : 16;
                 printf("REPLACED view=%" PRIu64 "\n", epoch); dirty = 1; continue;
             }
-            if (special && event.key == NX_KEY_F5 && view.expanded) { REQUIRE(request(&view, &p, &submitted)); dirty = 1; continue; }
+            if (special && event.key == NX_KEY_F5 && view.expanded) { REQUIRE(request(&view, &p, &submitted, selected_source)); dirty = 1; continue; }
             REQUIRE(nx_context_queue_event(ctx, &event) == NX_OK); dirty = 1;
         } while (available);
         size_t routed = 0; REQUIRE(nx_window_route_events(window, ctx, &routed) == NX_OK);
@@ -269,6 +385,10 @@ cleanup:
     if (lock_ready) pthread_mutex_destroy(&p.lock);
     if (read_fd >= 0) close(read_fd);
     if (write_fd >= 0) close(write_fd);
+#ifdef AH_MANIFEST
+    for (size_t i = 0; i < 3; ++i) nx_text_layout_destroy(source_labels[i]);
+    amh_sources_destroy(p.sources);
+#endif
     nx_font_collection_destroy(fonts); nx_font_close(font); free(font_bytes); if (file) fclose(file);
     printf("ASYNC_CLOSED submitted=%u posted=%u adopted=%u ignored=%u drained=%u joined=%u failed=%d\n",
         submitted, p.posted, adopted, ignored, drained, started, !okay);
