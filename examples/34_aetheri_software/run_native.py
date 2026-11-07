@@ -18,7 +18,9 @@ def main():
     for name in ('server','registry','host','client','font','source','model','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     for name in ('german','large','small','contrast','light','ime'):p.add_argument('--'+name,action='store_true')
     p.add_argument('--components',choices=('match','identity-failure'),help='Join private original canonical manifest metadata to the first selected app')
+    p.add_argument('--contents',action='store_true',help='Inspect all declared files/actions through native keyboard and OS semantics')
     a=p.parse_args()
+    if a.contents and a.components!='match':p.error('--contents requires --components match')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source','model')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
@@ -93,6 +95,7 @@ def main():
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
         peer_flags=(['--components',','.join(result['component_inputs']['dependencies'])] if a.components=='match' else ['--component-failure'] if a.components else [])
+        if a.contents:peer_flags+=['--contents',str(component_input/'content-peer.txt')]
         peer=start([paths['client'],host.pid,first_name,last_name]+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+peer_flags,'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         for step in range(10):
@@ -115,6 +118,21 @@ def main():
                     for i in range(pages):
                         before=view().get('frames',0);key(code);wait(lambda:view().get('frames',0)>before,'detail page frame')
                         peer.stdin.write(f'PAGE {direction} {i}\n'.encode());peer.stdin.flush();peer_line(f'PAGE_ACK {direction} {i}')
+                if a.contents:
+                    commands=[]
+                    for sequence in range(1024):
+                        def content_commands():return re.findall(r'^CONTENTS (\d+) (KEY|SYNC|DONE) (\d+) (\d+)$',log('client'),re.M)
+                        wait(lambda:len(content_commands())>sequence,'manifest content command')
+                        actual,kind,first,second=content_commands()[sequence];first=int(first);second=int(second)
+                        if int(actual)!=sequence:raise RuntimeError('Manifest content sequence')
+                        if kind=='KEY':
+                            before=view().get('frames',0);key(first);wait(lambda:view().get('frames',0)>before,'manifest keyboard frame')
+                        elif kind=='SYNC':wait(lambda:view().get('mode')==first and view().get('focus')==second,'manifest content focus')
+                        commands.append(dict(sequence=sequence,kind=kind,a=first,b=second,view=view()))
+                        peer.stdin.write(f'CONTENTS_ACK {sequence}\n'.encode());peer.stdin.flush()
+                        if kind=='DONE':break
+                    else:raise RuntimeError('Manifest content command bound')
+                    result['contents_commands']=commands
             peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
         peer.wait(timeout=7)
         if peer.returncode!=0 or 'SOFTWARE_NATIVE_SELECTED_ROWS_READONLY_DETAILS_RETIRED_REFERENCES_KEYBOARD_FILTER_SELECTION_OK' not in log('client'):raise RuntimeError('Independent peer failed')

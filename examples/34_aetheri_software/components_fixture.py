@@ -11,7 +11,9 @@ def seed(source,work):
     doc=copy.deepcopy(frozen['input']);doc['component']='aetheri.probe';doc['publisher']='00000000000040008000000000000009';doc['version']='Ä'*64
     last='/'.join(('z'*64,'p'*64,'q'*64,'r'*61))
     doc['files']=[dict(path=f'entry-{i:02d}',mode=0o555 if i==0 else 0o444,size=0,sha256=hashlib.sha256(b'').hexdigest()) for i in range(31)]+[dict(path=last,mode=0o444,size=0,sha256=hashlib.sha256(b'').hexdigest())]
+    doc['files'][-1].update(size=16*1024*1024,sha256=hashlib.sha256(b'declared maximum size, no payload').hexdigest())
     doc['actions']=[dict(id=f'run-{i}',executable='entry-00',arguments=['Ω'*128 for _ in range(8)]) for i in range(8)]
+    doc['actions'][-1]['arguments'][-1]='Ω'*127+'YZ'
     dependencies=sorted(hashlib.sha256(f'declared-dependency-{i}'.encode()).hexdigest() for i in range(8));doc['dependencies']=dependencies
     records={'maximum':original.fixture(doc),'malformed':b'not a canonical manifest'}
     empty=copy.deepcopy(doc);empty['dependencies']=[];records['empty']=original.fixture(empty)
@@ -19,6 +21,7 @@ def seed(source,work):
     publisher=copy.deepcopy(doc);publisher['publisher']='00000000000040008000000000000008';records['publisher']=original.fixture(publisher)
     for name,payload in records.items():(work/(name+'.bin')).write_bytes(payload);(work/(name+'.sha256')).write_text(hashlib.sha256(payload).hexdigest())
     (work/'dependencies.txt').write_text('\n'.join(dependencies)+'\n');(work/'maximum-path.txt').write_text(last)
+    (work/'content-peer.txt').write_text('\n'.join((last,doc['files'][-1]['sha256'],str(doc['files'][-1]['size']),doc['actions'][-1]['arguments'][-1]))+'\n')
     os.symlink('maximum.bin',work/'link');os.mkfifo(work/'fifo',0o600)
     (work/'inputs.json').write_text(json.dumps({'artifacts':{name:hashlib.sha256(value).hexdigest() for name,value in records.items()},'dependencies':dependencies,'declared_files':32,'declared_actions':8,'declared_dependencies':8,'scope':'Synthetic declarations only; no installed payload, dependency/process state or permission.'},indent=2)+'\n')
     return work/'maximum.bin'

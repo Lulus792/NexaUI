@@ -249,9 +249,23 @@ failed verification or identity mismatch is unavailable metadata. Zero declared
 dependencies is shown only for an available matching verified manifest. Installed/
 active dependency state and ownership remain explicitly unknown. Publisher trust,
 payload verification, current process/resources and management admission remain
-outside this inspection window. The separate manifest hierarchy already displays
-all declared file paths; full software file/action panes and dependency/ownership
-graph composition remain further integration work.
+outside this inspection window. Contents opens the matching manifest's complete
+declared file/action tree. File details retain the full path, octal mode, byte
+size and SHA-256; action details retain the exact executable, argument count,
+each literal argument and its UTF-8 byte length, including empty arguments.
+These are read-only declarations, with no action execution or payload access.
+Dependency/ownership graph composition still requires actual owner observations.
+
+Up/Down/Home/End navigate all tree rows. Left/Right collapse/expand groups; Left
+from a leaf returns to its group. Enter, pointer activation and the accessible
+Select action open the same declaration details. PageUp/PageDown read long paths
+and details without changing focus. Back/Escape returns from a declaration to
+that exact entry, then to Contents, then to the full installation identity.
+Groups include their declared counts. Missing/unavailable matching metadata
+disables Contents; it never displays a successful empty tree. Observation or
+manifest replacement retires the old context and returns nested inspection to
+installation details, so old file/action references cannot select a replacement.
+Ordinal entry IDs are local to that exact manifest/context, not global file IDs.
 
 `software_components_test` uses original-encoder maximum declarations (32 paths,
 eight actions with eight arguments, eight dependencies), owned-buffer lifetime,
@@ -269,6 +283,11 @@ native peer requires unavailable metadata without a fabricated zero dependency
 count. These remain private synthetic metadata cases, not installed payload or
 production-service adoption. The original encoder/vector/spec inputs are pinned
 by `manifest-inputs.json` in addition to example33's 67 original inputs.
+Append `--contents` with `--components match` to exercise all 32 paths/eight
+action names, keyboard selection, full read-only argument/file metadata, long
+detail scrolling and native reference retirement through the independent peer.
+The private fixture includes a declared 16 MiB file with no payload, a 256-byte
+path and eight 256-byte UTF-8 arguments; it does not create those payloads.
 
 Long metadata details cache the existing measured text wrapper per original
 paragraph and paint only intersecting paragraphs. The complete original UTF-8

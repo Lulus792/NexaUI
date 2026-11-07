@@ -51,11 +51,49 @@ static void document_checks(const char *dir,const sw_result *base){
 static int semantic(swg_view *v,uint64_t key,nx_semantic_view *out){uint32_t at;return nx_semantics_find(swg_context(v),key,&at)==NX_OK&&nx_semantics_get(swg_context(v),at,out)==NX_OK;}
 static int contains(nx_utf8_span text,const char *s){size_t n=strlen(s);for(size_t i=0;i+n<=text.length;++i)if(!memcmp(text.data+i,s,n))return 1;return 0;}
 static void frame(swg_view *v,float w,float h){swg_intent intent;CHECK(swg_frame(v,w,h,&intent)==NX_OK&&!intent.close&&!intent.refresh);}
-static void key(swg_view *v,nx_key key_value,float w,float h){nx_event e={0};e.type=NX_EVENT_KEY_DOWN;e.key=key_value;CHECK(swg_queue_event(v,&e)==NX_OK);frame(v,w,h);}
+static void key(swg_view *v,nx_key key_value,float w,float h){nx_event e={0};e.type=NX_EVENT_KEY_DOWN;e.key=key_value;CHECK(swg_queue_event(v,&e)==NX_OK);e.type=NX_EVENT_KEY_UP;CHECK(swg_queue_event(v,&e)==NX_OK);frame(v,w,h);}
 static void capture(swg_view *v,float w,float h,swg_style style,const char *name){
     const char *dir=getenv("SWG_CAPTURE_DIR");if(!dir)return;uint32_t width=(uint32_t)ceilf(w*style.raster_scale),height=(uint32_t)ceilf(h*style.raster_scale);size_t stride=(size_t)width*4;unsigned char *pixels=malloc(stride*height);CHECK(pixels);
     const nx_command *commands;size_t count;nx_color background;CHECK(nx_frame_commands(swg_context(v),&commands,&count)==NX_OK&&nx_theme_color(swg_context(v),NX_COLOR_BACKGROUND,&background)==NX_OK&&nx_headless_render_scaled(commands,count,pixels,width,height,stride,background,style.raster_scale)==NX_OK);
     char namebuf[64],path[4096];snprintf(namebuf,sizeof namebuf,"%g-%s.ppm",(double)w,name);filename(path,dir,namebuf);FILE *f=fopen(path,"wb");CHECK(f&&fprintf(f,"P6\n%u %u\n255\n",width,height)>0);for(uint32_t y=0;y<height;++y)for(uint32_t x=0;x<width;++x)CHECK(fwrite(pixels+(size_t)y*stride+(size_t)x*4,1,3,f)==3);CHECK(!fclose(f));free(pixels);
+}
+static void press(swg_view *v,uint64_t id_value,uint32_t action,float w,float h){CHECK(nx_semantics_request_action(swg_context(v),id_value,action)==NX_OK);frame(v,w,h);}
+static void read_end(swg_view *v,float w,float h){
+    nx_semantic_view node,area;CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&semantic(v,SWG_SCROLL,&area));size_t pages=0;
+    while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<256);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&semantic(v,SWG_SCROLL,&area)&&nx_focus_id(swg_context(v))==SWG_BACK);}
+}
+static void content_checks(swg_view *v,sw_owner *owner,const sw_components *batch,swg_style style,float w,float h){
+    sw_snapshot *snapshot=NULL;const amh_document *document=NULL;CHECK(sw_owner_snapshot(owner,&snapshot)==NX_OK&&sw_components_get(batch,snapshot,id(10),&document)==NX_OK&&document);
+    const struct ae_fixture *d=amh_document_data(document);nx_semantic_view node,area;
+    press(v,SWG_CONTENTS_BUTTON,NX_ACTION_PRESS,w,h);CHECK(swg_current_mode(v)==SWG_CONTENTS&&nx_focus_id(swg_context(v))==SWG_FILES);
+    CHECK(semantic(v,SWG_CONTENT_TREE,&node)&&node.role==NX_ROLE_TREE);
+    for(uint32_t i=0;i<d->file_count;++i)CHECK(semantic(v,SWG_FILE_ROWS+i,&node)&&node.role==NX_ROLE_TREE_ITEM&&node.name.length==d->files[i].path.size&&!memcmp(node.name.data,d->files[i].path.data,node.name.length));
+    for(uint32_t i=0;i<d->action_count;++i)CHECK(semantic(v,SWG_ACTION_ROWS+i,&node)&&node.name.length==d->actions[i].id.size&&!memcmp(node.name.data,d->actions[i].id.data,node.name.length));
+    capture(v,w,h,style,"contents-top");
+    press(v,SWG_FILES,NX_ACTION_COLLAPSE,w,h);CHECK(!semantic(v,SWG_FILE_ROWS,&node)&&semantic(v,SWG_ACTION_ROWS+7,&node));
+    press(v,SWG_FILES,NX_ACTION_EXPAND,w,h);CHECK(semantic(v,SWG_FILE_ROWS+31,&node));
+    key(v,NX_KEY_END,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_ACTION_ROWS+7);capture(v,w,h,style,"contents-end");
+    key(v,NX_KEY_ENTER,w,h);CHECK(swg_current_mode(v)==SWG_DECLARATION&&semantic(v,SWG_DETAIL_TEXT,&node));
+    CHECK(contains(node.value,style.german?"Deklarierte Aktion: run-7":"Declared action: run-7")&&contains(node.value,"argv[0]): entry-00")&&contains(node.value,"YZ")&&(node.state&NX_SEM_READONLY)&&!(node.actions&NX_ACTION_SET_VALUE));
+    CHECK(contains(node.value,style.german?"keine Aktion ausgeführt":"no action is executed"));
+    for(uint32_t i=0;i<8;++i){char expected[320];int n=snprintf(expected,sizeof expected,style.german?"Argument %u (256 UTF-8-Bytes):\n%.*s":"Argument %u (256 UTF-8 bytes):\n%.*s",i+1,256,d->actions[7].arguments[i].data);CHECK(n>0&&(size_t)n<sizeof expected&&contains(node.value,expected));}
+    capture(v,w,h,style,"action-top");read_end(v,w,h);capture(v,w,h,style,"action-bottom");
+    key(v,NX_KEY_ESCAPE,w,h);CHECK(swg_current_mode(v)==SWG_CONTENTS&&nx_focus_id(swg_context(v))==SWG_ACTION_ROWS+7);
+    press(v,SWG_FILE_ROWS+31,NX_ACTION_SELECT,w,h);CHECK(swg_current_mode(v)==SWG_DECLARATION&&semantic(v,SWG_DETAIL_TEXT,&node));
+    char path[257],digest_text[65];memcpy(path,d->files[31].path.data,256);path[256]=0;
+    for(size_t i=0;i<32;++i)snprintf(digest_text+i*2,3,"%02x",(unsigned)d->files[31].sha256[i]);
+    CHECK(contains(node.value,path)&&contains(node.value,"16777216")&&contains(node.value,"0444")&&contains(node.value,digest_text));
+    capture(v,w,h,style,"file-top");read_end(v,w,h);capture(v,w,h,style,"file-bottom");
+    press(v,SWG_BACK,NX_ACTION_PRESS,w,h);CHECK(swg_current_mode(v)==SWG_CONTENTS&&nx_focus_id(swg_context(v))==SWG_FILE_ROWS+31&&semantic(v,SWG_FILE_ROWS+31,&node)&&semantic(v,SWG_SCROLL,&area));
+    size_t pages=0;while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<256);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_FILE_ROWS+31&&semantic(v,SWG_FILE_ROWS+31,&node));}
+    capture(v,w,h,style,"path-end");frame(v,64,64);CHECK(nx_focus_id(swg_context(v))==SWG_CLOSE);frame(v,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_FILE_ROWS+31);
+    key(v,NX_KEY_LEFT,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_FILES);key(v,NX_KEY_LEFT,w,h);CHECK(!semantic(v,SWG_FILE_ROWS,&node));key(v,NX_KEY_RIGHT,w,h);CHECK(semantic(v,SWG_FILE_ROWS,&node));
+    key(v,NX_KEY_ESCAPE,w,h);CHECK(swg_current_mode(v)==SWG_DETAIL&&nx_focus_id(swg_context(v))==SWG_CONTENTS_BUTTON);
+    /* A queued leaf activation must die with the replaced metadata context. */
+    press(v,SWG_CONTENTS_BUTTON,NX_ACTION_PRESS,w,h);CHECK(nx_semantics_request_action(swg_context(v),SWG_ACTION_ROWS+7,NX_ACTION_SELECT)==NX_OK);
+    CHECK(swg_set_components(v,NULL,NX_ERROR_MEMORY)==NX_OK);frame(v,w,h);CHECK(swg_current_mode(v)==SWG_DETAIL&&nx_focus_id(swg_context(v))==SWG_BACK&&semantic(v,SWG_CONTENTS_BUTTON,&node)&&(node.state&NX_SEM_DISABLED));
+    CHECK(swg_set_components(v,batch,NX_OK)==NX_OK);frame(v,w,h);sw_snapshot_release(&snapshot);
+    puts("MANIFEST_CONTENTS_ALL_FILES_ACTIONS_FULL_ARGUMENTS_DECLARED_SIZE_FOCUS_SCROLL_RETIREMENT_OK");
 }
 static void view_checks(sw_owner *owner,const sw_components *batch,nx_font_collection *fonts,const char *last,swg_style style,float w,float h){
     swg_view *v=NULL;CHECK(swg_create(owner,fonts,style,&v)==NX_OK&&swg_set_components(v,batch,NX_OK)==NX_OK);frame(v,w,h);
@@ -64,6 +102,7 @@ static void view_checks(sw_owner *owner,const sw_components *batch,nx_font_colle
     capture(v,w,h,style,"dependencies-top");CHECK(semantic(v,SWG_SCROLL,&area));size_t pages=0;
     while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<256);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&semantic(v,SWG_SCROLL,&area)&&nx_focus_id(swg_context(v))==SWG_BACK);}
     capture(v,w,h,style,"dependencies-bottom");
+    content_checks(v,owner,batch,style,w,h);
     CHECK(swg_set_components(v,NULL,NX_ERROR_MEMORY)==NX_OK);frame(v,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&contains(node.value,style.german?"Manifest nicht verfügbar":"Manifest unavailable")&&!contains(node.value,last));
     CHECK(swg_set_components(v,NULL,NX_OK)==NX_OK);frame(v,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&contains(node.value,style.german?"Kein passendes Manifest":"No matching manifest"));
     CHECK(swg_close(&v)==NX_OK&&!v);

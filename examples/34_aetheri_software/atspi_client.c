@@ -4,6 +4,7 @@
 #undef main
 static const char *expected_dependencies;
 static int expect_manifest_failure;
+static const char *expected_contents;
 static const char *label(const char *en,const char *de){return german?de:en;}
 static AtspiAccessible *wait_node(AtspiAccessible *desktop,unsigned long pid,AtspiAccessible **app,const char *name,AtspiRole role){
     double until=now()+4;AtspiAccessible *node=NULL;
@@ -31,6 +32,13 @@ static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessib
         for(unsigned i=0;i<8;++i){char expected_dependency[65];memcpy(expected_dependency,expected_dependencies+i*65,64);expected_dependency[64]=0;CHECK(strstr(text,expected_dependency));}
     }
     if(expect_manifest_failure)CHECK(strstr(text,label("Manifest unavailable","Manifest nicht verfügbar"))&&!strstr(text,label("Declared dependencies:","Deklarierte Abhängigkeiten:")));
+    {
+        AtspiAccessible *contents=lookup(app,label("Contents","Inhalt"),ATSPI_ROLE_PUSH_BUTTON);
+        int enabled=contents&&state(contents,ATSPI_STATE_ENABLED)==(expected_dependencies!=NULL);
+        if(contents&&!expected_dependencies)enabled=enabled&&!action(contents,"click");
+        if(contents)g_object_unref(contents);
+        CHECK(enabled);
+    }
     CHECK(atspi_text_get_caret_offset(t,&error)==-1&&!error&&atspi_text_get_n_selections(t,&error)==0&&!error&&!replace_text(node,"changed"));
     AtspiRect first,outer,current;CHECK(rectangle(node,&first)&&rectangle(area,&outer)&&first.height>0&&outer.height>0&&state(back,ATSPI_STATE_FOCUSED));
     /* OS extents enclose fractional logical bounds: reported height can exceed
@@ -51,11 +59,13 @@ static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessib
 cleanup:
     g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
 }
+#include "contents_peer.h"
 int main(int argc,char **argv){
     int okay=0,initialized=0,ime=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
-    CHECK(argc>=4&&argc<=8);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;
+    CHECK(argc>=4&&argc<=10);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;
         else if(!strcmp(argv[i],"--components")){CHECK(++i<argc&&strlen(argv[i])==519&&strspn(argv[i],"0123456789abcdef,")==519);expected_dependencies=argv[i];}
-        else if(!strcmp(argv[i],"--component-failure"))expect_manifest_failure=1;else CHECK(0);}
+        else if(!strcmp(argv[i],"--component-failure"))expect_manifest_failure=1;
+        else if(!strcmp(argv[i],"--contents")){CHECK(++i<argc);expected_contents=argv[i];}else CHECK(0);}
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
@@ -63,7 +73,9 @@ int main(int argc,char **argv){
     CHECK(checkpoint(0));CHECK(!retired(old_first));puts("ACK 0");
     CHECK(checkpoint(1));last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&action(last,"select"));puts("ACK 1");
     CHECK(checkpoint(2));button=wait_node(desktop,pid,&app,label("Back","Zurück"),ATSPI_ROLE_PUSH_BUTTON);detail=lookup(app,label("Selected installation details","Details der ausgewählten Installation"),ATSPI_ROLE_LABEL);
-    CHECK(button&&detail&&retired(old_first)&&retired(last)&&!action(last,"select")&&read_details(app,detail,button,id));g_object_unref(button);button=NULL;puts("ACK 2");
+    CHECK(button&&detail&&retired(old_first)&&retired(last)&&!action(last,"select")&&read_details(app,detail,button,id));g_object_unref(button);button=NULL;
+    if(expected_contents){CHECK(inspect_contents(desktop,pid,&app,expected_contents));}
+    puts("ACK 2");
     CHECK(checkpoint(3));CHECK(retired(detail));g_object_unref(detail);detail=NULL;g_object_unref(last);last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED));
     button=lookup(app,label("Read","Lesen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&action(button,"click"));g_object_unref(button);button=NULL;puts("ACK 3");
     CHECK(checkpoint(4));CHECK(retired(last)&&!action(last,"select"));g_object_unref(last);last=NULL;
