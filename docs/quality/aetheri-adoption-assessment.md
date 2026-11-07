@@ -1,5 +1,30 @@
 # Aetheri adoption: initial source assessment
 
+## Native single-file picker over the original worker (2026-11-07)
+
+Consumer `185389787c0d1e07fa259c823da3e25ad3e97475` composes the installed
+`ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36` SDK over the original Files model
+from Aetheri `27de5cb228da0f37264fad64d964ad7a660d210d`. The UI provides an
+editable filter, held-ancestor path, explicit complete pages and ordinary
+single-file Open/Cancel. Ticket/key correlation and fresh native contexts prevent
+old results/actions/editable fields from retargeting current controls. Three
+strict installed profiles pass 2/2 CTests each, including actual original-model
+filtering and full 1,020-byte escaped-label real-font reflow. Five independent
+native cases each pass nine stages: controlled preedit/cancel/commit or absent
+IME transport, explicit filtering/clear, ancestor navigation, last-page reveal,
+Previous/Next ABA refusal and exact selected-file witness or Cancel. Maximum
+4,096-entry, German/200%/360x300/high-contrast cases pass shared and sanitizer
+profiles. A held original Refresh finishes only after actual native keyboard
+Cancel retires the GUI. Wrong-key and reused-context counterexamples reject.
+
+The native focus-loss defect at page replacement and narrow German footer were
+corrected with retained failure/image evidence. Exact source/artifacts, scoped
+claims and remaining native error/Retry/resize/variant gates are in the
+[native picker report](file-picker-native-report.md). This ordinary optional
+consumer is not normal Aetheri owner/modal integration, grants or full picker/
+device/software/service adoption. The original Files application, live Aetheri
+sources/defaults/pin and SDK implementation/version remain unchanged.
+
 ## Original Files model worker for a picker (2026-11-07)
 
 Consumer `9a42f0133aca070e193ed7b09ba206ef749e02ab` adds an optional adapter over
