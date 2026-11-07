@@ -1,5 +1,9 @@
 # Save destination ownership over the original Files worker — 2026-11-07
 
+The subsequent [Save UI step](file-picker-save-ui-report.md) connects this
+destination foundation to ordinary owner editing/review. This report retains
+the original worker-only source and acceptance boundary.
+
 Consumer source: `cc27e805202c27a239b5e8565601830578e4dd30`.
 Installed NexaUI remains `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`, version
 0.1.23; original application source remains Aetheri

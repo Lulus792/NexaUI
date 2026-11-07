@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Ordinary Save owner, filename editing and existing-file review (2026-11-07)
+
+Consumer `5b1b9b5ae0a81ece298426775d8818a77fc9a012` connects the original
+Save-target worker to the existing owner/modal UI. Literal filename drafts remain
+separate from raw-row bindings; an existing target needs explicit nested review,
+with default Back, complete name/path reading, compact recovery and retained
+owner note/results. Static/shared Release and ASan/UBSan/LSan pass 6/6 CTests.
+Three native Save workflows and two existing owner/multi regressions pass on the
+final binaries. Independent keyboard/IME/assistive and process-FD observations
+verify complete destinations, cancellation and replacement; selection writes
+nothing. Two core/two native defect checks fail, and the no-IME control passes.
+The [Save UI report](file-picker-save-ui-report.md) retains exact sources/artifacts,
+the earlier multi timeout, corrected fixture assumptions and quota/retirement
+history. This is ordinary destination UI, not application save/grant/unknown
+adoption. Standalone native, parenting/OS close, broader services, real IMEs and
+physical/human/performance acceptance remain open; the full catalogue is active.
+
 ## Original Save destination foundation (2026-11-07)
 
 Consumer `cc27e805202c27a239b5e8565601830578e4dd30` extends the existing
