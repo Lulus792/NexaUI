@@ -187,7 +187,7 @@ Start with a small example, then explore the parts your application needs.
 | [Widget text density](examples/17_widget_text_density/README.md) | Editable text, passwords and numeric fields at equal logical sizes |
 | [Async hierarchy](examples/30_async_hierarchy/README.md) | Loading/error/retry, correlated worker results and native focus/close lifetime |
 | [Original Aetheri manifest](examples/31_aetheri_manifest/README.md) | Original manifest verification, complete declared paths and asynchronous native hierarchy |
-| [File-picker model worker](examples/32_aetheri_file_picker/README.md) | Original Files model on one worker, complete snapshots and owned selected-file witnesses |
+| [Native file picker](examples/32_aetheri_file_picker/README.md) | Original Files worker, paged selection, held ancestors, editable filter/IME and owned file witnesses |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
 | [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows/Linux runners |
 
