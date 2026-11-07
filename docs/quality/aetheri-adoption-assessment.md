@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Atomic original-file batch ownership (2026-11-07)
+
+Consumer `44a185532bd9ab02895a465b6c67f23dbb08e591` adds a copied 4,096-bit
+snapshot-ordinal request and all-or-nothing regular-file witness acquisition to
+the original-model worker. Capacity retry/once-only transfer, stale/inode/I-O/
+type/filter/OS-FD-limit failures, prefix rollback and abandoned sets have actual
+filesystem/descriptor checks in three strict 3/3 CTest profiles. Prefix-leak and
+batch-only state-guard defects fail their counterexamples. Five current native
+single-selection/owner/reading regressions pass. The [batch report](file-picker-batch-report.md)
+records exact source, bounded memory growth and frozen evidence. This is worker
+foundation: visible logical multi-selection, native whole-set UI/assistive and
+owner composition still need implementation and evidence. Save/native parenting/
+services, other packet-6/7/8 surfaces and the earlier peer heap incident stay open.
+No SDK API/version, live Aetheri or pin changes.
+
 ## Complete owner-result keyboard reading (2026-11-07)
 
 Consumer `68908d0822d39ce3748160be20c670c45532bc42` adds owner PageUp/PageDown
