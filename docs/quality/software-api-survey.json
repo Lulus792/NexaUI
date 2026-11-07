@@ -1,0 +1,74 @@
+{
+  "revision": "497822f9609e50483594882dd74e5533257a9722",
+  "scope": "Read-only selected committed Aetheri interfaces, not a build/adoption test. Active Aetheri edits and consumer pin remain untouched.",
+  "archive": {
+    "path": "aetheri-system-api-survey-497822f.tar.gz",
+    "size": 36628,
+    "sha256": "f1ac5cb6f1755eccc354bae6c73b851bd6efd80067ab5a56eea18397f7feced1"
+  },
+  "files": [
+    {
+      "path": "spec/README.md",
+      "normalized_sha256": "b3bc99e5371c140b05874ec491e110e60b5738eb6f91a1edc97a443e835e5fb2",
+      "normalized_size": 39456
+    },
+    {
+      "path": "spec/api/catalogue-v1.xml",
+      "normalized_sha256": "7134b9aa446b123796d685f68eb68a3006d6a3fee8a4f0dce98c550bf0767c8f",
+      "normalized_size": 5363
+    },
+    {
+      "path": "spec/api/management-v1.xml",
+      "normalized_sha256": "83eab1b87f720385bb9e9c1c59663f69e8b28dda5bff0e42cb6307bdd3ff32d0",
+      "normalized_size": 6751
+    },
+    {
+      "path": "src/authority/main.c",
+      "normalized_sha256": "0e3030b35676b2e5523d093b697a3231b2e180d96b993ba9f6db54149a0dfd55",
+      "normalized_size": 76629
+    },
+    {
+      "path": "src/authority/projection.h",
+      "normalized_sha256": "c89abca941ad54a8d093b192442acacf0bc4fdfc707b5683b709801cbd1c1292",
+      "normalized_size": 957
+    },
+    {
+      "path": "src/catalogue/projection.h",
+      "normalized_sha256": "f011fd5034fe9d373749d9312794db7eb18b64ac0a6500ca8b690223276dce75",
+      "normalized_size": 2775
+    },
+    {
+      "path": "src/catalogue/store.h",
+      "normalized_sha256": "0a0a395c2b4904a4000593df232c41f670cfd22f3b7ef869f717b8ee0fb8cc9a",
+      "normalized_size": 12623
+    },
+    {
+      "path": "src/settings/model.h",
+      "normalized_sha256": "776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793",
+      "normalized_size": 1126
+    }
+  ],
+  "projection_header_equal_to_tested_original": true,
+  "management_draft_methods": [
+    "GetProtocolInfo",
+    "ListComponents",
+    "ListInstalls",
+    "GetInstall",
+    "PrepareChange",
+    "ListPlanEffects",
+    "ApplyPlan",
+    "GetOperation",
+    "ListOperationSteps",
+    "CancelOperation",
+    "SubscribeOperation",
+    "PrepareLaunch",
+    "GetLaunch",
+    "Close"
+  ],
+  "observations": [
+    "ListComponents/ListInstalls/GetInstall are declared in the discussion XML, not evidence of an installed inventory service.",
+    "Original implemented projection returns one eligible active app by exact install/account/context, not enumeration, device status or a launch ticket.",
+    "Settings model contains transient displays and appearance/language state. Audio/network/Bluetooth/power/account service/control composition needs its actual owner adapter.",
+    "Committed projection.h is byte-identical after CRLF normalization to the exercised original46e2a21 header; this alone does not prove current Aetheri runtime compatibility."
+  ]
+}

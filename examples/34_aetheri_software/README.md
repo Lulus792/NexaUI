@@ -61,7 +61,7 @@ SQL or infers them from the recovery inventory or manifest path list.
 
 ## Presentation ownership
 
-The selected target set is copied, deduplicated and canonically sorted by full
+The selected target set is copied, checked for duplicates and canonically sorted by full
 16-byte IDs. Up to 100,000 declared targets are accepted; oversize inputs fail
 as a whole. This is a declared model bound, not a measured application budget
 or proof of 100,000 real installed apps. Query I/O costs remain external.
