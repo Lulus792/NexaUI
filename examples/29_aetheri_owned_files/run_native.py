@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import re
+import select
 import signal
 import socket
 import subprocess
@@ -26,7 +27,11 @@ def main():
                  'terminal', 'editor', 'mono', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--expect-unavailable', action='store_true')
+    parser.add_argument('--document', action='store_true', help='open the original editor/Terminal, retain dirty choices and wait for original child end')
+    parser.add_argument('--runtime-library-dir', type=Path, help='explicit private runtime directory for the external Terminal')
     args = parser.parse_args()
+    if args.document and args.expect_unavailable:
+        parser.error('--document requires the accessible positive host')
     if os.getuid() == 0:
         parser.error('Use an unprivileged private test owner')
     source = args.aetheri_source.resolve(strict=True)
@@ -34,6 +39,10 @@ def main():
     for record in inputs['files']:
         if digest(source / record['path']) != record['sha256']:
             raise ValueError('Original source differs: ' + record['path'])
+    if args.document:
+        for record in inputs['document_files']:
+            if digest(source / record['path']) != record['sha256']:
+                raise ValueError('Original document source differs: ' + record['path'])
     paths = {name: getattr(args, name).resolve(strict=True) for name in
              ('server', 'host', 'client', 'registry', 'font', 'terminal', 'editor', 'mono')}
     work = args.work_dir.resolve()
@@ -50,13 +59,19 @@ def main():
                UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
     for name in ('DISPLAY', 'WAYLAND_SOCKET', 'NO_AT_BRIDGE'):
         env.pop(name, None)
+    if args.runtime_library_dir:
+        directory = args.runtime_library_dir.resolve(strict=True)
+        env['LD_LIBRARY_PATH'] = str(directory) + (':' + env['LD_LIBRARY_PATH'] if env.get('LD_LIBRARY_PATH') else '')
+    if args.document:
+        env.update(LIBGL_ALWAYS_SOFTWARE='1', GALLIUM_DRIVER='llvmpipe', LP_NUM_THREADS='2')
     left, right = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     left.settimeout(4)
-    children, streams, peers, images, cleanup = [], [], [], [], []
+    children, streams, peers, images, cleanup, actor_pins = [], [], [], [], [], []
     result = dict(status='failed', aetheri_revision=inputs['aetheri_revision'],
                   hashes={name: digest(path) for name, path in paths.items()},
                   peers=peers, images=images, cleanup=cleanup,
                   expect_unavailable=args.expect_unavailable,
+                  document=args.document,
                   scope='Original app/controller and native transport; no document grant, trusted service or physical/human acceptance')
 
     def start(command, name, pass_fds=()):
@@ -71,10 +86,10 @@ def main():
     def log(name='app'):
         return (work / (name + '.log')).read_text(errors='replace')
 
-    def wait(predicate, label):
+    def wait(predicate, label, allowed_exit=None):
         deadline = time.monotonic() + 5
         while not predicate():
-            if any(child.poll() is not None for child in children) or time.monotonic() >= deadline:
+            if any(child is not allowed_exit and child.poll() is not None for child in children) or time.monotonic() >= deadline:
                 raise RuntimeError(label + '; see logs in ' + str(work))
             time.sleep(.01)
 
@@ -88,13 +103,87 @@ def main():
         if left.recv(32) != b'OK':
             raise RuntimeError('Compositor rejected ' + command)
 
-    def key(code, ctrl=False):
-        if ctrl:
-            event('K 29 1')
+    def key(code, ctrl=False, shift=False):
+        held = ([29] if ctrl else []) + ([42] if shift else [])
+        for modifier in held:
+            event(f'K {modifier} 1')
         event(f'K {code} 1')
         event(f'K {code} 0')
-        if ctrl:
-            event('K 29 0')
+        for modifier in reversed(held):
+            event(f'K {modifier} 0')
+
+    def peer(mode):
+        with (work / ('peer-' + mode + '.log')).open('w') as output:
+            process = subprocess.run([str(paths['client']), str(app.pid), mode], env=env,
+                                     stdout=output, stderr=subprocess.STDOUT, timeout=12)
+        peers.append(dict(mode=mode, code=process.returncode))
+        return process.returncode
+
+    def document_flow():
+        # Use the original peer's localized Close action while the document owns
+        # native keyboard focus. An accessible close intent must not end that child.
+        key(108)
+        key(64)
+        wait(lambda: state(german=1, selected=1), 'original localized Files selection')
+        key(28)
+        wait(lambda: re.search(r'^OPEN pid=(\d+) pin=1$', log(), re.M) and
+             re.search(r'^READY wayland opengles2 editor=(\d+)', log(), re.M), 'original document pair')
+        terminal_pid = int(re.findall(r'^OPEN pid=(\d+) pin=1$', log(), re.M)[-1])
+        editor_pid = int(re.findall(r'^READY .*editor=(\d+)', log(), re.M)[-1])
+        actors = []
+        for pid, binary, parent in ((terminal_pid, paths['terminal'], app.pid), (editor_pid, paths['editor'], terminal_pid)):
+            pin = os.pidfd_open(pid)
+            actor_pins.append(pin)
+            proc = Path(f'/proc/{pid}')
+            fields = (proc / 'stat').read_text().rsplit(')', 1)[1].split()
+            if int(fields[1]) != parent or (proc / 'exe').resolve() != binary or digest(proc / 'exe') != digest(binary):
+                raise RuntimeError('Original document actor mismatch')
+            mappings = (proc / 'maps').read_text()
+            (work / f'actor-{pid}-maps.txt').write_text(mappings)
+            actors.append(dict(pid=pid, binary=str(binary), sha256=digest(binary), parent=parent))
+        result['actors'] = actors
+
+        def ended():
+            return [bool(select.select([pin], [], [], 0)[0]) for pin in actor_pins]
+
+        def document_log():
+            return log().rsplit('READY wayland opengles2 editor=', 1)[-1]
+
+        wait(lambda: 'FOCUS 1\n' in document_log() and re.search(r'^DRAWN \d+$', document_log(), re.M),
+             'original document frame and native focus')
+        codes = dict(zip('abcdefghijklmnopqrstuvwxyz', (30, 48, 46, 32, 18, 33, 34, 35, 23, 36, 37, 38, 50, 49, 24, 25, 16, 19, 31, 20, 22, 47, 17, 45, 21, 44)))
+
+        def accepted():
+            values = re.findall(r'^INPUT (\d+)$', document_log(), re.M)
+            return int(values[-1]) if values else 0
+
+        expected_input = accepted() + 6
+        for character in 'ihello':
+            key(codes[character])
+        wait(lambda: accepted() == expected_input, 'original editor accepts complete input')
+        key(16, ctrl=True, shift=True)
+        time.sleep(.2)
+        if any(ended()) or (folder / 'seed.txt').read_bytes() != b'seed':
+            raise RuntimeError('Terminal close discarded dirty content or saved implicitly')
+        capture('original dirty-document close choice')
+        key(1)
+        if peer('close'):
+            raise RuntimeError('Original Files close action failed')
+        wait(lambda: state(closing=1), 'Files waits for original document')
+        time.sleep(.2)
+        if app.poll() is not None or any(ended()) or 'DOCUMENT_END ' in log():
+            raise RuntimeError('Files closed before its original document')
+        capture('Files waits while original document remains editable')
+        key(31, ctrl=True)
+        wait(lambda: (folder / 'seed.txt').read_bytes() == b'helloseed', 'exact original selected-FD save')
+        if any(ended()) or app.poll() is not None or len(re.findall(r'^OPEN pid=', log(), re.M)) != 1:
+            raise RuntimeError('Save replaced or ended original actors')
+        result['saved_sha256'] = digest(folder / 'seed.txt')
+        key(16, ctrl=True)
+        wait(lambda: all(ended()) and 'DOCUMENT_END status=0' in log(), 'original document pair ended', allowed_exit=app)
+        result['document_checks'] = ['exact actor binaries and parents', 'dirty Terminal close retained',
+                                     'close choice cancelled', 'Files close waits', 'exact selected-FD save',
+                                     'one original launch', 'original editor and direct child ended']
 
     def capture(label):
         time.sleep(.08)
@@ -137,21 +226,21 @@ def main():
             raise RuntimeError('Unexpected presentation dependency')
         modes = ['initial'] if args.expect_unavailable else ['initial', 'dialog', 'text', 'cancel', 'query', 'query-clear']
         for mode in modes:
-            with (work / ('peer-' + mode + '.log')).open('w') as output:
-                peer = subprocess.run([str(paths['client']), str(app.pid), mode], env=env,
-                                      stdout=output, stderr=subprocess.STDOUT, timeout=12)
-            peers.append(dict(mode=mode, code=peer.returncode))
+            code = peer(mode)
             if args.expect_unavailable:
                 text = (work / ('peer-' + mode + '.log')).read_text()
-                if peer.returncode != 1 or 'target app was not registered' not in text:
+                if code != 1 or 'target app was not registered' not in text:
                     raise RuntimeError('Provider-off negative failed at an unexpected boundary')
-            elif peer.returncode:
+            elif code:
                 raise RuntimeError('Independent original peer failed: ' + mode)
             if mode in ('initial', 'text', 'query'):
                 capture(mode)
         if 'OPEN pid=' in log() or sorted(path.name for path in folder.iterdir()) != ['existing', 'seed.txt']:
             raise RuntimeError('View-only actions changed/opened content')
-        key(16, ctrl=True)
+        if args.document:
+            document_flow()
+        else:
+            key(16, ctrl=True)
         if app.wait(timeout=8) != 0 or 'CLOSED files ' not in log() or 'failed=0' not in log():
             raise RuntimeError('Original Files did not close cleanly')
         children.remove(app)
@@ -161,6 +250,13 @@ def main():
                 raise RuntimeError('Sanitizer diagnostic in ' + str(path))
         result.update(status='expected-unavailable' if args.expect_unavailable else 'passed', peers=peers, images=images)
     finally:
+        # These pidfds refer only to the document actors opened by this host.
+        # On a failing test, release those processes before their parent owner.
+        for pin in reversed(actor_pins):
+            try:
+                signal.pidfd_send_signal(pin, signal.SIGHUP)
+            except ProcessLookupError:
+                pass
         for child in reversed(children):
             escalated = False
             if child.poll() is None:
@@ -180,6 +276,16 @@ def main():
             cleanup.append(dict(command=child.args, code=child.returncode, escalated=escalated))
         for stream in streams:
             stream.close()
+        for pin in actor_pins:
+            escalated = False
+            if not select.select([pin], [], [], 1)[0]:
+                escalated = True
+                try:
+                    signal.pidfd_send_signal(pin, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            cleanup.append(dict(actor_pin=pin, ended=bool(select.select([pin], [], [], 3)[0]), escalated=escalated))
+            os.close(pin)
         left.close()
         right.close()
         (work / 'result.json').write_text(json.dumps(result, indent=2) + '\n')

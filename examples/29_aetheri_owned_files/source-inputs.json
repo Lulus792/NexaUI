@@ -154,5 +154,87 @@
       "path": "tools/test_files_view_fault.py",
       "sha256": "9e8cd0930163b56982306ecb9a67fc678a1d42920a39e9b187c4a71b7d75b3a0"
     }
+  ],
+  "document_files": [
+    {
+      "path": "src/terminal/clipboard.c",
+      "sha256": "7c5d6923cb0a235b15929576e3e5f5a2da925b80f5d5f4edf8fa9bc9f1c63aa4"
+    },
+    {
+      "path": "src/terminal/clipboard.h",
+      "sha256": "34cd8052244638b949c9870f798d645e63eb944936281c2acfc03bc9285b9fc2"
+    },
+    {
+      "path": "src/terminal/composition.c",
+      "sha256": "d01270a1e0e5fe260cd0e3f90857b7374b30f8976f68ce8f8cb50bea2f5a5be1"
+    },
+    {
+      "path": "src/terminal/composition.h",
+      "sha256": "1eb9bc93bebc5f974a1ba5fd30170cf598203232685fa252607c0c882f39beaf"
+    },
+    {
+      "path": "src/terminal/main.c",
+      "sha256": "9d275a9cee84fa0bb887eaf003f590c204a7aaee1af7a8007af4d64a9623907c"
+    },
+    {
+      "path": "src/terminal/model.c",
+      "sha256": "7a2acfba8f7d173d3f2ae23c3a8769f4552e9839f296dd0fe71fb7a32e59a871"
+    },
+    {
+      "path": "src/terminal/model.h",
+      "sha256": "9b703971117782ed7c1f4bc6bd2b7f6cb2280c46b5653283297a0f06375cfeb2"
+    },
+    {
+      "path": "src/terminal/nexaui_view.c",
+      "sha256": "a276ace8d61367d1deb45a00f95f0277869d7ad38349b08f32b63a86a0e18a40"
+    },
+    {
+      "path": "src/terminal/nexaui_view.h",
+      "sha256": "487f6843549e8d28eff6bef5c8132cd5ec3aaa0ca5813e6e70bddeb151d94246"
+    },
+    {
+      "path": "src/terminal/paste.c",
+      "sha256": "4ae25aafdc16fe8c9fdd82561b0ec5a4a6f666106361b1e05c2cc87296a4e493"
+    },
+    {
+      "path": "src/terminal/paste.h",
+      "sha256": "5e5968d701ecb009f70dd92bae6b9c0a2b234651f6dcc03359ee8d98abca32bd"
+    },
+    {
+      "path": "src/terminal/pty.c",
+      "sha256": "6248cc4ad76d6577cdcd623cf5bf08380f7faaa0a040883f44ff91db90155020"
+    },
+    {
+      "path": "src/terminal/pty.h",
+      "sha256": "6cec87625f6c75344c2edf3f3936bd13f63b4a896c96b8ba32eab44f76b04b13"
+    },
+    {
+      "path": "src/terminal/pty_starter.c",
+      "sha256": "93f0a3ab4832e6342c1bc1173c4a5dfa1916d4bfa1dc94d440bcf2eee70f9786"
+    },
+    {
+      "path": "src/terminal/session.c",
+      "sha256": "3636b2c2b318e1c49f23710966cfea486e44db2ffd7af98a2249cdb29e768842"
+    },
+    {
+      "path": "src/terminal/session.h",
+      "sha256": "72c361fe5724c3380f1ee2446dfa97648efd6deb172b89ea8709d96a13e26ce2"
+    },
+    {
+      "path": "src/terminal/spawn.c",
+      "sha256": "7c72dc1b48cb6e061111c0d806ea353cc9081a220a13ad8490d2e4f00c1df169"
+    },
+    {
+      "path": "src/terminal/spawn.h",
+      "sha256": "f4a1285be9172922b853f2c6c3363943985e93c6d99e750e58f94d83bc5aea84"
+    },
+    {
+      "path": "src/terminal/workspace.c",
+      "sha256": "bdda7511ed16f9840ec1fa5698edafbc163a63f19c962b3d13eee67955164305"
+    },
+    {
+      "path": "src/terminal/workspace.h",
+      "sha256": "cf82b8dd99c154f55dfd0ed5410aa9a1f626cf4168f8819bda3930919d842ff6"
+    }
   ]
 }

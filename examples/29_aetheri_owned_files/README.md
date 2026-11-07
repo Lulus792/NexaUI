@@ -7,6 +7,7 @@ It imports original sources from immutable Aetheri
 edit history, naming operation or UI. `source-inputs.json` hashes all 38 selected
 source/header/test/metadata inputs and rejects a different snapshot at configure.
 The full original Git archive SHA-256 is recorded separately in that file.
+The optional document test additionally verifies 20 original Terminal inputs.
 
 Aetheri's own CMake project intentionally requires exactly SDK 0.1.18. This
 external experiment builds the original application sources without executing
@@ -88,8 +89,51 @@ The original full `test_files_view.py` is deliberately not reported as passed
 by this experiment: it verifies Aetheri's exact 0.1.18 pin and a particular shared
 deployment record. Its assertions remain intact. This consumer instead selects
 and records its own experimental SDK and reuses the original client/fault tests.
-Normal owner launch, document/Terminal integration, actual pickers/authorities,
+Full normal-owner/document/Terminal workflows, actual pickers/authorities,
 installed IMEs, broader native chrome/scale/loss cases, other platforms and human/
 physical acceptance remain open. See the
 [quality report](../../docs/quality/aetheri-adoption-assessment.md#original-aetheri-owned-files-on-the-candidate-sdk-2026-11-07)
 for exact tested revisions, binaries and acceptance boundaries.
+
+## Original document and close lifetime
+
+`NEXAUI_OWNED_FILES_DOCUMENTS=ON` additionally builds `owned_files_terminal` from
+the same original Aetheri SDL Terminal and `owned_files_editor` from its original
+C17 editor/document/file sources. The editor has no toolkit dependency. This is
+an external application integration profile; SDL does not enter NexaUI or the
+Files host. The default OFF configuration does not search for SDL. ON requires
+the original reviewed SDL3 3.4.20, SDL3_ttf 3.2.2 and Wayland-client 1.26.0 packages
+in independently supplied local prefixes. No download or installation is implied.
+
+```sh
+cmake -S examples/29_aetheri_owned_files -B out/original-documents \
+  -DCMAKE_PREFIX_PATH='/absolute/installed/sdk;/absolute/reviewed/sdl-prefix' \
+  -DAETHERI_SOURCE_DIR=/absolute/immutable/aetheri \
+  -DNEXAUI_OWNED_FILES_DOCUMENTS=ON \
+  -DNEXAUI_OWNED_FILES_TEST_FONT=/absolute/LiberationSans-Regular.ttf \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build out/original-documents
+```
+
+Use the native command above with these newly built Terminal/editor paths, plus
+`--document --runtime-library-dir /absolute/reviewed/sdl-prefix/lib`. This mode
+requires the accessible positive host and cannot combine with
+`--expect-unavailable`. It first runs all six original independent Files peer
+modes, then opens its selected literal `seed.txt` through the original held-FD
+launch. It checks the original actor executables/parents using pidfds and records
+their process maps. Native input edits the original document. A Terminal-window
+close must retain its dirty-content choice; Escape cancels it. A localized native
+Files Close action must wait for that same document rather than ending/replacing
+it. Explicit save must produce exactly `helloseed`; only explicit document close
+ends the original editor/Terminal pair and lets Files exit normally. Captures
+retain both the dirty choice and Files' waiting message. Failure cleanup targets
+only the retained private actors and records escalation separately.
+
+This proves a selected ordinary-user document/save/close path through the
+original controller. It is not a normal installed owner launch, document grant,
+full Files/Terminal suite, PTY/lease drain, durable recovery or a NexaUI Terminal
+presentation claim. The child Terminal deliberately uses Aetheri's existing SDL
+view. Its external shared dependencies are not sanitizer-instrumented just
+because the original C17 app/editor/SDK are. See the
+[document-lifetime evidence](../../docs/quality/aetheri-adoption-assessment.md#original-files-document-save-and-close-lifetime-2026-11-07)
+for tested static/shared/sanitizer artifacts and the detected early-close mutant.
