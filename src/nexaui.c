@@ -71,7 +71,9 @@ typedef struct nx_region {
     uint64_t id;
     uint64_t overlay_id;
     uint64_t nav_parent_id;
-    unsigned nav_axis; /* 1 vertical menu, 2 horizontal menu bar. */
+    unsigned nav_axis; /* 1 vertical menu, 2 horizontal menu bar, 3 tree. */
+    uint64_t tree_row_id, tree_parent_id;
+    unsigned tree_state; /* 1 branch, 2 expanded; retained only with the region. */
     uint64_t scroll_owner_id; /* A scrollbar action must retain its owner. */
     unsigned scroll_axis; /* 1 horizontal, 2 vertical. */
     int scroll_steps;
@@ -861,8 +863,12 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         *route = (nx_event_route){0};
         if (event->type != NX_EVENT_KEY_DOWN_CONSUMED)
             nx_process_interaction(ctx, event, route);
-        route->focus_id = ctx->focused_id;
-        route->focus_serial = ctx->focus_serial;
+        /* Tree Left/Right can move focus while expansion still belongs to
+           the original row. Other events retain their post-routing target. */
+        if (!route->focus_id) {
+            route->focus_id = ctx->focused_id;
+            route->focus_serial = ctx->focus_serial;
+        }
     }
     ctx->selection_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
@@ -1161,7 +1167,7 @@ static void nx_focus_advance(nx_context *ctx, int backwards) {
 static void nx_menu_focus_advance(nx_context *ctx, nx_key key) {
     nx_region_buffer *regions = &ctx->previous_regions;
     nx_region *focused = nx_region_find(regions, ctx->focused_id);
-    if (!focused || !focused->nav_axis) return;
+    if (!focused || !focused->nav_axis || focused->nav_axis > 2u) return;
     int direction = 0;
     if (key == NX_KEY_HOME) direction = 2;
     else if (key == NX_KEY_END) direction = -2;
@@ -1194,6 +1200,76 @@ static void nx_menu_focus_advance(nx_context *ctx, nx_key key) {
         nx_context_change_focus(ctx, candidate->id);
         ctx->key_active_id = 0;
         return;
+    }
+}
+
+static int nx_tree_nav_available(const nx_context *ctx, const nx_region *row,
+                                 uint64_t owner) {
+    if (!row || row->nav_axis != 3u || row->nav_parent_id != owner ||
+        row->id != row->tree_row_id || !(row->flags & NX_REGION_FOCUSABLE) ||
+        (row->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+        (ctx->previous_overlay_id && row->overlay_id != ctx->previous_overlay_id))
+        return 0;
+    uint64_t parent_id = row->tree_parent_id;
+    while (parent_id) {
+        const nx_region *parent = nx_region_find(&ctx->previous_regions, parent_id);
+        if (!parent || parent->nav_axis != 3u || parent->nav_parent_id != owner ||
+            (parent->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
+            !(parent->tree_state & 2u)) return 0;
+        parent_id = parent->tree_parent_id;
+    }
+    return 1;
+}
+
+static void nx_tree_focus_advance(nx_context *ctx, nx_key key,
+                                  nx_event_route *route) {
+    nx_region_buffer *regions = &ctx->previous_regions;
+    nx_region *focused = nx_region_find(regions, ctx->focused_id);
+    if (!focused || focused->nav_axis != 3u) return;
+    nx_region *row = nx_region_find(regions, focused->tree_row_id);
+    if (!nx_tree_nav_available(ctx, row, focused->nav_parent_id)) return;
+    nx_region *next = NULL;
+    if (key == NX_KEY_LEFT || key == NX_KEY_RIGHT) {
+        route->focus_id = focused->id;
+        route->focus_serial = ctx->focus_serial;
+        if (key == NX_KEY_LEFT) {
+            if (row->tree_state & 2u) row->tree_state &= ~2u;
+            else {
+                nx_region *parent = nx_region_find(regions, row->tree_parent_id);
+                if (nx_tree_nav_available(ctx, parent, row->nav_parent_id)) next = parent;
+            }
+        } else if (row->tree_state & 1u) {
+            if (!(row->tree_state & 2u)) row->tree_state |= 2u;
+            else for (size_t i = 0; i < regions->count; ++i) {
+                nx_region *child = &regions->data[i];
+                if (child->tree_parent_id == row->id &&
+                    nx_tree_nav_available(ctx, child, row->nav_parent_id)) {
+                    next = child;
+                    break;
+                }
+            }
+        }
+    } else if (key == NX_KEY_UP || key == NX_KEY_DOWN ||
+               key == NX_KEY_HOME || key == NX_KEY_END) {
+        size_t start = 0;
+        while (start < regions->count && regions->data[start].id != row->id) ++start;
+        if (start == regions->count) return;
+        int backwards = key == NX_KEY_UP || key == NX_KEY_END;
+        size_t index = key == NX_KEY_HOME ? 0 : key == NX_KEY_END ? regions->count : start;
+        if (key == NX_KEY_DOWN) ++index;
+        while (backwards ? index > 0 : index < regions->count) {
+            if (backwards) --index;
+            nx_region *candidate = &regions->data[index];
+            if (nx_tree_nav_available(ctx, candidate, row->nav_parent_id)) {
+                next = candidate;
+                break;
+            }
+            if (!backwards) ++index;
+        }
+    }
+    if (next) {
+        nx_context_change_focus(ctx, next->id);
+        ctx->key_active_id = 0;
     }
 }
 
@@ -1366,7 +1442,10 @@ static void nx_process_interaction(nx_context *ctx, const nx_event *event, nx_ev
                 ctx->key_active_id = focused->id;
                 ctx->key_active_key = event->key;
             }
-        } else nx_menu_focus_advance(ctx, event->key);
+        } else {
+            nx_tree_focus_advance(ctx, event->key, route);
+            nx_menu_focus_advance(ctx, event->key);
+        }
     } else if (event->type == NX_EVENT_KEY_UP &&
                event->key == ctx->key_active_key) {
         if (ctx->focused_id == ctx->key_active_id)
@@ -5103,6 +5182,31 @@ nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
             }
         }
         *selected_id = desc->control.id;
+    }
+    uint64_t tree_owner = 0, tree_parent = 0;
+    uint64_t ancestor_id = desc->control.parent_id;
+    while (ancestor_id) {
+        uint32_t ancestor = nx_semantic_find_index(&ctx->semantics, ancestor_id);
+        if (ancestor == UINT32_MAX) break;
+        const nx_semantic_record *parent = &ctx->semantics.nodes[ancestor];
+        if (parent->role == NX_ROLE_TREE || parent->role == NX_ROLE_TABLE) {
+            tree_owner = ancestor_id;
+            break;
+        }
+        if (!tree_parent && parent->role == NX_ROLE_TREE_ITEM) tree_parent = ancestor_id;
+        ancestor_id = parent->parent_id;
+    }
+    if (tree_owner) {
+        uint64_t ids[2] = {desc->control.id, desc->expander_id};
+        for (unsigned i = 0; i < (desc->has_children ? 2u : 1u); ++i) {
+            nx_region *region = nx_region_find(&ctx->current_regions, ids[i]);
+            region->nav_axis = 3u;
+            region->nav_parent_id = tree_owner;
+            region->tree_row_id = desc->control.id;
+            region->tree_parent_id = tree_parent;
+            region->tree_state = (desc->has_children ? 1u : 0u) |
+                                 (next_expanded ? 2u : 0u);
+        }
     }
     if (desc->has_children) *expanded = next_expanded;
     *out_state = state;
