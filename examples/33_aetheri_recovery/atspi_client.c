@@ -16,6 +16,9 @@ static int replace_text(AtspiAccessible *node,const char *text){
     AtspiEditableText *t=node?atspi_accessible_get_editable_text_iface(node):NULL;GError *error=NULL;
     int yes=t&&atspi_editable_text_set_text_contents(t,text,&error)&&!error;if(error)g_error_free(error);if(t)g_object_unref(t);return yes;
 }
+static int has_focus(AtspiAccessible *app,const char *name,AtspiRole role){
+    AtspiAccessible *node=lookup(app,name,role);int yes=node&&state(node,ATSPI_STATE_FOCUSED);if(node)g_object_unref(node);return yes;
+}
 static int rectangle(AtspiAccessible *node,AtspiRect *out){
     AtspiComponent *c=node?atspi_accessible_get_component_iface(node):NULL;GError *error=NULL;AtspiRect *r=c?atspi_component_get_extents(c,ATSPI_COORD_TYPE_WINDOW,&error):NULL;
     int yes=!error&&r;if(yes)*out=*r;if(error)g_error_free(error);if(r)g_boxed_free(ATSPI_TYPE_RECT,r);if(c)g_object_unref(c);return yes;
@@ -41,8 +44,8 @@ cleanup:
     g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
 }
 int main(int argc,char **argv){
-    int okay=0,initialized=0,ime=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
-    CHECK(argc>=4&&argc<=6);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else CHECK(0);}
+    int okay=0,initialized=0,ime=0,navigation=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
+    CHECK(argc>=4&&argc<=7);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else CHECK(0);}
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
@@ -66,8 +69,39 @@ int main(int argc,char **argv){
     double until=now()+3;while(now()<until&&!text_equal(field,""))pump();CHECK(text_equal(field,""));puts("ACK 8");
     CHECK(checkpoint(9));CHECK(retired(field));g_object_unref(field);field=NULL;last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&state(last,ATSPI_STATE_SELECTED));
     button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 9");
+    if(navigation){
+        CHECK(checkpoint(10));CHECK(has_focus(app,label("Read","Lesen"),ATSPI_ROLE_PUSH_BUTTON));puts("ACK 10");
+        CHECK(checkpoint(11));CHECK(retired(last)&&!action(last,"select")&&retired(button));g_object_unref(last);last=NULL;g_object_unref(button);button=NULL;
+        last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&state(last,ATSPI_STATE_SELECTED));
+        button=lookup(app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;puts("ACK 11");
+        CHECK(checkpoint(12));CHECK(has_focus(app,label("Read","Lesen"),ATSPI_ROLE_PUSH_BUTTON));puts("ACK 12");
+        CHECK(checkpoint(13));CHECK(has_focus(app,"Filter",ATSPI_ROLE_PUSH_BUTTON));puts("ACK 13");
+        CHECK(checkpoint(14));field=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"")&&state(field,ATSPI_STATE_FOCUSED)&&retired(last));puts("ACK 14");
+        CHECK(checkpoint(15));CHECK(text_equal(field,"x")&&state(field,ATSPI_STATE_FOCUSED));scrollbar=lookup(app,"Vertical scrollbar",ATSPI_ROLE_SLIDER);CHECK(!scan_failed);
+        if(scrollbar)CHECK(state(scrollbar,ATSPI_STATE_FOCUSABLE)&&!retired(scrollbar));
+        printf("FILTER_SCROLLBAR %d\n",scrollbar!=NULL);puts("ACK 15");
+        CHECK(checkpoint(16));
+        if(scrollbar){CHECK(state(scrollbar,ATSPI_STATE_FOCUSED));puts("TAB_SCROLL_FORWARD");char line[32];CHECK(fgets(line,sizeof line,stdin)&&!strcmp(line,"NEXT_TAB\n"));}
+        CHECK(has_focus(app,label("Apply","Anwenden"),ATSPI_ROLE_PUSH_BUTTON));puts("ACK 16");
+        CHECK(checkpoint(17));
+        if(scrollbar){CHECK(state(scrollbar,ATSPI_STATE_FOCUSED));puts("TAB_SCROLL_REVERSE");char line[32];CHECK(fgets(line,sizeof line,stdin)&&!strcmp(line,"NEXT_TAB\n"));}
+        CHECK(state(field,ATSPI_STATE_FOCUSED)&&text_equal(field,"x"));puts("ACK 17");
+        CHECK(checkpoint(18));CHECK(has_focus(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON));puts("ACK 18");
+        CHECK(checkpoint(19));CHECK(has_focus(app,label("Back","Zurück"),ATSPI_ROLE_PUSH_BUTTON));puts("ACK 19");
+        for(unsigned cycle=0;cycle<3;++cycle){
+            unsigned back=20+2*cycle;CHECK(checkpoint(back));CHECK(retired(field)&&!replace_text(field,"late edit"));g_object_unref(field);field=NULL;
+            if(scrollbar){CHECK(retired(scrollbar));g_object_unref(scrollbar);scrollbar=NULL;}
+            button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));g_object_unref(button);button=NULL;
+            g_object_unref(last);last=lookup(app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_SELECTED));printf("ACK %u\n",back);
+            if(cycle==2)break;
+            CHECK(checkpoint(back+1));field=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"x")&&state(field,ATSPI_STATE_FOCUSED));printf("ACK %u\n",back+1);
+        }
+        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));
+        puts("RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK");
+    }
     puts("RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK");okay=1;
 cleanup:
+    if(scrollbar)g_object_unref(scrollbar);
     if(button)g_object_unref(button);
     if(field)g_object_unref(field);
     if(detail)g_object_unref(detail);

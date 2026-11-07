@@ -222,3 +222,21 @@ retained text and button to reject edits/actions. Only after those checks does
 the driver release SQL. The original result is disposed exactly once after GUI
 retirement, with no late adoption and balanced process FDs. The test adds no
 timeout or cancellation promise to original filesystem work or worker join.
+
+## Native keyboard navigation and filter cancellation
+
+Add `--navigation` to the ordinary native driver/peer workflow to extend its
+ten checkpoints to twenty-five. It drives native Tab/Shift-Tab, activates Read
+with Enter, reaches the filter with Enter, types a draft, and cancels through
+keyboard Back and Escape. An independent OS peer verifies focus, selected full
+record identity, retained drafts on reopen, unchanged applied results and refused
+late edits on retired fields. This mode expects exactly three original reads:
+initial, the ordinary OS-action refresh and the additional keyboard refresh.
+Filtering and cancellation dispatch no backend request.
+
+The public scroll-area contract makes visible scrollbars focusable. The peer
+inventories the filter-help scrollbar and checks the forward/reverse Tab path
+through it when present; ordinary layouts also check the direct path without a
+scrollbar. Each Tab stop and Cancel result is checked explicitly.
+Combine `--navigation` with the ordinary `--ime`
+case as needed; held-transaction checks use their own peer separately.

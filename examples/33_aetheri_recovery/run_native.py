@@ -19,9 +19,10 @@ def main():
     for name in ('server','registry','host','client','font','source','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--kind',choices=('system','user'),default='system')
     p.add_argument('--held',choices=('wake','close'),help='Test-only held host and lifecycle OS peer')
-    for name in ('german','large','small','contrast','light','ime'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','ime','navigation'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.held and a.ime:p.error('The held-transaction workflow has its own lifecycle peer; run IME separately')
+    if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
@@ -55,7 +56,7 @@ def main():
     else:env.pop('RVG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
-            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held')},'checks':[],'expected_records':len(reference)}
+            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation')},'checks':[],'expected_records':len(reference)}
     def start(command,name,fds=(),input_pipe=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
         child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if input_pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True)
@@ -72,6 +73,7 @@ def main():
         left.sendall(command.encode('ascii'))
         if left.recv(64)!=b'OK':raise RuntimeError('Compositor rejected '+command)
     def key(code):event(f'K {code} 1');event(f'K {code} 0')
+    def reverse_tab():event('K 42 1');key(15);event('K 42 0')
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
         return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',lines[-1])} if lines else {}
@@ -121,7 +123,7 @@ def main():
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else []),'client',input_pipe=True)
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         if a.held:
             for step in (0,1):
@@ -148,7 +150,7 @@ def main():
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
         else:
-            for step in range(10):
+            for step in range(25 if a.navigation else 10):
                 peer_line('STEP '+str(step))
                 if step==1:key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'logical End')
                 if step==2:
@@ -166,6 +168,21 @@ def main():
                 if step==9:
                     key(28);wait(lambda:view().get('mode')==0 and view().get('count')==len(reference),'clear local filter');key(107)
                     wait(lambda:view().get('focus')==1000+len(reference)-1,'restored selected record')
+                if step==10:reverse_tab();wait(lambda:view().get('focus')==41,'reverse Tab Close to Read')
+                if step==11:
+                    key(28);wait(lambda:view().get('epoch')==3 and view().get('state')==2 and view().get('request')==3,'keyboard Read observes original owner');key(107)
+                    wait(lambda:view().get('focus')==1000+len(reference)-1,'selected last record after keyboard refresh')
+                if step==12:key(15);wait(lambda:view().get('focus')==41,'forward Tab Filter to Read')
+                if step==13:reverse_tab();wait(lambda:view().get('focus')==40,'reverse Tab Read to Filter')
+                if step in (14,21,23):key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'keyboard opens retained filter')
+                if step==15:
+                    count=view().get('keys',0);key(45);wait(lambda:view().get('keys',0)>=count+2,'keyboard draft event pair')
+                if step==16:key(15);wait(lambda:view().get('focus')==(11 if result.get('filter_scrollbar') else 44),'forward Tab field to next focusable control')
+                if step==17:reverse_tab();wait(lambda:view().get('focus')==(11 if result.get('filter_scrollbar') else 45),'reverse Tab Apply to previous focusable control')
+                if step==18:reverse_tab();wait(lambda:view().get('focus')==42,'reverse Tab field to Close')
+                if step==19:reverse_tab();wait(lambda:view().get('focus')==43,'reverse Tab Close to Back')
+                if step in (20,22,24):
+                    key(28 if step==20 else 1);wait(lambda:view().get('mode')==0 and view().get('focus')==40 and view().get('count')==len(reference),'Cancel preserves applied results and restores Filter focus')
                 peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
                 if step==2:
                     wait(lambda:re.search(r'^READ_PAGES (\d+)$',log('client'),re.M) is not None,'detail geometry',(peer,))
@@ -174,11 +191,20 @@ def main():
                         for i in range(pages):
                             before=view().get('frames',0);key(code);wait(lambda:view().get('frames',0)>before,'detail page frame')
                             peer.stdin.write(f'PAGE {direction} {i}\n'.encode());peer.stdin.flush();peer_line(f'PAGE_ACK {direction} {i}')
+                if step in (16,17) and a.navigation and result.get('filter_scrollbar'):
+                    peer_line('TAB_SCROLL_FORWARD' if step==16 else 'TAB_SCROLL_REVERSE')
+                    (key(15) if step==16 else reverse_tab());wait(lambda:view().get('focus')==(44 if step==16 else 45),'Tab continues through help scrollbar')
+                    peer.stdin.write(b'NEXT_TAB\n');peer.stdin.flush()
                 peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
+                if step==15 and a.navigation:
+                    matches=re.findall(r'^FILTER_SCROLLBAR ([01])$',log('client'),re.M)
+                    if len(matches)!=1:raise RuntimeError('Missing independent filter-scrollbar inventory')
+                    result['filter_scrollbar']=bool(int(matches[0]))
         peer.wait(timeout=7)
         marker=('RECOVERY_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'RECOVERY_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK'
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
-        if view().get('request')!=2:raise RuntimeError('Local inspection/filtering posted backend work')
+        if a.navigation and 'RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Missing independent native navigation checks')
+        if view().get('request')!=(3 if a.navigation else 2):raise RuntimeError('Local inspection/filtering posted backend work')
         if a.held=='close':
             if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Held worker ended before retirement peer finished')
             release_gate()
