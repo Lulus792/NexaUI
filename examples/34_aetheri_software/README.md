@@ -6,8 +6,8 @@ identity/context, recipient account/UID and an explicit set of installation IDs.
 The presentation model receives only copied metadata. It owns no catalogue path,
 SQL, launcher, device service or permission capability.
 
-This step contains the read producer and immutable presentation model, not a
-native software-management window. Worker scheduling, the virtualized list,
+This step contains the read producer, immutable presentation model and bounded
+owner worker, not a native software-management window. The virtualized list,
 filter/details, native input/assistive publication, artifact dependency joins and
 production service transport remain subsequent integration work. The SDK's
 existing channel, list/tree, text, action and software-window APIs are retained.
@@ -16,7 +16,7 @@ existing channel, list/tree, text, action and software-window APIs are retained.
 cmake -S examples/34_aetheri_software -B build-software \
   -DCMAKE_PREFIX_PATH=/path/to/installed-nexaui \
   -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri
-cmake --build build-software --target software_model_test
+cmake --build build-software --target software_model_test software_worker_test
 ctest --test-dir build-software --output-on-failure
 ```
 
@@ -24,8 +24,9 @@ The original Aetheri inputs reuse example 33's 67-input check at
 `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`, normalizing only CRLF to LF.
 Keep that source immutable and independent from Aetheri's active checkout.
 Original build, OpenSSL and SQLite requirements remain in force; they belong to
-this optional application consumer, not to the NexaUI SDK. NexaUI package/header
-consumption here is not evidence of native NexaUI rendering or platform linkage.
+this optional application consumer, not to the NexaUI SDK. Worker tests use the
+installed SDK's channel and UI-context lifecycle. They exercise no native window,
+renderer, clipboard, IME or assistive provider.
 
 ## Source and observation contract
 
@@ -90,3 +91,47 @@ old context is refused and a new one can observe again. Owner/model checks
 exercise stale tickets, exact context/recipient/keys, immutable revisions,
 partial-read/OOM failures and retained snapshots. A separate declared 100,000-row
 model rejects a hidden malformed row; it is not original backend inventory.
+
+## Bounded owner worker
+
+`software_worker.h` is application-private. `sww_start` copies an explicit
+protected absolute Root source path and identity. The worker alone opens, reads
+and closes the original catalogue; the handshake returns its original context
+without scanning the selected apps. Opening/get-info may block this handshake.
+Thread separation does not create broker, IPC, provenance or authority checks.
+
+`sww_submit` copies the complete scope and selected target array before admission
+and wakeup. The existing `nx_sim_channel` reserves two command/completion slots;
+capacity returns `NX_ERROR_LIMIT`, with no ticket or input ownership transfer.
+Each completion carries both its channel ticket and copied view/request key.
+The UI must check both before adopting a result. The model independently checks
+its current ticket and exact source/recipient/target set. Changing views does not
+cancel or free a channel reservation. `sww_reply_take` detaches one successful
+result once; every received message, including stale and error replies, needs
+`nx_sim_message_dispose`. A transport/allocation status is separate from a
+reply's original negative errno. Do not interpret either as confirmed emptiness.
+
+The nonblocking close-on-exec pipe is a wake hint, not the result queue. Before
+sleeping, repeatedly receive until the channel returns no ticket. Receiving drains
+the pipe before taking a completion, so already queued completions must be drained
+without waiting for another byte. The future native host can use the existing
+`nx_window_poll_with_fd`; no periodic polling or new SDK API is required.
+
+Stop rejects new admission. Work already dequeued can finish; queued work completes
+as `-ECANCELED` without a new original scan. Retire the view and its publication
+before stop/join. Worker code contains no UI context, callback or semantic object.
+Joining waits for original I/O and has no filesystem deadline. After joining,
+destroy drains undispatched owned responses, destroys the channel and closes the
+pipe. Successful detached results remain the caller's responsibility. Owner-side
+calls and result/snapshot ownership remain serialized on the UI thread.
+
+The worker test holds two actual original SQLite read transactions per Root
+schema. It overwrites a queued caller scope/target array, checks the complete
+copied result, refuses stale tickets, exhausts both slots, transfers once and
+retains old snapshots across original read error. It also injects reply allocation
+failure and retries. In the shutdown case it destroys an actual `nx_context` and
+the app model before releasing the original SQL query; the late result is disposed,
+the queued job is cancelled and all descriptors balance. This is UI-context/model
+retirement, not native-window or AT-SPI retirement. Tests reuse `run_model.py`'s
+private metadata fixture and require unchanged Root/User database bytes and rows
+for all nine Root v2–v10 schemas. They create no real installed app payloads.

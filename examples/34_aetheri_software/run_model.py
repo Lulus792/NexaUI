@@ -11,6 +11,7 @@ import tempfile
 
 p=argparse.ArgumentParser(description=__doc__)
 for name in ('source','test','work'):p.add_argument('--'+name,type=Path,required=True)
+p.add_argument('--prepare-only',action='store_true',help='Create private metadata fixtures without running model observations')
 a=p.parse_args();sys.dont_write_bytecode=True;sys.path.insert(0,str(a.source.resolve()/'tools'))
 import catalogue_contracts as cc
 from test_contracts import rows
@@ -48,6 +49,10 @@ UPDATE installs SET state='active',active_generation_id=(SELECT generation_id FR
 """)
     db.commit()
 for path in (system/'catalogue.sqlite3',user/'catalogue.sqlite3'):path.chmod(0o600)
+(root/'fixture.json').write_text(json.dumps({'system':str(system.resolve()),'user':str(user.resolve())},indent=2)+'\n')
+if a.prepare_only:
+    print('PREPARED '+str(root/'fixture.json'),flush=True)
+    sys.exit(0)
 for version in range(2,11):
     with closing(sqlite3.connect(system/'catalogue.sqlite3')) as db:
         if version>2:
