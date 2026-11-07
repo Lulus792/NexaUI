@@ -10,12 +10,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 #include <time.h>
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "picker-worker:%d: %s\n", __LINE__, #x); return 1; } } while (0)
 static pthread_t ui_thread;
 static atomic_uint calls, wrong_thread, picks_completed;
+static atomic_uint pick_attempts, fail_pick_at;
 static pthread_mutex_t gate_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t gate_changed = PTHREAD_COND_INITIALIZER;
 static int armed, entered, released, ui_dead, after_ui;
@@ -42,7 +44,9 @@ WRAP(const char *, ae_files_ancestor_label, (const struct ae_files *f, unsigned 
 WRAP(int, ae_files_directory, (const struct ae_files *f), (f))
 enum ae_files_result __real_ae_files_open_selected(const struct ae_files *, int *, int *, char *);
 enum ae_files_result __wrap_ae_files_open_selected(const struct ae_files *f, int *d, int *w, char *n) {
-    note(); enum ae_files_result result = __real_ae_files_open_selected(f, d, w, n);
+    note(); unsigned attempt = atomic_fetch_add(&pick_attempts, 1) + 1;
+    if (attempt == atomic_load(&fail_pick_at)) { *d = *w = -1; n[0] = 0; return AE_FILES_IO; }
+    enum ae_files_result result = __real_ae_files_open_selected(f, d, w, n);
     if (result == AE_FILES_OK) atomic_fetch_add(&picks_completed, 1);
     return result;
 }
@@ -91,6 +95,7 @@ static size_t ordinal(const fp_reply *r, const char *name) {
     for (size_t i = 0; i < r->count; ++i) if (!strcmp(r->rows[i].entry.name, name)) return r->rows[i].ordinal;
     return SIZE_MAX;
 }
+static void include_pick(fp_command *c, size_t ordinal) { c->pick_mask[ordinal / 8] |= (unsigned char)(1u << (ordinal % 8)); }
 static int navigation(int base) {
     CHECK(!mkdirat(base, "navigation", 0700)); int root = openat(base, "navigation", O_DIRECTORY | O_CLOEXEC); CHECK(root >= 0);
     CHECK(!mkdirat(root, "existing", 0700) && !mkdirat(root, "other", 0700));
@@ -162,6 +167,19 @@ static int limits(int base) {
     c = command(FP_PICK, 5); c.ordinal = 4095; CHECK(ask(w, &c, &m)); r = fp_reply_get(&m);
     CHECK(r->result == AE_FILES_OK); int directory = r->directory, witness = r->witness; nx_sim_message_dispose(&m);
     CHECK(fcntl(directory, F_GETFD) == -1 && errno == EBADF && fcntl(witness, F_GETFD) == -1 && errno == EBADF);
+    unsigned before_batch=descriptors();c=command(FP_PICK_MANY,6);include_pick(&c,4095);
+    CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_OK&&r->state==7&&r->pick_count==1&&r->picks[0].ordinal==4095);
+    nx_sim_message_dispose(&m);CHECK(descriptors()==before_batch);
+    c=command(FP_PICK_MANY,7);include_pick(&c,0);include_pick(&c,4095);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);
+    CHECK(r->result==AE_FILES_CHANGED&&r->state==8&&!r->pick_count);nx_sim_message_dispose(&m);CHECK(descriptors()==before_batch);
+    c=command(FP_FILTER,8);CHECK(ask(w,&c,&m));nx_sim_message_dispose(&m);
+    /* The complete 4096-bit domain never becomes truncated success when the
+       OS cannot supply enough pairs. Only this isolated test process is capped. */
+    struct rlimit limit,capped;CHECK(!getrlimit(RLIMIT_NOFILE,&limit));capped=limit;capped.rlim_cur=64;CHECK(limit.rlim_cur>=64&&!setrlimit(RLIMIT_NOFILE,&capped));
+    c=command(FP_PICK_MANY,9);memset(c.pick_mask,255,sizeof c.pick_mask);int obtained=ask(w,&c,&m);
+    CHECK(!setrlimit(RLIMIT_NOFILE,&limit)&&obtained);r=fp_reply_get(&m);
+    CHECK((r->result==AE_FILES_CHANGED||r->result==AE_FILES_IO)&&r->state==10&&!r->pick_count&&r->count==4096);
+    nx_sim_message_dispose(&m);CHECK(descriptors()==before_batch);
     CHECK(fp_worker_destroy(&w) == NX_OK); close(root);
     puts("PICKER_COMPLETE_4096_AND_FILTER_ORDINAL_VERIFIED"); return 0;
 }
@@ -302,11 +320,45 @@ static int directory_selection(int base) {
     close(d);close(witness);CHECK(descriptors()==before);close(root);
     puts("PICKER_CURRENT_ROOT_RENAMED_DIRECTORY_STALE_ONCE_AND_ABANDONED_FDS_VERIFIED");return 0;
 }
+static int batch_selection(int base) {
+    CHECK(!mkdirat(base,"batch-selection",0700));int root=openat(base,"batch-selection",O_DIRECTORY|O_CLOEXEC);CHECK(root>=0);
+    CHECK(file_at(root,"a")&&file_at(root,"b")&&file_at(root,"c")&&!mkdirat(root,"folder",0700)&&!symlinkat("a",root,"link"));
+    unsigned before=descriptors();fp_worker *w=NULL;CHECK(fp_worker_start(root,&w)==NX_OK);
+    nx_sim_message m={0};fp_command c=command(FP_READ,0);CHECK(ask(w,&c,&m));fp_reply *r=fp_reply_get(&m);
+    size_t a=ordinal(r,"a"),b=ordinal(r,"b"),last=ordinal(r,"c"),folder=ordinal(r,"folder"),link=ordinal(r,"link");
+    CHECK(a!=SIZE_MAX&&b!=SIZE_MAX&&last!=SIZE_MAX&&a<b&&b<last&&folder!=SIZE_MAX&&link!=SIZE_MAX);nx_sim_message_dispose(&m);
+    uint64_t ticket=99;c=command(FP_PICK_MANY,1);CHECK(fp_worker_submit(w,&c,&ticket)==NX_ERROR_ARGUMENT&&!ticket);
+    unsigned active=descriptors();c=command(FP_PICK_MANY,1);include_pick(&c,last);include_pick(&c,a);include_pick(&c,a);
+    CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_OK&&r->state==2&&r->pick_count==2&&r->picks[0].ordinal==a&&r->picks[1].ordinal==last);
+    fp_pick output[3];size_t count=99;CHECK(fp_reply_take_many(r,output,1,&count)==NX_ERROR_LIMIT&&!count&&r->pick_count==2);
+    CHECK(fp_reply_take_many(r,output,3,&count)==NX_OK&&count==2&&!r->pick_count);
+    size_t again=99;CHECK(fp_reply_take_many(r,output+2,1,&again)==NX_ERROR_STATE&&!again);nx_sim_message_dispose(&m);
+    struct stat selected,expected;const char *names[]={"a","c"};
+    for(size_t i=0;i<count;++i){CHECK(!fstat(output[i].witness,&selected)&&!fstatat(root,names[i],&expected,AT_SYMLINK_NOFOLLOW)&&selected.st_dev==expected.st_dev&&selected.st_ino==expected.st_ino);
+        CHECK((fcntl(output[i].directory,F_GETFD)&FD_CLOEXEC)&&(fcntl(output[i].witness,F_GETFD)&FD_CLOEXEC));close(output[i].directory);close(output[i].witness);}
+    CHECK(descriptors()==active);
+    /* Mid-batch inode replacement and injected original I/O failure both close
+       an already acquired prefix; failed replies expose no partial result. */
+    CHECK(!renameat(root,"b",root,"retired-b")&&file_at(root,"b"));
+    c=command(FP_PICK_MANY,2);include_pick(&c,a);include_pick(&c,b);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);
+    CHECK(r->result==AE_FILES_CHANGED&&r->state==3&&!r->pick_count);nx_sim_message_dispose(&m);CHECK(descriptors()==active);
+    atomic_store(&pick_attempts,0);atomic_store(&fail_pick_at,2);c=command(FP_PICK_MANY,3);include_pick(&c,a);include_pick(&c,last);
+    CHECK(ask(w,&c,&m));atomic_store(&fail_pick_at,0);r=fp_reply_get(&m);CHECK(r->result==AE_FILES_IO&&r->state==4&&!r->pick_count);nx_sim_message_dispose(&m);CHECK(descriptors()==active);
+    c=command(FP_PICK_MANY,3);include_pick(&c,a);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_CHANGED&&r->state==4&&!r->pick_count);nx_sim_message_dispose(&m);
+    for(unsigned i=0;i<3;++i){c=command(FP_PICK_MANY,4+i);include_pick(&c,i==0?folder:i==1?link:AE_FILES_ENTRIES-1);
+        CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==(i<2?AE_FILES_INVALID:AE_FILES_CHANGED)&&!r->pick_count);nx_sim_message_dispose(&m);CHECK(descriptors()==active);}
+    c=command(FP_PICK_MANY,7);include_pick(&c,a);include_pick(&c,last);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);
+    CHECK(r->result==AE_FILES_OK&&r->pick_count==2);int abandoned[4]={r->picks[0].directory,r->picks[0].witness,r->picks[1].directory,r->picks[1].witness};nx_sim_message_dispose(&m);
+    for(size_t i=0;i<4;++i)CHECK(fcntl(abandoned[i],F_GETFD)==-1&&errno==EBADF);
+    c=command(FP_PICK_MANY,8);include_pick(&c,a);include_pick(&c,last);CHECK(fp_worker_submit(w,&c,&ticket)==NX_OK);
+    struct pollfd wake={fp_worker_wake_fd(w),POLLIN,0};CHECK(poll(&wake,1,5000)==1&&fp_worker_destroy(&w)==NX_OK&&descriptors()==before);
+    close(root);puts("PICKER_ATOMIC_BATCH_ORDER_ONCE_CAPACITY_STALE_INODE_IO_AND_ABANDONED_FDS_VERIFIED");return 0;
+}
 int main(int argc, char **argv) {
     CHECK(argc == 2 || (argc == 3 && !strcmp(argv[2], "lifetime")));
     ui_thread = pthread_self(); int base = open(argv[1], O_DIRECTORY | O_CLOEXEC); CHECK(base >= 0);
     if (argc == 3) CHECK(!lifetime(base));
-    else CHECK(!navigation(base) && !limits(base) && !depth(base) && !validation(base) && !lifetime(base) && !orphan(base) && !directory_selection(base));
+    else CHECK(!navigation(base) && !limits(base) && !depth(base) && !validation(base) && !lifetime(base) && !orphan(base) && !directory_selection(base) && !batch_selection(base));
     CHECK(!atomic_load(&wrong_thread)); close(base);
     printf("PICKER_WORKER_VERIFIED model_calls=%u wrong_thread=%u header_bytes=%zu row_bytes=%zu max_reply_bytes=%zu\n",
         atomic_load(&calls), atomic_load(&wrong_thread), offsetof(fp_reply, rows), sizeof(fp_row),

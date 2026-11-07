@@ -142,6 +142,25 @@ The caller independently decides what to do with those ordinary-user FDs; the
 worker neither reads contents nor authorizes filesystem operations. Display
 labels are never passed back as filenames or navigation commands.
 
+The worker additionally accepts `FP_PICK_MANY`: a copied 4,096-bit set of
+complete-snapshot ordinals bound to the observed adapter state. It rejects an
+empty set, non-regular entries, filtered-out or stale ordinals, and applies the
+original selected-file witness checks to every member. Records are returned in
+complete-snapshot order. Any failure closes the already acquired prefix and
+returns no partial selection. This is an atomic result/ownership contract, not
+a filesystem transaction or an authorization grant.
+
+`fp_reply_take_many` transfers the complete descriptor set once to a separate
+caller buffer. Insufficient capacity retains the entire reply for retry/disposal.
+Unclaimed/abandoned sets close with their message. Raw leaf names and original
+escaped labels remain in the corresponding complete-snapshot rows. The fixed
+descriptor table is bounded by the original 4,096-entry limit; actual OS descriptor
+limits may reject a large set without returning truncated success. No process or
+system descriptor limit is raised by the adapter. The visible picker and owner
+still expose single-file/folder selection: wiring the existing public logical
+multi-selection APIs and a complete native multi-picker workflow is the next
+consumer step, not established by this worker contract.
+
 Use the borrowed `fp_worker_wake_fd` with the existing `nx_window_poll_with_fd`.
 Do not read or close it directly. Drain `fp_worker_receive` until ticket zero;
 it drains notifications **before** taking a completion to avoid losing a wakeup

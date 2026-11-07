@@ -9,7 +9,8 @@
 typedef struct fp_worker fp_worker;
 typedef struct fp_key { uint64_t view, request; } fp_key;
 typedef enum fp_operation { FP_READ, FP_REFRESH, FP_ENTER, FP_UP, FP_ANCESTOR,
-                           FP_FILTER, FP_HIDDEN, FP_PICK, FP_PICK_DIRECTORY } fp_operation;
+                           FP_FILTER, FP_HIDDEN, FP_PICK, FP_PICK_DIRECTORY, FP_PICK_MANY } fp_operation;
+#define FP_PICK_MASK_BYTES ((AE_FILES_ENTRIES + 7u) / 8u)
 typedef struct fp_command {
     fp_key key;
     uint64_t expected_state; /* 0 allowed only for a read of current state. */
@@ -19,8 +20,12 @@ typedef struct fp_command {
     int show_hidden;
     size_t query_bytes; /* Preserve original byte validation, including interior NULs. */
     char query[AE_FILES_QUERY + 1];
+    /* PICK_MANY only: complete-snapshot ordinals, bound to expected_state.
+       A set has no duplicates/order ambiguity and is copied with the command. */
+    unsigned char pick_mask[FP_PICK_MASK_BYTES];
 } fp_command;
 typedef struct fp_row { size_t ordinal; struct ae_files_entry entry; } fp_row;
+typedef struct fp_pick { size_t ordinal; int directory, witness; } fp_pick;
 typedef struct fp_reply {
     fp_key key;
     uint64_t state, revision;
@@ -36,6 +41,11 @@ typedef struct fp_reply {
        No StorageRef, grant, authority admission, installation or content read. */
     int directory, witness;
     char leaf[AE_FILES_NAME + 1];
+    /* Atomic regular-file batch, in complete-snapshot ordinal order. The
+       corresponding original raw leaf/escaped label remain in rows. Unclaimed
+       pairs close on message disposal, including partial-failure prefixes. */
+    size_t pick_count;
+    fp_pick picks[AE_FILES_ENTRIES];
     fp_row rows[];
 } fp_reply;
 
@@ -58,6 +68,10 @@ fp_reply *fp_reply_get(const nx_sim_message *);
 /* Transfer an admitted selection exactly once, on the consumer thread. Outputs
    start empty; message disposal otherwise closes unclaimed witnesses. */
 nx_result fp_reply_take(fp_reply *, int *directory, int *witness, char leaf[AE_FILES_NAME + 1]);
+/* All-or-nothing, once-only transfer. Outputs must not alias the reply/count.
+   Capacity failure clears count and retains every owned pair for retry/disposal.
+   Native FD limits can fail a large batch; no truncated success is returned. */
+nx_result fp_reply_take_many(fp_reply *, fp_pick *out, size_t capacity, size_t *count);
 /* Stop rejects new submissions. Accepted queued work receives cancellation;
    already running original I/O may finish. Call Stop before Join; otherwise
    Join returns NX_ERROR_STATE. Join has NO filesystem timeout.

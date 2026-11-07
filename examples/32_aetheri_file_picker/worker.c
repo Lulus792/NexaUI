@@ -19,15 +19,28 @@ struct fp_worker {
     uint64_t state;
 };
 static void free_command(void *user, void *data, size_t bytes) { (void)user; (void)bytes; free(data); }
+static void close_picks(fp_reply *r) {
+    for (size_t i = 0; i < r->pick_count; ++i) {
+        if (r->picks[i].directory >= 0) close(r->picks[i].directory);
+        if (r->picks[i].witness >= 0 && r->picks[i].witness != r->picks[i].directory) close(r->picks[i].witness);
+    }
+    r->pick_count = 0;
+}
 static void free_reply(void *user, void *data, size_t bytes) {
     (void)user; (void)bytes;
     fp_reply *r = data;
     if (r->directory >= 0) close(r->directory);
     if (r->witness >= 0 && r->witness != r->directory) close(r->witness);
+    close_picks(r);
     free(r);
 }
 static int valid(const fp_command *c) {
-    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_PICK_DIRECTORY &&
+    if (c && c->operation == FP_PICK_MANY) {
+        unsigned char any = 0;
+        for (size_t i = 0; i < sizeof c->pick_mask; ++i) any |= c->pick_mask[i];
+        if (!any) return 0;
+    }
+    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_PICK_MANY &&
         (c->operation == FP_READ || c->expected_state) &&
         c->depth <= AE_FILES_DEPTH && c->ordinal < AE_FILES_ENTRIES &&
         (c->show_hidden == 0 || c->show_hidden == 1) && c->query_bytes <= AE_FILES_QUERY;
@@ -38,6 +51,31 @@ static enum ae_files_result select_ordinal(struct ae_files *f, size_t ordinal) {
     for (size_t i = 0; i < ae_files_count(f); ++i)
         if (ae_files_entry(f, i) == target) return ae_files_select(f, i) ? AE_FILES_OK : AE_FILES_CHANGED;
     return AE_FILES_CHANGED;
+}
+static int picked(const fp_command *c, size_t i) { return (c->pick_mask[i / 8] & (1u << (i % 8))) != 0; }
+static enum ae_files_result pick_many(fp_worker *w, const fp_command *c, fp_reply *r) {
+    /* Validate the entire domain/type before changing original selection. Each
+       original open still checks its observed inode/type and held directory. */
+    for (size_t i = 0; i < AE_FILES_ENTRIES; ++i) if (picked(c, i)) {
+        const struct ae_files_entry *entry = ae_files_snapshot_entry(w->files, i);
+        if (!entry) return AE_FILES_CHANGED;
+        if (entry->kind != AE_FILES_REGULAR) return AE_FILES_INVALID;
+    }
+    size_t visible = 0, count = ae_files_count(w->files);
+    for (size_t i = 0; i < AE_FILES_ENTRIES; ++i) if (picked(c, i)) {
+        const struct ae_files_entry *target = ae_files_snapshot_entry(w->files, i);
+        while (visible < count && ae_files_entry(w->files, visible) != target) ++visible;
+        enum ae_files_result result = visible < count && ae_files_select(w->files, visible++) ? AE_FILES_OK : AE_FILES_CHANGED;
+        int directory = -1, witness = -1; char leaf[AE_FILES_NAME + 1];
+        if (result == AE_FILES_OK) result = ae_files_open_selected(w->files, &directory, &witness, leaf);
+        if (result != AE_FILES_OK) {
+            if (directory >= 0) close(directory);
+            if (witness >= 0 && witness != directory) close(witness);
+            close_picks(r); return result;
+        }
+        r->picks[r->pick_count++] = (fp_pick){i, directory, witness};
+    }
+    return AE_FILES_OK;
 }
 static enum ae_files_result apply(fp_worker *w, const fp_command *c, fp_reply *r) {
     if (!w->files) {
@@ -74,6 +112,7 @@ static enum ae_files_result apply(fp_worker *w, const fp_command *c, fp_reply *r
         if (r->witness < 0) { close(r->directory); r->directory = -1; return AE_FILES_IO; }
         r->leaf[0] = '.'; r->leaf[1] = 0;
         return AE_FILES_OK;
+    case FP_PICK_MANY: return pick_many(w, c, r);
     default: return AE_FILES_INVALID;
     }
 }
@@ -197,6 +236,7 @@ fp_reply *fp_reply_get(const nx_sim_message *m) {
     if (!m || !m->ticket || m->status != NX_OK || !m->data || m->bytes < offsetof(fp_reply, rows)) return NULL;
     fp_reply *r = m->data;
     return r->key.view && r->key.request && (r->result != AE_FILES_OK || (r->state && r->revision)) &&
+        r->pick_count <= r->count && (r->result == AE_FILES_OK || !r->pick_count) &&
         r->count <= AE_FILES_ENTRIES && r->total <= AE_FILES_ENTRIES && r->count <= r->total &&
         r->depth <= AE_FILES_DEPTH && m->bytes == offsetof(fp_reply, rows) + r->count * sizeof(fp_row) ? r : NULL;
 }
@@ -207,6 +247,20 @@ nx_result fp_reply_take(fp_reply *r, int *directory, int *witness, char leaf[AE_
         !memchr(r->leaf, 0, sizeof r->leaf) || !r->leaf[0]) return NX_ERROR_STATE;
     memcpy(leaf, r->leaf, strlen(r->leaf) + 1); *directory = r->directory; *witness = r->witness;
     r->directory = r->witness = -1; return NX_OK;
+}
+nx_result fp_reply_take_many(fp_reply *r, fp_pick *out, size_t capacity, size_t *count) {
+    if (!count) return NX_ERROR_ARGUMENT;
+    *count = 0;
+    if (!r || !out || out == r->picks) return NX_ERROR_ARGUMENT;
+    if (r->result != AE_FILES_OK || !r->pick_count || r->pick_count > r->count || r->pick_count > AE_FILES_ENTRIES) return NX_ERROR_STATE;
+    if (capacity < r->pick_count) return NX_ERROR_LIMIT;
+    for (size_t i = 0; i < r->pick_count; ++i) {
+        const fp_pick *pick = &r->picks[i];
+        if (pick->directory < 4 || pick->witness < 4 || pick->directory == pick->witness ||
+            pick->ordinal >= r->total || (i && r->picks[i - 1].ordinal >= pick->ordinal)) return NX_ERROR_STATE;
+    }
+    memcpy(out, r->picks, r->pick_count * sizeof(*out)); *count = r->pick_count; r->pick_count = 0;
+    return NX_OK;
 }
 nx_result fp_worker_stop(fp_worker *w) {
     if (!w) return NX_ERROR_ARGUMENT;
