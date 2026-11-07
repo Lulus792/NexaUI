@@ -1,0 +1,17 @@
+{
+  "name": "nexaui-recovery-lifecycle-20261107.tar.gz",
+  "size": 28002757,
+  "sha256": "e898f8be20dea6f239e0e5cdf7ac14c4030ea8457c0159386c8351c8f6003c55",
+  "files": 1267,
+  "links": 2,
+  "directories": 483,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-recovery-lifecycle-20261107.tar.gz",
+  "source_revision": "1c8fa04942280c2189abbbe2a77dbe06f2f63c09",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally.",
+  "prior_archive": {
+    "sha256": "01d5e712d1811417f2fd7e9c58201505d5f1fa4eaf1015e2891ed932199d02d7",
+    "path": "D:/NexaUI/out/nexaui-recovery-native-20261107.tar.gz"
+  }
+}

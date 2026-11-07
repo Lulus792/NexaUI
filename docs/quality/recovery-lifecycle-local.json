@@ -1,0 +1,2606 @@
+{
+  "source_revision": "1c8fa04942280c2189abbbe2a77dbe06f2f63c09",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "ordinary_source_unchanged_from": "9d09ec0e49f3cc2f8b1a6d6e836528f964c96146",
+  "profiles": [
+    {
+      "profile": "release",
+      "ctest": {
+        "path": "lifecycle-release-ctest-input1.log",
+        "size": 451,
+        "sha256": "c5f1392fc94cb1e6b76dfd9e4b4e67f83bb1fb821aa7675b3fa9890ba096521d"
+      },
+      "tests_passed": 3,
+      "ordinary_host": {
+        "path": "lifecycle-release/recovery_native",
+        "size": 1398072,
+        "sha256": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6"
+      },
+      "held_host": {
+        "path": "lifecycle-release/recovery_held_native",
+        "size": 1399120,
+        "sha256": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360"
+      }
+    },
+    {
+      "profile": "shared",
+      "ctest": {
+        "path": "lifecycle-shared-ctest-input1.log",
+        "size": 450,
+        "sha256": "2147888ed632da4eb62dce11cad4e5e63348582f9aba45e17f585463e8e474d0"
+      },
+      "tests_passed": 3,
+      "ordinary_host": {
+        "path": "lifecycle-shared/recovery_native",
+        "size": 608992,
+        "sha256": "f37e505c84c0ae15d228b1be737087d4470c43bdfec9f7a8afd87c098e790a06"
+      },
+      "held_host": {
+        "path": "lifecycle-shared/recovery_held_native",
+        "size": 610152,
+        "sha256": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de"
+      }
+    },
+    {
+      "profile": "asan",
+      "ctest": {
+        "path": "lifecycle-asan-ctest-input1.log",
+        "size": 448,
+        "sha256": "c5be7b36ad9a3a999c462e8093872370eaeece331c6d8550fe262e16f1bfc13e"
+      },
+      "tests_passed": 3,
+      "ordinary_host": {
+        "path": "lifecycle-asan/recovery_native",
+        "size": 10132168,
+        "sha256": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54"
+      },
+      "held_host": {
+        "path": "lifecycle-asan/recovery_held_native",
+        "size": 10165128,
+        "sha256": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e"
+      }
+    }
+  ],
+  "held_cases": [
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 406,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7fff1ccc4dc0",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7fff1ccc4d38",
+          "0x7fd5508f6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 39,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-release-system-wake",
+      "result": {
+        "path": "lifecycle-final-release-system-wake/result.json",
+        "size": 9686,
+        "sha256": "6cf27474b6a43fda351b036e37a03b88fb183040a4bb3c396db38cc25a39d79d"
+      },
+      "host_log": {
+        "path": "lifecycle-final-release-system-wake/host.log",
+        "size": 9567,
+        "sha256": "92f161f353d0d11a2830ba589f928a82cd092e25afedaeaa73b3937f16c88962"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-release-system-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 327,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 331,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-release-system-close",
+      "result": {
+        "path": "lifecycle-final-release-system-close/result.json",
+        "size": 8952,
+        "sha256": "3cd2cb2896e06bb1f7cbb21f3bc35b13dda4dcfb22312fd62ce57134299c980b"
+      },
+      "host_log": {
+        "path": "lifecycle-final-release-system-close/host.log",
+        "size": 17138,
+        "sha256": "a05b3e7d6a14d328911adb9eac03c989c74e81a39fa7198c2721e2150720a471"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-release-system-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 230,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 408,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7fffaecfd5e0",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7fffaecfd558",
+          "0x7fdb186f6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 42,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 230,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-release-user-wake",
+      "result": {
+        "path": "lifecycle-final-release-user-wake/result.json",
+        "size": 9743,
+        "sha256": "75bc8229aeb5acd6245a6d3c619a79fef6ed60e26309b2c5d7202d2c689787b4"
+      },
+      "host_log": {
+        "path": "lifecycle-final-release-user-wake/host.log",
+        "size": 9567,
+        "sha256": "3a8cddb113759333d1629b26105f467f0e956b430aaf2581e3149660b14624e3"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-release-user-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 325,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 331,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-release-user-close",
+      "result": {
+        "path": "lifecycle-final-release-user-close/result.json",
+        "size": 8903,
+        "sha256": "fa2ceb986bbd66b15c79ef1613a58009a2d36455faf79b251694f8fd4a242659"
+      },
+      "host_log": {
+        "path": "lifecycle-final-release-user-close/host.log",
+        "size": 17063,
+        "sha256": "f0cd23cbd9a32314ea2cd11abeade782386590d513ce7b27b8bdacf1d41aa345"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-release-user-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 229,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 411,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7ffe0c463150",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffe0c463058",
+          "0x7f7b32ef6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 39,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 229,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-shared-system-wake",
+      "result": {
+        "path": "lifecycle-final-shared-system-wake/result.json",
+        "size": 10376,
+        "sha256": "7458d260c7728788964e9f4bfa1a2c666196119c6212402aed53721c8886c6dc"
+      },
+      "host_log": {
+        "path": "lifecycle-final-shared-system-wake/host.log",
+        "size": 9567,
+        "sha256": "cf179dc28594cb6b8ed502d90cc7c15e92c3274dcbdb1cb2ecbdb411719f7ee6"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-shared-system-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 333,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 338,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-shared-system-close",
+      "result": {
+        "path": "lifecycle-final-shared-system-close/result.json",
+        "size": 9642,
+        "sha256": "9b62458aa9fc3520d4b8bbbbefa67bfb9066f093a47b9c73c5a0ad1a85a32222"
+      },
+      "host_log": {
+        "path": "lifecycle-final-shared-system-close/host.log",
+        "size": 17211,
+        "sha256": "70938d02bd9d50a767d80969c89ddb045a7ed45b2f82ab522c0fcc5c49d2f1da"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-shared-system-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 405,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7fff59207db0",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7fff59207cb8",
+          "0x7f5d14ef6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 42,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-shared-user-wake",
+      "result": {
+        "path": "lifecycle-final-shared-user-wake/result.json",
+        "size": 10377,
+        "sha256": "1cfd78ef04d830b3181af2219aa8a53261bd7256f1f1beddf680af7dc618de6c"
+      },
+      "host_log": {
+        "path": "lifecycle-final-shared-user-wake/host.log",
+        "size": 9493,
+        "sha256": "59b3274c67253b004865b4446837c637f0b963bae3e1faaef199e877e5344e63"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-shared-user-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 331,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 335,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-shared-user-close",
+      "result": {
+        "path": "lifecycle-final-shared-user-close/result.json",
+        "size": 9643,
+        "sha256": "0adcc8454bcba8cb3482f4ca9f1ebd24c2908ec4d6cd8a351ce935bdc39cd54d"
+      },
+      "host_log": {
+        "path": "lifecycle-final-shared-user-close/host.log",
+        "size": 16989,
+        "sha256": "75f60c4c04978c34b897a0c9d0e11bc95617125559d220af8ce4ec67fd39e387"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-shared-user-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 230,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 411,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7bdff7303420",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffee49b45b8",
+          "0x7fdff9882352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 39,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 230,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-asan-system-wake",
+      "result": {
+        "path": "lifecycle-final-asan-system-wake/result.json",
+        "size": 20469,
+        "sha256": "4f5ef4e9c433d2e1caf37e5f47e47a0ec93f30fb41f6b5bdfdd2fe0cfa4829b5"
+      },
+      "host_log": {
+        "path": "lifecycle-final-asan-system-wake/host.log",
+        "size": 9493,
+        "sha256": "91523b577ec79ed1a42f37a0a0225679e5fb5cdb2b742e6f98d5b72bae474ed9"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-asan-system-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 325,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 329,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-asan-system-close",
+      "result": {
+        "path": "lifecycle-final-asan-system-close/result.json",
+        "size": 19685,
+        "sha256": "36e756d8f254446a0116d0952cc5416cde0d3de6a543b24792e8c538a6088661"
+      },
+      "host_log": {
+        "path": "lifecycle-final-asan-system-close/host.log",
+        "size": 16915,
+        "sha256": "51533e4aa102a20305c61ee2e07b302210f4c2398928d52bdb08c57350f9595a"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-asan-system-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 225,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 404,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7b63221e7820",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffe67674fd8",
+          "0x7f6324682352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 42,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 225,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-asan-user-wake",
+      "result": {
+        "path": "lifecycle-final-asan-user-wake/result.json",
+        "size": 20620,
+        "sha256": "d5cce67783c66439801759714daf135784b291e8fda658b8c5f25e8027389fe9"
+      },
+      "host_log": {
+        "path": "lifecycle-final-asan-user-wake/host.log",
+        "size": 9567,
+        "sha256": "ebc5a0a4840126c2ce7bcdaafb316812985b552db3e9e0f8351f453e54ea3aba"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-asan-user-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 321,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 324,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "descriptor_balance": {
+        "before_with_owned_gate": 5,
+        "after_gate_and_host_close": 4
+      },
+      "name": "lifecycle-final-asan-user-close",
+      "result": {
+        "path": "lifecycle-final-asan-user-close/result.json",
+        "size": 19886,
+        "sha256": "e6e5b92ae63549756059553f71328b4a855b6ba6c60727af122a6b317a1bd4b4"
+      },
+      "host_log": {
+        "path": "lifecycle-final-asan-user-close/host.log",
+        "size": 16619,
+        "sha256": "2ec071bc1a80d5cc492421655ce403d4a61042abe3cc55bb10e6b07b9cfee800"
+      },
+      "peer_log": {
+        "path": "lifecycle-final-asan-user-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    }
+  ],
+  "ordinary_regressions": [
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6",
+        "client": "a599cc8473ae9b7be606e64ae42d29edd712629d0d287f9cffa86262f957527e",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "held": null
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 109,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 120,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 38,
+            "polls": 536,
+            "keys": 50,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 40,
+            "polls": 543,
+            "keys": 52,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 42,
+            "polls": 694,
+            "keys": 52,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 45,
+            "polls": 733,
+            "keys": 54,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 48,
+            "polls": 800,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 49,
+            "polls": 842,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 54,
+            "polls": 1055,
+            "keys": 58,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 59,
+            "polls": 1231,
+            "keys": 62,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "pages_each_direction": 12,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "lifecycle-ordinary-release-german-ime",
+      "result": {
+        "path": "lifecycle-ordinary-release-german-ime/result.json",
+        "size": 11012,
+        "sha256": "9828f85763b22044289dde22420f69dde37f88aa5d76c8120af6434946684a4a"
+      },
+      "host_log": {
+        "path": "lifecycle-ordinary-release-german-ime/host.log",
+        "size": 73764,
+        "sha256": "f23f7d74aea97f279b88bae53393e50a64e38571882fb86fb9bf03f19a912557"
+      },
+      "peer_log": {
+        "path": "lifecycle-ordinary-release-german-ime/client.log",
+        "size": 561,
+        "sha256": "b8a45c1f984110f19d2abcc0a61a7498383fd08fed8762288d6d4b5c16381450"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54",
+        "client": "a599cc8473ae9b7be606e64ae42d29edd712629d0d287f9cffa86262f957527e",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": true,
+        "held": null
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 3,
+            "polls": 109,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 5,
+            "polls": 118,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 2,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 289,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 8,
+            "polls": 442,
+            "keys": 4,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 10,
+            "polls": 652,
+            "keys": 4,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 691,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 15,
+            "polls": 757,
+            "keys": 8,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 16,
+            "polls": 799,
+            "keys": 8,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 21,
+            "polls": 1009,
+            "keys": 10,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 25,
+            "polls": 1244,
+            "keys": 14,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "pages_each_direction": 0,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "lifecycle-ordinary-asan-user-light-ime",
+      "result": {
+        "path": "lifecycle-ordinary-asan-user-light-ime/result.json",
+        "size": 22037,
+        "sha256": "562f25fef3684b1537e5daed83cac353f926b3ad295b4902a9b13de4e0958bc9"
+      },
+      "host_log": {
+        "path": "lifecycle-ordinary-asan-user-light-ime/host.log",
+        "size": 38510,
+        "sha256": "cdf591b10f19225b0a385c8e3d6cb4914cd1f03bb0f10718ef02987d1aeac85e"
+      },
+      "peer_log": {
+        "path": "lifecycle-ordinary-asan-user-light-ime/client.log",
+        "size": 244,
+        "sha256": "008d2be8090bd247becb74deba22dd3e70e1a815ef99e4f99d0116c18159b65c"
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "name": "wake",
+      "mutation": {
+        "file": "/dev/shm/nexaui-recovery-live-tty-20261107/lifecycle-negative-wake/src/examples/33_aetheri_recovery/recovery_worker.c",
+        "old": "n=write(w->wake[1],\"W\",1)",
+        "new": "n=ticket==2?1:write(w->wake[1],\"W\",1)"
+      },
+      "test_exit": 1,
+      "expected_boundary": "completion adopts without further input: timeout",
+      "result": {
+        "path": "lifecycle-negative-wake/result.json",
+        "size": 1879,
+        "sha256": "7e7f4f82937a885932644dc39f3c8d3159b12c2056f9c40983af5e890656a9cb"
+      },
+      "log": {
+        "path": "lifecycle-negative-wake/test.log",
+        "size": 1069,
+        "sha256": "0b620b1c4bc2f972b09b23e014206a32bde10ac24c99b54c6cd539a677ca1bbb"
+      }
+    },
+    {
+      "name": "join",
+      "mutation": {
+        "file": "/dev/shm/nexaui-recovery-live-tty-20261107/lifecycle-negative-join/src/examples/33_aetheri_recovery/native.c",
+        "old": "cleanup:\n    nx_sim_message_dispose(&message);",
+        "new": "cleanup:\n    if(worker){(void)rw_stop(worker);(void)rw_join(worker);}\n    nx_sim_message_dispose(&message);"
+      },
+      "test_exit": 1,
+      "expected_boundary": "native GUI unmaps while original query is held: timeout",
+      "result": {
+        "path": "lifecycle-negative-join/result.json",
+        "size": 1961,
+        "sha256": "603df0f8b47dec6ef1c587a0c7daff2ee8f6845f5a97d04ad2cd0c506d9d3551"
+      },
+      "log": {
+        "path": "lifecycle-negative-join/test.log",
+        "size": 1014,
+        "sha256": "dd83b1424b1c5ff592bf82c930d33bae10ee33807bb957c9820995828df09512"
+      }
+    }
+  ],
+  "source_files": [
+    {
+      "path": "examples/33_aetheri_recovery/atspi_client.c",
+      "tested_source_sha256": "0a610db95c9c44e8c3668e8d9b8ee7bb67433f54f5a527c190f311df10869030",
+      "physical_sha256": "0a610db95c9c44e8c3668e8d9b8ee7bb67433f54f5a527c190f311df10869030"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/check_source.py",
+      "tested_source_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90",
+      "physical_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/CMakeLists.txt",
+      "tested_source_sha256": "421136f5a4f8853d4e41b8b8239d27fbf1026800520f6df4100f3edfebb1cd95",
+      "physical_sha256": "421136f5a4f8853d4e41b8b8239d27fbf1026800520f6df4100f3edfebb1cd95"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/lifecycle_atspi.c",
+      "tested_source_sha256": "859ad282784eddaad4fa6affe8e52226f58495fde7317fe3895ded385416760f",
+      "physical_sha256": "859ad282784eddaad4fa6affe8e52226f58495fde7317fe3895ded385416760f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/native.c",
+      "tested_source_sha256": "1b017ff87512b3c561c870e03bc470f305a73975d1256b45a57e53d412241c84",
+      "physical_sha256": "1b017ff87512b3c561c870e03bc470f305a73975d1256b45a57e53d412241c84"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/README.md",
+      "tested_source_sha256": "e1afaff950b687e8c2629043f19832821e2de1c5d448ab835e0f5df0e3ae9bf3",
+      "physical_sha256": "e1afaff950b687e8c2629043f19832821e2de1c5d448ab835e0f5df0e3ae9bf3"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.c",
+      "tested_source_sha256": "7e7ee4b402cb1696dd013a299b53dfa6669dc431ee2373185271ff37983ffcfe",
+      "physical_sha256": "7e7ee4b402cb1696dd013a299b53dfa6669dc431ee2373185271ff37983ffcfe"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.h",
+      "tested_source_sha256": "7e6541e70a10a8076645d6576e3a152cb6957ef28fe3b1ee9b428b83e2c2d992",
+      "physical_sha256": "7e6541e70a10a8076645d6576e3a152cb6957ef28fe3b1ee9b428b83e2c2d992"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.c",
+      "tested_source_sha256": "e10db3b1b62624e3dfc95b4b2f861f2d913d2e86a71ad9fe3d5ee6fe7f09dead",
+      "physical_sha256": "e10db3b1b62624e3dfc95b4b2f861f2d913d2e86a71ad9fe3d5ee6fe7f09dead"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.h",
+      "tested_source_sha256": "580256c1c5379ce38a16e2458acc3f1a432d806c10921f55268f4541285051c2",
+      "physical_sha256": "580256c1c5379ce38a16e2458acc3f1a432d806c10921f55268f4541285051c2"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_model.py",
+      "tested_source_sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31",
+      "physical_sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_native.py",
+      "tested_source_sha256": "4617fccfeb280416af06d3c3c4abefc26fbc35e388790e8ff05d33fbc7c22538",
+      "physical_sha256": "4617fccfeb280416af06d3c3c4abefc26fbc35e388790e8ff05d33fbc7c22538"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_view.py",
+      "tested_source_sha256": "1b768a359aa46e8f027ea44f5f383aed760c78ff5c5028d8349d632645f85158",
+      "physical_sha256": "1b768a359aa46e8f027ea44f5f383aed760c78ff5c5028d8349d632645f85158"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_worker.py",
+      "tested_source_sha256": "bea2fc59ad31f01ef503cbd3064d704f682aa33350a51c65884ed830e4c4888f",
+      "physical_sha256": "bea2fc59ad31f01ef503cbd3064d704f682aa33350a51c65884ed830e4c4888f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/source-inputs.json",
+      "tested_source_sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833",
+      "physical_sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_native_gate.c",
+      "tested_source_sha256": "37209041f482c9f3ee3a0140a1345a184539cd94af800a845443ba91c9e45539",
+      "physical_sha256": "37209041f482c9f3ee3a0140a1345a184539cd94af800a845443ba91c9e45539"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_view.c",
+      "tested_source_sha256": "53ef80828e61b4f1943fad049c1adfefe3a3af04b969ff2bcab94f4be2f4cc41",
+      "physical_sha256": "53ef80828e61b4f1943fad049c1adfefe3a3af04b969ff2bcab94f4be2f4cc41"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_worker.c",
+      "tested_source_sha256": "8e4ebeea4ef0d16d2e4fa4a2c288fe59ab133ba0854a9dee68cf6e0a46b91ca7",
+      "physical_sha256": "8e4ebeea4ef0d16d2e4fa4a2c288fe59ab133ba0854a9dee68cf6e0a46b91ca7"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_view_model.c",
+      "tested_source_sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f",
+      "physical_sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.c",
+      "tested_source_sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645",
+      "physical_sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.h",
+      "tested_source_sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357",
+      "physical_sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357"
+    },
+    {
+      "path": "examples/common/text_wrap.c",
+      "tested_source_sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae",
+      "physical_sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "path": "examples/common/text_wrap.h",
+      "tested_source_sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d",
+      "physical_sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    },
+    {
+      "path": "examples/30_async_hierarchy/atspi_client.c",
+      "tested_source_sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9",
+      "physical_sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9"
+    }
+  ],
+  "peer": {
+    "path": "recovery_lifecycle_atspi",
+    "size": 31880,
+    "sha256": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5"
+  },
+  "input_archive": {
+    "path": "nexaui-recovery-lifecycle-input2-20261107.tar.gz",
+    "size": 51186,
+    "sha256": "562ff45c0348d7805c9fc245fbc4dc5047bd7c73415ef93fb6e0940d4ff92edd"
+  },
+  "foundation_main_ci": {
+    "source_revision": "f43205bf1b961fd9705257cc89753389b2729e08",
+    "run_id": 42390839472,
+    "url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472",
+    "scope": "Prior main containing SDK c4f467d and native consumer 9d09ec0. New lifecycle tests are independently checked locally.",
+    "jobs": [
+      {
+        "id": 128457878434,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:58Z",
+        "completed_at": "2026-11-07T16:39:54Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878434"
+      },
+      {
+        "id": 128457878537,
+        "name": "core (ubuntu-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:58Z",
+        "completed_at": "2026-11-07T16:25:54Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878537"
+      },
+      {
+        "id": 128457878581,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:59Z",
+        "completed_at": "2026-11-07T16:26:04Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878581"
+      },
+      {
+        "id": 128457878611,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:59Z",
+        "completed_at": "2026-11-07T16:22:17Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878611"
+      },
+      {
+        "id": 128457878653,
+        "name": "core (macos-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:58Z",
+        "completed_at": "2026-11-07T16:21:52Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878653"
+      },
+      {
+        "id": 128457878707,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:59Z",
+        "completed_at": "2026-11-07T16:25:53Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878707"
+      },
+      {
+        "id": 128457878895,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:20:59Z",
+        "completed_at": "2026-11-07T16:24:58Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457878895"
+      },
+      {
+        "id": 128457879327,
+        "name": "fuzz-campaigns",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-11-07T16:20:56Z",
+        "completed_at": "2026-11-07T16:20:56Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457879327"
+      },
+      {
+        "id": 128457879492,
+        "name": "windows-asan",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-11-07T16:20:56Z",
+        "completed_at": "2026-11-07T16:20:56Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42390839472/job/128457879492"
+      }
+    ]
+  },
+  "prior_archive": {
+    "sha256": "01d5e712d1811417f2fd7e9c58201505d5f1fa4eaf1015e2891ed932199d02d7",
+    "path": "D:/NexaUI/out/nexaui-recovery-native-20261107.tar.gz"
+  },
+  "remaining": [
+    "Native Tab/Shift-Tab and filter Cancel",
+    "Native resize/compact restore/output migration and clipboard peers",
+    "Production owner/service transport, reconnect/unknown outcomes, actual recovery/readiness and remaining packet 6 workflows",
+    "Remaining packets 7-8, performance and physical/human acceptance"
+  ]
+}

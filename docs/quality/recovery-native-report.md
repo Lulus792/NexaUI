@@ -6,6 +6,11 @@ Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`; all 67 pinned
 build/core/schema/fixture inputs match. The live Aetheri source and pin are
 unchanged. Requirements touched: D11/L04/L11/I01/I07/T04/T11/A02/A06/P04/P05/Q02/Q04.
 
+The subsequent [held-query lifecycle step](recovery-lifecycle-report.md) adds
+native completion wake, close-before-release and whole-window retained-field/
+action checks on source `1c8fa04`. The results and open gates below remain
+attributed to this earlier native source.
+
 ## Delivered composition
 
 [Example 33](../../examples/33_aetheri_recovery/README.md) now has an ordinary
