@@ -1,5 +1,23 @@
 # Aetheri adoption: initial source assessment
 
+## Native tree keyboard and assistive states (2026-11-07)
+
+Consumer `b786e8081491ed34417331a9096dd4cbb1438242` shares the portable tree
+fixture with an installed ordinary Wayland/software host on the unchanged pinned
+Aetheri compositor. SDK artifacts remain source `8dbd3d961e5e7d4a51a40919e15051e31a67a887`.
+An independent libatspi peer verifies 16 native-key steps in each static/shared/
+sanitizer case, exact focus/expansion/selection notifications, retained selection
+and stale/fresh child paths through collapse/re-expansion. All positive peers and
+hosts exit 0; provider-off discovery rejects with 77 and its mapped host closes
+normally. The same shared host with the older SDK fails specifically at the first
+Down step after native discovery/focus. Four portable consumer CTests pass 1/1
+without skips. Initial fixture errors and a weaker preliminary peer are retained;
+final checks use exact event paths/values. Eighteen complete preliminary/final PPM
+pairs are byte-identical. See the [native tree report](tree-native-report.md)
+for source/artifact hashes and scope. This advances L06/I01/A02/A06/Q04; async
+hierarchy UI, virtual focus reveal, real services and production/human/physical
+acceptance remain open. No API/ABI, SDK version, Aetheri source or pin changes.
+
 ## Scoped tree keyboard navigation (2026-11-07)
 
 Source `8dbd3d961e5e7d4a51a40919e15051e31a67a887` extends existing tree items with
