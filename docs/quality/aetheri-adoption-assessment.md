@@ -1,5 +1,108 @@
 # Aetheri adoption: initial source assessment
 
+## Original Files document save and close lifetime (2026-11-07)
+
+Consumer implementation [1f9780edc7efba0878edea5d8ea153613506386b](https://github.com/Lulus792/NexaUI/commit/1f9780edc7efba0878edea5d8ea153613506386b)
+extends the existing original-Files build with an optional original document
+path. Aetheri remains frozen at `27de5cb228da0f37264fad64d964ad7a660d210d`.
+The original Files controller/launch code, Terminal, editor/document/file code
+and save/close policy are reused without application-source changes. The new
+`NEXAUI_OWNED_FILES_DOCUMENTS` option defaults OFF. ON additionally verifies 20
+Terminal input hashes beside the original 38 inputs and builds the original SDL
+Terminal and separate toolkit-free C17 editor. No SDL Files view is built.
+
+This is an external application integration profile. The selected original
+Terminal requires its reviewed local SDL3 3.4.20, SDL3_ttf 3.2.2 and Wayland-client
+1.26.0 packages. They do not enter NexaUI or the Files host. OFF neither searches
+for SDL nor builds the document programs. Exact source/archive selection and
+explicit runtime-library paths are recorded; there is no download, global setup,
+normal consumer-pin update or modification of Aetheri's ongoing work.
+
+The new `--document` native mode first runs all six original independent Files
+peer modes, then moves focus to the selected literal `seed.txt`, localizes Files
+and opens its original held-FD document path. It verifies exact original Terminal
+and editor executables/hashes/parents while holding pidfds and retaining process
+maps. The original Terminal reports Wayland/opengles2 readiness and admits native
+keyboard input into the original editor. Neither a copied SDK editor buffer nor
+a shell command substitutes for that application model.
+
+Native input creates the unsaved `helloseed` draft. Closing the Terminal window
+retains the original dirty-content decision and leaves the file's original
+`seed` bytes untouched. Escape cancels the choice. An independent AT-SPI action
+then requests the localized Files Close while the document owns keyboard focus.
+Files publishes its waiting state and retains both original actors. Explicit
+Ctrl+S saves exactly `helloseed` (SHA-256
+`e12c017eaada16e2355e85d52e366a99b6ef5b871e2a4ef15a33861cdfbc276e`),
+without changing either actor or launching another document. Only explicit
+document close ends the original pair; Files observes `DOCUMENT_END status=0`
+and exits normally. Final screenshots show the dirty editor choice and Files'
+German waiting message. Those are selected virtual-output observations, not a
+full visual or physical three-monitor acceptance result.
+
+All three accessible native profiles pass: reused static Release, reused static
+Debug ASan/UBSan, and a newly built installed shared Release SDK with AT-SPI.
+Each runs seven original independent peer invocations including localized Close,
+for 21 successful invocations in total. Files exits 0, both original actor pidfds
+report end, and owned helpers terminate without forced-kill escalation. The editor
+process maps contain neither SDL nor NexaUI; the original Terminal maps SDL.
+Shared runtime dependencies themselves are not sanitizer-instrumented merely
+because the original application C17 sources and static SDK are instrumented.
+Leak detection and halt-on-error remain enabled without suppressions.
+
+Four final core profiles each pass all three original CTests without skips:
+static Release, static ASan/UBSan, accessible shared Release, and provider-off
+shared Release with documents OFF. The latter configures/builds without an SDL
+prefix, renders, fails native discovery at the intended boundary and closes
+normally by keyboard. Original controller/view assertions and 10/30-second
+limits remain unchanged. Strict C17 conversion/shadow warnings and Werror remain
+enabled for original application sources. Native campaigns retain the existing
+90-second outer limit and original independent peer assertions/deadlines.
+
+An isolated early-close mutant sets Files' running flag false when Close is
+requested with the original document still open. The same native document test
+detects it after actor verification and the dirty-close capture; the mutant owner
+exits 125. This is not counted as a positive case. Normal original source and
+library hashes remain unchanged. Failure cleanup uses only the retained private
+actor pidfds; it does not target a live desktop or numeric unrelated PIDs.
+
+The accessible shared SDK was built from exact NexaUI
+`5118d3afd048a94430ca649fb345fb51f4f6965f`, with X11/Vulkan/examples/root tests off,
+AT-SPI on and its private reviewed D-Bus headers. The cache confirms compiled
+D-Bus support. Library SHA-256 is
+`20860b2bb8f4407d718d416da5b0d605372f4c172fae30dff54d0de589246559`.
+SDK production source/API/ABI/version 0.1.23 are unchanged by this consumer step.
+The independent [base CI](https://github.com/Lulus792/NexaUI/actions/runs/42314667944)
+finished with all seven required jobs successful. These external consumer cases
+are separate from root CI and are not automatically executed there.
+
+An additional SDK-wide global-Werror build failed on existing initializer,
+indentation and line-break maybe-uninitialized warnings. Its source, flags and
+failure logs are retained. The successful shared SDK uses the project's original
+standard flags, preserving those diagnostics; no warning is disabled and no
+warning-free SDK claim is made. Existing static SDK artifacts are reused as
+before. The warning-clean core build remains an explicit open engineering item.
+
+Evidence is `D:/NexaUI/out/nexaui-owned-documents-20261107.tar.gz`, SHA-256
+`c2783a7bb33573b4a9cd3e57d8721ba9367305b8a84f35287fbb11c693be7110`.
+All 1,652 manifest files and four symbolic links are independently checked after
+local transfer. The archive retains exact consumer/source archives, all selected
+builds and flags, installed shared SDK, source-input proofs, logs/JUnit, normal
+and negative native campaigns, full raw PPMs and runtime path/inode/hash records.
+Runtime files are hashed at collection, not claimed as in-memory code hashes.
+Trees are streamed without duplicating gigabytes of raw captures on the guest.
+Guest/host clock differences and overwritten intermediate helper-byte limitations
+remain explicit. No frozen prior evidence is removed or rewritten.
+
+This advances B02/B07/D07/P05/Q04 and supersedes the earlier document-path gap only
+for this explicit ordinary-user selected-document/save/close flow. Normal
+development-owner launch, real document grants, complete Files/Terminal suites,
+managed holder/lease drain, uncertain-save recovery, installed IMEs, full native
+chrome/scale/loss and human/physical acceptance remain open. The child uses the
+original SDL Terminal presentation; this does not claim a NexaUI Terminal view.
+Actual authorities, picker workflows, device/software integrations, the known
+unpaced Files sanitizer burst and held-pointer loss issue are still open. No
+1.0.0 release or Aetheri pin change is implied.
+
 ## Original Aetheri-owned Files on the candidate SDK (2026-11-07)
 
 Consumer implementation [973f228efd07dc55282502eb7623f001e196c9cd](https://github.com/Lulus792/NexaUI/commit/973f228efd07dc55282502eb7623f001e196c9cd)
