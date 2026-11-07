@@ -32,6 +32,17 @@ it. Applications own loading/error/retry state, virtual-row realization and
 scrolling to reveal focus, and choose focus restoration when a row disappears.
 No navigation step requests data or changes selection/operation authority.
 
+Between completed frames, `nx_semantics_request_action` accepts the branch's
+currently offered `NX_ACTION_EXPAND` or `NX_ACTION_COLLAPSE`, on either the row
+or its expander. These are state-setting requests: they neither toggle an
+already updated expansion value nor click, select or focus the row. Tree branches
+and collapsible-section headers have this binding; arbitrary custom widgets do
+not. The next frame revalidates ID, role, parent, overlay and enabled ancestry.
+Omitted, replaced, disabled or reparented targets drop their old requests. Painting
+failure leaves the caller's expansion unchanged and permits retry in that frame.
+This requests presentation expansion only; applications still own async loading,
+errors, retry correlation, cancellation and stale-result rejection.
+
 `nx_property_row` accepts a boolean, finite ranged number, or UTF-8 text
 value. It copies the accessible name and current value into the frame's
 semantic tree and paints an optional font-backed label. The minimum row

@@ -22,7 +22,10 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--expect-unavailable', action='store_true')
     parser.add_argument('--capture', action='store_true')
+    parser.add_argument('--actions', action='store_true', help='use the eight-step independent expansion-action peer')
     args = parser.parse_args()
+    if args.actions and args.expect_unavailable:
+        parser.error('--actions requires the accessible positive profile')
     paths = {name: getattr(args, name).resolve(strict=True)
              for name in ('server', 'registry', 'host', 'client', 'font')}
     work = args.work_dir.absolute()
@@ -46,6 +49,7 @@ def main():
     expected_done = set()
     result = dict(status='failed', input_sha256={name: digest(path) for name, path in paths.items()},
                   expect_unavailable=args.expect_unavailable, cleanup=cleanups,
+                  actions=args.actions,
                   scope='Native keyboard and independent AT-SPI on a private test seat; no real hierarchy service or physical/human acceptance')
 
     def start(command, name, pass_fds=(), interactive=False):
@@ -138,6 +142,8 @@ def main():
         else:
             sequences = [[108], [106], [105], [105], [106], [106], [102], [107],
                          [108], [108], [102], [28], [105, 108], [106], [106], [108]]
+            if args.actions:
+                sequences = [[] for _ in range(8)]
             for step, codes in enumerate(sequences):
                 wait(lambda: f'STEP {step}\n' in log('client'), f'peer step {step}')
                 count = keys_seen() + 2 * len(codes)
@@ -147,10 +153,22 @@ def main():
                 peer.stdin.write(f'CHECK {step}\n'.encode('ascii'))
                 peer.stdin.flush()
                 wait(lambda: f'ACK {step}\n' in log('client'), f'independent native state {step}', allowed_exit=peer)
-                if step in (3, 13):
-                    capture('collapsed' if step == 3 else 'restored-selection')
+                if step == len(sequences) - 1:
+                    expected_done.add(peer)  # Final capture may outlive the verified peer.
+                if args.actions:
+                    def published_action():
+                        views = re.findall(r'^VIEW (.+)$', log('host'), re.M)
+                        current = dict(re.findall(r'(\w+)=(\d+)', views[-1])) if views else {}
+                        expected_root = (step & 1) if step >= 4 else 1
+                        expected_child = 1 if step >= 4 else step & 1
+                        return all(current.get(k) == str(v) for k, v in
+                                   dict(root=expected_root, child=expected_child, selected=15, other=31, focus=17, keys=0).items())
+                    wait(published_action, f'published expansion action {step}')
+                if step in ((0, 7) if args.actions else (3, 13)):
+                    capture('collapsed' if step in (0, 3) else 'restored-selection')
             wait(lambda: peer.poll() is not None, 'independent client exit', allowed_exit=peer)
-            if peer.returncode or 'TREE_VERIFIED ' not in log('client'):
+            marker = 'TREE_ACTIONS_VERIFIED ' if args.actions else 'TREE_VERIFIED '
+            if peer.returncode or marker not in log('client'):
                 raise RuntimeError('native tree client failed')
         expected_done.add(peer)
         key(1)  # The test-only ordinary window closes normally with Escape.

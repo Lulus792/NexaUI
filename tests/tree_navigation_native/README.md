@@ -30,10 +30,10 @@ python3 tests/tree_navigation_native/run.py \
 
 The build needs the normal `atspi-2` pkg-config package to build the independent
 client. `NEXAUI_TREE_NATIVE_CLIENT=OFF` builds only the installed-SDK host and
-portable core test, allowing a separately compiled libatspi peer. The tested
+two portable core tests, allowing separately compiled libatspi peers. The tested
 private-prefix client command and dependency paths are retained in the evidence
 archive. Private registry/runtime libraries must already be available through
-the caller's environment. The CTest runs the portable test only; the native
+the caller's environment. CTest runs the portable tests only; the native
 driver is a separate explicit invocation, not an automatically passing CI case.
 
 The Python 3.11+ driver requires Aetheri's explicitly supplied test compositor
@@ -60,3 +60,22 @@ initial harness failures and native acceptance limits are recorded in the
 This checks a private test seat and controlled hierarchy. Real child-loading/error
 UI, virtual focus reveal, breadcrumbs, production services/registry, full native
 tree/table selection, installed IMEs and human/physical acceptance remain open.
+
+## Native expansion actions
+
+The additional `tree_action_client` discovers the same original fixture through
+OS libatspi. Pass it as `--client` and append `--actions` to the driver command,
+using a fresh work directory. Eight steps invoke the advertised `collapse` and
+`expand` actions by name on both actual tree rows and their expander buttons.
+They must change the corresponding branch state, notify the exact native row,
+retire removed children and restore fresh references while retaining application
+selection and focus on a separate row. A successful DoAction response alone is
+insufficient. The driver additionally requires a published host frame with the
+expected states and zero key events before the final Escape close.
+
+The installed `tree_expansion_core` test also covers idempotent state setting,
+duplicate/opposite/unsupported actions, current disabled ancestry, omitted and
+reparented targets, replacement by a leaf/custom control, collapsible headers and
+paint-failure retry. Custom widgets without an expansion binding stay unsupported.
+Neither test requests data or creates an application hierarchy service. See the
+[expansion-action report](../../docs/quality/tree-expansion-actions-report.md).

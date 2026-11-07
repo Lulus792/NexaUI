@@ -1899,13 +1899,20 @@ NX_API nx_result nx_semantics_get(const nx_context *context, uint32_t index,
                                   nx_semantic_view *out_view);
 NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
                                    uint32_t *out_index);
-/* Queue PRESS, FOCUS, selection or scrollbar INCREMENT/DECREMENT actions against a completed frame. PRESS and
+/* Queue PRESS, FOCUS, selection, built-in expansion or scrollbar step actions
+   against a completed frame. PRESS and
    legacy ungrouped SELECT become ordinary interaction; explicit group selection
    is applied through nx_selection_group/apply in the next frame without a click.
    ADD_SELECTION and DESELECT are derived for group members; required groups
    cannot be cleared. Disabled, modal-blocked and unsupported targets are rejected.
    Scrollbar steps use the area's wheel step and retain axis and owner identity;
    other controls' increment/decrement requests remain unsupported.
+   EXPAND/COLLAPSE set the requested state of a tree branch/expander or collapsible
+   header without clicking, selecting or focusing it. Only the currently offered
+   action is accepted. The next frame must submit the same ID, role, parent and
+   overlay as an enabled expansion control with enabled ancestors; otherwise it
+   expires. Queued native expansion is applied after that frame's routed input.
+   Generic custom widgets have no expansion-state binding and remain unsupported.
    Duplicate/full 64-entry queues return LIMIT. Owner thread, between frames. */
 NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
 /* Maximum UTF-8 bytes per queued whole-text replacement (excluding terminator). */
@@ -2206,7 +2213,8 @@ NX_API nx_result nx_tree(nx_context *context,
                          const nx_container_desc *desc);
 /* A branch uses a separate expander hit region; clicking the rest selects it.
    Left/Right set expansion when the item or expander is focused. State and
-   selection commit only after semantic registration and painting succeed. */
+   selection commit only after semantic registration and painting succeed.
+   Queued semantic EXPAND/COLLAPSE on either branch region sets expansion only. */
 NX_API nx_result nx_tree_item(nx_context *context,
                               const nx_tree_item_desc *desc,
                               int *expanded, uint64_t *selected_id,

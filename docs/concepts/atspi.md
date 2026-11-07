@@ -114,6 +114,14 @@ enter a queue bounded to 64 pending plus in-flight requests and are routed throu
 window/context owner thread. Core backpressure preserves pending native work.
 Acceptance does not mutate the application model or publish speculative state.
 
+Built-in tree branches and their expander buttons, and collapsible-section
+headers, bind their advertised expand/collapse action to a requested state in
+the next frame. This does not click, select or move focus. The core revalidates
+the submitted control's ID, role, parent, overlay and enabled ancestry; omitted
+or incompatible replacements expire. Applications still own data loading and
+must validate any resulting request against their current model. Other custom
+semantic widgets have no built-in expansion-state binding.
+
 Explicit single-selection groups serialize their operations until a newer
 completed frame acknowledges forwarding. Repeating a pending identical operation
 is idempotent; a conflicting operation is rejected. Required selections cannot be

@@ -74,6 +74,7 @@ typedef struct nx_region {
     unsigned nav_axis; /* 1 vertical menu, 2 horizontal menu bar, 3 tree. */
     uint64_t tree_row_id, tree_parent_id;
     unsigned tree_state; /* 1 branch, 2 expanded; retained only with the region. */
+    int expansion_control; /* Built-in tree branch or collapsible header. */
     uint64_t scroll_owner_id; /* A scrollbar action must retain its owner. */
     unsigned scroll_axis; /* 1 horizontal, 2 vertical. */
     int scroll_steps;
@@ -88,6 +89,12 @@ typedef struct nx_region {
     double wheel_delta_x, wheel_delta_y;
     double touch_delta_x, touch_delta_y;
 } nx_region;
+
+typedef struct nx_accessible_request {
+    uint64_t id, owner_id, parent_id, overlay_id;
+    nx_semantic_role role;
+    uint32_t action;
+} nx_accessible_request;
 
 #define NX_REGION_INACTIVE 8u
 
@@ -255,7 +262,8 @@ struct nx_context {
     nx_key key_active_key;
     int pointer_valid;
     nx_semantic_buffer semantics;
-    struct { uint64_t id, owner_id; uint32_t action; } accessible_requests[64];
+    nx_accessible_request accessible_requests[64], expansion_requests[64];
+    size_t expansion_request_count;
     struct { uint64_t id, owner_id; uint32_t action; } selection_requests[64];
     size_t selection_request_count;
     size_t accessible_request_count;
@@ -871,6 +879,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         }
     }
     ctx->selection_request_count = 0;
+    ctx->expansion_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
         uint64_t id = ctx->accessible_requests[i].id;
         uint32_t action = ctx->accessible_requests[i].action;
@@ -883,6 +892,8 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             ctx->selection_requests[slot].id = id;
             ctx->selection_requests[slot].owner_id = ctx->accessible_requests[i].owner_id;
             ctx->selection_requests[slot].action = action;
+        } else if (action == NX_ACTION_EXPAND || action == NX_ACTION_COLLAPSE) {
+            ctx->expansion_requests[ctx->expansion_request_count++] = ctx->accessible_requests[i];
         } else if (action == NX_ACTION_INCREMENT || action == NX_ACTION_DECREMENT) {
             if (region->scroll_axis && region->scroll_owner_id)
                 region->scroll_steps += action == NX_ACTION_INCREMENT ? 1 : -1;
@@ -2327,11 +2338,14 @@ nx_result nx_semantics_get(const nx_context *ctx, uint32_t index,
     return NX_OK;
 }
 
+static int nx_text_value_disabled(const nx_context *ctx, const nx_semantic_record *node);
+
 nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t action) {
     if (!ctx || !id) return NX_ERROR_ARGUMENT;
     if (ctx->state != 2u) return NX_ERROR_STATE;
     int scroll_step=action==NX_ACTION_INCREMENT || action==NX_ACTION_DECREMENT;
-    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT && !scroll_step &&
+    int expansion=action==NX_ACTION_EXPAND || action==NX_ACTION_COLLAPSE;
+    if (action != NX_ACTION_PRESS && action != NX_ACTION_FOCUS && action != NX_ACTION_SELECT && !scroll_step && !expansion &&
         action != NX_ACTION_ADD_SELECTION && action != NX_ACTION_DESELECT)
         return NX_ERROR_UNSUPPORTED;
     uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
@@ -2346,6 +2360,8 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id)) return NX_ERROR_STATE;
     if (scroll_step && (!region->scroll_axis || !region->scroll_owner_id ||
         region->scroll_owner_id!=node->parent_id)) return NX_ERROR_UNSUPPORTED;
+    if (expansion && !region->expansion_control) return NX_ERROR_UNSUPPORTED;
+    if (expansion && nx_text_value_disabled(ctx, node)) return NX_ERROR_STATE;
     const nx_semantic_record *owner = node->selection_owner == UINT32_MAX ? NULL : &ctx->semantics.nodes[node->selection_owner];
     uint32_t supported = node->actions;
     if (owner && (supported & NX_ACTION_SELECT)) {
@@ -2358,9 +2374,8 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     for (size_t i = 0; i < ctx->accessible_request_count; ++i)
         if (ctx->accessible_requests[i].id == id && ctx->accessible_requests[i].action == action) return NX_ERROR_LIMIT;
     if (ctx->accessible_request_count == 64u) return NX_ERROR_LIMIT;
-    ctx->accessible_requests[ctx->accessible_request_count].owner_id = owner ? owner->id : 0;
-    ctx->accessible_requests[ctx->accessible_request_count].id = id;
-    ctx->accessible_requests[ctx->accessible_request_count++].action = action;
+    ctx->accessible_requests[ctx->accessible_request_count++] = (nx_accessible_request){
+        id, owner ? owner->id : 0, node->parent_id, region->overlay_id, node->role, action};
     return NX_OK;
 }
 
@@ -5012,6 +5027,23 @@ menu_item_rollback:
     return result;
 }
 
+/* Native expansion sets a state; it must never become a click/selection or
+   toggle an app state that already reached the requested value. Requests are
+   frame-local and revalidated against the submitted control and ancestors. */
+static int nx_requested_expansion(nx_context *ctx, uint64_t id, int value) {
+    uint32_t index = nx_semantic_find_index(&ctx->semantics, id);
+    if (index == UINT32_MAX) return value;
+    const nx_semantic_record *node = &ctx->semantics.nodes[index];
+    if (nx_text_value_disabled(ctx, node)) return value;
+    for (size_t i = 0; i < ctx->expansion_request_count; ++i) {
+        const nx_accessible_request *request = &ctx->expansion_requests[i];
+        if (request->id == id && request->role == node->role &&
+            request->parent_id == node->parent_id && request->overlay_id == ctx->building_overlay_id)
+            value = request->action == NX_ACTION_EXPAND;
+    }
+    return value;
+}
+
 nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
                        int *expanded, uint64_t *selected_id,
                        nx_interaction_state *out_state) {
@@ -5085,6 +5117,8 @@ nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
             if (event->key == NX_KEY_RIGHT) next_expanded = 1;
             if (event->key == NX_KEY_LEFT) next_expanded = 0;
         }
+        next_expanded = nx_requested_expansion(ctx, desc->control.id, next_expanded);
+        next_expanded = nx_requested_expansion(ctx, desc->expander_id, next_expanded);
     }
     int next_selected = *selected_id == desc->control.id ||
         (!desc->control.disabled && state.clicked);
@@ -5208,7 +5242,11 @@ nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
                                  (next_expanded ? 2u : 0u);
         }
     }
-    if (desc->has_children) *expanded = next_expanded;
+    if (desc->has_children) {
+        nx_region_find(&ctx->current_regions, desc->control.id)->expansion_control = 1;
+        nx_region_find(&ctx->current_regions, desc->expander_id)->expansion_control = 1;
+        *expanded = next_expanded;
+    }
     *out_state = state;
     return NX_OK;
 tree_item_rollback:
@@ -5273,6 +5311,7 @@ nx_result nx_collapsible_section(nx_context *ctx,
         return result;
     }
     int next = (*expanded != 0) ^ (int)(state.clicked & 1u);
+    if (!desc->disabled) next = nx_requested_expansion(ctx, desc->header_id, next);
     nx_color surface, header_color, border, foreground;
     float radius, border_width;
     if (nx_theme_color(ctx, NX_COLOR_SURFACE, &surface) != NX_OK ||
@@ -5331,6 +5370,7 @@ nx_result nx_collapsible_section(nx_context *ctx,
                            (next ? NX_ACTION_COLLAPSE : NX_ACTION_EXPAND);
     *expanded = next;
     *out_state = state;
+    nx_region_find(&ctx->current_regions, desc->header_id)->expansion_control = 1;
     return NX_OK;
 rollback:
     ctx->command_count = old_command_count;
