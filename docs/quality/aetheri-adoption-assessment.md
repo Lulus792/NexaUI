@@ -1,5 +1,25 @@
 # Aetheri adoption: initial source assessment
 
+## Original canonical manifest in an asynchronous hierarchy (2026-11-07)
+
+Consumer `6a8bb795c42323ff42af69464619a9aa898baf30` reuses original Aetheri
+`1fb45c7c21f914a2893457132b609be50ef4280d` manifest verification and installed SDK
+`ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`. Real workers copy every admitted path
+before freeing decoder input. Three strict profiles pass 3/3 manifest CTests and
+1/1 neutral hierarchy regression each. Independent native cases cover all 32 full
+names, wrong-artifact failure/Retry, stale replies, selection/focus, retired
+contexts and held completion after GUI teardown. German 200% small/high-contrast
+cases read both ends of a 256-byte path through actual Page Down input; ungated
+automatic invocation also passes. Three deliberate digest/publication/row-height
+counterexamples and a changed-source guard reject as intended. The original
+Settings emergency-wrap helper is reused, with measured row heights and scroll
+retention. No SDK API/version, Aetheri live source, default or pin changes.
+
+This is read-only declared metadata, not publisher trust, payload verification,
+authority/catalogue operations or full component browser adoption. Source,
+artifacts, initial failures and remaining gates are in the
+[manifest hierarchy report](manifest-hierarchy-report.md).
+
 ## Asynchronous hierarchy presentation and producer lifetime (2026-11-07)
 
 Consumer `345394940ab4bb2d8b820efb9364cdfeca49baad` composes the existing installed
