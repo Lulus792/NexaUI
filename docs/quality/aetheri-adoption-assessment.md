@@ -1,5 +1,34 @@
 # Aetheri adoption: initial source assessment
 
+## Picker original-read recovery and native resize (2026-11-07)
+
+Consumer `f5a5d678fef7654671516e3e52e56f25ff8ff428` adds explicit Retry of a
+failed original READ/Enter/Refresh, adjacent error recovery and a measured compact
+layout around installed SDK `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`. The
+same original Aetheri model `27de5cb228da0f37264fad64d964ad7a660d210d` retains all
+data/FD/inode checks on its worker. Three strict profiles each pass 2/2 CTests,
+including actual failed Enter/read recovery at 4,097/4,096 entries, 64-level
+path handling, scroll/focus and geometry/draft/selection preservation down to
+1x1 in core. The previously usable 180x160 normal view remains checked at 16-pixel
+text; no native visual claim is made for 1x1.
+
+Independent native recovery workflows pass seven stages in static Release,
+shared German/200%/small/high-contrast and sanitizer equivalent. They distinguish
+initial failure from a retained parent, retry the actual failed Enter, read long
+errors through native PageUp, resize through 64x64/240x96 and back with retired
+references and retained state, refuse a replacement inode, then explicitly refresh
+and select its exact new witness. Five nine-stage prior native configurations
+also pass current source. Wrong retry/compact/scroll counterexamples reject in
+core and their applicable native configuration; the wide scroll negative's
+zero-page pass and targeted small failure are both retained.
+
+The example's direct system-math linkage, initial test/gesture synchronization
+failures, raw capture packs, source/artifact hashes and open gates are recorded in
+the [recovery report](file-picker-recovery-report.md). Unavailable count labels,
+additional failure/mixed-input/IME-resize coverage, full picker variants and normal
+Aetheri adoption remain open. No SDK API/version, Aetheri live source/default or
+pin changes; the separate ordinary Files application remains synchronous.
+
 ## Native single-file picker over the original worker (2026-11-07)
 
 Consumer `185389787c0d1e07fa259c823da3e25ad3e97475` composes the installed
