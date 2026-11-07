@@ -144,8 +144,9 @@ retired loose inputs as though this were a fresh experiment.
 
 This advances B02/W03/L02/L11/I01/I06/I07/A02/A06/A10/D07/P04/P05/Q02/Q04
 within the ordinary picker. It does not close those catalogue-wide requirements.
-The unread-root status is explicit, but its zero-valued count label still needs
-an unavailable marker rather than a numeric range; that is a next L11/D07 item.
+At this revision, the unread-root status is explicit but the zero-valued count
+label still needs an unavailable marker. The subsequent
+[count-state step](file-picker-counts-report.md) addresses that scoped L11/D07 item.
 Additional I/O/permission/allocation failures, unpaced mixed-input routing,
 active-IME resize, broader scale/outputs/platforms and native deep/long-name
 ancestor reading remain open. Directory/multiple/save choices, owner/modal

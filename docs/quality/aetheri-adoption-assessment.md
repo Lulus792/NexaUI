@@ -1,5 +1,17 @@
 # Aetheri adoption: initial source assessment
 
+## Picker unavailable versus empty counts (2026-11-07)
+
+Consumer `f1da1ba0e98440c611a671b6127e0abaf240a914` replaces misleading zero
+counts before a successful read with an explicit unavailable label shared by
+rendered layouts and semantics. Three strict installed profiles pass 2/2 CTests
+covering initial failure, filtered empty, actual empty and retained-empty counts.
+Three independent native recovery workflows check unavailable and no-match
+counts and retain the previous Retry/resize/witness checks. The old presentation
+fails current core and native checks. See the [count-state report](file-picker-counts-report.md)
+for exact source, frozen evidence and limits. Unpaced mixed-input routing and
+full picker/owner/service adoption remain open; Aetheri development stays separate.
+
 ## Picker original-read recovery and native resize (2026-11-07)
 
 Consumer `f5a5d678fef7654671516e3e52e56f25ff8ff428` adds explicit Retry of a
@@ -24,7 +36,8 @@ zero-page pass and targeted small failure are both retained.
 
 The example's direct system-math linkage, initial test/gesture synchronization
 failures, raw capture packs, source/artifact hashes and open gates are recorded in
-the [recovery report](file-picker-recovery-report.md). Unavailable count labels,
+the [recovery report](file-picker-recovery-report.md). Unavailable count labels
+are addressed in the subsequent count-state step above;
 additional failure/mixed-input/IME-resize coverage, full picker variants and normal
 Aetheri adoption remain open. No SDK API/version, Aetheri live source/default or
 pin changes; the separate ordinary Files application remains synchronous.
