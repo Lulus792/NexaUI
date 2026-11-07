@@ -299,3 +299,51 @@ this is an example-specific layout bound, not a general document/performance
 budget. Native reader tests account for AT-SPI's outward-rounded integer extents
 when counting fractional PageDown steps, and still verify the actual end bounds
 and exact return to the top.
+
+## Historical process observations
+
+`software_history.h` adds an owner-side read adapter for explicitly supplied
+original `ae_execution_profile` values, using only
+`ae_catalogue_get_execution_process`. It is a data foundation for the next worker/
+view integration; this increment adds no native process page, inventory or live
+process observer. Do not call it from a GUI frame. The trusted owner retains the
+serialized original Root handle and admits the source, account and profiles.
+
+`swh_read` copies at most 64 complete profiles, current scope and selected row
+anchors before any original getter. It reuses the model's validation and original
+profile codecs/hashes. Foreign epoch/account/boot, malformed profiles and duplicate
+launch IDs reject the entire input before any original read. An unselected or
+ineligible target causes no process query. Before/after source contexts must
+equal the selected-app observation, including its revision; this is no cross-query
+transaction, transport authentication or mutation fence.
+
+Each result retains the original profile/generation/runtime and full recorded
+starter/app values. Missing records and unsupported schema versions have explicit
+per-role negative errno and zero snapshots. Unexpected I/O/allocation/corruption/
+context errors reject the entire batch, preserving caller output and any earlier
+batch. No successful prefix becomes a complete observation. `swh_get` returns a
+borrowed range only for the exact current source/recipient/row/revisions. Batch
+storage outlives that range. A retained snapshot can inspect it after the original
+catalogue and owner close. No selected profiles means no selected profiles, not
+no processes. Each unavailable role remains unknown, not a zero PID/process count.
+
+These are **historical enrollment records**. A retained PID/pidfs/cgroup/unit or
+past readiness label proves no current process, image, CPU/RAM metric, ownership,
+permission, drain or replay right. Same-boot owner replacement can retain readable
+history without adopting a run. A selected current generation can differ from
+the historical profile; keep both exact identities visible. Current authenticated
+ProcessFD/system-bus/supervisor/image evidence and complete discovery remain
+external owner/service obligations. The adapter never opens a numeric PID, calls
+a launcher, changes a catalogue/runtime/gate or performs a process/service effect.
+
+The additional original fixture inputs are pinned by `history-inputs.json` at the
+same immutable Aetheri revision. `software_history_fixture` is Aetheri's unchanged
+metadata-only `test_launch.c`, compiled without native service/root-unit options.
+`software_history_original` reuses its frozen process/profile vector and canonical
+reference inputs to prepare private histories, including a completed/released
+run, owner replacement and an explicitly corrupted witness digest. Original
+migrations prepare Root v4–v10; Root v2/v3 stay unsupported. Read-only cases compare
+database bytes/rows afterward. Tests exercise whole-batch failures, copied caller
+inputs, exact row/UID/revision binding, full 64-bit IDs, the 64-profile limit,
+malformed final profiles, unavailable roles and retained storage/FD lifetimes.
+No synthetic witness is asserted to be an actual admitted kernel process.

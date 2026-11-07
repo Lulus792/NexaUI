@@ -62,6 +62,7 @@ static int result_valid(const sw_result *v){
     return 1;
 }
 void sw_result_free(sw_result **p){if(p&&*p){free((*p)->rows);free(*p);*p=NULL;}}
+int sw_result_valid(const sw_result *v){return result_valid(v);}
 int sw_read(struct ae_catalogue *catalogue,const sw_scope *scope,const sw_id *targets,size_t n,sw_result **out){
     if(!out||*out||!catalogue||!scope_valid(scope,0))return -EINVAL;
     if(n>SW_MAX_TARGETS)return -E2BIG;

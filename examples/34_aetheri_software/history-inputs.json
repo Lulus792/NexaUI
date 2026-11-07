@@ -1,0 +1,9 @@
+{
+  "revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "normalization": "CRLF to LF only",
+  "files": {
+    "spec/vectors/execution-process-v1.json": "7d90fa39e8811e9c8b0e23f8f2b0fd5466f83ff0dfac8ca3bbad87949e81bc60",
+    "tests/test_launch.c": "696d4bcc5df691ef9920c001dd101cf135e52e6b6c860627b0e45de9232dd60c",
+    "tools/test_launch_native.py": "b7d60b21360925477c08cc5098c98d531d1ed4e88f2d4274e6dcdf62e6e3889f"
+  }
+}
