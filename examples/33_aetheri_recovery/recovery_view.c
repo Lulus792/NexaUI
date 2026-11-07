@@ -89,6 +89,10 @@ nx_result rvg_close(rvg_view **value){
 }
 void rvg_bind_window(rvg_view *v,nx_window *w){if(v)v->window=w;}
 nx_context *rvg_context(rvg_view *v){return v?v->ctx:NULL;}
+nx_result rvg_set_raster_scale(rvg_view *v,float scale){
+    if(!v)return NX_ERROR_ARGUMENT;
+    nx_result r=nx_context_set_text_raster_scale(v->ctx,scale);if(r==NX_OK)v->style.raster_scale=scale;return r;
+}
 nx_result rvg_sync(rvg_view *v){
     if(!v)return NX_ERROR_ARGUMENT;
     uint64_t epoch=rv_owner_epoch(v->owner);rv_observation state=rv_owner_state(v->owner);int error=rv_owner_error(v->owner);
@@ -200,6 +204,10 @@ static void detail_body(rvg_view *v){
 }
 static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *intent,int *transition){
     const char *labels[3];uint64_t ids[3];size_t buttons=0;int clicked[3]={0};float top=12,button_height=0;nx_result r=NX_OK;
+    int apply_valid=1;size_t active_preedit=0;
+    if(v->mode==RVG_FILTER){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)apply_valid=valid_query(query,NULL);
+        if(v->window&&r==NX_OK){int32_t start=0,end=0;nx_result ime=nx_window_get_ime_preedit(v->window,NULL,0,&active_preedit,&start,&end);if(ime!=NX_OK&&ime!=NX_ERROR_UNSUPPORTED)r=ime;}}
+    if(r!=NX_OK)return r;
     status(v);v->compact=width<240||height<160;
     if(v->compact){labels[0]="X";ids[0]=RVG_CLOSE;buttons=1;}
     else if(v->mode==RVG_LIST){labels[0]=word(v,"Filter","Filter");ids[0]=RVG_FILTER_BUTTON;labels[1]=word(v,"Read","Lesen");ids[1]=RVG_REFRESH;labels[2]=word(v,"Close","Schließen");ids[2]=RVG_CLOSE;buttons=3;}
@@ -220,7 +228,7 @@ static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *int
     r=nx_begin_frame(v->ctx,width,height,0);if(r!=NX_OK)return r;
     nx_semantic_desc root={0};root.id=RVG_ROOT;root.role=NX_ROLE_WINDOW;root.bounds=(nx_rect){0,0,width,height};root.name=sp(word(v,"Recovery observations","Recovery-Beobachtungen"));root.description=sp(word(v,"Read-only owner metadata. Recovery actions belong to the owner.","Schreibgeschützte Owner-Metadaten. Recovery-Aktionen gehören dem Owner."));
     r=nx_semantics_add(v->ctx,&root,NULL);
-    for(size_t i=0;i<buttons&&r==NX_OK;++i){int disabled=ids[i]==RVG_REFRESH&&v->state==RV_READING;
+    for(size_t i=0;i<buttons&&r==NX_OK;++i){int disabled=(ids[i]==RVG_REFRESH&&v->state==RV_READING)||(ids[i]==RVG_APPLY&&(!apply_valid||active_preedit));
         r=button(v,ids[i],(nx_rect){margin+(cell+gap)*(float)i,margin,cell,button_height},ids[i]==RVG_CLOSE?word(v,"Close","Schließen"):labels[i],v->buttons[i],disabled,&clicked[i]);}
     if(v->compact){
         if(r==NX_OK)r=text(v,RVG_STATUS,RVG_ROOT,(nx_rect){4,button_height+8,width-8,fmaxf(0,height-button_height-12)},word(v,"Enlarge the window to inspect records","Fenster zum Prüfen der Einträge vergrößern"),v->status,NULL,0);
@@ -251,6 +259,7 @@ static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *int
             if(v->window&&r==NX_OK)r=nx_text_clipboard_for_window(v->window,&field.clipboard);
             nx_interaction_state interaction;int valid=0,submitted=0;
             if(r==NX_OK)r=nx_text_field_widget_described(v->ctx,&field,v->query,sp(word(v,"At most 128 UTF-8 bytes. Apply searches kind, state and full ID. Empty shows all.","Höchstens 128 UTF-8-Bytes. Anwenden sucht Typ, Zustand und volle ID. Leer zeigt alle.")),&interaction,&valid,&submitted);
+            if(valid!=apply_valid)v->again=1;
             size_t preedit=0;int32_t a=0,b=0;if(v->window&&r==NX_OK){nx_result ime=nx_window_get_ime_preedit(v->window,NULL,0,&preedit,&a,&b);if(ime!=NX_OK&&ime!=NX_ERROR_UNSUPPORTED)r=ime;}
             if(valid&&!preedit&&(submitted||clicked[0]))*transition=2;
             const char *help=valid?word(v,"Type, state or full ID.\n128 UTF-8 bytes; empty shows all.","Typ, Zustand oder volle ID.\n128 UTF-8-Bytes; leer zeigt alle."):word(v,"Invalid filter: at most 128 UTF-8 bytes, no line breaks","Ungültiger Filter: höchstens 128 UTF-8-Bytes, keine Zeilenumbrüche");
@@ -270,6 +279,11 @@ static nx_result frame_once(rvg_view *v,float width,float height,rvg_intent *int
             if(r==NX_OK)r=nx_scroll_area_end(v->ctx);
         }
     }
+    if(r==NX_OK&&v->window){float side=fminf(12,fminf(width,height));nx_widget_desc grip={0};grip.semantic.id=RVG_RESIZE;grip.semantic.parent_id=RVG_ROOT;
+        grip.semantic.role=NX_ROLE_CUSTOM;grip.semantic.name=sp(word(v,"Drag to resize window","Ziehen zum Ändern der Fenstergröße"));grip.semantic.bounds=(nx_rect){width-side,height-side,side,side};grip.flags=NX_WIDGET_INTERACTIVE;
+        nx_interaction_state interaction;r=nx_widget_register(v->ctx,&grip,&interaction);if(r==NX_OK&&interaction.pointer_pressed)intent->resize=1;
+        nx_color color;if(r==NX_OK)r=nx_theme_color(v->ctx,NX_COLOR_BORDER,&color);
+        if(r==NX_OK)r=nx_draw_line(v->ctx,(nx_point){width-side+2,height-2},(nx_point){width-2,height-side+2},1,color);}
     if(r==NX_OK)r=nx_end_frame(v->ctx);
     if(r!=NX_OK)return r;
     if(v->restore){uint32_t node;if(nx_semantics_find(v->ctx,v->restore,&node)==NX_OK){r=nx_focus_set(v->ctx,v->restore);if(r!=NX_OK)return r;v->restore=0;v->again=1;}}
@@ -286,7 +300,7 @@ nx_result rvg_frame(rvg_view *v,float width,float height,rvg_intent *out){
         clear_layouts(v);v->width=width;v->height=height;
     }
     for(unsigned pass=0;pass<12;++pass){v->again=0;int transition=0;rvg_intent intent={0};nx_result r=frame_once(v,width,height,&intent,&transition);if(r!=NX_OK)return r;
-        if(intent.close||intent.refresh){*out=intent;return NX_OK;}
+        if(intent.close||intent.refresh||intent.resize){*out=intent;return NX_OK;}
         if(transition){
             if(transition==1)r=mode(v,RVG_FILTER,RVG_QUERY);
             else if(transition==2){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)r=rvg_filter(v,query);}

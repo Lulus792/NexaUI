@@ -5,16 +5,18 @@ presentation with an owned immutable observation model. It uses the original
 `ae_catalogue_recovery_inventory` result and free function. There is no second
 inventory query, SQL implementation, recovery actor or authority API here.
 The presentation component now supplies a virtualized list, a local filter and
-full read-only details. Native host/worker composition and keyboard/IME/assistive
-acceptance remain the next integration step; this is not a complete Recovery app.
+full read-only details, an in-process original-owner worker and an ordinary
+Wayland software host. This is a private observation example, not a complete
+Recovery app or a privileged owner service.
 
 The trusted Aetheri owner remains responsible for opening its catalogue on its
 single owner thread, retaining the original lock/context and obtaining a complete
 bounded read transaction. `view_model.h` receives only its copied identity,
 context, accepted query ticket and owned original result. It receives no
-catalogue handle or path. A production IPC/worker host still has to correlate
-and deliver replies using the existing application channel; this example does
-not introduce another channel or an owner service.
+catalogue handle or path. `recovery_worker.h` adapts the existing public S02
+channel with two reserved completion slots and copied session/request keys.
+The UI correlates both that key and its ticket before adopting a reply.
+A production IPC/authority service remains an external integration obligation.
 
 Successful completion transfers the complete original allocation once. A view
 retains a snapshot reference and can inspect it after newer observations or
@@ -36,7 +38,8 @@ nondecreasing catalogue revision and identical records/schema at equal revision.
 Revisions remain observations, not mutation fences or future readiness proofs.
 Changed context or explicit schema rebinding needs a fresh owner/session and
 native view/provider retirement. The component retires its bound publication
-before replacing a context; native retained-reference acceptance remains open.
+before replacing a context. The independent OS peer checks retired row, detail
+and filter references across refresh and page/context replacement.
 Malformed, stale, inconsistent or allocation-failed candidates stay caller-owned;
 the pending ticket and prior snapshot survive. The caller frees rejected original
 results with `ae_recovery_inventory_free`. It may then explicitly report a read
@@ -56,12 +59,13 @@ cmake -S examples/33_aetheri_recovery -B build-recovery -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH=/path/to/installed-nexaui \
   -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri
-cmake --build build-recovery --target recovery_view_model_test
+cmake --build build-recovery
 ctest --test-dir build-recovery --output-on-failure
 ```
 
 Pass `-DRVG_TEST_FONT=/path/to/real/font.ttf` to enable the real-font
-`recovery_view` test in addition to `recovery_view_model`. The shared consumer
+`recovery_view` test in addition to `recovery_view_model` and `recovery_worker`.
+The shared consumer
 explicitly links its own standard math operations with `libm`. No font is bundled.
 
 ## Presentation component
@@ -70,7 +74,8 @@ explicitly links its own standard math operations with `libm`. No font is bundle
 retained original snapshot. Create it with a borrowed owner/font collection and
 explicit language, theme, text size and raster density. After owner state changes,
 call `rvg_sync` between frames. Queue input through `rvg_queue_event`; `rvg_frame`
-owns begin/end and returns only Close or Read intents. A Read intent is passed to
+owns begin/end and returns Close, Read or native resize intents. A Read intent
+is passed to
 the app's existing correlated query path; the view never runs the original read
 or a recovery action itself.
 
@@ -81,7 +86,7 @@ for native IME/clipboard and publication retirement; every bound window stays
 alive until `rvg_close` succeeds. Closing retires publication before destroying
 the context; a retirement error preserves the whole view. The host still owns
 native events, presentation/wakeup, backend replies and shutdown/join order.
-There is no runnable native Recovery host yet.
+The runnable host below supplies this ordering for an explicit private owner.
 
 The list mounts only measured visible/overscan rows using the existing virtual
 height index. Arrow/Home/End navigation reaches the full filtered result. Page
@@ -132,6 +137,58 @@ and owner-only Read/Close intents at ordinary, narrow German/high-contrast 2×,
 and light/fractional density. A separately named synthetic 65,536-record workload
 checks bounded mounted semantics, full-ID filtering, shifted snapshot identity
 and allocation-failure rollback. It is not an actual maximum-size authority
-inventory or an end-to-end performance/idle-memory benchmark. Native IME,
-clipboard, AT-SPI clients, physical/human acceptance and real app adoption remain
-unexecuted for this component.
+inventory or an end-to-end performance/idle-memory benchmark. Native checks
+below are separate from these component results. Clipboard, physical/human
+acceptance and real app adoption remain unexecuted for this component.
+
+## Private original-owner worker and native host
+
+`recovery_native FONT.ttf OWNER_DIRECTORY system|user EPOCH32 OWNER32|-` opens
+only the explicit private catalogue selected by its trusted launcher. Use a
+disposable fixture, not the installed system/user catalogue. Identity arguments
+are complete hexadecimal 16-byte values; a system owner uses `-` for OWNER32.
+Use a matching installed SDK containing the Wayland backing fix `c4f467d` or
+later. `RVG_GERMAN`, `RVG_LARGE`, `RVG_SMALL`, `RVG_CONTRAST` and `RVG_LIGHT`
+select the example's locale, text size, initial size and theme.
+
+Only the worker opens, queries and closes the original catalogue. Startup waits
+for its open/get-info handshake; inventory reads run asynchronously. Stop rejects
+new work and completes accepted queued reads as cancelled. An original read
+already running can finish. The host retires semantics and destroys its GUI
+before stop/join/drain; join has no filesystem deadline. This process is trusted
+in its entirety: separating threads does not establish an authority boundary.
+
+The worker test holds a real original SQLite read transaction while retiring
+the GUI context. It checks worker-only original API calls, bounded admission,
+ticket/key identity, queued cancellation, wake-FD readiness, drained completion
+delivery, stale-result ownership, once-only transfer, error/OOM retry and final
+descriptor balance on both original private owners. This core check does not
+prove native window retirement during a held transaction.
+
+For an independent OS peer, configure `-DRVG_BUILD_ATSPI_CLIENT=ON` with actual
+`atspi-2`/`gobject-2.0` development packages. It includes the existing independent
+OS helper from example 30 and links no NexaUI code. With a compatible immutable
+headless Aetheri compositor and AT-SPI registry available:
+
+```sh
+python3 examples/33_aetheri_recovery/run_native.py \
+  --server /path/to/test_compositor_server \
+  --registry /path/to/at-spi2-registryd \
+  --host build-recovery/recovery_native \
+  --client build-recovery/recovery_atspi \
+  --font /path/to/font.ttf \
+  --source /path/to/immutable-original-aetheri \
+  --work-dir /path/to/new-private-run --german --large --small --contrast --ime
+```
+
+The unprivileged driver creates its own private original owner, compositor and
+accessibility bus. Physical key events traverse the native Wayland path; the
+separate libatspi process reads full Text and invokes OS actions. It checks End
+navigation, complete details with PageDown/PageUp, old-reference retirement,
+Read refresh, editable local filtering, Enter refusal during native preedit,
+commit/application, selection restoration and keyboard Close. It requires the
+same original database bytes/rows and normal host/peer exits. `--kind user`
+selects User v8 instead of Root v10. These virtual-input checks are not human
+screenreader or physical-display acceptance. Native held-read close/wakeup,
+native resize/output migration, clipboard and production owner transport remain
+separate open gates.
