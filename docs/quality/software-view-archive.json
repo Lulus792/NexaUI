@@ -1,0 +1,24 @@
+{
+  "name": "nexaui-software-view-20261107-v2.tar.gz",
+  "size": 47178798,
+  "sha256": "0970627f07900d3563fe2d8ebdc5faf5596ea1de5cc78082c0eb6a9f54c7d81b",
+  "files": 3413,
+  "links": 37,
+  "directories": 1274,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-software-view-20261107-v2.tar.gz",
+  "source_revision": "33b9a45cd51c679d743dc4c4a8ae2e4afb5abff8",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally.",
+  "initial_archive": {
+    "name": "nexaui-software-view-20261107.tar.gz",
+    "size": 47175034,
+    "sha256": "851a15b59b2ee0c57cca19ef8cb20a32266467b48ffe245697f7059b29a476e9",
+    "files": 3410,
+    "links": 37,
+    "directories": 1274,
+    "excluded_special": []
+  },
+  "initial_rejection": "Regular-file manifest entries sharing an inode were emitted as tar hardlinks; full verifier refused at atspi-input/usr/lib64/pkgconfig/gmodule-export-2.0.pc.",
+  "collector_correction": "Clear tar inode memo before adding each member so each regular manifest entry is stored as regular bytes. Symlinks remain unfollowed. No build/test/source changes or rerun required; both artifacts retained."
+}
