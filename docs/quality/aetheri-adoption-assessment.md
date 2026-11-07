@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Native built-in expansion action binding (2026-11-07)
+
+SDK `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36` now applies advertised native
+Expand/Collapse requests to tree branches/expanders and collapsible headers.
+They set state without clicks, selection or focus movement and revalidate current
+binding/disabled ancestry. Static/shared/sanitizer installed consumers pass two
+portable CTests each; final regular suites pass 146/152, 145/151 and 146/152 with
+six documented display skips each. Every profile passes eight independent native
+Action steps, the prior 16-step keyboard workflow, four original Files CTests,
+six original native Files modes and 15 original-model navigation steps. Old-SDK
+portable and same-host native failures reproduce the missing binding. All 96
+complete PPM pairs are identical. Source, rollback/expiry checks, initial driver
+failure and remaining gates are in the [expansion report](tree-expansion-actions-report.md).
+Async hierarchy loading/error/retry and complete real-service adoption remain
+open; no Aetheri source/pin or public ABI change is made.
+
 ## Original Files hierarchy and complete-snapshot navigation (2026-11-07)
 
 Consumer `e12dc7f41520bd17ac4a0dac2f87f203d220a3fd` reuses the immutable original
