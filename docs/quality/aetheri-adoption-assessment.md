@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Strict SDK diagnostics and native capabilities (2026-11-07)
+
+SDK source `0d36408c120bd3ec59747688fa0ae6e94fc2dfe6` resolves the documented
+global-Werror diagnostics in four production files without compiler-option,
+API/ABI, dependency or version changes. Four local Linux software SDK profiles
+build warning-free with the original strict probe. Three regular root suites
+pass 144/150, 143/149 and 144/150 with six explicit no-display skips each; those
+native case classes are checked separately on the pinned Aetheri compositor.
+Original Files/document consumers and 47 full before/after images also pass.
+
+The compositor's absent Minimize capability exposed a generic test assumption.
+Test source `8f90afac74571375604b8b330c59ee3103746f54` keeps offered-feature checks
+and additionally requires unsupported results when absent. A success-for-
+unsupported mutant is rejected. The earlier extra-Werror gap is closed for the
+four checked SDK profiles, not all platforms/targets. Exact artifacts, source
+attribution, initial harness error, skip accounting and remaining B05/W03/Q01
+gates are in the [strict C17 report](strict-c17-sdk-report.md). Aetheri's pin and
+working source remain independent; no 1.0.0 release is implied.
+
 ## Original Files document save and close lifetime (2026-11-07)
 
 Consumer implementation [1f9780edc7efba0878edea5d8ea153613506386b](https://github.com/Lulus792/NexaUI/commit/1f9780edc7efba0878edea5d8ea153613506386b)
