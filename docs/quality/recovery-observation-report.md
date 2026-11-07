@@ -133,3 +133,11 @@ retirement. No native recovery window, production worker/IPC service, complete
 device/software inventory, recovery/admission action, installer/trusted surface
 or consumer adoption is closed here. Packet 6 and packets 7–8, physical/human
 acceptance and all other open rows of the 103-ID catalogue remain active.
+
+Subsequent component composition: [source 88d12b4](recovery-view-report.md) adds
+list/filter/full read-only details through public frame APIs. Its native
+host/worker/IME/assistive acceptance remains open. The earlier published
+foundation documentation `97a42647480bb05167cee5e4ae08cedd9147d80d` completes
+[CI42378557292](https://github.com/Lulus792/NexaUI/actions/runs/42378557292)
+with all seven required jobs successful; optional Windows-ASan/fuzz are skipped.
+That root SDK matrix does not execute these separately pinned optional examples.

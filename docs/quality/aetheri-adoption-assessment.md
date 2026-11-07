@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Recovery list/filter/detail component (2026-11-07)
+
+Consumer `88d12b4a3c226437d4ddc92d4390196cdac4ca25` composes original recovery
+observations with public virtual-list, filtering, text-field and read-only Text
+APIs. Static/shared Release and ASan/UBSan/LSan each pass 2/2 CTests, including
+Root/User component tasks at three font/theme/density styles and declared
+65,536-record/shifted-snapshot/allocation-failure cases. Three GUI defects fail;
+headless images are scoped separately from native acceptance. See the
+[report](recovery-view-report.md) and [receipt](recovery-view-local.json), including
+retained compile/focus/fixture/quota failures and verified duplicate retirement.
+The next step remains native host/worker, IME/clipboard/AT-SPI and held references.
+Packet 6 and packets 7–8 remain active; Aetheri's own source/backend/pin continue
+independently, without a normal app migration or 1.0.0 declaration.
+
 ## Original-owner recovery observation foundation (2026-11-07)
 
 Consumer `7bf9b92f1ba4d448295cc76db5975ce535c26770` reuses original Aetheri
