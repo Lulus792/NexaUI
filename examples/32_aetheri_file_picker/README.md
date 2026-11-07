@@ -60,7 +60,7 @@ IME placement and semantic actions reuse installed public APIs. Rows have full
 original escaped labels; directory icons use the existing portable vector API.
 
 `FP_OWNER=1` instead opens a Selection workspace with its own editable note,
-file/folder chooser buttons, last selection and Close. It reuses `nx_modal_begin`
+single-file/folder and multiple-file chooser buttons, last selection and Close. It reuses `nx_modal_begin`
 for a full-viewport modal inside this same native window; it does not implement
 native child-window parenting. Background controls reject input while the
 chooser is open. Cancel/Escape returns to the corresponding trigger, preserving
@@ -157,9 +157,31 @@ escaped labels remain in the corresponding complete-snapshot rows. The fixed
 descriptor table is bounded by the original 4,096-entry limit; actual OS descriptor
 limits may reject a large set without returning truncated success. No process or
 system descriptor limit is raised by the adapter. The visible picker and owner
-still expose single-file/folder selection: wiring the existing public logical
-multi-selection APIs and a complete native multi-picker workflow is the next
-consumer step, not established by this worker contract.
+can additionally expose multiple-file selection. The owner uses mode 2 of
+`fp_owner_open`; an embedding caller sets `picker.multiple=1` before its first
+request/frame (mutually exclusive with directory mode).
+
+Multiple-file mode reuses `nx_selection_model` for the complete observed regular-
+file membership. Every off-page member remains projected as an offscreen native
+item; directory navigation remains a separate button action. Arrow/Home/End
+navigation moves the active focus without replacing the selected set. Space
+toggles a file, Shift navigation/click extends from the anchor, Ctrl-click
+toggles, and Ctrl+A selects all observed files. A plain click replaces the set.
+The footer opens the entire selected set, including off-page files. Catalog
+replacement clears selection rather than retargeting ordinals; matching retained
+observations preserve it. Native actions apply at end-frame, followed by a
+selection repaint before presentation; a same-frame pending Open is discarded
+if that selected set changed. The native dispatcher preserves modifier release
+after preceding queued pointer input.
+
+The owner takes the whole batch once and retains one bounded immutable reply
+for original raw names/display labels. It retains the FD pairs until successful
+replacement or teardown. Cancel/reopen preserves the last accepted result and
+note while a fresh chooser starts with an empty logical selected set. Result
+pages retain at most 16 name layouts; Previous/Next keep the complete set owned,
+retire native publication before rebinding and restore a valid page-control
+focus. PageUp/PageDown read the result body while fixed Close stays available.
+This does not authorize an operation on those files or make them durable IDs.
 
 Use the borrowed `fp_worker_wake_fd` with the existing `nx_window_poll_with_fd`.
 Do not read or close it directly. Drain `fp_worker_receive` until ticket zero;

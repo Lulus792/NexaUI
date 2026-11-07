@@ -20,9 +20,12 @@ static int replace_context(nx_window *window,nx_context **ctx,int theme,fp_owner
     nx_context_destroy(*ctx);*ctx=NULL;return context(ctx,theme);
 }
 static int command_boundary(const nx_event *event) {
+    if((event->type==NX_EVENT_KEY_DOWN||event->type==NX_EVENT_KEY_UP)&&
+       (event->key==NX_KEY_CONTROL||event->key==NX_KEY_SHIFT||event->key==NX_KEY_ALT||event->key==NX_KEY_SUPER))return 1;
     if(event->type!=NX_EVENT_KEY_DOWN)return 0;
     if(event->key==NX_KEY_ESCAPE)return 1;
-    if(event->modifiers)return 0;
+    if(event->key==NX_KEY_SPACE||(event->key==NX_KEY_A&&event->modifiers==NX_MOD_CONTROL))return 1;
+    if(event->modifiers&~(NX_MOD_SHIFT|NX_MOD_CONTROL))return 0;
     return event->key==NX_KEY_HOME||event->key==NX_KEY_END||event->key==NX_KEY_UP||event->key==NX_KEY_DOWN||
         event->key==NX_KEY_ENTER||event->key==NX_KEY_PAGE_UP||event->key==NX_KEY_PAGE_DOWN;
 }
@@ -32,6 +35,7 @@ int main(int argc,char **argv) {
     nx_context *ctx=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     nx_font *font=NULL;nx_font_collection *fonts=NULL;unsigned char *bytes=NULL;FILE *file=NULL;
     fp_worker *worker=NULL;fp_picker picker={0};fp_intent pending={0};uint64_t frames=0,keys=0,requests=0;size_t last_preedit=0;
+    fp_pick *batch_owned=NULL;size_t batch_count=0;
     fp_owner owner={0};int owner_mode=getenv("FP_OWNER")!=NULL;
     nx_event deferred={0};int has_deferred=0,draining=0;
     int theme=getenv("FP_CONTRAST")?NX_THEME_HIGH_CONTRAST:getenv("FP_LIGHT")?NX_THEME_LIGHT:NX_THEME_DARK;
@@ -48,7 +52,9 @@ int main(int argc,char **argv) {
     if(owner_mode){REQUIRE(fp_owner_init(&owner,fonts)==NX_OK);owner.german=getenv("FP_GERMAN")!=NULL;owner.text_size=getenv("FP_LARGE")?32:16;}
     else REQUIRE(fp_picker_init(&picker,worker,fonts,1)==NX_OK);
     picker.german=getenv("FP_GERMAN")!=NULL;picker.text_size=getenv("FP_LARGE")?32:16;picker.directories=getenv("FP_DIRECTORY")!=NULL;
+    picker.multiple=getenv("FP_MULTIPLE")!=NULL;REQUIRE(!(picker.multiple&&picker.directories));
     nx_window_desc desc={owner_mode?(owner.german?"Auswahlbereich":"Selection workspace"):picker.directories?(picker.german?"Ordner auswählen":"Choose a folder"):(picker.german?"Datei auswählen":"Choose a file"),getenv("FP_SMALL")?360:720,getenv("FP_SMALL")?300:580,0,{0}};
+    if(!owner_mode&&picker.multiple)desc.title_utf8=picker.german?"Dateien auswählen":"Choose files";
     REQUIRE(nx_window_create(&desc,&window)==NX_OK&&nx_software_view_open(window,&renderer)==NX_OK);
     if(!owner_mode){pending.requested=1;pending.command.operation=FP_READ;}
     while(!done) {
@@ -60,13 +66,17 @@ int main(int argc,char **argv) {
             printf("OBSERVE ticket=%"PRIu64" accepted=%d\n",ticket,accepted);
             if(accepted) {
                 const fp_reply *r=fp_picker_snapshot(&picker);
-                if((picker.operation==FP_PICK||picker.operation==FP_PICK_DIRECTORY)&&r&&r->result==AE_FILES_OK) {
+                if((picker.operation==FP_PICK||picker.operation==FP_PICK_DIRECTORY||picker.operation==FP_PICK_MANY)&&r&&r->result==AE_FILES_OK) {
                     if(owner_mode){
                         REQUIRE(fp_owner_finish(&owner,&picker,ctx,1)==NX_OK);
-                        struct stat selected;REQUIRE(fstat(owner.witness,&selected)==0);picked=1;
-                        printf("OWNER_RESULT count=%"PRIu64" directories=%d device=%"PRIuMAX" inode=%"PRIuMAX"\n",owner.selections,owner.directories,(uintmax_t)selected.st_dev,(uintmax_t)selected.st_ino);
+                        picked=1;
+                        if(owner.batch_count)printf("OWNER_BATCH count=%"PRIu64" files=%zu\n",owner.selections,owner.batch_count);
+                        else {struct stat selected;REQUIRE(fstat(owner.witness,&selected)==0);
+                            printf("OWNER_RESULT count=%"PRIu64" directories=%d device=%"PRIuMAX" inode=%"PRIuMAX"\n",owner.selections,owner.directories,(uintmax_t)selected.st_dev,(uintmax_t)selected.st_ino);}
                         pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;
                     }
+                    if(picker.multiple){batch_owned=malloc(r->pick_count*sizeof(*batch_owned));REQUIRE(batch_owned&&fp_reply_take_many(fp_reply_get(&picker.observation),batch_owned,r->pick_count,&batch_count)==NX_OK);
+                        printf("PICKED_MANY count=%zu\n",batch_count);picked=1;done=1;break;}
                     char leaf[AE_FILES_NAME+1];
                     REQUIRE(fp_reply_take(fp_reply_get(&picker.observation),&selected_directory,&selected_witness,leaf)==NX_OK);
                     struct stat d,s;REQUIRE(fstat(selected_directory,&d)==0&&S_ISDIR(d.st_mode)&&fstat(selected_witness,&s)==0);
@@ -93,9 +103,11 @@ int main(int argc,char **argv) {
             if(owner_mode)REQUIRE(fp_owner_build(&owner,&picker,ctx,window,info.width,info.height,&pending,&redraw,&open_mode,&quit)==NX_OK);
             else REQUIRE(fp_picker_build(&picker,ctx,window,info.width,info.height,&pending,&redraw)==NX_OK);
             REQUIRE(nx_end_frame(ctx)==NX_OK);
+            int selection_changed;REQUIRE(fp_picker_selection_sync(&picker,&selection_changed)==NX_OK);
+            if(selection_changed){if(pending.requested&&pending.command.operation==FP_PICK_MANY)pending=(fp_intent){0};continue;}
             if(quit){done=1;break;}
             if(open_mode){
-                REQUIRE(fp_owner_open(&owner,&picker,worker,open_mode==2)==NX_OK);pending=(fp_intent){0};pending.requested=1;pending.command.operation=FP_READ;
+                REQUIRE(fp_owner_open(&owner,&picker,worker,open_mode-1)==NX_OK);pending=(fp_intent){0};pending.requested=1;pending.command.operation=FP_READ;
                 REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;
             }
             if(pending.cancel){
@@ -119,6 +131,7 @@ int main(int argc,char **argv) {
                 picker.rebind=0;picker.restore=nx_focus_id(ctx);
                 REQUIRE(replace_context(window,&ctx,theme,&owner));continue;
             }
+            if(owner_mode&&owner.rebind){owner.rebind=0;REQUIRE(replace_context(window,&ctx,theme,&owner));continue;}
             if(redraw||(owner_mode&&!owner.active?fp_owner_reveal(&owner,ctx,info.height):fp_picker_reveal(&picker,ctx,info.height)))continue;
             REQUIRE(nx_window_publish_semantics(window,ctx)==NX_OK);
             /* Finish interaction/focus frames before the next application key,
@@ -186,6 +199,7 @@ cleanup:
     fp_picker_destroy(&picker);if(fp_worker_destroy(&worker)!=NX_OK)okay=0;
     if(selected_directory>=0)close(selected_directory);
     if(selected_witness>=0)close(selected_witness);
+    for(size_t i=0;i<batch_count;++i){close(batch_owned[i].directory);close(batch_owned[i].witness);}free(batch_owned);
     if(root>=0)close(root);
     if(file)fclose(file);
     nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);

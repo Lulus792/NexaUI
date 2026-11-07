@@ -21,6 +21,10 @@ typedef struct fp_picker {
     nx_result error;
     int busy, german, expanded, rebind, retryable, compact, layout_compact;
     int directories; /* Set once after init, before the first request/frame. */
+    int multiple; /* Regular-file set, mutually exclusive with directories. */
+    nx_selection_model *selection;
+    uint64_t anchor;
+    unsigned char drawn_mask[FP_PICK_MASK_BYTES];
     size_t page;
     float text_size, scroll_y;
     double layout_width;
@@ -45,6 +49,9 @@ const fp_reply *fp_picker_snapshot(const fp_picker *);
 /* Return 1 when an unmodified row-navigation key is handled. No backend call. */
 int fp_picker_key(fp_picker *, uint64_t focus, const nx_event *, fp_intent *);
 int fp_picker_reveal(fp_picker *, const nx_context *, float height);
+/* After successful end_frame, before presentation or posting intents. Rebuild
+   when native selection changed; discard a same-frame Pick-many intent. */
+nx_result fp_picker_selection_sync(fp_picker *, int *changed);
 /* Host retires context/queued input when this layout mode changes. The model,
    query draft and selection remain owned independently of window geometry. */
 int fp_picker_compact(fp_picker *, float width, float height);

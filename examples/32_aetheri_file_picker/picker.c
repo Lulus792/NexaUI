@@ -8,7 +8,7 @@ static nx_utf8_span span(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 static int valid_query(nx_utf8_span text,void *user) { (void)user;return text.length<=AE_FILES_QUERY; }
 static const char *word(const fp_picker *p, const char *en, const char *de) { return p->german ? de : en; }
 static const char *open_name(const fp_picker *p) {
-    return p->directories ? word(p,"Choose this folder","Diesen Ordner auswählen") : word(p,"Open","Öffnen");
+    return p->directories ? word(p,"Choose this folder","Diesen Ordner auswählen") : p->multiple ? word(p,"Open selected files","Ausgewählte Dateien öffnen") : word(p,"Open","Öffnen");
 }
 const fp_reply *fp_picker_snapshot(const fp_picker *p) { return p ? fp_reply_get(&p->observation) : NULL; }
 static void format_counts(const fp_picker *p, char *text, size_t capacity) {
@@ -21,12 +21,63 @@ static void format_counts(const fp_picker *p, char *text, size_t capacity) {
     size_t end = first + FP_PAGE_ROWS < r->count ? first + FP_PAGE_ROWS : r->count;
     (void)snprintf(text, capacity, p->german ? "%zu–%zu von %zu Einträgen (%zu insgesamt)" : "%zu–%zu of %zu entries (%zu total)",
         r->count ? first + 1 : 0, end, r->count, r->total);
+    if(p->multiple&&p->selection){nx_selection_view v;if(nx_selection_model_get(p->selection,&v)==NX_OK){size_t used=strlen(text);
+        if(used<capacity)(void)snprintf(text+used,capacity-used,p->german?"; %zu ausgewählt":"; %zu selected",v.selected_count);}}
 }
 static void clear_layouts(fp_picker *p) {
     for (size_t i = 0; i < 16; ++i) { nx_text_layout_destroy(p->labels[i]); p->labels[i] = NULL; }
     for (size_t i = 0; i <= AE_FILES_DEPTH; ++i) { nx_text_layout_destroy(p->crumbs[i]); p->crumbs[i] = NULL; }
     for (size_t i = 0; i < FP_PAGE_ROWS; ++i) { nx_text_layout_destroy(p->rows[i]); p->rows[i] = NULL; }
     p->layout_width = 0; p->layout_compact = 0; p->revealed_focus = 0;
+}
+static nx_result selection_mask(const fp_picker *p,unsigned char *mask,size_t *count) {
+    memset(mask,0,FP_PICK_MASK_BYTES);*count=0;if(!p->selection)return NX_OK;
+    nx_selection_view v;nx_result result=nx_selection_model_get(p->selection,&v);if(result!=NX_OK)return result;
+    for(size_t i=0;i<v.selected_count;++i){uint64_t id=v.selected_ids[i];if(id<FP_ROWS||id-FP_ROWS>=AE_FILES_ENTRIES)return NX_ERROR_STATE;
+        size_t n=(size_t)(id-FP_ROWS);mask[n/8]|=(unsigned char)(1u<<(n%8));}
+    *count=v.selected_count;return NX_OK;
+}
+static int mask_has(const unsigned char *mask,size_t ordinal){return (mask[ordinal/8]&(1u<<(ordinal%8)))!=0;}
+static nx_result selection_prepare(fp_picker *p) {
+    if(!p->multiple)return NX_OK;
+    if(p->directories)return NX_ERROR_ARGUMENT;
+    if(!p->selection){
+        nx_result result=nx_selection_model_create(AE_FILES_ENTRIES,NULL,&p->selection);if(result!=NX_OK)return result;
+        const fp_reply *r=fp_picker_snapshot(p);nx_selection_item items[AE_FILES_ENTRIES];size_t count=0;
+        if(r)for(size_t i=0;i<r->count;++i)if(r->rows[i].entry.kind==AE_FILES_REGULAR)items[count++]=(nx_selection_item){FP_ROWS+r->rows[i].ordinal,0};
+        result=nx_selection_model_set_items(p->selection,items,count);
+        if(result!=NX_OK){nx_selection_model_destroy(p->selection);p->selection=NULL;return result;}
+    }
+    size_t count;return selection_mask(p,p->drawn_mask,&count);
+}
+nx_result fp_picker_selection_sync(fp_picker *p,int *changed) {
+    if(!p||!changed)return NX_ERROR_ARGUMENT;
+    *changed=0;if(!p->multiple||!p->selection)return NX_OK;
+    unsigned char mask[FP_PICK_MASK_BYTES];size_t count;nx_result result=selection_mask(p,mask,&count);if(result!=NX_OK)return result;
+    if(memcmp(mask,p->drawn_mask,sizeof mask)){uint64_t focus=p->revealed_focus;clear_layouts(p);p->revealed_focus=focus;*changed=1;}
+    return NX_OK;
+}
+static int same_catalog(const fp_reply *a,const fp_reply *b) {
+    if(!a||!b||a->revision!=b->revision||a->depth!=b->depth||a->count!=b->count||a->total!=b->total||a->show_hidden!=b->show_hidden||memcmp(a->query,b->query,sizeof a->query))return 0;
+    for(size_t i=0;i<a->count;++i){const fp_row *x=&a->rows[i],*y=&b->rows[i];
+        if(x->ordinal!=y->ordinal||x->entry.kind!=y->entry.kind||x->entry.device!=y->entry.device||x->entry.inode!=y->entry.inode||
+           memcmp(x->entry.name,y->entry.name,sizeof x->entry.name)||memcmp(x->entry.label,y->entry.label,sizeof x->entry.label))return 0;}
+    return 1;
+}
+static nx_result select_multiple(fp_picker *p,uint64_t id,uint32_t modifiers,int toggle) {
+    const fp_reply *r=fp_picker_snapshot(p);if(!r||!p->selection)return NX_ERROR_STATE;
+    size_t target=0;while(target<r->count&&FP_ROWS+r->rows[target].ordinal!=id)++target;
+    if(target==r->count||r->rows[target].entry.kind!=AE_FILES_REGULAR)return NX_ERROR_STATE;
+    if(modifiers&NX_MOD_SHIFT){
+        size_t anchor=target;for(size_t i=0;i<r->count;++i)if(FP_ROWS+r->rows[i].ordinal==p->anchor)anchor=i;
+        size_t first=anchor<target?anchor:target,last=anchor>target?anchor:target;uint64_t ids[AE_FILES_ENTRIES];size_t count=0;
+        unsigned char mask[FP_PICK_MASK_BYTES];size_t old_count;nx_result result=selection_mask(p,mask,&old_count);if(result!=NX_OK)return result;
+        for(size_t i=0;i<r->count;++i)if(r->rows[i].entry.kind==AE_FILES_REGULAR&&((i>=first&&i<=last)||((modifiers&NX_MOD_CONTROL)&&mask_has(mask,r->rows[i].ordinal))))ids[count++]=FP_ROWS+r->rows[i].ordinal;
+        return nx_selection_model_set_selected(p->selection,ids,count);
+    }
+    unsigned char mask[FP_PICK_MASK_BYTES];size_t count;nx_result result=selection_mask(p,mask,&count);if(result!=NX_OK)return result;
+    nx_selection_change change={id,toggle||modifiers&NX_MOD_CONTROL?mask_has(mask,r->rows[target].ordinal)?NX_ACTION_DESELECT:NX_ACTION_ADD_SELECTION:NX_ACTION_SELECT};int changed;
+    result=nx_selection_model_apply(p->selection,&change,1,0,&changed);if(result==NX_OK)p->anchor=id;return result;
 }
 nx_result fp_picker_init(fp_picker *p, fp_worker *worker, nx_font_collection *fonts, uint64_t view) {
     if (!p || !worker || !fonts || !view) return NX_ERROR_ARGUMENT;
@@ -36,7 +87,7 @@ nx_result fp_picker_init(fp_picker *p, fp_worker *worker, nx_font_collection *fo
 }
 void fp_picker_destroy(fp_picker *p) {
     if (!p) return;
-    clear_layouts(p); nx_sim_message_dispose(&p->observation); nx_text_field_destroy(p->query); *p = (fp_picker){0};
+    clear_layouts(p); nx_sim_message_dispose(&p->observation);nx_selection_model_destroy(p->selection); nx_text_field_destroy(p->query); *p = (fp_picker){0};
 }
 nx_result fp_picker_request(fp_picker *p, const fp_command *source) {
     if (!p || !source || p->busy) return NX_ERROR_STATE;
@@ -64,11 +115,12 @@ int fp_picker_observe(fp_picker *p, nx_sim_message *m) {
         p->last_command = (fp_command){0}; p->last_command.operation = FP_READ; p->retryable = 1;
     }
     else {
+        if(p->multiple&&!same_catalog(fp_picker_snapshot(p),r)){nx_selection_model_destroy(p->selection);p->selection=NULL;p->anchor=0;}
         nx_sim_message_dispose(&p->observation); p->observation = *m; *m = (nx_sim_message){0};
         p->error = NX_OK; p->selected = 0; p->page = 0; p->scroll_y = 0;
         p->retryable = r->result == AE_FILES_IO || r->result == AE_FILES_NOMEM || r->result == AE_FILES_LIMIT;
         if(r->result==AE_FILES_LIMIT&&p->operation==FP_ENTER&&r->depth==AE_FILES_DEPTH)p->retryable=0;
-        if (r->result == AE_FILES_OK && p->operation != FP_PICK && p->operation != FP_PICK_DIRECTORY)
+        if (r->result == AE_FILES_OK && p->operation != FP_PICK && p->operation != FP_PICK_DIRECTORY && p->operation != FP_PICK_MANY)
             p->error = nx_text_field_set_text(p->query, r->query, strlen(r->query));
         if(p->error!=NX_OK){p->last_command=(fp_command){0};p->last_command.operation=FP_READ;p->retryable=1;}
     }
@@ -92,12 +144,24 @@ static void open_selected(fp_picker *p, fp_intent *intent) {
         if(command(intent, row->entry.kind == AE_FILES_DIRECTORY ? FP_ENTER : FP_PICK))intent->command.ordinal = row->ordinal;
     }
 }
+static nx_result open_multiple(fp_picker *p,fp_intent *intent) {
+    unsigned char mask[FP_PICK_MASK_BYTES];size_t count;nx_result result=selection_mask(p,mask,&count);if(result!=NX_OK)return result;
+    if(count&&command(intent,FP_PICK_MANY))memcpy(intent->command.pick_mask,mask,sizeof mask);
+    return NX_OK;
+}
 int fp_picker_key(fp_picker *p, uint64_t focus, const nx_event *e, fp_intent *intent) {
     const fp_reply *r = fp_picker_snapshot(p);
-    if (!r || p->busy || p->compact || e->type != NX_EVENT_KEY_DOWN || e->modifiers || focus < FP_ROWS) return 0;
+    if (!r || p->busy || p->compact || e->type != NX_EVENT_KEY_DOWN || (!p->multiple&&e->modifiers) || focus < FP_ROWS) return 0;
     size_t i = 0; while (i < r->count && FP_ROWS + r->rows[i].ordinal != focus) ++i;
     if (i == r->count) return 0;
-    if (e->key == NX_KEY_ENTER && !e->repeat) { p->selected = focus; open_selected(p, intent); return 1; }
+    if(p->multiple){
+        if(e->key==NX_KEY_A&&e->modifiers==NX_MOD_CONTROL&&!e->repeat){uint64_t ids[AE_FILES_ENTRIES];size_t count=0;
+            for(size_t j=0;j<r->count;++j)if(r->rows[j].entry.kind==AE_FILES_REGULAR)ids[count++]=FP_ROWS+r->rows[j].ordinal;
+            p->error=nx_selection_model_set_selected(p->selection,ids,count);return 1;}
+        if(e->key==NX_KEY_SPACE&&!e->modifiers&&!e->repeat){if(r->rows[i].entry.kind==AE_FILES_REGULAR)p->error=select_multiple(p,focus,0,1);else if(r->rows[i].entry.kind==AE_FILES_DIRECTORY){p->selected=focus;open_selected(p,intent);}return 1;}
+        if(e->modifiers&~(NX_MOD_SHIFT|NX_MOD_CONTROL))return 0;
+    }
+    if (e->key == NX_KEY_ENTER && !e->repeat && !e->modifiers) { p->selected = focus;if(p->multiple&&r->rows[i].entry.kind!=AE_FILES_DIRECTORY)p->error=open_multiple(p,intent);else open_selected(p, intent); return 1; }
     size_t next = i;
     if (e->key == NX_KEY_HOME) next = 0;
     else if (e->key == NX_KEY_END) next = r->count - 1;
@@ -105,7 +169,9 @@ int fp_picker_key(fp_picker *p, uint64_t focus, const nx_event *e, fp_intent *in
     else if (e->key == NX_KEY_DOWN) { if (next + 1 < r->count) ++next; }
     else return 0;
     if (p->page != next / FP_PAGE_ROWS) { p->page = next / FP_PAGE_ROWS; p->rebind = 1; clear_layouts(p); }
-    p->selected = FP_ROWS + r->rows[next].ordinal; p->restore = p->selected; return 1;
+    p->selected = FP_ROWS + r->rows[next].ordinal; p->restore = p->selected;
+    if(p->multiple){if(e->modifiers&NX_MOD_SHIFT){if(r->rows[next].entry.kind==AE_FILES_REGULAR)p->error=select_multiple(p,p->selected,e->modifiers,0);}else p->anchor=p->selected;}
+    return 1;
 }
 static const char *status(const fp_picker *p) {
     if (p->busy) return word(p, "Reading folder…", "Ordner wird gelesen…");
@@ -113,7 +179,7 @@ static const char *status(const fp_picker *p) {
     const fp_reply *r = fp_picker_snapshot(p);
     if (!r) return word(p, "Folder not read", "Ordner noch nicht gelesen");
     switch (r->result) {
-    case AE_FILES_OK: return r->count ? p->directories ? word(p,"Open a subfolder, or choose this folder","Unterordner öffnen oder diesen Ordner auswählen") : word(p, "Select a file or open a folder", "Datei auswählen oder Ordner öffnen") :
+    case AE_FILES_OK: return r->count ? p->directories ? word(p,"Open a subfolder, or choose this folder","Unterordner öffnen oder diesen Ordner auswählen") : p->multiple?word(p,"Space toggles files; Shift extends; Ctrl+A selects all. Enter opens folders.","Leertaste wählt Dateien; Umschalt erweitert; Strg+A wählt alle. Enter öffnet Ordner."):word(p, "Select a file or open a folder", "Datei auswählen oder Ordner öffnen") :
         word(p, "No matching entries", "Keine passenden Einträge");
     case AE_FILES_CHANGED: return word(p, "Folder or entry changed. Refresh before retrying.", "Ordner oder Eintrag geändert. Vor erneutem Versuch aktualisieren.");
     case AE_FILES_LIMIT:
@@ -290,6 +356,7 @@ static nx_result compact_build(fp_picker *p,nx_context *ctx,float width,float wi
 }
 nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float width,float window_height,fp_intent *intent,int *redraw) {
     if(!p||!ctx||!intent||!redraw||!isfinite(width)||!isfinite(window_height)||width<1||window_height<1)return NX_ERROR_ARGUMENT;
+    TRY(selection_prepare(p));
     *redraw=0;
     p->compact=fp_picker_compact(p,width,window_height);
     if(p->compact)return compact_build(p,ctx,width,window_height,intent,redraw);
@@ -391,21 +458,32 @@ nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float w
     y+=page_h+8;float counts_h=height(p,p->labels[9]);
     char counts[96];format_counts(p,counts,sizeof counts);
     TRY(label(ctx,FP_COUNTS,FP_SCROLL,(nx_rect){x,y,w,counts_h},p->labels[9],counts,0,NX_ROLE_TEXT));y+=counts_h+4;
-    nx_semantic_desc list={0};list.id=FP_LIST;list.parent_id=FP_SCROLL;list.role=NX_ROLE_LIST;list.name=span(word(p,"Entries on this page","Einträge dieser Seite"));list.bounds=(nx_rect){x,y,w,rows_height};TRY(nx_semantics_add(ctx,&list,NULL));
+    nx_semantic_desc list={0};list.id=FP_LIST;list.parent_id=FP_SCROLL;list.role=NX_ROLE_LIST;list.name=span(p->multiple?word(p,"Files in this folder","Dateien dieses Ordners"):word(p,"Entries on this page","Einträge dieser Seite"));list.bounds=(nx_rect){x,y,w,rows_height};
+    if(p->multiple&&p->busy)list.state=NX_SEM_DISABLED;
+    TRY(nx_semantics_add(ctx,&list,NULL));if(p->multiple)TRY(nx_selection_bind_owner(ctx,FP_LIST,p->selection,0));
     for(size_t i=first;i<end;++i) {
         const fp_row *row=&r->rows[i];float h=height(p,p->rows[i-first]);nx_action_desc a={0};a.variant=NX_ACTION_TILE;a.selected=p->selected==FP_ROWS+row->ordinal;
+        if(p->multiple){a.selected=row->entry.kind==AE_FILES_REGULAR&&mask_has(p->drawn_mask,row->ordinal);if(row->entry.kind!=AE_FILES_REGULAR)a.variant=NX_ACTION_SECONDARY;}
         a.control.id=FP_ROWS+row->ordinal;a.control.parent_id=FP_LIST;a.control.name=span(row->entry.label);a.control.bounds=(nx_rect){x,y,w,h};
         a.control.disabled=p->busy;a.control.label_layout=p->rows[i-first];a.control.label_origin=(nx_point){x+(row->entry.kind==AE_FILES_DIRECTORY?36:12),y+8};a.control.glyph_cache_bytes=1024u*1024u;
         if(row->entry.kind==AE_FILES_DIRECTORY){a.icon=NX_ICON_FOLDER;a.icon_bounds=(nx_rect){x+8,y+10,20,20};}
-        nx_interaction_state s;TRY(nx_action(ctx,&a,&s));if(s.clicked){p->selected=a.control.id;*redraw=1;}y+=h+4;
+        nx_interaction_state s;TRY(nx_action(ctx,&a,&s));
+        if(p->multiple&&row->entry.kind==AE_FILES_REGULAR)TRY(nx_selection_bind_item(ctx,FP_LIST,a.control.id,0));
+        if(s.clicked){p->selected=a.control.id;if(p->multiple){if(row->entry.kind==AE_FILES_REGULAR){nx_input_snapshot input;TRY(nx_frame_input(ctx,&input));TRY(select_multiple(p,a.control.id,input.modifiers,0));}
+            else if(row->entry.kind==AE_FILES_DIRECTORY&&command(intent,FP_ENTER))intent->command.ordinal=row->ordinal;}*redraw=1;}y+=h+4;
+    }
+    if(p->multiple&&r)for(size_t i=0;i<r->count;++i)if((i<first||i>=end)&&r->rows[i].entry.kind==AE_FILES_REGULAR){
+        nx_semantic_desc item={0};item.id=FP_ROWS+r->rows[i].ordinal;item.parent_id=FP_LIST;item.role=NX_ROLE_LIST_ITEM;item.name=span(r->rows[i].entry.label);
+        TRY(nx_semantics_add(ctx,&item,NULL));TRY(nx_selection_bind_item(ctx,FP_LIST,item.id,1));
     }
     TRY(nx_scroll_area_end(ctx));
     int open=selected_row(p)!=NULL;
     const fp_row *chosen=selected_row(p);if(chosen&&chosen->entry.kind!=AE_FILES_DIRECTORY&&chosen->entry.kind!=AE_FILES_REGULAR)open=0;
     if(p->directories)open=r&&r->state;
+    if(p->multiple){unsigned char mask[FP_PICK_MASK_BYTES];size_t count;TRY(selection_mask(p,mask,&count));open=count!=0;}
     int stacked=width<480;float open_height=stacked?height(p,p->labels[10]):footer;
     TRY(button(p,ctx,FP_OPEN,p->parent_id,(nx_rect){16,window_height-footer-12,stacked?width-32:(width-40)/2,open_height},p->labels[10],open_name(p),p->busy||!open,&clicked));
-    if(clicked){if(p->directories)command(intent,FP_PICK_DIRECTORY);else open_selected(p,intent);}
+    if(clicked){if(p->directories)command(intent,FP_PICK_DIRECTORY);else if(p->multiple)TRY(open_multiple(p,intent));else open_selected(p,intent);}
     TRY(button(p,ctx,FP_CANCEL,p->parent_id,(nx_rect){stacked?16:24+(width-40)/2,stacked?window_height-footer-12+open_height+8:window_height-footer-12,stacked?width-32:(width-40)/2,stacked?height(p,p->labels[11]):footer},p->labels[11],word(p,"Cancel","Abbrechen"),0,&clicked));if(clicked)intent->cancel=1;
     if(p->restore) {if(nx_focus_set(ctx,p->restore)==NX_OK){p->restore=0;*redraw=1;}}
     return resize_grip(p,ctx,width,window_height,intent);
