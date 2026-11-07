@@ -159,3 +159,11 @@ active OS close, active-IME resize/scale/seat loss, broader service/permission
 workflows, other platforms and physical/human/performance gates remain required.
 The rest of Files/device/software/component/trusted-system packet 6 and packets
 7–8 remain active across the full 103-ID catalogue.
+
+Subsequent CI observation: published documentation source
+`fcb1ce3fef3f5f0dfe49321ae4920e125fd968b4` completes
+[run 42375426418](https://github.com/Lulus792/NexaUI/actions/runs/42375426418)
+with all seven required jobs successful (six platform/linkage variants and Linux
+sanitizers). Optional Windows-ASan/fuzz jobs are skipped. This root SDK matrix
+does not execute the separately pinned original-Aetheri optional examples and
+does not expand the local native Save acceptance scope above.

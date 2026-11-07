@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Original-owner recovery observation foundation (2026-11-07)
+
+Consumer `7bf9b92f1ba4d448295cc76db5975ce535c26770` reuses original Aetheri
+`46e2a21` recovery inventory, retaining whole immutable allocations, full kind/ID
+inspection and explicit ticket/context/error state. Static/shared Release and
+ASan/UBSan/LSan each pass fourteen view-only original owner/schema fixtures and
+two actual private-owner runtime replacements. Three model defects and a changed
+original input are detected. The [report](recovery-observation-report.md) and
+[receipt](recovery-observation-local.json) retain exact sources, profiles,
+unchanged-row/byte comparisons and limits. Native list/filter/detail, provider
+retirement, production transport, complete device/software inventories and
+recovery/admission operations remain open. Packet 6 and packets 7–8 continue;
+no live Aetheri source/catalogue/pin changes or broad adoption are implied.
+
 ## Ordinary Save owner, filename editing and existing-file review (2026-11-07)
 
 Consumer `5b1b9b5ae0a81ece298426775d8818a77fc9a012` connects the original

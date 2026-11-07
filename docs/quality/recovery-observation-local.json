@@ -1,0 +1,445 @@
+{
+  "summary": {
+    "source_revision": "7bf9b92f1ba4d448295cc76db5975ce535c26770",
+    "sdk_revision": "ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36",
+    "sdk_version": "0.1.23",
+    "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+    "original_files": 66,
+    "tested_source_inputs": [
+      {
+        "path": "examples/33_aetheri_recovery/CMakeLists.txt",
+        "sha256": "dec4ea568ceef4200749e3b0bd69882877fa79e49113804f4f98f878615985b8",
+        "normalized_sha256": "dec4ea568ceef4200749e3b0bd69882877fa79e49113804f4f98f878615985b8"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/check_source.py",
+        "sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90",
+        "normalized_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/run_model.py",
+        "sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31",
+        "normalized_sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/source-inputs.json",
+        "sha256": "b19f9e98a79d26817538028e68397020f6991521a78300508170ab24d160033c",
+        "normalized_sha256": "b19f9e98a79d26817538028e68397020f6991521a78300508170ab24d160033c"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/test_view_model.c",
+        "sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f",
+        "normalized_sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/view_model.c",
+        "sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645",
+        "normalized_sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645"
+      },
+      {
+        "path": "examples/33_aetheri_recovery/view_model.h",
+        "sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357",
+        "normalized_sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357"
+      }
+    ],
+    "profiles": {
+      "release": {
+        "ctests": 1,
+        "view_only_schema_fixtures": 14,
+        "explicit_owner_runtime_replacements": 2,
+        "test_sha256": "2922c41aae96c5efe5f68b8e219d597d211f865d8b02e108cc782b2ca5f87683",
+        "sdk_library": "/home/aetheri/expansion-sdk-release-prefix/lib64/libnexaui.a",
+        "sdk_sha256": "7d1491df1adbcdaf4e481eec90ea6f7632f929770aebc6f956cd0a67ccfc7541"
+      },
+      "shared": {
+        "ctests": 1,
+        "view_only_schema_fixtures": 14,
+        "explicit_owner_runtime_replacements": 2,
+        "test_sha256": "4be6e699a28535db10351df4067a50f7ef94f6181f8a80df43621a45523d07ee",
+        "sdk_library": "/home/aetheri/expansion-sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+        "sdk_sha256": "c8c4b66ee58ef9445b866ca1e87514083d455a37e502fbb8dc6791ba2c620679"
+      },
+      "asan": {
+        "ctests": 1,
+        "view_only_schema_fixtures": 14,
+        "explicit_owner_runtime_replacements": 2,
+        "test_sha256": "6cb01dcd29933c932951bfd51f0f4bc87d03faf5ff70e718fdcc321abb6853c7",
+        "sdk_library": "/home/aetheri/expansion-sdk-asan-prefix/lib64/libnexaui.a",
+        "sdk_sha256": "c6f4340cd626607d5b16f6c08860ab2888e5fba1fc4897dd40fa77b6da47d5b9"
+      }
+    },
+    "defects_detected": 3,
+    "original_input_mismatch_detected": true,
+    "scope": "Original-owner observation foundation. No native list/detail/provider, async transport, full device/app inventory, authority/recovery actions or physical/human/performance acceptance."
+  },
+  "archive-receipt": {
+    "archive": "nexaui-recovery-model-20261107.tar.gz",
+    "sha256": "5b0dab534a2bed73f6945f0b6f222b3e79a0229ae3605ade470ea16a1d05508b",
+    "size": 24138604,
+    "files": 1776,
+    "links": 2,
+    "directories": 582,
+    "source_revision": "7bf9b92f1ba4d448295cc76db5975ce535c26770"
+  },
+  "commands-input2": [
+    {
+      "profile": "release",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/src-input2",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-release-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "release",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-release",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "release",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-release",
+        "--output-on-failure"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "shared",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/src-input2",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "shared",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-shared",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "shared",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-shared",
+        "--output-on-failure"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "asan",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/src-input2",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-asan-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original",
+        "-DAETHERI_SANITIZERS=ON",
+        "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "asan",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-asan",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0
+    },
+    {
+      "profile": "asan",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-asan",
+        "--output-on-failure"
+      ],
+      "exit": 0
+    }
+  ],
+  "mutants-input2": [
+    {
+      "mutant": "ticket",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/mutants-input2/ticket/src",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-negative-ticket",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-release-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "ticket",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-negative-ticket",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "ticket",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-negative-ticket",
+        "--output-on-failure"
+      ],
+      "exit": 8,
+      "expected_failure": true
+    },
+    {
+      "mutant": "opaque-id",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/mutants-input2/opaque-id/src",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-negative-opaque-id",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-release-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "opaque-id",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-negative-opaque-id",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "opaque-id",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-negative-opaque-id",
+        "--output-on-failure"
+      ],
+      "exit": 8,
+      "expected_failure": true
+    },
+    {
+      "mutant": "lifetime",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-recovery-20261107/mutants-input2/lifetime/src",
+        "-B",
+        "/tmp/nexaui-recovery-20261107/model2-negative-lifetime",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-release-prefix",
+        "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "lifetime",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-recovery-20261107/model2-negative-lifetime",
+        "--target",
+        "recovery_view_model_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "expected_failure": false
+    },
+    {
+      "mutant": "lifetime",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-recovery-20261107/model2-negative-lifetime",
+        "--output-on-failure"
+      ],
+      "exit": 8,
+      "expected_failure": true
+    }
+  ],
+  "negative-original-input2": {
+    "command": [
+      "cmake",
+      "-S",
+      "/tmp/nexaui-recovery-20261107/src-input2",
+      "-B",
+      "/tmp/nexaui-recovery-20261107/negative-original-input2",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_PREFIX_PATH=/home/aetheri/expansion-sdk-release-prefix",
+      "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original-negative-input2"
+    ],
+    "exit": 1,
+    "expected_failure": true
+  },
+  "environment": [
+    {
+      "command": [
+        "uname",
+        "-a"
+      ],
+      "exit": 0,
+      "stdout": "Linux aetheri-p0 6.19.10-300.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Wed Mar 25 18:23:49 UTC 2026 x86_64 GNU/Linux\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "gcc",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "cmake",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "--version"
+      ],
+      "exit": 0,
+      "stdout": "Python 3.14.3\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pkg-config",
+        "--modversion",
+        "openssl"
+      ],
+      "exit": 0,
+      "stdout": "3.5.9\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pkg-config",
+        "--modversion",
+        "sqlite3"
+      ],
+      "exit": 0,
+      "stdout": "3.51.2\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "df",
+        "-h",
+        "/tmp"
+      ],
+      "exit": 0,
+      "stdout": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           3.9G  3.1G  867M  79% /tmp\n",
+      "stderr": ""
+    }
+  ],
+  "independent_local_verification": {
+    "sha256": "5b0dab534a2bed73f6945f0b6f222b3e79a0229ae3605ade470ea16a1d05508b",
+    "files": 1776,
+    "links": 2,
+    "directories": 582,
+    "verified": true,
+    "command": "wsl -d Alpine-Dev -- python3 /mnt/d/NexaUI/out/verify_picker_native_archive.py /mnt/d/NexaUI/out/nexaui-recovery-model-20261107.tar.gz 5b0dab534a2bed73f6945f0b6f222b3e79a0229ae3605ade470ea16a1d05508b",
+    "exit": 0
+  }
+}
