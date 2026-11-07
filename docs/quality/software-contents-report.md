@@ -1,6 +1,10 @@
 # Software manifest file/action inspection — 2026-11-07
 
 Consumer source: `de18e96e57a3bd0cbdedf2042fbfe1eec8ed4398`.
+The published checkpoint `da8a008856423af6d4d884590ebae0b7d2fe65be` now has
+seven required CI job successes and two optional skips; [exact-head API receipt](software-contents-ci.json).
+Later data foundation: [historical process observations](software-history-report.md)
+on `ddf4981`; this adds no current process or ownership acceptance to the results below.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI 0.1.23.
 Scoped requirements: D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08.

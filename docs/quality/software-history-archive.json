@@ -1,0 +1,14 @@
+{
+  "name": "nexaui-software-history-20261107.tar.gz",
+  "size": 30994654,
+  "sha256": "2ce0131145645bf22f4fd9a93c9501e5f03ffb126cf4ba4efff300983b628ecb",
+  "files": 1284,
+  "links": 6,
+  "directories": 484,
+  "excluded_special": [
+    "software-history-2-release/components-test/run-11aphfo9/fifo",
+    "software-history-3-asan/components-test/run-ads_81so/fifo",
+    "software-history-3-release/components-test/run-71q5kojc/fifo",
+    "software-history-3-shared/components-test/run-fw46rp1n/fifo"
+  ]
+}
