@@ -68,6 +68,7 @@
     "tools/catalogue_contracts.py": "2b021afd2b2c5eede0ac3b94345169663df315037094f930e8ebee348a80b0a6",
     "tools/embed_schema.py": "21f20d2efe88596f093198e1ad22dec7606a1e27c9e7a04f0a3246a1b2cbbdaf",
     "tools/test_contracts.py": "909332c89c8f28f289bf2ba0e751e8af509479602e5338356243bc3e859fcff9",
-    "tools/test_recovery_inventory.py": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a"
+    "tools/test_recovery_inventory.py": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a",
+    "tools/validate_contracts.py": "6fca28aae82bde10a1a6cf77b1257c82e826fed87983fb327a17bf96b2143ba8"
   }
 }

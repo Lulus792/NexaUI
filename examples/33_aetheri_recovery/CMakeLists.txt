@@ -16,7 +16,12 @@ target_link_libraries(recovery_view_model PUBLIC NexaUI::NexaUI aetheri_catalogu
 add_executable(recovery_view_model_test test_view_model.c)
 target_link_libraries(recovery_view_model_test PRIVATE recovery_view_model)
 target_link_options(recovery_view_model_test PRIVATE -Wl,--wrap=calloc,--wrap=ae_recovery_inventory_free)
-foreach(target recovery_view_model recovery_view_model_test)
+add_library(recovery_view STATIC recovery_view.c ../common/text_wrap.c)
+target_link_libraries(recovery_view PUBLIC recovery_view_model m)
+add_executable(recovery_view_test test_recovery_view.c)
+target_link_libraries(recovery_view_test PRIVATE recovery_view)
+target_link_options(recovery_view_test PRIVATE -Wl,--wrap=malloc)
+foreach(target recovery_view_model recovery_view_model_test recovery_view recovery_view_test)
     set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
     target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
 endforeach()
@@ -25,3 +30,10 @@ add_test(NAME recovery_view_model COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRE
     --source "${AETHERI_SOURCE_DIR}" --test "$<TARGET_FILE:recovery_view_model_test>"
     --work "${CMAKE_CURRENT_BINARY_DIR}/model-test")
 set_tests_properties(recovery_view_model PROPERTIES TIMEOUT 45 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
+set(RVG_TEST_FONT "" CACHE FILEPATH "Real font for recovery view interaction checks")
+if(RVG_TEST_FONT)
+    add_test(NAME recovery_view COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_view.py"
+        --source "${AETHERI_SOURCE_DIR}" --test "$<TARGET_FILE:recovery_view_test>"
+        --font "${RVG_TEST_FONT}" --work "${CMAKE_CURRENT_BINARY_DIR}/view-test")
+    set_tests_properties(recovery_view PROPERTIES TIMEOUT 190 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
+endif()
