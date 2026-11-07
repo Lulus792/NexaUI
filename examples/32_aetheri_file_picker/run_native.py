@@ -14,7 +14,7 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed','directory','owner','owner-reading','owner-multiple'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed','directory','owner','owner-reading','owner-multiple','owner-save'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.pending_cancel and not a.owner:a.cancel=True
     if a.recovery and (a.cancel or a.maximum):p.error('Recovery has its own complete initial/child-overflow workflow')
@@ -23,6 +23,7 @@ def main():
     if a.owner and (a.directory or a.mixed or a.recovery or a.cancel):p.error('Owner workflow selects a file/folder then cancels a new view')
     if a.owner_reading and not a.owner:p.error('Owner reading requires the owner workflow')
     if a.owner_multiple and (not a.owner or a.owner_reading):p.error('Multiple selection is a separate owner workflow')
+    if a.owner_save and (not a.owner or a.owner_reading or a.owner_multiple or a.pending_cancel or a.cancel):p.error('Save selection is a separate owner workflow')
     if os.getuid()==0:p.error('Run as an unprivileged private test owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
@@ -37,10 +38,14 @@ def main():
         for i in range(file_count):(files/f'snapshot-{i:04d}.txt').write_text(f'exact original {i}\n')
         (folder/'é.txt').write_text('selected Unicode\n');(folder/'other.txt').write_text('other\n')
     selected_file=files/f'snapshot-{file_count-1:04d}.txt'
-    if a.owner_reading:
+    if a.owner_reading or a.owner_save:
         selected_file.unlink()
         selected_file=Path(os.fsdecode(os.fsencode(files)+b'/'+b'\xff'*255))
         selected_file.write_text('complete escaped selected name\n')
+    def file_inventory():
+        return {os.fsencode(path.relative_to(files)).hex():dict(sha256=hashlib.sha256(path.read_bytes()).hexdigest(),device=path.stat().st_dev,inode=path.stat().st_ino)
+                for path in files.rglob('*') if path.is_file()}
+    save_inventory=file_inventory() if a.owner_save else None
     address='unix:path='+str(runtime/'bus')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY='picker',NEXAUI_PLATFORM='wayland',
              DBUS_SESSION_BUS_ADDRESS=address,AT_SPI_BUS_ADDRESS=address,ASAN_OPTIONS='detect_leaks=1:halt_on_error=1',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
@@ -48,6 +53,7 @@ def main():
     # A flushed client request alone does not prove the compositor began its grab.
     if a.recovery or (a.owner and not a.no_ime):env['WAYLAND_DEBUG']='client'
     for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE'):env.pop(name,None)
+    for name in ('FP_SAVE','FP_MULTIPLE'):env.pop(name,None)
     for name in ('german','large','small','contrast','light','directory','owner'):
         env.pop('FP_'+name.upper(),None)
         if getattr(a,name):env['FP_'+name.upper()]='1'
@@ -56,7 +62,7 @@ def main():
     if a.pending_cancel:
         gate_read,gate_write=os.pipe2(os.O_CLOEXEC);env['FP_TEST_REFRESH_GATE']=str(gate_read)
     result=dict(status='failed',inputs={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items()},checks=checks,images=images,
-                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed','directory','owner','owner_reading','owner_multiple')})
+                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed','directory','owner','owner_reading','owner_multiple','owner_save')})
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def start(command,name,pass_fds=(),interactive=False):
         stream=(work/(name+'.log')).open('xb');streams.append(stream)
@@ -151,9 +157,22 @@ def main():
         elif not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
         peer=start(peer_args,'client',interactive=True)
         error_pages=0
-        for step in range((16 if a.pending_cancel else 15) if a.owner_multiple else (9 if a.pending_cancel else 8) if a.owner else 3 if a.directory else 5 if a.mixed else 7 if a.recovery else 9):
+        for step in range(11 if a.owner_save else (16 if a.pending_cancel else 15) if a.owner_multiple else (9 if a.pending_cancel else 8) if a.owner else 3 if a.directory else 5 if a.mixed else 7 if a.recovery else 9):
             wait(lambda:f'STEP {step}\n' in log('client'),f'peer step {step}')
-            if a.owner_multiple:
+            if a.owner_save:
+                if step==1:capture('save-filename')
+                if step==3:
+                    before=view().get('keys',0);key(45);wait(lambda:view().get('keys',0)>=before+2,'literal filename keyboard character')
+                if step==3 and not a.no_ime:
+                    seven=log('host').count('PREEDIT bytes=7\n');zero=log('host').count('PREEDIT bytes=0\n')
+                    event('I 0');wait(lambda:log('host').count('PREEDIT bytes=7\n')>seven,'Save filename native preedit');owner_ime_barrier(7)
+                    before=view().get('keys',0);key(28);wait(lambda:view().get('keys',0)>=before+2,'Enter with active filename preedit')
+                    if log('host').count('OWNER_SAVE ') or log('host').count('REQUEST ')!=2:raise RuntimeError('Save admitted an uncommitted filename prefix')
+                    event('I 1');wait(lambda:log('host').count('PREEDIT bytes=0\n')>zero,'Save filename native commit');owner_ime_barrier(0)
+                    result['save_ime_preedit_enter_refused_commit_once']=True
+                if step==5:key(107)
+                key(1 if step in (9,10) else 28)
+            elif a.owner_multiple:
                 code={0:28,1:57,2:107,3:57,6:28,7:28,8:28,9:28,10:1,11:28,12:28,13:28,14:28 if a.pending_cancel else 1,15:1}.get(step)
                 if code is not None:key(code)
                 if a.pending_cancel and step==14:wait(lambda:'ORIGINAL_REFRESH_HELD\n' in log('host'),'multiple held original refresh')
@@ -207,6 +226,29 @@ def main():
                 if step==3 and not a.no_ime:event('I 1')
                 if step==7:key(107)
             peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
+            if a.owner_save and step==1:
+                wait(lambda:re.search(r'^SAVE_TAB_READY ([12])$',log('client'),re.M),'Save review keyboard readiness',allowed=peer)
+                tabs=int(re.search(r'^SAVE_TAB_READY ([12])$',log('client'),re.M)[1])
+                for direction in ('TAB','SHIFT_TAB'):
+                    for index in range(tabs):
+                        if direction=='SHIFT_TAB':event('K 42 1')
+                        key(15)
+                        if direction=='SHIFT_TAB':event('K 42 0')
+                        peer.stdin.write(f'SAVE_{direction}_CHECK {index}\n'.encode());peer.stdin.flush()
+                        wait(lambda:f'SAVE_{direction}_ACK {index}\n' in log('client'),'Save review '+direction+' trap',allowed=peer)
+                result['save_review_keyboard_tab_trap']=dict(tabs_each_direction=tabs,scrollbar_included=tabs==2)
+            if a.owner_save and step==5:
+                wait(lambda:re.search(r'^SAVE_READ (\d+)$',log('client'),re.M),'Save review reading geometry',allowed=peer)
+                pages=int(re.search(r'^SAVE_READ (\d+)$',log('client'),re.M)[1])
+                if not 0<=pages<256:raise RuntimeError('Invalid Save review reading count')
+                capture('save-review-top')
+                for direction,code in [('DOWN',109),('UP',104)]:
+                    for index in range(pages):
+                        before=view().get('keys',0);key(code);wait(lambda:view().get('keys',0)>=before+2,'Save review reading frame')
+                        if direction=='DOWN' and index+1==pages:capture('save-review-bottom')
+                        peer.stdin.write(f'SAVE_{direction} {index}\n'.encode());peer.stdin.flush()
+                        wait(lambda:f'SAVE_{direction}_ACK {index}\n' in log('client'),'Save review reading '+direction,allowed=peer)
+                result['save_review_pages_each_direction']=pages
             if a.owner_multiple and step==4:
                 wait(lambda:re.search(r'^MULTI_POINTER (\d+) (\d+)$',log('client'),re.M),'multiple pointer target',allowed=peer)
                 match=re.search(r'^MULTI_POINTER (\d+) (\d+)$',log('client'),re.M);x,y=map(int,match.groups())
@@ -247,6 +289,24 @@ def main():
                 wait(lambda:view().get('keys',0)>=before_keys+2*error_pages,'published error PageUp')
                 peer.stdin.write(b'READ_ERROR\n');peer.stdin.flush()
             wait(lambda:re.search(rf'^ACK {step}$',log('client'),re.M),f'native check {step}',allowed=peer)
+            if a.owner_save and step in (3,6,10):
+                matches=re.findall(r'^OWNER_SAVE count=(\d+) kind=(\d+) leaf_hex=([0-9a-f]+) directory_fd=(\d+) witness_fd=(-?\d+)$',log('host'),re.M)
+                count=1 if step==3 else 2
+                if len(matches)!=count:raise RuntimeError('Unexpected Save acceptance before FD observation')
+                observed,kind,leaf,directory,witness=matches[-1];directory=int(directory);witness=int(witness)
+                parent=Path(f'/proc/{host.pid}/fd/{directory}').stat();root_identity=files.stat()
+                if (parent.st_dev,parent.st_ino)!=(root_identity.st_dev,root_identity.st_ino):raise RuntimeError('Save target lost the original held parent')
+                if step==3:
+                    if kind!='1' or witness!=-1:raise RuntimeError('New Save destination acquired an existing witness')
+                    result['save_new_parent_fd']=directory
+                else:
+                    selected=Path(f'/proc/{host.pid}/fd/{witness}').stat();original=selected_file.stat()
+                    if kind!='2' or (selected.st_dev,selected.st_ino)!=(original.st_dev,original.st_ino):raise RuntimeError('Save owner held the wrong existing file')
+                    if step==6:
+                        old=Path(f'/proc/{host.pid}/fd/'+str(result['save_new_parent_fd']))
+                        if old.exists() and (old.stat().st_dev,old.stat().st_ino)==(root_identity.st_dev,root_identity.st_ino):raise RuntimeError('Save owner retained its replaced parent FD')
+                    result['save_existing_witness']=dict(fd=witness,device=selected.st_dev,inode=selected.st_ino)
+                result['save_native_parent_witness_and_replacement_verified']=True
             checks.append(dict(step=step))
             if a.owner_multiple and step in (6,10,12):
                 names=re.findall(r'^CHOSEN (snapshot-\d{4}\.txt)$',log('client'),re.M)
@@ -267,7 +327,7 @@ def main():
                     if len(observed)!=17 or {x['name'] for x in observed}!=set(names):raise RuntimeError('Owner did not retain the complete batch')
                     result['owner_batch_witnesses']=observed
                     if step==10:result['owner_batch_cancel_preserved']=True
-            if a.owner and not a.owner_multiple and step==5:
+            if a.owner and not a.owner_multiple and not a.owner_save and step==5:
                 previous=selected_file;leaked=[]
                 for fd in Path(f'/proc/{host.pid}/fd').iterdir():
                     try:
@@ -275,7 +335,7 @@ def main():
                     except FileNotFoundError:pass
                 if leaked:raise RuntimeError('Owner retained the replaced file witness')
                 result['owner_replaced_file_witness_closed']=True
-            if not a.owner_multiple and step in ((5,) if a.owner else (0,1,4) if a.recovery or a.mixed else (0,4,7)):capture('step-'+str(step))
+            if not a.owner_multiple and not a.owner_save and step in ((5,) if a.owner else (0,1,4) if a.recovery or a.mixed else (0,4,7)):capture('step-'+str(step))
             if a.recovery and step==3:
                 original_size=(view()['width'],view()['height']);original_state=view()
                 for phase,size in [('TINY',(64,64)),('SMALL',(240,96)),('RESTORE',original_size)]:
@@ -287,7 +347,7 @@ def main():
                     if any(current.get(k)!=original_state.get(k) for k in ('state','depth','count','page','selected')):raise RuntimeError('Window size changed model or selection')
                     capture('resize-'+phase.lower())
         expected.add(peer);wait(lambda:peer.poll() is not None,'peer exit',allowed=peer)
-        marker='PICKER_NATIVE_MULTIPLE_WHOLE_SET_OFFSCREEN_BULK_OWNER_PAGES_CANCEL_REPLACEMENT_AND_FOCUS_VERIFIED' if a.owner_multiple else 'PICKER_NATIVE_OWNER_FILE_DIRECTORY_MODAL_RETIREMENT_CANCEL_AND_FOCUS_VERIFIED' if a.owner else 'PICKER_NATIVE_DIRECTORY_FILTERED_EMPTY_AND_HELD_PATH_REPLACEMENT_VERIFIED' if a.directory else 'PICKER_NATIVE_QUEUED_TAB_POINTER_TEXT_AND_ROW_COMMAND_ORDER_VERIFIED' if a.mixed else 'PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
+        marker='PICKER_NATIVE_SAVE_NAME_IME_RAW_OVERWRITE_REVIEW_BACK_CANCEL_AND_OWNER_LIFETIME_VERIFIED' if a.owner_save else 'PICKER_NATIVE_MULTIPLE_WHOLE_SET_OFFSCREEN_BULK_OWNER_PAGES_CANCEL_REPLACEMENT_AND_FOCUS_VERIFIED' if a.owner_multiple else 'PICKER_NATIVE_OWNER_FILE_DIRECTORY_MODAL_RETIREMENT_CANCEL_AND_FOCUS_VERIFIED' if a.owner else 'PICKER_NATIVE_DIRECTORY_FILTERED_EMPTY_AND_HELD_PATH_REPLACEMENT_VERIFIED' if a.directory else 'PICKER_NATIVE_QUEUED_TAB_POINTER_TEXT_AND_ROW_COMMAND_ORDER_VERIFIED' if a.mixed else 'PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
         if peer.returncode or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.pending_cancel:wait(lambda:'ORIGINAL_REFRESH_HELD\n' in log('host'),'held original refresh')
         if a.mixed:
@@ -305,10 +365,17 @@ def main():
             if host.poll() is not None:raise RuntimeError('Worker ended before its original read was released')
             os.write(gate_write,b'R');os.close(gate_write);gate_write=None
         wait(lambda:host.poll() is not None,'selected or cancelled close',allowed=host);expected.add(host)
-        requests=(9 if a.pending_cancel else 8) if a.owner_multiple else (7 if a.pending_cancel else 6) if a.owner else (3 if a.cancel else 4) if a.directory else 2 if a.mixed else 9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
+        requests=7 if a.owner_save else (9 if a.pending_cancel else 8) if a.owner_multiple else (7 if a.pending_cancel else 6) if a.owner else (3 if a.cancel else 4) if a.directory else 2 if a.mixed else 9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
         if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
-        if a.owner_multiple:
+        if a.owner_save:
+            literal='freshx' if a.no_ime else 'freshxé'
+            raw_hex=(b'\xff'*255).hex()
+            wanted=[f'OWNER_SAVE count=1 kind=1 leaf_hex={literal.encode().hex()}',f'OWNER_SAVE count=2 kind=2 leaf_hex={raw_hex}']
+            if not all(re.search(re.escape(line)+r' directory_fd=\d+ witness_fd=-?\d+\n',log('host')) for line in wanted) or log('host').count('OWNER_SAVE ')!=2 or 'OWNER_CLOSED selections=2\n' not in log('host'):raise RuntimeError('Wrong Save destination or replayed acceptance')
+            if file_inventory()!=save_inventory:raise RuntimeError('Destination selection changed original filesystem content/identity')
+            result['save_no_filesystem_write']=True
+        elif a.owner_multiple:
             selected=(files/'snapshot-0010.txt').stat()
             if 'OWNER_BATCH count=1 files=17\n' not in log('host') or f'OWNER_RESULT count=2 directories=0 device={selected.st_dev} inode={selected.st_ino}\n' not in log('host') or 'OWNER_CLOSED selections=2\n' not in log('host'):raise RuntimeError('Wrong multiple-owner result or cancellation count')
         elif a.owner:

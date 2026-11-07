@@ -1,7 +1,7 @@
 # Native file picker over the original Files model
 
 This optional ordinary Wayland/software dialog composes an editable name filter,
-held-ancestor path, paged single selection and Open/Cancel over the original Files
+held-ancestor path, paged selection and Open/Save/Cancel over the original Files
 model on one worker. It does not replace the existing Files app, create another
 Files model or turn a GUI selection into a grant, StorageRef, installation or
 privileged authority receipt. Normal Aetheri adoption remains separate.
@@ -308,6 +308,38 @@ in `file_picker_save_test`, including refusal after a named replacement or an
 absent name becoming occupied. The worker itself never writes, reads content,
 changes the document's clean state or replays an uncertain save.
 
-This step does not yet connect Save to the visible picker/owner. Filename-field
-IME/keyboard/assistive behavior, explicit overwrite review, cancel/focus and
-native Save acceptance remain required before adopting that UI scope.
+`FP_SAVE=1` selects the standalone Save mode, mutually exclusive with directory
+and multiple selection. The owner offers Save as; mode 3 of `fp_owner_open`
+creates that same fresh chooser. The filename field has existing native editing,
+clipboard, IME and semantic Text/EditableText behavior. Enter or the fixed Save
+action submits only a complete validated literal name. Active native preedit
+blocks submission, including Enter, until it commits or is cancelled.
+The original context-free name validator classifies UI drafts and is repeated
+on the worker; all mutable Files model calls/borrowed views stay on that worker.
+
+Selecting an existing regular-file row instead binds its original ordinal and
+clears the filename field. Its complete escaped name appears separately; no
+display label ever becomes editable filename bytes. Typing a nonempty literal
+name or Clear existing selection removes the row binding. Page/catalog changes
+cannot reuse it for another object. Enter on a directory still navigates.
+
+A NEW observation returns a destination to the owner. An EXISTING observation
+opens a nested full-window review with the complete original escaped name and
+held ancestor labels, a fixed Replace this file action and Back with default
+focus. PageUp/PageDown reads its body without moving that safe focus. Back or
+Escape closes the candidate descriptors and restores filename editing with its
+draft; a later Escape cancels the chooser and restores the owner's Save trigger.
+The original note and last accepted destination survive cancellation. Neither
+selection nor the confirmation writes: the owner reports Save destination
+selected and retains the literal leaf and ordinary descriptors for its app.
+The app must still recheck the witness, apply its write policy, and report the
+actual save/conflict/unknown outcome. Holding a ready destination prevents another
+worker request until it is taken, cancelled or released through Back.
+
+The native driver's `--owner --owner-save` workflow uses an independent libatspi
+peer, actual Wayland keys and the original filesystem model. It covers typed new
+names, native filename IME, raw existing names, complete overwrite review reading,
+Back versus chooser Cancel, retired references and preserved owner state. The
+standalone entry point shares the implementation; its separate native adoption,
+normal installed IMEs, actual write/progress/unknown application workflows,
+native child parenting/OS close and physical/human acceptance remain open.

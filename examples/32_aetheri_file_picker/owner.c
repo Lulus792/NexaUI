@@ -8,7 +8,7 @@
 #include <unistd.h>
 static nx_utf8_span span(const char *s){return (nx_utf8_span){s,strlen(s)};}
 static const char *word(const fp_owner *o,const char *en,const char *de){return o->german?de:en;}
-static void clear(fp_owner *o){for(size_t i=0;i<9;++i){nx_text_layout_destroy(o->labels[i]);o->labels[i]=NULL;}for(size_t i=0;i<FP_PAGE_ROWS;++i){nx_text_layout_destroy(o->rows[i]);o->rows[i]=NULL;}o->layout_width=0;o->revealed_focus=0;}
+static void clear(fp_owner *o){for(size_t i=0;i<10;++i){nx_text_layout_destroy(o->labels[i]);o->labels[i]=NULL;}for(size_t i=0;i<FP_PAGE_ROWS;++i){nx_text_layout_destroy(o->rows[i]);o->rows[i]=NULL;}o->layout_width=0;o->revealed_focus=0;}
 static void release_batch(fp_owner *o){
     for(size_t i=0;i<o->batch_count;++i){close(o->batch[i].directory);close(o->batch[i].witness);}
     free(o->batch);o->batch=NULL;o->batch_count=o->batch_page=0;nx_sim_message_dispose(&o->batch_labels);
@@ -32,18 +32,29 @@ void fp_owner_destroy(fp_owner *o){
     *o=(fp_owner){0};o->directory=o->witness=-1;
 }
 nx_result fp_owner_open(fp_owner *o,fp_picker *p,fp_worker *worker,int mode){
-    if(!o||!p||!worker||mode<0||mode>2)return NX_ERROR_ARGUMENT;
+    if(!o||!p||!worker||mode<0||mode>3)return NX_ERROR_ARGUMENT;
     if(o->active)return NX_ERROR_STATE;
     if(o->epoch==UINT64_MAX)return NX_ERROR_LIMIT;
     nx_result result=fp_picker_init(p,worker,o->fonts,++o->epoch);
     if(result!=NX_OK)return result;
-    p->german=o->german;p->text_size=o->text_size;p->directories=mode==1;p->multiple=mode==2;p->parent_id=FP_OWNER_MODAL;
-    o->active=1;o->modal_built=0;o->trigger=mode==1?FP_OWNER_DIRECTORY:mode==2?FP_OWNER_MULTIPLE:FP_OWNER_FILE;return NX_OK;
+    p->german=o->german;p->text_size=o->text_size;p->directories=mode==1;p->multiple=mode==2;p->save=mode==3;p->parent_id=FP_OWNER_MODAL;
+    o->active=1;o->modal_built=0;o->trigger=mode==1?FP_OWNER_DIRECTORY:mode==2?FP_OWNER_MULTIPLE:mode==3?FP_OWNER_SAVE:FP_OWNER_FILE;return NX_OK;
 }
 nx_result fp_owner_finish(fp_owner *o,fp_picker *p,nx_context *ctx,int selected){
     if(!o||!p||!ctx||(selected!=0&&selected!=1))return NX_ERROR_ARGUMENT;
     if(!o->active)return NX_ERROR_STATE;
     const fp_reply *r=fp_picker_snapshot(p);const char *label=NULL;struct stat d,w;
+    if(selected&&p->save){
+        if(o->selections==UINT64_MAX)return NX_ERROR_LIMIT;
+        if(!fp_picker_save_ready(p)||r->directory<4||fstat(r->directory,&d)||!S_ISDIR(d.st_mode)||
+            (r->save_kind==FP_SAVE_EXISTING&&(r->witness<4||fstat(r->witness,&w)||!S_ISREG(w.st_mode))))return NX_ERROR_STATE;
+        if(o->modal_built){nx_result result=nx_overlay_close(ctx);if(result!=NX_OK)return result;}
+        fp_save_target target;nx_result result=fp_reply_take_save(fp_reply_get(&p->observation),&target);if(result!=NX_OK)return result;
+        release_batch(o);if(o->directory>=0)close(o->directory);if(o->witness>=0&&o->witness!=o->directory)close(o->witness);
+        o->directory=target.directory;o->witness=target.witness;o->save_kind=target.kind;o->directories=0;
+        memcpy(o->leaf,target.leaf,strlen(target.leaf)+1);memcpy(o->label,target.label,strlen(target.label)+1);++o->selections;clear(o);
+        fp_picker_destroy(p);o->active=o->modal_built=0;o->restore=o->trigger;return NX_OK;
+    }
     if(selected&&p->multiple){
         if(o->selections==UINT64_MAX)return NX_ERROR_LIMIT;
         if(!r||r->result!=AE_FILES_OK||p->operation!=FP_PICK_MANY||!r->pick_count||r->pick_count>r->count)return NX_ERROR_STATE;
@@ -58,7 +69,7 @@ nx_result fp_owner_finish(fp_owner *o,fp_picker *p,nx_context *ctx,int selected)
         size_t count;nx_result result=fp_reply_take_many(fp_reply_get(&p->observation),batch,r->pick_count,&count);if(result!=NX_OK){free(batch);return result;}
         release_batch(o);if(o->directory>=0)close(o->directory);if(o->witness>=0&&o->witness!=o->directory)close(o->witness);
         o->directory=o->witness=-1;o->batch=batch;o->batch_count=count;o->batch_labels=p->observation;p->observation=(nx_sim_message){0};
-        (void)snprintf(o->label,sizeof o->label,o->german?"%zu Dateien ausgewählt":"%zu files selected",count);o->directories=0;++o->selections;clear(o);
+        (void)snprintf(o->label,sizeof o->label,o->german?"%zu Dateien ausgewählt":"%zu files selected",count);o->directories=0;o->save_kind=FP_SAVE_NONE;o->leaf[0]=0;++o->selections;clear(o);
         fp_picker_destroy(p);o->active=o->modal_built=0;o->restore=o->trigger;return NX_OK;
     }
     if(selected){
@@ -81,7 +92,7 @@ nx_result fp_owner_finish(fp_owner *o,fp_picker *p,nx_context *ctx,int selected)
         release_batch(o);
         if(o->directory>=0)close(o->directory);
         if(o->witness>=0&&o->witness!=o->directory)close(o->witness);
-        o->directory=directory;o->witness=witness;memcpy(o->label,label,strlen(label)+1);o->directories=p->directories;++o->selections;clear(o);
+        o->directory=directory;o->witness=witness;memcpy(o->label,label,strlen(label)+1);o->directories=p->directories;o->save_kind=FP_SAVE_NONE;o->leaf[0]=0;++o->selections;clear(o);
     }
     fp_picker_destroy(p);o->active=0;o->modal_built=0;o->restore=o->trigger;return NX_OK;
 }
@@ -89,9 +100,9 @@ static float height(const fp_owner *o,size_t i){float h=(float)nx_text_layout_he
 static nx_result layouts(fp_owner *o,float width){
     if(o->layout_width==width&&o->layout_size==o->text_size)return NX_OK;
     clear(o);const char *texts[]={word(o,"Choose file…","Datei auswählen…"),word(o,"Choose folder…","Ordner auswählen…"),
-        word(o,"Close","Schließen"),word(o,"Owner note","Notiz"),o->selections?word(o,"Selected item","Ausgewählter Eintrag"):word(o,"Nothing selected","Noch keine Auswahl"),o->label,
-        word(o,"Choose files…","Dateien auswählen…"),word(o,"Previous results","Vorherige Ergebnisse"),word(o,"Next results","Nächste Ergebnisse")};
-    for(size_t i=0;i<9;++i)if(!nx_example_small_text_layout(o->fonts,texts[i],strlen(texts[i]),o->text_size,width-24,&o->labels[i])){clear(o);return NX_ERROR_STATE;}
+        word(o,"Close","Schließen"),word(o,"Owner note","Notiz"),o->save_kind?word(o,"Save destination selected","Speicherziel ausgewählt"):o->selections?word(o,"Selected item","Ausgewählter Eintrag"):word(o,"Nothing selected","Noch keine Auswahl"),o->label,
+        word(o,"Choose files…","Dateien auswählen…"),word(o,"Previous results","Vorherige Ergebnisse"),word(o,"Next results","Nächste Ergebnisse"),word(o,"Save as…","Speichern unter…")};
+    for(size_t i=0;i<10;++i)if(!nx_example_small_text_layout(o->fonts,texts[i],strlen(texts[i]),o->text_size,width-24,&o->labels[i])){clear(o);return NX_ERROR_STATE;}
     for(size_t i=0;i<FP_PAGE_ROWS&&o->batch_page*FP_PAGE_ROWS+i<o->batch_count;++i){const fp_row *row=fp_owner_batch_row(o,o->batch_page*FP_PAGE_ROWS+i);
         if(!row||!nx_example_small_text_layout(o->fonts,row->entry.label,strlen(row->entry.label),o->text_size,width-24,&o->rows[i])){clear(o);return NX_ERROR_STATE;}}
     o->layout_width=width;o->layout_size=o->text_size;return NX_OK;
@@ -115,7 +126,7 @@ nx_result fp_owner_build(fp_owner *o,fp_picker *p,nx_context *ctx,nx_window *win
     if(width>=160&&h>=160){
         float w=width-32;TRY(layouts(o,w));float footer=height(o,2),body=h-footer-32;
         if(body<24)body=24;
-        float total=height(o,0)+height(o,1)+height(o,6)+height(o,3)+o->text_size+20+height(o,4)+(o->selections?height(o,5)+8:0)+48;
+        float total=height(o,0)+height(o,1)+height(o,6)+height(o,9)+8+height(o,3)+o->text_size+20+height(o,4)+(o->selections?height(o,5)+8:0)+48;
         if(o->batch_count){total+=height(o,7)+height(o,8)+16;for(size_t i=0;i<FP_PAGE_ROWS&&o->rows[i];++i)total+=(float)nx_text_layout_height(o->rows[i])+20;}
         nx_scroll_area_desc scroll={0};scroll.id=FP_OWNER_SCROLL;scroll.parent_id=1;scroll.thumb_y_id=FP_OWNER_THUMB;
         scroll.name=span(word(o,"Selection workspace","Auswahlbereich"));scroll.viewport=(nx_rect){16,8,w,body};scroll.content_size=(nx_size){w,total};scroll.axes=NX_SCROLL_Y;scroll.wheel_step=o->text_size*3;
@@ -128,6 +139,9 @@ nx_result fp_owner_build(fp_owner *o,fp_picker *p,nx_context *ctx,nx_window *win
         float multiple_h=height(o,6);TRY(button(o,ctx,FP_OWNER_MULTIPLE,FP_OWNER_SCROLL,(nx_rect){16,y,w,multiple_h},6,word(o,"Choose files…","Dateien auswählen…"),&clicked));
         if(clicked&&!o->active)*open_mode=3;
         y+=multiple_h+8;
+        float save_h=height(o,9);TRY(button(o,ctx,FP_OWNER_SAVE,FP_OWNER_SCROLL,(nx_rect){16,y,w,save_h},9,word(o,"Save as…","Speichern unter…"),&clicked));
+        if(clicked&&!o->active)*open_mode=4;
+        y+=save_h+8;
         float note_h=height(o,3);TRY(label(o,ctx,FP_OWNER_NOTE_LABEL,(nx_rect){16,y,w,note_h},3,word(o,"Owner note","Notiz")));y+=note_h+4;
         nx_text_field_desc note={0};note.id=FP_OWNER_NOTE;note.parent_id=FP_OWNER_SCROLL;note.bounds=(nx_rect){16,y,w,o->text_size+20};
         note.name=span(word(o,"Owner note","Notiz"));note.fonts=o->fonts;note.pixels_per_em=o->text_size;note.glyph_cache_bytes=1024u*1024u;note.ime_window=window;
@@ -156,7 +170,7 @@ nx_result fp_owner_build(fp_owner *o,fp_picker *p,nx_context *ctx,nx_window *win
     if(o->active){
         if(!o->modal_built)(void)nx_focus_set(ctx,o->trigger);
         nx_overlay_desc modal={0};modal.panel.id=FP_OWNER_MODAL;modal.panel.parent_id=1;modal.panel.bounds=(nx_rect){0,0,width,h};
-        modal.panel.name=span(p->directories?word(o,"Choose a folder","Ordner auswählen"):p->multiple?word(o,"Choose files","Dateien auswählen"):word(o,"Choose a file","Datei auswählen"));modal.backdrop_id=FP_OWNER_BACKDROP;
+        modal.panel.name=span(p->save?word(o,"Save as","Speichern unter"):p->directories?word(o,"Choose a folder","Ordner auswählen"):p->multiple?word(o,"Choose files","Dateien auswählen"):word(o,"Choose a file","Datei auswählen"));modal.backdrop_id=FP_OWNER_BACKDROP;
         int dismissed;TRY(nx_modal_begin(ctx,&modal,&dismissed));o->modal_built=1;
         TRY(fp_picker_build(p,ctx,window,width,h,intent,redraw));TRY(nx_overlay_end(ctx));
     }else if(!o->rebind&&o->restore&&nx_focus_set(ctx,o->restore)==NX_OK){o->restore=0;*redraw=1;}

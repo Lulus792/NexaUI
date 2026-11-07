@@ -4,7 +4,9 @@
 #include "files/model.h"
 
 /* Consumer adapter, not an SDK API or replacement Files model. All original
-   model calls/borrowed views belong exclusively to one worker. No UI, context,
+   mutable model calls/borrowed views belong exclusively to one worker. The
+   context-free original name validator may also classify UI draft bytes.
+   No UI, context,
    font, window, authority or arbitrary callbacks enter that worker. */
 typedef struct fp_worker fp_worker;
 typedef struct fp_key { uint64_t view, request; } fp_key;

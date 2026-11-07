@@ -6,11 +6,16 @@ enum { FP_ROOT = 10, FP_UP_BUTTON, FP_REFRESH_BUTTON, FP_HIDDEN_BUTTON,
        FP_QUERY, FP_APPLY, FP_PATH, FP_STATUS, FP_PREVIOUS, FP_NEXT,
        FP_COUNTS, FP_LIST, FP_SCROLL, FP_THUMB, FP_OPEN, FP_CANCEL,
        FP_RETRY, FP_COMPACT_HELP, FP_RESIZE, FP_RECOVER,
+       FP_FILENAME, FP_SAVE_CHOSEN, FP_SAVE_CLEAR, FP_SAVE_REVIEW,
+       FP_SAVE_BACKDROP, FP_SAVE_TEXT, FP_SAVE_CONFIRM, FP_SAVE_BACK,
+       FP_SAVE_SCROLL, FP_SAVE_THUMB, FP_FILENAME_LABEL, FP_FILENAME_HELP,
+       FP_SAVE_LINES=40000,
        FP_ANCESTORS = 100, FP_ROWS = 1000 };
 typedef struct fp_picker {
     fp_worker *worker; /* Borrowed; host stops/joins after GUI retirement. */
     nx_font_collection *fonts;
     nx_text_field *query;
+    nx_text_field *filename;
     nx_sim_message observation;
     uint64_t view, request, ticket, selected, restore;
     uint64_t parent_id; /* Semantic parent; init defaults to 1. Set before frames. */
@@ -22,6 +27,11 @@ typedef struct fp_picker {
     int busy, german, expanded, rebind, retryable, compact, layout_compact;
     int directories; /* Set once after init, before the first request/frame. */
     int multiple; /* Regular-file set, mutually exclusive with directories. */
+    int save, save_review, save_approved, name_composing; /* Mode fixed before first frame. */
+    uint64_t save_binding; /* Original row ID, never an escaped name in the editor. */
+    float review_scroll, save_layout_width;
+    int save_layout_review, size_save, size_review;
+    nx_text_layout *save_labels[6];
     nx_selection_model *selection;
     uint64_t anchor;
     unsigned char drawn_mask[FP_PICK_MASK_BYTES];
@@ -36,7 +46,7 @@ typedef struct fp_picker {
     size_t layout_page;
     uint64_t layout_state;
 } fp_picker;
-typedef struct fp_intent { int requested, cancel, resize; fp_command command; } fp_intent;
+typedef struct fp_intent { int requested, cancel, resize, save_back, save_accept; fp_command command; } fp_intent;
 nx_result fp_picker_init(fp_picker *, fp_worker *, nx_font_collection *, uint64_t view);
 void fp_picker_destroy(fp_picker *);
 /* Call only between successful UI frames. One active request per picker. */
@@ -52,6 +62,12 @@ int fp_picker_reveal(fp_picker *, const nx_context *, float height);
 /* After successful end_frame, before presentation or posting intents. Rebuild
    when native selection changed; discard a same-frame Pick-many intent. */
 nx_result fp_picker_selection_sync(fp_picker *, int *changed);
+/* A successful NEW observation is ready; EXISTING requires the explicit review
+   action, processed only after successful end_frame. Back closes its held
+   candidate and requests context retirement without cancelling this picker. */
+int fp_picker_save_ready(const fp_picker *);
+nx_result fp_picker_save_confirm(fp_picker *, nx_context *);
+nx_result fp_picker_save_back(fp_picker *);
 /* Host retires context/queued input when this layout mode changes. The model,
    query draft and selection remain owned independently of window geometry. */
 int fp_picker_compact(fp_picker *, float width, float height);

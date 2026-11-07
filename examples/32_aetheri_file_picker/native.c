@@ -29,6 +29,17 @@ static int command_boundary(const nx_event *event) {
     return event->key==NX_KEY_HOME||event->key==NX_KEY_END||event->key==NX_KEY_UP||event->key==NX_KEY_DOWN||
         event->key==NX_KEY_ENTER||event->key==NX_KEY_PAGE_UP||event->key==NX_KEY_PAGE_DOWN;
 }
+static int take_save(fp_picker *p,int *directory,int *witness){
+    fp_save_target t;if(!fp_picker_save_ready(p)||fp_reply_take_save(fp_reply_get(&p->observation),&t)!=NX_OK)return 0;
+    *directory=t.directory;*witness=t.witness;
+    printf("SAVE_TARGET kind=%d leaf_hex=",(int)t.kind);for(size_t i=0;i<strlen(t.leaf);++i)printf("%02x",(unsigned char)t.leaf[i]);puts("");return 1;
+}
+static int owner_result(const fp_owner *o){
+    if(o->save_kind){printf("OWNER_SAVE count=%"PRIu64" kind=%d leaf_hex=",o->selections,(int)o->save_kind);for(size_t i=0;i<strlen(o->leaf);++i)printf("%02x",(unsigned char)o->leaf[i]);printf(" directory_fd=%d witness_fd=%d\n",o->directory,o->witness);return 1;}
+    if(o->batch_count){printf("OWNER_BATCH count=%"PRIu64" files=%zu\n",o->selections,o->batch_count);return 1;}
+    struct stat selected;if(fstat(o->witness,&selected))return 0;
+    printf("OWNER_RESULT count=%"PRIu64" directories=%d device=%"PRIuMAX" inode=%"PRIuMAX"\n",o->selections,o->directories,(uintmax_t)selected.st_dev,(uintmax_t)selected.st_ino);return 1;
+}
 #define REQUIRE(test) do { if(!(test)){fprintf(stderr,"picker-host:%d: %s\n",__LINE__,#test);okay=0;goto cleanup;} } while(0)
 int main(int argc,char **argv) {
     int okay=1,root=-1,selected_directory=-1,selected_witness=-1,done=0,dirty=1,picked=0;
@@ -53,8 +64,10 @@ int main(int argc,char **argv) {
     else REQUIRE(fp_picker_init(&picker,worker,fonts,1)==NX_OK);
     picker.german=getenv("FP_GERMAN")!=NULL;picker.text_size=getenv("FP_LARGE")?32:16;picker.directories=getenv("FP_DIRECTORY")!=NULL;
     picker.multiple=getenv("FP_MULTIPLE")!=NULL;REQUIRE(!(picker.multiple&&picker.directories));
+    picker.save=getenv("FP_SAVE")!=NULL;REQUIRE(!picker.save||(!picker.multiple&&!picker.directories));
     nx_window_desc desc={owner_mode?(owner.german?"Auswahlbereich":"Selection workspace"):picker.directories?(picker.german?"Ordner auswählen":"Choose a folder"):(picker.german?"Datei auswählen":"Choose a file"),getenv("FP_SMALL")?360:720,getenv("FP_SMALL")?300:580,0,{0}};
     if(!owner_mode&&picker.multiple)desc.title_utf8=picker.german?"Dateien auswählen":"Choose files";
+    if(!owner_mode&&picker.save)desc.title_utf8=picker.german?"Speichern unter":"Save as";
     REQUIRE(nx_window_create(&desc,&window)==NX_OK&&nx_software_view_open(window,&renderer)==NX_OK);
     if(!owner_mode){pending.requested=1;pending.command.operation=FP_READ;}
     while(!done) {
@@ -66,15 +79,14 @@ int main(int argc,char **argv) {
             printf("OBSERVE ticket=%"PRIu64" accepted=%d\n",ticket,accepted);
             if(accepted) {
                 const fp_reply *r=fp_picker_snapshot(&picker);
-                if((picker.operation==FP_PICK||picker.operation==FP_PICK_DIRECTORY||picker.operation==FP_PICK_MANY)&&r&&r->result==AE_FILES_OK) {
+                if(((picker.operation==FP_PICK||picker.operation==FP_PICK_DIRECTORY||picker.operation==FP_PICK_MANY)&&r&&r->result==AE_FILES_OK)||fp_picker_save_ready(&picker)) {
                     if(owner_mode){
                         REQUIRE(fp_owner_finish(&owner,&picker,ctx,1)==NX_OK);
                         picked=1;
-                        if(owner.batch_count)printf("OWNER_BATCH count=%"PRIu64" files=%zu\n",owner.selections,owner.batch_count);
-                        else {struct stat selected;REQUIRE(fstat(owner.witness,&selected)==0);
-                            printf("OWNER_RESULT count=%"PRIu64" directories=%d device=%"PRIuMAX" inode=%"PRIuMAX"\n",owner.selections,owner.directories,(uintmax_t)selected.st_dev,(uintmax_t)selected.st_ino);}
+                        REQUIRE(owner_result(&owner));
                         pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;
                     }
+                    if(picker.save){REQUIRE(take_save(&picker,&selected_directory,&selected_witness));picked=1;done=1;break;}
                     if(picker.multiple){batch_owned=malloc(r->pick_count*sizeof(*batch_owned));REQUIRE(batch_owned&&fp_reply_take_many(fp_reply_get(&picker.observation),batch_owned,r->pick_count,&batch_count)==NX_OK);
                         printf("PICKED_MANY count=%zu\n",batch_count);picked=1;done=1;break;}
                     char leaf[AE_FILES_NAME+1];
@@ -110,6 +122,12 @@ int main(int argc,char **argv) {
                 REQUIRE(fp_owner_open(&owner,&picker,worker,open_mode-1)==NX_OK);pending=(fp_intent){0};pending.requested=1;pending.command.operation=FP_READ;
                 REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;
             }
+            if(pending.save_back){REQUIRE(fp_picker_save_back(&picker)==NX_OK);picker.rebind=0;pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;}
+            if(pending.save_accept){
+                REQUIRE(fp_picker_save_confirm(&picker,ctx)==NX_OK);
+                if(owner_mode){REQUIRE(fp_owner_finish(&owner,&picker,ctx,1)==NX_OK&&owner_result(&owner));picked=1;pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;continue;}
+                REQUIRE(take_save(&picker,&selected_directory,&selected_witness));picked=1;done=1;break;
+            }
             if(pending.cancel){
                 if(owner_mode){REQUIRE(fp_owner_finish(&owner,&picker,ctx,0)==NX_OK);pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;printf("OWNER_VIEW_CLOSED selections=%"PRIu64"\n",owner.selections);continue;}
                 done=1;break;
@@ -128,7 +146,7 @@ int main(int argc,char **argv) {
                 REQUIRE(replace_context(window,&ctx,theme,&owner));continue;
             }
             if(picker.rebind) {
-                picker.rebind=0;picker.restore=nx_focus_id(ctx);
+                picker.rebind=0;if(!picker.restore)picker.restore=nx_focus_id(ctx);
                 REQUIRE(replace_context(window,&ctx,theme,&owner));continue;
             }
             if(owner_mode&&owner.rebind){owner.rebind=0;REQUIRE(replace_context(window,&ctx,theme,&owner));continue;}
@@ -161,16 +179,17 @@ drain_input:
             if(queued_prefix&&command_boundary(&event)){deferred=event;has_deferred=1;break;}
             if(event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP)++keys;
             if(event.type==NX_EVENT_KEY_DOWN&&event.key==NX_KEY_ESCAPE&&!event.repeat){
-                if(owner_mode&&owner.active){REQUIRE(fp_owner_finish(&owner,&picker,ctx,0)==NX_OK);pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;printf("OWNER_VIEW_CLOSED selections=%"PRIu64"\n",owner.selections);}
+                if((!owner_mode||owner.active)&&picker.save_review){REQUIRE(fp_picker_save_back(&picker)==NX_OK);picker.rebind=0;pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;}
+                else if(owner_mode&&owner.active){REQUIRE(fp_owner_finish(&owner,&picker,ctx,0)==NX_OK);pending=(fp_intent){0};REQUIRE(replace_context(window,&ctx,theme,&owner));dirty=1;printf("OWNER_VIEW_CLOSED selections=%"PRIu64"\n",owner.selections);}
                 else done=1;
                 break;
             }
             if(owner_mode&&fp_owner_key(&owner,ctx,&event)){dirty=1;break;}
-            if((!owner_mode||owner.active)&&event.type==NX_EVENT_KEY_DOWN&&(event.key==NX_KEY_PAGE_UP||event.key==NX_KEY_PAGE_DOWN)&&!event.modifiers&&nx_focus_id(ctx)!=FP_QUERY) {
+            if((!owner_mode||owner.active)&&event.type==NX_EVENT_KEY_DOWN&&(event.key==NX_KEY_PAGE_UP||event.key==NX_KEY_PAGE_DOWN)&&!event.modifiers&&nx_focus_id(ctx)!=FP_QUERY&&nx_focus_id(ctx)!=FP_FILENAME) {
                 uint32_t area_index;nx_semantic_view area;float step=info.height*0.25f;
-                if(nx_semantics_find(ctx,FP_SCROLL,&area_index)==NX_OK&&nx_semantics_get(ctx,area_index,&area)==NX_OK)step=area.bounds.height*0.5f;
-                picker.scroll_y+=event.key==NX_KEY_PAGE_DOWN?step:-step;
-                if(picker.scroll_y<0)picker.scroll_y=0;
+                if(nx_semantics_find(ctx,picker.save_review?FP_SAVE_SCROLL:FP_SCROLL,&area_index)==NX_OK&&nx_semantics_get(ctx,area_index,&area)==NX_OK)step=area.bounds.height*0.5f;
+                float *offset=picker.save_review?&picker.review_scroll:&picker.scroll_y;*offset+=event.key==NX_KEY_PAGE_DOWN?step:-step;
+                if(*offset<0)*offset=0;
                 dirty=1;break;
             }
             uint64_t focus=nx_focus_id(ctx);
