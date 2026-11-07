@@ -361,14 +361,14 @@ static void nx_grid_raise(nx_grid_axis *axis, size_t start, size_t span,
         for (size_t pass = 0; pass < span && remaining > 1e-9; ++pass) {
             size_t eligible = 0;
             for (size_t i = start; i < start + span; ++i)
-                if (axis[i].spec.kind == kind &&
+                if (axis[i].spec.kind == (nx_grid_track_kind)kind &&
                     axis[i].measured < axis[i].spec.maximum) ++eligible;
             if (!eligible) break;
             double share = remaining / eligible;
             double applied = 0;
             int capped = 0;
             for (size_t i = start; i < start + span; ++i) {
-                if (axis[i].spec.kind != kind ||
+                if (axis[i].spec.kind != (nx_grid_track_kind)kind ||
                     axis[i].measured >= axis[i].spec.maximum) continue;
                 double taken = fmin(share, axis[i].spec.maximum - axis[i].measured);
                 if (taken < share) capped = 1;
@@ -415,14 +415,14 @@ static void nx_grid_fit(nx_grid_axis *axis, size_t count, double gap,
             for (size_t pass = 0; pass < count && remaining > 1e-9; ++pass) {
                 double weight = 0;
                 for (size_t i = 0; i < count; ++i)
-                    if (axis[i].spec.kind == kind &&
+                    if (axis[i].spec.kind == (nx_grid_track_kind)kind &&
                         axis[i].arranged > axis[i].spec.minimum)
                         weight += axis[i].arranged;
                 if (weight <= 0) break;
                 double applied = 0;
                 int capped = 0;
                 for (size_t i = 0; i < count; ++i) {
-                    if (axis[i].spec.kind != kind ||
+                    if (axis[i].spec.kind != (nx_grid_track_kind)kind ||
                         axis[i].arranged <= axis[i].spec.minimum) continue;
                     double share = remaining * axis[i].arranged / weight;
                     double taken = fmin(share, axis[i].arranged - axis[i].spec.minimum);

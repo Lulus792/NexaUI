@@ -2824,7 +2824,7 @@ nx_result nx_fill_rect(nx_context *ctx, nx_rect rect, nx_color color) {
     if (ctx->state != 1u) return NX_ERROR_STATE;
     nx_result result = nx_reserve_command(ctx);
     if (result != NX_OK) return result;
-    ctx->commands[ctx->command_count++] = (nx_command){NX_COMMAND_FILL_RECT, rect, color};
+    ctx->commands[ctx->command_count++] = (nx_command){.type=NX_COMMAND_FILL_RECT, .rect=rect, .color=color};
     return NX_OK;
 }
 
@@ -8505,7 +8505,7 @@ nx_result nx_push_clip(nx_context *ctx, nx_rect rect) {
         clip.x1 = fmax(clip.x0, fmin(clip.x1, parent.x1));
         clip.y1 = fmax(clip.y0, fmin(clip.y1, parent.y1));
     }
-    ctx->commands[ctx->command_count++] = (nx_command){NX_COMMAND_PUSH_CLIP, rect, {0}};
+    ctx->commands[ctx->command_count++] = (nx_command){.type=NX_COMMAND_PUSH_CLIP, .rect=rect};
     ctx->clip_stack[ctx->clip_depth] = clip;
     ++ctx->clip_depth;
     return NX_OK;
@@ -8515,7 +8515,7 @@ nx_result nx_pop_clip(nx_context *ctx) {
     if (!ctx || ctx->state != 1u || !ctx->clip_depth) return NX_ERROR_STATE;
     nx_result result = nx_reserve_command(ctx);
     if (result != NX_OK) return result;
-    ctx->commands[ctx->command_count++] = (nx_command){NX_COMMAND_POP_CLIP, {0}, {0}};
+    ctx->commands[ctx->command_count++] = (nx_command){.type=NX_COMMAND_POP_CLIP};
     --ctx->clip_depth;
     return NX_OK;
 }
@@ -8632,8 +8632,10 @@ static nx_result nx_plot_multi_paint(nx_context *ctx,const nx_plot_desc *d,nx_re
                                 y0=y0<0?0:y0;y1=y1>(int)h?(int)h:y1;
                                 lower[x]=(uint16_t)y0;upper[x]=(uint16_t)y1;
                                 if(y1>y0){
-                                    if(x<first_x)first_x=x;if(x+1>last_x)last_x=x+1;
-                                    if(y0<first_y)first_y=y0;if(y1>last_y)last_y=y1;
+                                    if(x<first_x)first_x=x;
+                                    if(x+1>last_x)last_x=x+1;
+                                    if(y0<first_y)first_y=y0;
+                                    if(y1>last_y)last_y=y1;
                                 }
                             }
                         }
@@ -8667,7 +8669,8 @@ static nx_result nx_plot_multi_paint(nx_context *ctx,const nx_plot_desc *d,nx_re
                 for(unsigned j=0;j<4;++j){if(j&&marks[j].index==marks[j-1].index)continue;
                     nx_point point=nx_plot_map(area,d,marks[j].point);
                     nx_result r=nx_draw_line(ctx,has_previous?previous:point,point,1.5f,line);
-                    if(r!=NX_OK)return r;previous=point;has_previous=1;}
+                    if(r!=NX_OK)return r;
+                    previous=point;has_previous=1;}
             }
         }
     }

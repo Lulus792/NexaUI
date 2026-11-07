@@ -224,9 +224,9 @@ nx_result nx_window_poll_many_with_fd_events(nx_window *const *windows,size_t co
     if(!windows || !out_events || !count || count>NX_WINDOW_POLL_MAX_WINDOWS ||
        !nx_linux_fd_interests_valid(fd,interests))
         return NX_ERROR_ARGUMENT;
-    nx_wayland_window *native[NX_WINDOW_POLL_MAX_WINDOWS];
+    nx_wayland_window *native[NX_WINDOW_POLL_MAX_WINDOWS]={0};
     nx_window *members[NX_WINDOW_POLL_MAX_WINDOWS];
-    int extras[NX_WINDOW_POLL_MAX_WINDOWS], writable[NX_WINDOW_POLL_MAX_WINDOWS];
+    int extras[NX_WINDOW_POLL_MAX_WINDOWS]={0}, writable[NX_WINDOW_POLL_MAX_WINDOWS]={0};
     for(size_t i=0;i<count;++i) {
         members[i]=windows[i];
         if(!members[i])return NX_ERROR_ARGUMENT;

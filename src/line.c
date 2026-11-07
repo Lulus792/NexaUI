@@ -213,7 +213,7 @@ static int nx_lb_prefix_number(const char *bytes, size_t length,
 static uint8_t nx_lb_boundary(const char *bytes, size_t length,
                               nx_lb_char left, nx_lb_char right,
                               size_t ri_count) {
-    nx_lb_char before, after;
+    nx_lb_char before = {0}, after = {0};
 
     if (left.raw == NX_UCD_LB_BK) return NX_LINE_BREAK_MANDATORY; /* LB4 */
     if (left.raw == NX_UCD_LB_CR && right.raw == NX_UCD_LB_LF)
