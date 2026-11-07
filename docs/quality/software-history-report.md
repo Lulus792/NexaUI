@@ -1,5 +1,9 @@
 # Original historical process observation adapter — 2026-11-07
 
+Continuation: [worker and native historical inspection](software-history-worker-report.md)
+is implemented at `755a788`. The reader-only scope and remaining-work notes below
+record the earlier `ddf4981` checkpoint.
+
 Consumer source: `ddf4981530afe25cdc6f9a768cfcc8dc63da49af`.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI 0.1.23.

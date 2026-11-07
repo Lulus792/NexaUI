@@ -1,0 +1,16 @@
+{
+  "name": "nexaui-software-history-worker-20261107.tar.gz",
+  "size": 50277204,
+  "sha256": "45d84dd90cff85a1be3ef6629260f1b8ce2306e40e12be9a7dbb1d45892c0c0e",
+  "files": 2651,
+  "links": 8,
+  "directories": 920,
+  "excluded_special": [
+    "software-history-worker-2-release/components-test/run-czjsio3y/fifo",
+    "software-history-worker-3-asan/components-test/run-5brsh9sp/fifo",
+    "software-history-worker-3-release/components-test/run-svr1ua9x/fifo",
+    "software-history-worker-3-shared/components-test/run-yykja5m2/fifo",
+    "swh-legacy-asan/manifests/fifo",
+    "swh-legacy-release/manifests/fifo"
+  ]
+}
