@@ -5,7 +5,8 @@ from pathlib import Path
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','source','model','fixture','reader','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    p.add_argument('--mode',choices=('history','replacement','unsupported','corrupt','none'),default='history')
+    p.add_argument('--mode',choices=('history','replacement','unsupported','corrupt','none','unit','unit-replacement','custody','custody-max','custody-replacement'),default='history')
+    p.add_argument('--unit-links',action='store_true',help='Inspect original allocation/custody details without unit effects')
     for name in ('german','large','small','contrast','light'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if os.getuid()==0:p.error('Use an unprivileged private owner')
@@ -29,7 +30,7 @@ def main():
         env.pop('SWG_'+n.upper(),None)
         if getattr(a,n):env['SWG_'+n.upper()]='1'
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
-    result=dict(status='failed',inputs={n:hashlib.sha256(v.read_bytes()).hexdigest() for n,v in paths.items() if v.is_file()},configuration={n:getattr(a,n) for n in ('mode','german','large','small','contrast','light')},commands=[],scope='Original synthetic historical metadata, native virtual Wayland and OS AT-SPI transport. No current process/resource/ownership, human reader or physical hardware acceptance.')
+    result=dict(status='failed',inputs={n:hashlib.sha256(v.read_bytes()).hexdigest() for n,v in paths.items() if v.is_file()},configuration={n:getattr(a,n) for n in ('mode','german','large','small','contrast','light','unit_links')},commands=[],scope='Original synthetic historical metadata, native virtual Wayland and OS AT-SPI transport. No current process/resource/ownership, human reader or physical hardware acceptance.')
     def start(command,name,fds=(),pipe=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream);child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True);children.append((name,child));return child
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
@@ -57,7 +58,7 @@ def main():
         command=[paths['host'],paths['font'],data['system'],ids[0],ids[5],'1000',ids[6]]+([] if a.mode=='none' else ['--history',data['profile_hex']]);result['host_command']=list(map(str,command));host=start(command,'host')
         wait(lambda:view().get('state')==2 and view().get('count')==1 and 'SOFTWARE_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text();assert not any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan'))
-        peer=start([paths['client'],host.pid,first_name,history_name,expected,a.mode,'de' if a.german else 'en'],'client',pipe=True)
+        peer=start([paths['client'],host.pid,first_name,history_name,expected,a.mode,'de' if a.german else 'en']+(['--unit-links'] if a.unit_links else []),'client',pipe=True)
         for sequence in range(1024):
             def commands():return re.findall(r'^HISTORY (\d+) (KEY|SYNC|REFRESH|DONE) (\d+) (\d+)$',log('client'),re.M)
             wait(lambda:len(commands())>sequence,'history peer command',(peer,));actual,kind,first,second=commands()[sequence];first=int(first);second=int(second);assert int(actual)==sequence

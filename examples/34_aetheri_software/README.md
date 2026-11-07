@@ -21,7 +21,8 @@ cmake -S examples/34_aetheri_software -B build-software \
   -DSWG_TEST_FONT=/path/to/font.ttf
 cmake --build build-software --target software_model_test software_worker_test \
   software_view_test software_components_test software_history_test \
-  software_history_fixture software_history_worker_test software_native
+  software_history_fixture software_history_worker_test software_history_links_test \
+  software_native
 ctest --test-dir build-software --output-on-failure
 ```
 
@@ -375,3 +376,41 @@ database bytes/rows afterward. Tests exercise whole-batch failures, copied calle
 inputs, exact row/UID/revision binding, full 64-bit IDs, the 64-profile limit,
 malformed final profiles, unavailable roles and retained storage/FD lifetimes.
 No synthetic witness is asserted to be an actual admitted kernel process.
+
+## Recorded unit associations
+
+Each selected historical record also retains the original profile-bound
+`ae_catalogue_get_unit` and `ae_catalogue_get_unit_custody` observations. The same
+serialized worker uses its checked current Root epoch/boot/runtime; original
+getters bind the complete historical profile, including after an owner replacement.
+Unselected/ineligible targets cause no extra query. Root versions before9/10 and
+absent observations remain explicit per-field errors with zero snapshots.
+Unexpected errors or malformed returned bounds reject the complete historical
+batch; independently valid selected-app data remains usable. No private SQL,
+unit/RPC effect, FD recovery, runtime mutation or service connection is added.
+
+From a historical profile, **Unit links** opens a read-only page containing the
+allocation ID, recipe/placement/selection digests and timestamps; custody origin,
+bus/issuer/manager/label; node count and every recorded effect, node index,
+intention, acknowledgement flag and timestamp. Escape/Back returns focus to Unit
+links, then the profile tree. Paging, below-minimum restoration and metadata
+retirement reuse the existing contracts. Allocation witnessing and any number of
+RPC acknowledgements establish no current custody, independent retirement,
+process/holder drain, lease release or right to repeat an effect.
+
+The original custody codec permits non-UTF-8 manager-label bytes. The batch keeps
+them intact. The page uses UTF-8 when valid and otherwise shows the complete
+bytes as explicitly labelled hex, avoiding a text-layout failure or replacement.
+The maximum test combines19 effects,255-byte unique bus names and511 non-UTF-8
+label bytes; its origin strings are explicitly synthetic stress inputs.
+
+`software_history_links` reuses unchanged original metadata fixtures for witnessed
+Root9 allocation, Root10 custody (including all19 effects), same-epoch owner
+replacement and unavailable older schemas. It checks original database byte/row
+equality, full data/focus/scroll/retirement, malformed outputs, whole-batch errors
+and worker-thread getters. `run_history_native.py --unit-links` inspects the same
+page through the independent OS peer; its added `unit`, `unit-replacement`,
+`custody`, `custody-max` and `custody-replacement` modes prepare only private
+original metadata. They do not run actual bus/unit/process effects. Further
+lease, operation/diagnostic/reason and actual current owner observations remain
+separate composition work.

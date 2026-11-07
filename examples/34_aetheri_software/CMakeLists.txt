@@ -67,7 +67,10 @@ target_link_options(software_components_test PRIVATE -Wl,--wrap=malloc,--wrap=ca
 add_executable(software_history_worker_test test_history_worker.c)
 target_link_libraries(software_history_worker_test PRIVATE software_view software_worker)
 target_link_options(software_history_worker_test PRIVATE -Wl,--wrap=swh_read,--wrap=ae_catalogue_get_execution_process)
-foreach(target software_model software_model_test software_manifest_document software_components software_history software_history_test software_history_fixture software_worker software_worker_test software_view software_native software_view_test software_components_test software_history_worker_test)
+add_executable(software_history_links_test test_history_links.c)
+target_link_libraries(software_history_links_test PRIVATE software_view software_worker)
+target_link_options(software_history_links_test PRIVATE -Wl,--wrap=ae_catalogue_get_unit,--wrap=ae_catalogue_get_unit_custody)
+foreach(target software_model software_model_test software_manifest_document software_components software_history software_history_test software_history_fixture software_worker software_worker_test software_view software_native software_view_test software_components_test software_history_worker_test software_history_links_test)
     set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
     target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
 endforeach()
@@ -86,6 +89,10 @@ add_test(NAME software_worker_original COMMAND "${Python3_EXECUTABLE}" "${CMAKE_
 set_tests_properties(software_worker_original PROPERTIES TIMEOUT 180 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
 set(SWG_TEST_FONT "" CACHE FILEPATH "Real font for selected-app view checks")
 if(SWG_TEST_FONT)
+    add_test(NAME software_history_links COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_history_links.py"
+        --source "${AETHERI_SOURCE_DIR}" --fixture "$<TARGET_FILE:software_history_fixture>" --model "$<TARGET_FILE:software_model_test>"
+        --reader "$<TARGET_FILE:software_history_test>" --test "$<TARGET_FILE:software_history_links_test>" --font "${SWG_TEST_FONT}" --work "${CMAKE_CURRENT_BINARY_DIR}/history-links-test")
+    set_tests_properties(software_history_links PROPERTIES TIMEOUT 600 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
     add_test(NAME software_history_worker COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_history_worker.py"
         --source "${AETHERI_SOURCE_DIR}" --fixture "$<TARGET_FILE:software_history_fixture>" --model "$<TARGET_FILE:software_model_test>"
         --reader "$<TARGET_FILE:software_history_test>" --test "$<TARGET_FILE:software_history_worker_test>" --font "${SWG_TEST_FONT}" --work "${CMAKE_CURRENT_BINARY_DIR}/history-worker-test")
