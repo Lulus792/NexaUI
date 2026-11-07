@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Original Save destination foundation (2026-11-07)
+
+Consumer `cc27e805202c27a239b5e8565601830578e4dd30` extends the existing
+original-model worker with named and observed-row Save targets. It reuses the
+original creation validator, retains raw leaves separately from escaped labels,
+refuses symlink/non-regular targets and transfers held-parent/optional-witness
+ownership once. The original app controller separately proves create-only
+conflict, replaced-witness refusal and a real save through a renamed held parent.
+Static/shared Release and ASan/UBSan/LSan pass 5/5 CTests; three deliberate
+source defects fail their targeted checks. Two native regressions preserve
+multi-owner and controlled-IME/reading behavior on the final host binaries.
+See the [Save target report](file-picker-save-target-report.md) for exact
+sources, evidence and limits. The visible Save editor, explicit overwrite review
+and their native keyboard/IME/assistive acceptance are next; this does not close
+Save adoption, packet 6 or the whole catalogue. SDK API/version, live Aetheri
+and its pins remain unchanged.
+
 ## Logical multiple-file owner composition (2026-11-07)
 
 Consumer `c04d94292df0ee9c3afa7a1b6ae50c61a05fb12b` binds the existing public
