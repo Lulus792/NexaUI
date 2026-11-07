@@ -139,6 +139,10 @@
       "sha256": "4ba47dbf47388364fcf4a957ee09e77cbfeb7d7707181a5006a2f26da1759360"
     },
     {
+      "path": "tests/test_files.c",
+      "sha256": "31234307f81ed54df29dd539e22f28b72f7f2201411eb542f85a80f3626dea59"
+    },
+    {
       "path": "tests/test_files_session.c",
       "sha256": "d9acd56adf5cf9590184a04feca8bf461f5dcce5164e72c30d8d3f40bc191277"
     },

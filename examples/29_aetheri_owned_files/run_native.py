@@ -29,9 +29,12 @@ def main():
     parser.add_argument('--expect-unavailable', action='store_true')
     parser.add_argument('--document', action='store_true', help='open the original editor/Terminal, retain dirty choices and wait for original child end')
     parser.add_argument('--runtime-library-dir', type=Path, help='explicit private runtime directory for the external Terminal')
+    parser.add_argument('--navigation-client', type=Path, help='independent original-helper peer for held-folder, 4096-row and stale-inode navigation')
     args = parser.parse_args()
     if args.document and args.expect_unavailable:
         parser.error('--document requires the accessible positive host')
+    if args.navigation_client and (args.document or args.expect_unavailable):
+        parser.error('--navigation-client requires the accessible view-only profile')
     if os.getuid() == 0:
         parser.error('Use an unprivileged private test owner')
     source = args.aetheri_source.resolve(strict=True)
@@ -45,6 +48,8 @@ def main():
                 raise ValueError('Original document source differs: ' + record['path'])
     paths = {name: getattr(args, name).resolve(strict=True) for name in
              ('server', 'host', 'client', 'registry', 'font', 'terminal', 'editor', 'mono')}
+    if args.navigation_client:
+        paths['navigation'] = args.navigation_client.resolve(strict=True)
     work = args.work_dir.resolve()
     work.mkdir(mode=0o700)
     runtime, folder, cache, captures = (work / name for name in ('runtime', 'documents', 'cache', 'captures'))
@@ -52,6 +57,15 @@ def main():
         path.mkdir(mode=0o700)
     (folder / 'existing').mkdir(mode=0o700)
     (folder / 'seed.txt').write_bytes(b'seed')
+    if args.navigation_client:
+        nested = folder / 'existing' / 'nested'
+        nested.mkdir(mode=0o700)
+        full = nested / 'full'
+        full.mkdir(mode=0o700)
+        (folder / 'existing' / 'inner.txt').write_bytes(b'inner')
+        (nested / 'seed.txt').write_bytes(b'nested-seed-data')
+        for index in range(4097):
+            (full / f'item-{index:04d}').touch(exist_ok=False)
     env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='owned-files',
                NEXAUI_PLATFORM='wayland', DBUS_SESSION_BUS_ADDRESS='unix:path=' + str(work / 'bus'),
                AT_SPI_BUS_ADDRESS='unix:path=' + str(work / 'bus'),
@@ -72,13 +86,14 @@ def main():
                   peers=peers, images=images, cleanup=cleanup,
                   expect_unavailable=args.expect_unavailable,
                   document=args.document,
+                  navigation=bool(args.navigation_client),
                   scope='Original app/controller and native transport; no document grant, trusted service or physical/human acceptance')
 
-    def start(command, name, pass_fds=()):
+    def start(command, name, pass_fds=(), interactive=False):
         stream = (work / (name + '.log')).open('xb')
         streams.append(stream)
         child = subprocess.Popen(list(map(str, command)), stdout=stream, stderr=subprocess.STDOUT,
-                                 stdin=subprocess.DEVNULL, env=env, cwd=work,
+                                 stdin=subprocess.PIPE if interactive else subprocess.DEVNULL, env=env, cwd=work,
                                  pass_fds=pass_fds, start_new_session=True)
         children.append(child)
         return child
@@ -185,6 +200,91 @@ def main():
                                      'close choice cancelled', 'Files close waits', 'exact selected-FD save',
                                      'one original launch', 'original editor and direct child ended']
 
+    def navigation_flow():
+        # Only the new private fixture directories are perturbed. The original
+        # application/model performs all navigation and snapshot admission.
+        nav = start([paths['navigation'], app.pid], 'navigation', interactive=True)
+        observations = result.setdefault('navigation_checks', [])
+
+        def current_view():
+            values = re.findall(r'^VIEW (.+)$', log(), re.M)
+            return dict(re.findall(r'(\w+)=([^ ]+)', values[-1])) if values else {}
+
+        def directory_fds():
+            values = []
+            for entry in Path(f'/proc/{app.pid}/fd').iterdir():
+                try:
+                    target = os.readlink(entry)
+                except FileNotFoundError:
+                    continue
+                if target.startswith(str(folder)):
+                    values.append(dict(fd=entry.name, target=target))
+            return values
+
+        expected = [(2,1),(2,2),(2,2),(4096,3),(4096,3),(2,2),(2,1),(3,0),
+                    (1,1),(3,0),(3,0),(4,0),(1,1),(4,0),(4,0)]
+        for step, (count, depth) in enumerate(expected):
+            wait(lambda: re.search(rf'^STEP {step} ', log('navigation'), re.M), f'navigation step {step}')
+            before = current_view()
+            before_frames = len(re.findall(r'^VIEW ', log(), re.M))
+            mutation = None
+            if step == 3:
+                path = folder / 'existing' / 'nested' / 'full' / 'item-4096'
+                path.unlink()
+                mutation = dict(kind='fixture-reduce-to-4096', path=str(path))
+            elif step in (6, 10):
+                old_name, new_name = ('existing', 'renamed') if step == 6 else ('renamed', 'moved')
+                old_path, new_path = folder / old_name, folder / new_name
+                original = old_path.stat()
+                old_path.rename(new_path)
+                old_path.mkdir(mode=0o700)
+                replacement = old_path / ('decoy.txt' if step == 6 else 'replacement.txt')
+                replacement.write_bytes(b'decoy' if step == 6 else b'replacement')
+                held = new_path.stat()
+                fresh = old_path.stat()
+                if (original.st_dev, original.st_ino) != (held.st_dev, held.st_ino) or original.st_ino == fresh.st_ino:
+                    raise RuntimeError('Private fixture rename/replacement identity mismatch')
+                mutation = dict(kind='fixture-rename-and-replace', old=str(old_path), new=str(new_path),
+                                device=original.st_dev, original_inode=original.st_ino, replacement_inode=fresh.st_ino)
+            if step in (0, 1, 2, 3, 8, 10, 12):
+                key(28)
+            elif step == 4:
+                key(107)
+            elif step in (5, 9, 13, 14):
+                key(14)
+            elif step == 11:
+                key(19, ctrl=True)
+            if step not in (6, 7):
+                wait(lambda: len(re.findall(r'^VIEW ', log(), re.M)) > before_frames,
+                     f'original navigation key frame {step}', allowed_exit=nav)
+            nav.stdin.write(f'CHECK {step}\n'.encode('ascii'))
+            nav.stdin.flush()
+            wait(lambda: f'ACK {step}\n' in log('navigation'), f'independent navigation state {step}', allowed_exit=nav)
+            wait(lambda: state(count=count, depth=depth), f'original navigation model {step}', allowed_exit=nav)
+            after = current_view()
+            if step in (2, 10, 14) and after.get('revision') != before.get('revision'):
+                raise RuntimeError('Failed navigation replaced the original snapshot')
+            fds = directory_fds() if step in (6, 8, 12) else []
+            if step == 6 and not any(item['target'] == str(folder / 'renamed') for item in fds):
+                raise RuntimeError('Held-ancestor navigation reopened a replacement path')
+            if step == 4 and after.get('selected') != '4095':
+                raise RuntimeError('End did not reveal the original model last entry')
+            observations.append(dict(step=step, before=before, after=after, fixture_mutation=mutation, directory_fds=fds))
+            if step in (2, 4, 6, 10, 12):
+                capture('navigation-' + str(step))
+        if nav.wait(timeout=5) != 0 or 'FILES_NAVIGATION_VERIFIED' not in log('navigation'):
+            raise RuntimeError('Independent navigation peer failed')
+        nav.stdin.close()
+        children.remove(nav)
+        if 'OPEN pid=' in log() or sorted(path.name for path in folder.iterdir()) != ['existing', 'moved', 'renamed', 'seed.txt']:
+            raise RuntimeError('Unexpected document launch or fixture contents')
+        if (folder / 'existing' / 'decoy.txt').read_bytes() != b'decoy' or (folder / 'renamed' / 'replacement.txt').read_bytes() != b'replacement':
+            raise RuntimeError('Replacement fixture content changed')
+        if (folder / 'moved' / 'inner.txt').read_bytes() != b'inner' or (folder / 'moved' / 'nested' / 'seed.txt').read_bytes() != b'nested-seed-data':
+            raise RuntimeError('Original held-folder content changed')
+        if len(list((folder / 'moved' / 'nested' / 'full').iterdir())) != 4096:
+            raise RuntimeError('Admitted full fixture changed')
+
     def capture(label):
         time.sleep(.08)
         sequence = len(images) // 3 + 1
@@ -240,6 +340,8 @@ def main():
         if args.document:
             document_flow()
         else:
+            if args.navigation_client:
+                navigation_flow()
             key(16, ctrl=True)
         if app.wait(timeout=8) != 0 or 'CLOSED files ' not in log() or 'failed=0' not in log():
             raise RuntimeError('Original Files did not close cleanly')

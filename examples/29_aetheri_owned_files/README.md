@@ -4,7 +4,7 @@ This standalone Linux C17 build checks Aetheri's original Files controller and
 NexaUI view against an independently selected installed SDK, minimum 0.1.23.
 It imports original sources from immutable Aetheri
 `27de5cb228da0f37264fad64d964ad7a660d210d`; it adds no competing Files model,
-edit history, naming operation or UI. `source-inputs.json` hashes all 38 selected
+edit history, naming operation or UI. `source-inputs.json` hashes all 39 selected
 source/header/test/metadata inputs and rejects a different snapshot at configure.
 The full original Git archive SHA-256 is recorded separately in that file.
 The optional document test additionally verifies 20 original Terminal inputs.
@@ -33,8 +33,10 @@ cmake --build out/original-files
 ctest --test-dir out/original-files --output-on-failure
 ```
 
-The unmodified original controller test and two original view tests run without
-a display. The latter use raster densities 1 and 2, with 128 combinations each
+The unmodified original model and controller tests and two original view tests
+run without a display. The model test retains its original allocation-failure,
+held-folder, inode and complete-snapshot checks, including the 4,097-entry
+failure. The view tests use raster densities 1 and 2, with 128 combinations each
 of list/grid, locale, contrast, text size and window geometry. They also exercise
 stale row/dialog/sidebar actions, whole-commit rejection, Unicode edit commands,
 safe minimum-size behavior and modal bounds. These are application-view checks,
@@ -84,6 +86,38 @@ three-output PPMs are retained. `--expect-unavailable` requires a separately bui
 provider-off host: the already rendered app must fail native registration at the
 expected discovery boundary and still close normally by keyboard. Private AT-SPI
 runtime libraries must already be available on PATH/LD_LIBRARY_PATH.
+
+### Held folders and complete-directory navigation
+
+With the same private assets, append
+`--navigation-client out/original-files/owned_files_navigation_client` to run
+the additional independent native peer. CMake builds it when libatspi development
+files are available. It reuses the pinned original peer's bounded native helpers;
+neither peer links NexaUI or the Files model. This mode is separate from
+`--document` and `--expect-unavailable`.
+
+After the six original modes, 15 synchronized steps enter nested original
+directories, reject a 4,097-entry snapshot without replacing the current view,
+admit 4,096 entries and use native End to reveal/focus/select the last row. The
+peer checks full viewport containment and bounded materialized rows. Backspace
+and native ancestor actions navigate through held directory FDs after a private
+fixture rename and replacement. Enter on a stale snapshot rejects a substituted
+inode; Ctrl+R admits a fresh snapshot and retires the old accessible reference.
+Root-boundary actions retain the root and report the original model error. The
+original app keeps its Up button enabled at root. No document child is launched.
+
+The driver changes only its newly created fixture: one literal file is removed
+to move from 4,097 to 4,096 entries, and two directories are renamed and replaced.
+It records original model revisions, the transient fixture device/inode pairs,
+held app FD targets and native captures, then checks the exact surviving bytes
+and closes the original app by Ctrl+Q. These FDs and inode observations are
+ordinary process-local filesystem identity, not durable storage IDs or grants.
+
+Original directory scans are synchronous. This workflow does not establish
+async child loading, loading cancellation, a 100,000-file application, a general
+picker, native status Text support, human screenreader acceptance or a performance
+budget. The [navigation report](../../docs/quality/files-navigation-report.md)
+records exact sources, profiles and deliberate counterexamples.
 
 The original full `test_files_view.py` is deliberately not reported as passed
 by this experiment: it verifies Aetheri's exact 0.1.18 pin and a particular shared
