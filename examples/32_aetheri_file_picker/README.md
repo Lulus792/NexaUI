@@ -72,6 +72,13 @@ The owner takes an admitted FD pair once, copies its original escaped display
 label, and closes the preceding pair only when replacing it with a successful
 selection. Cancel and retired-view completions cannot replace it. The pair stays
 owned until replacement or owner teardown; it is not a grant or durable ID.
+Outside the note editor, PageUp/PageDown read the scrollable owner body in
+overlapping half-viewport steps without moving focus. The fixed Close action
+remains available while reading a selected name taller than the viewport.
+The note editor retains its own keys; owner paging does not intercept an active
+modal's commands. The native test's `--owner --owner-reading --small` workflow
+selects a real 255-byte non-UTF-8 filename and reads its complete 1,020-byte
+escaped result down and back up, preserving focus, note and later cancellation.
 Closing a chooser does not Join its worker. Owner window teardown retires all
 UI, closes its selection descriptors, then stops/joins/disposes original work.
 The optional `owner.c` composition uses only public APIs. The view's configurable

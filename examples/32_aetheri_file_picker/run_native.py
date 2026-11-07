@@ -14,13 +14,14 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed','directory','owner'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed','directory','owner','owner-reading'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.pending_cancel and not a.owner:a.cancel=True
     if a.recovery and (a.cancel or a.maximum):p.error('Recovery has its own complete initial/child-overflow workflow')
     if a.mixed and (a.recovery or a.cancel):p.error('Mixed input is a separate selection workflow')
     if a.directory and (a.mixed or a.recovery or a.maximum or a.pending_cancel):p.error('Directory selection has its own held-folder workflow')
     if a.owner and (a.directory or a.mixed or a.recovery or a.cancel):p.error('Owner workflow selects a file/folder then cancels a new view')
+    if a.owner_reading and not a.owner:p.error('Owner reading requires the owner workflow')
     if os.getuid()==0:p.error('Run as an unprivileged private test owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
@@ -34,6 +35,11 @@ def main():
     else:
         for i in range(file_count):(files/f'snapshot-{i:04d}.txt').write_text(f'exact original {i}\n')
         (folder/'é.txt').write_text('selected Unicode\n');(folder/'other.txt').write_text('other\n')
+    selected_file=files/f'snapshot-{file_count-1:04d}.txt'
+    if a.owner_reading:
+        selected_file.unlink()
+        selected_file=Path(os.fsdecode(os.fsencode(files)+b'/'+b'\xff'*255))
+        selected_file.write_text('complete escaped selected name\n')
     address='unix:path='+str(runtime/'bus')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY='picker',NEXAUI_PLATFORM='wayland',
              DBUS_SESSION_BUS_ADDRESS=address,AT_SPI_BUS_ADDRESS=address,ASAN_OPTIONS='detect_leaks=1:halt_on_error=1',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
@@ -49,7 +55,7 @@ def main():
     if a.pending_cancel:
         gate_read,gate_write=os.pipe2(os.O_CLOEXEC);env['FP_TEST_REFRESH_GATE']=str(gate_read)
     result=dict(status='failed',inputs={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items()},checks=checks,images=images,
-                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed','directory','owner')})
+                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed','directory','owner','owner_reading')})
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def start(command,name,pass_fds=(),interactive=False):
         stream=(work/(name+'.log')).open('xb');streams.append(stream)
@@ -138,7 +144,7 @@ def main():
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected native presentation dependency')
         peer_args=[paths['client'],host.pid]+(['--german'] if a.german else [])
-        if a.owner:peer_args+=(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+([] if a.no_ime else ['--ime'])
+        if a.owner:peer_args+=(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+([] if a.no_ime else ['--ime'])+(['--reading'] if a.owner_reading else [])
         elif a.directory:peer_args+=(['--cancel'] if a.cancel else [])
         elif a.mixed:peer_args+=(['--maximum'] if a.maximum else [])
         elif not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
@@ -196,6 +202,18 @@ def main():
                 if step==3 and not a.no_ime:event('I 1')
                 if step==7:key(107)
             peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
+            if a.owner_reading and step==2:
+                wait(lambda:re.search(r'^OWNER_READ (\d+)$',log('client'),re.M),'owner result reading geometry',allowed=peer)
+                pages=int(re.search(r'^OWNER_READ (\d+)$',log('client'),re.M)[1])
+                if not 1<pages<128:raise RuntimeError('Invalid owner reading page count')
+                for direction,code in [('DOWN',109),('UP',104)]:
+                    for index in range(pages):
+                        before=view().get('keys',0);key(code)
+                        wait(lambda:view().get('keys',0)>=before+2,'owner reading frame')
+                        if direction=='DOWN' and index==pages-1:capture('owner-result-bottom')
+                        peer.stdin.write(f'OWNER_{direction}\n'.encode());peer.stdin.flush()
+                        wait(lambda:f'OWNER_{direction}_ACK {index}\n' in log('client'),'owner reading '+direction,allowed=peer)
+                result['owner_reading_pages_each_direction']=pages
             if a.recovery and step==1:
                 wait(lambda:re.search(r'^ERROR_READ \d+$',log('client'),re.M),'retained error reading',allowed=peer)
                 error_pages=int(re.search(r'^ERROR_READ (\d+)$',log('client'),re.M)[1])
@@ -204,10 +222,10 @@ def main():
                 for _ in range(error_pages):key(104)
                 wait(lambda:view().get('keys',0)>=before_keys+2*error_pages,'published error PageUp')
                 peer.stdin.write(b'READ_ERROR\n');peer.stdin.flush()
-            wait(lambda:f'ACK {step}\n' in log('client'),f'native check {step}',allowed=peer)
+            wait(lambda:re.search(rf'^ACK {step}$',log('client'),re.M),f'native check {step}',allowed=peer)
             checks.append(dict(step=step))
             if a.owner and step==5:
-                previous=files/f'snapshot-{file_count-1:04d}.txt';leaked=[]
+                previous=selected_file;leaked=[]
                 for fd in Path(f'/proc/{host.pid}/fd').iterdir():
                     try:
                         if os.readlink(fd)==str(previous):leaked.append(fd.name)
@@ -248,7 +266,7 @@ def main():
         if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
         if a.owner:
-            selected=(files/f'snapshot-{file_count-1:04d}.txt').stat();chosen_folder=folder.stat()
+            selected=selected_file.stat();chosen_folder=folder.stat()
             if f'OWNER_RESULT count=1 directories=0 device={selected.st_dev} inode={selected.st_ino}\n' not in log('host') or f'OWNER_RESULT count=2 directories=1 device={chosen_folder.st_dev} inode={chosen_folder.st_ino}\n' not in log('host'):raise RuntimeError('Owner received the wrong selection')
             if log('host').count('OWNER_RESULT ')!=2 or 'OWNER_CLOSED selections=2\n' not in log('host'):raise RuntimeError('Cancel or stale replies changed owner result count')
         elif not a.cancel:

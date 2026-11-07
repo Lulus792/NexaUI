@@ -152,6 +152,7 @@ drain_input:
                 else done=1;
                 break;
             }
+            if(owner_mode&&fp_owner_key(&owner,ctx,&event)){dirty=1;break;}
             if((!owner_mode||owner.active)&&event.type==NX_EVENT_KEY_DOWN&&(event.key==NX_KEY_PAGE_UP||event.key==NX_KEY_PAGE_DOWN)&&!event.modifiers&&nx_focus_id(ctx)!=FP_QUERY) {
                 uint32_t area_index;nx_semantic_view area;float step=info.height*0.25f;
                 if(nx_semantics_find(ctx,FP_SCROLL,&area_index)==NX_OK&&nx_semantics_get(ctx,area_index,&area)==NX_OK)step=area.bounds.height*0.5f;

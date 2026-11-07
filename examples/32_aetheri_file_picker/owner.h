@@ -25,4 +25,6 @@ nx_result fp_owner_finish(fp_owner *, fp_picker *, nx_context *, int selected);
 nx_result fp_owner_build(fp_owner *, fp_picker *, nx_context *, nx_window *,
     float width, float height, fp_intent *, int *redraw, int *open_mode, int *quit);
 int fp_owner_reveal(fp_owner *, const nx_context *, float height);
+/* Page through owner content without moving focus; leave editor keys to it. */
+int fp_owner_key(fp_owner *, const nx_context *, const nx_event *);
 #endif

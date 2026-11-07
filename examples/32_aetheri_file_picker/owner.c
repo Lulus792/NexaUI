@@ -124,3 +124,11 @@ int fp_owner_reveal(fp_owner *o,const nx_context *ctx,float h){
     if(o->scroll_y<0)o->scroll_y=0;
     return before!=o->scroll_y;
 }
+int fp_owner_key(fp_owner *o,const nx_context *ctx,const nx_event *event){
+    if(!o||!ctx||!event||o->active||event->type!=NX_EVENT_KEY_DOWN||event->modifiers||
+       (event->key!=NX_KEY_PAGE_UP&&event->key!=NX_KEY_PAGE_DOWN)||nx_focus_id(ctx)==FP_OWNER_NOTE)return 0;
+    uint32_t index;nx_semantic_view area;
+    if(nx_semantics_find(ctx,FP_OWNER_SCROLL,&index)!=NX_OK||nx_semantics_get(ctx,index,&area)!=NX_OK)return 0;
+    float step=area.bounds.height*0.5f;
+    o->scroll_y=fmaxf(0,o->scroll_y+(event->key==NX_KEY_PAGE_DOWN?step:-step));return 1;
+}

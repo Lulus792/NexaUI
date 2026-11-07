@@ -56,6 +56,24 @@ int main(int argc,char **argv){
     CHECK(fcntl(previous_directory,F_GETFD)==-1&&errno==EBADF&&fcntl(previous_witness,F_GETFD)==-1&&errno==EBADF);
     CHECK(!fstat(o.witness,&actual)&&S_ISDIR(actual.st_mode)&&fresh(&ctx,&o));intent=(fp_intent){0};CHECK(frame(&o,&p,ctx,&intent,&mode)&&nx_focus_id(ctx)==FP_OWNER_DIRECTORY);
     CHECK(nx_text_field_text(o.note,&note)==NX_OK&&note.length==11&&!memcmp(note.data,"owner draft",11));
+    /* Read the complete maximum escaped label while retaining footer focus. */
+    for(size_t i=0;i<255;++i){memcpy(o.label+i*4,"\\xff",4);}o.label[1020]=0;
+    o.layout_width=0;CHECK(frame(&o,&p,ctx,&intent,&mode)&&nx_focus_set(ctx,FP_OWNER_CLOSE)==NX_OK&&frame(&o,&p,ctx,&intent,&mode));
+    nx_semantic_view first,last,area;CHECK(nx_semantics_find(ctx,FP_OWNER_RESULT+10,&index)==NX_OK&&nx_semantics_get(ctx,index,&first)==NX_OK&&first.name.length==1020);
+    CHECK(nx_semantics_find(ctx,FP_OWNER_SCROLL,&index)==NX_OK&&nx_semantics_get(ctx,index,&area)==NX_OK&&first.bounds.height>area.bounds.height);
+    nx_event page={0};page.type=NX_EVENT_KEY_DOWN;page.key=NX_KEY_PAGE_DOWN;unsigned pages=0;
+    for(;;){float before=o.scroll_y;CHECK(fp_owner_key(&o,ctx,&page)&&frame(&o,&p,ctx,&intent,&mode)&&nx_focus_id(ctx)==FP_OWNER_CLOSE);
+        CHECK(nx_semantics_find(ctx,FP_OWNER_RESULT+10,&index)==NX_OK&&nx_semantics_get(ctx,index,&last)==NX_OK&&last.name.length==1020&&!memcmp(last.name.data,o.label,1020));
+        if(o.scroll_y==before)break;
+        CHECK(o.scroll_y>before&&++pages<128);
+    }
+    CHECK(pages>1&&last.bounds.y<first.bounds.y&&last.bounds.y+last.bounds.height<=area.bounds.y+area.bounds.height&&last.bounds.y<area.bounds.y);
+    page.key=NX_KEY_PAGE_UP;for(unsigned i=0;i<=pages;++i)CHECK(fp_owner_key(&o,ctx,&page)&&frame(&o,&p,ctx,&intent,&mode)&&nx_focus_id(ctx)==FP_OWNER_CLOSE);
+    CHECK(o.scroll_y==0&&nx_focus_set(ctx,FP_OWNER_NOTE)==NX_OK&&frame(&o,&p,ctx,&intent,&mode));float retained_scroll=o.scroll_y;
+    CHECK(!fp_owner_key(&o,ctx,&page)&&o.scroll_y==retained_scroll&&nx_focus_set(ctx,FP_OWNER_CLOSE)==NX_OK);
+    page.modifiers=NX_MOD_SHIFT;CHECK(!fp_owner_key(&o,ctx,&page));page.modifiers=0;page.type=NX_EVENT_KEY_UP;CHECK(!fp_owner_key(&o,ctx,&page));page.type=NX_EVENT_KEY_DOWN;
+    o.active=1;CHECK(!fp_owner_key(&o,ctx,&page));o.active=0;
+    puts("PICKER_OWNER_MAX_ESCAPED_LABEL_KEYBOARD_READING_AND_FOCUS_VERIFIED");
     o.epoch=UINT64_MAX;CHECK(fp_owner_open(&o,&p,worker,0)==NX_ERROR_LIMIT&&!o.active&&o.selections==2);
     int final_directory=o.directory,final_witness=o.witness;nx_context_destroy(ctx);fp_owner_destroy(&o);CHECK(fcntl(final_directory,F_GETFD)==-1&&errno==EBADF&&fcntl(final_witness,F_GETFD)==-1&&errno==EBADF);
     fp_picker_destroy(&p);CHECK(fp_worker_destroy(&worker)==NX_OK);close(root);nx_font_collection_destroy(fonts);nx_font_close(font);free(data);
