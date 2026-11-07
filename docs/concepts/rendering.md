@@ -25,7 +25,11 @@ memory buffer. Three outstanding buffers are permitted, each at most 128 MiB;
 BUSY requires polling the window and retrying, not spinning. The view and its
 window must be used on their owner thread. Buffers are retained by the window
 until compositor release or window destruction, including after view close.
-Shared memory uses an unlinked temporary file under `/tmp`. The view reports
+Shared memory uses a close-on-exec anonymous Linux memory file. On kernels
+without `memfd_create`, it uses an unlinked close-on-exec file under `/tmp`.
+Both paths reserve the full backing storage before mapping; reservation failures
+return a platform error before pixels are written or a buffer is submitted.
+This does not guarantee recovery from process-wide memory exhaustion. The view reports
 submission, not physical presentation; a failed connection after commit has an
 unknown outcome. X11 returns unsupported, and no automatic renderer fallback
 is selected. Performance, physical displays and production compositor behavior

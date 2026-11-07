@@ -1,6 +1,7 @@
-#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 #include "nexaui/wayland_host.h"
 #include "pixels.h"
+#include "shm_file.h"
 #include "../../../src/internal.h"
 #include "../../../src/renderer_backend.h"
 
@@ -84,12 +85,8 @@ nx_result nx_wayland_shm_host_present(nx_wayland_shm_host *host,
     nx_wayland_host_buffer *buffer=calloc(1,sizeof(*buffer));
     if (!buffer) return NX_ERROR_MEMORY;
     buffer->host=host; buffer->size=bytes;
-    char path[]="/tmp/nexaui-host-XXXXXX";
-    int fd=mkstemp(path);
+    int fd=nx_wayland_shm_file(bytes);
     if (fd<0) { free(buffer); return NX_ERROR_PLATFORM; }
-    if (unlink(path)!=0 || ftruncate(fd,(off_t)bytes)!=0) {
-        close(fd); free(buffer); return NX_ERROR_PLATFORM;
-    }
     buffer->pixels=mmap(NULL,bytes,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
     if (buffer->pixels==MAP_FAILED) {
         close(fd); free(buffer); return NX_ERROR_PLATFORM;

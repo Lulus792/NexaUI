@@ -6,6 +6,7 @@
 #include "repeat.h"
 #include "pixels.h"
 #include "scale.h"
+#include "shm_file.h"
 #include "transfer.h"
 #include "uri_list.h"
 #include "../window_internal.h"
@@ -2153,11 +2154,8 @@ static nx_result nx_wayland_create_buffer(nx_wayland_window *window,
     memset(buffer, 0, sizeof(*buffer));
     buffer->window = window;
     buffer->size = (size_t)size;
-    char name[] = "/tmp/nexaui-wayland-XXXXXX";
-    int fd = mkstemp(name);
+    int fd = nx_wayland_shm_file((size_t)size);
     if (fd < 0) goto platform_fail;
-    unlink(name);
-    if (ftruncate(fd, (off_t)size) != 0) goto fd_fail;
     buffer->pixels = mmap(NULL, (size_t)size, PROT_READ | PROT_WRITE,
                           MAP_SHARED, fd, 0);
     if (buffer->pixels == MAP_FAILED) {

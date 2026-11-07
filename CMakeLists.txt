@@ -619,6 +619,13 @@ if(NEXAUI_BUILD_TESTS)
                     set_tests_properties(nexaui_wayland_fractional_${_mode} PROPERTIES TIMEOUT 15)
                 endforeach()
             endif()
+            add_executable(nexaui_wayland_shm_file_tests tests/test_wayland_shm_file.c)
+            target_compile_features(nexaui_wayland_shm_file_tests PRIVATE c_std_17)
+            target_compile_options(nexaui_wayland_shm_file_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+            target_link_options(nexaui_wayland_shm_file_tests PRIVATE
+                -Wl,--wrap=memfd_create,--wrap=posix_fallocate,--wrap=mkostemp,--wrap=unlink)
+            add_test(NAME nexaui_wayland_shm_file COMMAND nexaui_wayland_shm_file_tests)
+            set_tests_properties(nexaui_wayland_shm_file PROPERTIES TIMEOUT 10)
             add_executable(nexaui_wayland_software_tests tests/test_wayland_software.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
