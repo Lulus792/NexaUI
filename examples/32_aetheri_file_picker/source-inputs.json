@@ -1,0 +1,26 @@
+{
+  "aetheri_revision": "27de5cb228da0f37264fad64d964ad7a660d210d",
+  "archive_sha256": "ab6f36cf98b45fb36f006173e7432a6e676f2ed53003e3747d2839d33421e812",
+  "files": [
+    {
+      "path": "src/files/model.c",
+      "sha256": "a4ce9a9e9035f4d0aae53d4f3511eeeec36ec18c77012b0ee1a52fe0ea0b2ef3"
+    },
+    {
+      "path": "src/files/model.h",
+      "sha256": "70a7298064afa822f4f45f13c3dae04f61bbfe6b8290f99a7ca2d9e0164e70f0"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    }
+  ]
+}
