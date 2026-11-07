@@ -31,6 +31,10 @@ typedef struct sw_result { sw_scope scope; size_t count; sw_row *rows; } sw_resu
    *out must be NULL; errors preserve it. Original negative errno is returned. */
 int sw_read(struct ae_catalogue *,const sw_scope *,const sw_id *,size_t,sw_result **out);
 void sw_result_free(sw_result **);
+/* Exact read-only binding comparison for optional metadata joins. Both rows
+   must be valid under their complete scopes; includes all revisions/identity
+   fields and recipient UID. Establishes no fresh source observation/authority. */
+int sw_observation_same(const sw_scope *,const sw_row *,const sw_scope *,const sw_row *);
 
 /* Owner-thread presentation state. Source/recipient/target changes require a
    new owner; no catalogue, SQL, launch/permission capability enters this model.

@@ -2,6 +2,8 @@
 #define main hierarchy_peer_main
 #include "../30_async_hierarchy/atspi_client.c"
 #undef main
+static const char *expected_dependencies;
+static int expect_manifest_failure;
 static const char *label(const char *en,const char *de){return german?de:en;}
 static AtspiAccessible *wait_node(AtspiAccessible *desktop,unsigned long pid,AtspiAccessible **app,const char *name,AtspiRole role){
     double until=now()+4;AtspiAccessible *node=NULL;
@@ -24,16 +26,25 @@ static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessib
     int okay=0;AtspiAccessible *area=lookup(app,label("App observation details","App-Beobachtungsdetails"),ATSPI_ROLE_SCROLL_PANE);AtspiText *t=atspi_accessible_get_text_iface(node);GError *error=NULL;
     char *text=t?atspi_text_get_text(t,0,-1,&error):NULL;char expected[80];snprintf(expected,sizeof expected,label("Selected installation: %s","Ausgewählte Installation: %s"),id);
     CHECK(t&&!error&&text&&strstr(text,expected)&&strstr(text,"Runtime:")&&strstr(text,label("Catalogue revision:","Katalogrevision:"))&&g_utf8_validate(text,-1,NULL));
+    if(expected_dependencies){
+        CHECK(strstr(text,label("Declared files: 32","Deklarierte Dateien: 32"))&&strstr(text,label("Declared actions: 8","Deklarierte Aktionen: 8"))&&strstr(text,label("Declared dependencies: 8","Deklarierte Abhängigkeiten: 8"))&&strstr(text,label("ownership state: unknown","Besitzstatus: unbekannt")));
+        for(unsigned i=0;i<8;++i){char expected_dependency[65];memcpy(expected_dependency,expected_dependencies+i*65,64);expected_dependency[64]=0;CHECK(strstr(text,expected_dependency));}
+    }
+    if(expect_manifest_failure)CHECK(strstr(text,label("Manifest unavailable","Manifest nicht verfügbar"))&&!strstr(text,label("Declared dependencies:","Deklarierte Abhängigkeiten:")));
     CHECK(atspi_text_get_caret_offset(t,&error)==-1&&!error&&atspi_text_get_n_selections(t,&error)==0&&!error&&!replace_text(node,"changed"));
     AtspiRect first,outer,current;CHECK(rectangle(node,&first)&&rectangle(area,&outer)&&first.height>0&&outer.height>0&&state(back,ATSPI_STATE_FOCUSED));
-    long long overflow=(long long)first.y+first.height-outer.y-outer.height;unsigned pages=overflow>0?(unsigned)((2*overflow+outer.height-1)/outer.height):0;CHECK(pages<256);
+    /* OS extents enclose fractional logical bounds: reported height can exceed
+       the true viewport by less than two pixels. Use its conservative lower
+       bound to reach the end, then verify actual extents rather than assuming. */
+    long long overflow=(long long)first.y+first.height-outer.y-outer.height,viewport_min=outer.height>2?outer.height-2:1;
+    unsigned pages=overflow>0?(unsigned)((2*(overflow+2)+viewport_min-1)/viewport_min):0;CHECK(pages<256);
     if(!pages)CHECK(first.y>=outer.y&&(long long)first.y+first.height<=outer.y+outer.height);
     printf("READ_PAGES %u\n",pages);current=first;
     for(unsigned direction=0;direction<2;++direction)for(unsigned i=0;i<pages;++i){
         char line[64],wanted[64];snprintf(wanted,sizeof wanted,"PAGE %c %u\n",direction?'U':'D',i);CHECK(fgets(line,sizeof line,stdin)&&!strcmp(line,wanted));
         AtspiRect next;CHECK(rectangle(node,&next)&&state(back,ATSPI_STATE_FOCUSED));
         CHECK(direction?next.y>=current.y&&(long long)next.y-current.y<=outer.height/2+1:next.y<=current.y&&(long long)current.y-next.y<=outer.height/2+1);current=next;
-        if(!direction&&i+1==pages)CHECK((long long)current.y+current.height<=outer.y+outer.height&&(long long)current.y+current.height>outer.y+outer.height/2);
+        if(!direction&&i+1==pages){printf("DETAIL_END y=%d height=%d viewport_y=%d viewport_height=%d\n",current.y,current.height,outer.y,outer.height);CHECK((long long)current.y+current.height<=outer.y+outer.height&&(long long)current.y+current.height>outer.y+outer.height/2);}
         printf("PAGE_ACK %c %u\n",direction?'U':'D',i);
     }
     CHECK(current.y==first.y);okay=1;
@@ -42,7 +53,9 @@ cleanup:
 }
 int main(int argc,char **argv){
     int okay=0,initialized=0,ime=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
-    CHECK(argc>=4&&argc<=6);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else CHECK(0);}
+    CHECK(argc>=4&&argc<=8);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;
+        else if(!strcmp(argv[i],"--components")){CHECK(++i<argc&&strlen(argv[i])==519&&strspn(argv[i],"0123456789abcdef,")==519);expected_dependencies=argv[i];}
+        else if(!strcmp(argv[i],"--component-failure"))expect_manifest_failure=1;else CHECK(0);}
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);

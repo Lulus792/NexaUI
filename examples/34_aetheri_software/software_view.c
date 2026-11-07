@@ -5,15 +5,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-enum { ROW_BUDGET=192 };
+enum { ROW_BUDGET=192,BODY_PARAGRAPHS=256 };
 typedef struct row_cache {size_t index;char text[256];nx_text_layout *layout;float height;} row_cache;
+typedef struct paragraph_cache {nx_text_layout *layout;float y,height;} paragraph_cache;
 struct swg_view {
     sw_owner *owner;sw_snapshot *snapshot;nx_font_collection *fonts;nx_window *window;
+    const sw_components *components;nx_result components_status;
     nx_context *ctx;nx_text_field *query;nx_virtual_list *index;size_t *matches,count;
     swg_style style;swg_mode mode;sw_id detail;
     uint64_t epoch,restore,resume_focus;sw_state state;int error;
-    char filter[129],status[192],body[2048];nx_text_layout *status_layout,*body_layout,*buttons[3];
+    char filter[129],status[192],body[8192];nx_text_layout *status_layout,*body_layout,*buttons[3];
     row_cache rows[ROW_BUDGET];size_t cached,measured;double cache_width;
+    paragraph_cache paragraphs[BODY_PARAGRAPHS];size_t paragraph_count;float body_height;
     float scroll,body_scroll,width,height,viewport_height;int compact,again,escape;
 };
 static nx_utf8_span sp(const char *s){return (nx_utf8_span){s,strlen(s)};}
@@ -25,8 +28,9 @@ static void row_text(const swg_view *v,const sw_row *r,char out[256]){
         r->error?word(v,"Eligibility not observed","Eignung nicht beobachtet"):word(v,"Active app observed","Aktive App beobachtet"),id);
 }
 static void clear_rows(swg_view *v){for(size_t i=0;i<v->cached;++i)nx_text_layout_destroy(v->rows[i].layout);v->cached=0;}
+static void clear_paragraphs(swg_view *v){for(size_t i=0;i<v->paragraph_count;++i)nx_text_layout_destroy(v->paragraphs[i].layout);v->paragraph_count=0;v->body_height=0;}
 static void clear_layouts(swg_view *v){
-    clear_rows(v);nx_text_layout_destroy(v->status_layout);v->status_layout=NULL;nx_text_layout_destroy(v->body_layout);v->body_layout=NULL;
+    clear_rows(v);clear_paragraphs(v);nx_text_layout_destroy(v->status_layout);v->status_layout=NULL;nx_text_layout_destroy(v->body_layout);v->body_layout=NULL;
     for(unsigned i=0;i<3;++i){nx_text_layout_destroy(v->buttons[i]);v->buttons[i]=NULL;}v->cache_width=0;
 }
 static nx_result context(swg_view *v,nx_context **out){
@@ -87,6 +91,14 @@ nx_context *swg_context(swg_view *v){return v?v->ctx:NULL;}
 nx_result swg_set_raster_scale(swg_view *v,float scale){
     if(!v)return NX_ERROR_ARGUMENT;
     nx_result r=nx_context_set_text_raster_scale(v->ctx,scale);if(r==NX_OK)v->style.raster_scale=scale;return r;
+}
+nx_result swg_set_components(swg_view *v,const sw_components *components,nx_result status_value){
+    if(!v||(components&&status_value!=NX_OK))return NX_ERROR_ARGUMENT;
+    if(v->components==components&&v->components_status==status_value)return NX_OK;
+    uint64_t focus=nx_focus_id(v->ctx);nx_context *next=NULL;nx_result r=context(v,&next);
+    if(r==NX_OK)r=retire(v,next);
+    if(r!=NX_OK){nx_context_destroy(next);return r;}
+    v->components=components;v->components_status=status_value;v->restore=focus?focus:v->mode==SWG_FILTER?SWG_QUERY:v->mode==SWG_DETAIL?SWG_BACK:SWG_FILTER_BUTTON;return NX_OK;
 }
 nx_result swg_sync(swg_view *v){
     if(!v)return NX_ERROR_ARGUMENT;
@@ -220,6 +232,51 @@ static void detail_body(swg_view *v){
             s->component,publisher,scope,generation,artifact,s->install_revision,s->generation_revision,gate,s->gate_revision);
     }
 }
+static nx_result component_details(swg_view *v){
+    size_t used=strlen(v->body);const amh_document *document=NULL;
+    nx_result status_value=v->components_status;
+    if(status_value==NX_OK)status_value=sw_components_get(v->components,v->snapshot,v->detail,&document);
+    int n;
+    if(status_value!=NX_OK)n=snprintf(v->body+used,sizeof v->body-used,word(v,
+        "\n\nManifest unavailable (%d). Declared dependencies and installed dependency state are unknown.",
+        "\n\nManifest nicht verfügbar (%d). Deklarierte Abhängigkeiten und installierter Abhängigkeitszustand sind unbekannt."),(int)status_value);
+    else if(!document)n=snprintf(v->body+used,sizeof v->body-used,"%s",word(v,
+        "\n\nNo matching manifest selected. Declared dependencies and installed dependency state are unknown.",
+        "\n\nKein passendes Manifest ausgewählt. Deklarierte Abhängigkeiten und installierter Abhängigkeitszustand sind unbekannt."));
+    else{
+        const struct ae_fixture *d=amh_document_data(document);
+        n=snprintf(v->body+used,sizeof v->body-used,word(v,
+            "\n\nVerified manifest matches this observation's artifact, component and publisher. Publisher trust remains external.\nVersion: %.*s\nTarget: %.*s\nDeclared files: %" PRIu32 "\nDeclared actions: %" PRIu32 "\nDeclared dependencies: %" PRIu32 "\nInstalled/active dependency and ownership state: unknown.\n",
+            "\n\nVerifiziertes Manifest passt zu Artefakt, Komponente und Herausgeber dieser Beobachtung. Herausgebervertrauen bleibt extern.\nVersion: %.*s\nZiel: %.*s\nDeklarierte Dateien: %" PRIu32 "\nDeklarierte Aktionen: %" PRIu32 "\nDeklarierte Abhängigkeiten: %" PRIu32 "\nInstallierter/aktiver Abhängigkeits- und Besitzstatus: unbekannt.\n"),
+            (int)d->version.size,d->version.data,(int)d->target.size,d->target.data,d->file_count,d->action_count,d->dependency_count);
+        if(n<0||(size_t)n>=sizeof v->body-used)return NX_ERROR_LIMIT;
+        used+=(size_t)n;
+        for(uint32_t i=0;i<d->dependency_count;++i){char digest[65];hex_text(d->dependencies[i],32,digest);
+            n=snprintf(v->body+used,sizeof v->body-used,word(v,"Declared dependency %" PRIu32 ": %s\n","Deklarierte Abhängigkeit %" PRIu32 ": %s\n"),i+1,digest);
+            if(n<0||(size_t)n>=sizeof v->body-used)return NX_ERROR_LIMIT;
+            used+=(size_t)n;
+        }
+        return NX_OK;
+    }
+    return n<0||(size_t)n>=sizeof v->body-used?NX_ERROR_LIMIT:NX_OK;
+}
+static nx_result detail_layout(swg_view *v,double width){
+    /* Use the existing measured grapheme wrapper per original paragraph. Its
+       fallback must not repeatedly reshape the entire preceding multi-line
+       document for every scalar of a later long identity/version. Full original
+       text remains one read-only semantic snapshot, with no editable caret. */
+    clear_paragraphs(v);size_t length=strlen(v->body),start=0;nx_result r=NX_OK;
+    while(start<length&&r==NX_OK){
+        if(v->paragraph_count==BODY_PARAGRAPHS){r=NX_ERROR_LIMIT;break;}
+        size_t end=start;while(end<length&&v->body[end]!='\n')++end;
+        paragraph_cache *p=&v->paragraphs[v->paragraph_count];*p=(paragraph_cache){.y=v->body_height};
+        const char *text=end==start?" ":v->body+start;size_t bytes=end==start?1:end-start;
+        if(!nx_example_small_text_layout(v->fonts,text,bytes,v->style.text_size,width,&p->layout)){r=NX_ERROR_STATE;break;}
+        p->height=(float)nx_text_layout_height(p->layout);v->body_height+=p->height;++v->paragraph_count;start=end+1;
+    }
+    if(r!=NX_OK)clear_paragraphs(v);
+    return r;
+}
 static nx_result frame_once(swg_view *v,float width,float height,swg_intent *intent,int *transition){
     uint64_t focus_before=nx_focus_id(v->ctx);
     const char *labels[3];uint64_t ids[3];size_t buttons=0;int clicked[3]={0};float top=12,button_height=0;nx_result r=NX_OK;
@@ -300,10 +357,13 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
             if(r==NX_OK)r=text(v,SWG_STATUS,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,hint.content_size.height},help,help,v->body_layout,valid?0:NX_SEM_INVALID);
             if(r==NX_OK)r=nx_scroll_area_end(v->ctx);
         }else{
-            if(!v->body_layout){detail_body(v);if(r==NX_OK)r=layout(v,v->body,width-44,&v->body_layout);}
-            nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=SWG_ROOT;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;area.name=sp(word(v,"App observation details","App-Beobachtungsdetails"));area.viewport=(nx_rect){12,y,width-24,available};area.content_size=(nx_size){width-24,v->body_layout?(float)nx_text_layout_height(v->body_layout)+16:0};
+            if(!v->paragraph_count){detail_body(v);if(r==NX_OK)r=component_details(v);if(r==NX_OK)r=detail_layout(v,width-44);}
+            nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=SWG_ROOT;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;area.name=sp(word(v,"App observation details","App-Beobachtungsdetails"));area.viewport=(nx_rect){12,y,width-24,available};area.content_size=(nx_size){width-24,v->body_height+16};
             float x=0;nx_scroll_info info;if(r==NX_OK)r=nx_scroll_area_begin(v->ctx,&area,&x,&v->body_scroll,&info);
-            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,v->body_layout,0);
+            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,NULL,0);
+            nx_color color;if(r==NX_OK)r=nx_theme_color(v->ctx,NX_COLOR_TEXT,&color);
+            for(size_t i=0;i<v->paragraph_count&&r==NX_OK;++i){const paragraph_cache *p=&v->paragraphs[i];float py=info.viewport.y-v->body_scroll+p->y;
+                if(py+p->height>info.viewport.y&&py<info.viewport.y+info.viewport.height)r=nx_draw_text_layout(v->ctx,p->layout,(nx_point){info.viewport.x+4,py},color,1024*1024);}
             if(r==NX_OK)r=nx_scroll_area_end(v->ctx);
         }
     }

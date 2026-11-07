@@ -1,0 +1,9 @@
+{
+  "revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "normalization": "CRLF to LF only",
+  "files": {
+    "tools/runtime_contracts.py": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b",
+    "spec/vectors/runtime-v1.json": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4",
+    "spec/runtime.md": "0af2ddb3fabcfa9ad9b93b0b970af94fc650687f6d83b165709e6912eee961fd"
+  }
+}

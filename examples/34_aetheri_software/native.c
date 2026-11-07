@@ -23,6 +23,7 @@ static int request(sww_worker *worker,sw_owner *owner,const sw_scope *scope,cons
 int main(int argc,char **argv){
     int okay=1,done=0,dirty=1;sww_worker *worker=NULL;sw_owner *owner=NULL;swg_view *view=NULL;
     nx_window *window=NULL;nx_software_view *renderer=NULL;nx_font *font=NULL;nx_font_collection *fonts=NULL;
+    sw_components *components=NULL;sw_manifest_source *sources=NULL;
     sw_id *targets=NULL;unsigned char *font_bytes=NULL;FILE *file=NULL;uint64_t sequence=0,frames=0,polls=0,keys=0,adopted=0,ignored=0;sww_key current={0};nx_sim_message message={0};
     setvbuf(stdout,NULL,_IONBF,0);
     REQUIRE(argc>=6);struct ae_catalogue_identity identity={.kind=AE_CATALOGUE_SYSTEM};
@@ -30,9 +31,13 @@ int main(int argc,char **argv){
     REQUIRE(parse_id(argv[4],scope.account));
     REQUIRE(*argv[5]&&strspn(argv[5],"0123456789")==strlen(argv[5]));errno=0;char *uid_end=NULL;uintmax_t uid=strtoumax(argv[5],&uid_end,10);
     REQUIRE(!errno&&uid_end&&!*uid_end&&uid<UINT32_MAX);scope.os_uid=(uint32_t)uid;
-    size_t count=(size_t)(argc-6);REQUIRE(count<=SW_MAX_TARGETS);targets=count?calloc(count,sizeof(*targets)):NULL;REQUIRE(!count||targets);
+    int manifest_at=6;while(manifest_at<argc&&strcmp(argv[manifest_at],"--manifest"))++manifest_at;
+    size_t count=(size_t)(manifest_at-6);REQUIRE(count<=SW_MAX_TARGETS);targets=count?calloc(count,sizeof(*targets)):NULL;REQUIRE(!count||targets);
     for(size_t i=0;i<count;++i)REQUIRE(parse_id(argv[i+6],targets[i].bytes));
-    int original_error=0;nx_result started=sww_start(argv[2],&identity,&worker,&scope.context,&original_error);
+    REQUIRE((argc-manifest_at)%3==0);size_t source_count=(size_t)(argc-manifest_at)/3;REQUIRE(source_count<=SW_MAX_TARGETS);
+    sources=source_count?calloc(source_count,sizeof(*sources)):NULL;REQUIRE(!source_count||sources);
+    for(size_t i=0;i<source_count;++i){size_t at=(size_t)manifest_at+i*3;REQUIRE(!strcmp(argv[at],"--manifest")&&parse_id(argv[at+1],sources[i].install.bytes));sources[i].path=argv[at+2];}
+    int original_error=0;nx_result started=sww_start_with_manifests(argv[2],&identity,sources,source_count,&worker,&scope.context,&original_error);
     printf("OWNER_OPEN status=%d original_error=%d selected=%zu\n",(int)started,original_error,count);REQUIRE(started==NX_OK);
     REQUIRE(sw_owner_create(&scope,targets,count,&owner)==NX_OK);
     REQUIRE((file=fopen(argv[1],"rb"))&&!fseek(file,0,SEEK_END));long length=ftell(file);REQUIRE(length>0&&length<64000000&&!fseek(file,0,SEEK_SET));
@@ -53,7 +58,7 @@ int main(int argc,char **argv){
                 nx_result r;
                 if(reply&&reply->key.view==current.view&&reply->key.request==current.request){
                     r=sw_owner_complete(owner,message.ticket,reply->original_error,&reply->result);
-                    if(r==NX_OK)accepted=1;
+                    if(r==NX_OK){accepted=1;if(!reply->original_error){REQUIRE(swg_set_components(view,reply->components,reply->components_status)==NX_OK);sw_components_free(&components);components=reply->components;reply->components=NULL;}}
                     else error=r==NX_ERROR_MEMORY?-ENOMEM:r==NX_ERROR_STATE?-ESTALE:-EBADMSG;
                 }
                 if(!accepted){REQUIRE(sw_owner_complete(owner,message.ticket,error,NULL)==NX_OK);accepted=1;}
@@ -90,8 +95,8 @@ cleanup:
     if(view&&swg_close(&view)!=NX_OK)okay=0;
     if(renderer&&nx_software_view_close(&renderer)!=NX_OK)okay=0;
     if(window)nx_window_destroy(window);
-    sw_owner_destroy(&owner);puts("SOFTWARE_GUI_GONE");
+    sw_owner_destroy(&owner);sw_components_free(&components);puts("SOFTWARE_GUI_GONE");
     if(worker){if(sww_stop(worker)!=NX_OK||sww_join(worker)!=NX_OK)okay=0;if(sww_destroy(&worker)!=NX_OK)okay=0;}
-    nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);free(targets);if(file)fclose(file);
+    nx_font_collection_destroy(fonts);nx_font_close(font);free(font_bytes);free(targets);free(sources);if(file)fclose(file);
     printf("SOFTWARE_CLOSED requests=%" PRIu64 " adopted=%" PRIu64 " ignored=%" PRIu64 " failed=%d\n",sequence,adopted,ignored,!okay);return okay?0:1;
 }

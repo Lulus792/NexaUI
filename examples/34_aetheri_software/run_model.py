@@ -12,6 +12,7 @@ import tempfile
 p=argparse.ArgumentParser(description=__doc__)
 for name in ('source','test','work'):p.add_argument('--'+name,type=Path,required=True)
 p.add_argument('--prepare-only',action='store_true',help='Create private metadata fixtures without running model observations')
+p.add_argument('--fixture-manifest',type=Path,help='Private test metadata only: seed artifact identity from these manifest bytes')
 a=p.parse_args();sys.dont_write_bytecode=True;sys.path.insert(0,str(a.source.resolve()/'tools'))
 import catalogue_contracts as cc
 from test_contracts import rows
@@ -33,7 +34,7 @@ run('bootstrap','create')
 # private SQL writes prepare synthetic eligible/ineligible original API inputs;
 # no installation, filesystem payload, launcher, process or permission is created.
 with closing(sqlite3.connect(system/'catalogue.sqlite3')) as db:
-    db.executescript("""
+    seed_sql="""
 INSERT INTO scopes VALUES(X'00000000000040008000000000000008','machine',NULL,'active',1);
 INSERT INTO components VALUES('aetheri.probe',X'00000000000040008000000000000009','app','Probe',0,1),('aetheri.pending',X'00000000000040008000000000000009','app','Pending',0,1);
 INSERT INTO artifacts VALUES(zeroblob(32),'aetheri.probe','test','x86_64-linux-gnu','verified');
@@ -46,7 +47,12 @@ INSERT INTO generations SELECT X'0000000000004000800000000000000e',X'00000000000
 INSERT INTO generations SELECT X'0000000000004000800000000000000f',X'0000000000004000800000000000000b','aetheri.probe',zeroblob(32),'committed',0,1;
 INSERT INTO generations SELECT X'00000000000040008000000000000010',X'0000000000004000800000000000000c','aetheri.probe',zeroblob(32),'committed',0,1;
 UPDATE installs SET state='active',active_generation_id=(SELECT generation_id FROM generations WHERE generations.install_id=installs.install_id),revision=2 WHERE install_id!=X'0000000000004000800000000000000d';
-""")
+"""
+    if a.fixture_manifest:
+        manifest_digest=hashlib.sha256(a.fixture_manifest.read_bytes()).hexdigest()
+        seed_sql=seed_sql.replace('zeroblob(32)',"X'"+manifest_digest+"'")
+        (root/'fixture-manifest.json').write_text(json.dumps({'source':str(a.fixture_manifest.resolve()),'sha256':manifest_digest,'scope':'Private synthetic artifact/generation fixture seed, not a production install or payload verification.'},indent=2)+'\n')
+    db.executescript(seed_sql)
     db.commit()
 for path in (system/'catalogue.sqlite3',user/'catalogue.sqlite3'):path.chmod(0o600)
 (root/'fixture.json').write_text(json.dumps({'system':str(system.resolve()),'user':str(user.resolve())},indent=2)+'\n')

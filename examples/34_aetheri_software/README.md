@@ -8,9 +8,10 @@ SQL, launcher, device service or permission capability.
 
 The example composes the read producer, immutable presentation model and bounded
 owner worker into a native Wayland selected-app observation window. It has a
-virtualized list, local filter and full metadata details. Artifact/dependency
-joins, full inventory and production management/service adoption remain separate
-work. The SDK's existing channel, list, text, action, semantics, clipboard, IME
+virtualized list, local filter and full metadata details. Optional original
+manifests join through exact observed artifact/component/publisher identity and
+show complete declared dependency IDs. Full inventory and production management/
+service adoption remain separate work. The SDK's existing channel, list, text, action, semantics, clipboard, IME
 and software-window APIs are reused; no SDK implementation/API/version changes.
 
 ```sh
@@ -19,7 +20,7 @@ cmake -S examples/34_aetheri_software -B build-software \
   -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri \
   -DSWG_TEST_FONT=/path/to/font.ttf
 cmake --build build-software --target software_model_test software_worker_test \
-  software_view_test software_native
+  software_view_test software_components_test software_native
 ctest --test-dir build-software --output-on-failure
 ```
 
@@ -146,7 +147,8 @@ The trusted owner host accepts explicit configuration, never a GUI-selected sour
 path or an administrative request from an ordinary client:
 
 ```sh
-./build-software/software_native FONT ROOT_DIR ROOT_EPOCH ACCOUNT UID [INSTALL_ID ...]
+./build-software/software_native FONT ROOT_DIR ROOT_EPOCH ACCOUNT UID [INSTALL_ID ...] \
+  [--manifest INSTALL_ID MANIFEST_PATH ...]
 ```
 
 Identities are 32 hexadecimal characters. The complete selected set is copied into
@@ -218,3 +220,63 @@ old-reference retirement, retained filter draft and selected installation. The
 host exits by its real focused Close button, then all owned children are reaped.
 No physical keyboard/monitor, installed production IME, spoken screenreader or
 current production Aetheri service acceptance is inferred.
+
+## Exact manifest/dependency join
+
+Each optional `--manifest INSTALL_ID MANIFEST_PATH` follows all selected IDs and
+is explicit trusted owner configuration. Sources/paths are copied before worker
+startup. No path is requested by the GUI or derived from a component name. The
+worker first obtains the original app observation; only then can it open an
+explicit source for an eligible selected install. Ineligible/unknown/unselected
+targets do not cause manifest reads. Hash expectation comes from that original
+row's exact artifact ID. The shared example31 document loader uses the original
+`ae_fixture_verify_manifest`; no second decoder or hash routine is introduced.
+It reads at most 131,072 bytes plus one overflow byte through a regular-file,
+no-follow/nonblocking open and owns immutable bytes until its document is freed.
+No declared file path, action or dependency is opened/executed.
+
+Hash agreement alone is insufficient: the original manifest component and full
+publisher identity must also match the observed row. The batch copies the entire
+source/recipient/install/generation/gate/revision binding. A lookup against another
+UID, source context, row or revision exposes no document, even if artifact bytes
+still match. An original app-read failure retains the old observation/metadata;
+manifest failure remains separately unavailable and cannot fabricate an empty
+inventory or replace the app's observation with a successful prefix.
+
+The detail text shows original declared version/target, file/action counts and all
+zero-to-eight complete 32-byte dependency IDs. A missing source is unknown metadata;
+failed verification or identity mismatch is unavailable metadata. Zero declared
+dependencies is shown only for an available matching verified manifest. Installed/
+active dependency state and ownership remain explicitly unknown. Publisher trust,
+payload verification, current process/resources and management admission remain
+outside this inspection window. The separate manifest hierarchy already displays
+all declared file paths; full software file/action panes and dependency/ownership
+graph composition remain further integration work.
+
+`software_components_test` uses original-encoder maximum declarations (32 paths,
+eight actions with eight arguments, eight dependencies), owned-buffer lifetime,
+empty dependency declarations, wrong hash/component/publisher and exact observation
+binding checks. It overwrites copied worker configuration, proves only the two
+eligible configured sources are read, disposes messages/documents after transfer,
+checks allocation/FD errors and reads the final dependency through large-text
+details. Root v2/v10 bytes/rows remain unchanged after fixture preparation.
+
+Append `--components match` to the native test command to bind a real original
+observation to the original-encoder fixture and check all eight IDs through the
+separate OS peer. `--components identity-failure` selects a canonical manifest
+whose hash matches the original artifact row but whose component disagrees; the
+native peer requires unavailable metadata without a fabricated zero dependency
+count. These remain private synthetic metadata cases, not installed payload or
+production-service adoption. The original encoder/vector/spec inputs are pinned
+by `manifest-inputs.json` in addition to example33's 67 original inputs.
+
+Long metadata details cache the existing measured text wrapper per original
+paragraph and paint only intersecting paragraphs. The complete original UTF-8
+value remains one read-only semantic Text snapshot without a caret. This avoids
+repeatedly shaping a whole multi-line document while emergency-wrapping a later
+long ID/version. Width, density, observation, metadata and state changes clear the
+cache. The bounded original fields fit the 8,192-byte body and 256-paragraph cache;
+this is an example-specific layout bound, not a general document/performance
+budget. Native reader tests account for AT-SPI's outward-rounded integer extents
+when counting fractional PageDown steps, and still verify the actual end bounds
+and exact return to the top.

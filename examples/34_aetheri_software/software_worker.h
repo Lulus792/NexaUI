@@ -1,17 +1,23 @@
 #ifndef EXAMPLE_SOFTWARE_WORKER_H
 #define EXAMPLE_SOFTWARE_WORKER_H
-#include "software_model.h"
+#include "software_components.h"
 /* Application-private trusted Root adapter following example33's owner-worker
    pattern. Source configuration and jobs are copied; no GUI object or callback
    enters the worker. Thread separation is not an authority/IPC boundary. */
 typedef struct sww_worker sww_worker;
 typedef struct sww_key { uint64_t view,request; } sww_key;
-typedef struct sww_reply { sww_key key; int original_error; sw_result *result; } sww_reply;
+typedef struct sww_reply { sww_key key; int original_error; sw_result *result; nx_result components_status;sw_components *components; } sww_reply;
 /* Copy the explicit protected source path/Root identity. Only the worker opens,
    queries and closes the original catalogue. Wait only for open/get-info here;
    no selected-app scan runs during this handshake. Context changes on success. */
 nx_result sww_start(const char *,const struct ae_catalogue_identity *,sww_worker **,
                     struct ae_catalogue_info *,int *original_error);
+/* Optional immutable manifest-source configuration, copied before thread start.
+   No manifest file is opened until an eligible selected original row is read.
+   Source changes require another worker. Component failure never fabricates an
+   empty inventory or invalidates the separately valid app observation. */
+nx_result sww_start_with_manifests(const char *,const struct ae_catalogue_identity *,
+    const sw_manifest_source *,size_t,sww_worker **,struct ae_catalogue_info *,int *original_error);
 /* Owner-thread calls. Two S02 slots reserve completions until receive takes
    them. Copy the complete scope and selected IDs before waking the worker.
    Scope/target validation errors complete as original producer errors; bound,

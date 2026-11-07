@@ -102,6 +102,10 @@ static int row_equal(const sw_row *a,const sw_row *b){
         p->install_revision==q->install_revision&&p->generation_revision==q->generation_revision&&
         p->gate_revision==q->gate_revision&&p->catalogue_revision==q->catalogue_revision&&p->gate==q->gate;
 }
+int sw_observation_same(const sw_scope *a,const sw_row *ar,const sw_scope *b,const sw_row *br){
+    return scope_valid(a,1)&&scope_valid(b,1)&&ar&&br&&row_valid(ar,a)&&row_valid(br,b)&&
+        scope_same(a,b)&&a->context.revision==b->context.revision&&row_equal(ar,br);
+}
 nx_result sw_owner_create(const sw_scope *scope,const sw_id *targets,size_t n,sw_owner **out){
     if(!out||*out||!scope_valid(scope,0))return NX_ERROR_ARGUMENT;
     if(n>SW_MAX_TARGETS||n>SIZE_MAX/sizeof(sw_id))return NX_ERROR_LIMIT;

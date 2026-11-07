@@ -1,6 +1,6 @@
 #ifndef EXAMPLE_SOFTWARE_VIEW_H
 #define EXAMPLE_SOFTWARE_VIEW_H
-#include "software_model.h"
+#include "software_components.h"
 /* Optional example presentation, not a public SDK/authority contract. Owner,
    fonts and any bound window outlive this single-threaded view. */
 typedef struct swg_view swg_view;
@@ -19,6 +19,11 @@ nx_context *swg_context(swg_view *);
 /* Native backing density, between frames. Logical layout/drafts stay intact;
    replacement contexts inherit it. Failure preserves the configured density. */
 nx_result swg_set_raster_scale(swg_view *,float);
+/* Borrow immutable optional manifest batch until replacement/close. Retire the
+   context before changing it; failure preserves the old binding. Lookup still
+   requires exact current source/recipient/row/revision agreement. A non-OK batch
+   status is unavailable metadata, distinct from no selected manifest. */
+nx_result swg_set_components(swg_view *,const sw_components *,nx_result);
 /* Between frames. A new owner snapshot gets a fresh context/provider binding;
    allocation failure preserves the old presentation. No query is dispatched. */
 nx_result swg_sync(swg_view *);

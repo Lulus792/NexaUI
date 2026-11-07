@@ -90,3 +90,15 @@ by an ignored older failure, view replacement and Close with held work.
 Human/physical assistive review, services, source discovery, payload file
 verification and actual Aetheri adoption remain separate gates. Existing Aetheri
 sources, launcher, default presentation and SDK pin are unchanged.
+
+The shared `manifest_document.h/.c` adapter owns immutable bytes and exposes the
+original verifier's complete bounded fixture views until explicit free. This
+keeps component/version/target, publisher, file/action declarations and dependency
+IDs alive without copying borrowed slices into dangling pointers. The existing
+`amh_read` path projection now uses this same bounded regular-file loader, while
+`amh_project` retains its original caller-byte contract and output behavior.
+Expected hash provenance, publisher trust, payload/installation and authority
+remain external. [Example34](../34_aetheri_software/README.md#exact-manifestdependency-join)
+uses the document only after exact artifact/component/publisher agreement with
+an original selected-install observation. The standalone example31 continues to
+check its own original `1fb45c7` pin independently of example34's `46e2a21` pin.
