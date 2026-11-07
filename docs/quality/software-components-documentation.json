@@ -1,0 +1,13 @@
+{
+  "source_revision": "865f21c8f4a42ea62293b39f06f092863bbab99b",
+  "post_source_documentation": [
+    {
+      "path": "examples/34_aetheri_software/README.md",
+      "source_sha256": "c8d69099c22679bed59291697f18578633187fc8a109004a3515b82d898fb859",
+      "current_sha256": "0f36ecf107fde2a38a1a7e21bcf076c5ae6036c79575fd2a18181051ab685dc2",
+      "old_text": "Width, density, observation, metadata and state changes clear the\ncache.",
+      "new_text": "Width, observation, metadata and state changes clear paragraph layouts.\nRaster density updates use the existing context API and preserve logical layouts.",
+      "reason": "Clarify logical paragraph cache versus context-controlled raster density; no implementation change."
+    }
+  ]
+}

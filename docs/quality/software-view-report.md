@@ -1,5 +1,8 @@
 # Native selected-app observations — 2026-11-07
 
+Continued by the [exact original manifest/dependency join](software-components-report.md)
+at `865f21c`; the narrower native-view checkpoint below remains unchanged.
+
 Consumer source: `33b9a45cd51c679d743dc4c4a8ae2e4afb5abff8`.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Installed NexaUI SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, 0.1.23.

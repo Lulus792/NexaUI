@@ -274,8 +274,8 @@ Long metadata details cache the existing measured text wrapper per original
 paragraph and paint only intersecting paragraphs. The complete original UTF-8
 value remains one read-only semantic Text snapshot without a caret. This avoids
 repeatedly shaping a whole multi-line document while emergency-wrapping a later
-long ID/version. Width, density, observation, metadata and state changes clear the
-cache. The bounded original fields fit the 8,192-byte body and 256-paragraph cache;
+long ID/version. Width, observation, metadata and state changes clear paragraph layouts.
+Raster density updates use the existing context API and preserve logical layouts. The bounded original fields fit the 8,192-byte body and 256-paragraph cache;
 this is an example-specific layout bound, not a general document/performance
 budget. Native reader tests account for AT-SPI's outward-rounded integer extents
 when counting fractional PageDown steps, and still verify the actual end bounds
