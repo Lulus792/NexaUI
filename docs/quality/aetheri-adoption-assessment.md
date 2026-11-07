@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Original manifest source changes and native identity (2026-11-07)
+
+Consumer `73eab048195dd8701336ad26971e88e8d6ec39c3` adds caller-selected artifact
+sources to the existing original-manifest hierarchy. Copied source paths/digests
+outlive workers, tickets retain their selected source and each source change
+retires its native context before creating a new view epoch. Three installed
+profiles pass 4/4 manifest and 1/1 neutral CTests each. Independent native source
+workflows pass nine stages per profile, including German 200%/small/high contrast
+and an additional ungated light-theme run. Existing 11-stage manifest and
+18-stage neutral workflows pass all three profiles. A→B→A→B checks cover exact
+read-only identity Text, focus, late results and retained-object refusal. Wrong
+binding and reused-context counterexamples reject at intended boundaries.
+Original sources, SDK implementation/version and Aetheri pin/default are unchanged.
+Full picker/inventory/service adoption remains open; see the
+[source-switch report](manifest-source-switch-report.md).
+
 ## Original canonical manifest in an asynchronous hierarchy (2026-11-07)
 
 Consumer `6a8bb795c42323ff42af69464619a9aa898baf30` reuses original Aetheri

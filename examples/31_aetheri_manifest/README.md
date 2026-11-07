@@ -87,6 +87,6 @@ The native workflow observes wrong-artifact failure, Retry, all 32 full paths,
 last-row selection/focus/reveal or top-to-bottom reading, collapsed pending work, newer success followed
 by an ignored older failure, view replacement and Close with held work.
 
-Human/physical assistive review, services, artifact switching, payload file
+Human/physical assistive review, services, source discovery, payload file
 verification and actual Aetheri adoption remain separate gates. Existing Aetheri
 sources, launcher, default presentation and SDK pin are unchanged.
