@@ -1,5 +1,23 @@
 # Aetheri adoption: initial source assessment
 
+## Scoped tree keyboard navigation (2026-11-07)
+
+Source `8dbd3d961e5e7d4a51a40919e15051e31a67a887` extends existing tree items with
+Up/Down, Home/End and parent/child Left/Right focus movement over registered rows.
+Nearest tree/table ownership, collapsed/disabled ancestors and modal admission
+constrain targets; selection and loading remain app-owned. The new public-event
+regression checks hierarchy, repeat/consumed input, same-batch collapse/movement,
+unloaded children, table paths and modal restoration. Previous static/shared
+SDKs reject the first navigation step. An initial ancestor-eligibility defect
+was separately reproduced and corrected before final acceptance; its source and
+failed probe remain retained. Final strict installed static/shared/sanitizer
+consumers pass old-tree and navigation checks. Regular suites pass 145/151,
+144/150 and 145/151, retaining six display skips each. See the
+[navigation report](tree-navigation-report.md) for exact scope and artifacts.
+This advances L06/I01/Q02; async hierarchy UI, virtual focus reveal, breadcrumbs,
+richer tree-table relationships, real pickers/services and native/human adoption
+remain open. Public API/ABI, SDK 0.1.23, Aetheri sources and its pin are unchanged.
+
 ## Tree expansion retains the original key target (2026-11-07)
 
 Source `bae657a4cdaaed6e4f6dc426b71ad17c69586c12` corrects tree expansion after

@@ -76,6 +76,13 @@ Register only visible `nx_table_row` and `nx_table_cell` nodes below the table, 
 
 For a tree table, register `nx_table_headers`, then visible `nx_table_row` and `nx_table_cell` nodes. Place `nx_tree_item` inside the first cell and register additional cells under the same row. This yields a table → row → cell → tree item semantic path while retaining sort, width and tree expansion models in application data. Tree item painting and state updates can be retried after failure in the same frame.
 
+Tree rows support group-scoped Up/Down and Home/End focus movement without
+wrapping or changing selection. Right enters the first registered child of an
+expanded item; Left returns from a collapsed item or leaf to its parent.
+Disabled/inactive/collapsed ancestors exclude descendants from navigation.
+See the [hierarchy contract](inspector.md) for expansion, frame boundaries,
+table ancestry and application-owned virtual focus/loading responsibilities.
+
 ## Popups, modals and tooltips
 
 Register an overlay after background widgets so its backdrop and panel are visually on top. `nx_popup_begin` and `nx_modal_begin` accept an `nx_overlay_desc` with distinct panel and backdrop IDs, a named panel rectangle, and optional outside-click or Escape dismissal. Register interactive children with the panel ID as parent, then call `nx_overlay_end`. The returned `out_dismissed` tells the application to omit the overlay in its next frame. Modal panels dim the full window with the theme shadow color; popups use the same input scope without dimming. Both expose a named popup or dialog semantic role and trap keyboard focus among their children. Closing restores the previous focus when its region still exists. Call `nx_overlay_close` for a programmatic close, especially between frames, so the next pointer event reaches the background immediately.

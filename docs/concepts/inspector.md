@@ -11,6 +11,27 @@ Left/Right expansion applies to the row or expander that held logical focus
 when that key event was routed. A later Tab, pointer click or application focus
 change in the same frame does not transfer an earlier key to another branch.
 
+Within the nearest tree or table, Up/Down move focus between registered item
+rows and Home/End choose the first/last eligible row. The expander buttons do
+not add stops to directional navigation; Tab still reaches them. Navigation
+stops at the ends, skips disabled/inactive rows and their subtrees, and leaves
+the application-owned selection unchanged. Enter/Space retain their existing
+selection/expander behavior.
+
+Right expands a closed branch; on an already expanded branch it focuses its
+first eligible registered child. Left collapses an expanded branch, otherwise
+it focuses its eligible parent item. These relationships follow semantic item
+ancestry, not indentation or row indices. Items in separate table cells share
+table-scoped row navigation; their logical hierarchy is not inferred from cell
+geometry. Arrow-induced collapse also hides descendants from later navigation
+in that same event batch. Consumed key events do not navigate.
+
+The previous completed frame defines available targets. A newly expanded or
+asynchronously loaded child becomes navigable after the application registers
+it. Applications own loading/error/retry state, virtual-row realization and
+scrolling to reveal focus, and choose focus restoration when a row disappears.
+No navigation step requests data or changes selection/operation authority.
+
 `nx_property_row` accepts a boolean, finite ranged number, or UTF-8 text
 value. It copies the accessible name and current value into the frame's
 semantic tree and paints an optional font-backed label. The minimum row
