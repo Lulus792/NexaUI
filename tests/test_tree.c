@@ -232,9 +232,87 @@ static int test_retry(void) {
     return 0;
 }
 
+static int queue_key(nx_context *ctx, nx_key key, int consumed) {
+    nx_event event = {0};
+    event.key = key;
+    event.type = consumed ? NX_EVENT_KEY_DOWN_CONSUMED : NX_EVENT_KEY_DOWN;
+    if (nx_context_queue_event(ctx, &event) != NX_OK) return 0;
+    event.type = NX_EVENT_KEY_UP;
+    return nx_context_queue_event(ctx, &event) == NX_OK;
+}
+
+static int branch_pair(nx_context *ctx, int *first, int *second,
+                       uint64_t *selected, int disabled_second) {
+    nx_container_desc root = root_desc();
+    nx_tree_item_desc a = branch_desc(), b = branch_desc();
+    b.control.id = 21;
+    b.control.name = (nx_utf8_span){"Other folder", 12};
+    b.control.bounds.y = b.expander_bounds.y = 48;
+    b.control.disabled = disabled_second;
+    b.expander_id = 22;
+    nx_interaction_state state;
+    return nx_tree(ctx, &root) == NX_OK &&
+        nx_tree_item(ctx, &a, first, selected, &state) == NX_OK &&
+        nx_tree_item(ctx, &b, second, selected, &state) == NX_OK;
+}
+
+/* Arrow keys belong to their routed row/expander, even if focus changes later
+   in the same native batch. Both final model values and published expansion
+   states must describe that original intent. */
+static int test_batched_expansion_targets(void) {
+    for (unsigned scenario = 0; scenario < 9; ++scenario) {
+        nx_context *ctx = NULL;
+        CHECK(nx_context_create(NULL, &ctx) == NX_OK);
+        int first = scenario == 3, second = scenario == 3 || scenario == 4;
+        uint64_t selected = 0;
+        CHECK(nx_begin_frame(ctx, 120, 90, 0) == NX_OK);
+        CHECK(branch_pair(ctx, &first, &second, &selected, scenario == 5));
+        CHECK(nx_end_frame(ctx) == NX_OK);
+        CHECK(nx_focus_set(ctx, scenario == 1 ? 12 : 11) == NX_OK);
+        if (scenario != 2)
+            CHECK(queue_key(ctx, scenario == 3 ? NX_KEY_LEFT : NX_KEY_RIGHT,
+                             scenario == 6));
+        if (scenario == 4) {
+            CHECK(queue_key(ctx, NX_KEY_TAB, 0)); /* First expander. */
+            CHECK(queue_key(ctx, NX_KEY_TAB, 0)); /* Second row. */
+            CHECK(queue_key(ctx, NX_KEY_LEFT, 0));
+        } else if (scenario != 7) {
+            CHECK(click(ctx, scenario == 8 ? 10 : 40, 60));
+            if (scenario == 2) CHECK(queue_key(ctx, NX_KEY_RIGHT, 0));
+            if (scenario == 8) CHECK(queue_key(ctx, NX_KEY_LEFT, 0));
+        }
+        CHECK(nx_begin_frame(ctx, 120, 90, 0) == NX_OK);
+        /* An app may move focus while composing a refreshed view. */
+        if (scenario == 7) CHECK(nx_focus_set(ctx, 21) == NX_OK);
+        CHECK(branch_pair(ctx, &first, &second, &selected, scenario == 5));
+        CHECK(nx_end_frame(ctx) == NX_OK);
+        int expected_first = scenario != 2 && scenario != 3 && scenario != 6;
+        int expected_second = scenario == 2 || scenario == 3;
+        if (first != expected_first || second != expected_second) {
+            fprintf(stderr, "batched tree scenario %u: expanded %d/%d, expected %d/%d\n",
+                scenario, first, second, expected_first, expected_second);
+            nx_context_destroy(ctx);
+            return 1;
+        }
+        CHECK(semantic(ctx, 11, 10, NX_ROLE_TREE_ITEM,
+                       NX_SEM_EXPANDED, expected_first));
+        CHECK(semantic(ctx, 12, 11, NX_ROLE_BUTTON,
+                       NX_SEM_EXPANDED, expected_first));
+        CHECK(semantic(ctx, 21, 10, NX_ROLE_TREE_ITEM,
+                       NX_SEM_EXPANDED, expected_second));
+        CHECK(semantic(ctx, 22, 21, NX_ROLE_BUTTON,
+                       NX_SEM_EXPANDED, expected_second));
+        CHECK(nx_focus_id(ctx) == (scenario == 5 ? 11u : scenario == 8 ? 22u : 21u));
+        CHECK(selected == (scenario <= 3 || scenario == 5 || scenario == 6 ?
+                           (scenario == 5 ? 0u : 21u) : 0u));
+        nx_context_destroy(ctx);
+    }
+    return 0;
+}
+
 int main(void) {
     if (test_flatten() || test_interaction() || test_tree_table() ||
-        test_retry()) return 1;
+        test_retry() || test_batched_expansion_targets()) return 1;
     puts("tree tests passed");
     return 0;
 }

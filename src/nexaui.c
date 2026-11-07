@@ -4997,13 +4997,14 @@ nx_result nx_tree_item(nx_context *ctx, const nx_tree_item_desc *desc,
     int next_expanded = desc->has_children ? !!*expanded : 0;
     if (!desc->control.disabled && desc->has_children) {
         next_expanded ^= (int)(handle_state.clicked & 1u);
-        if (state.focused || handle_state.focused) {
-            for (size_t i = 0; i < ctx->frame_events.count; ++i) {
-                const nx_event *event = &ctx->frame_events.data[i];
-                if (event->type != NX_EVENT_KEY_DOWN) continue;
-                if (event->key == NX_KEY_RIGHT) next_expanded = 1;
-                if (event->key == NX_KEY_LEFT) next_expanded = 0;
-            }
+        for (size_t i = 0; i < ctx->frame_events.count; ++i) {
+            const nx_event *event = &ctx->frame_events.data[i];
+            const nx_event_route *route = &ctx->frame_events.routes[i];
+            if (event->type != NX_EVENT_KEY_DOWN ||
+                (route->focus_id != desc->control.id &&
+                 route->focus_id != desc->expander_id)) continue;
+            if (event->key == NX_KEY_RIGHT) next_expanded = 1;
+            if (event->key == NX_KEY_LEFT) next_expanded = 0;
         }
     }
     int next_selected = *selected_id == desc->control.id ||
