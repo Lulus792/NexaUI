@@ -7,13 +7,19 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 
 def seed(source, work):
     spec = importlib.util.spec_from_file_location('original_runtime', source / 'tools/runtime_contracts.py')
     original = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(original)
+    previous = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        spec.loader.exec_module(original)
+    finally:
+        sys.dont_write_bytecode = previous
     frozen = json.loads((source / 'spec/vectors/runtime-v1.json').read_text())[0]
     data = bytes.fromhex(frozen['hex'])
     if hashlib.sha256(data).hexdigest() != frozen['sha256'] or original.fixture(frozen['input']) != data:
