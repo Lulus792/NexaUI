@@ -1,5 +1,17 @@
 # Aetheri adoption: initial source assessment
 
+## Picker queued native input order (2026-11-07)
+
+Consumer c73c2d94ddfff7a6d817c4f775c79e4440bdf139 finishes queued interaction
+frames before custom keys, preserving Tab/pointer/text/row order and existing
+page/context retirement. Three independent unpaced burst workflows pass,
+including 4,096-entry German/200%/small/high-contrast shared and sanitizer cases;
+eight native regressions and 2/2 CTests in each strict profile also pass.
+The previous published host fails the same current native test. See the
+[input-order report](file-picker-input-order-report.md) for exact source,
+evidence and remaining scope. Full picker variants, owners and real services
+remain open; no SDK API or live Aetheri/pin changes.
+
 ## Picker unavailable versus empty counts (2026-11-07)
 
 Consumer `f1da1ba0e98440c611a671b6127e0abaf240a914` replaces misleading zero

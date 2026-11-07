@@ -75,9 +75,10 @@ logs, binaries and the frozen guest/local archives remain. The included receipt
 names every retired root; this is not deletion of unique evidence or live data.
 
 L11/D07/A02/Q02 advance within this picker; the full catalogue remains partial.
-Unpaced mixed-input routing is the next input issue: the native host currently
+At this revision, unpaced mixed-input routing remains an input issue: the host
 intercepts row commands before queued preceding focus/pointer events have been
-applied. Additional permission/I/O/allocation failures, active-IME resize, long
+applied. The subsequent [input-order step](file-picker-input-order-report.md)
+addresses the scoped queued bursts. Additional permission/I/O/allocation failures, active-IME resize, long
 native ancestor reading, directory/multiple/save variants and owner/modal
 integration remain open. Actual service/authority/durable reconciliation, other
 packet-6 compositions, packets 7/8, performance and physical/human acceptance
