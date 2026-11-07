@@ -7,6 +7,9 @@ selected ID and property values. A tree node array is in preorder;
 state. Only register visible rows. Stable IDs let selection and focus survive
 changes to their visible positions. The expander has its own hit region, so
 clicking it changes expansion while clicking the rest of an item selects it.
+Left/Right expansion applies to the row or expander that held logical focus
+when that key event was routed. A later Tab, pointer click or application focus
+change in the same frame does not transfer an earlier key to another branch.
 
 `nx_property_row` accepts a boolean, finite ranged number, or UTF-8 text
 value. It copies the accessible name and current value into the frame's

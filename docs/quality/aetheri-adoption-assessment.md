@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Tree expansion retains the original key target (2026-11-07)
+
+Source `bae657a4cdaaed6e4f6dc426b71ad17c69586c12` corrects tree expansion after
+same-frame focus changes. Previously, Right on one branch followed by focus
+movement could expand another branch. The existing per-event routing metadata
+now preserves the original row/expander target. Nine added public-event cases
+check model and semantic expansion, focus and selection. Three previous installed
+SDK artifacts detect the original mismatch; three new strict C17 installed
+static/shared/sanitizer consumers pass. Regular root suites pass 144/150,
+143/149 and 144/150 respectively, retaining six external-display skips each.
+Initial negative-test cleanup diagnostics and the cleanup-safe final negative
+are preserved separately. See the [tree routing report](tree-input-routing-report.md)
+for exact artifacts and scope. This advances L06/I01/Q02; asynchronous hierarchy
+loading, full navigation, real pickers/services and native/human acceptance remain
+open. Aetheri, its pin, SDK API/ABI and version 0.1.23 are unchanged.
+
 ## Strict SDK diagnostics and native capabilities (2026-11-07)
 
 SDK source `0d36408c120bd3ec59747688fa0ae6e94fc2dfe6` resolves the documented
