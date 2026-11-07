@@ -1,0 +1,13 @@
+{
+  "name": "nexaui-recovery-resize-20261107.tar.gz",
+  "size": 23004742,
+  "sha256": "00b04779fc3fa5178f5f7c0c14bc58d9cce27b8d64fef8429be920b139a0257d",
+  "files": 1316,
+  "links": 2,
+  "directories": 471,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-recovery-resize-20261107.tar.gz",
+  "source_revision": "38210e00ea34fe9611ac01145f05a4828d852bf7",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally."
+}
