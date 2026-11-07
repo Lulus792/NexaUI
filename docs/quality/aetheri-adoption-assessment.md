@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Current held-directory selection (2026-11-07)
+
+Consumer a040d1288106cdbb6f1afaf623fb3a98200ea96c adds a folder mode using the
+original model's owned current-directory descriptor. It selects roots and empty
+or filtered views, survives held-folder rename/path replacement and preserves
+once-only disposal/transfer. Three strict profiles pass 2/2 CTests; four directory
+and eleven other current-source native workflows pass, with two detected
+core/native counterexamples. One earlier ordinary AT-SPI peer heap abort remains
+unresolved; the failed core/logs and passing ordinary/instrumented repeats are
+retained. See the [directory report](file-picker-directory-report.md) for exact
+scope and artifacts. Multi/save/owner integration and normal Aetheri adoption
+remain open. No SDK API/version, live Aetheri or pin changes.
+
 ## Picker queued native input order (2026-11-07)
 
 Consumer c73c2d94ddfff7a6d817c4f775c79e4440bdf139 finishes queued interaction
