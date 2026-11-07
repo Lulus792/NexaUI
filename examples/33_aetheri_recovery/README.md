@@ -189,6 +189,36 @@ Read refresh, editable local filtering, Enter refusal during native preedit,
 commit/application, selection restoration and keyboard Close. It requires the
 same original database bytes/rows and normal host/peer exits. `--kind user`
 selects User v8 instead of Root v10. These virtual-input checks are not human
-screenreader or physical-display acceptance. Native held-read close/wakeup,
-native resize/output migration, clipboard and production owner transport remain
-separate open gates.
+screenreader or physical-display acceptance. Native resize/output migration,
+clipboard and production owner transport remain separate open gates. The
+test-only lifecycle host below checks held-read close/wakeup and selected
+whole-window retained references.
+
+## Native held-transaction lifecycle checks
+
+Configure `-DRVG_BUILD_LIFECYCLE_HOST=ON` to build `recovery_held_native`, and
+`-DRVG_BUILD_ATSPI_CLIENT=ON` to build `recovery_lifecycle_atspi` with actual OS
+development dependencies. The ordinary host source is included verbatim in the
+test executable; GNU link wrappers hold only its second original inventory read
+inside an active SQLite transaction and observe real teardown/disposal calls.
+No test gate is compiled into `recovery_native` or the installed SDK.
+
+Run the same driver/arguments above with `--host build-recovery/recovery_held_native`,
+`--client build-recovery/recovery_lifecycle_atspi` and either `--held wake` or
+`--held close`, in a new work directory. Omit `--ime`: ordinary IME checks use
+the ordinary peer separately. All original fixture, byte/row equality and
+normal-exit checks remain. Use `--kind user` for User v8, otherwise Root v10.
+
+The wake case pauses the independent peer, observes the actual parent-owned
+Linux x86-64 child in `poll` with its worker FD, then releases SQL. It requires
+worker-FD readability, a fresh observation and unchanged key count before any
+further OS request. This `/proc` witness requires parent access to its child's
+syscall and bounded pollfd memory; other carriers need their own witness.
+
+The close case opens a live filter draft during the held read, focuses Close
+and closes with a native Enter key. The compositor must unmap the window while
+the process/transaction remain alive. The independent peer then requires the
+retained text and button to reject edits/actions. Only after those checks does
+the driver release SQL. The original result is disposed exactly once after GUI
+retirement, with no late adoption and balanced process FDs. The test adds no
+timeout or cancellation promise to original filesystem work or worker join.

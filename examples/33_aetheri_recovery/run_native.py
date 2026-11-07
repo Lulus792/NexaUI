@@ -9,6 +9,7 @@ import re
 import signal
 import socket
 import sqlite3
+import struct
 import subprocess
 import sys
 import time
@@ -17,8 +18,10 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','source','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--kind',choices=('system','user'),default='system')
+    p.add_argument('--held',choices=('wake','close'),help='Test-only held host and lifecycle OS peer')
     for name in ('german','large','small','contrast','light','ime'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
+    if a.held and a.ime:p.error('The held-transaction workflow has its own lifecycle peer; run IME separately')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
@@ -47,9 +50,12 @@ def main():
         env.pop('RVG_'+name.upper(),None)
         if getattr(a,name):env['RVG_'+name.upper()]='1'
     if a.ime:env['WAYLAND_DEBUG']='client'
+    gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
+    if a.held:env['RVG_TEST_GATE_FD']=str(gate_read)
+    else:env.pop('RVG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
-            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime')},'checks':[],'expected_records':len(reference)}
+            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held')},'checks':[],'expected_records':len(reference)}
     def start(command,name,fds=(),input_pipe=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
         child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if input_pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True)
@@ -77,6 +83,29 @@ def main():
             served=re.findall(r'^IME commit enabled=1 serial=(\d+)',log('server'),re.M)
             return sent>0 and served and int(served[-1])==sent
         wait(settled,'producer processed text-input commits')
+    def release_gate():
+        nonlocal gate_write
+        if gate_write>=0:
+            try:os.write(gate_write,b'R')
+            finally:os.close(gate_write);gate_write=-1
+    def sleeping_with_worker_fd():
+        # The selected carrier is Linux x86-64. Observe the parent's actual child
+        # in poll, then read its bounded pollfd array; no guessed sleep interval.
+        if sys.platform!='linux' or os.uname().machine!='x86_64':raise RuntimeError('Native wait witness requires the selected Linux x86-64 carrier')
+        matches=re.findall(r'^HELD_WAIT_ENTER fd=(\d+) timeout=(\d+)$',log('host'),re.M)
+        if not matches:return False
+        try:
+            raw=Path(f'/proc/{host.pid}/syscall').read_text().split()
+            if len(raw)<4 or raw[0]!='7':return False
+            address,nfds=int(raw[1],0),int(raw[2],0)
+            if not 1<=nfds<=32:return False
+            with Path(f'/proc/{host.pid}/mem').open('rb',buffering=0) as memory:data=os.pread(memory.fileno(),nfds*8,address)
+            if len(data)!=nfds*8:return False
+            descriptors=[{'fd':fd,'events':events,'revents':revents} for fd,events,revents in struct.iter_unpack('<ihh',data)]
+            wake_fd=int(matches[-1][0])
+            if not any(d['fd']==wake_fd and d['events']&1 for d in descriptors):return False
+            result['native_wait_witness']={'syscall':raw,'descriptors':descriptors,'worker_fd':wake_fd,'view':view()};return True
+        except (FileNotFoundError,ProcessLookupError):return False
     try:
         server=start([paths['server'],'--headless','recovery','-',right.fileno()],'server',(right.fileno(),));right.close()
         wait(lambda:'READY ' in log('server'),'compositor')
@@ -87,44 +116,77 @@ def main():
             probe=subprocess.run(['dbus-send','--bus='+address,'--print-reply','--dest=org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus.NameHasOwner','string:org.a11y.atspi.Registry'],env=env,capture_output=True,text=True,timeout=2)
             return probe.returncode==0 and 'boolean true' in probe.stdout
         wait(registered,'registry')
-        host=start([paths['host'],paths['font'],directory,a.kind,fixture['epoch'].hex(),fixture['account'].hex() if a.kind=='user' else '-'],'host')
+        host=start([paths['host'],paths['font'],directory,a.kind,fixture['epoch'].hex(),fixture['account'].hex() if a.kind=='user' else '-'],'host',(gate_read,) if a.held else ())
+        if gate_read>=0:os.close(gate_read);gate_read=-1
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--german'] if a.german else [])+(['--ime'] if a.ime else []),'client',input_pipe=True)
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
-        for step in range(10):
-            peer_line('STEP '+str(step))
-            if step==1:key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'logical End')
-            if step==2:
-                wait(lambda:view().get('mode')==2,'detail mode')
-            if step==3:key(1);wait(lambda:view().get('mode')==0,'Back to records')
-            if step==4:wait(lambda:view().get('epoch')==2 and view().get('state')==2,'fresh original observation')
-            if step==5:
-                wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter focus');count=view().get('frames',0);key(45)
-                wait(lambda:view().get('frames',0)>count,'literal key frame')
-            if step==6 and a.ime:
-                event('I 0');ime_barrier(7);count=view().get('keys',0);key(28);wait(lambda:view().get('keys',0)>=count+2,'Enter during preedit')
-                if view().get('mode')!=1:raise RuntimeError('Enter applied an uncommitted filter prefix')
-            if step==7 and a.ime:event('I 1');ime_barrier(0)
-            if step==8:key(28);wait(lambda:view().get('mode')==0 and view().get('count')==0,'filtered empty')
-            if step==9:
-                key(28);wait(lambda:view().get('mode')==0 and view().get('count')==len(reference),'clear local filter');key(107)
-                wait(lambda:view().get('focus')==1000+len(reference)-1,'restored selected record')
-            peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
-            if step==2:
-                wait(lambda:re.search(r'^READ_PAGES (\d+)$',log('client'),re.M) is not None,'detail geometry',(peer,))
-                pages=int(re.search(r'^READ_PAGES (\d+)$',log('client'),re.M)[1]);result['pages_each_direction']=pages
-                for direction,code in (('D',109),('U',104)):
-                    for i in range(pages):
-                        before=view().get('frames',0);key(code);wait(lambda:view().get('frames',0)>before,'detail page frame')
-                        peer.stdin.write(f'PAGE {direction} {i}\n'.encode());peer.stdin.flush();peer_line(f'PAGE_ACK {direction} {i}')
-            peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
+        if a.held:
+            for step in (0,1):
+                peer_line('STEP '+str(step))
+                if step==1:
+                    wait(lambda:'HELD_QUERY_ENTERED ordinal=2 transaction=1\n' in log('host'),'original SQL transaction held')
+                    wait(lambda:view().get('state')==1 and view().get('epoch')==1 and view().get('request')==2,'Reading while original query held')
+                peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush();peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
+            peer_line('STEP 2')
+            if 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Original query completed before gate release')
+            if a.held=='close':
+                wait(lambda:view().get('mode')==1 and view().get('focus')==42,'Close focused beside retained field')
+                key(28)
+                wait(lambda:'RECOVERY_GUI_GONE\n' in log('host') and 'UNMAP 0\n' in log('server'),'native GUI unmaps while original query is held')
+                if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Host did not retain its held worker after GUI close')
+                result['gui_gone_before_gate_release']=True
+            else:
+                wait(sleeping_with_worker_fd,'native main thread asleep in poll with worker FD')
+                before_keys=view().get('keys');offset=len(log('host'));release_gate()
+                wait(lambda:'HELD_QUERY_DONE ordinal=2 status=0\n' in log('host') and view().get('epoch')==2 and view().get('state')==2,'completion adopts without further input')
+                if view().get('keys')!=before_keys:raise RuntimeError('Unexpected native key while waiting for worker completion')
+                returns=re.findall(r'^HELD_WAIT_RETURN ready=(\d+) status=0$',log('host')[offset:],re.M)
+                if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
+                result['completion_without_further_input']=True
+            peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
+        else:
+            for step in range(10):
+                peer_line('STEP '+str(step))
+                if step==1:key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'logical End')
+                if step==2:
+                    wait(lambda:view().get('mode')==2,'detail mode')
+                if step==3:key(1);wait(lambda:view().get('mode')==0,'Back to records')
+                if step==4:wait(lambda:view().get('epoch')==2 and view().get('state')==2,'fresh original observation')
+                if step==5:
+                    wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter focus');count=view().get('frames',0);key(45)
+                    wait(lambda:view().get('frames',0)>count,'literal key frame')
+                if step==6 and a.ime:
+                    event('I 0');ime_barrier(7);count=view().get('keys',0);key(28);wait(lambda:view().get('keys',0)>=count+2,'Enter during preedit')
+                    if view().get('mode')!=1:raise RuntimeError('Enter applied an uncommitted filter prefix')
+                if step==7 and a.ime:event('I 1');ime_barrier(0)
+                if step==8:key(28);wait(lambda:view().get('mode')==0 and view().get('count')==0,'filtered empty')
+                if step==9:
+                    key(28);wait(lambda:view().get('mode')==0 and view().get('count')==len(reference),'clear local filter');key(107)
+                    wait(lambda:view().get('focus')==1000+len(reference)-1,'restored selected record')
+                peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush()
+                if step==2:
+                    wait(lambda:re.search(r'^READ_PAGES (\d+)$',log('client'),re.M) is not None,'detail geometry',(peer,))
+                    pages=int(re.search(r'^READ_PAGES (\d+)$',log('client'),re.M)[1]);result['pages_each_direction']=pages
+                    for direction,code in (('D',109),('U',104)):
+                        for i in range(pages):
+                            before=view().get('frames',0);key(code);wait(lambda:view().get('frames',0)>before,'detail page frame')
+                            peer.stdin.write(f'PAGE {direction} {i}\n'.encode());peer.stdin.flush();peer_line(f'PAGE_ACK {direction} {i}')
+                peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
         peer.wait(timeout=7)
-        if peer.returncode!=0 or 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Independent peer failed')
+        marker=('RECOVERY_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'RECOVERY_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK'
+        if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if view().get('request')!=2:raise RuntimeError('Local inspection/filtering posted backend work')
-        key(28);host.wait(timeout=7)
+        if a.held=='close':
+            if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Held worker ended before retirement peer finished')
+            release_gate()
+        else:key(28)
+        host.wait(timeout=7)
         if host.returncode!=0 or 'RECOVERY_GUI_GONE\n' not in log('host') or 'failed=0\n' not in log('host'):raise RuntimeError('Host did not close normally')
+        if a.held and 'RECOVERY_NATIVE_HELD_ORIGINAL_QUERY_RETIREMENT_DISPOSAL_AND_FDS_OK' not in log('host'):raise RuntimeError('Missing original late-result disposal or descriptor balance')
+        if a.held=='close' and 'RECOVERY_CLOSED requests=2 adopted=1 ignored=0 failed=0' not in log('host'):raise RuntimeError('Closed GUI adopted the late observation')
         if hashlib.sha256(db_path.read_bytes()).hexdigest()!=before_sha:raise RuntimeError('Owner database bytes changed')
         with closing(sqlite3.connect(db_path)) as db:
             if rows(db)!=before_rows:raise RuntimeError('Owner rows changed')
@@ -132,6 +194,10 @@ def main():
             if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:',log(name)):raise RuntimeError('Sanitizer diagnostic')
         result.update(status='passed',host_exit=host.returncode,peer_exit=peer.returncode,owner_sha256_before_after=before_sha,owner_rows_unchanged=True)
     finally:
+        if gate_write>=0:
+            try:release_gate()
+            except BrokenPipeError:pass
+        if gate_read>=0:os.close(gate_read)
         cleanup=[]
         for name,child in reversed(children):
             forced=False
