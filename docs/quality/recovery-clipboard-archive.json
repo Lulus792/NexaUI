@@ -1,0 +1,14 @@
+{
+  "name": "nexaui-recovery-clipboard-20261107.tar.gz",
+  "size": 21745599,
+  "sha256": "9fbec408e074b0904847a4ffdf1d3cdf3801772ee5185eebda4959a2c2aca10e",
+  "files": 2340,
+  "links": 6,
+  "directories": 421,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-recovery-clipboard-20261107.tar.gz",
+  "source_revision": "0ddad5ea1a09a480abfef7f1c44077bd2a82b162",
+  "host_revision": "38210e00ea34fe9611ac01145f05a4828d852bf7",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally."
+}
