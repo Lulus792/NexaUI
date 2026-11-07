@@ -163,6 +163,19 @@ merely flushing a client request is not treated as an accepted grab. The pinned
 fixture's first ordinary window origin is (40,40). This is controlled native
 input, not physical output or human acceptance.
 
+`--mixed` uses the independent `mixed_atspi.c` peer. The fixture briefly stops
+only its own test host, submits each complete native input burst through the
+compositor, then resumes it. It checks Tab/Home away from a row, Shift-Tab/End
+back into the list, pointer focus loss before Home, text-field Home/End and
+cross-page Home/Down/End. A final Home/Down/Enter burst must open the first regular
+file's exact witness. `--maximum` also applies to this workflow. The ordinary
+host completes queued interaction frames before interpreting the next custom
+key and before interpreting another handled row key. It retains at most one
+deferred copied event and postpones rasterization until that native queue is
+drained. General routing is called only after the native queue is empty, so it
+cannot bypass those command boundaries. This is ordering evidence, not a
+throughput or latency budget.
+
 Directory/multiple/save selection, richer sorting/file-type policy, additional
 I/O/permission/allocation failures and resize/scale configurations, other platforms, real services/grants,
 performance, physical/human acceptance and normal Aetheri integration stay open.

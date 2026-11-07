@@ -18,12 +18,20 @@ static int replace_context(nx_window *window,nx_context **ctx,int theme) {
     if(nx_window_publish_semantics(window,NULL)!=NX_OK)return 0;
     nx_context_destroy(*ctx);*ctx=NULL;return context(ctx,theme);
 }
+static int command_boundary(const nx_event *event) {
+    if(event->type!=NX_EVENT_KEY_DOWN)return 0;
+    if(event->key==NX_KEY_ESCAPE)return 1;
+    if(event->modifiers)return 0;
+    return event->key==NX_KEY_HOME||event->key==NX_KEY_END||event->key==NX_KEY_UP||event->key==NX_KEY_DOWN||
+        event->key==NX_KEY_ENTER||event->key==NX_KEY_PAGE_UP||event->key==NX_KEY_PAGE_DOWN;
+}
 #define REQUIRE(test) do { if(!(test)){fprintf(stderr,"picker-host:%d: %s\n",__LINE__,#test);okay=0;goto cleanup;} } while(0)
 int main(int argc,char **argv) {
     int okay=1,root=-1,selected_directory=-1,selected_witness=-1,done=0,dirty=1,picked=0;
     nx_context *ctx=NULL;nx_window *window=NULL;nx_software_view *renderer=NULL;
     nx_font *font=NULL;nx_font_collection *fonts=NULL;unsigned char *bytes=NULL;FILE *file=NULL;
     fp_worker *worker=NULL;fp_picker picker={0};fp_intent pending={0};uint64_t frames=0,keys=0,requests=0;size_t last_preedit=0;
+    nx_event deferred={0};int has_deferred=0,draining=0;
     int theme=getenv("FP_CONTRAST")?NX_THEME_HIGH_CONTRAST:getenv("FP_LIGHT")?NX_THEME_LIGHT:NX_THEME_DARK;
     setvbuf(stdout,NULL,_IONBF,0);
     REQUIRE(argc==3);
@@ -91,6 +99,9 @@ int main(int argc,char **argv) {
             }
             if(redraw||fp_picker_reveal(&picker,ctx,info.height))continue;
             REQUIRE(nx_window_publish_semantics(window,ctx)==NX_OK);
+            /* Finish interaction/focus frames before the next application key,
+               but rasterize only after the already queued input is drained. */
+            if(draining)goto drain_input;
             const nx_command *commands;size_t count;nx_color background;nx_software_view_outcome outcome;
             REQUIRE(nx_frame_commands(ctx,&commands,&count)==NX_OK&&nx_theme_color(ctx,NX_COLOR_BACKGROUND,&background)==NX_OK&&nx_software_view_render(renderer,commands,count,background,&outcome)==NX_OK);
             dirty=outcome!=NX_SOFTWARE_VIEW_READY;++frames;
@@ -98,10 +109,20 @@ int main(int argc,char **argv) {
             printf("VIEW busy=%d state=%"PRIu64" depth=%u count=%zu page=%zu selected=%"PRIu64" focus=%"PRIu64" frames=%"PRIu64" keys=%"PRIu64" width=%.0f height=%.0f compact=%d\n",
                 picker.busy,r?r->state:0,r?r->depth:0,r?r->count:0,picker.page,picker.selected,nx_focus_id(ctx),frames,keys,(double)info.width,(double)info.height,picker.compact);
         }
-        uint32_t ready=0;REQUIRE(nx_window_poll_with_fd(window,UINT32_MAX,fp_worker_wake_fd(worker),&ready)==NX_OK&&!(ready&NX_WINDOW_FD_ERROR));
+drain_input:
+        if(!draining) {
+            uint32_t ready=0;REQUIRE(nx_window_poll_with_fd(window,UINT32_MAX,fp_worker_wake_fd(worker),&ready)==NX_OK&&!(ready&NX_WINDOW_FD_ERROR));
+        }
         nx_event event;int available;
+        int queued_prefix=0;
         do {
-            REQUIRE(nx_window_next_event(window,&event,&available)==NX_OK);if(!available)break;
+            if(has_deferred){event=deferred;has_deferred=0;available=1;}
+            else REQUIRE(nx_window_next_event(window,&event,&available)==NX_OK);
+            if(!available){draining=0;break;}
+            draining=1;
+            /* A following command must observe the effects of every queued
+               predecessor. Keep just that copied event across the frame. */
+            if(queued_prefix&&command_boundary(&event)){deferred=event;has_deferred=1;break;}
             if(event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP)++keys;
             if(event.type==NX_EVENT_KEY_DOWN&&event.key==NX_KEY_ESCAPE&&!event.repeat){done=1;break;}
             if(event.type==NX_EVENT_KEY_DOWN&&(event.key==NX_KEY_PAGE_UP||event.key==NX_KEY_PAGE_DOWN)&&!event.modifiers&&nx_focus_id(ctx)!=FP_QUERY) {
@@ -109,12 +130,21 @@ int main(int argc,char **argv) {
                 if(nx_semantics_find(ctx,FP_SCROLL,&area_index)==NX_OK&&nx_semantics_get(ctx,area_index,&area)==NX_OK)step=area.bounds.height*0.5f;
                 picker.scroll_y+=event.key==NX_KEY_PAGE_DOWN?step:-step;
                 if(picker.scroll_y<0)picker.scroll_y=0;
-                dirty=1;continue;
+                dirty=1;break;
             }
-            if(fp_picker_key(&picker,nx_focus_id(ctx),&event,&pending)){dirty=1;continue;}
-            REQUIRE(nx_context_queue_event(ctx,&event)==NX_OK);dirty=1;
+            uint64_t focus=nx_focus_id(ctx);
+            if(fp_picker_key(&picker,focus,&event,&pending)){
+                printf("ROW_KEY key=%d focus=%"PRIu64" selected=%"PRIu64" page=%zu\n",(int)event.key,focus,picker.selected,picker.page);
+                dirty=1;break;
+            }
+            REQUIRE(nx_context_queue_event(ctx,&event)==NX_OK);queued_prefix=1;dirty=1;
         }while(available);
-        size_t routed=0;REQUIRE(nx_window_route_events(window,ctx,&routed)==NX_OK);if(routed)dirty=1;
+        /* route_events also transfers the remaining native queue. Calling it
+           at a command boundary would bypass the dispatcher above. Route
+           assistive requests only once that native queue is actually empty. */
+        if(!draining) {
+            size_t routed=0;REQUIRE(nx_window_route_events(window,ctx,&routed)==NX_OK);if(routed)dirty=1;
+        }
         size_t composition_bytes=0;int32_t begin=0,end=0;
         nx_result composition_status=nx_window_get_ime_preedit(window,NULL,0,&composition_bytes,&begin,&end);
         REQUIRE(composition_status==NX_OK||composition_status==NX_ERROR_UNSUPPORTED);

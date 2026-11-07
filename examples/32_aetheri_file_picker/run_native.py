@@ -14,10 +14,11 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.pending_cancel:a.cancel=True
     if a.recovery and (a.cancel or a.maximum):p.error('Recovery has its own complete initial/child-overflow workflow')
+    if a.mixed and (a.recovery or a.cancel):p.error('Mixed input is a separate selection workflow')
     if os.getuid()==0:p.error('Run as an unprivileged private test owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
@@ -46,7 +47,7 @@ def main():
     if a.pending_cancel:
         gate_read,gate_write=os.pipe2(os.O_CLOEXEC);env['FP_TEST_REFRESH_GATE']=str(gate_read)
     result=dict(status='failed',inputs={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items()},checks=checks,images=images,
-                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery')})
+                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed')})
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def start(command,name,pass_fds=(),interactive=False):
         stream=(work/(name+'.log')).open('xb');streams.append(stream)
@@ -62,6 +63,20 @@ def main():
         left.sendall(command.encode('ascii'))
         if left.recv(64)!=b'OK':raise RuntimeError('Rejected compositor command: '+command)
     def key(code):event(f'K {code} 1');event(f'K {code} 0')
+    def burst(commands):
+        before=view().get('keys',0);os.kill(host.pid,signal.SIGSTOP)
+        def stopped():
+            state=Path(f'/proc/{host.pid}/status').read_text()
+            return re.search(r'^State:\s+T\b',state,re.M) is not None
+        wait(stopped,'test-owned host stopped')
+        try:
+            for command in commands:event(command)
+            if not stopped():raise RuntimeError('Host resumed during input burst')
+        finally:os.kill(host.pid,signal.SIGCONT)
+        expected_keys=sum(command.startswith('K ') for command in commands)
+        wait(lambda:view().get('keys',0)>=before+expected_keys,'published complete input burst')
+        result.setdefault('bursts',[]).append(dict(commands=commands,keys_before=before,after=view(),host_stopped_during_submission=True))
+    def key_commands(*codes):return [f'K {code} {down}' for code in codes for down in (1,0)]
     def view():
         frames=re.findall(r'^VIEW (.+)$',log('host'),re.M)
         return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',frames[-1])} if frames else {}
@@ -109,12 +124,25 @@ def main():
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected native presentation dependency')
         peer_args=[paths['client'],host.pid]+(['--german'] if a.german else [])
-        if not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
+        if a.mixed:peer_args+=(['--maximum'] if a.maximum else [])
+        elif not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
         peer=start(peer_args,'client',interactive=True)
         error_pages=0
-        for step in range(7 if a.recovery else 9):
+        for step in range(5 if a.mixed else 7 if a.recovery else 9):
             wait(lambda:f'STEP {step}\n' in log('client'),f'peer step {step}')
-            if a.recovery:
+            if a.mixed:
+                if step==0:burst(key_commands(15,102))
+                if step==1:burst(['K 42 1',*key_commands(15),'K 42 0',*key_commands(107)])
+                if step==2:
+                    match=re.search(r'^POINTER (\d+) (\d+)$',log('client'),re.M)
+                    if not match:raise RuntimeError('Missing peer pointer location')
+                    x,y=map(int,match.groups());burst([f'M {40+x} {40+y}','B 272 1','B 272 0',*key_commands(102)])
+                if step==3:burst(key_commands(107,102))
+                if step==4:
+                    start=len(log('host'));burst(key_commands(102,108,107))
+                    selected=re.findall(r'^ROW_KEY .*selected=(\d+) page=',log('host')[start:],re.M)
+                    if list(map(int,selected))!=[1000,1001,1000+file_count]:raise RuntimeError('Row commands did not preserve their input order')
+            elif a.recovery:
                 if step==0:capture('initial-error')
                 if step==0:(files/'root-4094').unlink()
                 if step==2:
@@ -143,7 +171,7 @@ def main():
                 peer.stdin.write(b'READ_ERROR\n');peer.stdin.flush()
             wait(lambda:f'ACK {step}\n' in log('client'),f'native check {step}',allowed=peer)
             checks.append(dict(step=step))
-            if step in ((0,1,4) if a.recovery else (0,4,7)):capture('step-'+str(step))
+            if step in ((0,1,4) if a.recovery or a.mixed else (0,4,7)):capture('step-'+str(step))
             if a.recovery and step==3:
                 original_size=(view()['width'],view()['height']);original_state=view()
                 for phase,size in [('TINY',(64,64)),('SMALL',(240,96)),('RESTORE',original_size)]:
@@ -155,20 +183,29 @@ def main():
                     if any(current.get(k)!=original_state.get(k) for k in ('state','depth','count','page','selected')):raise RuntimeError('Window size changed model or selection')
                     capture('resize-'+phase.lower())
         expected.add(peer);wait(lambda:peer.poll() is not None,'peer exit',allowed=peer)
-        marker='PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
+        marker='PICKER_NATIVE_QUEUED_TAB_POINTER_TEXT_AND_ROW_COMMAND_ORDER_VERIFIED' if a.mixed else 'PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
         if peer.returncode or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.pending_cancel:wait(lambda:'ORIGINAL_REFRESH_HELD\n' in log('host'),'held original refresh')
-        key(28)
+        if a.mixed:
+            # This burst intentionally closes the host, so it has no final VIEW.
+            os.kill(host.pid,signal.SIGSTOP)
+            wait(lambda:re.search(r'^State:\s+T\b',Path(f'/proc/{host.pid}/status').read_text(),re.M),'host stopped for final selection')
+            commands=key_commands(102,108,28)
+            try:
+                for command in commands:event(command)
+            finally:os.kill(host.pid,signal.SIGCONT)
+            result.setdefault('bursts',[]).append(dict(commands=commands,host_stopped_during_submission=True,closes=True))
+        else:key(28)
         if a.pending_cancel:
             wait(lambda:'GUI_GONE\n' in log('host'),'GUI retirement before original I/O completion')
             if host.poll() is not None:raise RuntimeError('Worker ended before its original read was released')
             os.write(gate_write,b'R');os.close(gate_write);gate_write=None
         wait(lambda:host.poll() is not None,'selected or cancelled close',allowed=host);expected.add(host)
-        requests=9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
+        requests=2 if a.mixed else 9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
         if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
         if not a.cancel:
-            leaf='item-4095' if a.recovery else f'snapshot-{file_count-1:04d}.txt';selected=((folder if a.recovery else files)/leaf).stat()
+            leaf='snapshot-0000.txt' if a.mixed else 'item-4095' if a.recovery else f'snapshot-{file_count-1:04d}.txt';selected=((folder if a.recovery else files)/leaf).stat()
             wanted=f'PICKED leaf_hex={leaf.encode().hex()} device={selected.st_dev} inode={selected.st_ino}\n'
             if wanted not in log('host'):raise RuntimeError('Wrong ordinary-file witness')
         for path in work.glob('*.log'):
@@ -179,6 +216,7 @@ def main():
         for name,child in reversed(children):
             forced=False
             if child.poll() is None:
+                if a.mixed and name=='host':os.kill(child.pid,signal.SIGCONT)
                 os.killpg(child.pid,signal.SIGTERM)
                 try:child.wait(timeout=3)
                 except subprocess.TimeoutExpired:forced=True;os.killpg(child.pid,signal.SIGKILL);child.wait(timeout=3)
