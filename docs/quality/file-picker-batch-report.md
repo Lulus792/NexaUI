@@ -6,6 +6,10 @@ Installed NexaUI remains `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`, version
 live Aetheri or pin changes. This advances the worker foundation for a complete
 multi-picker; **the visible picker still selects one file or folder**.
 
+The subsequent [multi-picker composition](file-picker-multiple-report.md) adds
+scoped visible/native owner evidence. The worker-only claims and open UI scope
+below describe this earlier report's original source.
+
 ## Contract and ownership
 
 The existing worker accepts `FP_PICK_MANY` with a copied 4,096-bit set of

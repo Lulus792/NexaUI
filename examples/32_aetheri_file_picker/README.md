@@ -135,7 +135,7 @@ Query byte lengths preserve original validation, including interior NULs and
 invalid UTF-8; no prefix truncation is treated as success.
 
 Replies are immutable in-process observations, owned until message disposal.
-Only `fp_reply_take` mutates their FD ownership: it transfers the original
+Only the take helpers mutate their FD ownership. `fp_reply_take` transfers the original
 directory/O_PATH regular-file witness plus literal leaf exactly once. Otherwise
 message disposal closes the witnesses, including abandoned queued selections.
 The caller independently decides what to do with those ordinary-user FDs; the
@@ -182,6 +182,10 @@ pages retain at most 16 name layouts; Previous/Next keep the complete set owned,
 retire native publication before rebinding and restore a valid page-control
 focus. PageUp/PageDown read the result body while fixed Close stays available.
 This does not authorize an operation on those files or make them durable IDs.
+The optional native `--owner --owner-multiple` workflow uses the independent
+`multiple_atspi.c` peer; add `--maximum --german --large --small --contrast` for
+the full-entry, German 200% configuration. Its Cache.GetItems budget warning is
+recorded in the [scope report](../../docs/quality/file-picker-multiple-report.md).
 
 Use the borrowed `fp_worker_wake_fd` with the existing `nx_window_poll_with_fd`.
 Do not read or close it directly. Drain `fp_worker_receive` until ticket zero;

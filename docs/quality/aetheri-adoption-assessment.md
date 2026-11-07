@@ -1,5 +1,23 @@
 # Aetheri adoption: initial source assessment
 
+## Logical multiple-file owner composition (2026-11-07)
+
+Consumer `c04d94292df0ee9c3afa7a1b6ae50c61a05fb12b` binds the existing public
+logical selection model to complete original-file membership, including off-page
+items. Keyboard/range/Ctrl-pointer/native bulk selection feeds the original
+worker's atomic set; the owner retains and reads complete result pages, preserves
+them through Cancel and closes all replaced descriptors. Three strict installed
+profiles pass 4/4 CTests. Four ordinary multi-owner cases, one explicitly labeled
+post-release modifier event variant and five current single-owner/IME/reading
+regressions pass natively. Two core and three native targeted failures detect
+missing projection, FD release and the bounded modifier-event variant; the ordinary
+modifier mutant passes and is retained as a control. See the
+[multi-picker report](file-picker-multiple-report.md) for exact source/artifacts,
+preliminary outcomes and native Cache.GetItems budget warnings. Save, standalone
+native acceptance, parenting/active OS close, broader multi-mode faults and real
+services/adoption remain open, as does the earlier peer heap incident. SDK API,
+version, live Aetheri and pins are unchanged; the full catalogue remains active.
+
 ## Atomic original-file batch ownership (2026-11-07)
 
 Consumer `44a185532bd9ab02895a465b6c67f23dbb08e591` adds a copied 4,096-bit
