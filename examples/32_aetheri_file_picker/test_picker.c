@@ -25,6 +25,11 @@ static int frame(fp_picker *p,nx_context *ctx,float width,float height,fp_intent
     }
     return 0;
 }
+static int named(nx_context *ctx,uint64_t id,const char *expected) {
+    uint32_t node;nx_semantic_view view;
+    return nx_semantics_find(ctx,id,&node)==NX_OK&&nx_semantics_get(ctx,node,&view)==NX_OK&&
+        view.name.length==strlen(expected)&&!memcmp(view.name.data,expected,view.name.length);
+}
 int main(int argc,char **argv) {
     CHECK(argc==3);FILE *f=fopen(argv[1],"rb");CHECK(f&&!fseek(f,0,SEEK_END));long length=ftell(f);CHECK(length>0&&!fseek(f,0,SEEK_SET));
     unsigned char *bytes=malloc((size_t)length);CHECK(bytes&&fread(bytes,1,(size_t)length,f)==(size_t)length&&!fclose(f));
@@ -33,6 +38,7 @@ int main(int argc,char **argv) {
     int root=open(argv[2],O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(root>=0&&fp_worker_start(root,&worker)==NX_OK);close(root);
     CHECK(fp_picker_init(&p,worker,fonts,77)==NX_OK&&nx_context_create(NULL,&ctx)==NX_OK);
     fp_intent intent={0};CHECK(frame(&p,ctx,720,580,&intent)&&!intent.requested);
+    CHECK(named(ctx,FP_COUNTS,"Entries not available"));
     fp_command read={0};read.operation=FP_READ;CHECK(fp_picker_request(&p,&read)==NX_OK);
     nx_sim_message m={0};CHECK(receive(worker,&m));uint64_t ticket=m.ticket;m.ticket=ticket+1;CHECK(!fp_picker_observe(&p,&m)&&p.busy);m.ticket=ticket;
     fp_reply *r=fp_reply_get(&m);CHECK(r&&r->count==41);r->key.view=78;CHECK(!fp_picker_observe(&p,&m)&&p.busy);r->key.view=77;
@@ -73,6 +79,13 @@ int main(int argc,char **argv) {
     intent=(fp_intent){0};CHECK(frame(&p,ctx,360,300,&intent));
     CHECK(fp_picker_request(&p,&clear)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&p,&m));nx_sim_message_dispose(&m);
     CHECK(p.error==NX_OK&&fp_picker_snapshot(&p)->count==42);
+    /* A successful filter with no matches has observed numeric counts. */
+    clear=(fp_command){0};clear.operation=FP_FILTER;memcpy(clear.query,"no-such-entry",13);clear.query_bytes=13;
+    CHECK(fp_picker_request(&p,&clear)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&p,&m));nx_sim_message_dispose(&m);
+    intent=(fp_intent){0};CHECK(frame(&p,ctx,360,300,&intent));
+    CHECK(named(ctx,FP_COUNTS,"0–0 von 0 Einträgen (42 insgesamt)")&&named(ctx,FP_STATUS,"Keine passenden Einträge"));
+    clear=(fp_command){0};clear.operation=FP_FILTER;
+    CHECK(fp_picker_request(&p,&clear)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&p,&m));nx_sim_message_dispose(&m);
     /* Retry must repeat the failed original Enter, not refresh its retained parent. */
     directory=open(argv[2],O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(directory>=0&&mkdirat(directory,"large",0700)==0);
     int large=openat(directory,"large",O_RDONLY|O_DIRECTORY|O_CLOEXEC);close(directory);CHECK(large>=0);
@@ -113,12 +126,31 @@ int main(int argc,char **argv) {
     clear=(fp_command){0};clear.operation=FP_READ;CHECK(fp_picker_request(&q,&clear)==NX_OK&&receive(initial,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
     CHECK(q.retryable&&fp_picker_snapshot(&q)->state==0&&fp_picker_snapshot(&q)->result==AE_FILES_LIMIT);
     intent=(fp_intent){0};CHECK(frame(&q,initial_ctx,720,580,&intent));
+    CHECK(named(initial_ctx,FP_COUNTS,"Entries not available"));
     const char *initial_error="Too many entries in this folder (maximum 4,096). No folder was loaded.";
     CHECK(nx_semantics_find(initial_ctx,FP_STATUS,&node)==NX_OK&&nx_semantics_get(initial_ctx,node,&after)==NX_OK&&after.name.length==strlen(initial_error)&&!memcmp(after.name.data,initial_error,after.name.length));
     CHECK(nx_semantics_request_action(initial_ctx,FP_RETRY,NX_ACTION_PRESS)==NX_OK&&frame(&q,initial_ctx,720,580,&intent)&&intent.command.operation==FP_READ&&unlinkat(large,"item-4096",0)==0);
     CHECK(fp_picker_request(&q,&intent.command)==NX_OK&&receive(initial,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
     CHECK(fp_picker_snapshot(&q)->count==4096&&fp_picker_snapshot(&q)->state==1&&!q.retryable);
+    CHECK(frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"1–16 of 4096 entries (4096 total)"));
     nx_context_destroy(initial_ctx);fp_picker_destroy(&q);CHECK(fp_worker_destroy(&initial)==NX_OK);
+    /* A successfully read empty directory is different from unknown data,
+       including while Refresh is pending and after its failure. */
+    CHECK(mkdirat(large,"empty",0700)==0);int empty=openat(large,"empty",O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(empty>=0);
+    CHECK(fp_worker_start(empty,&initial)==NX_OK&&fp_picker_init(&q,initial,fonts,89)==NX_OK&&nx_context_create(NULL,&initial_ctx)==NX_OK);
+    q.german=1;intent=(fp_intent){0};CHECK(frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"Einträge nicht verfügbar"));
+    clear=(fp_command){0};clear.operation=FP_READ;CHECK(fp_picker_request(&q,&clear)==NX_OK);
+    CHECK(frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"Einträge nicht verfügbar"));
+    CHECK(receive(initial,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
+    CHECK(frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"0–0 von 0 Einträgen (0 insgesamt)")&&named(initial_ctx,FP_STATUS,"Keine passenden Einträge"));
+    for(unsigned i=0;i<=AE_FILES_ENTRIES;++i){char leaf[32];snprintf(leaf,sizeof leaf,"item-%04u",i);special=openat(empty,leaf,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC,0600);CHECK(special>=0);close(special);}
+    clear.operation=FP_REFRESH;CHECK(fp_picker_request(&q,&clear)==NX_OK);
+    CHECK(frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"0–0 von 0 Einträgen (0 insgesamt)"));
+    CHECK(receive(initial,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
+    CHECK(fp_picker_snapshot(&q)->result==AE_FILES_LIMIT&&fp_picker_snapshot(&q)->state>0&&frame(&q,initial_ctx,720,580,&intent)&&named(initial_ctx,FP_COUNTS,"0–0 von 0 Einträgen (0 insgesamt)"));
+    nx_context_destroy(initial_ctx);fp_picker_destroy(&q);CHECK(fp_worker_destroy(&initial)==NX_OK);
+    for(unsigned i=0;i<=AE_FILES_ENTRIES;++i){char leaf[32];snprintf(leaf,sizeof leaf,"item-%04u",i);CHECK(unlinkat(empty,leaf,0)==0);}
+    close(empty);CHECK(unlinkat(large,"empty",AT_REMOVEDIR)==0);
     /* The path limit is not a transient entry-count failure; do not offer an
        unchanged Enter as Retry at the original 64-level boundary. */
     CHECK(unlinkat(large,"item-4095",0)==0);int tree=fcntl(large,F_DUPFD_CLOEXEC,4);CHECK(tree>=0);
@@ -135,5 +167,6 @@ int main(int argc,char **argv) {
     nx_context_destroy(ctx);fp_picker_destroy(&p);CHECK(fp_worker_destroy(&worker)==NX_OK);
     nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);
     puts("PICKER_RETRY_ORIGINAL_ENTER_INITIAL_READ_AND_COMPACT_SIZE_MATRIX_VERIFIED");
+    puts("PICKER_UNKNOWN_FILTERED_EMPTY_AND_RETAINED_EMPTY_COUNTS_VERIFIED");
     puts("PICKER_CORRELATION_PAGING_FILTER_AND_REALFONT_REFLOW_VERIFIED");return 0;
 }

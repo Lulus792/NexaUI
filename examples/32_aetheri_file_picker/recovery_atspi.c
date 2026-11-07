@@ -49,8 +49,22 @@ int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     node=wait_for(desktop,pid,&app,initial_failure(),ATSPI_ROLE_STATUS_BAR);CHECK(node&&state(node,ATSPI_STATE_INVALID_ENTRY));g_object_unref(node);node=NULL;
     node=lookup(app,name("No matching entries","Keine passenden Einträge"),ATSPI_ROLE_STATUS_BAR);CHECK(!node&&!scan_failed);
+    node=lookup(app,name("Entries not available","Einträge nicht verfügbar"),ATSPI_ROLE_LABEL);CHECK(node);g_object_unref(node);node=NULL;
+    node=lookup(app,german?"0–0 von 0 Einträgen (0 insgesamt)":"0–0 of 0 entries (0 total)",ATSPI_ROLE_LABEL);CHECK(!node&&!scan_failed);
     retry=lookup(app,name("Retry","Erneut versuchen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(retry&&focus(retry));
-    CHECK(step(0));node=wait_for(desktop,pid,&app,"large",ATSPI_ROLE_LIST_ITEM);CHECK(node&&retired(retry)&&!action(retry,"click")&&focus(node));g_object_unref(node);node=NULL;puts("ACK 0");
+    CHECK(step(0));node=wait_for(desktop,pid,&app,"large",ATSPI_ROLE_LIST_ITEM);CHECK(node&&retired(retry)&&!action(retry,"click"));g_object_unref(node);node=NULL;
+    node=lookup(app,name("Entries not available","Einträge nicht verfügbar"),ATSPI_ROLE_LABEL);CHECK(!node&&!scan_failed);
+    /* The real model may also publish an empty filtered view; retain its total. */
+    field=lookup(app,name("Name filter","Namensfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&edit(field,"no-such-entry"));
+    double edited_until=now()+3;while(now()<edited_until&&!text_is(field,"no-such-entry"))pump();CHECK(text_is(field,"no-such-entry"));
+    node=lookup(app,name("Apply filter","Filter anwenden"),ATSPI_ROLE_PUSH_BUTTON);CHECK(node&&action(node,"click"));g_object_unref(node);node=NULL;
+    node=wait_for(desktop,pid,&app,name("No matching entries","Keine passenden Einträge"),ATSPI_ROLE_STATUS_BAR);CHECK(node);g_object_unref(node);node=NULL;
+    node=lookup(app,german?"0–0 von 0 Einträgen (4096 insgesamt)":"0–0 of 0 entries (4096 total)",ATSPI_ROLE_LABEL);CHECK(node);g_object_unref(node);node=NULL;
+    CHECK(retired(field));g_object_unref(field);field=lookup(app,name("Name filter","Namensfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&edit(field,""));
+    edited_until=now()+3;while(now()<edited_until&&!text_is(field,""))pump();CHECK(text_is(field,""));
+    node=lookup(app,name("Apply filter","Filter anwenden"),ATSPI_ROLE_PUSH_BUTTON);CHECK(node&&action(node,"click"));g_object_unref(node);node=NULL;
+    node=wait_for(desktop,pid,&app,"large",ATSPI_ROLE_LIST_ITEM);CHECK(node&&focus(node));g_object_unref(node);node=NULL;g_object_unref(field);field=NULL;
+    puts("PICKER_NATIVE_UNKNOWN_AND_FILTERED_EMPTY_COUNTS_VERIFIED");puts("ACK 0");
     CHECK(step(1));node=wait_for(desktop,pid,&app,retained_failure(),ATSPI_ROLE_STATUS_BAR);CHECK(node&&state(node,ATSPI_STATE_INVALID_ENTRY));g_object_unref(node);node=NULL;
     node=lookup(app,german?"1–16 von 4096 Einträgen (4096 insgesamt)":"1–16 of 4096 entries (4096 total)",ATSPI_ROLE_LABEL);CHECK(node);g_object_unref(node);node=NULL;
     old_retry=retry;retry=lookup(app,name("Retry","Erneut versuchen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(retry&&focus(retry)&&retired(old_retry));

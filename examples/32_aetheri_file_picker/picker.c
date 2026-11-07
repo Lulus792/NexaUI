@@ -8,6 +8,17 @@ static nx_utf8_span span(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 static int valid_query(nx_utf8_span text,void *user) { (void)user;return text.length<=AE_FILES_QUERY; }
 static const char *word(const fp_picker *p, const char *en, const char *de) { return p->german ? de : en; }
 const fp_reply *fp_picker_snapshot(const fp_picker *p) { return p ? fp_reply_get(&p->observation) : NULL; }
+static void format_counts(const fp_picker *p, char *text, size_t capacity) {
+    const fp_reply *r = fp_picker_snapshot(p);
+    if (!r || !r->state) {
+        (void)snprintf(text, capacity, "%s", word(p, "Entries not available", "Einträge nicht verfügbar"));
+        return;
+    }
+    size_t first = p->page * FP_PAGE_ROWS;
+    size_t end = first + FP_PAGE_ROWS < r->count ? first + FP_PAGE_ROWS : r->count;
+    (void)snprintf(text, capacity, p->german ? "%zu–%zu von %zu Einträgen (%zu insgesamt)" : "%zu–%zu of %zu entries (%zu total)",
+        r->count ? first + 1 : 0, end, r->count, r->total);
+}
 static void clear_layouts(fp_picker *p) {
     for (size_t i = 0; i < 16; ++i) { nx_text_layout_destroy(p->labels[i]); p->labels[i] = NULL; }
     for (size_t i = 0; i <= AE_FILES_DEPTH; ++i) { nx_text_layout_destroy(p->crumbs[i]); p->crumbs[i] = NULL; }
@@ -132,8 +143,7 @@ static nx_result layouts(fp_picker *p, double width) {
     clear_layouts(p);
     char counts[96]; size_t first = p->page * FP_PAGE_ROWS;
     size_t end = r && first + FP_PAGE_ROWS < r->count ? first + FP_PAGE_ROWS : r ? r->count : 0;
-    (void)snprintf(counts, sizeof counts, p->german ? "%zu–%zu von %zu Einträgen (%zu insgesamt)" : "%zu–%zu of %zu entries (%zu total)",
-        r && r->count ? first + 1 : 0, end, r ? r->count : 0, r ? r->total : 0);
+    format_counts(p, counts, sizeof counts);
     const char *text[16] = {
         word(p,"Root","Wurzelordner"), word(p,"Up","Übergeordneter Ordner"),
         word(p,"Refresh","Aktualisieren"), word(p,"Show hidden","Verborgene anzeigen"),
@@ -374,7 +384,7 @@ nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float w
         }
     }
     y+=page_h+8;float counts_h=height(p,p->labels[9]);
-    char counts[96];(void)snprintf(counts,sizeof counts,p->german?"%zu–%zu von %zu Einträgen (%zu insgesamt)":"%zu–%zu of %zu entries (%zu total)",r&&r->count?first+1:0,end,r?r->count:0,r?r->total:0);
+    char counts[96];format_counts(p,counts,sizeof counts);
     TRY(label(ctx,FP_COUNTS,FP_SCROLL,(nx_rect){x,y,w,counts_h},p->labels[9],counts,0,NX_ROLE_TEXT));y+=counts_h+4;
     nx_semantic_desc list={0};list.id=FP_LIST;list.parent_id=FP_SCROLL;list.role=NX_ROLE_LIST;list.name=span(word(p,"Entries on this page","Einträge dieser Seite"));list.bounds=(nx_rect){x,y,w,rows_height};TRY(nx_semantics_add(ctx,&list,NULL));
     for(size_t i=first;i<end;++i) {

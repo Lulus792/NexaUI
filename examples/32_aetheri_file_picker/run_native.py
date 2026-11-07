@@ -164,7 +164,7 @@ def main():
             if host.poll() is not None:raise RuntimeError('Worker ended before its original read was released')
             os.write(gate_write,b'R');os.close(gate_write);gate_write=None
         wait(lambda:host.poll() is not None,'selected or cancelled close',allowed=host);expected.add(host)
-        requests=7 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
+        requests=9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
         if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
         if not a.cancel:

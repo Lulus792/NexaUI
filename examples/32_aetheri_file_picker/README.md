@@ -110,6 +110,9 @@ it drains notifications **before** taking a completion to avoid losing a wakeup
 between an empty-queue observation and the next native poll. Dispose every taken
 message, including retired-view messages. A failed root read has an explicit
 original error and zero revision/state; it is not confirmed empty success.
+The view says “Entries not available” until an observation has been admitted.
+Successful empty views show numeric zeros, with the original total preserved
+when a filter has no matches. Failed operations retain prior observed counts.
 
 Stop rejects new requests and cancels accepted queued work. Running original I/O
 may finish; GUI/context retirement can precede it because worker jobs contain no
@@ -150,6 +153,7 @@ profiles and sanitizers do not replace installed input methods or human review.
 The same native runner accepts `--recovery` with `recovery_atspi.c` as its
 independent peer. It starts with 4,097 root entries, retries after the real
 filesystem reaches 4,096, repeats a failed Enter into another overfull folder,
+and distinguishes unavailable counts from a successful filter with no matches,
 reads the retained error using PageUp, and navigates to the last child. Real
 pointer drags resize through 64x64, 240x96 and back, checking preserved draft,
 selection/focus and retired controls. It then replaces the selected inode,
