@@ -1,4 +1,5 @@
 #include "nexaui/nexaui.h"
+#include "tree_navigation_fixture.h"
 
 #include <stdio.h>
 
@@ -7,50 +8,9 @@
     return 1; \
 } } while (0)
 
-typedef struct model {
-    int root_open, child_open, child_disabled, child_missing;
-    uint64_t selected, other_selected;
-} model;
-
-static int item(nx_context *ctx, uint64_t id, uint64_t parent, float y,
-                 int *expanded, int disabled, uint64_t *selected) {
-    nx_tree_item_desc d = {0};
-    d.control.id = id;
-    d.control.parent_id = parent;
-    d.control.name = (nx_utf8_span){"Item", 4};
-    d.control.bounds = (nx_rect){0, y, 120, 24};
-    d.control.disabled = disabled;
-    if (expanded) {
-        d.has_children = 1;
-        d.expander_id = id + 1;
-        d.expander_bounds = (nx_rect){0, y, 20, 24};
-    }
-    nx_interaction_state state;
-    return nx_tree_item(ctx, &d, expanded, selected, &state) == NX_OK;
-}
-
 static int frame(nx_context *ctx, model *m) {
     if (nx_begin_frame(ctx, 240, 180, 0) != NX_OK) return 0;
-    nx_container_desc tree = {0};
-    tree.id = 10;
-    tree.name = (nx_utf8_span){"Hierarchy", 9};
-    tree.bounds = (nx_rect){0, 0, 120, 120};
-    if (nx_tree(ctx, &tree) != NX_OK ||
-        !item(ctx, 11, 10, 0, &m->root_open, 0, &m->selected)) return 0;
-    if (m->root_open) {
-        if (!item(ctx, 13, 11, 24, &m->child_open, m->child_disabled, &m->selected)) return 0;
-        if (m->child_open && !m->child_missing &&
-            !item(ctx, 15, 13, 48, NULL, 0, &m->selected)) return 0;
-        if (!item(ctx, 16, 11, 72, NULL, 0, &m->selected)) return 0;
-    }
-    if (!item(ctx, 17, 10, 96, NULL, 0, &m->selected)) return 0;
-    tree.id = 30;
-    tree.bounds.y = 120;
-    tree.bounds.height = 48;
-    if (nx_tree(ctx, &tree) != NX_OK ||
-        !item(ctx, 31, 30, 120, NULL, 0, &m->other_selected) ||
-        !item(ctx, 32, 30, 144, NULL, 0, &m->other_selected)) return 0;
-    return nx_end_frame(ctx) == NX_OK;
+    return tree_navigation_rows(ctx, m, 0) && nx_end_frame(ctx) == NX_OK;
 }
 
 static int key(nx_context *ctx, nx_key code, int consumed, int repeat) {
@@ -73,7 +33,7 @@ static int focused(nx_context *ctx, uint64_t id) {
 static int test_navigation(void) {
     nx_context *ctx = NULL;
     CHECK(nx_context_create(NULL, &ctx) == NX_OK);
-    model m = {1, 1, 0, 0, 15, 31};
+    model m = {1, 1, 0, 0, 15, 31, NULL};
     CHECK(frame(ctx, &m));
     CHECK(nx_focus_set(ctx, 11) == NX_OK);
     const struct { nx_key key; uint64_t focus; int root, child; } steps[] = {
@@ -113,7 +73,7 @@ static int test_navigation(void) {
 static int test_disabled_and_unloaded(void) {
     nx_context *ctx = NULL;
     CHECK(nx_context_create(NULL, &ctx) == NX_OK);
-    model m = {1, 1, 1, 0, 15, 31};
+    model m = {1, 1, 1, 0, 15, 31, NULL};
     CHECK(frame(ctx, &m) && nx_focus_set(ctx, 11) == NX_OK);
     CHECK(key(ctx, NX_KEY_DOWN, 0, 0) && frame(ctx, &m) && focused(ctx, 16));
     CHECK(key(ctx, NX_KEY_LEFT, 0, 0) && frame(ctx, &m) && focused(ctx, 11));
@@ -139,7 +99,7 @@ static int test_batches(void) {
     for (unsigned scenario = 0; scenario < 5; ++scenario) {
         nx_context *ctx = NULL;
         CHECK(nx_context_create(NULL, &ctx) == NX_OK);
-        model m = {1, 1, 0, 0, 15, 31};
+        model m = {1, 1, 0, 0, 15, 31, NULL};
         CHECK(frame(ctx, &m) && nx_focus_set(ctx, scenario == 4 ? 12 : 11) == NX_OK);
         uint64_t expected = 11;
         if (scenario == 0) {
