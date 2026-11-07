@@ -1,0 +1,1864 @@
+{
+  "source_revision": "a7a920ebf298c03851b1c78a4af974e8c91337a7",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "scope": "Bounded copied selected-app worker jobs with real original reads and installed SDK channel/context lifecycle. No native window, rendering, IME, clipboard, AT-SPI or complete inventory acceptance.",
+  "native_gui_tests": 0,
+  "new_sdk_core_test_runs": 0,
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": {
+        "passed": 3,
+        "total": 3,
+        "log": {
+          "path": "software-worker-release-ctest.log",
+          "size": 476,
+          "sha256": "34cf235bd951700e1a581bdac1cb5a0ceb6b474487851e095a681b2e2655003d"
+        }
+      },
+      "worker_cases": {
+        "cases": [
+          {
+            "root_schema": 2,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 3,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 4,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 5,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 6,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 7,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 8,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 9,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 10,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/worker-test/run-usjacqgs/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "held_original_read_transactions_per_schema": 2,
+        "gui_context_retirement": true,
+        "native_window_retirement": false
+      },
+      "worker_binary": {
+        "path": "software-worker-release/software_worker_test",
+        "size": 1368808,
+        "sha256": "f44b7cebeeb31baf250c915a3ad1dff85d8b0b8164871e342e8eb3b4009d8a33"
+      },
+      "model_binary": {
+        "path": "software-worker-release/software_model_test",
+        "size": 574696,
+        "sha256": "5d75c4f070e96f762b09cf75c859c7f1765fb6f31f29d90f823b6c9b6d721d0c"
+      },
+      "worker_library": {
+        "path": "software-worker-release/libsoftware_worker.a",
+        "size": 10098,
+        "sha256": "9acbd5ebdad199b7f51971fbf9c7d76d9011f54eccc5ab73d4fb2069b0bc6711"
+      },
+      "model_library": {
+        "path": "software-worker-release/libsoftware_model.a",
+        "size": 12960,
+        "sha256": "34772373179b4e93dd48df7f53e5d6d491029cd3832777881fd6e81214d467ec"
+      },
+      "raw_test_log": {
+        "path": "software-worker-release/Testing/Temporary/LastTest.log",
+        "size": 3413,
+        "sha256": "faff1082fd1920b14e760755ff382e255af5d8089ad56ef67f6a8ccd1bce56ca"
+      },
+      "original_result": {
+        "path": "software-worker-release/worker-test/run-usjacqgs/worker-result.json",
+        "size": 7663,
+        "sha256": "df68d83fd3e74c4910ff582c39b6c3891fd5202b372d1975334f56f9f425573d"
+      },
+      "model_regression_cases": {
+        "cases": [
+          {
+            "name": "bootstrap",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "create",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "bootstrap.log"
+          },
+          {
+            "name": "root-v2",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v3",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v4",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v5",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v6",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v7",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v8",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v9",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10-explicit-runtime-replacement",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_model_test",
+              "runtime",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/original-test/run-1cf7_jl9/user"
+            ],
+            "exit": 0,
+            "log": "root-v10-explicit-runtime-replacement.log",
+            "explicit_original_backend_mutation": true
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "selected_targets": 5,
+        "observed_eligible": 2,
+        "not_observed_eligible": 3,
+        "runtime_replacements": 1
+      },
+      "generated_compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model.dir/software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/CMakeFiles/software_model.dir/software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model_test.dir/test_software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/CMakeFiles/software_model_test.dir/test_software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker.dir/software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/CMakeFiles/software_worker.dir/software_worker.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker_test.dir/test_software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/CMakeFiles/software_worker_test.dir/test_software_worker.c.o"
+        }
+      ],
+      "build_commands": [
+        {
+          "profile": "release",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          ],
+          "exit": 0,
+          "log": "software-worker-release-configure.log"
+        },
+        {
+          "profile": "release",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+            "--target",
+            "software_model_test",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "software-worker-release-build.log"
+        },
+        {
+          "profile": "release",
+          "phase": "ctest",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "software-worker-release-ctest.log"
+        }
+      ],
+      "selected_sdk_input": {
+        "path": "sdk-release-prefix/lib64/libnexaui.a",
+        "size": 1184220,
+        "sha256": "815ccf9b7f2299402fd5d65b6d5ad6ca474c6935c6c94849560257a153662493"
+      },
+      "linkage": {
+        "readelf": {
+          "command": [
+            "readelf",
+            "-d",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-release/readelf.log",
+            "size": 1702,
+            "sha256": "4e35ee501989dc22667d78fb5a264e594a979cf414a90a57187c7c0535291a69"
+          },
+          "output": "\nDynamic section at offset 0x13cda8 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libcrypto.so.3]\n 0x0000000000000001 (NEEDED)             Shared library: [libsqlite3.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x000000000000000c (INIT)               0x400374\n 0x000000000000000d (FINI)               0x4b1968\n 0x0000000000000019 (INIT_ARRAY)         0x53da70\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x53da78\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x4b2020\n 0x0000000000000005 (STRTAB)             0x4b30a8\n 0x0000000000000006 (SYMTAB)             0x4b2088\n 0x000000000000000a (STRSZ)              2715 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x53dfe8\n 0x0000000000000002 (PLTRELSZ)           3720 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4b3f70\n 0x0000000000000007 (RELA)               0x4b3df0\n 0x0000000000000008 (RELASZ)             384 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000006ffffffe (VERNEED)            0x4b3ca0\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x4b3b44\n 0x0000000000000000 (NULL)               0x0\n"
+        },
+        "ldd": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-release/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-release/ldd.log",
+            "size": 572,
+            "sha256": "3374800329ad4dde018a553b18873973588bb6d8e230ae71e3a4dc048e36b191"
+          },
+          "output": "\tlinux-vdso.so.1 (0x00007f4db3c76000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f4db3c58000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f4db3b41000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f4db3ae2000)\n\tlibcrypto.so.3 => /lib64/libcrypto.so.3 (0x00007f4db3400000)\n\tlibsqlite3.so.0 => /lib64/libsqlite3.so.0 (0x00007f4db3274000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f4db307b000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f4db3ad0000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f4db3c78000)\n\tlibz.so.1 => /lib64/libz.so.1 (0x00007f4db3aa6000)\n"
+        }
+      },
+      "sdk_scope": "Actual installed nx_sim_channel and nx_context create/destroy calls. Shared binary dynamic resolution recorded. No native window/rendering/platform/provider behavior is inferred."
+    },
+    {
+      "profile": "shared",
+      "ctests": {
+        "passed": 3,
+        "total": 3,
+        "log": {
+          "path": "software-worker-shared-ctest.log",
+          "size": 475,
+          "sha256": "6a7edd07b23b2220611e519081c2a81a949aee735955a52f5261c1a76f6675d3"
+        }
+      },
+      "worker_cases": {
+        "cases": [
+          {
+            "root_schema": 2,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 3,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 4,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 5,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 6,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 7,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 8,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 9,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 10,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/worker-test/run-70kb5fut/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "held_original_read_transactions_per_schema": 2,
+        "gui_context_retirement": true,
+        "native_window_retirement": false
+      },
+      "worker_binary": {
+        "path": "software-worker-shared/software_worker_test",
+        "size": 577000,
+        "sha256": "94fdd8e238abbec8bbc5e5a8561cacbb06cac3da54e96c4c2fad3ff4fa2ee3d6"
+      },
+      "model_binary": {
+        "path": "software-worker-shared/software_model_test",
+        "size": 574696,
+        "sha256": "3d559c9376617635c68c0d336933a23551ff5ee2b6f130a474d6cbb0fad1e6d4"
+      },
+      "worker_library": {
+        "path": "software-worker-shared/libsoftware_worker.a",
+        "size": 10098,
+        "sha256": "7185e5ed9ebd804f7718d54d366637656b7d74cc361c54508fb9a61de7ce287d"
+      },
+      "model_library": {
+        "path": "software-worker-shared/libsoftware_model.a",
+        "size": 12960,
+        "sha256": "091c2c54f10d1bfe6b8ad192460b1b7c1808c499c6959be1d0609f166c954525"
+      },
+      "raw_test_log": {
+        "path": "software-worker-shared/Testing/Temporary/LastTest.log",
+        "size": 3401,
+        "sha256": "1b11428bffe6030910ecf14800e5f56581d5b991f1a3d75aa19058d7f010693e"
+      },
+      "original_result": {
+        "path": "software-worker-shared/worker-test/run-70kb5fut/worker-result.json",
+        "size": 7627,
+        "sha256": "426de67706915e30c1399d95f105ad80816cc825c5db19269c71ca95466b637b"
+      },
+      "model_regression_cases": {
+        "cases": [
+          {
+            "name": "bootstrap",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "create",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "bootstrap.log"
+          },
+          {
+            "name": "root-v2",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v3",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v4",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v5",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v6",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v7",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v8",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v9",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10-explicit-runtime-replacement",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_model_test",
+              "runtime",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/original-test/run-w6w43xkn/user"
+            ],
+            "exit": 0,
+            "log": "root-v10-explicit-runtime-replacement.log",
+            "explicit_original_backend_mutation": true
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "selected_targets": 5,
+        "observed_eligible": 2,
+        "not_observed_eligible": 3,
+        "runtime_replacements": 1
+      },
+      "generated_compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model.dir/software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/CMakeFiles/software_model.dir/software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model_test.dir/test_software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/CMakeFiles/software_model_test.dir/test_software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker.dir/software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/CMakeFiles/software_worker.dir/software_worker.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker_test.dir/test_software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/CMakeFiles/software_worker_test.dir/test_software_worker.c.o"
+        }
+      ],
+      "build_commands": [
+        {
+          "profile": "shared",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          ],
+          "exit": 0,
+          "log": "software-worker-shared-configure.log"
+        },
+        {
+          "profile": "shared",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+            "--target",
+            "software_model_test",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "software-worker-shared-build.log"
+        },
+        {
+          "profile": "shared",
+          "phase": "ctest",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "software-worker-shared-ctest.log"
+        }
+      ],
+      "selected_sdk_input": {
+        "path": "sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+        "size": 934608,
+        "sha256": "d9a058c1287b73c649c76602cec51210cef7567b0f4258e48dfc44268f709771"
+      },
+      "linkage": {
+        "readelf": {
+          "command": [
+            "readelf",
+            "-d",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-shared/readelf.log",
+            "size": 1673,
+            "sha256": "acb5f8e5130a1f49d2c0b4e8cee0e57a46660e1101ae7f0d94d7c75b222b7ac5"
+          },
+          "output": "\nDynamic section at offset 0x86dc8 contains 28 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libcrypto.so.3]\n 0x0000000000000001 (NEEDED)             Shared library: [libsqlite3.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x000000000000001d (RUNPATH)            Library runpath: [/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64]\n 0x000000000000000c (INIT)               0x40033c\n 0x000000000000000d (FINI)               0x4325c8\n 0x0000000000000019 (INIT_ARRAY)         0x487db8\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x487dc0\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x433020\n 0x0000000000000005 (STRTAB)             0x433a50\n 0x0000000000000006 (SYMTAB)             0x433048\n 0x000000000000000a (STRSZ)              1763 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x487fe8\n 0x0000000000000002 (PLTRELSZ)           2472 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x434318\n 0x0000000000000007 (RELA)               0x4342d0\n 0x0000000000000008 (RELASZ)             72 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000006ffffffe (VERNEED)            0x434210\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x434134\n 0x0000000000000000 (NULL)               0x0\n"
+        },
+        "ldd": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-shared/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-shared/ldd.log",
+            "size": 694,
+            "sha256": "35bb673a69c2e10fdbd66c4bedebfd9c995a82b6220b502affbeb49103f984cc"
+          },
+          "output": "\tlinux-vdso.so.1 (0x00007f413cf80000)\n\tlibnexaui.so.0 => /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/libnexaui.so.0 (0x00007f413cea0000)\n\tlibcrypto.so.3 => /lib64/libcrypto.so.3 (0x00007f413c800000)\n\tlibsqlite3.so.0 => /lib64/libsqlite3.so.0 (0x00007f413c674000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f413c47b000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f413cd83000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f413cd71000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f413c41c000)\n\tlibz.so.1 => /lib64/libz.so.1 (0x00007f413c3f2000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f413cf82000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f413c3e2000)\n"
+        }
+      },
+      "sdk_scope": "Actual installed nx_sim_channel and nx_context create/destroy calls. Shared binary dynamic resolution recorded. No native window/rendering/platform/provider behavior is inferred."
+    },
+    {
+      "profile": "asan",
+      "ctests": {
+        "passed": 3,
+        "total": 3,
+        "log": {
+          "path": "software-worker-asan-ctest.log",
+          "size": 473,
+          "sha256": "c69dffb9e421e19842624a0e050731b7a9bc0c18defc8431bc5a68f1b6302124"
+        }
+      },
+      "worker_cases": {
+        "cases": [
+          {
+            "root_schema": 2,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 3,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 4,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 5,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 6,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 7,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 8,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 9,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "root_schema": 10,
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system"
+            ],
+            "exit": 0,
+            "log": "worker-root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/worker-test/run-djfvkkwj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "held_original_read_transactions_per_schema": 2,
+        "gui_context_retirement": true,
+        "native_window_retirement": false
+      },
+      "worker_binary": {
+        "path": "software-worker-asan/software_worker_test",
+        "size": 9872616,
+        "sha256": "760a45248a2152e4a1ebe7ac96b88136f01020aa9c8a77bda8ed3034c97ef86a"
+      },
+      "model_binary": {
+        "path": "software-worker-asan/software_model_test",
+        "size": 2339672,
+        "sha256": "7958c8e2c152c355b48e8ef37caa8588def0f99d646da00bfac232e7f552f8cf"
+      },
+      "worker_library": {
+        "path": "software-worker-asan/libsoftware_worker.a",
+        "size": 137650,
+        "sha256": "6288436aa16f96da986b3332783ea4a5770dc7e26dcfd37c18f489a7be916530"
+      },
+      "model_library": {
+        "path": "software-worker-asan/libsoftware_model.a",
+        "size": 217592,
+        "sha256": "6f1c4fc8abdb21360150bdc54ad6f532f47c381714ccb1d46bc4f1cc38acacd9"
+      },
+      "raw_test_log": {
+        "path": "software-worker-asan/Testing/Temporary/LastTest.log",
+        "size": 3377,
+        "sha256": "122ec4160ca7ac499f16357c4da40164eececceec4c6bea6c270e2258988660c"
+      },
+      "original_result": {
+        "path": "software-worker-asan/worker-test/run-djfvkkwj/worker-result.json",
+        "size": 7555,
+        "sha256": "f8886b0f344088f6efd277aaac08fd01cf20fd64709fc4db43d222b40226f466"
+      },
+      "model_regression_cases": {
+        "cases": [
+          {
+            "name": "bootstrap",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "create",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "bootstrap.log"
+          },
+          {
+            "name": "root-v2",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v2.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "78bbccda6b06930aaa2356b0987ccbee99273330a244350f84e0c7348ccf2f35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v3",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v3.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "703286b49b29cfe42fe6f2ecacff56cda51d0164d662863b315944644c1a82f0",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v4",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v4.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "82af36c020f5779de907314d0811bfc3edb04ec052334aa0478e11b4a8549ae6",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v5",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v5.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "2ddd0580892ddffc05d530549a4ace1d7190c74c2c60c0e29beb405290eae7af",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v6",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v6.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "77895b0c5f77ad83aa118c7ea785d2464875f06fa7a8734e18a677a573b9ac35",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v7",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v7.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "ad716a70d23ecda274050965755e89e39a61b47cd2d5a7bea28f7fe699ce9a21",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v8",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v8.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "0d1d440f6affb12ed787217552fb2845f0812a2218eb2a56ea44665e9028cd1f",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v9",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v9.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "482508a485c7f6977a009b1b70f4f9cb7006b7394fa5e38dcbb29ccbc88a588a",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "test",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v10.log",
+            "database_bytes_unchanged": true,
+            "database_rows_unchanged": true,
+            "sha256_before_after": {
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+            }
+          },
+          {
+            "name": "root-v10-explicit-runtime-replacement",
+            "command": [
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_model_test",
+              "runtime",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/system",
+              "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/original-test/run-e6fw6nak/user"
+            ],
+            "exit": 0,
+            "log": "root-v10-explicit-runtime-replacement.log",
+            "explicit_original_backend_mutation": true
+          }
+        ],
+        "read_only_root_schemas": 9,
+        "selected_targets": 5,
+        "observed_eligible": 2,
+        "not_observed_eligible": 3,
+        "runtime_replacements": 1
+      },
+      "generated_compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model.dir/software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/CMakeFiles/software_model.dir/software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_model_test.dir/test_software_model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/CMakeFiles/software_model_test.dir/test_software_model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker.dir/software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/CMakeFiles/software_worker.dir/software_worker.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/. -I/tmp/nexaui-recovery-20261107/original/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/software_worker_test.dir/test_software_worker.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software/test_software_worker.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/CMakeFiles/software_worker_test.dir/test_software_worker.c.o"
+        }
+      ],
+      "build_commands": [
+        {
+          "profile": "asan",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-src1/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+          ],
+          "exit": 0,
+          "log": "software-worker-asan-configure.log"
+        },
+        {
+          "profile": "asan",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+            "--target",
+            "software_model_test",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "software-worker-asan-build.log"
+        },
+        {
+          "profile": "asan",
+          "phase": "ctest",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "software-worker-asan-ctest.log"
+        }
+      ],
+      "selected_sdk_input": {
+        "path": "sdk-asan-prefix/lib64/libnexaui.a",
+        "size": 14278216,
+        "sha256": "a302d120a8e7375bcc0a97d2f0514698603394267690b48358125b369552e2ab"
+      },
+      "linkage": {
+        "readelf": {
+          "command": [
+            "readelf",
+            "-d",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-asan/readelf.log",
+            "size": 1952,
+            "sha256": "b913e35dc658c367055e33104b68586646ed0afdfe06764839c63c113a6f6d83"
+          },
+          "output": "\nDynamic section at offset 0x443d68 contains 33 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libasan.so.8]\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libcrypto.so.3]\n 0x0000000000000001 (NEEDED)             Shared library: [libsqlite3.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libubsan.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x000000000000000c (INIT)               0x400374\n 0x000000000000000d (FINI)               0x70ac98\n 0x0000000000000020 (PREINIT_ARRAY)      0x843638\n 0x0000000000000021 (PREINIT_ARRAYSZ)    8 (bytes)\n 0x0000000000000019 (INIT_ARRAY)         0x843640\n 0x000000000000001b (INIT_ARRAYSZ)       512 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x843840\n 0x000000000000001c (FINI_ARRAYSZ)       512 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x70b020\n 0x0000000000000005 (STRTAB)             0x70c558\n 0x0000000000000006 (SYMTAB)             0x70b088\n 0x000000000000000a (STRSZ)              3878 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x843fe8\n 0x0000000000000002 (PLTRELSZ)           4824 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x70d910\n 0x0000000000000007 (RELA)               0x70d760\n 0x0000000000000008 (RELASZ)             432 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000006ffffffe (VERNEED)            0x70d640\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x70d47e\n 0x0000000000000000 (NULL)               0x0\n"
+        },
+        "ldd": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-asan/software_worker_test"
+          ],
+          "exit": 0,
+          "log": {
+            "path": "software-worker-asan/ldd.log",
+            "size": 812,
+            "sha256": "18a8e204ffbacc7c20745a243d73c4adffb6da89be53660782d0272f148a1cec"
+          },
+          "output": "\tlinux-vdso.so.1 (0x00007f7ad5849000)\n\tlibasan.so.8 => /lib64/libasan.so.8 (0x00007f7ad5000000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f7ad582b000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f7ad5714000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f7ad4fa1000)\n\tlibcrypto.so.3 => /lib64/libcrypto.so.3 (0x00007f7ad4a00000)\n\tlibsqlite3.so.0 => /lib64/libsqlite3.so.0 (0x00007f7ad4874000)\n\tlibubsan.so.1 => /lib64/libubsan.so.1 (0x00007f7ad4200000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f7ad4007000)\n\tlibstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f7ad3c00000)\n\tlibgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f7ad4f74000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f7ad4864000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f7ad584b000)\n\tlibz.so.1 => /lib64/libz.so.1 (0x00007f7ad483a000)\n"
+        }
+      },
+      "sdk_scope": "Actual installed nx_sim_channel and nx_context create/destroy calls. Shared binary dynamic resolution recorded. No native window/rendering/platform/provider behavior is inferred."
+    }
+  ],
+  "negative_cases": [
+    {
+      "kind": "borrowed-targets",
+      "mutations": [
+        {
+          "old": "size_t count; sw_id targets[];",
+          "new": "size_t count; const sw_id *borrowed; sw_id targets[];"
+        },
+        {
+          "old": "copy->key=key;copy->scope=*scope;",
+          "new": "copy->key=key;copy->scope=*scope;copy->borrowed=targets;"
+        },
+        {
+          "old": "job->targets,job->count",
+          "new": "job->borrowed,job->count"
+        }
+      ],
+      "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/src/examples/34_aetheri_software/software_worker.c",
+      "build_commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/src/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+          ],
+          "exit": 0
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/build",
+            "--target",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0
+        }
+      ],
+      "test_command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/build/software_worker_test",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-borrowed-targets/system"
+      ],
+      "test_exit": 1,
+      "result": {
+        "path": "software-worker-negative-borrowed-targets/result.json",
+        "size": 1758,
+        "sha256": "d456551910efb9475d7fe7986f48527ef502a931f59d225e1854bf465c3931a4"
+      },
+      "log": {
+        "path": "software-worker-negative-borrowed-targets/test.log",
+        "size": 68,
+        "sha256": "63f70f2fdf4b9637333d6cc1b2746e495e344b986c8ef1fd95fd79bf506d8cc1"
+      },
+      "binary": {
+        "path": "software-worker-negative-borrowed-targets/build/software_worker_test",
+        "size": 1368808,
+        "sha256": "58dff8ab65bfceb816d215d5ed3658017e810086faa3e2f97c5474ae67db4422"
+      }
+    },
+    {
+      "kind": "queued-scan",
+      "mutations": [
+        {
+          "old": "stopping?-ECANCELED:sw_read",
+          "new": "sw_read"
+        }
+      ],
+      "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/src/examples/34_aetheri_software/software_worker.c",
+      "build_commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/src/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+          ],
+          "exit": 0
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/build",
+            "--target",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0
+        }
+      ],
+      "test_command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/build/software_worker_test",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-queued-scan/system"
+      ],
+      "test_exit": 1,
+      "result": {
+        "path": "software-worker-negative-queued-scan/result.json",
+        "size": 1446,
+        "sha256": "a3caf9ede9295172db58229e1a9241ba3001382d53851efaac9ade5732856f7c"
+      },
+      "log": {
+        "path": "software-worker-negative-queued-scan/test.log",
+        "size": 258,
+        "sha256": "ce5b981f6e83a06d50e67515fc04fa5c03373aa7a9b0a2e025356f74463c2816"
+      },
+      "binary": {
+        "path": "software-worker-negative-queued-scan/build/software_worker_test",
+        "size": 1368808,
+        "sha256": "39f0195e7dc2409529f5ce2a0f8d5eb596ea9cfcd715de3285c6e664b6f084ad"
+      }
+    },
+    {
+      "kind": "wake",
+      "mutations": [
+        {
+          "old": "do{n=write(w->wake[1],\"W\",1);}while(n<0&&errno==EINTR);",
+          "new": "do{n=1;}while(n<0&&errno==EINTR);"
+        }
+      ],
+      "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/src/examples/34_aetheri_software/software_worker.c",
+      "build_commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/src/examples/34_aetheri_software",
+            "-B",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-recovery-20261107/original"
+          ],
+          "exit": 0
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/build",
+            "--target",
+            "software_worker_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0
+        }
+      ],
+      "test_command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/build/software_worker_test",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-worker-negative-wake/system"
+      ],
+      "test_exit": 1,
+      "result": {
+        "path": "software-worker-negative-wake/result.json",
+        "size": 1453,
+        "sha256": "7a55eca4cbaf211e381b06bbdd1d36b21be76fb81a5ed16d825db877529a9c60"
+      },
+      "log": {
+        "path": "software-worker-negative-wake/test.log",
+        "size": 165,
+        "sha256": "db9d054f6be873dd7a1e66ce4fa109fc10a27847b972300620130f6503709f4a"
+      },
+      "binary": {
+        "path": "software-worker-negative-wake/build/software_worker_test",
+        "size": 1368808,
+        "sha256": "1e42b3e9b9c9265937f0a490bec3d6e302e1405c97ad3829b0f852b348bbf7c8"
+      }
+    }
+  ],
+  "source_files": {
+    "source_revision": "a7a920ebf298c03851b1c78a4af974e8c91337a7",
+    "normalization": "CRLF to LF only",
+    "files": [
+      {
+        "path": "examples/34_aetheri_software/CMakeLists.txt",
+        "normalized_sha256": "748ad129d612964c0fe54749458c53a55abae886f3c80e99cbc31b284fce4cb9",
+        "size": 2811,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/README.md",
+        "normalized_sha256": "31980f95bbbc50305b6503225f87af1129a2ed91a9ab42b3ce28f75f89d0a015",
+        "size": 8674,
+        "tested_input1_equal": false
+      },
+      {
+        "path": "examples/34_aetheri_software/run_model.py",
+        "normalized_sha256": "4335d2121d54edfd8108e6bd529ce5ae3ff2ad7f0c232235d4931fad787a8c8b",
+        "size": 5354,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/run_worker.py",
+        "normalized_sha256": "70eded83bed06e3452d6fcbac3ac0b38a539b1e8a25bb23aabb212e921e7f661",
+        "size": 2978,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/software_model.c",
+        "normalized_sha256": "ffb746406d05190dd19bb9834bc0132fa8b6c45857b2a1920a2bf93b69d2b395",
+        "size": 10109,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/software_model.h",
+        "normalized_sha256": "a22fc4debc1ad71803722669d295e740bdd39277a1ae161a5a64875a446dfef8",
+        "size": 3073,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/software_worker.c",
+        "normalized_sha256": "d8ff834d9bd71863e5c067513f262f255bd4a250464061b6db72acaebe0a2479",
+        "size": 7330,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/software_worker.h",
+        "normalized_sha256": "d6f2892eeb3e8e612c2176beed646bc2e242efb6f59d3b0f891c35c6ac1d58c9",
+        "size": 2080,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/test_software_model.c",
+        "normalized_sha256": "0cfc2e95935c363f0473c5f4acd3a934f4f9e1a0293a739f9ccff337271bef22",
+        "size": 12171,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/34_aetheri_software/test_software_worker.c",
+        "normalized_sha256": "24bf5ee5770ff4d5844139897210cb519594c630da16623ceaa36b53e1635ec0",
+        "size": 10844,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/33_aetheri_recovery/check_source.py",
+        "normalized_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90",
+        "size": 585,
+        "tested_input1_equal": true
+      },
+      {
+        "path": "examples/33_aetheri_recovery/source-inputs.json",
+        "normalized_sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833",
+        "size": 6793,
+        "tested_input1_equal": true
+      }
+    ]
+  },
+  "source_archives": [
+    {
+      "path": "nexaui-software-worker-input1-20261107.tar.gz",
+      "size": 21656,
+      "sha256": "440f968a2c6268ac875abffbcee2b73b90af41b3f6ef825985d1879f29b11399"
+    },
+    {
+      "path": "nexaui-software-worker-input2-20261107.tar.gz",
+      "size": 22853,
+      "sha256": "d9531d02ec5c1f0f20a0fb5e3c9c93ac2a053a9084171268de3512bd7e9d6408"
+    }
+  ],
+  "prior_ci": {
+    "scope": "GitHub API run/job status only; no raw logs or artifact verification. Optional example34 local tests are separate.",
+    "head_sha": "b5b7a1ddce2f479dbb3d4e6fe89e13a69001802f",
+    "run_id": 42404807662,
+    "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662",
+    "status": "completed",
+    "conclusion": "success",
+    "updated_at": "2026-11-07T19:27:25Z",
+    "jobs": [
+      {
+        "id": 128500096794,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500096794",
+        "started_at": "2026-11-07T19:09:16Z",
+        "completed_at": "2026-11-07T19:14:31Z"
+      },
+      {
+        "id": 128500096948,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500096948",
+        "started_at": "2026-11-07T19:09:16Z",
+        "completed_at": "2026-11-07T19:27:24Z"
+      },
+      {
+        "id": 128500096958,
+        "name": "core (ubuntu-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500096958",
+        "started_at": "2026-11-07T19:09:17Z",
+        "completed_at": "2026-11-07T19:14:44Z"
+      },
+      {
+        "id": 128500097030,
+        "name": "core (macos-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500097030",
+        "started_at": "2026-11-07T19:09:17Z",
+        "completed_at": "2026-11-07T19:10:29Z"
+      },
+      {
+        "id": 128500097037,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500097037",
+        "started_at": "2026-11-07T19:09:18Z",
+        "completed_at": "2026-11-07T19:14:15Z"
+      },
+      {
+        "id": 128500097099,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500097099",
+        "started_at": "2026-11-07T19:09:18Z",
+        "completed_at": "2026-11-07T19:10:54Z"
+      },
+      {
+        "id": 128500097139,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500097139",
+        "started_at": "2026-11-07T19:09:17Z",
+        "completed_at": "2026-11-07T19:14:33Z"
+      },
+      {
+        "id": 128500098035,
+        "name": "fuzz-campaigns",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500098035",
+        "started_at": "2026-11-07T19:09:14Z",
+        "completed_at": "2026-11-07T19:09:14Z"
+      },
+      {
+        "id": 128500098143,
+        "name": "windows-asan",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42404807662/job/128500098143",
+        "started_at": "2026-11-07T19:09:14Z",
+        "completed_at": "2026-11-07T19:09:14Z"
+      }
+    ]
+  },
+  "prior_archive": {
+    "path": "D:/NexaUI/out/nexaui-software-model-20261107.tar.gz",
+    "sha256": "a740281c8e4fd20a0016fc875514f861bca6c0b9443b9fc4db52e38941444d51"
+  },
+  "preflight_corrections": {
+    "logs": [
+      {
+        "path": "software-worker-preflight.log",
+        "size": 1047,
+        "sha256": "3d32d1b8fad14e2c434b8d53722cd5b75f8271ffdeaa4b26d915b1ea2fe38312"
+      },
+      {
+        "path": "software-worker-preflight2.log",
+        "size": 941,
+        "sha256": "53e4421216f2da244565ab34e38ca16af3ec229a403c5437ade0bb7cf528dfcc"
+      },
+      {
+        "path": "software-worker-original-read.log",
+        "size": 1029,
+        "sha256": "4d007bab0e9c0c0f06fe0f8bcf68aa30622e0e557dfdf272177c4d5ad8cc5d8a"
+      },
+      {
+        "path": "software-worker-original-read2.log",
+        "size": 83455,
+        "sha256": "557ec3ba0d83a19a0f493f461acaa9895913431b55292d4d4ad75c0291f80ebd"
+      }
+    ],
+    "scope": "Read-only locator attempts initially assumed a projection.c implementation. Actual original SQL implementation is src/catalogue/store.c. No source/test fix or build failure was involved."
+  },
+  "remaining": [
+    "Visible software list/filter/details and native keyboard/IME/clipboard/AT-SPI retirement",
+    "Exact artifact/dependency joins and actual full inventory/device/service/trusted owner seams",
+    "Remaining packet 6, packets 7-8 and physical/human/performance acceptance"
+  ]
+}

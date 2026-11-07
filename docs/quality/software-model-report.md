@@ -1,5 +1,8 @@
 # Selected original software observations — 2026-11-07
 
+Continued by the [bounded worker evidence](software-worker-report.md) at
+`a7a920e`; the tests and scope recorded below remain this model-only checkpoint.
+
 Consumer source: `64c9ab101bdaea2ff47e650ea911e81f1115935e`.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Selected installed SDK input: `c4f467d85b0147944d2456f5e7602a39ac18e579`, 0.1.23.

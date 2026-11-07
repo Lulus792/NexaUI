@@ -1,0 +1,13 @@
+{
+  "name": "nexaui-software-worker-20261107.tar.gz",
+  "size": 13725579,
+  "sha256": "7e1f2a0b1df89d49c71960fb96656b2c8ec74b9e72654ee8ea7de2469205a56e",
+  "files": 1083,
+  "links": 2,
+  "directories": 383,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-software-worker-20261107.tar.gz",
+  "source_revision": "a7a920ebf298c03851b1c78a4af974e8c91337a7",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally."
+}
