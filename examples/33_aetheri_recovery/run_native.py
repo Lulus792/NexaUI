@@ -19,12 +19,16 @@ def main():
     for name in ('server','registry','host','client','font','source','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--kind',choices=('system','user'),default='system')
     p.add_argument('--held',choices=('wake','close'),help='Test-only held host and lifecycle OS peer')
+    p.add_argument('--clipboard',choices=('normal','close'),help='Independent wl-clipboard transfer/focus or pending-close workflow')
+    p.add_argument('--clipboard-tools',type=Path,help='Private bin/wl-copy, bin/wl-paste and lib/loader+runtime directory')
     for name in ('german','large','small','contrast','light','ime','navigation','resize','capture'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.resize:a.navigation=True
     if a.capture and not a.resize:p.error('Capture is attached to the native resize workflow')
     if a.held and a.ime:p.error('The held-transaction workflow has its own lifecycle peer; run IME separately')
     if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
+    if a.clipboard and (a.held or a.navigation):p.error('Clipboard has a separate ordinary-peer sequence')
+    if bool(a.clipboard)!=bool(a.clipboard_tools):p.error('Clipboard requires its explicitly selected private tools')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
@@ -54,29 +58,32 @@ def main():
     for name in ('german','large','small','contrast','light'):
         env.pop('RVG_'+name.upper(),None)
         if getattr(a,name):env['RVG_'+name.upper()]='1'
-    if a.ime or a.resize:env['WAYLAND_DEBUG']='client'
+    if a.ime or a.resize or a.clipboard:env['WAYLAND_DEBUG']='client'
     gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
     if a.held:env['RVG_TEST_GATE_FD']=str(gate_read)
     else:env.pop('RVG_TEST_GATE_FD',None)
-    left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
+    left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];background=set();stopped=set()
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
-            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation','resize','capture')},'checks':[],'expected_records':len(reference),'images':images}
-    def start(command,name,fds=(),input_pipe=False):
+            'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation','resize','capture','clipboard')},'checks':[],'expected_records':len(reference),'images':images}
+    def start(command,name,fds=(),input_pipe=False,may_exit=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
         child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if input_pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True)
-        children.append((name,child));return child
+        children.append((name,child))
+        if may_exit:background.add(child)
+        return child
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def wait(test,label,allowed=()):
         until=time.monotonic()+7
         while not test():
             for name,child in children:
-                if child not in allowed and child.poll() is not None:raise RuntimeError(label+': '+name+' exited '+str(child.returncode))
+                if child not in allowed and child not in background and child.poll() is not None:raise RuntimeError(label+': '+name+' exited '+str(child.returncode))
             if time.monotonic()>=until:raise RuntimeError(label+': timeout')
             time.sleep(.01)
     def event(command):
         left.sendall(command.encode('ascii'))
         if left.recv(64)!=b'OK':raise RuntimeError('Compositor rejected '+command)
     def key(code):event(f'K {code} 1');event(f'K {code} 0')
+    def control(code):event('K 29 1');key(code);event('K 29 0')
     def reverse_tab():event('K 42 1');key(15);event('K 42 0')
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
@@ -108,6 +115,49 @@ def main():
             path=captures/f'capture-{sequence}-output-{i}.ppm';data=path.read_bytes();magic,extent,maximum,pixels=data.split(b'\n',3);width,height=map(int,extent.split())
             if magic!=b'P6' or maximum!=b'255' or len(pixels)!=width*height*3:raise RuntimeError('Incomplete native PPM')
             images.append({'label':label,'file':path.name,'width':width,'height':height,'sha256':hashlib.sha256(data).hexdigest(),'view':view()})
+    def foreign(tool):
+        root=a.clipboard_tools.resolve(strict=True);loader=root/'lib/ld-musl-x86_64.so.1';binary=root/'bin'/tool
+        for path in (loader,binary):
+            path.resolve(strict=True);result.setdefault('clipboard_tool_inputs',{})[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
+        return [loader,'--library-path',root/'lib',binary]
+    def foreign_read(expected,owner=None):
+        until=time.monotonic()+7
+        while True:
+            if owner is not None and owner.poll() is not None:raise RuntimeError('Independent clipboard owner exited before publication')
+            done=subprocess.run([*foreign('wl-paste'),'--no-newline'],env=env,capture_output=True,timeout=3)
+            result.setdefault('clipboard_probes',[]).append({'exit':done.returncode,'length':len(done.stdout),'sha256':hashlib.sha256(done.stdout).hexdigest(),'stderr':done.stderr.decode(errors='replace')})
+            if done.returncode==0 and done.stdout==expected:return
+            if time.monotonic()>=until:raise RuntimeError('Independent clipboard probe did not receive exact bytes')
+            time.sleep(.01)
+    def foreign_copy(payload,ordinal):
+        # Fixed public test text: wl-copy's argument path avoids its stdin spool.
+        child=start([*foreign('wl-copy'),'--foreground','--type','text/plain;charset=utf-8','--',payload.decode('utf-8')],'clipboard-source'+str(ordinal),may_exit=True)
+        name='clipboard-source'+str(ordinal)
+        wait(lambda:re.search(r'->\s*wl_data_device#\d+\.set_selection\(',log(name)) is not None and re.search(r'->\s*wl_surface#\d+\.destroy\(\)',log(name)) is not None,'foreign selection published and popup retired')
+        foreign_read(payload,child)
+        if child.poll() is not None:raise RuntimeError('Independent clipboard owner exited before transfer')
+        return child
+    def source_returned_to_socket_wait(child,send_before):
+        # Parent-owned Linux x86-64 child: its send callback must have returned
+        # before it can block on the next Wayland socket read/poll. No extra
+        # wl-paste popup may steal the consumer's focus during this barrier.
+        if sys.platform!='linux' or os.uname().machine!='x86_64':raise RuntimeError('Clipboard send witness requires Linux x86-64')
+        sends=len(re.findall(r'wl_data_source#\d+\.send\(',log('clipboard-source2')))
+        if sends<=send_before:return False
+        try:
+            raw=Path(f'/proc/{child.pid}/syscall').read_text().split();descriptors=[]
+            if raw[0] in ('0','47'):descriptors=[int(raw[1],0)]
+            elif raw[0] in ('7','271'):
+                address,nfds=int(raw[1],0),int(raw[2],0)
+                if not 1<=nfds<=16:return False
+                with Path(f'/proc/{child.pid}/mem').open('rb',buffering=0) as memory:data=os.pread(memory.fileno(),nfds*8,address)
+                if len(data)!=nfds*8:return False
+                descriptors=[fd for fd,events,_ in struct.iter_unpack('<ihh',data) if events&1]
+            else:return False
+            sockets={fd:os.readlink(f'/proc/{child.pid}/fd/{fd}') for fd in descriptors}
+            if not sockets or not all(name.startswith('socket:[') for name in sockets.values()):return False
+            result['clipboard_send_return_witness']={'syscall':raw,'sockets':sockets,'source_sends_before':send_before,'source_sends_after':sends};return True
+        except (FileNotFoundError,ProcessLookupError,IndexError):return False
     def ime_barrier(bytes_count):
         marker=f'PREEDIT bytes={bytes_count}\n';wait(lambda:marker in log('host'),'native preedit change')
         wait(lambda:re.search(r'^VIEW ',log('host')[log('host').rfind(marker)+len(marker):],re.M) is not None,'field frame after preedit')
@@ -154,7 +204,7 @@ def main():
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else []),'client',input_pipe=True)
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else [])+(['--clipboard-'+a.clipboard] if a.clipboard else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         if a.held:
             for step in (0,1):
@@ -181,8 +231,46 @@ def main():
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
         else:
-            for step in range(30 if a.resize else 25 if a.navigation else 10):
+            for step in range((15 if a.clipboard=='close' else 16) if a.clipboard else 30 if a.resize else 25 if a.navigation else 10):
                 peer_line('STEP '+str(step))
+                if a.clipboard and step>=10:
+                    sample='Grüße 🌍 e\u0301'.encode()
+                    if step==10:key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'clipboard filter focus')
+                    if step==11:
+                        source=foreign_copy(sample,1)
+                        bounds=re.search(r'^FIELD_BOUNDS (\d+) (\d+) (\d+) (\d+)$',log('client'),re.M)
+                        if not bounds:raise RuntimeError('Missing independent field bounds')
+                        x,y,width,height=map(int,bounds.groups());event(f'M {40+x+width//2} {40+y+height//2}');event('B 272 1');event('B 272 0');control(47)
+                    if step==12:
+                        sets=len(re.findall(r'->\s*wl_data_device#\d+\.set_selection\(',log('host')));keys=view().get('keys',0)
+                        control(30);control(46)
+                        wait(lambda:len(re.findall(r'->\s*wl_data_device#\d+\.set_selection\(',log('host')))>sets and view().get('keys',0)>=keys+8,'native copy publishes after complete Ctrl-A/C input')
+                        source.wait(timeout=7)
+                        if source.returncode!=0 or not re.search(r'wl_data_source#\d+\.cancelled\(\)',log('clipboard-source1')):raise RuntimeError('Native copy did not replace the foreign owner')
+                        result['clipboard_copy_replaced_foreign_owner']=True;foreign_read(sample)
+                    if step==13:
+                        pending=foreign_copy('late clipboard 🌙'.encode(),2);pending.send_signal(signal.SIGSTOP);stopped.add(pending)
+                        wait(lambda:re.search(r'^State:\s+T',Path(f'/proc/{pending.pid}/status').read_text(),re.M) is not None,'independent source stopped')
+                        send_before=len(re.findall(r'wl_data_source#\d+\.send\(',log('clipboard-source2')))
+                        offset=len(log('host'));control(47)
+                        wait(lambda:re.search(r'->\s*wl_data_offer#\d+\.receive\(',log('host')[offset:]) is not None,'native pending clipboard request')
+                        result['clipboard_pending_witness']={'source_pid':pending.pid,'source_status':Path(f'/proc/{pending.pid}/status').read_text(),'view':view()}
+                    if step==14:
+                        if a.clipboard=='close':
+                            wait(lambda:view().get('focus')==42,'Close beside pending clipboard');key(28)
+                            wait(lambda:'RECOVERY_GUI_GONE\n' in log('host') and 'UNMAP 0\n' in log('server'),'clipboard-pending GUI retired',(host,))
+                            host.wait(timeout=7)
+                            if host.returncode!=0:raise RuntimeError('Host failed closing with pending clipboard')
+                            background.add(host)
+                            result['clipboard_host_closed_while_source_stopped']=True
+                        else:
+                            key(15);wait(lambda:view().get('focus')!=45,'focus leaves pending clipboard field')
+                            pending.send_signal(signal.SIGCONT);stopped.remove(pending)
+                            wait(lambda:source_returned_to_socket_wait(pending,send_before),'source returned after late clipboard send')
+                            keys=view().get('keys',0);frame=view().get('frames',0);key(42)
+                            wait(lambda:view().get('keys',0)>=keys+2 and view().get('frames',0)>frame,'native frame after late clipboard send')
+                    if step==15:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40,'Cancel after foreign clipboard')
+                    peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush();peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()});continue
                 if step==1:key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'logical End')
                 if step==2:
                     wait(lambda:view().get('mode')==2,'detail mode')
@@ -244,11 +332,14 @@ def main():
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.navigation and 'RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Missing independent native navigation checks')
         if a.resize and 'RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
+        if a.clipboard:
+            marker='RECOVERY_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK' if a.clipboard=='close' else 'RECOVERY_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK'
+            if marker not in log('client'):raise RuntimeError('Missing independent clipboard checks')
         if view().get('request')!=(3 if a.navigation else 2):raise RuntimeError('Local inspection/filtering posted backend work')
         if a.held=='close':
             if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Held worker ended before retirement peer finished')
             release_gate()
-        else:key(28)
+        elif a.clipboard!='close':key(28)
         host.wait(timeout=7)
         if host.returncode!=0 or 'RECOVERY_GUI_GONE\n' not in log('host') or 'failed=0\n' not in log('host'):raise RuntimeError('Host did not close normally')
         if a.held and 'RECOVERY_NATIVE_HELD_ORIGINAL_QUERY_RETIREMENT_DISPOSAL_AND_FDS_OK' not in log('host'):raise RuntimeError('Missing original late-result disposal or descriptor balance')
@@ -260,6 +351,8 @@ def main():
             if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:',log(name)):raise RuntimeError('Sanitizer diagnostic')
         result.update(status='passed',host_exit=host.returncode,peer_exit=peer.returncode,owner_sha256_before_after=before_sha,owner_rows_unchanged=True)
     finally:
+        for child in stopped:
+            if child.poll() is None:child.send_signal(signal.SIGCONT)
         if gate_write>=0:
             try:release_gate()
             except BrokenPipeError:pass

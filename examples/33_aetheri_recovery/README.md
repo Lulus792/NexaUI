@@ -262,3 +262,30 @@ its three virtual outputs. The driver records complete PPM hashes and view sizes
 Compact mode exposes only Close and an accessible enlargement explanation; it
 does not display record/filter content. These captures and OS queries do not
 establish mixed-scale output migration, physical display or human acceptance.
+
+## Independent native clipboard checks
+
+The existing window-bound text clipboard adapter also supports the filter.
+Add `--clipboard normal --clipboard-tools /path/to/private-tools` to the ordinary
+workflow, omitting `--navigation`/`--resize`. The private Linux x86-64 tools directory
+contains `bin/wl-copy`, `bin/wl-paste`, and `lib/ld-musl-x86_64.so.1` with its
+matching Wayland/FFI runtime. The recorded fixture uses unchanged wl-clipboard
+2.2.1 tools, separate from NexaUI. No tool installation or account clipboard is
+used; every process connects only to the private test compositor.
+
+The sixteen checkpoints include the ordinary ten, then native Unicode paste,
+Ctrl-A/C copy to an independent client, and a source held during a pending read.
+Copy must actually cancel the previous foreign owner; equal text alone cannot
+prove ownership. Foreign publication and its temporary popup retirement precede
+probing. After Tab leaves the field, the source resumes. A parent-owned `/proc`
+socket-wait witness confirms its send callback returned without opening another
+focus-stealing probe window. A native frame then precedes the OS client's check
+that the old draft remains unchanged. Escape preserves the selected record.
+
+Use `--clipboard close` for fifteen checkpoints instead: Close remains usable
+while the foreign source is stopped. The host must unmap and exit normally before
+the source resumes; retained field/button references refuse edits/actions.
+The harness resumes and terminates its own stopped source during cleanup.
+The fixed public test payload is passed through wl-copy's text argument, avoiding
+its stdin spool on a quota-exhausted filesystem. Neither clipboard workflow adds
+an original-owner request, filesystem timeout or new SDK implementation.

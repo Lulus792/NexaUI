@@ -47,9 +47,9 @@ cleanup:
     g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
 }
 int main(int argc,char **argv){
-    int okay=0,initialized=0,ime=0,navigation=0,resizing=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
-    CHECK(argc>=4&&argc<=8);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else if(!strcmp(argv[i],"--resize"))resizing=1;else CHECK(0);}
-    CHECK(!resizing||navigation);
+    int okay=0,initialized=0,ime=0,navigation=0,resizing=0,clipboard=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
+    CHECK(argc>=4&&argc<=9);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else if(!strcmp(argv[i],"--resize"))resizing=1;else if(!strcmp(argv[i],"--clipboard-normal"))clipboard=1;else if(!strcmp(argv[i],"--clipboard-close"))clipboard=2;else CHECK(0);}
+    CHECK((!resizing||navigation)&&(!clipboard||(!resizing&&!navigation)));
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
@@ -121,6 +121,27 @@ int main(int argc,char **argv){
         g_object_unref(last);last=lookup(app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_SELECTED));
         button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 29");
         puts("RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK");
+    }
+    if(clipboard){
+        static const char sample[]="Gr\xc3\xbc\xc3\x9f" "e \xf0\x9f\x8c\x8d e\xcc\x81";
+        g_object_unref(button);button=lookup(app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;
+        CHECK(checkpoint(10));field=wait_node(desktop,pid,&app,label("Record filter","Eintragsfilter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"")&&state(field,ATSPI_STATE_FOCUSED));
+        AtspiRect bounds;CHECK(rectangle(field,&bounds));printf("FIELD_BOUNDS %d %d %d %d\n",bounds.x,bounds.y,bounds.width,bounds.height);puts("ACK 10");
+        CHECK(checkpoint(11));until=now()+3;while(now()<until&&!text_equal(field,sample))pump();CHECK(text_equal(field,sample)&&state(field,ATSPI_STATE_FOCUSED));puts("ACK 11");
+        CHECK(checkpoint(12));CHECK(text_equal(field,sample)&&state(field,ATSPI_STATE_FOCUSED));puts("ACK 12");
+        CHECK(checkpoint(13));CHECK(text_equal(field,sample)&&state(field,ATSPI_STATE_FOCUSED));
+        if(clipboard==2){button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));}
+        puts("ACK 13");
+        CHECK(checkpoint(14));
+        if(clipboard==2){CHECK(retired(field)&&retired(button)&&!replace_text(field,"late closed clipboard")&&!action(button,"click"));puts("ACK 14");}
+        else {
+            CHECK(!state(field,ATSPI_STATE_FOCUSED)&&text_equal(field,sample));puts("ACK 14");
+            CHECK(checkpoint(15));CHECK(retired(field)&&!replace_text(field,"late cancelled clipboard"));g_object_unref(field);field=NULL;
+            button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));g_object_unref(button);button=NULL;
+            g_object_unref(last);last=lookup(app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_SELECTED));
+            button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 15");
+        }
+        puts(clipboard==2?"RECOVERY_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK":"RECOVERY_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK");
     }
     puts("RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK");okay=1;
 cleanup:
