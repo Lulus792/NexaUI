@@ -21,6 +21,30 @@
     {
       "path": "src/text/grapheme_data.h",
       "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "src/files/create.c",
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+    },
+    {
+      "path": "src/files/create.h",
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60"
+    },
+    {
+      "path": "src/editor/file.c",
+      "sha256": "debb14a3a43bd39a8d2b6ab2a828153ffedd59f7c5c3198317dccb069a8896e5"
+    },
+    {
+      "path": "src/editor/file.h",
+      "sha256": "ccfb5cb49fda5b9bf32f8c1f07e7231199900b2371da7cce94b57147de411c47"
+    },
+    {
+      "path": "src/editor/document.c",
+      "sha256": "887c0c49daf07225371581c7f0d3bf3ccd13acb2f1dba96ade958aa7c2082bc7"
+    },
+    {
+      "path": "src/editor/document.h",
+      "sha256": "92831167eb9bfed78a75c80c7daef478f547b7a55cd3a1842502902e394da3e2"
     }
   ]
 }

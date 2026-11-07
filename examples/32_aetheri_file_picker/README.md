@@ -8,7 +8,7 @@ privileged authority receipt. Normal Aetheri adoption remains separate.
 
 The external Linux C17 consumer builds the original Files model and its original
 UTF-8/grapheme support from immutable Aetheri
-`27de5cb228da0f37264fad64d964ad7a660d210d`. Five hashed source/header/data inputs
+`27de5cb228da0f37264fad64d964ad7a660d210d`. Eleven hashed source/header/data inputs
 must match `source-inputs.json`. The original app's exact SDK selection, UI,
 launchers and live sources are unchanged. Neither this optional application
 model nor its text validation becomes a dependency of NexaUI's own core stack.
@@ -273,6 +273,41 @@ for completed field frames and matching compositor-observed v3 commit serials
 before further injection. This is a private test producer, not installed-IME or
 human acceptance.
 
-Multiple/save selection, separate native owner/child windows, richer sorting/file-type policy, additional
+Native Save selection, separate native owner/child windows, richer sorting/file-type policy, additional
 I/O/permission/allocation failures and resize/scale configurations, other platforms, real services/grants,
 performance, physical/human acceptance and normal Aetheri integration stay open.
+
+## Save destination foundation
+
+The worker additionally accepts `FP_SAVE_NAME` with copied literal UTF-8 bytes
+and `FP_SAVE_SELECTED` with an observed original row ordinal. Both require the
+current adapter state. New-name validation calls the original
+`ae_files_create_name`; selected existing names retain their exact original
+bytes, including non-UTF-8 names. Six further hashed original create/editor
+source/header inputs supply that existing validator and the actual document
+controller used by the handoff test. There is no SDL or new SDK dependency.
+
+A typed name is looked up relative to the current held directory independently
+of filtering or hidden membership, including names added since the snapshot.
+Only ENOENT yields `FP_SAVE_NEW`; other I/O/access errors fail. Existing regular
+files yield `FP_SAVE_EXISTING` with an O_PATH/CLOEXEC witness; symlinks,
+directories and other types fail without following or reading them. Original
+row selection instead reuses its original observed-identity checks.
+
+`fp_reply_take_save` transfers the held parent and optional witness once, with
+literal leaf bytes and a separate original escaped label. The ordinary scalar
+and batch take helpers refuse these replies. Unclaimed destinations close with
+their reply/channel. A target remains bound to the held parent through later
+navigation or a path rename. Its absence/existence is a transient observation,
+not a writable grant, overwrite confirmation, save attempt or durable receipt.
+
+The integrating application must admit NEW through create-only behavior and
+review EXISTING explicitly before asking its own controller to recheck the
+witness and write. The original editor controller demonstrates both handoffs
+in `file_picker_save_test`, including refusal after a named replacement or an
+absent name becoming occupied. The worker itself never writes, reads content,
+changes the document's clean state or replays an uncertain save.
+
+This step does not yet connect Save to the visible picker/owner. Filename-field
+IME/keyboard/assistive behavior, explicit overwrite review, cancel/focus and
+native Save acceptance remain required before adopting that UI scope.

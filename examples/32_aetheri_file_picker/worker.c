@@ -1,10 +1,12 @@
 #define _GNU_SOURCE
 #include "worker.h"
+#include "files/create.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 struct fp_worker {
@@ -40,10 +42,10 @@ static int valid(const fp_command *c) {
         for (size_t i = 0; i < sizeof c->pick_mask; ++i) any |= c->pick_mask[i];
         if (!any) return 0;
     }
-    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_PICK_MANY &&
+    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_SAVE_SELECTED &&
         (c->operation == FP_READ || c->expected_state) &&
         c->depth <= AE_FILES_DEPTH && c->ordinal < AE_FILES_ENTRIES &&
-        (c->show_hidden == 0 || c->show_hidden == 1) && c->query_bytes <= AE_FILES_QUERY;
+        (c->show_hidden == 0 || c->show_hidden == 1) && c->query_bytes <= AE_FILES_QUERY && c->name_bytes <= AE_FILES_NAME;
 }
 static enum ae_files_result select_ordinal(struct ae_files *f, size_t ordinal) {
     const struct ae_files_entry *target = ae_files_snapshot_entry(f, ordinal);
@@ -53,6 +55,44 @@ static enum ae_files_result select_ordinal(struct ae_files *f, size_t ordinal) {
     return AE_FILES_CHANGED;
 }
 static int picked(const fp_command *c, size_t i) { return (c->pick_mask[i / 8] & (1u << (i % 8))) != 0; }
+static enum ae_files_result save_target(fp_worker *w, const fp_command *c, fp_reply *r) {
+    int directory = -1, witness = -1; char leaf[AE_FILES_NAME + 1];
+    enum ae_files_result result = AE_FILES_OK;
+    fp_save_kind kind = FP_SAVE_EXISTING;
+    if (c->operation == FP_SAVE_SELECTED) {
+        result = select_ordinal(w->files, c->ordinal);
+        if (result == AE_FILES_OK) result = ae_files_open_selected(w->files, &directory, &witness, leaf);
+    } else {
+        if (!ae_files_create_name(c->name, c->name_bytes)) return AE_FILES_INVALID;
+        memcpy(leaf, c->name, c->name_bytes); leaf[c->name_bytes] = 0;
+        directory = ae_files_directory(w->files);
+        if (directory < 0) return AE_FILES_IO;
+        /* Named intent is a fresh lookup in the held folder, independent of
+           filter/hidden membership. Never infer absence from access/I/O errors.
+           O_PATH|NOFOLLOW cannot truncate, read a FIFO or follow a link. */
+        witness = openat(directory, leaf, O_PATH | O_NOFOLLOW | O_CLOEXEC);
+        if (witness < 0) {
+            if (errno == ENOENT) kind = FP_SAVE_NEW;
+            else result = AE_FILES_IO;
+        } else {
+            if (witness < 4) {
+                int original = witness; witness = fcntl(original, F_DUPFD_CLOEXEC, 4); close(original);
+            }
+            struct stat st;
+            if (witness < 0 || fstat(witness, &st)) result = AE_FILES_IO;
+            else if (!S_ISREG(st.st_mode)) result = AE_FILES_UNSUPPORTED;
+        }
+    }
+    if (result == AE_FILES_OK && !ae_files_format_name(leaf, strlen(leaf), r->save_label)) result = AE_FILES_INVALID;
+    if (result != AE_FILES_OK) {
+        if (directory >= 0) close(directory);
+        if (witness >= 0 && witness != directory) close(witness);
+        return result;
+    }
+    r->directory = directory; r->witness = witness; r->save_kind = kind;
+    memcpy(r->leaf, leaf, strlen(leaf) + 1);
+    return AE_FILES_OK;
+}
 static enum ae_files_result pick_many(fp_worker *w, const fp_command *c, fp_reply *r) {
     /* Validate the entire domain/type before changing original selection. Each
        original open still checks its observed inode/type and held directory. */
@@ -113,6 +153,7 @@ static enum ae_files_result apply(fp_worker *w, const fp_command *c, fp_reply *r
         r->leaf[0] = '.'; r->leaf[1] = 0;
         return AE_FILES_OK;
     case FP_PICK_MANY: return pick_many(w, c, r);
+    case FP_SAVE_NAME: case FP_SAVE_SELECTED: return save_target(w, c, r);
     default: return AE_FILES_INVALID;
     }
 }
@@ -236,6 +277,8 @@ fp_reply *fp_reply_get(const nx_sim_message *m) {
     if (!m || !m->ticket || m->status != NX_OK || !m->data || m->bytes < offsetof(fp_reply, rows)) return NULL;
     fp_reply *r = m->data;
     return r->key.view && r->key.request && (r->result != AE_FILES_OK || (r->state && r->revision)) &&
+        r->save_kind >= FP_SAVE_NONE && r->save_kind <= FP_SAVE_EXISTING &&
+        (r->save_kind == FP_SAVE_NONE || (r->result == AE_FILES_OK && !r->pick_count)) &&
         r->pick_count <= r->count && (r->result == AE_FILES_OK || !r->pick_count) &&
         r->count <= AE_FILES_ENTRIES && r->total <= AE_FILES_ENTRIES && r->count <= r->total &&
         r->depth <= AE_FILES_DEPTH && m->bytes == offsetof(fp_reply, rows) + r->count * sizeof(fp_row) ? r : NULL;
@@ -243,7 +286,7 @@ fp_reply *fp_reply_get(const nx_sim_message *m) {
 nx_result fp_reply_take(fp_reply *r, int *directory, int *witness, char leaf[AE_FILES_NAME + 1]) {
     if (!directory || !witness || directory == witness || !leaf) return NX_ERROR_ARGUMENT;
     *directory = *witness = -1; leaf[0] = 0;
-    if (!r || r->result != AE_FILES_OK || r->directory < 4 || r->witness < 4 || r->directory == r->witness ||
+    if (!r || r->result != AE_FILES_OK || r->save_kind != FP_SAVE_NONE || r->directory < 4 || r->witness < 4 || r->directory == r->witness ||
         !memchr(r->leaf, 0, sizeof r->leaf) || !r->leaf[0]) return NX_ERROR_STATE;
     memcpy(leaf, r->leaf, strlen(r->leaf) + 1); *directory = r->directory; *witness = r->witness;
     r->directory = r->witness = -1; return NX_OK;
@@ -260,6 +303,20 @@ nx_result fp_reply_take_many(fp_reply *r, fp_pick *out, size_t capacity, size_t 
             pick->ordinal >= r->total || (i && r->picks[i - 1].ordinal >= pick->ordinal)) return NX_ERROR_STATE;
     }
     memcpy(out, r->picks, r->pick_count * sizeof(*out)); *count = r->pick_count; r->pick_count = 0;
+    return NX_OK;
+}
+nx_result fp_reply_take_save(fp_reply *r, fp_save_target *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    *out = (fp_save_target){.directory = -1, .witness = -1};
+    if (!r || r->result != AE_FILES_OK || r->directory < 4 ||
+        (r->save_kind != FP_SAVE_NEW && r->save_kind != FP_SAVE_EXISTING) ||
+        (r->save_kind == FP_SAVE_NEW ? r->witness != -1 : r->witness < 4 || r->directory == r->witness) ||
+        !memchr(r->leaf, 0, sizeof r->leaf) || !r->leaf[0] ||
+        !memchr(r->save_label, 0, sizeof r->save_label) || !r->save_label[0]) return NX_ERROR_STATE;
+    out->kind = r->save_kind; out->directory = r->directory; out->witness = r->witness;
+    memcpy(out->leaf, r->leaf, strlen(r->leaf) + 1);
+    memcpy(out->label, r->save_label, strlen(r->save_label) + 1);
+    r->directory = r->witness = -1; r->save_kind = FP_SAVE_NONE;
     return NX_OK;
 }
 nx_result fp_worker_stop(fp_worker *w) {
