@@ -1,5 +1,24 @@
 # Aetheri adoption: initial source assessment
 
+## Original Files hierarchy and complete-snapshot navigation (2026-11-07)
+
+Consumer `e12dc7f41520bd17ac4a0dac2f87f203d220a3fd` reuses the immutable original
+Aetheri Files model/view/controller `27de5cb228da0f37264fad64d964ad7a660d210d`
+and installed SDK artifacts from `8dbd3d961e5e7d4a51a40919e15051e31a67a887`.
+Each strict static/shared/sanitizer profile passes all four selected original
+CTests, the six original native peer modes and 15 additional independent native
+navigation steps. Actual nested-directory navigation rejects 4,097 entries,
+admits 4,096, reveals/focuses the final row, preserves held ancestry after rename,
+rejects a substituted inode until explicit refresh and retires stale references.
+All positive apps close normally; two isolated original-model counterexamples
+fail at the intended held-ancestor/inode checks. All 72 complete preliminary/final
+PPM pairs are identical. Exact sources, failures and remaining gates are in the
+[navigation report](files-navigation-report.md).
+
+Directory scans in this original application are synchronous. Async loading,
+full pickers/services, normal owner adoption, performance and physical/human
+acceptance remain open. Aetheri's live source and SDK pin remain unchanged.
+
 ## Native tree keyboard and assistive states (2026-11-07)
 
 Consumer `b786e8081491ed34417331a9096dd4cbb1438242` shares the portable tree
