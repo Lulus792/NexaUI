@@ -1,5 +1,27 @@
 # Aetheri adoption: initial source assessment
 
+## Original Files model worker for a picker (2026-11-07)
+
+Consumer `9a42f0133aca070e193ed7b09ba206ef749e02ab` adds an optional adapter over
+five original Files model/grapheme inputs from Aetheri
+`27de5cb228da0f37264fad64d964ad7a660d210d`, using installed SDK
+`ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`. All original model calls run on its
+single worker. Copied complete snapshots preserve 4,096 rows, 64 held levels,
+raw-name/escaped-label boundaries, original filtering and checked selected-file
+witnesses. State guards refuse old commands; READ rediscovers current state.
+Static Release, shared Release and ASan/UBSan/LSan each pass one CTest with six
+actual filesystem/core groups and zero observed model calls on the caller thread.
+Held Refresh permits core keyboard Cancel and GUI retirement before Stop/Join;
+orphaned selected descriptors are released. State/FD/UI-ownership counterexamples
+and an original-source mismatch reject at the intended checks.
+
+This advances the data-owner foundation, not native picker Q04 acceptance.
+Native editable filter/IME, list/breadcrumb semantics, error/Retry/Cancel and
+actual selection workflow remain next. The original ordinary Files application
+still scans synchronously; live Aetheri source, pin/default and SDK implementation
+are unchanged. Exact artifacts, commands, initial failure, bounded allocations
+and remaining gates are in the [worker report](file-picker-worker-report.md).
+
 ## Original manifest source changes and native identity (2026-11-07)
 
 Consumer `73eab048195dd8701336ad26971e88e8d6ec39c3` adds caller-selected artifact
