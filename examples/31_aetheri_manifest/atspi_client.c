@@ -53,6 +53,35 @@ static int phase(AtspiAccessible *app, int value, int open) {
     okay = okay && collect(app, 0, &seen, &nodes) && seen == (open && value == 3 ? 0xffffffffu : 0u);
     return okay;
 }
+/* Full containment is required whenever the row fits. An over-height row must
+   expose its complete width, start at the viewport top and remain focused while
+   actual PageDown input reaches its bottom. Never accept a merely partial row
+   as proof that the full label can be read. */
+static int read_edge(AtspiAccessible *app, AtspiAccessible *node, int bottom, int *pages) {
+    AtspiAccessible *area = lookup(app, german ? "Unterelemente" : "Children", ATSPI_ROLE_SCROLL_PANE);
+    AtspiComponent *a = node ? atspi_accessible_get_component_iface(node) : NULL;
+    AtspiComponent *b = area ? atspi_accessible_get_component_iface(area) : NULL;
+    GError *error = NULL;
+    AtspiRect *inner = a ? atspi_component_get_extents(a, ATSPI_COORD_TYPE_WINDOW, &error) : NULL;
+    AtspiRect *outer = b && !error ? atspi_component_get_extents(b, ATSPI_COORD_TYPE_WINDOW, &error) : NULL;
+    int result = 0;
+    if (!error && inner && outer && inner->width > 0 && inner->height > 0 && outer->height > 1 &&
+        inner->x >= outer->x && (long long)inner->x + inner->width <= (long long)outer->x + outer->width) {
+        if (inner->height <= outer->height) {
+            result = inner->y >= outer->y && (long long)inner->y + inner->height <= (long long)outer->y + outer->height;
+        } else if (bottom ? (long long)inner->y + inner->height == (long long)outer->y + outer->height : inner->y == outer->y) {
+            result = 2;
+            if (pages) *pages = 2 * (inner->height / outer->height + 1);
+        }
+    }
+    if (error) g_error_free(error);
+    if (inner) g_boxed_free(ATSPI_TYPE_RECT, inner);
+    if (outer) g_boxed_free(ATSPI_TYPE_RECT, outer);
+    if (a) g_object_unref(a);
+    if (b) g_object_unref(b);
+    if (area) g_object_unref(area);
+    return result;
+}
 int main(int argc, char **argv) {
     int okay = 0, initialized = 0;
     AtspiAccessible *desktop = NULL, *app = NULL, *branch = NULL, *old_retry = NULL, *last = NULL, *old_last = NULL;
@@ -92,7 +121,15 @@ int main(int argc, char **argv) {
         if (step == 2) CHECK(retired(old_retry) && !action(old_retry, "click"));
         if (step == 3 || step == 7 || automatic) {
             AtspiAccessible *item = lookup(app, paths[31], ATSPI_ROLE_TREE_ITEM);
-            CHECK(item && focus(item) && visible_in(app, item));
+            CHECK(item && focus(item));
+            int pages = 0, edge = read_edge(app, item, 0, &pages); CHECK(edge);
+            if (edge == 2) {
+                CHECK(pages > 0 && pages <= 64);
+                printf("READ_TOP %u %d\n", step, pages);
+                CHECK(fgets(line, sizeof(line), stdin) && sscanf(line, "READ %u", &actual) == 1 && actual == step);
+                CHECK(read_edge(app, item, 1, NULL) == 2 && state(item, ATSPI_STATE_FOCUSED));
+                printf("READ_BOTTOM %u\n", step);
+            }
             if (step == 3 || automatic) {
                 CHECK(action(item, "select"));
                 until = now() + 3; while (now() < until && !state(item, ATSPI_STATE_SELECTED)) pump();

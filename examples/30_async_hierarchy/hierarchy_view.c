@@ -195,6 +195,20 @@ nx_result ah_build(ah_view *v, nx_context *ctx, uint64_t parent, nx_rect box,
         else if (target_height <= scroll.viewport.height && target_y + target_height > v->scroll_y + scroll.viewport.height)
             v->scroll_y = target_y + target_height - scroll.viewport.height;
     }
+    /* The scrollbar has its own keyboard focus. As in the Settings example,
+       also let a focused over-height label be read without leaving that row. */
+    if (target_y >= 0 && target_height > scroll.viewport.height && !reveal) {
+        const nx_event *events = NULL; size_t count = 0;
+        result = nx_frame_events(ctx, &events, &count);
+        if (result != NX_OK) return result;
+        for (size_t i = 0; i < count; ++i) if (events[i].type == NX_EVENT_KEY_DOWN && !events[i].modifiers) {
+            if (events[i].key == NX_KEY_PAGE_DOWN) v->scroll_y += scroll.viewport.height * 0.5f;
+            else if (events[i].key == NX_KEY_PAGE_UP) {
+                v->scroll_y -= scroll.viewport.height * 0.5f;
+                if (v->scroll_y < 0) v->scroll_y = 0;
+            }
+        }
+    }
     float offset_x = 0; nx_scroll_info scroll_info;
     result = nx_scroll_area_begin(ctx, &scroll, &offset_x, &v->scroll_y, &scroll_info);
     if (result != NX_OK) return result;

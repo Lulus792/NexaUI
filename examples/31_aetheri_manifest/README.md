@@ -50,9 +50,11 @@ different list under retained IDs.
 The shared example reuses the existing Settings emergency grapheme-wrap helper
 and measures wrapped row heights. Semantic names retain all original bytes.
 Bounds below 280×160 and
-text outside 12–32 remain unsupported. A real-font core check retains scroll
-inside an over-height focused row; complete native reading still needs broader
-acceptance. This is not a complete component
+text outside 12–32 remain unsupported. Page Up/Down reads a focused row taller
+than the viewport without moving focus or continually revealing its top.
+Real-font checks retain that scroll; the independent native peer verifies both
+edges through actual keyboard input. Broader fonts/human reading remain open.
+This is not a complete component
 browser, general multi-branch/paged hierarchy or normal Aetheri integration.
 
 `run_source.py` generates tests through the original Python encoder and frozen
@@ -62,7 +64,7 @@ the worker has already read/verified/projected the actual manifest before the
 driver releases its result. The driver cannot choose success or fabricate rows.
 Production invocation above has no release gate and completes automatically.
 The native workflow observes wrong-artifact failure, Retry, all 32 full paths,
-last-row selection/focus/reveal, collapsed pending work, newer success followed
+last-row selection/focus/reveal or top-to-bottom reading, collapsed pending work, newer success followed
 by an ignored older failure, view replacement and Close with held work.
 
 Human/physical assistive review, services, artifact switching, payload file

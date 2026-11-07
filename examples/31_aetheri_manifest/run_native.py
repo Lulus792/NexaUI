@@ -168,6 +168,20 @@ def main():
                 permit(requests()[completed[step]])
             peer.stdin.write(f'CHECK {step}\n'.encode('ascii'))
             peer.stdin.flush()
+            wait(lambda: f'ACK {step}\n' in log('client') or f'READ_TOP {step} ' in log('client'),
+                 f'native row reading {step}', allowed_exit=peer)
+            reading = re.search(rf'^READ_TOP {step} (\d+)$', log('client'), re.M)
+            if reading:
+                pages = int(reading[1])
+                if not 0 < pages <= 64:
+                    raise RuntimeError('Invalid native reading page count')
+                capture('read-top-' + str(step))
+                before_keys = int(view().get('keys', '0'))
+                for _ in range(pages):
+                    key(109)
+                wait(lambda: int(view().get('keys', '0')) >= before_keys + 2 * pages, 'published PageDown reading')
+                peer.stdin.write(f'READ {step}\n'.encode('ascii'))
+                peer.stdin.flush()
             wait(lambda: f'ACK {step}\n' in log('client'), f'independent manifest state {step}', allowed_exit=peer)
             if args.automatic or step == 10:
                 expected_done.add(peer)

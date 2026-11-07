@@ -94,7 +94,13 @@ static int whole_model(void) {
         CHECK(nx_begin_frame(ctx, 360, 260, 0) == NX_OK &&
             ah_build(&v, ctx, 0, (nx_rect){8, 8, 344, 244}, &intent, &redraw) == NX_OK && nx_end_frame(ctx) == NX_OK);
         CHECK(nx_text_layout_height(v.layouts[35]) > 260);
-        v.scroll_y += 80; float scrolled = v.scroll_y;
+        float before_scroll = v.scroll_y;
+        nx_event page = {0}; page.type = NX_EVENT_KEY_DOWN; page.key = NX_KEY_PAGE_DOWN;
+        CHECK(nx_context_queue_event(ctx, &page) == NX_OK);
+        CHECK(nx_begin_frame(ctx, 360, 260, 0) == NX_OK &&
+            ah_build(&v, ctx, 0, (nx_rect){8, 8, 344, 244}, &intent, &redraw) == NX_OK && nx_end_frame(ctx) == NX_OK &&
+            v.scroll_y > before_scroll && nx_focus_id(ctx) == 131);
+        float scrolled = v.scroll_y;
         CHECK(nx_begin_frame(ctx, 360, 260, 0) == NX_OK &&
             ah_build(&v, ctx, 0, (nx_rect){8, 8, 344, 244}, &intent, &redraw) == NX_OK && nx_end_frame(ctx) == NX_OK &&
             v.scroll_y == scrolled);
