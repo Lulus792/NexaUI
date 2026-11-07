@@ -185,6 +185,7 @@ Start with a small example, then explore the parts your application needs.
 | [3D viewport shell](examples/15_3d_viewport_shell/README.md) | An application-rendered cube at multiple backing scales |
 | [Text raster density](examples/16_text_density/README.md) | Low-density versus density-matched cached masks |
 | [Widget text density](examples/17_widget_text_density/README.md) | Editable text, passwords and numeric fields at equal logical sizes |
+| [Async hierarchy](examples/30_async_hierarchy/README.md) | Loading/error/retry, correlated worker results and native focus/close lifetime |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
 | [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows/Linux runners |
 

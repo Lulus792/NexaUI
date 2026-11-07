@@ -1,6 +1,9 @@
 # Threading and simulation integration
 
-This document defines the target threading contract. The current C API already enforces exclusive context use by contract; snapshot and command-queue helpers are planned in ROADMAP tasks S01-S02.
+This document defines the threading contract. A context has exclusive owner-thread
+use. The public [snapshot exchange](simulation.md) and [command/completion
+channel](sim-channel.md) provide explicit handoff helpers; domain synchronization,
+worker lifetime and publication correlation remain application responsibilities.
 
 The platform event thread is the thread required by the native OS backend. A window must be created, polled, queried and destroyed on that same thread. A UI context has one designated owner thread during frame construction. Applications may own more than one context; context data is never shared implicitly. The headless renderer can run on another thread after commands are copied or while their owning context is kept unchanged. Renderer submission will specify its backend thread rules separately.
 
@@ -8,6 +11,12 @@ Simulation threads advance at a fixed timestep independent of UI refresh. They p
 
 UI interactions that control a simulation use a bounded command queue. The UI enqueues pause, step, reset or parameter changes; simulation threads apply them at a defined step boundary and publish completion/status. UI callbacks never execute inside the hot simulation loop. A bounded queue has an explicit full policy: return an error for important commands, or coalesce replaceable updates such as slider positions. It must not silently discard pause or reset requests.
 
-The application owns synchronization around its domain state. NexaUI will not claim arbitrary thread safety or hide a global lock. Tests for future handoff helpers must check publication ordering, slot reclamation, shutdown, queue-full behavior, slow UI and slow simulation cases. Benchmarks must report UI frame time and simulation step time separately.
+The application owns synchronization around its domain state. NexaUI does not
+claim arbitrary thread safety or hide a global lock. Handoff tests must check
+publication ordering, slot reclamation, shutdown, queue-full behavior, slow UI and
+slow simulation cases. Benchmarks must report UI frame time and simulation step
+time separately. The [async hierarchy consumer](../../examples/30_async_hierarchy/README.md)
+shows copied request identities, current-result admission and producer completion
+after view/window teardown using the existing channel and native poll-FD APIs.
 
 The initial [Windows UIA bridge](accessibility.md#initial-windows-uia-bridge) publishes an owned semantic snapshot on the window/context owner thread. Foreign COM callbacks read only that protected copy and enqueue bounded native requests; `nx_window_route_events` forwards them to the published context's owner-thread action queue. UIA callbacks never execute widget code or read context storage. Native snapshot teardown stays on the owner thread, while detached provider objects can live until external clients release their COM references.

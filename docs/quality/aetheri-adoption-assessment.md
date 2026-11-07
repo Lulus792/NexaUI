@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Asynchronous hierarchy presentation and producer lifetime (2026-11-07)
+
+Consumer `345394940ab4bb2d8b820efb9364cdfeca49baad` composes the existing installed
+SDK `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36` APIs into bounded hierarchy
+loading/error/retry/empty states. Its neutral declared producer is not another
+Aetheri model or service. Three strict installed profiles each pass the portable
+CTest; five native configurations each pass 18 independent assistive/key stages,
+including German 200% in a small high-contrast window and a light theme. Two
+actual controlled workers exercise out-of-order and old-view replies, queue
+publication and a last completion after UI/window teardown. Both threads join;
+accepted hosts/peers exit 0 with no sanitizer diagnostics. Two presentation-module
+counterexamples fail at their intended portable/native stale/status boundaries.
+All 45 final/preliminary PPM pairs are identical. The
+[async hierarchy report](async-hierarchy-report.md) records exact sources,
+artifacts, response/minimum-size bounds and remaining data-owner adoption gates.
+Original Files scans remain synchronous; its live source and SDK pin are untouched.
+
 ## Native built-in expansion action binding (2026-11-07)
 
 SDK `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36` now applies advertised native

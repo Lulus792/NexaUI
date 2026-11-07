@@ -59,5 +59,9 @@ responsibility.
 
 Windows MSVC tests cover capacity backpressure, allocation failure, duplicate
 completion rejection, reversed completion order, destroy cleanup and a
-10,000-command run with two workers. Native macOS/Linux and thread-sanitizer
-validation remain open.
+10,000-command run with two workers. The separate Linux
+[async hierarchy consumer](../../examples/30_async_hierarchy/README.md) exercises
+two real controlled workers, out-of-order/stale completion and producer end after
+UI teardown in static/shared/sanitizer profiles. That bounded seven-command
+workflow does not establish simulation throughput or arbitrary worker ownership.
+Native macOS and thread-sanitizer validation remain open.
