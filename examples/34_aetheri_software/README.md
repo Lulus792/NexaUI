@@ -6,17 +6,20 @@ identity/context, recipient account/UID and an explicit set of installation IDs.
 The presentation model receives only copied metadata. It owns no catalogue path,
 SQL, launcher, device service or permission capability.
 
-This step contains the read producer, immutable presentation model and bounded
-owner worker, not a native software-management window. The virtualized list,
-filter/details, native input/assistive publication, artifact dependency joins and
-production service transport remain subsequent integration work. The SDK's
-existing channel, list/tree, text, action and software-window APIs are retained.
+The example composes the read producer, immutable presentation model and bounded
+owner worker into a native Wayland selected-app observation window. It has a
+virtualized list, local filter and full metadata details. Artifact/dependency
+joins, full inventory and production management/service adoption remain separate
+work. The SDK's existing channel, list, text, action, semantics, clipboard, IME
+and software-window APIs are reused; no SDK implementation/API/version changes.
 
 ```sh
 cmake -S examples/34_aetheri_software -B build-software \
   -DCMAKE_PREFIX_PATH=/path/to/installed-nexaui \
-  -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri
-cmake --build build-software --target software_model_test software_worker_test
+  -DAETHERI_SOURCE_DIR=/path/to/immutable-original-aetheri \
+  -DSWG_TEST_FONT=/path/to/font.ttf
+cmake --build build-software --target software_model_test software_worker_test \
+  software_view_test software_native
 ctest --test-dir build-software --output-on-failure
 ```
 
@@ -25,8 +28,9 @@ The original Aetheri inputs reuse example 33's 67-input check at
 Keep that source immutable and independent from Aetheri's active checkout.
 Original build, OpenSSL and SQLite requirements remain in force; they belong to
 this optional application consumer, not to the NexaUI SDK. Worker tests use the
-installed SDK's channel and UI-context lifecycle. They exercise no native window,
-renderer, clipboard, IME or assistive provider.
+installed SDK's channel and UI-context lifecycle. Optional font tests exercise
+the view and headless pixels; the separate native workflow below exercises the
+Wayland software host and OS accessibility transport.
 
 ## Source and observation contract
 
@@ -114,7 +118,7 @@ reply's original negative errno. Do not interpret either as confirmed emptiness.
 The nonblocking close-on-exec pipe is a wake hint, not the result queue. Before
 sleeping, repeatedly receive until the channel returns no ticket. Receiving drains
 the pipe before taking a completion, so already queued completions must be drained
-without waiting for another byte. The future native host can use the existing
+without waiting for another byte. The native host uses the existing
 `nx_window_poll_with_fd`; no periodic polling or new SDK API is required.
 
 Stop rejects new admission. Work already dequeued can finish; queued work completes
@@ -135,3 +139,82 @@ the queued job is cancelled and all descriptors balance. This is UI-context/mode
 retirement, not native-window or AT-SPI retirement. Tests reuse `run_model.py`'s
 private metadata fixture and require unchanged Root/User database bytes and rows
 for all nine Root v2–v10 schemas. They create no real installed app payloads.
+
+## Selected-app window
+
+The trusted owner host accepts explicit configuration, never a GUI-selected source
+path or an administrative request from an ordinary client:
+
+```sh
+./build-software/software_native FONT ROOT_DIR ROOT_EPOCH ACCOUNT UID [INSTALL_ID ...]
+```
+
+Identities are 32 hexadecimal characters. The complete selected set is copied into
+the owner/worker; zero targets means no selected targets, not an empty installed
+inventory. The native host uses the normal accessible Wayland-only SDK profile
+with AT-SPI support and a working private/session bus. It draws with the software
+renderer. The source path and recipient still require the original owner's actual
+admission; this sample must not be exposed as an arbitrary-path privileged service.
+
+Filter/Read/Close are the list toolbar. Tab and Shift-Tab move through available
+controls; Up/Down/Home/End reach the complete selected result, including unmounted
+rows. Enter or a row's Select action opens read-only details. Back/Escape returns
+to that full installation ID. PageUp/PageDown scroll the details or list. Details
+include exact source epoch/boot/runtime, recipient/UID, install/component/publisher/
+scope/generation/artifact IDs and original revisions/gate state. Unavailable rows
+explain the ambiguity of absent/inactive/ineligible targets instead of claiming
+removal or denial. Successful gate metadata is explicitly no launch ticket,
+permission or running-process observation.
+
+Filter opens an editable draft. Apply/Enter searches component, observation label
+and full ID, with a 128-byte UTF-8 limit and no line breaks/NUL. Empty shows all
+selected targets. Back/Escape preserves the draft without applying it. Clipboard
+and IME use the existing field adapters; Apply waits for composition to finish.
+Read alone schedules another original observation. Filtering, details and resize
+do not dispatch any administrative work or scan. Selection remains a complete
+installation identity, independent of filtering.
+
+Each new observation or mode/filter replacement retires the previous semantic
+context before releasing it. Drafts and full-ID selection survive; late actions
+queued on the replaced context are discarded. Measured heights re-anchor the
+focused full ID after refresh instead of relying on estimated row positions.
+Undersized windows expose Close and retain the inspection state for restoration.
+Fonts, owner and bound window outlive the view. The host unpublishes/destroys the
+view, closes renderer/window, then stops/joins/drains the worker and releases fonts.
+The worker itself never accesses those UI objects. Native close during held SQL,
+pending foreign clipboard and resize/monitor-migration stress remain separate
+software-composition checks; prior Recovery evidence does not silently cover them.
+
+`SWG_GERMAN`, `SWG_LARGE`, `SWG_CONTRAST`, `SWG_LIGHT` and `SWG_SMALL` choose
+example styles; large text is 32 logical pixels versus 16 normally. Motion is
+reduced and all themes use opaque existing tokens. Font tests cover 800×600 dark
+at 1×, 360×300 German/large/high contrast at 2×, and 480×360 light at 1.25×.
+Long labels wrap and detail/help content scrolls; 64×64 and 240×96 keep Close
+reachable. The declared 100,000-target synthetic view mounts fewer than 200
+semantic nodes and tests full-ID navigation/filtering and allocation rollback;
+it is neither real app enumeration nor an accepted memory/latency budget.
+
+## Independent native check
+
+`atspi_client.c` links only OS libatspi/GLib helpers. Build it with
+`-DSWG_BUILD_ATSPI_CLIENT=ON` where complete development pkg-config metadata exists.
+The recorded private carrier instead uses real headers and versioned libraries
+with an explicit compiler command because its full pkg-config dependency chain is
+unavailable. The command and input hashes are retained with the native results.
+
+```sh
+python3 examples/34_aetheri_software/run_native.py \
+  --source /path/to/immutable-original-aetheri \
+  --model /path/to/software_model_test --host /path/to/software_native \
+  --client /path/to/software_atspi --font /path/to/font.ttf \
+  --server /path/to/test_compositor_server --registry /path/to/at-spi2-registryd \
+  --work-dir /private/fresh/native-run --german --large --small --contrast --ime
+```
+
+This creates private metadata fixtures/bus/socket, exercises ten OS-peer checkpoints
+and compares exact Root/User database bytes/rows before/after. Original compositor
+virtual keys, IME preedit/commit and independent AT-SPI reads check focus, full text,
+old-reference retirement, retained filter draft and selected installation. The
+host exits by its real focused Close button, then all owned children are reaped.
+No physical keyboard/monitor, installed production IME, spoken screenreader or
+current production Aetheri service acceptance is inferred.

@@ -1,0 +1,80 @@
+/* Independent OS transport peer. No NexaUI headers, types or linkage. */
+#define main hierarchy_peer_main
+#include "../30_async_hierarchy/atspi_client.c"
+#undef main
+static const char *label(const char *en,const char *de){return german?de:en;}
+static AtspiAccessible *wait_node(AtspiAccessible *desktop,unsigned long pid,AtspiAccessible **app,const char *name,AtspiRole role){
+    double until=now()+4;AtspiAccessible *node=NULL;
+    while(!node&&now()<until){AtspiAccessible *fresh=target(desktop,pid);if(fresh){if(*app)g_object_unref(*app);*app=fresh;node=lookup(*app,name,role);}if(!node)pump();}return node;
+}
+static int checkpoint(unsigned n){printf("STEP %u\n",n);char line[64];unsigned actual=999;return fgets(line,sizeof line,stdin)&&sscanf(line,"CHECK %u",&actual)==1&&actual==n;}
+static int text_equal(AtspiAccessible *node,const char *expected){
+    AtspiText *t=node?atspi_accessible_get_text_iface(node):NULL;GError *error=NULL;char *s=t?atspi_text_get_text(t,0,-1,&error):NULL;int yes=!error&&s&&!strcmp(s,expected);
+    g_free(s);if(error)g_error_free(error);if(t)g_object_unref(t);return yes;
+}
+static int replace_text(AtspiAccessible *node,const char *text){
+    AtspiEditableText *t=node?atspi_accessible_get_editable_text_iface(node):NULL;GError *error=NULL;
+    int yes=t&&atspi_editable_text_set_text_contents(t,text,&error)&&!error;if(error)g_error_free(error);if(t)g_object_unref(t);return yes;
+}
+static int rectangle(AtspiAccessible *node,AtspiRect *out){
+    AtspiComponent *c=node?atspi_accessible_get_component_iface(node):NULL;GError *error=NULL;AtspiRect *r=c?atspi_component_get_extents(c,ATSPI_COORD_TYPE_WINDOW,&error):NULL;
+    int yes=!error&&r;if(yes)*out=*r;if(error)g_error_free(error);if(r)g_boxed_free(ATSPI_TYPE_RECT,r);if(c)g_object_unref(c);return yes;
+}
+static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessible *back,const char *id){
+    int okay=0;AtspiAccessible *area=lookup(app,label("App observation details","App-Beobachtungsdetails"),ATSPI_ROLE_SCROLL_PANE);AtspiText *t=atspi_accessible_get_text_iface(node);GError *error=NULL;
+    char *text=t?atspi_text_get_text(t,0,-1,&error):NULL;char expected[80];snprintf(expected,sizeof expected,label("Selected installation: %s","Ausgewählte Installation: %s"),id);
+    CHECK(t&&!error&&text&&strstr(text,expected)&&strstr(text,"Runtime:")&&strstr(text,label("Catalogue revision:","Katalogrevision:"))&&g_utf8_validate(text,-1,NULL));
+    CHECK(atspi_text_get_caret_offset(t,&error)==-1&&!error&&atspi_text_get_n_selections(t,&error)==0&&!error&&!replace_text(node,"changed"));
+    AtspiRect first,outer,current;CHECK(rectangle(node,&first)&&rectangle(area,&outer)&&first.height>0&&outer.height>0&&state(back,ATSPI_STATE_FOCUSED));
+    long long overflow=(long long)first.y+first.height-outer.y-outer.height;unsigned pages=overflow>0?(unsigned)((2*overflow+outer.height-1)/outer.height):0;CHECK(pages<256);
+    if(!pages)CHECK(first.y>=outer.y&&(long long)first.y+first.height<=outer.y+outer.height);
+    printf("READ_PAGES %u\n",pages);current=first;
+    for(unsigned direction=0;direction<2;++direction)for(unsigned i=0;i<pages;++i){
+        char line[64],wanted[64];snprintf(wanted,sizeof wanted,"PAGE %c %u\n",direction?'U':'D',i);CHECK(fgets(line,sizeof line,stdin)&&!strcmp(line,wanted));
+        AtspiRect next;CHECK(rectangle(node,&next)&&state(back,ATSPI_STATE_FOCUSED));
+        CHECK(direction?next.y>=current.y&&(long long)next.y-current.y<=outer.height/2+1:next.y<=current.y&&(long long)current.y-next.y<=outer.height/2+1);current=next;
+        if(!direction&&i+1==pages)CHECK((long long)current.y+current.height<=outer.y+outer.height&&(long long)current.y+current.height>outer.y+outer.height/2);
+        printf("PAGE_ACK %c %u\n",direction?'U':'D',i);
+    }
+    CHECK(current.y==first.y);okay=1;
+cleanup:
+    g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
+}
+int main(int argc,char **argv){
+    int okay=0,initialized=0,ime=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
+    CHECK(argc>=4&&argc<=6);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else CHECK(0);}
+    char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
+    setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
+    old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
+    button=lookup(app,label("Filter","Filter"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;
+    CHECK(checkpoint(0));CHECK(!retired(old_first));puts("ACK 0");
+    CHECK(checkpoint(1));last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&action(last,"select"));puts("ACK 1");
+    CHECK(checkpoint(2));button=wait_node(desktop,pid,&app,label("Back","Zurück"),ATSPI_ROLE_PUSH_BUTTON);detail=lookup(app,label("Selected installation details","Details der ausgewählten Installation"),ATSPI_ROLE_LABEL);
+    CHECK(button&&detail&&retired(old_first)&&retired(last)&&!action(last,"select")&&read_details(app,detail,button,id));g_object_unref(button);button=NULL;puts("ACK 2");
+    CHECK(checkpoint(3));CHECK(retired(detail));g_object_unref(detail);detail=NULL;g_object_unref(last);last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED));
+    button=lookup(app,label("Read","Lesen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&action(button,"click"));g_object_unref(button);button=NULL;puts("ACK 3");
+    CHECK(checkpoint(4));CHECK(retired(last)&&!action(last,"select"));g_object_unref(last);last=NULL;
+    button=wait_node(desktop,pid,&app,label("Filter","Filter"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&action(button,"click"));g_object_unref(button);button=NULL;puts("ACK 4");
+    CHECK(checkpoint(5));field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"x")&&state(field,ATSPI_STATE_FOCUSED));puts("ACK 5");
+    CHECK(checkpoint(6));CHECK(text_equal(field,"x"));button=lookup(app,label("Apply","Anwenden"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button);
+    if(ime)CHECK(!state(button,ATSPI_STATE_ENABLED)&&!action(button,"click"));
+    g_object_unref(button);button=NULL;puts("ACK 6");
+    CHECK(checkpoint(7));CHECK(text_equal(field,ime?"xé":"x"));button=lookup(app,label("Apply","Anwenden"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_ENABLED));g_object_unref(button);button=NULL;puts("ACK 7");
+    CHECK(checkpoint(8));CHECK(retired(field));g_object_unref(field);field=NULL;button=wait_node(desktop,pid,&app,label("No matching selected targets","Keine passenden ausgewählten Ziele"),ATSPI_ROLE_LABEL);CHECK(button);g_object_unref(button);
+    button=lookup(app,label("Filter","Filter"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&action(button,"click"));g_object_unref(button);button=NULL;
+    field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,ime?"xé":"x")&&replace_text(field,"")&&focus(field));
+    double until=now()+3;while(now()<until&&!text_equal(field,""))pump();CHECK(text_equal(field,""));puts("ACK 8");
+    CHECK(checkpoint(9));CHECK(retired(field));g_object_unref(field);field=NULL;last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&state(last,ATSPI_STATE_SELECTED));
+    button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 9");
+    puts("SOFTWARE_NATIVE_SELECTED_ROWS_READONLY_DETAILS_RETIRED_REFERENCES_KEYBOARD_FILTER_SELECTION_OK");okay=1;
+cleanup:
+    if(button)g_object_unref(button);
+    if(field)g_object_unref(field);
+    if(detail)g_object_unref(detail);
+    if(last)g_object_unref(last);
+    if(old_first)g_object_unref(old_first);
+    if(app)g_object_unref(app);
+    if(desktop)g_object_unref(desktop);
+    if(initialized)atspi_exit();
+    return okay?0:1;
+}
