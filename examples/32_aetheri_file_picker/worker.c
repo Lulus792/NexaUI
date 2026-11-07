@@ -27,7 +27,7 @@ static void free_reply(void *user, void *data, size_t bytes) {
     free(r);
 }
 static int valid(const fp_command *c) {
-    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_PICK &&
+    return c && c->key.view && c->key.request && c->operation >= FP_READ && c->operation <= FP_PICK_DIRECTORY &&
         (c->operation == FP_READ || c->expected_state) &&
         c->depth <= AE_FILES_DEPTH && c->ordinal < AE_FILES_ENTRIES &&
         (c->show_hidden == 0 || c->show_hidden == 1) && c->query_bytes <= AE_FILES_QUERY;
@@ -67,6 +67,13 @@ static enum ae_files_result apply(fp_worker *w, const fp_command *c, fp_reply *r
         enum ae_files_result selected = select_ordinal(w->files, c->ordinal);
         return selected == AE_FILES_OK ? ae_files_open_selected(w->files, &r->directory, &r->witness, r->leaf) : selected;
     }
+    case FP_PICK_DIRECTORY:
+        r->directory = ae_files_directory(w->files);
+        if (r->directory < 0) return AE_FILES_IO;
+        r->witness = fcntl(r->directory, F_DUPFD_CLOEXEC, 4);
+        if (r->witness < 0) { close(r->directory); r->directory = -1; return AE_FILES_IO; }
+        r->leaf[0] = '.'; r->leaf[1] = 0;
+        return AE_FILES_OK;
     default: return AE_FILES_INVALID;
     }
 }

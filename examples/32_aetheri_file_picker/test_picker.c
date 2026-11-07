@@ -165,7 +165,29 @@ int main(int argc,char **argv) {
     CHECK(nx_focus_id(ctx)==FP_RECOVER);p.scroll_y=0;
     CHECK(frame(&p,ctx,720,580,&intent)&&p.scroll_y==0&&nx_focus_id(ctx)==FP_RECOVER);
     nx_context_destroy(ctx);fp_picker_destroy(&p);CHECK(fp_worker_destroy(&worker)==NX_OK);
+    /* Directory selection remains available without a selected entry, even
+       when the real current folder is empty or filtered to no matches. */
+    root=open(argv[2],O_RDONLY|O_DIRECTORY|O_CLOEXEC);CHECK(root>=0&&fp_worker_start(root,&worker)==NX_OK);close(root);
+    CHECK(fp_picker_init(&q,worker,fonts,90)==NX_OK&&nx_context_create(NULL,&initial_ctx)==NX_OK);q.directories=1;q.german=1;q.text_size=32;
+    intent=(fp_intent){0};CHECK(frame(&q,initial_ctx,360,300,&intent)&&nx_semantics_request_action(initial_ctx,FP_OPEN,NX_ACTION_PRESS)==NX_ERROR_STATE);
+    clear=(fp_command){0};clear.operation=FP_READ;CHECK(fp_picker_request(&q,&clear)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
+    intent=(fp_intent){0};CHECK(frame(&q,initial_ctx,360,300,&intent)&&named(initial_ctx,FP_OPEN,"Diesen Ordner auswählen"));
+    const fp_reply *directory_view=fp_picker_snapshot(&q);size_t regular=SIZE_MAX;
+    for(size_t i=0;i<directory_view->count;++i)if(directory_view->rows[i].entry.kind==AE_FILES_REGULAR){regular=directory_view->rows[i].ordinal;break;}
+    CHECK(regular!=SIZE_MAX);end.key=NX_KEY_ENTER;CHECK(fp_picker_key(&q,FP_ROWS+regular,&end,&intent)&&!intent.requested);
+    clear.operation=FP_FILTER;memcpy(clear.query,"no-such-entry",13);clear.query_bytes=13;
+    CHECK(fp_picker_request(&q,&clear)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
+    CHECK(fp_picker_snapshot(&q)->count==0);intent=(fp_intent){0};CHECK(frame(&q,initial_ctx,360,300,&intent));
+    CHECK(fp_picker_prepare_size(&q,nx_focus_id(initial_ctx),64,64,&intent));nx_context_destroy(initial_ctx);CHECK(nx_context_create(NULL,&initial_ctx)==NX_OK&&frame(&q,initial_ctx,64,64,&intent));
+    CHECK(named(initial_ctx,FP_COMPACT_HELP,"Vergrößern Sie dieses Fenster, um einen Ordner auszuwählen. Ordner und Entwurf bleiben erhalten.")&&nx_semantics_request_action(initial_ctx,FP_OPEN,NX_ACTION_PRESS)==NX_ERROR_STATE&&!intent.requested);
+    CHECK(fp_picker_prepare_size(&q,nx_focus_id(initial_ctx),360,300,&intent));nx_context_destroy(initial_ctx);CHECK(nx_context_create(NULL,&initial_ctx)==NX_OK&&frame(&q,initial_ctx,360,300,&intent));
+    CHECK(nx_semantics_request_action(initial_ctx,FP_OPEN,NX_ACTION_PRESS)==NX_OK&&frame(&q,initial_ctx,360,300,&intent));
+    CHECK(intent.requested&&intent.command.operation==FP_PICK_DIRECTORY);
+    CHECK(fp_picker_request(&q,&intent.command)==NX_OK&&receive(worker,&m)&&fp_picker_observe(&q,&m));nx_sim_message_dispose(&m);
+    int selected_directory=-1,selected_witness=-1;char directory_leaf[256];CHECK(fp_reply_take(fp_reply_get(&q.observation),&selected_directory,&selected_witness,directory_leaf)==NX_OK&&!strcmp(directory_leaf,"."));
+    nx_context_destroy(initial_ctx);fp_picker_destroy(&q);CHECK(fp_worker_destroy(&worker)==NX_OK);close(selected_directory);close(selected_witness);
     nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);
+    puts("PICKER_DIRECTORY_MODE_UNREAD_REFUSAL_FILTERED_EMPTY_AND_FILE_ENTER_REFUSAL_VERIFIED");
     puts("PICKER_RETRY_ORIGINAL_ENTER_INITIAL_READ_AND_COMPACT_SIZE_MATRIX_VERIFIED");
     puts("PICKER_UNKNOWN_FILTERED_EMPTY_AND_RETAINED_EMPTY_COUNTS_VERIFIED");
     puts("PICKER_CORRELATION_PAGING_FILTER_AND_REALFONT_REFLOW_VERIFIED");return 0;

@@ -7,6 +7,9 @@
 static nx_utf8_span span(const char *s) { return (nx_utf8_span){s, strlen(s)}; }
 static int valid_query(nx_utf8_span text,void *user) { (void)user;return text.length<=AE_FILES_QUERY; }
 static const char *word(const fp_picker *p, const char *en, const char *de) { return p->german ? de : en; }
+static const char *open_name(const fp_picker *p) {
+    return p->directories ? word(p,"Choose this folder","Diesen Ordner auswählen") : word(p,"Open","Öffnen");
+}
 const fp_reply *fp_picker_snapshot(const fp_picker *p) { return p ? fp_reply_get(&p->observation) : NULL; }
 static void format_counts(const fp_picker *p, char *text, size_t capacity) {
     const fp_reply *r = fp_picker_snapshot(p);
@@ -65,7 +68,7 @@ int fp_picker_observe(fp_picker *p, nx_sim_message *m) {
         p->error = NX_OK; p->selected = 0; p->page = 0; p->scroll_y = 0;
         p->retryable = r->result == AE_FILES_IO || r->result == AE_FILES_NOMEM || r->result == AE_FILES_LIMIT;
         if(r->result==AE_FILES_LIMIT&&p->operation==FP_ENTER&&r->depth==AE_FILES_DEPTH)p->retryable=0;
-        if (r->result == AE_FILES_OK && p->operation != FP_PICK)
+        if (r->result == AE_FILES_OK && p->operation != FP_PICK && p->operation != FP_PICK_DIRECTORY)
             p->error = nx_text_field_set_text(p->query, r->query, strlen(r->query));
         if(p->error!=NX_OK){p->last_command=(fp_command){0};p->last_command.operation=FP_READ;p->retryable=1;}
     }
@@ -85,7 +88,7 @@ static int command(fp_intent *intent, fp_operation op) {
 }
 static void open_selected(fp_picker *p, fp_intent *intent) {
     const fp_row *row = selected_row(p);
-    if (!p->busy && row && (row->entry.kind == AE_FILES_DIRECTORY || row->entry.kind == AE_FILES_REGULAR)) {
+    if (!p->busy && row && (row->entry.kind == AE_FILES_DIRECTORY || (!p->directories && row->entry.kind == AE_FILES_REGULAR))) {
         if(command(intent, row->entry.kind == AE_FILES_DIRECTORY ? FP_ENTER : FP_PICK))intent->command.ordinal = row->ordinal;
     }
 }
@@ -110,7 +113,7 @@ static const char *status(const fp_picker *p) {
     const fp_reply *r = fp_picker_snapshot(p);
     if (!r) return word(p, "Folder not read", "Ordner noch nicht gelesen");
     switch (r->result) {
-    case AE_FILES_OK: return r->count ? word(p, "Select a file or open a folder", "Datei auswählen oder Ordner öffnen") :
+    case AE_FILES_OK: return r->count ? p->directories ? word(p,"Open a subfolder, or choose this folder","Unterordner öffnen oder diesen Ordner auswählen") : word(p, "Select a file or open a folder", "Datei auswählen oder Ordner öffnen") :
         word(p, "No matching entries", "Keine passenden Einträge");
     case AE_FILES_CHANGED: return word(p, "Folder or entry changed. Refresh before retrying.", "Ordner oder Eintrag geändert. Vor erneutem Versuch aktualisieren.");
     case AE_FILES_LIMIT:
@@ -149,7 +152,7 @@ static nx_result layouts(fp_picker *p, double width) {
         word(p,"Refresh","Aktualisieren"), word(p,"Show hidden","Verborgene anzeigen"),
         word(p,"Apply filter","Filter anwenden"), word(p,"Folder path","Ordnerpfad"),
         status(p), word(p,"Previous page","Vorherige Seite"), word(p,"Next page","Nächste Seite"), counts,
-        word(p,"Open","Öffnen"), word(p,"Cancel","Abbrechen"),
+        open_name(p), word(p,"Cancel","Abbrechen"),
         r && r->state ? r->ancestors[r->depth] : word(p,"No current folder","Kein aktueller Ordner"),
         recovery_name(p), "", ""
     };
@@ -211,7 +214,7 @@ int fp_picker_compact(fp_picker *p,float width,float window_height) {
         p->size_width=width;p->size_text=p->text_size;p->size_german=p->german;p->size_supported=1;
         double content=width-48,half=(content-8)/2,footer=width<480?content-24:half-24;
         const double widths[]={footer,footer,half-24,half-24,half-24,half-40,content-40};
-        const char *texts[]={word(p,"Open","Öffnen"),word(p,"Cancel","Abbrechen"),word(p,"Root","Wurzelordner"),
+        const char *texts[]={open_name(p),word(p,"Cancel","Abbrechen"),word(p,"Root","Wurzelordner"),
             word(p,"Up","Übergeordneter Ordner"),word(p,"Refresh","Aktualisieren"),word(p,"Show hidden","Verborgene anzeigen"),word(p,"Folder path","Ordnerpfad")};
         float heights[2]={0};
         for(size_t i=0;i<7;++i) {
@@ -248,7 +251,9 @@ static nx_result resize_grip(fp_picker *p,nx_context *ctx,float width,float wind
     return NX_OK;
 }
 static nx_result compact_build(fp_picker *p,nx_context *ctx,float width,float window_height,fp_intent *intent,int *redraw) {
-    const char *help=word(p,"Enlarge this window to continue choosing a file. Your folder and draft are retained.",
+    const char *help=p->directories ? word(p,"Enlarge this window to continue choosing a folder. Your folder and draft are retained.",
+        "Vergrößern Sie dieses Fenster, um einen Ordner auszuwählen. Ordner und Entwurf bleiben erhalten.") :
+        word(p,"Enlarge this window to continue choosing a file. Your folder and draft are retained.",
         "Vergrößern Sie dieses Fenster, um eine Datei auszuwählen. Ordner und Entwurf bleiben erhalten.");
     float pad=fminf(8,fminf(width,window_height)*0.05f),w=width-2*pad;
     if(!p->layout_compact || p->layout_width!=w || p->layout_size!=p->text_size) {
@@ -397,8 +402,10 @@ nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float w
     TRY(nx_scroll_area_end(ctx));
     int open=selected_row(p)!=NULL;
     const fp_row *chosen=selected_row(p);if(chosen&&chosen->entry.kind!=AE_FILES_DIRECTORY&&chosen->entry.kind!=AE_FILES_REGULAR)open=0;
+    if(p->directories)open=r&&r->state;
     int stacked=width<480;float open_height=stacked?height(p,p->labels[10]):footer;
-    TRY(button(p,ctx,FP_OPEN,1,(nx_rect){16,window_height-footer-12,stacked?width-32:(width-40)/2,open_height},p->labels[10],word(p,"Open","Öffnen"),p->busy||!open,&clicked));if(clicked)open_selected(p,intent);
+    TRY(button(p,ctx,FP_OPEN,1,(nx_rect){16,window_height-footer-12,stacked?width-32:(width-40)/2,open_height},p->labels[10],open_name(p),p->busy||!open,&clicked));
+    if(clicked){if(p->directories)command(intent,FP_PICK_DIRECTORY);else open_selected(p,intent);}
     TRY(button(p,ctx,FP_CANCEL,1,(nx_rect){stacked?16:24+(width-40)/2,stacked?window_height-footer-12+open_height+8:window_height-footer-12,stacked?width-32:(width-40)/2,stacked?height(p,p->labels[11]):footer},p->labels[11],word(p,"Cancel","Abbrechen"),0,&clicked));if(clicked)intent->cancel=1;
     if(p->restore) {if(nx_focus_set(ctx,p->restore)==NX_OK){p->restore=0;*redraw=1;}}
     return resize_grip(p,ctx,width,window_height,intent);

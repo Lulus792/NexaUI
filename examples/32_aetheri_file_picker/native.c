@@ -43,8 +43,8 @@ int main(int argc,char **argv) {
     int closed=fclose(file);file=NULL;REQUIRE(!closed);
     REQUIRE(nx_font_open(bytes,(size_t)size,NULL,&font)==NX_OK&&nx_font_collection_create(NULL,&fonts)==NX_OK&&nx_font_collection_add(fonts,font)==NX_OK);
     REQUIRE(context(&ctx,theme)&&fp_picker_init(&picker,worker,fonts,1)==NX_OK);
-    picker.german=getenv("FP_GERMAN")!=NULL;picker.text_size=getenv("FP_LARGE")?32:16;
-    nx_window_desc desc={picker.german?"Datei auswählen":"Choose a file",getenv("FP_SMALL")?360:720,getenv("FP_SMALL")?300:580,0,{0}};
+    picker.german=getenv("FP_GERMAN")!=NULL;picker.text_size=getenv("FP_LARGE")?32:16;picker.directories=getenv("FP_DIRECTORY")!=NULL;
+    nx_window_desc desc={picker.directories?(picker.german?"Ordner auswählen":"Choose a folder"):(picker.german?"Datei auswählen":"Choose a file"),getenv("FP_SMALL")?360:720,getenv("FP_SMALL")?300:580,0,{0}};
     REQUIRE(nx_window_create(&desc,&window)==NX_OK&&nx_software_view_open(window,&renderer)==NX_OK);
     pending.requested=1;pending.command.operation=FP_READ;
     while(!done) {
@@ -57,10 +57,12 @@ int main(int argc,char **argv) {
             if(accepted) {
                 REQUIRE(replace_context(window,&ctx,theme));dirty=1;
                 const fp_reply *r=fp_picker_snapshot(&picker);
-                if(picker.operation==FP_PICK&&r&&r->result==AE_FILES_OK) {
+                if((picker.operation==FP_PICK||picker.operation==FP_PICK_DIRECTORY)&&r&&r->result==AE_FILES_OK) {
                     char leaf[AE_FILES_NAME+1];
                     REQUIRE(fp_reply_take(fp_reply_get(&picker.observation),&selected_directory,&selected_witness,leaf)==NX_OK);
-                    struct stat d,s;REQUIRE(fstat(selected_directory,&d)==0&&S_ISDIR(d.st_mode)&&fstat(selected_witness,&s)==0&&S_ISREG(s.st_mode));
+                    struct stat d,s;REQUIRE(fstat(selected_directory,&d)==0&&S_ISDIR(d.st_mode)&&fstat(selected_witness,&s)==0);
+                    if(picker.directories)REQUIRE(S_ISDIR(s.st_mode)&&d.st_dev==s.st_dev&&d.st_ino==s.st_ino&&!strcmp(leaf,"."));
+                    else REQUIRE(S_ISREG(s.st_mode));
                     printf("PICKED leaf_hex=");for(size_t i=0;i<strlen(leaf);++i)printf("%02x",(unsigned char)leaf[i]);
                     printf(" device=%"PRIuMAX" inode=%"PRIuMAX"\n",(uintmax_t)s.st_dev,(uintmax_t)s.st_ino);
                     picked=1;done=1;break;

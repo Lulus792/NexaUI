@@ -39,6 +39,7 @@ WRAP(unsigned, ae_files_depth, (const struct ae_files *f), (f))
 WRAP(uint64_t, ae_files_revision, (const struct ae_files *f), (f))
 WRAP(const char *, ae_files_query, (const struct ae_files *f), (f))
 WRAP(const char *, ae_files_ancestor_label, (const struct ae_files *f, unsigned d), (f, d))
+WRAP(int, ae_files_directory, (const struct ae_files *f), (f))
 enum ae_files_result __real_ae_files_open_selected(const struct ae_files *, int *, int *, char *);
 enum ae_files_result __wrap_ae_files_open_selected(const struct ae_files *f, int *d, int *w, char *n) {
     note(); enum ae_files_result result = __real_ae_files_open_selected(f, d, w, n);
@@ -273,11 +274,39 @@ static int orphan(int base) {
     CHECK(fp_worker_destroy(&w) == NX_OK); close(root);
     puts("PICKER_ABANDONED_WITNESSES_AND_FAILED_ROOT_VERIFIED"); return 0;
 }
+static int directory_selection(int base) {
+    CHECK(!mkdirat(base,"directory-selection",0700));int root=openat(base,"directory-selection",O_DIRECTORY|O_CLOEXEC);CHECK(root>=0);
+    unsigned before=descriptors();fp_worker *w=NULL;CHECK(fp_worker_start(root,&w)==NX_OK);
+    nx_sim_message m={0};fp_command c=command(FP_READ,0);CHECK(ask(w,&c,&m));fp_reply *r=fp_reply_get(&m);
+    CHECK(r->state==1&&r->count==0&&r->total==0);nx_sim_message_dispose(&m);
+    c=command(FP_PICK_DIRECTORY,1);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);
+    int d=-1,witness=-1,x=-1,y=-1;char leaf[256],again[256];struct stat a,b,expected;
+    CHECK(r&&r->state==2&&fp_reply_take(r,&d,&witness,leaf)==NX_OK&&!strcmp(leaf,".")&&d!=witness);
+    CHECK((fcntl(d,F_GETFD)&FD_CLOEXEC)&&(fcntl(witness,F_GETFD)&FD_CLOEXEC));
+    CHECK(!fstat(d,&a)&&!fstat(witness,&b)&&!fstat(root,&expected)&&S_ISDIR(a.st_mode)&&S_ISDIR(b.st_mode)&&a.st_dev==expected.st_dev&&a.st_ino==expected.st_ino&&a.st_dev==b.st_dev&&a.st_ino==b.st_ino);
+    CHECK(fp_reply_take(r,&x,&y,again)==NX_ERROR_STATE&&x==-1&&y==-1);close(d);close(witness);nx_sim_message_dispose(&m);
+    c=command(FP_PICK_DIRECTORY,1);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_CHANGED&&r->state==2&&r->directory==-1&&r->witness==-1);nx_sim_message_dispose(&m);
+    CHECK(!mkdirat(root,"held",0700)&&file_at(root,"regular")&&!symlinkat("held",root,"link"));
+    c=command(FP_REFRESH,2);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);size_t child=ordinal(r,"held");CHECK(r->result==AE_FILES_OK&&r->state==3&&child!=SIZE_MAX);nx_sim_message_dispose(&m);
+    c=command(FP_ENTER,3);c.ordinal=child;CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_OK&&r->depth==1&&r->state==4);nx_sim_message_dispose(&m);
+    CHECK(!renameat(root,"held",root,"moved")&&!mkdirat(root,"held",0700));
+    c=command(FP_PICK_DIRECTORY,4);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);
+    CHECK(r->state==5&&fp_reply_take(r,&d,&witness,leaf)==NX_OK&&!strcmp(leaf,"."));
+    CHECK(!fstat(witness,&b)&&S_ISDIR(b.st_mode)&&!fstatat(root,"moved",&expected,AT_SYMLINK_NOFOLLOW)&&b.st_dev==expected.st_dev&&b.st_ino==expected.st_ino);
+    CHECK(!fstatat(root,"held",&a,AT_SYMLINK_NOFOLLOW)&&(a.st_dev!=b.st_dev||a.st_ino!=b.st_ino));nx_sim_message_dispose(&m);
+    unsigned active=descriptors();uint64_t state=5;
+    for(unsigned i=0;i<64;++i){c=command(FP_PICK_DIRECTORY,state);CHECK(ask(w,&c,&m));r=fp_reply_get(&m);CHECK(r->result==AE_FILES_OK&&r->state==state+1);state=r->state;nx_sim_message_dispose(&m);CHECK(descriptors()==active);}
+    c=command(FP_PICK_DIRECTORY,state);uint64_t ticket;CHECK(fp_worker_submit(w,&c,&ticket)==NX_OK);
+    struct pollfd wake={fp_worker_wake_fd(w),POLLIN,0};CHECK(poll(&wake,1,5000)==1);
+    CHECK(fp_worker_destroy(&w)==NX_OK&&!fstat(witness,&a)&&a.st_dev==b.st_dev&&a.st_ino==b.st_ino);
+    close(d);close(witness);CHECK(descriptors()==before);close(root);
+    puts("PICKER_CURRENT_ROOT_RENAMED_DIRECTORY_STALE_ONCE_AND_ABANDONED_FDS_VERIFIED");return 0;
+}
 int main(int argc, char **argv) {
     CHECK(argc == 2 || (argc == 3 && !strcmp(argv[2], "lifetime")));
     ui_thread = pthread_self(); int base = open(argv[1], O_DIRECTORY | O_CLOEXEC); CHECK(base >= 0);
     if (argc == 3) CHECK(!lifetime(base));
-    else CHECK(!navigation(base) && !limits(base) && !depth(base) && !validation(base) && !lifetime(base) && !orphan(base));
+    else CHECK(!navigation(base) && !limits(base) && !depth(base) && !validation(base) && !lifetime(base) && !orphan(base) && !directory_selection(base));
     CHECK(!atomic_load(&wrong_thread)); close(base);
     printf("PICKER_WORKER_VERIFIED model_calls=%u wrong_thread=%u header_bytes=%zu row_bytes=%zu max_reply_bytes=%zu\n",
         atomic_load(&calls), atomic_load(&wrong_thread), offsetof(fp_reply, rows), sizeof(fp_row),

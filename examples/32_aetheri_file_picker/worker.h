@@ -9,7 +9,7 @@
 typedef struct fp_worker fp_worker;
 typedef struct fp_key { uint64_t view, request; } fp_key;
 typedef enum fp_operation { FP_READ, FP_REFRESH, FP_ENTER, FP_UP, FP_ANCESTOR,
-                           FP_FILTER, FP_HIDDEN, FP_PICK } fp_operation;
+                           FP_FILTER, FP_HIDDEN, FP_PICK, FP_PICK_DIRECTORY } fp_operation;
 typedef struct fp_command {
     fp_key key;
     uint64_t expected_state; /* 0 allowed only for a read of current state. */
@@ -31,6 +31,8 @@ typedef struct fp_reply {
     char query[AE_FILES_QUERY + 1];
     char ancestors[AE_FILES_DEPTH + 1][AE_FILES_LABEL + 1];
     /* Owned ordinary-user directory/O_PATH witness from original open_selected.
+       PICK_DIRECTORY instead returns two independent CLOEXEC descriptors for
+       the original current held directory, with literal leaf ".". No path reopen.
        No StorageRef, grant, authority admission, installation or content read. */
     int directory, witness;
     char leaf[AE_FILES_NAME + 1];

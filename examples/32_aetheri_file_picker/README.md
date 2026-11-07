@@ -31,6 +31,19 @@ contents or return durable authorization. Cancel closes without a selection.
 An integrating caller can take the original directory/O_PATH witness once via
 `fp_reply_take` instead of this demonstration's printing/closing step.
 
+Set `FP_DIRECTORY=1` for single-directory selection. Enter on a directory row
+still navigates; regular-file rows cannot complete this mode. The fixed action
+“Choose this folder / Diesen Ordner auswählen” selects the current held folder,
+including the caller's root, a genuinely empty folder or a filtered view with no
+matches. An unread root remains unavailable. The worker reuses the original
+`ae_files_directory` contract and returns two distinct owned CLOEXEC descriptors
+for that same held directory with literal leaf `.`. It never reopens a displayed
+path, so renaming the held folder and replacing its old name cannot redirect the
+selection. Disposal/once-only transfer and Stop/Join ownership remain the same.
+These ordinary directory descriptors are not grants or durable directory IDs.
+An embedding caller sets `picker.directories` once after init and before the
+first request/frame. The mode has folder-specific normal and compact help text.
+
 All admitted rows remain available through explicit 16-entry pages with complete
 counts. Up/Down and Home/End on a row move across pages; Enter opens a directory
 or selects an ordinary file. Tab/Shift-Tab traverse controls. PageUp/PageDown
@@ -176,6 +189,10 @@ drained. General routing is called only after the native queue is empty, so it
 cannot bypass those command boundaries. This is ordering evidence, not a
 throughput or latency budget.
 
-Directory/multiple/save selection, richer sorting/file-type policy, additional
+`--directory` runs `directory_atspi.c` against actual navigation, a no-match
+filter, held-folder rename/path replacement and exact directory selection or
+Cancel. The native host checks both descriptor types and their shared inode.
+
+Multiple/save selection and owner/modal integration, richer sorting/file-type policy, additional
 I/O/permission/allocation failures and resize/scale configurations, other platforms, real services/grants,
 performance, physical/human acceptance and normal Aetheri integration stay open.

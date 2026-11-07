@@ -14,11 +14,12 @@ import time
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','work-dir'):p.add_argument('--'+name,type=Path,required=True)
-    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed'):p.add_argument('--'+name,action='store_true')
+    for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending-cancel','no-ime','recovery','mixed','directory'):p.add_argument('--'+name,action='store_true')
     a=p.parse_args()
     if a.pending_cancel:a.cancel=True
     if a.recovery and (a.cancel or a.maximum):p.error('Recovery has its own complete initial/child-overflow workflow')
     if a.mixed and (a.recovery or a.cancel):p.error('Mixed input is a separate selection workflow')
+    if a.directory and (a.mixed or a.recovery or a.maximum or a.pending_cancel):p.error('Directory selection has its own held-folder workflow')
     if os.getuid()==0:p.error('Run as an unprivileged private test owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font')}
     work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700)
@@ -39,7 +40,7 @@ def main():
     # A flushed client request alone does not prove the compositor began its grab.
     if a.recovery:env['WAYLAND_DEBUG']='client'
     for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE'):env.pop(name,None)
-    for name in ('german','large','small','contrast','light'):
+    for name in ('german','large','small','contrast','light','directory'):
         env.pop('FP_'+name.upper(),None)
         if getattr(a,name):env['FP_'+name.upper()]='1'
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4)
@@ -47,7 +48,7 @@ def main():
     if a.pending_cancel:
         gate_read,gate_write=os.pipe2(os.O_CLOEXEC);env['FP_TEST_REFRESH_GATE']=str(gate_read)
     result=dict(status='failed',inputs={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items()},checks=checks,images=images,
-                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed')})
+                configuration={name:getattr(a,name) for name in ('german','large','small','contrast','light','capture','cancel','maximum','pending_cancel','no_ime','recovery','mixed','directory')})
     def log(name):return (work/(name+'.log')).read_text(errors='replace')
     def start(command,name,pass_fds=(),interactive=False):
         stream=(work/(name+'.log')).open('xb');streams.append(stream)
@@ -124,13 +125,18 @@ def main():
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected native presentation dependency')
         peer_args=[paths['client'],host.pid]+(['--german'] if a.german else [])
-        if a.mixed:peer_args+=(['--maximum'] if a.maximum else [])
+        if a.directory:peer_args+=(['--cancel'] if a.cancel else [])
+        elif a.mixed:peer_args+=(['--maximum'] if a.maximum else [])
         elif not a.recovery:peer_args+=(['--cancel'] if a.cancel else [])+(['--maximum'] if a.maximum else [])+(['--pending-cancel'] if a.pending_cancel else [])+(['--no-ime'] if a.no_ime else [])
         peer=start(peer_args,'client',interactive=True)
         error_pages=0
-        for step in range(5 if a.mixed else 7 if a.recovery else 9):
+        for step in range(3 if a.directory else 5 if a.mixed else 7 if a.recovery else 9):
             wait(lambda:f'STEP {step}\n' in log('client'),f'peer step {step}')
-            if a.mixed:
+            if a.directory:
+                if step in (0,1):key(28)
+                else:
+                    folder.rename(work/'held-folder');folder.mkdir();(folder/'decoy').write_text('replacement path\n')
+            elif a.mixed:
                 if step==0:burst(key_commands(15,102))
                 if step==1:burst(['K 42 1',*key_commands(15),'K 42 0',*key_commands(107)])
                 if step==2:
@@ -183,7 +189,7 @@ def main():
                     if any(current.get(k)!=original_state.get(k) for k in ('state','depth','count','page','selected')):raise RuntimeError('Window size changed model or selection')
                     capture('resize-'+phase.lower())
         expected.add(peer);wait(lambda:peer.poll() is not None,'peer exit',allowed=peer)
-        marker='PICKER_NATIVE_QUEUED_TAB_POINTER_TEXT_AND_ROW_COMMAND_ORDER_VERIFIED' if a.mixed else 'PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
+        marker='PICKER_NATIVE_DIRECTORY_FILTERED_EMPTY_AND_HELD_PATH_REPLACEMENT_VERIFIED' if a.directory else 'PICKER_NATIVE_QUEUED_TAB_POINTER_TEXT_AND_ROW_COMMAND_ORDER_VERIFIED' if a.mixed else 'PICKER_NATIVE_INITIAL_RETRY_RETAINED_ENTER_RETRY_CHANGED_REFRESH_AND_RESIZE_VERIFIED' if a.recovery else 'PICKER_NATIVE_KEYS_IME_FILTER_PAGING_AND_RETIREMENT_VERIFIED'
         if peer.returncode or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.pending_cancel:wait(lambda:'ORIGINAL_REFRESH_HELD\n' in log('host'),'held original refresh')
         if a.mixed:
@@ -201,11 +207,15 @@ def main():
             if host.poll() is not None:raise RuntimeError('Worker ended before its original read was released')
             os.write(gate_write,b'R');os.close(gate_write);gate_write=None
         wait(lambda:host.poll() is not None,'selected or cancelled close',allowed=host);expected.add(host)
-        requests=2 if a.mixed else 9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
+        requests=(3 if a.cancel else 4) if a.directory else 2 if a.mixed else 9 if a.recovery else 6 if a.pending_cancel or not a.cancel else 5
         if host.returncode or f'PICKER_CLOSED picked={0 if a.cancel else 1} requests={requests} failed=0' not in log('host'):raise RuntimeError('Picker did not close normally')
         if a.pending_cancel and not log('host').index('GUI_GONE\n')<log('host').index('ORIGINAL_REFRESH_RELEASED\n'):raise RuntimeError('Original I/O escaped the held lifetime check')
         if not a.cancel:
-            leaf='snapshot-0000.txt' if a.mixed else 'item-4095' if a.recovery else f'snapshot-{file_count-1:04d}.txt';selected=((folder if a.recovery else files)/leaf).stat()
+            leaf='.' if a.directory else 'snapshot-0000.txt' if a.mixed else 'item-4095' if a.recovery else f'snapshot-{file_count-1:04d}.txt'
+            selected=(work/'held-folder').stat() if a.directory else ((folder if a.recovery else files)/leaf).stat()
+            if a.directory:
+                replacement=folder.stat()
+                if (selected.st_dev,selected.st_ino)==(replacement.st_dev,replacement.st_ino):raise RuntimeError('Directory fixture did not replace the held path')
             wanted=f'PICKED leaf_hex={leaf.encode().hex()} device={selected.st_dev} inode={selected.st_ino}\n'
             if wanted not in log('host'):raise RuntimeError('Wrong ordinary-file witness')
         for path in work.glob('*.log'):

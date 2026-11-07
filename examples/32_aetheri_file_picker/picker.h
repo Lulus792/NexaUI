@@ -19,6 +19,7 @@ typedef struct fp_picker {
     fp_operation operation;
     nx_result error;
     int busy, german, expanded, rebind, retryable, compact, layout_compact;
+    int directories; /* Set once after init, before the first request/frame. */
     size_t page;
     float text_size, scroll_y;
     double layout_width;
