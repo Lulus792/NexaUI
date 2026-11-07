@@ -5,6 +5,10 @@ Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, 0.1.23.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`, 67 pinned inputs.
 Requirements gaining scoped evidence: D11/L11/I07/T11/A02/A06/P04/P05/Q02/Q04.
 
+The subsequent [native keyboard step](recovery-navigation-report.md) checks
+Tab/Shift-Tab, Enter refresh and filter Back/Escape/draft restoration on source
+`d098be3`. Results and open gates below retain this earlier lifecycle scope.
+
 This extends the [ordinary native observation step](recovery-native-report.md).
 The SDK, original query, worker, model, view and ordinary host bodies are
 unchanged. A test-only executable includes `native.c` verbatim with a renamed

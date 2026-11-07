@@ -1,0 +1,3922 @@
+{
+  "source_revision": "d098be32eb28f985cc3ac4a626c5fbd81ff19abe",
+  "host_revision": "1c8fa04942280c2189abbbe2a77dbe06f2f63c09",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "production_bodies_unchanged_from": "9d09ec0e49f3cc2f8b1a6d6e836528f964c96146",
+  "new_core_ctest_runs": 0,
+  "reuse_scope": "Only OS peer, native driver and README change. Exact previously validated ordinary/held hosts and installed SDKs are reused.",
+  "reused_hosts": [
+    {
+      "profile": "release",
+      "kind": "ordinary_host",
+      "original_receipt": {
+        "path": "lifecycle-release/recovery_native",
+        "size": 1398072,
+        "sha256": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/release/recovery_native",
+        "size": 1398072,
+        "sha256": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6"
+      }
+    },
+    {
+      "profile": "release",
+      "kind": "held_host",
+      "original_receipt": {
+        "path": "lifecycle-release/recovery_held_native",
+        "size": 1399120,
+        "sha256": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/release/recovery_held_native",
+        "size": 1399120,
+        "sha256": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360"
+      }
+    },
+    {
+      "profile": "shared",
+      "kind": "ordinary_host",
+      "original_receipt": {
+        "path": "lifecycle-shared/recovery_native",
+        "size": 608992,
+        "sha256": "f37e505c84c0ae15d228b1be737087d4470c43bdfec9f7a8afd87c098e790a06"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/shared/recovery_native",
+        "size": 608992,
+        "sha256": "f37e505c84c0ae15d228b1be737087d4470c43bdfec9f7a8afd87c098e790a06"
+      }
+    },
+    {
+      "profile": "shared",
+      "kind": "held_host",
+      "original_receipt": {
+        "path": "lifecycle-shared/recovery_held_native",
+        "size": 610152,
+        "sha256": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/shared/recovery_held_native",
+        "size": 610152,
+        "sha256": "de3c1169935de0c36caac06c5364bc4b3505f0dda6f814ae09d986b158f5b9de"
+      }
+    },
+    {
+      "profile": "asan",
+      "kind": "ordinary_host",
+      "original_receipt": {
+        "path": "lifecycle-asan/recovery_native",
+        "size": 10132168,
+        "sha256": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/asan/recovery_native",
+        "size": 10132168,
+        "sha256": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54"
+      }
+    },
+    {
+      "profile": "asan",
+      "kind": "held_host",
+      "original_receipt": {
+        "path": "lifecycle-asan/recovery_held_native",
+        "size": 10165128,
+        "sha256": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e"
+      },
+      "snapshot": {
+        "path": "navigation-reused-hosts/asan/recovery_held_native",
+        "size": 10165128,
+        "sha256": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e"
+      }
+    }
+  ],
+  "sdk_libraries": [
+    {
+      "profile": "release",
+      "receipt": {
+        "path": "sdk-release-prefix/lib64/libnexaui.a",
+        "size": 1184220,
+        "sha256": "815ccf9b7f2299402fd5d65b6d5ad6ca474c6935c6c94849560257a153662493"
+      }
+    },
+    {
+      "profile": "shared",
+      "receipt": {
+        "path": "sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+        "size": 934608,
+        "sha256": "d9a058c1287b73c649c76602cec51210cef7567b0f4258e48dfc44268f709771"
+      }
+    },
+    {
+      "profile": "asan",
+      "receipt": {
+        "path": "sdk-asan-prefix/lib64/libnexaui.a",
+        "size": 14278216,
+        "sha256": "a302d120a8e7375bcc0a97d2f0514698603394267690b48358125b369552e2ab"
+      }
+    }
+  ],
+  "navigation_cases": [
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 114,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 124,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 43,
+            "polls": 549,
+            "keys": 50,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 45,
+            "polls": 556,
+            "keys": 52,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 47,
+            "polls": 707,
+            "keys": 52,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 50,
+            "polls": 751,
+            "keys": 54,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 53,
+            "polls": 818,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 54,
+            "polls": 860,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 58,
+            "polls": 1078,
+            "keys": 58,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 63,
+            "polls": 1254,
+            "keys": 62,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 65,
+            "polls": 1260,
+            "keys": 66,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 70,
+            "polls": 1454,
+            "keys": 70,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 72,
+            "polls": 1460,
+            "keys": 72,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 74,
+            "polls": 1506,
+            "keys": 76,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 76,
+            "polls": 1542,
+            "keys": 78,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 78,
+            "polls": 1607,
+            "keys": 80,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 44,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 80,
+            "polls": 1709,
+            "keys": 84,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 83,
+            "polls": 1750,
+            "keys": 92,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 85,
+            "polls": 1757,
+            "keys": 96,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 88,
+            "polls": 1812,
+            "keys": 100,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 90,
+            "polls": 1857,
+            "keys": 102,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 92,
+            "polls": 1997,
+            "keys": 104,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 94,
+            "polls": 2062,
+            "keys": 106,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 95,
+            "polls": 2205,
+            "keys": 108,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 97,
+            "polls": 2270,
+            "keys": 110,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 39,
+      "pages_each_direction": 12,
+      "filter_scrollbar": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-release-system",
+      "result": {
+        "path": "navigation-final-release-system/result.json",
+        "size": 15725,
+        "sha256": "708c8a9644676d5efeb2e472262b74b120b9ffbd6f92a10f0a6a0a0c0e5e3f9b"
+      },
+      "host_log": {
+        "path": "navigation-final-release-system/host.log",
+        "size": 117790,
+        "sha256": "36782216a286cc65304620ca8bd82dff0426a9a601d26444b459488e2d5eeae0"
+      },
+      "peer_log": {
+        "path": "navigation-final-release-system/client.log",
+        "size": 924,
+        "sha256": "3f91321226a0fdfb53cb26b7376b4a0bd3dbd689d671c3839096bc336e8a456f"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 3,
+            "polls": 110,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 5,
+            "polls": 120,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 2,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 291,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 8,
+            "polls": 443,
+            "keys": 4,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 9,
+            "polls": 653,
+            "keys": 4,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 692,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 692,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 692,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 17,
+            "polls": 993,
+            "keys": 8,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 21,
+            "polls": 1227,
+            "keys": 12,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 23,
+            "polls": 1234,
+            "keys": 16,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 29,
+            "polls": 1483,
+            "keys": 20,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 31,
+            "polls": 1488,
+            "keys": 22,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 33,
+            "polls": 1532,
+            "keys": 26,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 35,
+            "polls": 1568,
+            "keys": 28,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 37,
+            "polls": 1633,
+            "keys": 30,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 44,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 38,
+            "polls": 1727,
+            "keys": 32,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 40,
+            "polls": 1763,
+            "keys": 36,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 42,
+            "polls": 1771,
+            "keys": 40,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 44,
+            "polls": 1826,
+            "keys": 44,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 46,
+            "polls": 1872,
+            "keys": 46,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 48,
+            "polls": 2079,
+            "keys": 48,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 50,
+            "polls": 2144,
+            "keys": 50,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 51,
+            "polls": 2341,
+            "keys": 52,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 53,
+            "polls": 2406,
+            "keys": 54,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 42,
+      "pages_each_direction": 0,
+      "filter_scrollbar": false,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-release-user",
+      "result": {
+        "path": "navigation-final-release-user/result.json",
+        "size": 15710,
+        "sha256": "f6db4410eb38b4693c39dc4544f0f5f06b28cbb1f4136995f5d23cef2f5f1e2a"
+      },
+      "host_log": {
+        "path": "navigation-final-release-user/host.log",
+        "size": 7345,
+        "sha256": "70961091b04c83b3b289c3739e2a7b5be6938113c989b1728bb23e1166592bb8"
+      },
+      "peer_log": {
+        "path": "navigation-final-release-user/client.log",
+        "size": 569,
+        "sha256": "f752deb185110023b5ceadac6c8a0a7116e77e13e456a8a50a4ab852c95b48a2"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "f37e505c84c0ae15d228b1be737087d4470c43bdfec9f7a8afd87c098e790a06",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 115,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 125,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 41,
+            "polls": 548,
+            "keys": 50,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 43,
+            "polls": 555,
+            "keys": 52,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 45,
+            "polls": 706,
+            "keys": 52,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 48,
+            "polls": 750,
+            "keys": 54,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 51,
+            "polls": 817,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 52,
+            "polls": 859,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 57,
+            "polls": 1077,
+            "keys": 58,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 62,
+            "polls": 1252,
+            "keys": 62,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 64,
+            "polls": 1257,
+            "keys": 66,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 70,
+            "polls": 1446,
+            "keys": 70,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 72,
+            "polls": 1451,
+            "keys": 72,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 74,
+            "polls": 1496,
+            "keys": 76,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 76,
+            "polls": 1533,
+            "keys": 78,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 77,
+            "polls": 1597,
+            "keys": 80,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 44,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 81,
+            "polls": 1701,
+            "keys": 84,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 85,
+            "polls": 1744,
+            "keys": 92,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 87,
+            "polls": 1752,
+            "keys": 96,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 89,
+            "polls": 1807,
+            "keys": 100,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 91,
+            "polls": 1853,
+            "keys": 102,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 93,
+            "polls": 1993,
+            "keys": 104,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 95,
+            "polls": 2058,
+            "keys": 106,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 97,
+            "polls": 2198,
+            "keys": 108,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 99,
+            "polls": 2263,
+            "keys": 110,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 39,
+      "pages_each_direction": 12,
+      "filter_scrollbar": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-shared-system",
+      "result": {
+        "path": "navigation-final-shared-system/result.json",
+        "size": 16415,
+        "sha256": "1b1f0576bab48114c8f1492f3e4f0862977ecdd25c373f1cdeafe74c1677933e"
+      },
+      "host_log": {
+        "path": "navigation-final-shared-system/host.log",
+        "size": 119483,
+        "sha256": "1a3ff5c2793de894b9a06a78041198e92265a37e854fdbe270234dc8a9fac1bc"
+      },
+      "peer_log": {
+        "path": "navigation-final-shared-system/client.log",
+        "size": 924,
+        "sha256": "3f91321226a0fdfb53cb26b7376b4a0bd3dbd689d671c3839096bc336e8a456f"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "f37e505c84c0ae15d228b1be737087d4470c43bdfec9f7a8afd87c098e790a06",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 3,
+            "polls": 115,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 5,
+            "polls": 124,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 2,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 297,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 8,
+            "polls": 450,
+            "keys": 4,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 10,
+            "polls": 662,
+            "keys": 4,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 13,
+            "polls": 701,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 13,
+            "polls": 701,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 13,
+            "polls": 701,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 18,
+            "polls": 1007,
+            "keys": 8,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 22,
+            "polls": 1242,
+            "keys": 12,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 24,
+            "polls": 1248,
+            "keys": 16,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 30,
+            "polls": 1500,
+            "keys": 20,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 32,
+            "polls": 1505,
+            "keys": 22,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 34,
+            "polls": 1550,
+            "keys": 26,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 36,
+            "polls": 1587,
+            "keys": 28,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 37,
+            "polls": 1651,
+            "keys": 30,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 44,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 39,
+            "polls": 1745,
+            "keys": 32,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 41,
+            "polls": 1781,
+            "keys": 36,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 42,
+            "polls": 1788,
+            "keys": 40,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 44,
+            "polls": 1842,
+            "keys": 44,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 46,
+            "polls": 1888,
+            "keys": 46,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 48,
+            "polls": 2091,
+            "keys": 48,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 50,
+            "polls": 2156,
+            "keys": 50,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 52,
+            "polls": 2357,
+            "keys": 52,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 54,
+            "polls": 2422,
+            "keys": 54,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 42,
+      "pages_each_direction": 0,
+      "filter_scrollbar": false,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-shared-user",
+      "result": {
+        "path": "navigation-final-shared-user/result.json",
+        "size": 16352,
+        "sha256": "3a161d55fbb3b6de64270c060f50f7db76b91f137ab663a27c1284aa0b85bdbf"
+      },
+      "host_log": {
+        "path": "navigation-final-shared-user/host.log",
+        "size": 7605,
+        "sha256": "ef3c95e817d1daff8847ee44e4fd325bb2e006cfbb6bfa2ff107166c1aa93caa"
+      },
+      "peer_log": {
+        "path": "navigation-final-shared-user/client.log",
+        "size": 569,
+        "sha256": "f752deb185110023b5ceadac6c8a0a7116e77e13e456a8a50a4ab852c95b48a2"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 109,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 118,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 46,
+            "polls": 500,
+            "keys": 50,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 48,
+            "polls": 504,
+            "keys": 52,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 50,
+            "polls": 649,
+            "keys": 52,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 53,
+            "polls": 689,
+            "keys": 54,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 56,
+            "polls": 751,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 57,
+            "polls": 793,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 62,
+            "polls": 999,
+            "keys": 58,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 65,
+            "polls": 1171,
+            "keys": 62,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 67,
+            "polls": 1176,
+            "keys": 66,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 72,
+            "polls": 1366,
+            "keys": 70,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 41,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 74,
+            "polls": 1371,
+            "keys": 72,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 76,
+            "polls": 1413,
+            "keys": 76,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 78,
+            "polls": 1450,
+            "keys": 78,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 80,
+            "polls": 1515,
+            "keys": 80,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 44,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 84,
+            "polls": 1617,
+            "keys": 84,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 88,
+            "polls": 1657,
+            "keys": 92,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 90,
+            "polls": 1662,
+            "keys": 96,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 92,
+            "polls": 1717,
+            "keys": 100,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 94,
+            "polls": 1763,
+            "keys": 102,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 96,
+            "polls": 1903,
+            "keys": 104,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 98,
+            "polls": 1968,
+            "keys": 106,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 100,
+            "polls": 2102,
+            "keys": 108,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 102,
+            "polls": 2167,
+            "keys": 110,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 39,
+      "pages_each_direction": 12,
+      "filter_scrollbar": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-asan-system",
+      "result": {
+        "path": "navigation-final-asan-system/result.json",
+        "size": 26559,
+        "sha256": "92c22459aa3d7692fe44531d99ae58f8c4e7b4afe42e78ff3779b257f53f6600"
+      },
+      "host_log": {
+        "path": "navigation-final-asan-system/host.log",
+        "size": 122578,
+        "sha256": "83add2718dcc76b97f294ce53cef01a3ee4246c5a7c03d459b201c5878266fc4"
+      },
+      "peer_log": {
+        "path": "navigation-final-asan-system/client.log",
+        "size": 924,
+        "sha256": "3f91321226a0fdfb53cb26b7376b4a0bd3dbd689d671c3839096bc336e8a456f"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "b45f7f9a028164615872567466208b09df211dbbef74de2d92d8462a3e463b54",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": null,
+        "navigation": true
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 3,
+            "polls": 110,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 118,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 2,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 5,
+            "polls": 291,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 1041,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 443,
+            "keys": 4,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 9,
+            "polls": 652,
+            "keys": 4,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 690,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 690,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 12,
+            "polls": 690,
+            "keys": 6,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 17,
+            "polls": 988,
+            "keys": 8,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 21,
+            "polls": 1224,
+            "keys": 12,
+            "request": 2
+          }
+        },
+        {
+          "step": 10,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 23,
+            "polls": 1229,
+            "keys": 16,
+            "request": 2
+          }
+        },
+        {
+          "step": 11,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 29,
+            "polls": 1478,
+            "keys": 20,
+            "request": 3
+          }
+        },
+        {
+          "step": 12,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 41,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 31,
+            "polls": 1484,
+            "keys": 22,
+            "request": 3
+          }
+        },
+        {
+          "step": 13,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 33,
+            "polls": 1528,
+            "keys": 26,
+            "request": 3
+          }
+        },
+        {
+          "step": 14,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 34,
+            "polls": 1561,
+            "keys": 28,
+            "request": 3
+          }
+        },
+        {
+          "step": 15,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 36,
+            "polls": 1626,
+            "keys": 30,
+            "request": 3
+          }
+        },
+        {
+          "step": 16,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 44,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 38,
+            "polls": 1721,
+            "keys": 32,
+            "request": 3
+          }
+        },
+        {
+          "step": 17,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 40,
+            "polls": 1757,
+            "keys": 36,
+            "request": 3
+          }
+        },
+        {
+          "step": 18,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 42,
+            "polls": 1765,
+            "keys": 40,
+            "request": 3
+          }
+        },
+        {
+          "step": 19,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 43,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 44,
+            "polls": 1820,
+            "keys": 44,
+            "request": 3
+          }
+        },
+        {
+          "step": 20,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 46,
+            "polls": 1866,
+            "keys": 46,
+            "request": 3
+          }
+        },
+        {
+          "step": 21,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 48,
+            "polls": 2069,
+            "keys": 48,
+            "request": 3
+          }
+        },
+        {
+          "step": 22,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 49,
+            "polls": 2133,
+            "keys": 50,
+            "request": 3
+          }
+        },
+        {
+          "step": 23,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 1,
+            "focus": 45,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 51,
+            "polls": 2340,
+            "keys": 52,
+            "request": 3
+          }
+        },
+        {
+          "step": 24,
+          "view": {
+            "state": 2,
+            "epoch": 3,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 53,
+            "polls": 2405,
+            "keys": 54,
+            "request": 3
+          }
+        }
+      ],
+      "expected_records": 42,
+      "pages_each_direction": 0,
+      "filter_scrollbar": false,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-final-asan-user",
+      "result": {
+        "path": "navigation-final-asan-user/result.json",
+        "size": 26793,
+        "sha256": "4da373f7f0f55fc319dc8c30a48dbd2d9d65299a73cdc98978b98946d3d5d0a3"
+      },
+      "host_log": {
+        "path": "navigation-final-asan-user/host.log",
+        "size": 7342,
+        "sha256": "1a0f3e1cedca14976bdffaea8b291de61e0b4675ffb8bd0ff251b99d443ec481"
+      },
+      "peer_log": {
+        "path": "navigation-final-asan-user/client.log",
+        "size": 569,
+        "sha256": "f752deb185110023b5ceadac6c8a0a7116e77e13e456a8a50a4ab852c95b48a2"
+      }
+    }
+  ],
+  "regressions": [
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "8a6fb15987a8db75d48ed8dd982fe6c8cb14fbab3d6c1ade0811bfaad8ac96d6",
+        "client": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "held": null,
+        "navigation": false
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 109,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 119,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 43,
+            "polls": 538,
+            "keys": 50,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 1038,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 44,
+            "polls": 544,
+            "keys": 52,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 47,
+            "polls": 735,
+            "keys": 52,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 49,
+            "polls": 739,
+            "keys": 54,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 52,
+            "polls": 806,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 53,
+            "polls": 848,
+            "keys": 56,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 58,
+            "polls": 1064,
+            "keys": 58,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 39,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 61,
+            "polls": 1234,
+            "keys": 62,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "pages_each_direction": 12,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-regression-release-ordinary-ime",
+      "result": {
+        "path": "navigation-regression-release-ordinary-ime/result.json",
+        "size": 11087,
+        "sha256": "016489382355cc2b2c80660f09b72bce985cc58ba4d3b8d349d25bbfd0863cce"
+      },
+      "host_log": {
+        "path": "navigation-regression-release-ordinary-ime/host.log",
+        "size": 75492,
+        "sha256": "8f36ae461750cc1870464d55fff931e694668f72a6929eb37dfe828e763e8765"
+      },
+      "peer_log": {
+        "path": "navigation-regression-release-ordinary-ime/client.log",
+        "size": 561,
+        "sha256": "b8a45c1f984110f19d2abcc0a61a7498383fd08fed8762288d6d4b5c16381450"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "78da3434c890702261dde3dc6828c764b8776db5da2cc9fe22aaf7a7d872f360",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "system",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "held": "close",
+        "navigation": false
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 39,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 329,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 39,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 333,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 39,
+      "gui_gone_before_gate_release": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-regression-release-held-close",
+      "result": {
+        "path": "navigation-regression-release-held-close/result.json",
+        "size": 8931,
+        "sha256": "b89c79b85d30f8bc610c0db58496d617e83e3fd6f9b148bae5455c7865c9220a"
+      },
+      "host_log": {
+        "path": "navigation-regression-release-held-close/host.log",
+        "size": 16915,
+        "sha256": "33578befff5b3d50a45ac6202473cabfbb785eecab918b06a882d7714eccf9a3"
+      },
+      "peer_log": {
+        "path": "navigation-regression-release-held-close/client.log",
+        "size": 104,
+        "sha256": "0cf8f6603e7e0d0d1cc158717f2d35db6375ef68fea5295e3afd9281497f6992"
+      }
+    },
+    {
+      "status": "passed",
+      "inputs": {
+        "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+        "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+        "host": "c14628946fd1152f6a752b81ef04d9f228db440b37a62912647f7a070244010e",
+        "client": "e4bd2b3eda70393db812ac4a9be1e7854afb69b3490e6cd30fb95b8b9d1957d5",
+        "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+      },
+      "configuration": {
+        "kind": "user",
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": true,
+        "ime": false,
+        "held": "wake",
+        "navigation": false
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 42,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 401,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "expected_records": 42,
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7b5dae3e7220",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7fff615d3f38",
+          "0x7f5db0882352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 42,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "owner_sha256_before_after": "adefd4d05ee3e3f447dbe3fdf0b58dcfc5c5fb8469061f39ff7419ed0c2be78e",
+      "owner_rows_unchanged": true,
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "name": "navigation-regression-asan-held-wake",
+      "result": {
+        "path": "navigation-regression-asan-held-wake/result.json",
+        "size": 20745,
+        "sha256": "8073cfc4db9ab68aa607924714e85ea43569358eb309241e379a34914e905910"
+      },
+      "host_log": {
+        "path": "navigation-regression-asan-held-wake/host.log",
+        "size": 9493,
+        "sha256": "46269867a58c1f66297eb5561bea7470bb3fd28cdc1fc1592555b9429c0e0778"
+      },
+      "peer_log": {
+        "path": "navigation-regression-asan-held-wake/client.log",
+        "size": 102,
+        "sha256": "a966e2486e4ab79b34e64fe4413c6c491e684910af8331da98dba32577f90088"
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "kind": "reverse",
+      "test_exit": 1,
+      "expected_boundary": "reverse Tab Close to Read: timeout",
+      "mutation": {
+        "file": "/dev/shm/nexaui-recovery-live-tty-20261107/navigation-negative-reverse/src/examples/33_aetheri_recovery/recovery_view.c",
+        "old": "if(!v||!e)return NX_ERROR_ARGUMENT;",
+        "new": "if(!v||!e)return NX_ERROR_ARGUMENT;\n    if(e->type==NX_EVENT_KEY_DOWN&&e->key==NX_KEY_TAB){nx_event forward=*e;forward.modifiers=0;return nx_context_queue_event(v->ctx,&forward);}"
+      },
+      "result": {
+        "path": "navigation-negative-reverse/result.json",
+        "size": 2001,
+        "sha256": "10259ae5d7451f1eb50f8552cd59228d757933a3dc00e1f0c16a33f0ef79ad90"
+      },
+      "log": {
+        "path": "navigation-negative-reverse/test.log",
+        "size": 923,
+        "sha256": "9a3bd92a49e88ecdfa2afb4552ef65809ac63119862fe67401084e562f9be628"
+      }
+    },
+    {
+      "kind": "cancel",
+      "test_exit": 1,
+      "expected_boundary": "Cancel preserves applied results and restores Filter focus: timeout",
+      "mutation": {
+        "file": "/dev/shm/nexaui-recovery-live-tty-20261107/navigation-negative-cancel/src/examples/33_aetheri_recovery/recovery_view.c",
+        "old": "else {uint64_t restore=RVG_FILTER_BUTTON;",
+        "new": "else if(v->mode==RVG_FILTER){nx_utf8_span draft;r=nx_text_field_text(v->query,&draft);if(r==NX_OK)r=rvg_filter(v,draft);}\n            else {uint64_t restore=RVG_FILTER_BUTTON;"
+      },
+      "result": {
+        "path": "navigation-negative-cancel/result.json",
+        "size": 1996,
+        "sha256": "4eebe2b413585665d9b73046a18f9a4242b61e221bb330b02c58836aaf692f9d"
+      },
+      "log": {
+        "path": "navigation-negative-cancel/test.log",
+        "size": 1153,
+        "sha256": "f717554dff810fd0512d9581a5aadcbe51aee1c212fc1abcaa9c2a5f8bdea109"
+      }
+    }
+  ],
+  "source_files": [
+    {
+      "path": "examples/33_aetheri_recovery/atspi_client.c",
+      "normalized_sha256": "532a4c9e1d6e85c6acb36fecce270e6728a39cbe021df9ce54f4d256511df13f",
+      "physical_sha256": "532a4c9e1d6e85c6acb36fecce270e6728a39cbe021df9ce54f4d256511df13f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/check_source.py",
+      "normalized_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90",
+      "physical_sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/CMakeLists.txt",
+      "normalized_sha256": "421136f5a4f8853d4e41b8b8239d27fbf1026800520f6df4100f3edfebb1cd95",
+      "physical_sha256": "421136f5a4f8853d4e41b8b8239d27fbf1026800520f6df4100f3edfebb1cd95"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/lifecycle_atspi.c",
+      "normalized_sha256": "859ad282784eddaad4fa6affe8e52226f58495fde7317fe3895ded385416760f",
+      "physical_sha256": "859ad282784eddaad4fa6affe8e52226f58495fde7317fe3895ded385416760f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/native.c",
+      "normalized_sha256": "1b017ff87512b3c561c870e03bc470f305a73975d1256b45a57e53d412241c84",
+      "physical_sha256": "1b017ff87512b3c561c870e03bc470f305a73975d1256b45a57e53d412241c84"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/README.md",
+      "normalized_sha256": "e2a57d5dd9efa613ffc4737a38b3621e7894e1beb76285d179434840e6e5c22a",
+      "physical_sha256": "e2a57d5dd9efa613ffc4737a38b3621e7894e1beb76285d179434840e6e5c22a"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.c",
+      "normalized_sha256": "7e7ee4b402cb1696dd013a299b53dfa6669dc431ee2373185271ff37983ffcfe",
+      "physical_sha256": "7e7ee4b402cb1696dd013a299b53dfa6669dc431ee2373185271ff37983ffcfe"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.h",
+      "normalized_sha256": "7e6541e70a10a8076645d6576e3a152cb6957ef28fe3b1ee9b428b83e2c2d992",
+      "physical_sha256": "7e6541e70a10a8076645d6576e3a152cb6957ef28fe3b1ee9b428b83e2c2d992"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.c",
+      "normalized_sha256": "e10db3b1b62624e3dfc95b4b2f861f2d913d2e86a71ad9fe3d5ee6fe7f09dead",
+      "physical_sha256": "e10db3b1b62624e3dfc95b4b2f861f2d913d2e86a71ad9fe3d5ee6fe7f09dead"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.h",
+      "normalized_sha256": "580256c1c5379ce38a16e2458acc3f1a432d806c10921f55268f4541285051c2",
+      "physical_sha256": "580256c1c5379ce38a16e2458acc3f1a432d806c10921f55268f4541285051c2"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_model.py",
+      "normalized_sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31",
+      "physical_sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_native.py",
+      "normalized_sha256": "5f65fcb45c1539791935398f4fa87d832acf8341dc956dc7329c7e4cb1831fe9",
+      "physical_sha256": "5f65fcb45c1539791935398f4fa87d832acf8341dc956dc7329c7e4cb1831fe9"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_view.py",
+      "normalized_sha256": "1b768a359aa46e8f027ea44f5f383aed760c78ff5c5028d8349d632645f85158",
+      "physical_sha256": "1b768a359aa46e8f027ea44f5f383aed760c78ff5c5028d8349d632645f85158"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_worker.py",
+      "normalized_sha256": "bea2fc59ad31f01ef503cbd3064d704f682aa33350a51c65884ed830e4c4888f",
+      "physical_sha256": "bea2fc59ad31f01ef503cbd3064d704f682aa33350a51c65884ed830e4c4888f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/source-inputs.json",
+      "normalized_sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833",
+      "physical_sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_native_gate.c",
+      "normalized_sha256": "37209041f482c9f3ee3a0140a1345a184539cd94af800a845443ba91c9e45539",
+      "physical_sha256": "37209041f482c9f3ee3a0140a1345a184539cd94af800a845443ba91c9e45539"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_view.c",
+      "normalized_sha256": "53ef80828e61b4f1943fad049c1adfefe3a3af04b969ff2bcab94f4be2f4cc41",
+      "physical_sha256": "53ef80828e61b4f1943fad049c1adfefe3a3af04b969ff2bcab94f4be2f4cc41"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_worker.c",
+      "normalized_sha256": "8e4ebeea4ef0d16d2e4fa4a2c288fe59ab133ba0854a9dee68cf6e0a46b91ca7",
+      "physical_sha256": "8e4ebeea4ef0d16d2e4fa4a2c288fe59ab133ba0854a9dee68cf6e0a46b91ca7"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_view_model.c",
+      "normalized_sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f",
+      "physical_sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.c",
+      "normalized_sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645",
+      "physical_sha256": "b296f7304405569580dcb6c85cd2908568784c191deab4afbbf75148d603a645"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.h",
+      "normalized_sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357",
+      "physical_sha256": "a0cb00a2175fc27272249d70037d726ca2831f42aa50a27bfc6d179a06260357"
+    },
+    {
+      "path": "examples/common/text_wrap.c",
+      "normalized_sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae",
+      "physical_sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "path": "examples/common/text_wrap.h",
+      "normalized_sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d",
+      "physical_sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    },
+    {
+      "path": "examples/30_async_hierarchy/atspi_client.c",
+      "normalized_sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9",
+      "physical_sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9"
+    }
+  ],
+  "peer": {
+    "path": "recovery_navigation_atspi2",
+    "size": 40560,
+    "sha256": "965ea9b6c32fb160b8002423b62a6f0bc8d9fde6f222ad2d5b6b260c417625ab"
+  },
+  "source_archive": {
+    "path": "nexaui-recovery-navigation-input3-20261107.tar.gz",
+    "size": 52788,
+    "sha256": "5d0b0f7b5168dac7b9c450a7faa2b697566429e009170bdcf67d5c6a32898a12"
+  },
+  "foundation_ci": {
+    "source_revision": "b0ac871895993a7c605da3ff5c5889a753d12c38",
+    "run_id": 42393948858,
+    "url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858",
+    "scope": "Prior main including lifecycle source 1c8fa04. Navigation peer/driver checks run independently against the same production bodies.",
+    "jobs": [
+      {
+        "id": 128467222679,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T17:17:05Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467222679"
+      },
+      {
+        "id": 128467222850,
+        "name": "core (macos-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T16:59:28Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467222850"
+      },
+      {
+        "id": 128467222869,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T17:03:55Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467222869"
+      },
+      {
+        "id": 128467222987,
+        "name": "core (ubuntu-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T17:03:43Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467222987"
+      },
+      {
+        "id": 128467222995,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T17:03:23Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467222995"
+      },
+      {
+        "id": 128467223026,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:29Z",
+        "completed_at": "2026-11-07T16:59:51Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467223026"
+      },
+      {
+        "id": 128467223153,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-07T16:58:28Z",
+        "completed_at": "2026-11-07T17:03:14Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467223153"
+      },
+      {
+        "id": 128467223956,
+        "name": "fuzz-campaigns",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-11-07T16:58:26Z",
+        "completed_at": "2026-11-07T16:58:25Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467223956"
+      },
+      {
+        "id": 128467223970,
+        "name": "windows-asan",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-11-07T16:58:26Z",
+        "completed_at": "2026-11-07T16:58:25Z",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42393948858/job/128467223970"
+      }
+    ]
+  },
+  "retained_initial_failure": {
+    "path": "navigation-release-german-input1",
+    "reason": "Initial test assumed direct field-to-Apply Tab; public focusable help scrollbar was present. The final test inventories and verifies both paths without changing production UI."
+  },
+  "prior_archive": {
+    "path": "D:/NexaUI/out/nexaui-recovery-lifecycle-20261107.tar.gz",
+    "sha256": "e898f8be20dea6f239e0e5cdf7ac14c4030ea8457c0159386c8351c8f6003c55"
+  },
+  "remaining": [
+    "Native resize/compact restore/output migration and clipboard peers",
+    "Production owner/service and remaining packet 6 workflows",
+    "Packets 7-8 and physical/human/performance acceptance"
+  ]
+}

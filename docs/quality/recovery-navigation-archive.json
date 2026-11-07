@@ -1,0 +1,18 @@
+{
+  "name": "nexaui-recovery-navigation-20261107.tar.gz",
+  "size": 13052489,
+  "sha256": "85515fb621fdb765de0c78b6aae31b513e9bedcfa2d828942e4081d1ef6f5ee8",
+  "files": 946,
+  "links": 2,
+  "directories": 258,
+  "excluded_special": [],
+  "path": "D:/NexaUI/out/nexaui-recovery-navigation-20261107.tar.gz",
+  "source_revision": "d098be32eb28f985cc3ac4a626c5fbd81ff19abe",
+  "host_revision": "1c8fa04942280c2189abbbe2a77dbe06f2f63c09",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally.",
+  "prior_archive": {
+    "path": "D:/NexaUI/out/nexaui-recovery-lifecycle-20261107.tar.gz",
+    "sha256": "e898f8be20dea6f239e0e5cdf7ac14c4030ea8457c0159386c8351c8f6003c55"
+  }
+}
