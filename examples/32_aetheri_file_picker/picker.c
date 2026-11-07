@@ -30,7 +30,7 @@ static void clear_layouts(fp_picker *p) {
 }
 nx_result fp_picker_init(fp_picker *p, fp_worker *worker, nx_font_collection *fonts, uint64_t view) {
     if (!p || !worker || !fonts || !view) return NX_ERROR_ARGUMENT;
-    *p = (fp_picker){0}; p->worker = worker; p->fonts = fonts; p->view = view;
+    *p = (fp_picker){0}; p->worker = worker; p->fonts = fonts; p->view = view; p->parent_id = 1;
     p->text_size = 16; p->layout_page = SIZE_MAX;
     return nx_text_field_create("", 0, 4096, &p->query);
 }
@@ -241,7 +241,7 @@ int fp_picker_prepare_size(fp_picker *p,uint64_t focus,float width,float window_
 }
 static nx_result resize_grip(fp_picker *p,nx_context *ctx,float width,float window_height,fp_intent *intent) {
     float side=fminf(12,fminf(width,window_height));
-    nx_widget_desc d={0};d.semantic.id=FP_RESIZE;d.semantic.parent_id=1;d.semantic.role=NX_ROLE_CUSTOM;
+    nx_widget_desc d={0};d.semantic.id=FP_RESIZE;d.semantic.parent_id=p->parent_id;d.semantic.role=NX_ROLE_CUSTOM;
     d.semantic.name=span(word(p,"Drag to resize window","Ziehen zum Ändern der Fenstergröße"));
     d.semantic.bounds=(nx_rect){width-side,window_height-side,side,side};d.flags=NX_WIDGET_INTERACTIVE;
     nx_interaction_state s;TRY(nx_widget_register(ctx,&d,&s));
@@ -270,7 +270,7 @@ static nx_result compact_build(fp_picker *p,nx_context *ctx,float width,float wi
     float cancel_h=text_cancel?height(p,p->labels[15]):fminf(32,window_height*0.4f);
     float body_h=window_height-2*pad-gap-cancel_h;
     float help_h=p->labels[14]?height(p,p->labels[14]):body_h;
-    nx_scroll_area_desc scroll={0};scroll.id=FP_SCROLL;scroll.parent_id=1;scroll.thumb_y_id=FP_THUMB;scroll.axes=NX_SCROLL_Y;
+    nx_scroll_area_desc scroll={0};scroll.id=FP_SCROLL;scroll.parent_id=p->parent_id;scroll.thumb_y_id=FP_THUMB;scroll.axes=NX_SCROLL_Y;
     scroll.name=span(word(p,"Window size help","Hilfe zur Fenstergröße"));scroll.viewport=(nx_rect){pad,pad,w,body_h};
     scroll.content_size=(nx_size){w,help_h};float offset=0;nx_scroll_info info;
     TRY(nx_scroll_area_begin(ctx,&scroll,&offset,&p->scroll_y,&info));
@@ -280,7 +280,7 @@ static nx_result compact_build(fp_picker *p,nx_context *ctx,float width,float wi
         TRY(nx_draw_icon(ctx,NX_ICON_INFO,(nx_rect){info.viewport.x+(info.viewport.width-side)/2,info.viewport.y+(body_h-side)/2,side,side},1,color));
     }
     TRY(nx_scroll_area_end(ctx));
-    nx_action_desc cancel={0};cancel.variant=NX_ACTION_SECONDARY;cancel.control.id=FP_CANCEL;cancel.control.parent_id=1;
+    nx_action_desc cancel={0};cancel.variant=NX_ACTION_SECONDARY;cancel.control.id=FP_CANCEL;cancel.control.parent_id=p->parent_id;
     cancel.control.name=span(word(p,"Cancel","Abbrechen"));cancel.control.bounds=(nx_rect){pad,window_height-pad-cancel_h,w,cancel_h};
     if(text_cancel){cancel.control.label_layout=p->labels[15];cancel.control.label_origin=(nx_point){pad+12,window_height-pad-cancel_h+8};cancel.control.glyph_cache_bytes=1024u*1024u;}
     else {cancel.icon=NX_ICON_CLOSE;float icon=fminf(20,fminf(w,cancel_h)*0.6f);cancel.icon_bounds=(nx_rect){(width-icon)/2,window_height-pad-(cancel_h+icon)/2,icon,icon};}
@@ -322,7 +322,7 @@ nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float w
             target+=h+4;
         }
     }
-    nx_scroll_area_desc scroll={0};scroll.id=FP_SCROLL;scroll.parent_id=1;scroll.thumb_y_id=FP_THUMB;
+    nx_scroll_area_desc scroll={0};scroll.id=FP_SCROLL;scroll.parent_id=p->parent_id;scroll.thumb_y_id=FP_THUMB;
     scroll.name=span(word(p,"Folder contents","Ordnerinhalt"));scroll.axes=NX_SCROLL_Y;
     scroll.viewport=(nx_rect){16,8,width-32,viewport};scroll.content_size=(nx_size){content_width,total};scroll.wheel_step=p->text_size*3;
     float x_offset=0;nx_scroll_info info;TRY(nx_scroll_area_begin(ctx,&scroll,&x_offset,&p->scroll_y,&info));
@@ -404,9 +404,9 @@ nx_result fp_picker_build(fp_picker *p,nx_context *ctx,nx_window *window,float w
     const fp_row *chosen=selected_row(p);if(chosen&&chosen->entry.kind!=AE_FILES_DIRECTORY&&chosen->entry.kind!=AE_FILES_REGULAR)open=0;
     if(p->directories)open=r&&r->state;
     int stacked=width<480;float open_height=stacked?height(p,p->labels[10]):footer;
-    TRY(button(p,ctx,FP_OPEN,1,(nx_rect){16,window_height-footer-12,stacked?width-32:(width-40)/2,open_height},p->labels[10],open_name(p),p->busy||!open,&clicked));
+    TRY(button(p,ctx,FP_OPEN,p->parent_id,(nx_rect){16,window_height-footer-12,stacked?width-32:(width-40)/2,open_height},p->labels[10],open_name(p),p->busy||!open,&clicked));
     if(clicked){if(p->directories)command(intent,FP_PICK_DIRECTORY);else open_selected(p,intent);}
-    TRY(button(p,ctx,FP_CANCEL,1,(nx_rect){stacked?16:24+(width-40)/2,stacked?window_height-footer-12+open_height+8:window_height-footer-12,stacked?width-32:(width-40)/2,stacked?height(p,p->labels[11]):footer},p->labels[11],word(p,"Cancel","Abbrechen"),0,&clicked));if(clicked)intent->cancel=1;
+    TRY(button(p,ctx,FP_CANCEL,p->parent_id,(nx_rect){stacked?16:24+(width-40)/2,stacked?window_height-footer-12+open_height+8:window_height-footer-12,stacked?width-32:(width-40)/2,stacked?height(p,p->labels[11]):footer},p->labels[11],word(p,"Cancel","Abbrechen"),0,&clicked));if(clicked)intent->cancel=1;
     if(p->restore) {if(nx_focus_set(ctx,p->restore)==NX_OK){p->restore=0;*redraw=1;}}
     return resize_grip(p,ctx,width,window_height,intent);
 }

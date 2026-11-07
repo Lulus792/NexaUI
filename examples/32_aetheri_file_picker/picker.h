@@ -13,6 +13,7 @@ typedef struct fp_picker {
     nx_text_field *query;
     nx_sim_message observation;
     uint64_t view, request, ticket, selected, restore;
+    uint64_t parent_id; /* Semantic parent; init defaults to 1. Set before frames. */
     uint64_t revealed_focus;
     uint64_t resume_focus;
     fp_command last_command;

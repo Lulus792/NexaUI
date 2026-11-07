@@ -58,6 +58,24 @@ German, 200%-text, 360x300, high-contrast and light configurations. Default is
 English/dark at 720x580. Colors, focus, reduced motion, fields, clipboard,
 IME placement and semantic actions reuse installed public APIs. Rows have full
 original escaped labels; directory icons use the existing portable vector API.
+
+`FP_OWNER=1` instead opens a Selection workspace with its own editable note,
+file/folder chooser buttons, last selection and Close. It reuses `nx_modal_begin`
+for a full-viewport modal inside this same native window; it does not implement
+native child-window parenting. Background controls reject input while the
+chooser is open. Cancel/Escape returns to the corresponding trigger, preserving
+the owner note and last successful selection. Reopening creates a fresh view
+epoch/editor while READ rediscovers the persistent original worker's held
+folder and committed filter. Unapplied chooser drafts belong to their view.
+
+The owner takes an admitted FD pair once, copies its original escaped display
+label, and closes the preceding pair only when replacing it with a successful
+selection. Cancel and retired-view completions cannot replace it. The pair stays
+owned until replacement or owner teardown; it is not a grant or durable ID.
+Closing a chooser does not Join its worker. Owner window teardown retires all
+UI, closes its selection descriptors, then stops/joins/disposes original work.
+The optional `owner.c` composition uses only public APIs. The view's configurable
+`parent_id` defaults to 1; the composition sets its modal parent before frames.
 Measured labels determine whether the normal controls and fixed footer fit.
 Smaller sizes use a compact, scrollable size hint and Cancel (a close icon when
 text would crowd the hint). Folder, page, selection and query draft survive.
@@ -193,6 +211,16 @@ throughput or latency budget.
 filter, held-folder rename/path replacement and exact directory selection or
 Cancel. The native host checks both descriptor types and their shared inode.
 
-Multiple/save selection and owner/modal integration, richer sorting/file-type policy, additional
+`--owner` uses `owner_atspi.c` to exercise file and directory completion,
+background blocking, retired references, restored focus, preserved note/result
+and cancellation of a subsequent view. A held original Refresh variant retires
+the chooser while the owner remains usable, then closes the owner before the
+worker is released. A controlled native IME case commits text in the owner note
+and cancels a subsequent preedit through real focus traversal. The fixture waits
+for completed field frames and matching compositor-observed v3 commit serials
+before further injection. This is a private test producer, not installed-IME or
+human acceptance.
+
+Multiple/save selection, separate native owner/child windows, richer sorting/file-type policy, additional
 I/O/permission/allocation failures and resize/scale configurations, other platforms, real services/grants,
 performance, physical/human acceptance and normal Aetheri integration stay open.
