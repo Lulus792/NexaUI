@@ -188,7 +188,7 @@ Start with a small example, then explore the parts your application needs.
 | [Async hierarchy](examples/30_async_hierarchy/README.md) | Loading/error/retry, correlated worker results and native focus/close lifetime |
 | [Original Aetheri manifest](examples/31_aetheri_manifest/README.md) | Original manifest verification, complete declared paths and asynchronous native hierarchy |
 | [Native file picker](examples/32_aetheri_file_picker/README.md) | Original Files worker, paged selection, held ancestors, editable filter/IME and owned file witnesses |
-| [Original recovery observations](examples/33_aetheri_recovery/README.md) | Virtualized observation list, local filter and full read-only details; native host integration pending |
+| [Original recovery observations](examples/33_aetheri_recovery/README.md) | Original-owner worker, native Wayland list/filter/details and independent IME/AT-SPI checks; production adoption pending |
 | [Studio showcase](examples/showcase/README.md) | A native Windows D3D12 editor/dashboard |
 | [NexaCloud](examples/nexacloud/README.md) | Cloud dashboard and file browser, shared C17 scene and native Windows/Linux runners |
 

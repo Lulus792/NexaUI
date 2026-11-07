@@ -4,6 +4,10 @@ Consumer source: `88d12b4a3c226437d4ddc92d4390196cdac4ca25`.
 Installed SDK: `ac0fb3b3b3aa53b2a4de927ec52a06deb33d5c36`, NexaUI 0.1.23.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 
+The subsequent [native integration report](recovery-native-report.md) adds
+worker/Wayland/IME/OS-peer evidence on source `9d09ec0`. The measurements below
+remain attributed to this earlier component-only source.
+
 ## Delivered scope
 
 [Example 33](../../examples/33_aetheri_recovery/README.md) now composes the

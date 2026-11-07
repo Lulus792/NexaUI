@@ -1,0 +1,25 @@
+{
+  "source_revision": "9d09ec0e49f3cc2f8b1a6d6e836528f964c96146",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "path": "D:/NexaUI/out/nexaui-recovery-native-20261107.tar.gz",
+  "size": 73866740,
+  "sha256": "01d5e712d1811417f2fd7e9c58201505d5f1fa4eaf1015e2891ed932199d02d7",
+  "files": 3448,
+  "links": 4,
+  "directories": 1978,
+  "verification": "Every file size/hash/mode, directory mode and symlink target checked locally; nested archives separately verified.",
+  "nested_archives": [
+    {
+      "name": "consumer-input3-builds.tar.gz",
+      "size": 11219247,
+      "mode": 420,
+      "sha256": "f079a070c420c170c4ac9452914d681a5013dc786116fb84b97ce0548998ad84"
+    },
+    {
+      "name": "previous-native/native1-build-outputs.tar.gz",
+      "size": 8112989,
+      "mode": 420,
+      "sha256": "a6912ebadb985c1ef4a9612439772ea902c264e56a9bd5ba51de54d371fb1815"
+    }
+  ]
+}
