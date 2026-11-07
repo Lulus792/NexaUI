@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Persistent picker owner and modal selection (2026-11-07)
+
+Consumer `951e8d2aba147de6fe8c75f0077613380dadfd78` composes the existing
+file/directory picker with a persistent owner note and result. It reuses the
+public full-viewport modal in one native window: background input is rejected,
+Cancel restores the trigger and preserves owner state, old views cannot adopt
+late results, and successful replacement closes the previous descriptor pair.
+Three strict installed profiles pass 3/3 CTests each; five owner and fifteen
+existing native workflows pass. Both missing-modal and retained-witness defects
+fail core/native counterexamples. Controlled IME and GUI-before-held-worker
+teardown have scoped evidence. See the [owner report](file-picker-owner-report.md)
+for exact inputs, preliminary failures and frozen evidence. Native child-window
+parenting, OS close while a chooser is active, long-result reading, multi/save,
+real services/adoption and the earlier peer heap incident remain open. No SDK
+API/version, live Aetheri or pin changes.
+
 ## Current held-directory selection (2026-11-07)
 
 Consumer a040d1288106cdbb6f1afaf623fb3a98200ea96c adds a folder mode using the
