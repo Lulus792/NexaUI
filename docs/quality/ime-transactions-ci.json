@@ -1,0 +1,71 @@
+{
+  "source_revision": "9a746654c5619312ab65f7a47c7991989d16f592",
+  "run_id": 42460791707,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42460791707",
+  "scope": "Exact-source GitHub job metadata for the preceding SDK 0.1.24 transport checkpoint; seven required successes and two optional skips. Does not cover the uncommitted 0.1.25 atomic field change or physical/human acceptance.",
+  "jobs": [
+    {
+      "id": 128669435501,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435599,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435626,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435646,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435658,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435741,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669435827,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669436297,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 42460791707
+    },
+    {
+      "id": 128669436413,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 42460791707
+    }
+  ]
+}

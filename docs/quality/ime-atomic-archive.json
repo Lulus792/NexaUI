@@ -1,0 +1,14 @@
+{
+  "name": "nexaui-sdk-ime-atomic-20261108.tar.gz",
+  "size": 205414993,
+  "sha256": "164669b886940cb9e1e6bb24219a84eaf13c8379f32cd46229b470c29d7be5a3",
+  "files": 8064,
+  "links": 10,
+  "directories": 3811,
+  "excluded_special": [],
+  "host_verification": {
+    "all_bytes_sizes_modes_links_directories": true,
+    "source_inputs_bound_to_git": 828,
+    "objects_executables_libraries_bound": true
+  }
+}

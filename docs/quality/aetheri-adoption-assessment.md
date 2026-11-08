@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Atomic marked IME field edits (2026-11-08)
+
+B03/B04/I02/T01/T03/T04/P04/P05/Q02/Q03/Q06/Q08:
+SDK `ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18` (0.1.25) applies complete
+marked IME packets in text/numeric widgets as one validated edit and undo.
+Three final profiles pass 16/16 affected CTests, eight native widget tasks and
+33 transport cases each; three installed C17 probes pass. All 828 source/package
+inputs bind to Git; 525 Linux shared export names are unchanged. An actual
+0.1.24/0.1.25 paired regression detects the previous partial undo and its fix.
+See [atomic field evidence and remaining integration](ime-atomic-report.md).
+Original Files-controller buffering/adoption remains next. Its 0.1.23 experiment
+and active Aetheri source/pin are unchanged. All 103 IDs, remaining packet 6,
+packets 7–8 and final physical/human/performance/adoption gates stay open.
+
 ## Complete native IME transport boundaries (2026-11-08)
 
 B03/B04/I02/T04/P04/P05/Q02/Q03/Q06/Q08:

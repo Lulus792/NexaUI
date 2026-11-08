@@ -1,5 +1,8 @@
 # Opt-in complete native IME boundaries — 2026-11-08
 
+Follow-up: [0.1.25 atomic field application](ime-atomic-report.md) extends this
+transport checkpoint. The results and remaining work below describe 0.1.24.
+
 SDK source: `f413682a1aed3e2952b1fd335f260e338fccc448`, development version
 0.1.24. Affected requirements: B03/B04/I02/T04/P04/P05/Q02/Q03/Q06/Q08.
 This closes a transport gap found while extending the separate Files consumer:

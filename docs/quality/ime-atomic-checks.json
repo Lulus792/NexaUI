@@ -1,0 +1,26 @@
+{
+  "source_revision": "ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+  "version": "0.1.25",
+  "source_and_package_inputs": 828,
+  "profiles": 3,
+  "ctests": [
+    16,
+    16,
+    16
+  ],
+  "native_field_tasks_per_profile": 8,
+  "transport_wire_cases_per_profile": 33,
+  "compiled_c17_werror_objects": [
+    79,
+    79,
+    79
+  ],
+  "installed_consumers": 3,
+  "unchanged_shared_export_names": 525,
+  "paired_actual_previous_sdk_failure": true,
+  "retained_fixture_and_export_audit_corrections": true,
+  "source_map_ids": 103,
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "archive_sha256": "164669b886940cb9e1e6bb24219a84eaf13c8379f32cd46229b470c29d7be5a3",
+  "verified": true
+}
