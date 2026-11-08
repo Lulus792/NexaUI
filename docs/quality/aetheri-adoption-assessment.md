@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Complete native IME transport boundaries (2026-11-08)
+
+B03/B04/I02/T04/P04/P05/Q02/Q03/Q06/Q08:
+SDK `f413682a1aed3e2952b1fd335f260e338fccc448` adds opt-in complete Wayland
+v1/v3 IME boundaries in development version 0.1.24. Empty/all-filtered commits
+and delete-only edits are distinguishable without changing default streams.
+Three profiles pass 9/9 affected CTests and 33 wire cases each; three installed
+C17 consumers build/run with matching versions. All 826 source/package inputs
+bind to exact Git blobs. See [contract, failures and limits](ime-transactions-report.md).
+Atomic field application/undo and Files integration remain next. The prior
+Files 0.1.23 experiment and independent Aetheri source/pin are unchanged. All
+103 IDs, packet 6, packets 7–8 and final physical/human/performance gates persist.
+
 ## Files native IME integration variant (2026-11-08)
 
 B01/B03/B04/I01/I02/T01/T03/T04/A02/A04/P04/P05/Q02/Q03/Q06:

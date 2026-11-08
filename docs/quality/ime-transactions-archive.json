@@ -1,0 +1,14 @@
+{
+  "name": "nexaui-sdk-ime-transactions-20261108.tar.gz",
+  "size": 118642460,
+  "sha256": "8ff143cb085da234dba58a6790754f2c9c4b40b9655515eb8ac2fcadf94fd413",
+  "files": 6272,
+  "links": 4,
+  "directories": 2805,
+  "excluded_special": [],
+  "host_verification": {
+    "all_bytes_sizes_modes_links_directories": true,
+    "source_inputs_bound_to_git": 826,
+    "object_and_executable_hashes_bound": true
+  }
+}

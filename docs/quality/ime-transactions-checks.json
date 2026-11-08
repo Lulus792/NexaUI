@@ -1,0 +1,23 @@
+{
+  "source_revision": "f413682a1aed3e2952b1fd335f260e338fccc448",
+  "version": "0.1.24",
+  "source_and_package_inputs": 826,
+  "profiles": 3,
+  "ctests": [
+    9,
+    9,
+    9
+  ],
+  "wire_cases_per_profile": 33,
+  "compiled_c17_werror_objects": [
+    66,
+    66,
+    66
+  ],
+  "installed_consumers": 3,
+  "retained_failed_prototype": true,
+  "source_map_ids": 103,
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "archive_sha256": "8ff143cb085da234dba58a6790754f2c9c4b40b9655515eb8ac2fcadf94fd413",
+  "verified": true
+}

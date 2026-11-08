@@ -1,0 +1,62 @@
+{
+  "source_revision": "9a45895d3bded6b24d5a9cfca9756a20a7263a23",
+  "run_id": 42457599832,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42457599832",
+  "scope": "Exact-source GitHub job metadata for the preceding Files IME integration checkpoint. Not new SDK transaction or automatic Files integration acceptance.",
+  "jobs": [
+    {
+      "id": 128659843329,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843386,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843440,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843468,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843510,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843581,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659843633,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128659844117,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 128659844293,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ]
+}
