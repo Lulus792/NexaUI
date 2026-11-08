@@ -12,6 +12,7 @@
 #include "event_queue.h"
 #include "drop_queue.h"
 #include "window_management.h"
+#include "close_request.h"
 
 #include <limits.h>
 #include <math.h>
@@ -24,6 +25,7 @@ struct nx_window {
     nx_uia_bridge *accessibility;
     DWORD owner_thread;
     int should_close;
+    nx_close_state close_request;
     float scale;
     HCURSOR cursor;
     nx_platform_event_queue event_queue;
@@ -446,7 +448,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
             return 0;
         }
         if (message == WM_CLOSE) {
-            window->should_close = 1;
+            nx_close_notify(&window->close_request,&window->should_close);
             return 0;
         }
         if (message == WM_DPICHANGED) {
@@ -620,6 +622,7 @@ static LRESULT CALLBACK nx_window_proc(HWND hwnd, UINT message, WPARAM wparam, L
         if (message == WM_ACTIVATE) nx_window_report_state(window);
         if (message == WM_WINDOWPOSCHANGED || message == WM_SHOWWINDOW || message == WM_ACTIVATE || message == WM_ENABLE)
             nx_uia_geometry(window->accessibility);
+        if (message == WM_DESTROY) nx_close_force(&window->close_request,&window->should_close);
         if (message == WM_DESTROY && window->accessibility) {
             nx_uia_bridge *bridge=window->accessibility; window->accessibility=NULL;
             nx_uia_destroy(bridge);
@@ -754,7 +757,7 @@ nx_result nx_window_poll(nx_window *window, uint32_t timeout_ms) {
     MSG message;
     while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE)) {
         if (message.message == WM_QUIT) {
-            window->should_close = 1;
+            nx_close_force(&window->close_request,&window->should_close);
             continue;
         }
         TranslateMessage(&message);
@@ -774,6 +777,21 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     out_info->scale = window->scale;
     out_info->should_close = window->should_close;
     return NX_OK;
+}
+
+nx_result nx_window_take_close_request(nx_window *window,nx_window_close_request *out) {
+    if(!out)return NX_ERROR_ARGUMENT;
+    *out=(nx_window_close_request){0};
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(GetCurrentThreadId()!=window->owner_thread||!window->hwnd)return NX_ERROR_STATE;
+    out->id=nx_close_take(&window->close_request,&window->should_close);
+    if(out->id)out->window=window;
+    return NX_OK;
+}
+nx_result nx_window_resolve_close(nx_window *window,const nx_window_close_request *request,nx_window_close_action action) {
+    if(!window||!request||(action!=NX_WINDOW_CLOSE_CANCEL&&action!=NX_WINDOW_CLOSE_ACCEPT))return NX_ERROR_ARGUMENT;
+    if(GetCurrentThreadId()!=window->owner_thread||!window->hwnd||request->window!=window)return NX_ERROR_STATE;
+    return nx_close_resolve(&window->close_request,&window->should_close,request->id,action);
 }
 
 nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {

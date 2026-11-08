@@ -259,6 +259,10 @@ static int test_incremental_clipboard(nx_window *requestor) {
 
 static void *wrong_thread(void *user) {
     cross_thread_case *test = (cross_thread_case *)user;
+    nx_window_close_request request={test->window,99};
+    if(nx_window_take_close_request(test->window,&request)!=NX_ERROR_STATE||request.window||request.id)abort();
+    request=(nx_window_close_request){test->window,1};
+    if(nx_window_resolve_close(test->window,&request,NX_WINDOW_CLOSE_CANCEL)!=NX_ERROR_STATE)abort();
     test->poll_result = nx_window_poll(test->window, 0);
     test->cursor_result = nx_window_set_cursor(test->window, NX_CURSOR_LINK);
     return NULL;
@@ -882,6 +886,32 @@ int main(void) {
         CHECK(test_xdnd(second, 1, 1, 1) == 0);
         CHECK(test_xdnd(second, 0, 0, 0) == 0);
     }
+    nx_window_close_request request={0},foreign={0},next={0};nx_window_info close_info;
+    XEvent close_event={0};close_event.xclient.type=ClientMessage;close_event.xclient.format=32;
+    close_event.xclient.message_type=XInternAtom(display,"WM_PROTOCOLS",False);
+    close_event.xclient.data.l[0]=(long)XInternAtom(display,"WM_DELETE_WINDOW",False);
+    close_event.xclient.window=xid;CHECK(XSendEvent(display,xid,False,NoEventMask,&close_event));XSync(display,False);
+    CHECK(nx_window_poll(first,0)==NX_OK&&nx_window_get_info(first,&close_info)==NX_OK&&close_info.should_close);
+    close_event.xclient.window=second_xid;CHECK(XSendEvent(second_display,second_xid,False,NoEventMask,&close_event));XSync(second_display,False);
+    CHECK(nx_window_poll(second,0)==NX_OK);
+    CHECK(nx_window_take_close_request(first,&request)==NX_OK&&request.id&&request.window==first);
+    CHECK(nx_window_take_close_request(second,&foreign)==NX_OK&&foreign.id==request.id);
+    CHECK(nx_window_resolve_close(second,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_resolve_close(second,&foreign,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_take_close_request(first,&next)==NX_OK&&!next.id&&!next.window);
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_set_cursor(first,NX_CURSOR_LINK)==NX_OK);
+    CHECK(XResizeWindow(display,xid,320,180));XSync(display,False);CHECK(nx_window_poll(first,0)==NX_OK);
+    nx_pixel_size resized;CHECK(nx_window_get_pixel_size(first,&resized)==NX_OK&&resized.width==320&&resized.height==180);
+    close_event.xclient.window=xid;CHECK(XSendEvent(display,xid,False,NoEventMask,&close_event));XSync(display,False);CHECK(nx_window_poll(first,0)==NX_OK);
+    CHECK(nx_window_take_close_request(first,&next)==NX_OK&&next.id>request.id);
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(XSendEvent(display,xid,False,NoEventMask,&close_event));XSync(display,False);CHECK(nx_window_poll(first,0)==NX_OK);
+    CHECK(nx_window_resolve_close(first,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_take_close_request(first,&request)==NX_OK&&request.id>next.id);
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
+    CHECK(nx_window_get_info(first,&close_info)==NX_OK&&close_info.should_close);
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
     nx_window_destroy(second);
     if (private_display && !strcmp(private_display, "1")) {
         size_t missing_length = 99;

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.27 — Development snapshot
+
+- Added optional owner-thread native close request delivery and cancellation/acceptance. Taken requests acknowledge the legacy close flag so review dialogs can wait and keep using the original window; stale, foreign and superseded responses cannot clear a newer request. Native terminal conditions and accepted closes cannot be revived. Existing window/event structure layouts and legacy close handling remain unchanged.
+
 ## 0.1.25 — Development snapshot
 
 - General and numeric fields apply complete opt-in IME transactions queued in one frame as one edit, with whole-operation validation and one undo restoring text and selection. Consecutive native packets retain separate undo; stale, rejected, malformed and interrupted packets do not partially edit. Password commits retain no history. Numeric draft confirmation and default legacy event streams are unchanged. Application-owned packet buffering and raw controller integration remain separate responsibilities.

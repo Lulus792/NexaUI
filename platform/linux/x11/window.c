@@ -5,6 +5,7 @@
 #include "backend.h"
 #include "uri_list.h"
 #include "window_management.h"
+#include "close_request.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -75,6 +76,7 @@ struct nx_x11_window {
     float scale;
     float width, height;
     int should_close, alive;
+    nx_close_state close_request;
     uint32_t flags, reported_state;
     int left_pressed, press_root_x, press_root_y;
     int detectable_repeat;
@@ -957,7 +959,7 @@ static void nx_x11_dispatch(nx_x11_window *window, XEvent *native) {
         if (native->xclient.message_type == window->wm_protocols &&
             native->xclient.format == 32 &&
             (Atom)native->xclient.data.l[0] == window->wm_delete_window)
-            window->should_close = 1;
+            nx_close_notify(&window->close_request,&window->should_close);
         else if (native->xclient.format == 32) {
             Atom message = native->xclient.message_type;
             if (message == window->xdnd_enter)
@@ -975,7 +977,7 @@ static void nx_x11_dispatch(nx_x11_window *window, XEvent *native) {
         break;
     case DestroyNotify:
         window->alive = 0;
-        window->should_close = 1;
+        nx_close_force(&window->close_request,&window->should_close);
         break;
     case ConfigureNotify:
         if (native->xconfigure.width != window->width ||
@@ -1245,6 +1247,19 @@ nx_result nx_x11_window_get_info(nx_x11_window *window, nx_window_info *out_info
                                  window->height / window->scale,
                                  window->scale, window->should_close};
     return NX_OK;
+}
+
+nx_result nx_x11_window_take_close(nx_x11_window *window,uint64_t *id) {
+    if(!id)return NX_ERROR_ARGUMENT;
+    *id=0;
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(!nx_x11_on_owner_thread(window)||!window->alive)return NX_ERROR_STATE;
+    *id=nx_close_take(&window->close_request,&window->should_close);return NX_OK;
+}
+nx_result nx_x11_window_resolve_close(nx_x11_window *window,uint64_t id,nx_window_close_action action) {
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(!nx_x11_on_owner_thread(window)||!window->alive)return NX_ERROR_STATE;
+    return nx_close_resolve(&window->close_request,&window->should_close,id,action);
 }
 
 nx_result nx_x11_window_get_pixel_size(nx_x11_window *window, nx_pixel_size *out_size) {

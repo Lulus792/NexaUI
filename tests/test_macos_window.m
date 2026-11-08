@@ -37,6 +37,10 @@ static int find(nx_window *w, nx_event_type type, nx_event *out) {
 typedef struct thread_case { nx_window *window; nx_result poll, info, create; } thread_case;
 static void *wrong_thread(void *user) {
     thread_case *t = user; nx_window_info info;
+    nx_window_close_request request={t->window,99};
+    if(nx_window_take_close_request(t->window,&request)!=NX_ERROR_STATE||request.window||request.id)abort();
+    request=(nx_window_close_request){t->window,1};
+    if(nx_window_resolve_close(t->window,&request,NX_WINDOW_CLOSE_CANCEL)!=NX_ERROR_STATE)abort();
     nx_window_status status; memset(&status,0xff,sizeof(status));
     if (nx_window_get_status(t->window,&status)!=NX_ERROR_STATE || status.state || status.known || status.capabilities || status.client_chrome ||
         nx_window_minimize(t->window)!=NX_ERROR_STATE || nx_window_maximize(t->window)!=NX_ERROR_STATE || nx_window_restore(t->window)!=NX_ERROR_STATE ||
@@ -52,6 +56,41 @@ static void *wrong_thread(void *user) {
 - (NSPasteboard *)draggingPasteboard { return pasteboard; }
 - (NSPoint)draggingLocation { return location; }
 @end
+
+static int test_input(nx_window *w);
+static int test_close_requests(nx_window *w) {
+    nx_window *other=NULL;nx_window_desc desc={"close ownership",100,100,NX_WINDOW_HIDDEN,{0}};
+    CHECK(nx_window_create(&desc,&other)==NX_OK);nx_window_close_request request={w,99},foreign={0},next={0};nx_window_info info;
+    CHECK(nx_window_take_close_request(NULL,&request)==NX_ERROR_ARGUMENT&&!request.id&&!request.window);
+    CHECK(nx_window_take_close_request(w,NULL)==NX_ERROR_ARGUMENT);
+    [nx_window_native_nswindow(w) performClose:nil];[nx_window_native_nswindow(other) performClose:nil];
+    CHECK(nx_window_get_info(w,&info)==NX_OK&&info.should_close);
+    CHECK(nx_window_take_close_request(w,&request)==NX_OK&&request.window==w&&request.id);
+    CHECK(nx_window_take_close_request(other,&foreign)==NX_OK&&foreign.id==request.id);
+    CHECK(nx_window_resolve_close(other,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_resolve_close(other,&foreign,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_get_info(w,&info)==NX_OK&&!info.should_close);
+    CHECK(nx_window_take_close_request(w,&next)==NX_OK&&!next.id&&!next.window);
+    CHECK(nx_window_resolve_close(w,&request,(nx_window_close_action)7)==NX_ERROR_ARGUMENT);
+    CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_maximize(w)==NX_OK&&nx_window_restore(w)==NX_OK);
+    CHECK(drain(w)==0&&test_input(w)==0);
+    [nx_window_native_nswindow(w) performClose:nil];
+    CHECK(nx_window_take_close_request(w,&next)==NX_OK&&next.id>request.id);
+    CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    [nx_window_native_nswindow(w) performClose:nil];
+    CHECK(nx_window_resolve_close(w,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_take_close_request(w,&request)==NX_OK&&request.id>next.id);
+    CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
+    CHECK(nx_window_take_close_request(w,&next)==NX_OK&&!next.id);
+    CHECK(nx_window_get_info(w,&info)==NX_OK&&info.should_close);
+    CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    [nx_window_native_nswindow(other) performClose:nil];CHECK(nx_window_take_close_request(other,&foreign)==NX_OK&&foreign.id);
+    [nx_window_native_nswindow(other) close];
+    CHECK(nx_window_resolve_close(other,&foreign,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_take_close_request(other,&next)==NX_OK&&!next.id);
+    nx_window_destroy(other);return 0;
+}
 
 static int test_clipboard(nx_window *w) {
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -323,6 +362,7 @@ int main(void) {
         [client insertText:@"late callback" replacementRange:NSMakeRange(NSNotFound,0)];
         [client doCommandBySelector:@selector(moveLeft:)];
         [retained release];
+        CHECK(test_close_requests(w)==0);
         [nx_window_native_nswindow(w) performClose:nil];
         CHECK(nx_window_get_info(w,&info) == NX_OK && info.should_close);
         nx_window_destroy(w); CHECK(!h.live);

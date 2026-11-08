@@ -125,6 +125,19 @@ jobs:
         run: cmake -S tests/package_consumer -B consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/stage
       - name: Build installed consumer
         run: cmake --build consumer-build --config Debug
+      - name: Configure close-request consumer
+        run: cmake -S tests/close_request_consumer -B close-consumer-build -DCMAKE_PREFIX_PATH=${{ github.workspace }}/stage
+      - name: Build close-request consumer
+        run: cmake --build close-consumer-build --config Debug
+      - name: Run close-request consumer (Unix)
+        if: runner.os != 'Windows'
+        run: ./close-consumer-build/close_request_consumer
+      - name: Run close-request consumer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:PATH = "${{ github.workspace }}\stage\bin;$env:PATH"
+          & .\close-consumer-build\Debug\close_request_consumer.exe
       - name: Configure add_subdirectory consumer
         run: cmake -S tests/add_subdirectory_consumer -B subdir-build
       - name: Build add_subdirectory consumer

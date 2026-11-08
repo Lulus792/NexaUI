@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 26
+#define NX_VERSION_PATCH 27
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -440,7 +440,8 @@ typedef struct nx_window_desc {
 typedef struct nx_window_info {
     float width, height; /* Current logical client size. */
     float scale;         /* Native backing pixels per logical pixel. */
-    int should_close;    /* Set when the OS requests closure. */
+    int should_close;    /* Native close notification or accepted/terminal close.
+                           take_close_request acknowledges cancellable requests. */
 } nx_window_info;
 
 typedef struct nx_pixel_size {
@@ -521,6 +522,38 @@ NX_API nx_result nx_window_poll_many_with_fd_events(nx_window *const *windows,si
     uint32_t timeout_ms,int fd,uint32_t interests,uint32_t *out_events);
 #endif
 NX_API nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info);
+/* Optional cancellable native-close handling. Existing should_close users keep
+   their behavior. A request is bound to its still-live SDK window, not an OS
+   handle, device identity or authorization. Keep the window alive until reply;
+   never use a retained request after destroying that window. Do not modify it. */
+typedef struct nx_window_close_request {
+    nx_window *window;
+    uint64_t id;
+} nx_window_close_request;
+typedef enum nx_window_close_action {
+    NX_WINDOW_CLOSE_CANCEL = 0,
+    NX_WINDOW_CLOSE_ACCEPT = 1
+} nx_window_close_action;
+/* Owner thread only. Clears out_request on entry/error. NX_OK with id=0 means
+   no new cancellable notification. A nonzero result is delivered once and
+   acknowledges should_close (clears it), allowing normal input, rendering,
+   management and event waiting while the owner reviews unsaved work. The
+   request remains pending until resolved or superseded by a newer native
+   close. Repeated closes use increasing IDs; only the latest is retained.
+   This bounded coalescing does not queue every unobserved native notification.
+   Native destruction, connection failure and exhausted IDs are not cancellable;
+   never ignore a remaining should_close or a failed native operation. */
+NX_API nx_result nx_window_take_close_request(nx_window *window,
+    nx_window_close_request *out_request);
+/* Reply only to the latest request actually taken from this window. A stale,
+   superseded, foreign or already resolved request returns STATE without any
+   change. Invalid action/NULL arguments return ARGUMENT. CANCEL keeps the
+   window usable. ACCEPT makes should_close terminal; it does not destroy the
+   window, its renderer or application state. Retire those in their usual owner
+   order. A subsequent cancellation cannot revive an accepted/terminal close.
+   Neither operation pumps native events; poll before handling new requests. */
+NX_API nx_result nx_window_resolve_close(nx_window *window,
+    const nx_window_close_request *request, nx_window_close_action action);
 /* Recommended native client backing extent in pixels after polling. Use this
    for render targets rather than reconstructing pixels from the float scale.
    A zero extent means that rendering is suspended. On error, out_size is zero.

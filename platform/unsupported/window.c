@@ -29,6 +29,16 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
     return NX_ERROR_UNSUPPORTED;
 }
 
+nx_result nx_window_take_close_request(nx_window *window,nx_window_close_request *out) {
+    if(!out)return NX_ERROR_ARGUMENT;
+    *out=(nx_window_close_request){0};
+    return window?NX_ERROR_UNSUPPORTED:NX_ERROR_ARGUMENT;
+}
+nx_result nx_window_resolve_close(nx_window *window,const nx_window_close_request *request,nx_window_close_action action) {
+    if(!window||!request||(action!=NX_WINDOW_CLOSE_CANCEL&&action!=NX_WINDOW_CLOSE_ACCEPT))return NX_ERROR_ARGUMENT;
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {
     (void)window;
     if (!out_size) return NX_ERROR_ARGUMENT;

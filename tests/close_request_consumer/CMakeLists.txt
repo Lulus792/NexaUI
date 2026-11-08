@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+project(CloseRequestConsumer LANGUAGES C)
+find_package(NexaUI 0.1.27 CONFIG REQUIRED)
+add_executable(close_request_consumer main.c)
+set_target_properties(close_request_consumer PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+target_link_libraries(close_request_consumer PRIVATE NexaUI::NexaUI)

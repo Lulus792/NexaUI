@@ -72,6 +72,52 @@ acceptance remain open.
 
 ## Application integration
 
+### Cancellable native close requests (0.1.27)
+
+Applications that need an unsaved-work review can opt into
+`nx_window_take_close_request` and `nx_window_resolve_close`. Existing loops
+that only inspect `nx_window_info.should_close` retain their behavior.
+
+After polling, take the latest notification on the owner thread. A nonzero
+token belongs to this still-live SDK window and is delivered once. Taking it
+acknowledges the legacy close bit so native event waiting, presentation, editing
+and window management can continue while the owner presents its review. Keep
+that token with the review state; it does not own the window or any document.
+
+```c
+nx_window_close_request incoming = {0};
+nx_result result = nx_window_take_close_request(window, &incoming);
+if (result != NX_OK) {
+    /* Handle native failure using the application's existing teardown path. */
+} else if (incoming.id) {
+    pending_review = incoming;
+    /* Open or update the application's existing unsaved-work review. */
+}
+```
+
+Cancel that review with `NX_WINDOW_CLOSE_CANCEL`. Confirm it with
+`NX_WINDOW_CLOSE_ACCEPT`, then retire renderer/window/model resources in their
+normal owner order. Acceptance sets the legacy bit terminally; it never destroys
+those resources inside the API call. Continue checking native failures and any
+remaining `should_close` indication; forced native destruction and connection
+loss are not cancelled by this protocol.
+
+A later native close supersedes an earlier pending token, including while a
+review is open. Only the latest unobserved notification is retained; this is
+bounded coalescing, not an unbounded close queue. Replies to superseded, foreign,
+untaken or already resolved requests fail with `NX_ERROR_STATE` and leave the
+current request unchanged. Reconcile a newer request instead of interpreting a
+failed stale cancellation as success. Neither API pumps events, so poll before
+handling newly queued native work. Request IDs do not wrap: exhaustion becomes
+a terminal close rather than reusing an old identity.
+
+The request contains a borrowed SDK-window reference and an ID. Do not modify
+it, persist it as a device identity or use it after window destruction. Existing
+descriptor, info and event layouts remain unchanged. An installed consumer can
+require `find_package(NexaUI 0.1.27 CONFIG REQUIRED)`; no automatic application
+pin upgrade is implied. See `tests/close_request_consumer` for the C17 package
+availability/ABI check and native platform tests for behavior acceptance.
+
 On Linux, `nx_window_poll_many` can wait for up to 16 distinct Wayland windows
 and an optional application-owned fd on their owner thread. Route and inspect
 each live window after return, since work may be dispatched for any member and

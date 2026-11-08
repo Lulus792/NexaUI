@@ -25,6 +25,8 @@ int nx_wayland_window_ax_focus(nx_wayland_window *window);
 nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                      nx_window_info *out_info);
 nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_size *out_size);
+nx_result nx_wayland_window_take_close(nx_wayland_window *window,uint64_t *id);
+nx_result nx_wayland_window_resolve_close(nx_wayland_window *window,uint64_t id,nx_window_close_action action);
 nx_result nx_wayland_window_get_status(nx_wayland_window *window, nx_window_status *out);
 nx_result nx_wayland_window_set_app_id(nx_wayland_window *window, const char *id);
 nx_result nx_wayland_window_get_outputs(nx_wayland_window *window,

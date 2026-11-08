@@ -6,6 +6,7 @@
 #include "repeat.h"
 #include "pixels.h"
 #include "scale.h"
+#include "close_request.h"
 #include "shm_file.h"
 #include "transfer.h"
 #include "uri_list.h"
@@ -186,6 +187,7 @@ struct nx_wayland_window {
     int bounds_width, bounds_height;
     int normal_width, normal_height;
     int configured, should_close, hidden, buffer_attached, destroying;
+    nx_close_state close_request;
     int connection_failed;
     int external_renderer;
     uint32_t flags, state, pending_state, reported_state, wm_caps;
@@ -2326,7 +2328,7 @@ static void nx_wayland_toplevel_close(void *data,
                                       struct xdg_toplevel *toplevel) {
     nx_wayland_window *window = (nx_wayland_window *)data;
     (void)toplevel;
-    window->should_close = 1;
+    nx_close_notify(&window->close_request,&window->should_close);
 }
 
 #ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
@@ -2854,6 +2856,23 @@ nx_result nx_wayland_window_get_info(nx_wayland_window *window,
                                  (float)window->height, (float)((double)window->scale_120/120.0),
                                  window->should_close};
     return NX_OK;
+}
+
+nx_result nx_wayland_window_take_close(nx_wayland_window *window,uint64_t *id) {
+    if(!id)return NX_ERROR_ARGUMENT;
+    *id=0;
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(!nx_wayland_on_owner_thread(window)||window->destroying||!window->toplevel)return NX_ERROR_STATE;
+    if(window->connection_failed)return NX_ERROR_PLATFORM;
+    if(window->error!=NX_OK)return window->error;
+    *id=nx_close_take(&window->close_request,&window->should_close);return NX_OK;
+}
+nx_result nx_wayland_window_resolve_close(nx_wayland_window *window,uint64_t id,nx_window_close_action action) {
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(!nx_wayland_on_owner_thread(window)||window->destroying||!window->toplevel)return NX_ERROR_STATE;
+    if(window->connection_failed)return NX_ERROR_PLATFORM;
+    if(window->error!=NX_OK)return window->error;
+    return nx_close_resolve(&window->close_request,&window->should_close,id,action);
 }
 
 nx_result nx_wayland_window_get_pixel_size(nx_wayland_window *window, nx_pixel_size *out_size) {

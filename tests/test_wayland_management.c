@@ -19,6 +19,7 @@ typedef struct server {
     uint32_t serial,state;
     atomic_int command,moves,resizes,minimizes,decorations,attaches,acks;
     atomic_int buffer_width,buffer_height,app_requests,app_matches,reject_fullscreen;
+    atomic_int after_close,after_close_resizes;
 } server;
 static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_resource_destroy(r); }
 static void configure(server *s) {
@@ -116,6 +117,7 @@ static void move(struct wl_client *c,struct wl_resource *r,struct wl_resource *s
 }
 static void resize(struct wl_client *c,struct wl_resource *r,struct wl_resource *seat,uint32_t serial,uint32_t edge) {
     (void)c; server *s=wl_resource_get_user_data(r); static const uint32_t expected[]={5,1,9,8,10,2,6,4};
+    if(atomic_load(&s->after_close)) { CHECK(seat==s->seat&&serial==0&&edge==5);atomic_fetch_add(&s->after_close_resizes,1);return; }
     int i=atomic_fetch_add(&s->resizes,1); CHECK(seat==s->seat && serial==0 && i<8 && edge==expected[i]);
 }
 static const struct xdg_toplevel_interface top_impl={.destroy=destroy,.set_title=string,.set_app_id=app_id,
@@ -147,6 +149,10 @@ static void bind_decoration(struct wl_client *c,void *s,uint32_t version,uint32_
 }
 static void *run(void *data) { wl_display_run(((server *)data)->display); return NULL; }
 static void *wrong_app_thread(void *data) {
+    nx_window_close_request request={data,99};
+    if(nx_window_take_close_request(data,&request)!=NX_ERROR_STATE||request.window||request.id)return (void *)(uintptr_t)1;
+    request=(nx_window_close_request){data,1};
+    if(nx_window_resolve_close(data,&request,NX_WINDOW_CLOSE_CANCEL)!=NX_ERROR_STATE)return (void *)(uintptr_t)1;
     return (void *)(uintptr_t)(nx_window_set_wayland_app_id(data,"org.aetheri.Settings")!=NX_ERROR_STATE);
 }
 typedef struct heap { size_t live; } heap;
@@ -243,15 +249,52 @@ static void test(int client_mode,int reject) {
         CHECK(atomic_load(&s.moves)==1 && atomic_load(&s.resizes)==8);
         send(&s,w,1); send(&s,w,2); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
         send(&s,w,1); send(&s,w,5); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
-        send(&s,w,3); CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED);
-        CHECK(nx_window_get_status(w,&status)==NX_OK && (status.capabilities&NX_WINDOW_CAP_FULLSCREEN));
         nx_event e; int available; unsigned states=0,cancels=0;
         do { CHECK(nx_window_next_event(w,&e,&available)==NX_OK); if(available && e.type==NX_EVENT_WINDOW_STATE) ++states; if(available && e.type==NX_EVENT_POINTER_CANCEL) ++cancels; } while(available);
         CHECK((client_mode ? states>=3 : states==0) && cancels==9);
+        send(&s,w,7);nx_window_close_request review={0};
+        CHECK(nx_window_take_close_request(w,&review)==NX_OK&&review.id&&review.window==w);
+        CHECK(nx_window_resolve_close(w,&review,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+        CHECK(nx_window_maximize(w)==NX_OK);roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK&&(status.state&NX_WINDOW_STATE_MAXIMIZED));
+        CHECK(nx_window_restore(w)==NX_OK);roundtrip(w);
+        CHECK(nx_window_get_status(w,&status)==NX_OK&&!(status.state&NX_WINDOW_STATE_MAXIMIZED));
+        atomic_store(&s.after_close,1);send(&s,w,1);CHECK(nx_window_begin_move(w)==NX_OK);roundtrip(w);send(&s,w,2);
+        send(&s,w,1);CHECK(nx_window_begin_resize(w,NX_WINDOW_RESIZE_TOP_LEFT)==NX_OK);roundtrip(w);send(&s,w,2);
+        CHECK(atomic_load(&s.moves)==2&&atomic_load(&s.after_close_resizes)==1);
+        unsigned post_cancels=0;
+        do { CHECK(nx_window_next_event(w,&e,&available)==NX_OK);if(available&&e.type==NX_EVENT_POINTER_CANCEL)++post_cancels; } while(available);
+        CHECK(post_cancels==2);
+        send(&s,w,3); CHECK(nx_window_maximize(w)==NX_ERROR_UNSUPPORTED && nx_window_minimize(w)==NX_ERROR_UNSUPPORTED);
+        CHECK(nx_window_get_status(w,&status)==NX_OK && (status.capabilities&NX_WINDOW_CAP_FULLSCREEN));
         send(&s,w,1); send(&s,w,6); CHECK(nx_window_begin_move(w)==NX_ERROR_STATE);
         if(client_mode) { send(&s,w,4); CHECK(nx_window_get_status(w,&status)==NX_ERROR_UNSUPPORTED && !status.known && !status.capabilities); }
         else { send(&s,w,7); CHECK(nx_window_get_status(w,&status)==NX_ERROR_STATE && !status.state && !status.known && !status.capabilities && !status.client_chrome);
-            CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_STATE); }
+            CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_STATE);
+            nx_window_close_request request={w,99},next={0};nx_window_info info;
+            CHECK(nx_window_take_close_request(NULL,&request)==NX_ERROR_ARGUMENT&&!request.id&&!request.window);
+            CHECK(nx_window_take_close_request(w,NULL)==NX_ERROR_ARGUMENT);
+            CHECK(nx_window_take_close_request(w,&request)==NX_OK&&request.window==w&&request.id);
+            CHECK(nx_window_get_info(w,&info)==NX_OK&&!info.should_close);
+            CHECK(nx_window_take_close_request(w,&next)==NX_OK&&!next.id&&!next.window);
+            CHECK(nx_window_resolve_close(w,&request,(nx_window_close_action)7)==NX_ERROR_ARGUMENT);
+            next=request;next.window=NULL;CHECK(nx_window_resolve_close(w,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+            CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+            CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_OK);
+            CHECK(nx_window_fullscreen(w)==NX_OK);roundtrip(w);
+            CHECK(nx_window_get_status(w,&status)==NX_OK&&(status.state&NX_WINDOW_STATE_FULLSCREEN));
+            CHECK(nx_window_restore(w)==NX_OK);roundtrip(w);roundtrip(w);
+            CHECK(nx_window_get_status(w,&status)==NX_OK&&!(status.state&NX_WINDOW_STATE_FULLSCREEN));
+            send(&s,w,7);CHECK(nx_window_take_close_request(w,&next)==NX_OK&&next.id>request.id);
+            CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+            send(&s,w,7);CHECK(nx_window_resolve_close(w,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+            CHECK(nx_window_take_close_request(w,&request)==NX_OK&&request.id>next.id);
+            CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
+            CHECK(nx_window_take_close_request(w,&next)==NX_OK&&!next.id);
+            CHECK(nx_window_get_info(w,&info)==NX_OK&&info.should_close);
+            CHECK(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+            CHECK(nx_window_set_wayland_app_id(w,"org.aetheri.Settings")==NX_ERROR_STATE);
+        }
         nx_window_destroy(w); CHECK(!h.live);
     }
     wl_display_terminate(s.display); CHECK(!pthread_join(thread,NULL)); wl_display_destroy_clients(s.display); wl_display_destroy(s.display);

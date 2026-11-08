@@ -268,6 +268,23 @@ nx_result nx_window_get_info(nx_window *window, nx_window_info *out_info) {
         nx_x11_window_get_info(window->native.x11, out_info));
 }
 
+nx_result nx_window_take_close_request(nx_window *window,nx_window_close_request *out) {
+    if(!out)return NX_ERROR_ARGUMENT;
+    *out=(nx_window_close_request){0};
+    if(!window)return NX_ERROR_ARGUMENT;
+    if(!nx_linux_on_owner_thread(window)||window->retired)return NX_ERROR_STATE;
+    nx_result r=NX_LINUX_DISPATCH(nx_wayland_window_take_close(window->native.wayland,&out->id),
+        nx_x11_window_take_close(window->native.x11,&out->id));
+    if(r==NX_OK&&out->id)out->window=window;
+    return r;
+}
+nx_result nx_window_resolve_close(nx_window *window,const nx_window_close_request *request,nx_window_close_action action) {
+    if(!window||!request||(action!=NX_WINDOW_CLOSE_CANCEL&&action!=NX_WINDOW_CLOSE_ACCEPT))return NX_ERROR_ARGUMENT;
+    if(!nx_linux_on_owner_thread(window)||window->retired||request->window!=window)return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_resolve_close(window->native.wayland,request->id,action),
+        nx_x11_window_resolve_close(window->native.x11,request->id,action));
+}
+
 nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_size) {
     if (!out_size) return NX_ERROR_ARGUMENT;
     *out_size=(nx_pixel_size){0};

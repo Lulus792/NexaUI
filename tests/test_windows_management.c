@@ -34,6 +34,10 @@ static int drain(nx_window *w, int allow_state, unsigned *states) {
 }
 static DWORD WINAPI wrong_thread(void *arg) {
     nx_window *w = arg;
+    nx_window_close_request request={w,99};
+    if(nx_window_take_close_request(w,&request)!=NX_ERROR_STATE||request.window||request.id)return 3;
+    request=(nx_window_close_request){w,1};
+    if(nx_window_resolve_close(w,&request,NX_WINDOW_CLOSE_CANCEL)!=NX_ERROR_STATE)return 4;
     nx_window_status s; memset(&s,0xff,sizeof(s));
     if (nx_window_get_status(w,&s) != NX_ERROR_STATE || s.state || s.known || s.capabilities || s.client_chrome) return 1;
     if (nx_window_minimize(w) != NX_ERROR_STATE || nx_window_maximize(w) != NX_ERROR_STATE ||
@@ -122,6 +126,44 @@ int main(void) {
     SendMessageW(h,WM_CLOSE,0,0); memset(&s,0xff,sizeof(s));
     CHECK(nx_window_get_status(client,&s)==NX_ERROR_STATE && !s.state && !s.known && !s.capabilities && !s.client_chrome);
     CHECK(nx_window_maximize(client)==NX_ERROR_STATE && nx_window_minimize(client)==NX_ERROR_STATE && nx_window_restore(client)==NX_ERROR_STATE);
+    nx_window_close_request request={normal,99},next={0};nx_window_info info;
+    CHECK(nx_window_take_close_request(NULL,&request)==NX_ERROR_ARGUMENT&&!request.window&&!request.id);
+    CHECK(nx_window_take_close_request(client,NULL)==NX_ERROR_ARGUMENT);
+    CHECK(nx_window_take_close_request(client,&request)==NX_OK&&request.window==client&&request.id);
+    CHECK(nx_window_get_info(client,&info)==NX_OK&&!info.should_close);
+    CHECK(nx_window_take_close_request(client,&next)==NX_OK&&!next.id&&!next.window);
+    nx_window_close_request foreign={0};SendMessageW(n,WM_CLOSE,0,0);
+    CHECK(nx_window_take_close_request(normal,&foreign)==NX_OK&&foreign.id==request.id);
+    CHECK(nx_window_resolve_close(normal,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_resolve_close(normal,&foreign,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_resolve_close(client,&request,(nx_window_close_action)7)==NX_ERROR_ARGUMENT);
+    CHECK(nx_window_resolve_close(client,&request,NX_WINDOW_CLOSE_CANCEL)==NX_OK);
+    CHECK(nx_window_maximize(client)==NX_OK&&nx_window_restore(client)==NX_OK);
+    SendMessageW(h,WM_LBUTTONDOWN,MK_LBUTTON,MAKELPARAM(30,30));
+    previous_proc=(WNDPROC)SetWindowLongPtrW(h,GWLP_WNDPROC,(LONG_PTR)observe);CHECK(previous_proc);
+    CHECK(nx_window_begin_move(client)==NX_OK);
+    SendMessageW(h,WM_LBUTTONUP,0,MAKELPARAM(30,30));
+    SendMessageW(h,WM_LBUTTONDOWN,MK_LBUTTON,MAKELPARAM(30,30));
+    CHECK(nx_window_begin_resize(client,NX_WINDOW_RESIZE_LEFT)==NX_OK);
+    SendMessageW(h,WM_LBUTTONUP,0,MAKELPARAM(30,30));
+    CHECK(moves==2&&sizes==9);
+    SetWindowLongPtrW(h,GWLP_WNDPROC,(LONG_PTR)previous_proc);
+    SendMessageW(h,WM_CLOSE,0,0);
+    CHECK(nx_window_take_close_request(client,&next)==NX_OK&&next.id>request.id);
+    CHECK(nx_window_resolve_close(client,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    SendMessageW(h,WM_CLOSE,0,0);
+    CHECK(nx_window_resolve_close(client,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_take_close_request(client,&request)==NX_OK&&request.id>next.id);
+    CHECK(nx_window_resolve_close(client,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
+    CHECK(nx_window_take_close_request(client,&next)==NX_OK&&!next.id);
+    CHECK(nx_window_get_info(client,&info)==NX_OK&&info.should_close);
+    CHECK(nx_window_resolve_close(client,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_maximize(client)==NX_ERROR_STATE);
+    SendMessageW(n,WM_CLOSE,0,0);CHECK(nx_window_take_close_request(normal,&foreign)==NX_OK&&foreign.id);
+    PostQuitMessage(0);CHECK(nx_window_poll(normal,0)==NX_OK);
+    CHECK(nx_window_resolve_close(normal,&foreign,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
+    CHECK(nx_window_take_close_request(normal,&next)==NX_OK&&!next.id);
+    CHECK(nx_window_get_info(normal,&info)==NX_OK&&info.should_close);
     nx_window_destroy(client); nx_window_destroy(normal);
     d.flags=0x80000000u; client=(nx_window *)(uintptr_t)1;
     CHECK(nx_window_create(&d,&client)==NX_ERROR_ARGUMENT && !client);

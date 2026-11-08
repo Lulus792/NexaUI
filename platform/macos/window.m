@@ -6,6 +6,7 @@
 #include "accessibility.h"
 #include "text_command.h"
 #include "window_management.h"
+#include "close_request.h"
 #include <objc/runtime.h>
 
 #include <limits.h>
@@ -26,6 +27,7 @@ struct nx_window {
     const void *renderer_owner;
     nx_window *next;
     int should_close, ime_enabled, discarding_marked;
+    nx_close_state close_request;
     int interpreting_repeat;
     nx_ime_purpose ime_purpose;
     nx_rect caret;
@@ -266,7 +268,7 @@ static void nx_mac_command(nx_window *w,uint32_t command) {
 @implementation NXMacApplicationDelegate
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
     (void)sender;
-    for (nx_window *w = nx_macos_windows; w; w = w->next) w->should_close = 1;
+    for (nx_window *w = nx_macos_windows; w; w = w->next) nx_close_notify(&w->close_request,&w->should_close);
     return NSTerminateCancel; /* The application retires renderers before exit. */
 }
 @end
@@ -518,7 +520,8 @@ static void nx_mac_focus(nx_window *w, int focused) {
 @interface NXMacWindowDelegate : NSObject <NSWindowDelegate> { @public nx_window *owner; }
 @end
 @implementation NXMacWindowDelegate
-- (BOOL)windowShouldClose:(NSWindow *)sender { (void)sender; if (owner) owner->should_close = 1; return NO; }
+- (BOOL)windowShouldClose:(NSWindow *)sender { (void)sender; if (owner) nx_close_notify(&owner->close_request,&owner->should_close); return NO; }
+- (void)windowWillClose:(NSNotification *)note { (void)note; if(owner) nx_close_force(&owner->close_request,&owner->should_close); }
 - (void)windowDidBecomeKey:(NSNotification *)note { (void)note; nx_mac_focus(owner,1); }
 - (void)windowDidResignKey:(NSNotification *)note { (void)note; nx_mac_focus(owner,0); }
 - (void)windowDidResize:(NSNotification *)note { (void)note; nx_mac_resize(owner); }
@@ -637,6 +640,20 @@ nx_result nx_window_get_info(nx_window *w, nx_window_info *out) {
         out->scale = (float)[w->native backingScaleFactor]; out->should_close = w->should_close;
         return NX_OK;
     }
+}
+nx_result nx_window_take_close_request(nx_window *w,nx_window_close_request *out) {
+    if(!out)return NX_ERROR_ARGUMENT;
+    *out=(nx_window_close_request){0};
+    if(!w)return NX_ERROR_ARGUMENT;
+    if(!nx_mac_owner(w)||!w->native)return NX_ERROR_STATE;
+    out->id=nx_close_take(&w->close_request,&w->should_close);
+    if(out->id)out->window=w;
+    return NX_OK;
+}
+nx_result nx_window_resolve_close(nx_window *w,const nx_window_close_request *request,nx_window_close_action action) {
+    if(!w||!request||(action!=NX_WINDOW_CLOSE_CANCEL&&action!=NX_WINDOW_CLOSE_ACCEPT))return NX_ERROR_ARGUMENT;
+    if(!nx_mac_owner(w)||!w->native||request->window!=w)return NX_ERROR_STATE;
+    return nx_close_resolve(&w->close_request,&w->should_close,request->id,action);
 }
 nx_result nx_window_get_pixel_size(nx_window *w, nx_pixel_size *out) {
     if (!out) return NX_ERROR_ARGUMENT;
