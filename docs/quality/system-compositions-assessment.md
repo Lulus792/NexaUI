@@ -1,5 +1,13 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Software foreign clipboard/resize: `ad7c933fe2763a4893758d31c3558ac56ad6bf31`,
+[independent Unicode transfer, late-focus refusal, close while the foreign source
+stays stopped and actual compact resize/draft/focus restoration](software-window-report.md).
+Three profiles pass six native tasks each; a capture repeat and five regressions
+bring the total to24 cases/327 checkpoints. Two compiled defects and nine full
+captures are retained. Output/scale/workarea migration and observed large-label
+wrapping remain open; no product host/view/worker or SDK implementation changed.
+
 Software native lifetime: `7c45be1f166ade719bdc78688eca75840ac8c1e9`,
 [held original SQL, actual worker-FD wake without input, close before completion,
 retained OS-reference refusal and exact-once late allocation disposal](software-lifecycle-report.md).
@@ -72,7 +80,7 @@ exercised older header exactly; this is not current-runtime acceptance.
 | --- | --- | --- | --- |
 | Files application | Original7483286 candidate plus separate generated IME consumer713c26e/SDK0.1.26; native document/unknown-worker/OS AT-SPI, atomic edits, foreign clipboard/close, selected fallback and EN/DE cancellation evidence | Full replacement/delete and remaining interruption paths, broader clipboard pressure/deadline/provider/error paths, font/locale/IME coverage and normal application adoption; preserve actual original validation/explicit rejection barrier and service boundaries | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
 | Settings and devices | Original Settings model contains transient display observations and appearance/language/text settings; [example21](../../examples/21_aetheri_model/README.md) and ordinary Settings evidence already exist | Reuse controls/status/wakeup for additional actual device models, with unavailable/pending/error/reconnect states | Real audio, network, Bluetooth/input, power/account observations and authorized control; compositor output observation alone changes no display/device configuration |
-| Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker, native list/filter/full details, keyboard/controlled IME/OS AT-SPI and held-query wake/close evidence | Foreign clipboard/late replies and resize/output migration checks; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
+| Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker, native list/filter/full details, keyboard/controlled IME/OS AT-SPI, held-query wake/close, foreign clipboard/late-focus/close and compact resize evidence | Output/scale/workarea migration, large-label layout and broader clipboard/font/IME; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
 | Components/dependencies | Original manifest decoder and shared owned document reader expose declared component/version/publisher/files/actions/dependency IDs; example34 binds exact observed artifact/component/publisher and shows all declared dependencies plus complete file/action inspection | Compose actual dependency/ownership/process graph data; retain missing/unverified state and expand native lifetime/resource checks | Installed dependency/ownership state, trusted expected artifact provenance and complete inventory; declarations are no installed-files or current-process inventory |
 | Processes/resources/reasons | Original execution/unit getters and recovery observations retain exact historical profiles/leases/custody; [example33](../../examples/33_aetheri_recovery/README.md) provides bounded read-only inspection. Example34 now composes the original historical process reader through its copied worker and native History tree/detail page, including recorded unit/custody details with exact selected-app/profile binding | Compose further lease/operation/diagnostic/reason relationships; consume actual current process/resource snapshots when supplied | Existing current-process APIs require authenticated held ProcessFD/system-bus/supervisor/image evidence. Metrics/source/actor/transport admission remain owner obligations; matching PID/name/SQL rows cannot substitute |
 | Install/update/remove/full removal | [Operation observer](../../examples/27_aetheri_operation/README.md) uses original journal APIs; [removal review](../../examples/28_removal_review/README.md) distinguishes retained/shared/unknown scope | Compose real owner plans/results with selection/conflict/unknown/reconnect handling; preserve exact target and request identity | Actual plan admission and effects, complete ownership enumeration, shared/retained-state evidence and independent completion; a UI acknowledgement is no deletion/authorization receipt |
@@ -99,7 +107,7 @@ the final application matrix.
 Declared file/action and historical process inspection now use the bounded
 worker/native view. Recorded unit/custody details are integrated. Next compose lease/operation/
 diagnostic/reason relationships and owner-provided dependency/ownership/current-process state. The scoped native held-query lifecycle is proven;
-foreign clipboard/late-reply/resize checks and full inventory/device/trusted service adapters
+broader clipboard, output/scale/workarea and visual-layout checks plus full inventory/device/trusted service adapters
 and the remaining packet 6–8 acceptance stay open. Existing SDK controls and
 renderer/input/wakeup contracts should be reused; add a primitive only when the
 composed workload demonstrates a missing capability. All 103 catalogue IDs and

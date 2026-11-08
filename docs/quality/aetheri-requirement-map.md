@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W03/D07/L05/L11/I01/I05/T11/A02/A06/P05/P07/Q02/Q04/Q08: source
+`ad7c933fe2763a4893758d31c3558ac56ad6bf31` extends the ordinary Software OS
+peer/driver with foreign clipboard and real pointer resize checks. Three
+profiles each pass six EN/DE task cases; one capture repeat and five IME/held
+regressions bring the total to24 cases/327 checkpoints. Two compiled view
+defects fail the intended text checks. Nine complete native images and three
+inspected lossless PNGs are retained;95 staged inputs bind to exact Git blobs.
+See [source, artifact binding, scope and observed label wrapping](software-window-report.md).
+No SDK/product host/model/view/worker or Aetheri pin changes. Output/scale/workarea
+transitions, visual layout, broader clipboard and full service/adoption gates
+remain open, with remaining packet6, packets7–8 and all103 IDs preserved.
+
 D07/L05/L11/I01/I05/A02/A06/P04/P05/P07/Q02/Q04/Q08: source
 `7c45be1f166ade719bdc78688eca75840ac8c1e9` adds a default-OFF Software native
 held-query host and independent OS peer, reusing ordinary host/model/view/worker

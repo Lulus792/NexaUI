@@ -1,0 +1,24 @@
+{
+  "sha256": "6f15b7dce3e259d41494b1167551fde150cc5903d6d880f1e131ff3705a1768a",
+  "files": 641,
+  "links": 0,
+  "directories": 251,
+  "verified": true,
+  "name": "nexaui-software-window-20261108.tar.gz",
+  "size": 4547340,
+  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+  "early_archive": {
+    "sha256": "a6a94c54f6e7e15d7e2f91eb966b794684b4c36b873bba99e12cca1e5722cda7",
+    "files": 509,
+    "links": 0,
+    "directories": 194,
+    "verified": true,
+    "name": "nexaui-software-window-early-20261108.tar.gz",
+    "size": 3591328,
+    "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+  },
+  "reused_archive": {
+    "name": "nexaui-software-lifecycle-20261108.tar.gz",
+    "sha256": "85425fff953e7a34f8a07064e4d53b33322f8239b97cfe0837669dd379a10f70"
+  }
+}

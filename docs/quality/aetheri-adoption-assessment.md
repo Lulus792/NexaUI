@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Software foreign clipboard and compact resize (2026-11-08)
+
+Test/consumer source `ad7c933fe2763a4893758d31c3558ac56ad6bf31` exercises the
+unchanged ordinary Software host/view/worker and installed SDKc4f467d/0.1.23.
+Three profiles each pass six native clipboard/resize tasks. With one capture
+repeat and five retained-feature regressions,24 cases/327 checkpoints pass;
+two compiled view defects fail as intended. Nine complete native captures bind
+to the source/results. Native Unicode clipboard transport, late-focus refusal,
+close while the foreign producer stays stopped, compact field retirement and
+draft/focus restore are now scoped evidence. See [exact source and open gates](software-window-report.md).
+Actual output/scale/workarea transitions, the observed large-German-label wrapping,
+broader clipboard/font/IME/locale, complete inventory/management/device/trusted-owner
+services, remaining packet6, packets7–8 and final physical/human/performance/adoption
+gates stay open across all103 IDs. Aetheri continues independently; no1.0 release.
+
 ## Software native query/close lifetime (2026-11-08)
 
 Consumer/test source `7c45be1f166ade719bdc78688eca75840ac8c1e9` reuses the

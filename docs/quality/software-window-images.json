@@ -1,0 +1,226 @@
+{
+  "native_images": [
+    {
+      "label": "filter",
+      "file": "capture-1-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "3cf900960223a96e33b69c8c7f7f81f7899ca2ae527d692a401bf7bd9b1eaceb",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 1629,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "filter",
+      "file": "capture-1-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 1629,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "filter",
+      "file": "capture-1-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 1629,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e433fd80a10d3c226629ff30042a87bbc7381caf3ab151b851680e536c27739a",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 130,
+        "polls": 1690,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 130,
+        "polls": 1690,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 130,
+        "polls": 1690,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "3cf900960223a96e33b69c8c7f7f81f7899ca2ae527d692a401bf7bd9b1eaceb",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 138,
+        "polls": 1822,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 138,
+        "polls": 1822,
+        "keys": 130,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 138,
+        "polls": 1822,
+        "keys": 130,
+        "request": 2
+      }
+    }
+  ],
+  "published_pngs": [
+    {
+      "label": "filter",
+      "ppm": "capture-1-output-0.ppm",
+      "ppm_sha256": "3cf900960223a96e33b69c8c7f7f81f7899ca2ae527d692a401bf7bd9b1eaceb",
+      "png": "filter.png",
+      "png_sha256": "7f452c3c5ae127ee1f03c2de52d0f8ac6159860f084562ed735caa6cca153a19",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-window-filter.png"
+    },
+    {
+      "label": "compact",
+      "ppm": "capture-2-output-0.ppm",
+      "ppm_sha256": "e433fd80a10d3c226629ff30042a87bbc7381caf3ab151b851680e536c27739a",
+      "png": "compact.png",
+      "png_sha256": "1c5edf20fbc86ae36db73a0e0edd7a78d426a42e4ca4a26ec42c602b09e0b2a4",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-window-compact.png"
+    },
+    {
+      "label": "restored",
+      "ppm": "capture-3-output-0.ppm",
+      "ppm_sha256": "3cf900960223a96e33b69c8c7f7f81f7899ca2ae527d692a401bf7bd9b1eaceb",
+      "png": "restored.png",
+      "png_sha256": "7f452c3c5ae127ee1f03c2de52d0f8ac6159860f084562ed735caa6cca153a19",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-window-restored.png"
+    }
+  ],
+  "visual_review": "Inspected all three published output0 images. Compact Close stays inside64x64; Unicode draft/caret restore. Mid-word wrapping in large German action labels remains visual work; no complete design acceptance."
+}

@@ -1,6 +1,10 @@
 # Software native held-query lifetimes — 2026-11-08
 
 Test/consumer source: `7c45be1f166ade719bdc78688eca75840ac8c1e9`.
+Published checkpoint `49becec512f47f21a5e3e0e34d17404f8007b3d5` has
+[seven successful required CI jobs and two optional skips](software-lifecycle-ci.json).
+The later [ordinary clipboard/resize tasks](software-window-report.md) retain
+their separate source and native evidence; the historical scope below is unchanged.
 Unchanged ordinary host/model/view/worker: `8b29872a2bccec620f453cc2a97e7ef796ecee64`.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI0.1.23.
