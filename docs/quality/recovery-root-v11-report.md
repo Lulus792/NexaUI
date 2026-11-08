@@ -7,6 +7,12 @@ Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI0.1.23.
 Catalogue SHA-256: `9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65`.
 Scoped B01/B04/D07/L05/L11/P04/P05/P07/Q02/Q04/Q08, within packet6.
 
+Subsequent [ordinary native Root11 checks](recovery-root-v11-native-report.md)
+on peer/runner source `5a5a1b4` reuse these exact provider binaries and add
+Wayland/IME/independent OS-peer evidence. The component results and historical
+native gap below retain their original source boundary; held/clipboard/resize,
+current authority and final physical/human/performance gates remain separate.
+
 The independently evolving original backend now supports Root schema11 and
 Unit issuer recovery kind17. The previous consumer correctly refused an
 unreviewed schema, but could not display this original metadata. The existing

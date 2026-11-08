@@ -1,0 +1,5399 @@
+{
+  "commands": [
+    {
+      "name": "rv11n4-current-release-fresh",
+      "owner": "current",
+      "profile": "release",
+      "mode": "fresh",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "fresh"
+      ],
+      "exit": 0,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    },
+    {
+      "name": "rv11n4-current-release-lost",
+      "owner": "current",
+      "profile": "release",
+      "mode": "lost",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost",
+        "--ime",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "lost"
+      ],
+      "exit": 0,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    },
+    {
+      "name": "rv11n4-current-release-replacement",
+      "owner": "current",
+      "profile": "release",
+      "mode": "replacement",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement",
+        "--ime",
+        "--light",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "replacement"
+      ],
+      "exit": 0,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    },
+    {
+      "name": "rv11n4-current-shared-fresh",
+      "owner": "current",
+      "profile": "shared",
+      "mode": "fresh",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "fresh"
+      ],
+      "exit": 0,
+      "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+    },
+    {
+      "name": "rv11n4-current-shared-lost",
+      "owner": "current",
+      "profile": "shared",
+      "mode": "lost",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost",
+        "--ime",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "lost"
+      ],
+      "exit": 0,
+      "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+    },
+    {
+      "name": "rv11n4-current-shared-replacement",
+      "owner": "current",
+      "profile": "shared",
+      "mode": "replacement",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement",
+        "--ime",
+        "--light",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "replacement"
+      ],
+      "exit": 0,
+      "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+    },
+    {
+      "name": "rv11n4-current-asan-fresh",
+      "owner": "current",
+      "profile": "asan",
+      "mode": "fresh",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "fresh"
+      ],
+      "exit": 0,
+      "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+    },
+    {
+      "name": "rv11n4-current-asan-lost",
+      "owner": "current",
+      "profile": "asan",
+      "mode": "lost",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost",
+        "--ime",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "lost"
+      ],
+      "exit": 0,
+      "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+    },
+    {
+      "name": "rv11n4-current-asan-replacement",
+      "owner": "current",
+      "profile": "asan",
+      "mode": "replacement",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement",
+        "--ime",
+        "--light",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "replacement"
+      ],
+      "exit": 0,
+      "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+    },
+    {
+      "name": "rv11n4-legacy-release-legacy",
+      "owner": "legacy",
+      "profile": "release",
+      "mode": "legacy",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-release/recovery_native",
+        "--source",
+        "/tmp/nexaui-recovery-20261107/original",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-release-legacy",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation"
+      ],
+      "exit": 0,
+      "host_sha256": "c6643b6719cff88d1953dead4b63b00458a221c9166eabfecbfdaa6b8419f0ef"
+    },
+    {
+      "name": "rv11n4-legacy-asan-legacy",
+      "owner": "legacy",
+      "profile": "asan",
+      "mode": "legacy",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-asan/recovery_native",
+        "--source",
+        "/tmp/nexaui-recovery-20261107/original",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-asan-legacy",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation"
+      ],
+      "exit": 0,
+      "host_sha256": "ca04977b48bd37874a85b6b409d0af5933cda4d9b431cd49da36336201be1364"
+    }
+  ],
+  "cases": [
+    {
+      "command": {
+        "name": "rv11n4-current-release-fresh",
+        "owner": "current",
+        "profile": "release",
+        "mode": "fresh",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh",
+          "--ime",
+          "--german",
+          "--large",
+          "--small",
+          "--contrast",
+          "--navigation",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "fresh"
+        ],
+        "exit": 0,
+        "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": true,
+          "large": true,
+          "small": true,
+          "contrast": true,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": true,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 3,
+              "polls": 109,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 5,
+              "polls": 119,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 38,
+              "polls": 544,
+              "keys": 54,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 39,
+              "polls": 550,
+              "keys": 56,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 41,
+              "polls": 701,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 44,
+              "polls": 743,
+              "keys": 58,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 47,
+              "polls": 809,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 48,
+              "polls": 850,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 53,
+              "polls": 1066,
+              "keys": 62,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 58,
+              "polls": 1235,
+              "keys": 66,
+              "request": 2
+            }
+          },
+          {
+            "step": 10,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 60,
+              "polls": 1240,
+              "keys": 70,
+              "request": 2
+            }
+          },
+          {
+            "step": 11,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 66,
+              "polls": 1429,
+              "keys": 74,
+              "request": 3
+            }
+          },
+          {
+            "step": 12,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 68,
+              "polls": 1434,
+              "keys": 76,
+              "request": 3
+            }
+          },
+          {
+            "step": 13,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 70,
+              "polls": 1479,
+              "keys": 80,
+              "request": 3
+            }
+          },
+          {
+            "step": 14,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 72,
+              "polls": 1515,
+              "keys": 82,
+              "request": 3
+            }
+          },
+          {
+            "step": 15,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 74,
+              "polls": 1579,
+              "keys": 84,
+              "request": 3
+            }
+          },
+          {
+            "step": 16,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 44,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 77,
+              "polls": 1683,
+              "keys": 88,
+              "request": 3
+            }
+          },
+          {
+            "step": 17,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 81,
+              "polls": 1724,
+              "keys": 96,
+              "request": 3
+            }
+          },
+          {
+            "step": 18,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 83,
+              "polls": 1732,
+              "keys": 100,
+              "request": 3
+            }
+          },
+          {
+            "step": 19,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 85,
+              "polls": 1787,
+              "keys": 104,
+              "request": 3
+            }
+          },
+          {
+            "step": 20,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 86,
+              "polls": 1832,
+              "keys": 106,
+              "request": 3
+            }
+          },
+          {
+            "step": 21,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 88,
+              "polls": 1975,
+              "keys": 108,
+              "request": 3
+            }
+          },
+          {
+            "step": 22,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 89,
+              "polls": 2039,
+              "keys": 110,
+              "request": 3
+            }
+          },
+          {
+            "step": 23,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 90,
+              "polls": 2178,
+              "keys": 112,
+              "request": 3
+            }
+          },
+          {
+            "step": 24,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 92,
+              "polls": 2243,
+              "keys": 114,
+              "request": 3
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "fresh",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh/canonical/run-cnxal3ey/expected",
+                "exec-issuer-fresh"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 13,
+        "filter_scrollbar": true,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "da63fcc72610b153fc13ad7a078fe025b9d12db9a500a7a9516fcb7d9aa377b3",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-fresh/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-release-lost",
+        "owner": "current",
+        "profile": "release",
+        "mode": "lost",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost",
+          "--ime",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "lost"
+        ],
+        "exit": 0,
+        "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 114,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 125,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 263,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 416,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 592,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 13,
+              "polls": 636,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 16,
+              "polls": 702,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 17,
+              "polls": 743,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 22,
+              "polls": 951,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 26,
+              "polls": 1145,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "lost",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost/canonical/run-1ttfdjyn/expected",
+                "exec-issuer-lost"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "ad49df7f826d7e8ecb0c00c32a378248e4d8e82cea431f15d4f482c37b08f14f",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-lost/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-release-replacement",
+        "owner": "current",
+        "profile": "release",
+        "mode": "replacement",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement",
+          "--ime",
+          "--light",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "replacement"
+        ],
+        "exit": 0,
+        "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": true,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 114,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 124,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 251,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 404,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 570,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 13,
+              "polls": 609,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 15,
+              "polls": 673,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 16,
+              "polls": 714,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 21,
+              "polls": 923,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 25,
+              "polls": 1109,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 6,
+        "images": [],
+        "issuer": {
+          "mode": "replacement",
+          "runtime": "00000000000040008000000000000006",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement/canonical/run-853wqs92/expected",
+                "exec-issuer-replacement"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a9645839e408b143e6b964bb54ddbc684845f19632640761783007edd3f93da5",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "e46fbb93f4fe437b9e1f32a54c8ee789673e4ebefd6115a4e64fdb9602d6f437",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-release-replacement/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-shared-fresh",
+        "owner": "current",
+        "profile": "shared",
+        "mode": "fresh",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh",
+          "--ime",
+          "--german",
+          "--large",
+          "--small",
+          "--contrast",
+          "--navigation",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "fresh"
+        ],
+        "exit": 0,
+        "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": true,
+          "large": true,
+          "small": true,
+          "contrast": true,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": true,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 3,
+              "polls": 108,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 5,
+              "polls": 117,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 46,
+              "polls": 554,
+              "keys": 54,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 48,
+              "polls": 561,
+              "keys": 56,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 50,
+              "polls": 707,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 53,
+              "polls": 745,
+              "keys": 58,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 56,
+              "polls": 812,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 57,
+              "polls": 853,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 61,
+              "polls": 1065,
+              "keys": 62,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 66,
+              "polls": 1240,
+              "keys": 66,
+              "request": 2
+            }
+          },
+          {
+            "step": 10,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 68,
+              "polls": 1246,
+              "keys": 70,
+              "request": 2
+            }
+          },
+          {
+            "step": 11,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 73,
+              "polls": 1440,
+              "keys": 74,
+              "request": 3
+            }
+          },
+          {
+            "step": 12,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 75,
+              "polls": 1446,
+              "keys": 76,
+              "request": 3
+            }
+          },
+          {
+            "step": 13,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 77,
+              "polls": 1492,
+              "keys": 80,
+              "request": 3
+            }
+          },
+          {
+            "step": 14,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 79,
+              "polls": 1529,
+              "keys": 82,
+              "request": 3
+            }
+          },
+          {
+            "step": 15,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 80,
+              "polls": 1593,
+              "keys": 84,
+              "request": 3
+            }
+          },
+          {
+            "step": 16,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 44,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 82,
+              "polls": 1694,
+              "keys": 88,
+              "request": 3
+            }
+          },
+          {
+            "step": 17,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 86,
+              "polls": 1736,
+              "keys": 96,
+              "request": 3
+            }
+          },
+          {
+            "step": 18,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 88,
+              "polls": 1744,
+              "keys": 100,
+              "request": 3
+            }
+          },
+          {
+            "step": 19,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 90,
+              "polls": 1799,
+              "keys": 104,
+              "request": 3
+            }
+          },
+          {
+            "step": 20,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 92,
+              "polls": 1845,
+              "keys": 106,
+              "request": 3
+            }
+          },
+          {
+            "step": 21,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 93,
+              "polls": 1984,
+              "keys": 108,
+              "request": 3
+            }
+          },
+          {
+            "step": 22,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 95,
+              "polls": 2048,
+              "keys": 110,
+              "request": 3
+            }
+          },
+          {
+            "step": 23,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 97,
+              "polls": 2192,
+              "keys": 112,
+              "request": 3
+            }
+          },
+          {
+            "step": 24,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 99,
+              "polls": 2257,
+              "keys": 114,
+              "request": 3
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "fresh",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh/canonical/run-qosd7q1o/expected",
+                "exec-issuer-fresh"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 13,
+        "filter_scrollbar": true,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "8ff1ecfadcfdc5eef1943a5285c83ab3e876669bb96d530fb3f27e4c3d4f4a50",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-fresh/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-shared-lost",
+        "owner": "current",
+        "profile": "shared",
+        "mode": "lost",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost",
+          "--ime",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "lost"
+        ],
+        "exit": 0,
+        "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 110,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 120,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 257,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 410,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 585,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 13,
+              "polls": 625,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 16,
+              "polls": 688,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 17,
+              "polls": 730,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 21,
+              "polls": 943,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 25,
+              "polls": 1140,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "lost",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost/canonical/run-15hw6krk/expected",
+                "exec-issuer-lost"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "a5f5eb2b0590105bf76bd19e96583306465264fbe78980811ae44a1d9a066c6e",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-lost/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-shared-replacement",
+        "owner": "current",
+        "profile": "shared",
+        "mode": "replacement",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement",
+          "--ime",
+          "--light",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "replacement"
+        ],
+        "exit": 0,
+        "host_sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": true,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 115,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 125,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 252,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 404,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 568,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 12,
+              "polls": 610,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 15,
+              "polls": 675,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 16,
+              "polls": 716,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 21,
+              "polls": 923,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 25,
+              "polls": 1108,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 6,
+        "images": [],
+        "issuer": {
+          "mode": "replacement",
+          "runtime": "00000000000040008000000000000006",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement/canonical/run-ae3rgqyz/expected",
+                "exec-issuer-replacement"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a9645839e408b143e6b964bb54ddbc684845f19632640761783007edd3f93da5",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "3b0a2fa83174071f57952370207b4222c05252b2d36f6a59f0c3a22f9c47da49",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-shared-replacement/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-asan-fresh",
+        "owner": "current",
+        "profile": "asan",
+        "mode": "fresh",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh",
+          "--ime",
+          "--german",
+          "--large",
+          "--small",
+          "--contrast",
+          "--navigation",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "fresh"
+        ],
+        "exit": 0,
+        "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "01f006d13ace153fad0fca1ebbcc1c8da3e888f3f3b10a897f146bd19b632a4f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": true,
+          "large": true,
+          "small": true,
+          "contrast": true,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": true,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 3,
+              "polls": 110,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 5,
+              "polls": 120,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 40,
+              "polls": 523,
+              "keys": 54,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 41,
+              "polls": 529,
+              "keys": 56,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 43,
+              "polls": 680,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 46,
+              "polls": 719,
+              "keys": 58,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 49,
+              "polls": 782,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 50,
+              "polls": 824,
+              "keys": 60,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 54,
+              "polls": 1039,
+              "keys": 62,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 58,
+              "polls": 1207,
+              "keys": 66,
+              "request": 2
+            }
+          },
+          {
+            "step": 10,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 60,
+              "polls": 1212,
+              "keys": 70,
+              "request": 2
+            }
+          },
+          {
+            "step": 11,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 64,
+              "polls": 1401,
+              "keys": 74,
+              "request": 3
+            }
+          },
+          {
+            "step": 12,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 66,
+              "polls": 1406,
+              "keys": 76,
+              "request": 3
+            }
+          },
+          {
+            "step": 13,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 68,
+              "polls": 1450,
+              "keys": 80,
+              "request": 3
+            }
+          },
+          {
+            "step": 14,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 70,
+              "polls": 1487,
+              "keys": 82,
+              "request": 3
+            }
+          },
+          {
+            "step": 15,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 71,
+              "polls": 1551,
+              "keys": 84,
+              "request": 3
+            }
+          },
+          {
+            "step": 16,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 44,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 75,
+              "polls": 1653,
+              "keys": 88,
+              "request": 3
+            }
+          },
+          {
+            "step": 17,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 79,
+              "polls": 1693,
+              "keys": 96,
+              "request": 3
+            }
+          },
+          {
+            "step": 18,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 81,
+              "polls": 1701,
+              "keys": 100,
+              "request": 3
+            }
+          },
+          {
+            "step": 19,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 82,
+              "polls": 1755,
+              "keys": 104,
+              "request": 3
+            }
+          },
+          {
+            "step": 20,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 83,
+              "polls": 1799,
+              "keys": 106,
+              "request": 3
+            }
+          },
+          {
+            "step": 21,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 85,
+              "polls": 1939,
+              "keys": 108,
+              "request": 3
+            }
+          },
+          {
+            "step": 22,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 87,
+              "polls": 2004,
+              "keys": 110,
+              "request": 3
+            }
+          },
+          {
+            "step": 23,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 89,
+              "polls": 2140,
+              "keys": 112,
+              "request": 3
+            }
+          },
+          {
+            "step": 24,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 91,
+              "polls": 2205,
+              "keys": 114,
+              "request": 3
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "fresh",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh/canonical/run-4bbv1ge3/expected",
+                "exec-issuer-fresh"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 13,
+        "filter_scrollbar": true,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "fdbe6be7d67550676426b6bd62cb3bf7678957d2f2c3d8b0e08bdcb661362fbc",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-fresh/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-asan-lost",
+        "owner": "current",
+        "profile": "asan",
+        "mode": "lost",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost",
+          "--ime",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "lost"
+        ],
+        "exit": 0,
+        "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "01f006d13ace153fad0fca1ebbcc1c8da3e888f3f3b10a897f146bd19b632a4f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 110,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 119,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 255,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 7,
+              "mode": 0,
+              "focus": 1006,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 407,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 580,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 13,
+              "polls": 620,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 16,
+              "polls": 685,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 17,
+              "polls": 727,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 22,
+              "polls": 934,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 7,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 26,
+              "polls": 1126,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 7,
+        "images": [],
+        "issuer": {
+          "mode": "lost",
+          "runtime": "00000000000040008000000000000005",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost/canonical/run-e3zl2yye/expected",
+                "exec-issuer-lost"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a6607bb96551d50fe4be1559d7b608f9fdd5092a664b4b18480a1ef6f20b13e2",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "4e60a2deb69c89f9722327f8291bca568d5982e3dea82e19768aa48e411ef4a6",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-lost/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-current-asan-replacement",
+        "owner": "current",
+        "profile": "asan",
+        "mode": "replacement",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement",
+          "--ime",
+          "--light",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+          "--issuer-mode",
+          "replacement"
+        ],
+        "exit": 0,
+        "host_sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+          "issuer_fixture": "01f006d13ace153fad0fca1ebbcc1c8da3e888f3f3b10a897f146bd19b632a4f"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": false,
+          "large": false,
+          "small": false,
+          "contrast": false,
+          "light": true,
+          "ime": true,
+          "held": null,
+          "navigation": false,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 3,
+              "polls": 110,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 5,
+              "polls": 119,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 2,
+              "focus": 43,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 6,
+              "polls": 245,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 6,
+              "mode": 0,
+              "focus": 1005,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 8,
+              "polls": 398,
+              "keys": 4,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 40,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 10,
+              "polls": 561,
+              "keys": 4,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 12,
+              "polls": 600,
+              "keys": 6,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 14,
+              "polls": 665,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 15,
+              "polls": 706,
+              "keys": 8,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 19,
+              "polls": 921,
+              "keys": 10,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 6,
+              "mode": 0,
+              "focus": 42,
+              "width": 800,
+              "height": 600,
+              "scale": 1,
+              "frames": 23,
+              "polls": 1108,
+              "keys": 14,
+              "request": 2
+            }
+          }
+        ],
+        "expected_records": 6,
+        "images": [],
+        "issuer": {
+          "mode": "replacement",
+          "runtime": "00000000000040008000000000000006",
+          "commands": [
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/check_source.py",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "root-v11"
+              ],
+              "exit": 0,
+              "log": "issuer-source-check.log"
+            },
+            {
+              "command": [
+                "/usr/bin/python3",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/34_aetheri_software/run_history.py",
+                "--source",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+                "--fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "--model",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--test",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+                "--work",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement/canonical",
+                "--prepare-only",
+                "custody"
+              ],
+              "exit": 0,
+              "log": "issuer-canonical.log"
+            },
+            {
+              "command": [
+                "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement/owner",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement/issuer-user",
+                "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement/canonical/run-66s1fnl3/expected",
+                "exec-issuer-replacement"
+              ],
+              "exit": 0,
+              "log": "issuer-original.log"
+            }
+          ],
+          "scope": "Original stored metadata; no current process/issuer/service authority",
+          "user_sha256_before_after": "96ada41a5845299f7ad471ada411b2db27b55f7d9360469780c54d7ef7c3cd44",
+          "user_rows_unchanged": true
+        },
+        "pages_each_direction": 0,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "a9645839e408b143e6b964bb54ddbc684845f19632640761783007edd3f93da5",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "17c32e789036024ca45e05cfd8576389da287514a7e608df6d942d88509e7636",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-current-asan-replacement/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-legacy-release-legacy",
+        "owner": "legacy",
+        "profile": "release",
+        "mode": "legacy",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-release/recovery_native",
+          "--source",
+          "/tmp/nexaui-recovery-20261107/original",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-release-legacy",
+          "--ime",
+          "--german",
+          "--large",
+          "--small",
+          "--contrast",
+          "--navigation"
+        ],
+        "exit": 0,
+        "host_sha256": "c6643b6719cff88d1953dead4b63b00458a221c9166eabfecbfdaa6b8419f0ef"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "c6643b6719cff88d1953dead4b63b00458a221c9166eabfecbfdaa6b8419f0ef",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": true,
+          "large": true,
+          "small": true,
+          "contrast": true,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": true,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 3,
+              "polls": 109,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 1038,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 5,
+              "polls": 118,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 2,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 41,
+              "polls": 536,
+              "keys": 50,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 1038,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 42,
+              "polls": 543,
+              "keys": 52,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 44,
+              "polls": 694,
+              "keys": 52,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 47,
+              "polls": 738,
+              "keys": 54,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 50,
+              "polls": 805,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 51,
+              "polls": 847,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 56,
+              "polls": 1072,
+              "keys": 58,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 61,
+              "polls": 1244,
+              "keys": 62,
+              "request": 2
+            }
+          },
+          {
+            "step": 10,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 63,
+              "polls": 1250,
+              "keys": 66,
+              "request": 2
+            }
+          },
+          {
+            "step": 11,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 69,
+              "polls": 1442,
+              "keys": 70,
+              "request": 3
+            }
+          },
+          {
+            "step": 12,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 71,
+              "polls": 1448,
+              "keys": 72,
+              "request": 3
+            }
+          },
+          {
+            "step": 13,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 73,
+              "polls": 1494,
+              "keys": 76,
+              "request": 3
+            }
+          },
+          {
+            "step": 14,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 75,
+              "polls": 1531,
+              "keys": 78,
+              "request": 3
+            }
+          },
+          {
+            "step": 15,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 77,
+              "polls": 1596,
+              "keys": 80,
+              "request": 3
+            }
+          },
+          {
+            "step": 16,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 44,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 80,
+              "polls": 1700,
+              "keys": 84,
+              "request": 3
+            }
+          },
+          {
+            "step": 17,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 84,
+              "polls": 1742,
+              "keys": 92,
+              "request": 3
+            }
+          },
+          {
+            "step": 18,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 86,
+              "polls": 1750,
+              "keys": 96,
+              "request": 3
+            }
+          },
+          {
+            "step": 19,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 88,
+              "polls": 1805,
+              "keys": 100,
+              "request": 3
+            }
+          },
+          {
+            "step": 20,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 90,
+              "polls": 1851,
+              "keys": 102,
+              "request": 3
+            }
+          },
+          {
+            "step": 21,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 91,
+              "polls": 1990,
+              "keys": 104,
+              "request": 3
+            }
+          },
+          {
+            "step": 22,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 93,
+              "polls": 2055,
+              "keys": 106,
+              "request": 3
+            }
+          },
+          {
+            "step": 23,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 95,
+              "polls": 2195,
+              "keys": 108,
+              "request": 3
+            }
+          },
+          {
+            "step": 24,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 97,
+              "polls": 2260,
+              "keys": 110,
+              "request": 3
+            }
+          }
+        ],
+        "expected_records": 39,
+        "images": [],
+        "pages_each_direction": 12,
+        "filter_scrollbar": true,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "9d8ae0280978c9a28733ddcab8f36c7c13dab85daa67259c7de438b1005598e8",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-release-legacy/result.json"
+      }
+    },
+    {
+      "command": {
+        "name": "rv11n4-legacy-asan-legacy",
+        "owner": "legacy",
+        "profile": "asan",
+        "mode": "legacy",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-asan/recovery_native",
+          "--source",
+          "/tmp/nexaui-recovery-20261107/original",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-asan-legacy",
+          "--ime",
+          "--german",
+          "--large",
+          "--small",
+          "--contrast",
+          "--navigation"
+        ],
+        "exit": 0,
+        "host_sha256": "ca04977b48bd37874a85b6b409d0af5933cda4d9b431cd49da36336201be1364"
+      },
+      "result": {
+        "status": "passed",
+        "inputs": {
+          "server": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+          "registry": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+          "host": "ca04977b48bd37874a85b6b409d0af5933cda4d9b431cd49da36336201be1364",
+          "client": "b26fdff4922e878369308b69328e3a001abd0748ed06c3bda3151340f7d53318",
+          "font": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+        },
+        "configuration": {
+          "kind": "system",
+          "german": true,
+          "large": true,
+          "small": true,
+          "contrast": true,
+          "light": false,
+          "ime": true,
+          "held": null,
+          "navigation": true,
+          "resize": false,
+          "capture": false,
+          "clipboard": null
+        },
+        "checks": [
+          {
+            "step": 0,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 3,
+              "polls": 109,
+              "keys": 0,
+              "request": 1
+            }
+          },
+          {
+            "step": 1,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 1038,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 5,
+              "polls": 119,
+              "keys": 2,
+              "request": 1
+            }
+          },
+          {
+            "step": 2,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 2,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 44,
+              "polls": 519,
+              "keys": 50,
+              "request": 1
+            }
+          },
+          {
+            "step": 3,
+            "view": {
+              "state": 2,
+              "epoch": 1,
+              "count": 39,
+              "mode": 0,
+              "focus": 1038,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 46,
+              "polls": 526,
+              "keys": 52,
+              "request": 1
+            }
+          },
+          {
+            "step": 4,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 48,
+              "polls": 671,
+              "keys": 52,
+              "request": 2
+            }
+          },
+          {
+            "step": 5,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 51,
+              "polls": 710,
+              "keys": 54,
+              "request": 2
+            }
+          },
+          {
+            "step": 6,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 54,
+              "polls": 772,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 7,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 55,
+              "polls": 814,
+              "keys": 56,
+              "request": 2
+            }
+          },
+          {
+            "step": 8,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 0,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 59,
+              "polls": 1025,
+              "keys": 58,
+              "request": 2
+            }
+          },
+          {
+            "step": 9,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 63,
+              "polls": 1194,
+              "keys": 62,
+              "request": 2
+            }
+          },
+          {
+            "step": 10,
+            "view": {
+              "state": 2,
+              "epoch": 2,
+              "count": 39,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 65,
+              "polls": 1200,
+              "keys": 66,
+              "request": 2
+            }
+          },
+          {
+            "step": 11,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 69,
+              "polls": 1385,
+              "keys": 70,
+              "request": 3
+            }
+          },
+          {
+            "step": 12,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 41,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 71,
+              "polls": 1390,
+              "keys": 72,
+              "request": 3
+            }
+          },
+          {
+            "step": 13,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 73,
+              "polls": 1434,
+              "keys": 76,
+              "request": 3
+            }
+          },
+          {
+            "step": 14,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 75,
+              "polls": 1471,
+              "keys": 78,
+              "request": 3
+            }
+          },
+          {
+            "step": 15,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 76,
+              "polls": 1535,
+              "keys": 80,
+              "request": 3
+            }
+          },
+          {
+            "step": 16,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 44,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 80,
+              "polls": 1639,
+              "keys": 84,
+              "request": 3
+            }
+          },
+          {
+            "step": 17,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 83,
+              "polls": 1679,
+              "keys": 92,
+              "request": 3
+            }
+          },
+          {
+            "step": 18,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 42,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 85,
+              "polls": 1686,
+              "keys": 96,
+              "request": 3
+            }
+          },
+          {
+            "step": 19,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 43,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 87,
+              "polls": 1741,
+              "keys": 100,
+              "request": 3
+            }
+          },
+          {
+            "step": 20,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 89,
+              "polls": 1787,
+              "keys": 102,
+              "request": 3
+            }
+          },
+          {
+            "step": 21,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 90,
+              "polls": 1926,
+              "keys": 104,
+              "request": 3
+            }
+          },
+          {
+            "step": 22,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 92,
+              "polls": 1991,
+              "keys": 106,
+              "request": 3
+            }
+          },
+          {
+            "step": 23,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 1,
+              "focus": 45,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 94,
+              "polls": 2127,
+              "keys": 108,
+              "request": 3
+            }
+          },
+          {
+            "step": 24,
+            "view": {
+              "state": 2,
+              "epoch": 3,
+              "count": 39,
+              "mode": 0,
+              "focus": 40,
+              "width": 360,
+              "height": 300,
+              "scale": 1,
+              "frames": 96,
+              "polls": 2191,
+              "keys": 110,
+              "request": 3
+            }
+          }
+        ],
+        "expected_records": 39,
+        "images": [],
+        "pages_each_direction": 12,
+        "filter_scrollbar": true,
+        "host_exit": 0,
+        "peer_exit": 0,
+        "owner_sha256_before_after": "43a1b202bd438b796fb781031f7b4191cea75dd9db42affb0bd51d42f5d5a51b",
+        "owner_rows_unchanged": true,
+        "cleanup": [
+          {
+            "name": "client",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "host",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "registry",
+            "exit": -15,
+            "forced": false
+          },
+          {
+            "name": "bus",
+            "exit": 0,
+            "forced": false
+          },
+          {
+            "name": "server",
+            "exit": 0,
+            "forced": false
+          }
+        ],
+        "maps_sha256": "4e3a0ea1c4c56788feb5647a257ce07cf5462aaa2482dffa86a4d4e712e85815",
+        "raw_result": "/dev/shm/nexaui-recovery-live-tty-20261107/rv11n4-legacy-asan-legacy/result.json"
+      }
+    }
+  ],
+  "binary_bindings": [
+    {
+      "variant": "current-release",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+      "name": "recovery_native",
+      "sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e",
+      "size": 1411000
+    },
+    {
+      "variant": "current-release",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+      "name": "recovery_root_v11_fixture",
+      "sha256": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f",
+      "size": 756416
+    },
+    {
+      "variant": "current-shared",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_native",
+      "name": "recovery_native",
+      "sha256": "ec068477b4cdc978d9e74bf36ce2b90f1302bc008726be21e3a3f1ea821b700c",
+      "size": 617800
+    },
+    {
+      "variant": "current-shared",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-shared/recovery_root_v11_fixture",
+      "name": "recovery_root_v11_fixture",
+      "sha256": "c8124ec10afb5312f645520f701eda5a8eb2bfa2d8855e0d68f6313fbf37b92f",
+      "size": 756416
+    },
+    {
+      "variant": "current-asan",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_native",
+      "name": "recovery_native",
+      "sha256": "ec7dbbb6ff5911a37801a10f5c27b84e48a5f5633a65f7d039b76af2a8ecd685",
+      "size": 10249576
+    },
+    {
+      "variant": "current-asan",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-asan/recovery_root_v11_fixture",
+      "name": "recovery_root_v11_fixture",
+      "sha256": "01f006d13ace153fad0fca1ebbcc1c8da3e888f3f3b10a897f146bd19b632a4f",
+      "size": 3359056
+    },
+    {
+      "variant": "legacy-release",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-release/recovery_native",
+      "name": "recovery_native",
+      "sha256": "c6643b6719cff88d1953dead4b63b00458a221c9166eabfecbfdaa6b8419f0ef",
+      "size": 1398072
+    },
+    {
+      "variant": "legacy-asan",
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-legacy-asan/recovery_native",
+      "name": "recovery_native",
+      "sha256": "ca04977b48bd37874a85b6b409d0af5933cda4d9b431cd49da36336201be1364",
+      "size": 10133400
+    }
+  ],
+  "controls": {
+    "compiled_provider_defects": [
+      {
+        "name": "issuer-label",
+        "link": {
+          "command": [
+            "/usr/bin/cc",
+            "-O3",
+            "-DNDEBUG",
+            "-Wl,--dependency-file=CMakeFiles/recovery_native.dir/link.d",
+            "CMakeFiles/recovery_native.dir/native.c.o",
+            "-o",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/issuer-label-host",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-controls/issuer-label/variant.a",
+            "librecovery_worker.a",
+            "librecovery_view_model.a",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+            "-ldl",
+            "-lm",
+            "/usr/lib64/libwayland-client.so",
+            "-lm",
+            "/usr/lib64/libxkbcommon.so",
+            "aetheri/libaetheri_catalogue.a",
+            "aetheri/libaetheri_core.a",
+            "/usr/lib64/libcrypto.so",
+            "/usr/lib64/libsqlite3.so"
+          ],
+          "exit": 0
+        },
+        "test_command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/issuer-label-host",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11c-issuer-label"
+        ],
+        "test_exit": 1,
+        "intended_assertion": "last&&state(last,ATSPI_STATE_FOCUSED)&&action(last,\"select\")",
+        "peer_log": "STEP 0\nACK 0\nSTEP 1\nasync-peer:64: last&&state(last,ATSPI_STATE_FOCUSED)&&action(last,\"select\")\n",
+        "binary_sha256": "b193cdf1a32aaf3da0b985d68ded9cfb429ed28e9d6f4fc929e8e9bf2407b07f"
+      },
+      {
+        "name": "runtime",
+        "link": {
+          "command": [
+            "/usr/bin/cc",
+            "-O3",
+            "-DNDEBUG",
+            "-Wl,--dependency-file=CMakeFiles/recovery_native.dir/link.d",
+            "CMakeFiles/recovery_native.dir/native.c.o",
+            "-o",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime-host",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime/variant.a",
+            "librecovery_worker.a",
+            "librecovery_view_model.a",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+            "-ldl",
+            "-lm",
+            "/usr/lib64/libwayland-client.so",
+            "-lm",
+            "/usr/lib64/libxkbcommon.so",
+            "aetheri/libaetheri_catalogue.a",
+            "aetheri/libaetheri_core.a",
+            "/usr/lib64/libcrypto.so",
+            "/usr/lib64/libsqlite3.so"
+          ],
+          "exit": 0
+        },
+        "test_command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+          "--server",
+          "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+          "--source",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+          "--issuer-fixture",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+          "--host",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime-host",
+          "--work-dir",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/rv11c-runtime"
+        ],
+        "test_exit": 1,
+        "intended_assertion": "strstr(text,runtime)",
+        "peer_log": "STEP 0\nACK 0\nSTEP 1\nACK 1\nSTEP 2\nasync-peer:36: !strcmp(id,\"0000000000004000800000000000005a\")&&strstr(text,label(\"Unit issuer\",\"Unit-Aussteller\"))&&strstr(text,\"Schema: 11\")&&strstr(text,runtime)\nasync-peer:66: button&&detail&&retired(old_first)&&retired(last)&&!action(last,\"select\")&&read_details(app,detail,button,id)\n",
+        "binary_sha256": "8b884c02b25597af733661845feac8580cb207d4f72c673689928def3580cbf5"
+      }
+    ],
+    "runtime_variant_build": [
+      {
+        "command": [
+          "/usr/bin/cc",
+          "-DRV_ROOT_SCHEMA_MAX=11",
+          "-DRV_UNIT_ISSUER=1",
+          "-I/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-src-2/examples/33_aetheri_recovery/.",
+          "-I/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534/src",
+          "-isystem",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include",
+          "-O3",
+          "-DNDEBUG",
+          "-std=c17",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Wconversion",
+          "-Wshadow",
+          "-Werror",
+          "-o",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime/variant.o",
+          "-c",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime/recovery_view.c"
+        ],
+        "exit": 0
+      },
+      {
+        "command": [
+          "ar",
+          "rcs",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime/variant.a",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-controls/runtime/variant.o",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/CMakeFiles/recovery_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-src-2/examples/common/text_wrap.c.o"
+        ],
+        "exit": 0
+      }
+    ],
+    "runtime_variant_source_sha256": "397e24cfbf87c8c3f3c99225ee2a77f8c555cd2fbc4b5b4491b4d8f0ae960438",
+    "long_socket_path": {
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "exit": 2,
+      "stderr": "usage: run_native.py [-h] --server SERVER --registry REGISTRY --host HOST\n                     --client CLIENT --font FONT --source SOURCE\n                     --work-dir WORK_DIR [--kind {system,user}]\n                     [--issuer-fixture ISSUER_FIXTURE]\n                     [--issuer-mode {fresh,lost,replacement}]\n                     [--held {wake,close}] [--clipboard {normal,close}]\n                     [--clipboard-tools CLIPBOARD_TOOLS] [--german] [--large]\n                     [--small] [--contrast] [--light] [--ime] [--navigation]\n                     [--resize] [--capture]\nrun_native.py: error: Private Linux socket path is too long; choose a shorter --work-dir\n",
+      "no_directory_created": true
+    },
+    "scope": "Independent OS peer rejects actual wrongly labelled/provider-runtime detail views; explicit long native socket path refusal. No timeout/assertion weakening."
+  },
+  "peer_build": {
+    "command": [
+      "cc",
+      "-std=c17",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-O2",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-4/examples/33_aetheri_recovery/atspi_client.c",
+      "-o",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_4",
+      "-I/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/include/at-spi-2.0",
+      "-I/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/include/glib-2.0",
+      "-I/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/include/dbus-1.0",
+      "-I/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/lib64/glib-2.0/include",
+      "-I/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/lib64/dbus-1.0/include",
+      "-L/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/lib64",
+      "-latspi",
+      "-l:libgobject-2.0.so.0",
+      "-l:libglib-2.0.so.0",
+      "-Wl,-rpath,/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/lib64"
+    ],
+    "exit": 0
+  },
+  "initial_attempt": [
+    {
+      "name": "recovery-root-v11-native-3-current-release-fresh",
+      "owner": "current",
+      "profile": "release",
+      "mode": "fresh",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_3",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-3-current-release-fresh",
+        "--ime",
+        "--german",
+        "--large",
+        "--small",
+        "--contrast",
+        "--navigation",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "fresh"
+      ],
+      "exit": 0,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    },
+    {
+      "name": "recovery-root-v11-native-3-current-release-lost",
+      "owner": "current",
+      "profile": "release",
+      "mode": "lost",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_3",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-3-current-release-lost",
+        "--ime",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "lost"
+      ],
+      "exit": 0,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    },
+    {
+      "name": "recovery-root-v11-native-3-current-release-replacement",
+      "owner": "current",
+      "profile": "release",
+      "mode": "replacement",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery_root_v11_atspi_3",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_native",
+        "--source",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/aetheri-root-v11-fa534",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-3-current-release-replacement",
+        "--ime",
+        "--light",
+        "--issuer-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-2-current-release/recovery_root_v11_fixture",
+        "--issuer-mode",
+        "replacement"
+      ],
+      "exit": 1,
+      "host_sha256": "10ffaa671986b745dd480e67cd86965b79cbe0574cc9c8c59acc55aad35f7f1e"
+    }
+  ],
+  "initial_failure": "Traceback (most recent call last):\n  File \"/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py\", line 392, in <module>\n    if __name__=='__main__':main()\n                            ~~~~^^\n  File \"/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py\", line 206, in main\n    wait(lambda:'READY ' in log('server'),'compositor')\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/dev/shm/nexaui-recovery-live-tty-20261107/recovery-root-v11-native-src-3/examples/33_aetheri_recovery/run_native.py\", line 91, in wait\n    if child not in allowed and child not in background and child.poll() is not None:raise RuntimeError(label+': '+name+' exited '+str(child.returncode))\n                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: compositor: server exited 1\n",
+  "scope": "Nine original metadata-only Root11 native Wayland/IME/independent AT-SPI cases; two default legacy regression cases; no actual current issuer/service/ProcessFD authority, physical/human or performance acceptance."
+}

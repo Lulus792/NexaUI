@@ -1,5 +1,15 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/D07/L05/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08: source `5a5a1b4`
+adds native Root11 issuer fixture/reference and independent OS-peer checks to
+the unchanged `e3031e0` provider. Nine Root11 and two default legacy native
+Wayland/IME cases pass, including185 checkpoints, read-only full-ID/runtime/
+reason Text and retained-reference/focus/close checks. Two compiled provider
+defects fail the OS peer. All32 native inputs and eight reused provider/fixture
+binaries have exact source/artifact bindings. See [native Root11 evidence](recovery-root-v11-native-report.md).
+Current authority, new-profile held/clipboard/resize, further packet6, packets7–8
+and final physical/human/performance/adoption gates remain open across103 IDs.
+
 B01/B04/D07/L05/L11/P04/P05/P07/Q02/Q04/Q08: source `e3031e0` adds an
 explicit reviewed Root11/Unit issuer original-source profile to the existing
 Recovery model/view/worker while retaining the legacy default and unchanged SDK.

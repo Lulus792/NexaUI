@@ -312,3 +312,21 @@ contracts. Existing tests continue covering older Root/User schemas. Native
 OS-peer, actual current issuer/service and physical/human/performance acceptance
 for this new profile remain separate gates.
 
+
+## Native Root11 issuer inspection
+
+For an explicitly built `root-v11` host, the ordinary native runner accepts
+`--issuer-fixture /path/to/recovery_root_v11_fixture` and
+`--issuer-mode fresh|lost|replacement` (default fresh). Use the matching frozen
+source as `--source`. This requires the existing canonical preparation script
+in example34 alongside example33 and the peer built from the same checkout.
+The runner prepares private original metadata fixtures, not live service or
+process admission. It currently combines this mode with ordinary IME/navigation;
+held-query and clipboard workflows remain separate. Choose a short private
+`--work-dir` so both Wayland and D-Bus socket pathnames fit Linux limits.
+
+The independent peer checks the full issuer ID, related operation, schema,
+runtime, reason and read-only Text. See the [native Root11 report](../../docs/quality/recovery-root-v11-native-report.md)
+for nine current-profile and two legacy cases, compiled negative controls,
+retained setup failure and exact source/artifact bindings. Native physical,
+human assistive and actual current-authority acceptance remain open.
