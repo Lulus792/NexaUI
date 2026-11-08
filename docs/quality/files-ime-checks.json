@@ -1,0 +1,34 @@
+{
+  "source_revision": "3fd58c7a507ed94eaf4bb9c623c1b7acbbce394a",
+  "original_inputs": 87,
+  "final_inputs": 11,
+  "application_input10_native_peer_input11_difference": "test peer static-text role only",
+  "ctests": [
+    23,
+    23,
+    23
+  ],
+  "layout_checks": 1536,
+  "translation_units": [
+    47,
+    47,
+    47
+  ],
+  "hashed_executables": [
+    26,
+    26,
+    26
+  ],
+  "final_native_runs": 4,
+  "positive_captures": 129,
+  "before_capture": 1,
+  "full_rgb_pngs": 7,
+  "native_counterexamples": 2,
+  "build_controls": 8,
+  "previous_ci_required_success": 7,
+  "previous_ci_optional_skip": 2,
+  "catalogue_ids": 103,
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "archive_sha256": "120b11b9d0306ca0dfc04196719485e055584734b0cbe13a0b4fbd42d3a5d045",
+  "verified": true
+}

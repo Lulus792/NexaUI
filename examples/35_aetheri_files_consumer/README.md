@@ -72,3 +72,35 @@ See [native evidence](../../docs/quality/files-native-report.md) for the actual
 3×21 CTests, five native runs, nine lost-result operations, exact artifacts and
 observed missing emoji fallback. Host-bound IME, foreign clipboard, localization,
 font fallback, normal adoption and physical/human/performance remain open.
+
+## Native IME integration variant
+
+Add `-DFILES_BUILD_IME_HOST=ON` for the separately reviewed generated
+`aetheri_files_ime_candidate`. The default remains OFF. Its three generated
+application files are recorded in `files-ime-generated/source-delta.json`; the
+original export and `aetheri_files_candidate` are retained unchanged. The binding
+reuses the installed public text-field/window APIs and original bounded commit
+validation. It is an integration experiment, not an approved Aetheri migration.
+
+For the native task also enable `FILES_BUILD_NATIVE_CHILDREN` and use the original
+private compositor/AT-SPI fixture described above. Run:
+
+```sh
+python3 examples/35_aetheri_files_consumer/run_ime.py \
+  --binaries /path/to/files-build --original /path/to/exported-original-source \
+  --atspi-fixture /path/to/private-atspi-fixture \
+  --sdk-input /path/to/checked-sdk-input.json \
+  --expected-sdk-revision c4f467d85b0147944d2456f5e7602a39ac18e579 \
+  --linkage shared --server /path/to/test_compositor_server \
+  --font /path/to/borrowed-sans.ttf --mono /path/to/borrowed-mono.ttf \
+  --work-dir /short/fresh/private-output
+```
+
+Select `--linkage static` for a static SDK profile; the runner checks actual
+process mappings. The work directory must be fresh and short enough for Unix
+sockets. It performs real create operations only in its own document fixture.
+See [IME evidence](../../docs/quality/files-ime-report.md) for 3×23 CTests,
+three native IME tasks, the original document regression, lossless images and
+negative controls. Native delete/replacement grouping, late/interrupted/empty
+transactions, real installed IMEs, foreign clipboard and full acceptance remain
+open. The preceding sections describe their historical checkpoint scopes.

@@ -1,5 +1,10 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Files IME integration: `3fd58c7a507ed94eaf4bb9c623c1b7acbbce394a`,
+[separate default-OFF generated host, native preedit/complete commits and cancellation](files-ime-report.md).
+Three profiles pass 23/23 CTests; four final native runs retain 129 checked captures.
+Replacement/delete transactions, interruption/lifetime and final adoption remain open.
+
 Original Files native source `d5018d36261da45289a46db51e8fa6dbe0e99a5e`: [real document children,
 independent AT-SPI tasks and nine unknown operations; 3×21 CTests/five final native runs](files-native-report.md).
 Visible emoji fallback, host-bound IME, foreign clipboard, localization and adoption remain open.
@@ -44,7 +49,7 @@ exercised older header exactly; this is not current-runtime acceptance.
 
 | Required composition | Existing source/evidence | Next consumer work | External owner obligation |
 | --- | --- | --- | --- |
-| Files application | Original 7483286 Files model/session/NexaUI view/native host now have a separate checked candidate build and original controller/view tests on three installed SDK profiles | Native Files/document/unknown-worker/independent AT-SPI workflows now pass; complete host-bound IME, foreign clipboard, visible font fallback, localization and normal adoption | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
+| Files application | Original 7483286 Files model/session/NexaUI view/native host now have a separate checked candidate build and original controller/view tests on three installed SDK profiles | Native Files/document/unknown-worker/independent AT-SPI workflows pass; separate IME variant adds preedit/complete commits/cancellation. Finish replacement/delete and interruption/lifetime, foreign clipboard, visible font fallback, localization and normal adoption | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
 | Settings and devices | Original Settings model contains transient display observations and appearance/language/text settings; [example21](../../examples/21_aetheri_model/README.md) and ordinary Settings evidence already exist | Reuse controls/status/wakeup for additional actual device models, with unavailable/pending/error/reconnect states | Real audio, network, Bluetooth/input, power/account observations and authorized control; compositor output observation alone changes no display/device configuration |
 | Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker and native list/filter/full details with keyboard/controlled IME/OS AT-SPI | Native held-query close/wake, foreign clipboard/late-completion and resize/output migration checks; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
 | Components/dependencies | Original manifest decoder and shared owned document reader expose declared component/version/publisher/files/actions/dependency IDs; example34 binds exact observed artifact/component/publisher and shows all declared dependencies plus complete file/action inspection | Compose actual dependency/ownership/process graph data; retain missing/unverified state and expand native lifetime/resource checks | Installed dependency/ownership state, trusted expected artifact provenance and complete inventory; declarations are no installed-files or current-process inventory |

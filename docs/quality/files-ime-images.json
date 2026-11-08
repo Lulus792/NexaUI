@@ -1,0 +1,105 @@
+{
+  "after": [
+    {
+      "name": "preedit",
+      "case": "native query preedit",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-1-output-0.ppm.gz",
+      "source_sha256": "5d428ac8c9ba6295d2c7da035bf4996ba8f0711c19917acd047488c918c9530e",
+      "ppm": "preedit.ppm",
+      "png": "files-ime-after-preedit.png",
+      "sha256": "7c904e8fce16ca7ad77f3597268f0103dc0029f4554d0530f0aa06992e909ae4",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    },
+    {
+      "name": "cancel",
+      "case": "query after Escape cancellation",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-2-output-0.ppm.gz",
+      "source_sha256": "184e5f3931c1dc153dc108868ff02e4c5ee9e6406443d2f3e7c4cefec51eb413",
+      "ppm": "cancel.ppm",
+      "png": "files-ime-after-cancel.png",
+      "sha256": "438fb27d7565941f09066fb815c3ae0f2a0e9ed1fa68d4aa931371635d477ba7",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    },
+    {
+      "name": "unicode",
+      "case": "native Unicode query",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-3-output-0.ppm.gz",
+      "source_sha256": "e025cf0d7245b723550581dc44e96f081f5511d4a45e28b3770d2b73a488ae6f",
+      "ppm": "unicode.ppm",
+      "png": "files-ime-after-unicode.png",
+      "sha256": "92ac9ffa645e553dee2c24b5ea831770b59be24aff264de16cd0608074658905",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    },
+    {
+      "name": "preedit-200",
+      "case": "native preedit at 200 percent",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-4-output-0.ppm.gz",
+      "source_sha256": "49d74987e0ab2dfb856695670ba17ba60887f4b72bab597dd1c0bf84c7b373ef",
+      "ppm": "preedit-200.ppm",
+      "png": "files-ime-after-preedit-200.png",
+      "sha256": "4d7aa64038833fd17bfba6aa36045cd158b14133fe749720e3c9060071f2b67b",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    },
+    {
+      "name": "combining",
+      "case": "native combining preedit",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-5-output-0.ppm.gz",
+      "source_sha256": "116148a0447437121a2fa0923e61cbfcbda9d34f4294e35426aebf6d52d651af",
+      "ppm": "combining.ppm",
+      "png": "files-ime-after-combining.png",
+      "sha256": "b47c82052224d9d7be1fbcb8ff95450d5e2cb0fe1fe78e79d62c606ec3a3586b",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    },
+    {
+      "name": "rejected",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "source": "files-ime-public-5-shared-runs/run/captures/capture-7-output-0.ppm.gz",
+      "source_sha256": "ba20dc1356721570ccc8e53e25f31e10fdf575e2f4bdd8cc931b0e3160f49db0",
+      "ppm": "rejected.ppm",
+      "png": "files-ime-after-rejected.png",
+      "sha256": "bd2c1c295a6eee633b0be835af8c073cce1096863b8c083dc9097ecc161e0465",
+      "width": 1920,
+      "height": 1080,
+      "full_rgb_verified": true
+    }
+  ],
+  "before": {
+    "name": "preedit",
+    "case": "native query preedit",
+    "source": "files-ime-public-3-shared-runs/run/captures/capture-1-output-0.ppm.gz",
+    "source_sha256": "851f2170a32d97118b43d354310736a4f4b772a2cfee9430723cdc537fb65a07",
+    "ppm": "preedit.ppm",
+    "png": "files-ime-before-preedit.png",
+    "sha256": "44e94083ace4d5bee9a824a859000c7e8a019a6b0408e5601e99c4f8e82d7a33",
+    "width": 1920,
+    "height": 1080,
+    "full_rgb_verified": true
+  },
+  "conversion": "Lossless P6 RGB to PNG, complete decoded RGB and CRC verified; no creative image editing",
+  "review": {
+    "platform": "Private Linux Wayland/software compositor, output0 1920x1080",
+    "appearance": "Original dark Files appearance, borrowed Liberation Sans",
+    "observed": [
+      "Empty-query preedit is visible without overlapping placeholder",
+      "Escape restores empty query and placeholder",
+      "Committed Unicode filters the original model",
+      "200-percent preedit retains original committed prefix",
+      "Combining preedit is underlined; committed text unchanged",
+      "Rejected input retains the name, marks the field, explains rejection and disables OK"
+    ],
+    "remaining": [
+      "Original narrow Cancel label is visibly truncated; full native action name remains available",
+      "No light/high-contrast, physical monitor, human screenreader or installed real IME acceptance"
+    ]
+  }
+}

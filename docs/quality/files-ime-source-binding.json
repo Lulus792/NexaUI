@@ -1,0 +1,195 @@
+{
+  "source_revision": "3fd58c7a507ed94eaf4bb9c623c1b7acbbce394a",
+  "files": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "size": 5084,
+      "sha256": "4284e15d5a5852b540b8575b26b73f49485559257ab6923393eac0f209e8d65b"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "size": 4524,
+      "sha256": "ce04189abde3efe93d6ca805baddd18329588452423d41d3e2a877d8f6fd7662"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1194,
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+      "size": 2191,
+      "sha256": "3ac30d7f86fd7f7dcaf1aa620eb13e6a24e066fff882f7dd27ee94372960f976"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+      "size": 1937,
+      "sha256": "6da69cd026cc6e84c6f72e801b2a6812cc1cb283c9e3b677b814f7f68ebbec08"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+      "size": 15427,
+      "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+      "size": 5132,
+      "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+      "size": 8264,
+      "sha256": "29491e15cf4cd6438a9d935f356b2259c70c90d7cfcd3786da493dd50fa84256"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_ime.py",
+      "size": 11863,
+      "sha256": "9b6b24c2d9a02fb7c2670ba0dd868452b3627974ddf6fb7240d5eb7c837655c2"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_native.py",
+      "size": 4855,
+      "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "size": 8203,
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "nexaui-files-native-input-10-20261108.tar.gz",
+      "size": 22320,
+      "sha256": "61ff6fab23a528958c981ebc9fdd63030ec4434b685d22cf075abe312abb4d52",
+      "files": [
+        {
+          "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+          "size": 5084,
+          "sha256": "4284e15d5a5852b540b8575b26b73f49485559257ab6923393eac0f209e8d65b"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/README.md",
+          "size": 4524,
+          "sha256": "ce04189abde3efe93d6ca805baddd18329588452423d41d3e2a877d8f6fd7662"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/check_source.py",
+          "size": 1194,
+          "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+          "size": 2190,
+          "sha256": "0910da3d8f52457ecd3edbb1c1e9d3cb34eaf32c908681adbe83f2c174d51f07"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+          "size": 1937,
+          "sha256": "6da69cd026cc6e84c6f72e801b2a6812cc1cb283c9e3b677b814f7f68ebbec08"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+          "size": 15427,
+          "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+          "size": 5132,
+          "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+          "size": 8264,
+          "sha256": "29491e15cf4cd6438a9d935f356b2259c70c90d7cfcd3786da493dd50fa84256"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/run_ime.py",
+          "size": 11863,
+          "sha256": "9b6b24c2d9a02fb7c2670ba0dd868452b3627974ddf6fb7240d5eb7c837655c2"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/run_native.py",
+          "size": 4855,
+          "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+          "size": 8203,
+          "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+        }
+      ],
+      "scope": "Final build-4 application and original test inputs"
+    },
+    {
+      "name": "nexaui-files-native-input-11-20261108.tar.gz",
+      "size": 22323,
+      "sha256": "25e442d62a5138e3c3d36b68bde6e6d0f7ebac1413e0e231401aad5b43a51dad",
+      "files": [
+        {
+          "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+          "size": 5084,
+          "sha256": "4284e15d5a5852b540b8575b26b73f49485559257ab6923393eac0f209e8d65b"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/README.md",
+          "size": 4524,
+          "sha256": "ce04189abde3efe93d6ca805baddd18329588452423d41d3e2a877d8f6fd7662"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/check_source.py",
+          "size": 1194,
+          "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+          "size": 2191,
+          "sha256": "3ac30d7f86fd7f7dcaf1aa620eb13e6a24e066fff882f7dd27ee94372960f976"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+          "size": 1937,
+          "sha256": "6da69cd026cc6e84c6f72e801b2a6812cc1cb283c9e3b677b814f7f68ebbec08"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+          "size": 15427,
+          "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+          "size": 5132,
+          "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+          "size": 8264,
+          "sha256": "29491e15cf4cd6438a9d935f356b2259c70c90d7cfcd3786da493dd50fa84256"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/run_ime.py",
+          "size": 11863,
+          "sha256": "9b6b24c2d9a02fb7c2670ba0dd868452b3627974ddf6fb7240d5eb7c837655c2"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/run_native.py",
+          "size": 4855,
+          "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+        },
+        {
+          "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+          "size": 8203,
+          "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+        }
+      ],
+      "scope": "Final native runner and independently compiled libatspi peer; application inputs unchanged"
+    }
+  ],
+  "normalization": "CRLF to LF only",
+  "post_application_test_code_differences": [],
+  "post_build_test_only_update": {
+    "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+    "reason": "Use AT-SPI Label role for native static text instead of Text; final peer compiled and exercised independently",
+    "application_inputs_unchanged": true
+  }
+}

@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Files native IME integration variant (2026-11-08)
+
+B01/B03/B04/I01/I02/T01/T03/T04/A02/A04/P04/P05/Q02/Q03/Q06:
+Files IME integration `3fd58c7a507ed94eaf4bb9c623c1b7acbbce394a` reuses the
+existing native text-field/window APIs in a distinct default-OFF generated
+consumer. Three profiles pass 23/23 CTests; three final IME/OS-peer tasks and one
+original document regression retain 129 checked virtual captures. Complete native
+commit buffering, preedit cancellation/command suppression and placeholder
+overlap correction have scoped evidence and two compiled negative controls.
+See [source, images and remaining work](files-ime-report.md). Native replacement/
+delete transactions, interruption/lifetime coverage, foreign clipboard, font and
+localization work and final adoption remain open. No SDK API/ABI/version or live
+Aetheri/pin changes; packet 6, packets 7–8 and all 103 catalogue IDs remain active.
+
 ## Native receipt inspection (2026-11-08)
 
 D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08: source
