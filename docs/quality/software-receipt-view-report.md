@@ -145,8 +145,10 @@ nor raw-log review or coverage for this optional installed consumer.
 Broader operation/diagnostic/reason relationships, actual current process/image/
 resource/ownership providers, complete discovery/inventory, device/permission/
 trusted-service compositions and software-specific held-query/clipboard/resize
-acceptance remain. Independent Aetheri source remains
-`1441b636eb14dbbed36e4e2825b2f44b16599a01`; no consumer source/pin was edited,
-built, reset or pushed. All 103 catalogue IDs, remaining packet6, packets7–8
+acceptance remain. Independent Aetheri source was observed at
+`1441b636eb14dbbed36e4e2825b2f44b16599a01` during the campaign and revalidated at
+`fa5347264054b05e8af57e6d0a210008a6c849d1` after publication. This campaign did
+not edit, build, reset or push the consumer or change its SDK pin. All 103
+catalogue IDs, remaining packet6, packets7–8
 and physical/human/performance gates remain active. No 1.0 or full-goal
 completion is declared.
