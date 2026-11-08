@@ -27,11 +27,11 @@ def main():
     # Independent expected raw metadata from the private fixture, never GUI SQL.
     # API tests separately validate codecs, errors, chain and request admission.
     if a.receipts:
-        values=[digest,ids[6],ids[1],ids[2],ids[5],ids[11]]
+        values=[digest,ids[6],ids[1],ids[2],ids[5]]
         with closing(sqlite3.connect(databases[0])) as db:
             observed_epoch,observed_runtime,observed_boot=db.execute('SELECT authority_epoch,runtime_incarnation,current_boot_id FROM authority_meta').fetchone();values.extend(x.hex() for x in (observed_epoch,observed_runtime,observed_boot))
             row=db.execute("SELECT d.root_operation_id,d.launch_id,d.invocation_ref,d.state,d.unit_name,d.revision,d.install_gate_revision,o.plan_id,o.intent_digest,s.evidence_digest,d.broker_incarnation,d.close_cause_epoch,d.close_cause_operation_ref FROM launch_dispatches d JOIN operations o ON o.operation_id=d.root_operation_id JOIN operation_steps s ON s.operation_id=o.operation_id AND s.step_no=0 WHERE d.lease_id=?",(bytes.fromhex(ids[11]),)).fetchone()
-            if row:values.extend(x.hex() if isinstance(x,bytes) else str(x) for x in row if x is not None)
+            if row:values.extend([ids[11],*(x.hex() if isinstance(x,bytes) else str(x) for x in row if x is not None)])
             if a.mode=='history':
                 for index,raw_receipt in enumerate(db.execute('SELECT begin_receipt,quiet_receipt,release_receipt FROM run_closures').fetchone()):
                     assert len(raw_receipt)==136 and raw_receipt[:8]==(b'AETHCLS1',b'AETHQSC1',b'AETHEND1')[index]
