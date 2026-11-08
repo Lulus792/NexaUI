@@ -490,3 +490,22 @@ complete copied records, negative bindings/errors,64 copied profiles with one
 query, worker disposal and unchanged databases. See the
 [source-bound report](../../docs/quality/software-recovery-report.md) for actual
 results, retries, compiled defects and remaining packet6–8/adoption gates.
+
+## Recovery relationship inspection
+
+The later presentation step implements the page described as next in the
+data-foundation section above. Open a target, History, a profile, Receipts, then
+Recovery links. Tab/Enter opens the page; PageUp/PageDown reaches all fields;
+Escape returns focus to its trigger. The read-only page shows all five selective
+records, complete kind/IDs/relation/revision/step/state/detail/phase/reason fields,
+query context/schema and independent unavailable errors. Original and query Root
+runtimes are distinct. A missing selective row remains unknown, not completed,
+absent, drained or authorized. Inspection dispatches no backend operation.
+
+The existing8192-byte body budget is retained.2048 paragraph slots admit legal
+embedded newlines in all bounded records; maximum synthetic five-record text,
+large fonts, keyboard return, compact restoration and metadata/snapshot retirement
+are checked. `run_history_native.py --recovery-links` uses the original Python
+reference and an independent OS peer; optional `--capture` retains native output
+images. See the [source-bound report](../../docs/quality/software-recovery-view-report.md)
+for executed cases, exact sources/artifacts and remaining acceptance boundaries.

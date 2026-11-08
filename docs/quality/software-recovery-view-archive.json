@@ -1,0 +1,13 @@
+{
+  "name": "nexaui-software-recovery-view-20261108.tar.gz",
+  "size": 50878786,
+  "sha256": "b3e32d76d439e446cd4d784bf82792d133d660bf87174a6deed89d0214f99059",
+  "files": 2408,
+  "links": 3,
+  "directories": 699,
+  "excluded_special": [
+    "software-recovery-view-1-asan/components-test/run-q_kpgfu5/fifo",
+    "software-recovery-view-1-release/components-test/run-qjqgy0_d/fifo",
+    "software-recovery-view-1-shared/components-test/run-wxa2c6la/fifo"
+  ]
+}

@@ -1,5 +1,15 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08:
+Recovery presentation source `8b29872a2bccec620f453cc2a97e7ef796ecee64` adds a complete read-only
+Recovery-links page using existing copied data/public controls. Three profiles
+pass4/4 affected CTests, including27 fixture/81 styled page exercises; ten native
+OS-peer flows plus one custody capture flow, ten inspected lossless images and three compiled defects are
+checked. All71 inputs have exact source/artifact bindings. See [presentation](software-recovery-view-report.md).
+Broader packet6, packets7–8, current owner/inventory/adoption and final
+physical/human/performance gates remain open across103 IDs. SDK API/ABI/version
+and independent Aetheri source/pin are unchanged.
+
 D07/L11/P04/P05/P07/Q02/Q04/Q08: source `226a847` adds five original selective
 recovery relationships to the existing copied history worker, reusing the
 example33 validator and exact kind/ID/context/reservation/related bindings.

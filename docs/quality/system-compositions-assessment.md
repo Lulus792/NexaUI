@@ -1,5 +1,10 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Selective recovery presentation: `8b29872a2bccec620f453cc2a97e7ef796ecee64`,
+[complete profile-bound relationship/reason fields, keyboard/read-only Text, focus and retirement](software-recovery-view-report.md).
+This implements the presentation pending in the earlier data-foundation entry;
+broader graph/current-process/inventory, device and trusted owner seams remain open.
+
 Selective recovery data foundation: `226a847b6655ec39ebf6427ab95d265ea82f9a0d`,
 [five profile-bound operation/lease/dispatch/closure/handoff records through the existing worker](software-recovery-report.md).
 Presentation is the next step; missing selective metadata is unknown and supplies

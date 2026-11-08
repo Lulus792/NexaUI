@@ -1,0 +1,71 @@
+{
+  "source_revision": "7ffca821b67f6c3503801ec80939170f9c394ff7",
+  "run_id": 42444216743,
+  "run_url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743",
+  "scope": "Queried exact-source run/job metadata: seven required successes and two optional skips. This previous data-foundation CI is not new Recovery-page, raw-log, physical or performance acceptance.",
+  "jobs": [
+    {
+      "id": 128619641878,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619641878"
+    },
+    {
+      "id": 128619642101,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642101"
+    },
+    {
+      "id": 128619642106,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642106"
+    },
+    {
+      "id": 128619642207,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642207"
+    },
+    {
+      "id": 128619642222,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642222"
+    },
+    {
+      "id": 128619642272,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642272"
+    },
+    {
+      "id": 128619642274,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642274"
+    },
+    {
+      "id": 128619642849,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642849"
+    },
+    {
+      "id": 128619642988,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42444216743/job/128619642988"
+    }
+  ]
+}
