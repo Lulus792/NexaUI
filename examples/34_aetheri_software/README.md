@@ -420,7 +420,12 @@ separate composition work.
 The same bounded history batch now also copies `ae_catalogue_get_receipt` and,
 when admitted, the three original `ae_catalogue_get_run_receipt` results. Reads
 run on the existing serialized Root worker; the GUI does no original query.
-This foundation does not yet add a receipt page to the native view.
+From a historical profile, **Receipts** opens the read-only original metadata.
+The page shows current query Root and original profile runtime separately, the
+reservation/dispatch fields, optional invocation/cause, and every field/digest of
+the three original lifetime receipts. The first preceding digest is labelled as
+the original start result; later digests reference the previous receipt. The
+counterpart quiet record remains a Root-local historical copy.
 
 Reservation lookup uses the selected account/UID, checked current Root
 epoch/boot/runtime and the explicit profile's broker epoch. Its returned
@@ -449,5 +454,15 @@ database bytes and rows, source/request/chain faults, error propagation after
 successful prefixes, explicit missing values, worker-only getters, independently
 valid app replies and detach-once owned lifetime. Earlier snapshot/64-profile,
 copying, row/revision and GUI regressions remain in the full example suite.
-Receipt presentation and further operation/diagnostic/reason relationships,
-actual current observations and the remaining catalogue gates remain open.
+Escape/Back returns focus to Receipts in the profile details. Page keys reach the
+whole text at the supported sizes; below-minimum restoration, metadata replacement
+and owner-snapshot replacement reuse the existing retirement contracts. Missing
+data is explicitly unknown and zero snapshots are never rendered as real IDs.
+`software_history_links` checks all fields, unavailable/replaced/withdrawn cases,
+three font/theme/density styles and normal focus/retirement. The independent
+`run_history_native.py --receipts` peer reads the complete published text, verifies
+fixture metadata, keyboard entry, read-only behavior, paging and retired nodes.
+These are Linux virtual-compositor/OS transport checks, with actual installed IME,
+spoken screenreader and physical display acceptance remaining separate.
+Further operation/diagnostic/reason relationships, actual current observations
+and the remaining catalogue gates remain open.

@@ -8,7 +8,7 @@ a=p.parse_args();a.work.mkdir(exist_ok=True);root=Path(tempfile.mkdtemp(prefix='
 commands=[];cases=[]
 def run(name,command,env=None):
     done=subprocess.run(list(map(str,command)),capture_output=True,text=True,timeout=180,env=env);log=root/(name+'.log');log.write_text(done.stdout+done.stderr);commands.append(dict(name=name,command=list(map(str,command)),exit=done.returncode,log=str(log)));(root/'commands.json').write_text(json.dumps(commands,indent=2)+'\n');assert done.returncode==0,(name,done.stdout,done.stderr);assert not any(s in done.stderr for s in ('AddressSanitizer','LeakSanitizer','runtime error:'));return done
-for mode in ('history','unsupported','unit','unit-replacement','custody','custody-max','custody-replacement'):
+for mode in ('history','replacement','unsupported','withdrawn','unit','unit-replacement','custody','custody-max','custody-replacement'):
     prepared=run(mode+'-prepare',[sys.executable,Path(__file__).with_name('run_history.py'),'--source',a.source,'--fixture',a.fixture,'--model',a.model,'--test',a.reader,'--work',root/(mode+'-fixture'),'--prepare-only',mode]);fixture=Path(next(line.removeprefix('PREPARED ') for line in prepared.stdout.splitlines() if line.startswith('PREPARED ')));data=json.loads(fixture.read_text());databases=[Path(data[k])/'catalogue.sqlite3' for k in ('system','user')];before=[hashlib.sha256(d.read_bytes()).hexdigest() for d in databases];before_rows=[]
     for d in databases:
         with closing(sqlite3.connect(d)) as db:before_rows.append(rows(db))
