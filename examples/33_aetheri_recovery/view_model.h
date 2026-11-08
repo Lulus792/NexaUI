@@ -2,6 +2,20 @@
 #define EXAMPLE_AETHERI_RECOVERY_VIEW_MODEL_H
 #include <nexaui/nexaui.h>
 #include "catalogue/recovery.h"
+#ifndef RV_ROOT_SCHEMA_MAX
+#define RV_ROOT_SCHEMA_MAX 10
+#endif
+#ifndef RV_UNIT_ISSUER
+#define RV_UNIT_ISSUER 0
+#endif
+/* Each source profile pins the exact original headers and schema. Unknown new
+   record kinds require review; neither compiler success nor a bigger enum is
+   automatic admission of another backend version. */
+_Static_assert((RV_ROOT_SCHEMA_MAX==10&&!RV_UNIT_ISSUER&&AE_RECOVERY_KIND_COUNT==17)||
+    (RV_ROOT_SCHEMA_MAX==11&&RV_UNIT_ISSUER&&AE_RECOVERY_KIND_COUNT==18),"review original recovery source profile");
+#if RV_UNIT_ISSUER
+_Static_assert(AE_RECOVERY_UNIT_ISSUER==17,"review original issuer record kind");
+#endif
 
 /* Optional consumer presentation ownership, not a public SDK or authority API.
    The trusted original owner supplies its checked context and original copied

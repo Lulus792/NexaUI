@@ -30,11 +30,14 @@ static int shape(const struct ae_recovery_inventory *v){
     if(!v||v->count>AE_RECOVERY_MAX_RECORDS||(v->count&&!v->records)||v->context.revision<1||
        memcmp(v->identity.authority_epoch,v->context.authority_epoch,16)||
        (v->identity.kind!=AE_CATALOGUE_SYSTEM&&v->identity.kind!=AE_CATALOGUE_USER)||
-       v->schema_version<2||v->schema_version>10||
+       v->schema_version<2||v->schema_version>RV_ROOT_SCHEMA_MAX||
        (v->identity.kind==AE_CATALOGUE_USER&&(v->schema_version==5||v->schema_version==6||v->schema_version>=9)))return 0;
     size_t counts[AE_RECOVERY_KIND_COUNT]={0};
     for(size_t i=0;i<v->count;++i){
         const struct ae_recovery_record *p=&v->records[i];
+#if RV_UNIT_ISSUER
+        if(p->kind==AE_RECOVERY_UNIT_ISSUER&&v->schema_version!=11)return 0;
+#endif
         if(p->kind<AE_RECOVERY_OPERATION||p->kind>=AE_RECOVERY_KIND_COUNT||p->revision<1||p->unfinished_steps<0||
            (p->has_related!=0&&p->has_related!=1)||!p->state[0]||
            !string_valid(p->state,sizeof p->state)||!string_valid(p->detail,sizeof p->detail)||

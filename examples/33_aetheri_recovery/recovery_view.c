@@ -20,8 +20,16 @@ static nx_utf8_span sp(const char *s){return (nx_utf8_span){s,strlen(s)};}
 static const char *word(const rvg_view *v,const char *en,const char *de){return v->style.german?de:en;}
 static const char *kind_name(enum ae_recovery_record_kind kind,int german){
     static const char *const names[2][AE_RECOVERY_KIND_COUNT]={
-        {"","Operation","Admission gate","Installation","Generation","Code lease","Dispatch","Launch","Grant","Access lease","Resource","Data epoch","Closure","Handoff","Interruption","Unit allocation","Unit custody"},
-        {"","Vorgang","Zulassungssperre","Installation","Generation","Code-Lease","Dispatch","Start","Freigabe","Zugriffs-Lease","Ressource","Datenepoche","Abschluss","Übergabe","Unterbrechung","Unit-Zuweisung","Unit-Verwahrung"}};
+        {"","Operation","Admission gate","Installation","Generation","Code lease","Dispatch","Launch","Grant","Access lease","Resource","Data epoch","Closure","Handoff","Interruption","Unit allocation","Unit custody"
+#if RV_UNIT_ISSUER
+        ,"Unit issuer"
+#endif
+        },
+        {"","Vorgang","Zulassungssperre","Installation","Generation","Code-Lease","Dispatch","Start","Freigabe","Zugriffs-Lease","Ressource","Datenepoche","Abschluss","Übergabe","Unterbrechung","Unit-Zuweisung","Unit-Verwahrung"
+#if RV_UNIT_ISSUER
+        ,"Unit-Aussteller"
+#endif
+        }};
     return kind>0&&kind<AE_RECOVERY_KIND_COUNT?names[!!german][kind]:"?";
 }
 static void id_text(const uint8_t id[16],char out[33]){static const char digits[]="0123456789abcdef";for(size_t i=0;i<16;++i){out[i*2]=digits[id[i]>>4];out[i*2+1]=digits[id[i]&15];}out[32]=0;}

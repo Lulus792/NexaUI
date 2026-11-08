@@ -289,3 +289,26 @@ The harness resumes and terminates its own stopped source during cleanup.
 The fixed public test payload is passed through wl-copy's text argument, avoiding
 its stdin spool on a quota-exhausted filesystem. Neither clipboard workflow adds
 an original-owner request, filesystem timeout or new SDK implementation.
+## Reviewed original source profiles
+
+The default `AETHERI_SOURCE_PROFILE=legacy-v10` retains the existing pinned
+`46e2a21` Root2–10/User2–4,7–8 consumer. Explicit
+`-DAETHERI_SOURCE_PROFILE=root-v11` selects the separately pinned
+`fa5347264054b05e8af57e6d0a210008a6c849d1` snapshot and admits Root11, including
+the original Unit issuer recovery record. Both profiles use the installed
+NexaUI0.1.23 API and the same model/view/worker. Source hash checks reject a
+profile/snapshot mismatch before building. No live Aetheri source/pin is changed.
+
+The model checks each reviewed schema/kind combination; User11, future Root12,
+unknown kinds and an issuer record in Root10 remain rejected. The view gives the
+new full kind+ID a distinct English/German name, including when allocation,
+custody and issuer records share the same opaque allocation ID. An issuer
+recovery row is stored owner metadata; it proves no current actor/image/ProcessFD
+admission, independent retirement, holder drain or permission.
+
+With `RVG_TEST_FONT` configured, `recovery_root_v11` exercises original unchanged
+metadata-only issuer fixtures through read-only inventory/model/view/worker
+contracts. Existing tests continue covering older Root/User schemas. Native
+OS-peer, actual current issuer/service and physical/human/performance acceptance
+for this new profile remain separate gates.
+
