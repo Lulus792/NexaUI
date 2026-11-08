@@ -324,11 +324,17 @@ struct nx_numeric_field {
     int suppress_caret_reveal;
 };
 
+typedef struct nx_paste_validation {
+    nx_text_paste_validate_fn validate;
+    void *user;
+} nx_paste_validation;
+
 struct nx_text_field {
     nx_text_buffer *buffer;
     nx_text_value_target text_value;
     size_t history_bytes;
     int sensitive, read_only;
+    nx_paste_validation paste_validation;
     nx_ime_sequence ime_sequence;
     const nx_context *last_context;
     uint64_t last_frame_serial;
@@ -2592,9 +2598,26 @@ nx_result nx_semantics_request_text_value(nx_context *ctx, uint64_t id,
 }
 
 static nx_result nx_window_clipboard_read_adapter(void *user,char *bytes,size_t capacity,size_t *out_length);
+static nx_result nx_paste_admit(nx_text_buffer *buffer, size_t start, size_t end,
+    const char *bytes, size_t length, const nx_paste_validation *policy, int *admitted) {
+    *admitted=1;
+    if (!policy || !policy->validate) return NX_OK;
+    *admitted=0;
+    nx_utf8_span current={0};
+    nx_result result=nx_text_buffer_text(buffer,&current.data,&current.length);
+    if (result!=NX_OK) return result;
+    if (start>end || end>current.length || length>SIZE_MAX-(current.length-(end-start))-1u ||
+        (!bytes && length) || (length && memchr(bytes,0,length)) ||
+        nx_utf8_validate(bytes?bytes:"",length,NULL)!=NX_OK ||
+        (start<current.length && ((unsigned char)current.data[start]&0xc0u)==0x80u) ||
+        (end<current.length && ((unsigned char)current.data[end]&0xc0u)==0x80u)) return NX_OK;
+    nx_paste_validation copied=*policy;
+    *admitted=copied.validate(current,start,end,(nx_utf8_span){bytes,length},copied.user)!=0;
+    return NX_OK;
+}
 static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
     nx_text_buffer **buffer_address,nx_text_value_target *live_target,
-    const nx_text_clipboard *clipboard,int *changed,int pending_phase) {
+    const nx_text_clipboard *clipboard,const nx_paste_validation *policy,int *changed,int pending_phase) {
     nx_text_buffer *buffer=*buffer_address;
     *changed = 0;
     for (size_t i = 0; i < ctx->text_value_count; ++i) {
@@ -2718,6 +2741,12 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
                    r->async_buffer_serial!=nx_text_buffer_change_serial(*buffer_address)) {
                     free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
                 }
+                int admitted=0;
+                read=nx_paste_admit(*buffer_address,r->start,r->start,copy,actual,policy,&admitted);
+                if(read!=NX_OK || !admitted || !nx_text_request_current(ctx,r,live_target) ||
+                   r->async_buffer_serial!=nx_text_buffer_change_serial(*buffer_address)) {
+                    free(copy);nx_text_value_dispose(ctx,r,0);return read;
+                }
                 read=nx_text_buffer_replace_range_private(*buffer_address,r->start,r->start,copy,actual);
                 free(copy);
                 if(read!=NX_OK) {nx_text_value_dispose(ctx,r,0);return NX_OK;}
@@ -2757,6 +2786,11 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             read=nx_semantic_reserve_text(ctx,total?total+1u:0);
             if(read!=NX_OK || !nx_text_request_current(ctx,r,live_target)) {
                 free(copy);nx_text_value_dispose(ctx,r,0);return NX_OK;
+            }
+            int admitted=0;
+            read=nx_paste_admit(*buffer_address,r->start,r->start,copy,actual,policy,&admitted);
+            if(read!=NX_OK || !admitted || !nx_text_request_current(ctx,r,live_target)) {
+                free(copy);nx_text_value_dispose(ctx,r,0);return read;
             }
             read=nx_text_buffer_replace_range_private(*buffer_address,r->start,r->start,copy,actual);
             free(copy);
@@ -6691,7 +6725,7 @@ static int nx_field_ime_surrounding(nx_utf8_span text, size_t anchor,
                                     size_t *out_length);
 static nx_result nx_field_clipboard_event(nx_context *ctx,nx_text_clipboard clipboard,
     uint64_t id,nx_text_buffer **live_buffer,nx_text_value_target *live_model,
-    int multiline,int sensitive,nx_key key);
+    int multiline,int sensitive,nx_key key,const nx_paste_validation *policy);
 #if defined(__linux__)
 static void nx_numeric_paste_cancel(nx_numeric_field *field);
 static nx_result nx_numeric_paste_op(nx_context *ctx,const nx_text_field_desc *desc,
@@ -6981,7 +7015,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  &field->buffer,&field->text_value,&field->clipboard,&value_changed,0);
+                                  &field->buffer,&field->text_value,&field->clipboard,NULL,&value_changed,0);
     if (result != NX_OK) goto rollback;
     ctx->semantics.nodes[ctx->semantics.count-1u].text_value=field->text_value;
     if (value_changed) {
@@ -7120,7 +7154,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                     }
 #endif
                     if (!handled) result=nx_field_clipboard_event(ctx,field->clipboard,desc->id,
-                        &field->buffer,&field->text_value,0,0,clipboard_key);
+                        &field->buffer,&field->text_value,0,0,clipboard_key,NULL);
                     if (result!=NX_OK) goto rollback;
                     if (clipboard_key!=NX_KEY_C) field->suppress_caret_reveal=field->command_caret_valid=field->vertical_x_valid=0;
                     if ((before.identity!=field->text_value.identity || before.revision!=field->text_value.revision ||
@@ -7163,7 +7197,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
     if (result!=NX_OK) goto rollback;
     int deferred_changed=0;
     result=nx_text_value_apply(ctx,&ctx->semantics.nodes[ctx->semantics.count-1u],
-        &field->buffer,&field->text_value,&field->clipboard,&deferred_changed,1);
+        &field->buffer,&field->text_value,&field->clipboard,NULL,&deferred_changed,1);
     if (result!=NX_OK) goto rollback;
     if (deferred_changed) {
         field->pointer.active=field->suppress_caret_reveal=field->command_caret_valid=field->vertical_x_valid=0;
@@ -7351,6 +7385,16 @@ nx_result nx_text_field_set_read_only(nx_text_field *field, int read_only) {
     return NX_OK;
 }
 
+nx_result nx_text_field_set_paste_validator(nx_text_field *field,
+    nx_text_paste_validate_fn validate, void *user) {
+    if (!field || (!validate && user)) return NX_ERROR_ARGUMENT;
+    if (field->paste_validation.validate==validate && field->paste_validation.user==user) return NX_OK;
+    if (field->text_value.revision==UINT64_MAX) return NX_ERROR_LIMIT;
+    field->paste_validation=(nx_paste_validation){validate,user};
+    ++field->text_value.revision;
+    return NX_OK;
+}
+
 nx_result nx_text_field_text(const nx_text_field *field,
                              nx_utf8_span *out_text) {
     if (!out_text) return NX_ERROR_ARGUMENT;
@@ -7507,7 +7551,7 @@ static int nx_clipboard_edit_current(nx_context *ctx,nx_text_buffer **live_buffe
 
 static nx_result nx_field_clipboard_event(nx_context *ctx,nx_text_clipboard clipboard,
     uint64_t id,nx_text_buffer **live_buffer,nx_text_value_target *live_model,
-    int multiline,int sensitive,nx_key key) {
+    int multiline,int sensitive,nx_key key,const nx_paste_validation *policy) {
     nx_text_buffer *buffer=*live_buffer;
     nx_text_value_target model=*live_model;
     uint64_t serial=nx_text_buffer_change_serial(buffer), focus_serial=ctx->focus_serial;
@@ -7558,7 +7602,13 @@ static nx_result nx_field_clipboard_event(nx_context *ctx,nx_text_clipboard clip
             }
             actual = written;
         }
-        result = nx_text_buffer_replace(buffer, bytes, actual);
+        size_t anchor=0,cursor=0;int admitted=0;
+        result=nx_text_buffer_selection(buffer,&anchor,&cursor);
+        if(result==NX_OK) result=nx_paste_admit(buffer,anchor<cursor?anchor:cursor,
+            anchor>cursor?anchor:cursor,bytes,actual,policy,&admitted);
+        if(result==NX_OK && admitted &&
+           nx_clipboard_edit_current(ctx,live_buffer,live_model,id,buffer,model,serial,focus_serial))
+            result = nx_text_buffer_replace(buffer, bytes, actual);
     } else result = NX_OK; /* Unavailable clipboard leaves the draft alone. */
     if (sensitive) nx_private_secure_zero(bytes, length + 1u);
     free(bytes);
@@ -7745,7 +7795,7 @@ static nx_result nx_field_text_command(nx_context *ctx,const nx_text_field_desc 
         nx_key key=command==NX_TEXT_COMMAND_COPY?NX_KEY_C:command==NX_TEXT_COMMAND_CUT?NX_KEY_X:NX_KEY_V;
         if (desc->password && key!=NX_KEY_V) return NX_OK;
         nx_result result=nx_field_clipboard_event(ctx,desc->clipboard,desc->id,
-            &field->buffer,&field->text_value,desc->multiline,field->sensitive,key);
+            &field->buffer,&field->text_value,desc->multiline,field->sensitive,key,&field->paste_validation);
         if (result==NX_OK && key!=NX_KEY_C) field->command_caret_valid=field->vertical_x_valid=0;
         return result;
     }
@@ -7853,10 +7903,14 @@ static nx_result nx_field_paste_finish(nx_context *ctx, const nx_text_field_desc
         }
         actual = written;
     }
-    result = nx_text_buffer_replace(field->buffer, bytes, actual);
+    size_t anchor=0,cursor=0;int admitted=0;
+    result=nx_text_buffer_selection(field->buffer,&anchor,&cursor);
+    if(result==NX_OK) result=nx_paste_admit(field->buffer,anchor<cursor?anchor:cursor,
+        anchor>cursor?anchor:cursor,bytes,actual,&field->paste_validation,&admitted);
+    if(result==NX_OK && admitted) result = nx_text_buffer_replace(field->buffer, bytes, actual);
     if (field->sensitive && bytes) nx_private_secure_zero(bytes, length);
     free(bytes);
-    if (result == NX_OK) {
+    if (result == NX_OK && admitted) {
         field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
         if (desc->ime_window && ctx->ime_active_window == desc->ime_window &&
             ctx->ime_active_id == desc->id && nx_window_set_ime_enabled(desc->ime_window, 0) == NX_OK) {
@@ -8011,7 +8065,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value = field->text_value;
     int value_changed = 0;
     result = nx_text_value_apply(ctx, &ctx->semantics.nodes[ctx->semantics.count - 1u],
-                                  &field->buffer,&field->text_value,&desc->clipboard,&value_changed,0);
+                                  &field->buffer,&field->text_value,&desc->clipboard,&field->paste_validation,&value_changed,0);
     if (result != NX_OK) goto rollback;
     /* A clipboard callback can replace the application's field model. */
     ctx->semantics.nodes[ctx->semantics.count - 1u].text_value=field->text_value;
@@ -8156,7 +8210,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
 #endif
                 result = paste_handled || (desc->password && event->key != NX_KEY_V) ? NX_OK :
                     nx_field_clipboard_event(ctx,desc->clipboard,desc->id,
-                        &field->buffer,&field->text_value,desc->multiline,field->sensitive,event->key);
+                        &field->buffer,&field->text_value,desc->multiline,field->sensitive,event->key,&field->paste_validation);
                 if (result != NX_OK) goto rollback;
                 if (event->key!=NX_KEY_C) {
                     field->vertical_x_valid = 0;
@@ -8230,7 +8284,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
         nx_field_paste_cancel(desc, field);
     int deferred_changed=0;
     result=nx_text_value_apply(ctx,&ctx->semantics.nodes[ctx->semantics.count-1u],
-                               &field->buffer,&field->text_value,&desc->clipboard,&deferred_changed,1);
+                               &field->buffer,&field->text_value,&desc->clipboard,&field->paste_validation,&deferred_changed,1);
     if(result!=NX_OK) goto rollback;
     if(deferred_changed) {
         field->pointer.active=0;

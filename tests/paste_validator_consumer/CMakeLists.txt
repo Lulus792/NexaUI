@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+project(NexaUIPasteValidatorConsumer LANGUAGES C)
+find_package(NexaUI 0.1.26 CONFIG REQUIRED)
+add_executable(paste_validator_consumer main.c)
+set_target_properties(paste_validator_consumer PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+target_link_libraries(paste_validator_consumer PRIVATE NexaUI::NexaUI)

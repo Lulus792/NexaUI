@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 25
+#define NX_VERSION_PATCH 26
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -1600,6 +1600,14 @@ typedef struct nx_numeric_field_desc {
    call before and after focused edits; the text is borrowed. */
 typedef int (*nx_text_field_validate_fn)(nx_utf8_span text, void *user);
 
+/* A paste proposal is current[0,start) + insertion + current[end,length).
+   Offsets are UTF-8 byte boundaries in current; insertion has already received
+   single-line CR/LF normalization. All spans are borrowed for this call only.
+   Return nonzero to admit the complete splice, zero to reject it unchanged.
+   Must not mutate/destroy NexaUI objects or retain the spans. */
+typedef int (*nx_text_paste_validate_fn)(nx_utf8_span current, size_t start,
+    size_t end, nx_utf8_span insertion, void *user);
+
 /* Clipboard callbacks follow nx_window_clipboard_get/set_text: read(NULL,0)
    queries UTF-8 byte count, and a later read needs space for a terminating
    NUL. The widget handles Ctrl+C/X/V, and Command+C/X/V on macOS, when the
@@ -2381,6 +2389,18 @@ NX_API nx_result nx_text_field_set_text(nx_text_field *field,
    accessibility writes even if it is changed back before the next frame.
    Does not change the descriptor layout or erase the editor's undo history. */
 NX_API nx_result nx_text_field_set_read_only(nx_text_field *field, int read_only);
+/* Owner thread, between widget submissions. NULL removes the optional paste
+   validator (user must then be NULL). Its user data outlives calls until removal
+   or field destruction. An identical setting is a no-op; a changed setting
+   invalidates pending native/assistive edits, without changing text, selection
+   or undo/redo. Applies to keyboard, logical-command and accessible Paste;
+   accessible Paste inserts at its requested offset. Rejecting a proposal is a
+   successful no-edit, with no invalid flag or undo entry. desc.validate still
+   reports draft validity; typing, IME, Cut, Undo and programmatic/assistive Set
+   are not paste operations and do not call this validator. Native transfer byte
+   limits/deadlines are unchanged. */
+NX_API nx_result nx_text_field_set_paste_validator(nx_text_field *field,
+    nx_text_paste_validate_fn validate, void *user);
 NX_API nx_result nx_text_field_text(const nx_text_field *field,
                                    nx_utf8_span *out_text);
 NX_API nx_result nx_text_field_selection(const nx_text_field *field,

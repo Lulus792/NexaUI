@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.25 LANGUAGES C)
+project(NexaUI VERSION 0.1.26 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -751,6 +751,17 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_wayland_async_clipboard_tests PRIVATE
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
             add_test(NAME nexaui_wayland_async_clipboard COMMAND nexaui_wayland_async_clipboard_tests)
+            add_executable(nexaui_wayland_paste_validation_tests tests/test_wayland_paste_validation.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_paste_validation_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_paste_validation_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            target_link_libraries(nexaui_wayland_paste_validation_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
+            set_target_properties(nexaui_wayland_paste_validation_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            add_test(NAME nexaui_wayland_paste_validation COMMAND nexaui_wayland_paste_validation_tests)
+            set_tests_properties(nexaui_wayland_paste_validation PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_numeric_clipboard COMMAND nexaui_wayland_async_clipboard_tests --numeric)
             set_tests_properties(nexaui_wayland_numeric_clipboard PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_clipboard_focus_loss COMMAND nexaui_wayland_async_clipboard_tests --focus-loss)
@@ -1434,6 +1445,12 @@ if(NEXAUI_BUILD_TESTS)
     add_executable(nexaui_text_field_tests tests/test_text_field.c)
     target_link_libraries(nexaui_text_field_tests PRIVATE NexaUI::NexaUI)
     add_test(NAME nexaui_text_field COMMAND nexaui_text_field_tests)
+    add_executable(nexaui_text_paste_tests tests/test_text_paste.c)
+    target_include_directories(nexaui_text_paste_tests PRIVATE src)
+    target_link_libraries(nexaui_text_paste_tests PRIVATE NexaUI::NexaUI)
+    set_target_properties(nexaui_text_paste_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    add_test(NAME nexaui_text_paste COMMAND nexaui_text_paste_tests)
+    set_tests_properties(nexaui_text_paste PROPERTIES TIMEOUT 15)
     add_executable(nexaui_ime_field_atomic_tests tests/test_ime_field_atomic.c)
     target_link_libraries(nexaui_ime_field_atomic_tests PRIVATE NexaUI::NexaUI)
     set_target_properties(nexaui_ime_field_atomic_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)

@@ -221,3 +221,35 @@ measurements, selection/caret behavior and frame-owned draw masks keep their
 existing contracts. The [text-cost report](../quality/text-cost-report.md)
 records paired real-font timings, full old/current comparisons and the
 remaining wrapped-text, application and CI limits.
+
+## Admit a complete paste before changing the draft
+
+Since 0.1.26, `nx_text_field_set_paste_validator(field, callback, user)` optionally
+checks keyboard, logical-command and assistive Paste before its replacement is
+applied. The callback borrows the current UTF-8 text, replacement start/end byte
+offsets and insertion. Single-line CR/LF normalization has already happened.
+The complete proposal is current-prefix + insertion + current-suffix; no combined
+allocation is needed to reject an oversized proposal. A callback may validate
+that whole proposal against the application's own rules.
+
+Return zero to reject without changing text, selection, undo or redo. It creates
+no history entry and does not automatically mark the existing draft invalid.
+The application can record a separate error for its next frame. Accessible Paste
+inserts at its explicitly requested offset, rather than replacing the current
+selection. Callback spans expire when it returns; do not retain them or mutate/
+destroy NexaUI objects inside the callback. Its user data outlives pending calls
+until the policy is removed or the field is destroyed.
+
+Configure on the owner thread between widget submissions. Pass NULL/NULL to
+remove the policy. Changing function or user invalidates pending native and
+assistive edits; setting the identical pair is a no-op. The field's current
+text, selection and history are preserved by configuration. The default has no
+paste validator. Existing `desc.validate` reports draft validity after edits;
+it is not this admission callback. Typing, IME, Cut, Undo and application/assistive
+Set retain their existing contracts. Clipboard byte limits/deadlines and
+asynchronous native transport also remain unchanged.
+
+The [installed C17 consumer](../../tests/paste_validator_consumer/CMakeLists.txt)
+requires at least package0.1.26. Older same-SONAME libraries do not provide the
+new entry point. The original optional Files0.1.25 experiment requires a separate
+consumer upgrade before using this new API; no Aetheri pin changes automatically.
