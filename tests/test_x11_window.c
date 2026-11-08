@@ -892,7 +892,8 @@ int main(void) {
     close_event.xclient.data.l[0]=(long)XInternAtom(display,"WM_DELETE_WINDOW",False);
     close_event.xclient.window=xid;CHECK(XSendEvent(display,xid,False,NoEventMask,&close_event));XSync(display,False);
     CHECK(nx_window_poll(first,0)==NX_OK&&nx_window_get_info(first,&close_info)==NX_OK&&close_info.should_close);
-    close_event.xclient.window=second_xid;CHECK(XSendEvent(second_display,second_xid,False,NoEventMask,&close_event));XSync(second_display,False);
+    /* The original isolation check already delivered the second window's
+       first close. Consume that request to exercise equal-ID foreign tokens. */
     CHECK(nx_window_poll(second,0)==NX_OK);
     CHECK(nx_window_take_close_request(first,&request)==NX_OK&&request.id&&request.window==first);
     CHECK(nx_window_take_close_request(second,&foreign)==NX_OK&&foreign.id==request.id);
@@ -909,9 +910,6 @@ int main(void) {
     CHECK(XSendEvent(display,xid,False,NoEventMask,&close_event));XSync(display,False);CHECK(nx_window_poll(first,0)==NX_OK);
     CHECK(nx_window_resolve_close(first,&next,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
     CHECK(nx_window_take_close_request(first,&request)==NX_OK&&request.id>next.id);
-    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
-    CHECK(nx_window_get_info(first,&close_info)==NX_OK&&close_info.should_close);
-    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
     nx_window_destroy(second);
     if (private_display && !strcmp(private_display, "1")) {
         size_t missing_length = 99;
@@ -919,6 +917,9 @@ int main(void) {
                                            &missing_length) == NX_ERROR_STATE &&
               missing_length == 0);
     }
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_ACCEPT)==NX_OK);
+    CHECK(nx_window_get_info(first,&close_info)==NX_OK&&close_info.should_close);
+    CHECK(nx_window_resolve_close(first,&request,NX_WINDOW_CLOSE_CANCEL)==NX_ERROR_STATE);
     nx_window_destroy(first);
 
     allocation_probe allocation = {0};
