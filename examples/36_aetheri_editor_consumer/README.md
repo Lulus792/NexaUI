@@ -147,3 +147,35 @@ comparison checks that long preedit leaves the original prefix unchanged.
 These are controlled native-v3 tests; installed IMEs, independent editable
 accessibility, human/physical input, performance and normal Aetheri adoption
 remain separate gates.
+
+## Original accessible-model prerequisite
+
+`-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON` requires `EDITOR_BUILD_IME_MODEL=ON`.
+It adds scalar-indexed reads/replacements and atomic two-endpoint selection
+through the original controller/document/history. It does not yet connect a
+native AT-SPI document object; enabling this option alone changes no visible
+document semantics or accessibility transport. The native IME option remains
+independently selectable and the default accessible-model option is OFF.
+
+The adapter scans the original gap-buffer spans without a second document
+buffer. Reads count Unicode scalars, can address combining marks and either
+CR/LF separately, allocate nothing and preserve the input token/history grouping.
+The read caller chooses its output capacity; insufficient capacity preserves
+the entire destination and reports the required byte count. Whole-document reads
+are not silently truncated at the SDK's separate read-only snapshot bound.
+
+Every operation checks the original controller identity, interaction, revision,
+cursor, anchor and selection state. Replacements use the existing atomic native
+byte seam and one original undo entry, preserving strict UTF-8/CRLF/control and
+allocation rollback rules. Selection supports either direction, validates both
+original grapheme endpoints before mutation, and consumes one gesture even at
+an unchanged caret. The generated selection entry never moves one endpoint
+before validating the other. No native target/window/focus admission, file or
+clipboard authority is granted by this model API.
+
+`editor.accessible_original_model` covers scalar/byte distinctions, gap-spanning
+reads, reverse/collapsed selections, rejected interior grapheme/CRLF endpoints,
+all six stale token fields, whole replacement and Undo/Redo, three allocation
+rollbacks, and a600,000-byte allocation-free read. Native provider lifetime,
+deferred completion, geometry/events and independent assistive tasks remain the
+next integration work; model tests do not establish those gates.
