@@ -46,11 +46,11 @@ def main():
         from test_recovery_inventory import expected as recovery_reference
         english=('Root operation','Code lease','Dispatch','Run closure','Execution handoff');german=('Root-Operation','Code-Lease','Dispatch','Run-Abschluss','Ausführungsübergabe');values=[digest,ids[6],ids[1]]
         with closing(sqlite3.connect(databases[0])) as db:
-            version=db.execute('PRAGMA user_version').fetchone()[0];reference=[] if a.mode=='unsupported' else recovery_reference(db,'system',version)
+            version=db.execute('PRAGMA user_version').fetchone()[0];reference=recovery_reference(db,'system',version)
             epoch,runtime_id,boot,revision=db.execute('SELECT authority_epoch,runtime_incarnation,current_boot_id,catalogue_revision FROM authority_meta').fetchone();values.extend(x.hex() for x in (epoch,runtime_id,boot));values.append(('Abfrage-Katalogrevision: ' if a.german else 'Query catalogue revision: ')+str(revision))
         for i,(kind,key) in enumerate(zip((1,5,6,12,13),(ids[12],ids[11],ids[10],ids[10],ids[10]))):
             values.append((german if a.german else english)[i]);row=next((v for v in reference if v[0]==kind and v[1]==key),None)
-            if row is None:values.append(('Nicht verfügbar (' if a.german else 'Unavailable (')+('-93)' if a.mode=='unsupported' else '-2)'));continue
+            if row is None:values.append(('Nicht verfügbar (-2)' if a.german else 'Unavailable (-2)'));continue
             names=('Aufgezeichnete Art','Aufgezeichnete ID','Aufgezeichnete Bezugs-ID','Aufgezeichnete Revision','Aufgezeichnete offene Schritte','Aufgezeichneter Status','Aufgezeichnetes Detail','Aufgezeichnete Phase','Aufgezeichneter Grund') if a.german else ('Recorded kind','Recorded ID','Recorded related ID','Recorded revision','Recorded unfinished steps','Recorded state','Recorded detail','Recorded phase','Recorded reason')
             for j,(name,value) in enumerate(zip(names,row)):values.append(name+': '+(('keine' if a.german else 'none') if j==2 and value=='-' else str(value)))
         Path(str(expected)+'.recovery').write_text('\n'.join(values)+'\n')
