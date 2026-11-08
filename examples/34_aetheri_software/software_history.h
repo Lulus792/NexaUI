@@ -4,11 +4,20 @@
 #include "catalogue/execution.h"
 #include "catalogue/unit.h"
 #include "catalogue/lifetime.h"
+#include "catalogue/recovery.h"
 /* Trusted owner supplies explicit original profiles, never numeric PID lookup
    or catalogue enumeration. This is historical enrollment metadata, not a live
    process/resource/image observation, permission, replay or drain authority. */
 enum { SWH_MAX_PROFILES=64 };
 enum { SWH_RUN_RECEIPTS=3 };
+enum { SWH_RECOVERY_OPERATION,SWH_RECOVERY_LEASE,SWH_RECOVERY_DISPATCH,
+       SWH_RECOVERY_CLOSURE,SWH_RECOVERY_HANDOFF,SWH_RECOVERY_LINKS };
+typedef struct swh_recovery_link {
+    /* ENOENT after a successful query means omitted from a SELECTIVE inventory,
+       never completed, drained or absent. Snapshot stays zero on every error. */
+    int error;
+    struct ae_recovery_record value;
+} swh_recovery_link;
 typedef struct swh_run_receipt {
     int error; /* 0 only for an available, profile-bound original receipt. */
     struct ae_run_receipt value;
@@ -28,16 +37,21 @@ typedef struct swh_record {
        A copied query context is no broker/process authentication. */
     struct ae_reservation_receipt reservation;
     /* Original Root-local closing, counterpart quiet, released receipts, in
-       enum ae_run_receipt_kind order. No User catalogue or recovery API opened.
+       enum ae_run_receipt_kind order. No User catalogue or lifetime-recovery API opened.
        ESTALE: original Root runtime differs; ENODATA: no retained starter
        evidence; EXDEV: reservation not bound to this profile. Zero on error. */
     swh_run_receipt run[SWH_RUN_RECEIPTS];
+    /* Current query Root metadata, bound through the full original reservation.
+       A nonzero query error is distinct from a missing individual record. */
+    int recovery_error;
+    unsigned recovery_schema;
+    swh_recovery_link recovery[SWH_RECOVERY_LINKS];
 } swh_record;
 typedef struct swh_batch swh_batch;
 /* Worker-only on the serialized original Root handle. Copies profiles, scope
    and selected rows before any original read. Foreign epoch/account/boot or
    duplicate launch/profile inputs reject the whole request before reading.
-   Unselected/ineligible targets cause no process/unit/custody/receipt queries. Original
+   Unselected/ineligible targets cause no process/unit/custody/receipt/recovery queries. Original
    unit/custody getters bind the complete historical profile under the current
    same-epoch Root owner; these records grant no current custody or effect right.
    ENOENT and unsupported

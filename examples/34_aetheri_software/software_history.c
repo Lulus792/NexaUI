@@ -1,4 +1,5 @@
 #include "software_history.h"
+#include "software_recovery.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,6 +116,7 @@ int swh_read(struct ae_catalogue *catalogue,const sw_result *apps,const struct a
         if(at!=SIZE_MAX)r->observed=apps->rows[at];else r->observed.error=-ENOENT;
         r->starter_error=r->app_error=r->unit_error=r->custody_error=-ENOENT;
         r->reservation_error=-ENOENT;for(unsigned j=0;j<SWH_RUN_RECEIPTS;++j)r->run[j].error=-ENOENT;
+        r->recovery_error=-ENOENT;for(unsigned j=0;j<SWH_RECOVERY_LINKS;++j)r->recovery[j].error=-ENOENT;
     }
     struct ae_catalogue_info before,after;
     if(!error)error=ae_catalogue_get_info(catalogue,&before);
@@ -131,6 +133,7 @@ int swh_read(struct ae_catalogue *catalogue,const sw_result *apps,const struct a
         if(!error)error=unit_links(catalogue,&b->scope,r);
         if(!error)error=receipt_links(catalogue,&b->scope,r);
     }
+    if(!error)error=swh_recovery_read(catalogue,&b->scope,b->records,n);
     if(!error)error=ae_catalogue_get_info(catalogue,&after);
     if(!error&&!context_same(&before,&after))error=-ESTALE;
     if(error){swh_free(&b);return error;}
