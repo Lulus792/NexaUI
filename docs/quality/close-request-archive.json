@@ -1,0 +1,36 @@
+{
+  "archives": [
+    {
+      "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+      "files": 1585,
+      "links": 4,
+      "directories": 1200,
+      "verified": true,
+      "name": "nexaui-close-sdk-20261108.tar.gz",
+      "size": 36277344,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "88a30b91bdd0bb4fabd63fa255ec3060423ea0dc3fe4ae3e583e585043ea9978",
+      "files": 962,
+      "links": 0,
+      "directories": 1298,
+      "verified": true,
+      "name": "nexaui-close-windows-20261108.tar.gz",
+      "size": 8955497,
+      "scope": "Owned Windows build/prefix/consumer/log artifacts; modes describe WSL filesystem view, not Windows ACLs"
+    },
+    {
+      "sha256": "a94556968917a0e22029e9f29f50dd5c779718eb3e3048b2204b8271d2e57b47",
+      "files": 22,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-close-evidence-20261108.tar.gz",
+      "size": 251291,
+      "scope": "Decoded hosted CI logs/job metadata, source/artifact binding and build/archive drivers; Windows file modes are WSL view, not ACLs."
+    }
+  ],
+  "vm_recorded_artifacts_bound": 370,
+  "scope": "Every VM receipt artifact is present by size/hash in the fully reverified archive. Windows objects, projects, logs, prefixes and consumers are separately reverified below. Local archive paths are evidence locations, not downloadable GitHub assets."
+}

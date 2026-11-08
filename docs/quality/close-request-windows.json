@@ -1,0 +1,983 @@
+{
+  "source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "staged_bundle": "close-sdk-input2.tar.gz",
+  "profiles": [
+    {
+      "profile": "static",
+      "configuration": "MSVC19.38 Visual Studio17 2022 x64 Release; Windows SDK10.0.26100; no Windows ASan claim",
+      "executed_ctests": 3,
+      "skips": [],
+      "projects": [
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-static/nexaui.vcxproj",
+            "size": 56317,
+            "sha256": "225488c8b8fbc8acf53ee9386a8efdd14981c35b1e5803a7083c2e1e587c9feb"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\nexaui.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\headless.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\renderer_backend.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\theme.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\color.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\utf8.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\grapheme.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\word.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\line.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\bidi.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\shape.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gsub.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gpos.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gpos_marks.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\ot_layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_buffer.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\virtual_list.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\table.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\tree.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\docking.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\search.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\snapshot.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\sim_channel.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\series.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\arena.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\font.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\glyf.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\raster.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\glyph_cache.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\font_collection.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\unicode_data.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\event_queue.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\drop_queue.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\uri_list.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_stamp.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\paint.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gsub_context.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\selection_model.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\window.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\snapshot_lock.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\accessibility.c"
+          ],
+          "actual_objects": 43
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-static/nexaui_close_request_tests.vcxproj",
+            "size": 57865,
+            "sha256": "8e20ddbf7b424ef6bcdb8cc5724d22c12b88c9fefda745ea88afb25bcc67aa68"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_close_request.c"
+          ],
+          "actual_objects": 1
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-static/nexaui_windows_management_tests.vcxproj",
+            "size": 57379,
+            "sha256": "65973d44b17095224e9b9190591b8889567ee954210d8071c0bfdbbef959eb18"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_windows_management.c"
+          ],
+          "actual_objects": 1
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-static/nexaui_tests.vcxproj",
+            "size": 57044,
+            "sha256": "dd229696e6625450b78f18e4926d8473a0b069a639331be8a28c096ce8d3b2e9"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_nexaui.c"
+          ],
+          "actual_objects": 1
+        }
+      ],
+      "compiled_objects": 47,
+      "artifacts": [
+        {
+          "path": "D:/NexaUI/out/close-win2-static-test.log",
+          "size": 448,
+          "sha256": "611ce951da1953d119631970aba750ece51a7444ae415c38459e93370dac25a5"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer/close_request_consumer.vcxproj",
+          "size": 57298,
+          "sha256": "d05ff82d100262295f84305a0493a0ee7c6f429a88ea139b98dc85137110954c"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/accessibility.obj",
+          "size": 93406,
+          "sha256": "733ff5257e9bcddf7349e0dc9755c5eef18149a908ff67cd8246337c69435bc1"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/arena.obj",
+          "size": 4602,
+          "sha256": "cd4ec39e52d39ba570ae920d147d1998d2f172998a60e0b9ef94f69c0d918136"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/bidi.obj",
+          "size": 11173,
+          "sha256": "a2f53939af8969485dfa0fec18e045f1dbb7fe3e34c208cc957baf052b6b8a28"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/color.obj",
+          "size": 11162,
+          "sha256": "5c519724f71fe6aa994ac2654b57922218259b9198894f7cf356e1fc6bf8d032"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/docking.obj",
+          "size": 15544,
+          "sha256": "d22961ec5d2a4447f5e735f40fdc84dc962eb7b1522c6a60cb9fd94cdda98ee6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/drop_queue.obj",
+          "size": 5333,
+          "sha256": "7661aa0bd86298879832ff26da0c83ae21a37b35c4e674378dbf92becf5cabb6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/event_queue.obj",
+          "size": 5648,
+          "sha256": "d4ab5d5a69ee79020662df3f75664ee2f142cdbf5cb9034ed5fa2106ba3a2d03"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/font.obj",
+          "size": 25253,
+          "sha256": "609b2b70e2e42d900e38d35d53d73377ad4b73ce94b0db05096e678d054dbad4"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/font_collection.obj",
+          "size": 5906,
+          "sha256": "7d64f5f3325a31e21b2e90759ae8a366e8016a2cc79c6fb4135f7fe4b0f9f828"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/glyf.obj",
+          "size": 15374,
+          "sha256": "4e62cc90ef76e679c96582ef0a2e2a2818293c94e0b7820dd0831d8a6bf50fd4"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/glyph_cache.obj",
+          "size": 15310,
+          "sha256": "5126dc425ec4200d8fdc300e319825ce2ee49a3b1f96f0af2c1ac2b89d0c5b84"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/gpos.obj",
+          "size": 19389,
+          "sha256": "9b1b7db4df50ccc74089bc7cc2defb791c8c4a3527e4f7cec921817ef6749bf8"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/gpos_marks.obj",
+          "size": 7609,
+          "sha256": "27e5a9ffc39521b221d8d88779c640f0bcadcd4dc0acab9b3e47c95110e65daa"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/grapheme.obj",
+          "size": 2215,
+          "sha256": "1e49d86edcd67228254dc4c197b2e1db4a2df4f7923bc110807d3de8bfe9c943"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/gsub.obj",
+          "size": 14387,
+          "sha256": "21904f5513b6ff28e2e07d83b1207a10ac8fe2b91395eed3646fbc82e5b8d8c9"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/gsub_context.obj",
+          "size": 23587,
+          "sha256": "123458be582ba2196fe943aba3f57aa82f823ace3ff84d93dd78bd6a665bc7e0"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/headless.obj",
+          "size": 24472,
+          "sha256": "9326a40d99916f0c4df19536e52e56472864ce7018e0c62ecbd53f67379368e1"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/layout.obj",
+          "size": 49387,
+          "sha256": "60687f1457ace4e9b5ac9c1dd763667ae2441f551bb789e467b632f147aaad0c"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/line.obj",
+          "size": 13048,
+          "sha256": "77d80979198ebb778f91fade0276db628822f28591beeed22688e75911f60bcb"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/nexaui.obj",
+          "size": 472454,
+          "sha256": "f6c76112080441ecaf8730a77b551472494bb2ff1a694880b6ef0e6b81b27b04"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/ot_layout.obj",
+          "size": 11403,
+          "sha256": "4d500f2d4187ceb37237581c399fe3031880298ba3433d81e22241d8e4714edc"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/paint.obj",
+          "size": 25047,
+          "sha256": "a21e57a3cc091302d568c031db2a9a5ea1ccda326df46e986c187abc45e1302b"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/raster.obj",
+          "size": 16895,
+          "sha256": "02857d8bf47a77a2ecde7261a68287577a29af80968fe5a05da4b7d5a2733b20"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/renderer_backend.obj",
+          "size": 8894,
+          "sha256": "32201c4a42d057158b9241aa7b4ee16a5c4b06c769b8d7c6d9f7cf60b7aad5ab"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/search.obj",
+          "size": 2574,
+          "sha256": "8dc72404ac6c64fd3233f9faad64934421dbb9cd222e9b06804d238655743fa1"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/selection_model.obj",
+          "size": 19817,
+          "sha256": "9a4d1c22d0c46e0ee872404b00fa51eb5426a7ddeebb192dd12eed6eb8b0e04d"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/series.obj",
+          "size": 3594,
+          "sha256": "be55969a6a5b475e70597bbe6d606d91dd96fa71cc05c25c2d907425add72a44"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/shape.obj",
+          "size": 8424,
+          "sha256": "c7e27b54a1b0fa2826233b71d5d19ef203cef19651ee3032ba06f771a4ab8b80"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/sim_channel.obj",
+          "size": 9358,
+          "sha256": "cfa16cfcd7ea81fc99324658b116d4d8f2e2b11afbf8dc49bf87b1ac18f99103"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/snapshot.obj",
+          "size": 8057,
+          "sha256": "a74a55672986a7c9fddf37883db080b1aeb77a1bac89a5b9477a884e59fcb75e"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/snapshot_lock.obj",
+          "size": 2054,
+          "sha256": "d4743083dbeec88d8812fb6db55d38e3df239099d875c465312ff4e968f685e0"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/table.obj",
+          "size": 5048,
+          "sha256": "1703273368b93e2786187bee7074b976d20ab3cb7e2b9b87fc35b28e10dc5462"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/text_buffer.obj",
+          "size": 37867,
+          "sha256": "90a9e8a76e609e7a2ea63b4590750f1ac17eb168f54209f99fe7f9d06b539d61"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/text_layout.obj",
+          "size": 31551,
+          "sha256": "d3a281656b78b3992b26eec520c40ed3ff7bac184587e2caf3929feb70da5a15"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/text_stamp.obj",
+          "size": 12645,
+          "sha256": "1ac715920f25a1d842d9193b03bebf9984b7fadb94dc20e326d5eb215ddc12d2"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/theme.obj",
+          "size": 7252,
+          "sha256": "5f34ff53cbecd3f89fb2d15b8d24888bbd27d6c463d5e012c15a47d33cf9ea14"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/tree.obj",
+          "size": 4441,
+          "sha256": "97e38d5d7ef4086477974376e321de738f088f992546524d203959a890902a16"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/unicode_data.obj",
+          "size": 148862,
+          "sha256": "a0037c487e44a3f9374151042a032b34c41a8166c4260e1592da28fdb327b1eb"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/uri_list.obj",
+          "size": 6420,
+          "sha256": "a98d0e4d31cceec525a907da09ea6efe47ff01b97d0d43fa0cd7a9f74dd21c8a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/utf8.obj",
+          "size": 2048,
+          "sha256": "be378cd21917eb51a26de57f6668aa4fe3c86a8925114b368eca846eef0cffa6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/virtual_list.obj",
+          "size": 19453,
+          "sha256": "c9ab2d6bcaa8059559eb0d4408398e020108f9ed3b74f0083defb12fc95fcc3a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/window.obj",
+          "size": 70482,
+          "sha256": "7591c4a26e52895d292c667e2e32ec7419df173f51c92cfbc81a437115a85630"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.dir/Release/word.obj",
+          "size": 4100,
+          "sha256": "cc447ee304dd6ac61e638c492f8cfdc807c24dfcc95eb2831c2940da5c931f7c"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_close_request_tests.dir/Release/test_close_request.obj",
+          "size": 3276,
+          "sha256": "0351544e0809c367a676a7be9890c44cf4358786d26bf1b9cee8b7b6dbb3249e"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_windows_management_tests.dir/Release/test_windows_management.obj",
+          "size": 43146,
+          "sha256": "a1e5b2d0695317c1c83bcaf05ab27cbc86cd5b6f8ce8d8ea5eb94c5992f7d42c"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_tests.dir/Release/test_nexaui.obj",
+          "size": 37295,
+          "sha256": "4ca0378475625812e8b4fb3c709b5bae4c58c21440e7018201627b525cfde429"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer/close_request_consumer.dir/Release/main.obj",
+          "size": 1819,
+          "sha256": "dd5a79e23f37f60c15feecc97b7427a6f5ff3c5530375452b3cf3c8b18ee9bea"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui.vcxproj",
+          "size": 56317,
+          "sha256": "225488c8b8fbc8acf53ee9386a8efdd14981c35b1e5803a7083c2e1e587c9feb"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_close_request_tests.vcxproj",
+          "size": 57865,
+          "sha256": "8e20ddbf7b424ef6bcdb8cc5724d22c12b88c9fefda745ea88afb25bcc67aa68"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_windows_management_tests.vcxproj",
+          "size": 57379,
+          "sha256": "65973d44b17095224e9b9190591b8889567ee954210d8071c0bfdbbef959eb18"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/nexaui_tests.vcxproj",
+          "size": 57044,
+          "sha256": "dd229696e6625450b78f18e4926d8473a0b069a639331be8a28c096ce8d3b2e9"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-build.log",
+          "size": 1785,
+          "sha256": "70e31ebd83837d4265113a9f0c6b27acbadc22e726a3ddf12852175256a22c2b"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-install.log",
+          "size": 1294,
+          "sha256": "78ec432282e1136955135d7155a177a6975aa6fda520deb024fae5f287b67537"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer-configure.log",
+          "size": 564,
+          "sha256": "62fdb349504220de44d701d47dd191fb6db5e37a29b2cfa8562a0019f5fcdf94"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer-build.log",
+          "size": 407,
+          "sha256": "a9bd7140063f316aa8cb4f5489081784f0a691d01cf6813ce6fc5c453d5a0eb1"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer-run.log",
+          "size": 83,
+          "sha256": "74185207c37a5f11d46a8b0271359f8d9e90ced36fc48c08aebc845f43e305bf"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/CMakeCache.txt",
+          "size": 16610,
+          "sha256": "0b558fede7c2a7ca0a0974f058fd3a4e7571806ea8f3b3c94d97535fac7b8f7e"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/Release/nexaui.lib",
+          "size": 1335862,
+          "sha256": "f4fefbecc7c1ec11da635f26e51591f413fcd4e36620d0f7b9ebbabb98876bd4"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/Release/nexaui_close_request_tests.exe",
+          "size": 10240,
+          "sha256": "e1c854b83d9988d19d0a0e6c6074755541a85cfea62d12c15d555c188c6e6781"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/Release/nexaui_tests.exe",
+          "size": 233472,
+          "sha256": "0428accda1ea88ce30cef518ddf8051117832df17d93e72e2cf6b9dab49ed775"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/Release/nexaui_windows_management_tests.exe",
+          "size": 236032,
+          "sha256": "2794cab17dfbe7d7d144bb3ef1e0a13acfae1723d14cee5a57c52553f1866caf"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static/CMakeFiles/4.3.2/CompilerIdC/CompilerIdC.exe",
+          "size": 14848,
+          "sha256": "fd52821d1c71cb52bf41cfdbca87dd0e7dcaa55d77cf473af036cc4a8f59db8f"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer/CMakeCache.txt",
+          "size": 13204,
+          "sha256": "ad09546d1f50111d0ba0914f585cf793e0208bcd2f85022ce46013746224a301"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer/Release/close_request_consumer.exe",
+          "size": 174080,
+          "sha256": "e780074c038ef02222a9884186bfe0418c2ea50365491b02baef33491cd54f27"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-consumer/CMakeFiles/4.3.2/CompilerIdC/CompilerIdC.exe",
+          "size": 14848,
+          "sha256": "5807eeab2ec2ea91884d37dc61e9bb274f92c3d3958182463cc7fbb009e85321"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-static-prefix/lib/nexaui.lib",
+          "size": 1335862,
+          "sha256": "f4fefbecc7c1ec11da635f26e51591f413fcd4e36620d0f7b9ebbabb98876bd4"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "configuration": "MSVC19.38 Visual Studio17 2022 x64 Release; Windows SDK10.0.26100; no Windows ASan claim",
+      "executed_ctests": 3,
+      "skips": [],
+      "projects": [
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-shared/nexaui.vcxproj",
+            "size": 62174,
+            "sha256": "1974d40d62ba3d92d51cd1fc1c9cdcd5d4bce33d4d5b2cdfc962e2ba8de1d170"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\nexaui.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\headless.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\renderer_backend.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\theme.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\color.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\utf8.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\grapheme.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\word.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\line.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\bidi.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\shape.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gsub.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gpos.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gpos_marks.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\ot_layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_buffer.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\virtual_list.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\table.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\tree.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\docking.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\search.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\snapshot.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\sim_channel.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\series.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\arena.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\layout.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\font.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\glyf.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\raster.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\glyph_cache.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\font_collection.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\unicode_data.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\event_queue.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\drop_queue.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\common\\uri_list.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\text_stamp.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\paint.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\gsub_context.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\src\\selection_model.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\window.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\snapshot_lock.c",
+            "D:\\NexaUI\\out\\close-sdk-source2\\platform\\windows\\accessibility.c"
+          ],
+          "actual_objects": 43
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-shared/nexaui_close_request_tests.vcxproj",
+            "size": 57633,
+            "sha256": "f730bde30f61a799da278bf586d029741c0858ca571b8816a920b599c33c2353"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_close_request.c"
+          ],
+          "actual_objects": 1
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-shared/nexaui_windows_management_tests.vcxproj",
+            "size": 57191,
+            "sha256": "ccbbd27ea111d87f6318412cbf78a068b7b13bffe2a9e7400da7ac71e77a4e97"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_windows_management.c"
+          ],
+          "actual_objects": 1
+        },
+        {
+          "project": {
+            "path": "D:/NexaUI/out/close-win2-shared/nexaui_tests.vcxproj",
+            "size": 56812,
+            "sha256": "1de36b36f86a1d27650e4ba3bce6ec55ef364940e29b32466dce935f3612a1cd"
+          },
+          "language": "C17",
+          "sources": [
+            "D:\\NexaUI\\out\\close-sdk-source2\\tests\\test_nexaui.c"
+          ],
+          "actual_objects": 1
+        }
+      ],
+      "compiled_objects": 47,
+      "artifacts": [
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-test.log",
+          "size": 448,
+          "sha256": "fb0ac0412acdae48d0baf365eb79903706c611e76ebe96d6f385444edc034983"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer/close_request_consumer.vcxproj",
+          "size": 57066,
+          "sha256": "0b4de24b4cd0cb0b8f017d000d277ce10f21a51b6140f134011fee24c586c56b"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/accessibility.obj",
+          "size": 93406,
+          "sha256": "7ea11b316b39d1e9a10932a4ef9fa777066cf2d620417d193435d9620bb815d6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/arena.obj",
+          "size": 4745,
+          "sha256": "a68623aa2f2690ee9104ff5f6021fa6f0393b628ed9f522218cd6451cc787993"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/bidi.obj",
+          "size": 11197,
+          "sha256": "3cb84ed874a4095ca2391dc6be01b25febf2f3137426ac077594a103436caa80"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/color.obj",
+          "size": 11267,
+          "sha256": "81c8670ddf07b4c33a0c3a7fe9c0d886caeb540723ae1b2644833ab17d9708b8"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/docking.obj",
+          "size": 15752,
+          "sha256": "bfe688d524170c08203286e7117013b7ab6d7e04f3d4c5ce726e2228204e3688"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/drop_queue.obj",
+          "size": 5333,
+          "sha256": "00edd166e4da8486b909fc8993286f001b151dd7fd4e4141f038e46ab09a9af7"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/event_queue.obj",
+          "size": 5648,
+          "sha256": "e97447d918a5de4ff38912b956e6b7ffef2646ed817f6438a65b369424596fd7"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/font.obj",
+          "size": 25487,
+          "sha256": "8b12bce816bfad28af5fb299a7309f69c581d846cfd9ea08f3bc6f4b21a2bb0a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/font_collection.obj",
+          "size": 6142,
+          "sha256": "493e78f7d7a6909706f84d2bd9de734353a71c7a49305ea762d0272fd2fd562d"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/glyf.obj",
+          "size": 15408,
+          "sha256": "cd8ab3ae3e1c5cfbb2fc6672c4c7798e241261855d2da8b0d04c900cc9227845"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/glyph_cache.obj",
+          "size": 15498,
+          "sha256": "990f573d73d394f591fc52e5fd28c7cdefb6250d0846743d66f5239014ce04aa"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/gpos.obj",
+          "size": 19389,
+          "sha256": "f85b1fa8ad2aa95fc1130b7d31801af23723b2977e05ddb71aae165524ea2e17"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/gpos_marks.obj",
+          "size": 7609,
+          "sha256": "7980665ee6718952f072ba6fabd1f84f2d23b56be0531e6e9ef147e41143e933"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/grapheme.obj",
+          "size": 2240,
+          "sha256": "d1bd5cbe03e657e83d5cf69d6003d2dd47526ebcdd149fee44df95e14e94800a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/gsub.obj",
+          "size": 14387,
+          "sha256": "c63a499c3a533589e8684d37014b6bcd0233a2a276dd4a0e07afb56846425d70"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/gsub_context.obj",
+          "size": 23587,
+          "sha256": "fbc7df22664b8ec3f20bc3389644be612f1555bf553268289a29d17e76851ced"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/headless.obj",
+          "size": 24533,
+          "sha256": "76bd0c2e19a4403f5e4e3513136790bbef5c0df499006a810e131eebcebe5300"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/layout.obj",
+          "size": 49803,
+          "sha256": "c1ef5e07f19eff3d34cbc385c5a5d2239f423da9fcc74af059ce8de5ddbe3dff"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/line.obj",
+          "size": 13071,
+          "sha256": "70a134416f859f29e89256a3f1df695b66c832dc30329bb6016932d8f2ab1e4f"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/nexaui.obj",
+          "size": 475934,
+          "sha256": "1d202f2c1ddf5c6e602404a2f3f836682b507819caa29dabb243f1f7d5af4cc4"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/ot_layout.obj",
+          "size": 11403,
+          "sha256": "0b4abc01dfa878db99c7bfc7fb6d9d897aac75c4d8d39ef2ecff5554e82dc2b7"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/paint.obj",
+          "size": 25197,
+          "sha256": "0cc1e9eee2fee792231482b1787006b0ce94a74a14351e23826124f185a6b113"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/raster.obj",
+          "size": 16925,
+          "sha256": "c8346061c6eee5b577a164e6bc74657b3208836a00446f1635aa99865ba15b6f"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/renderer_backend.obj",
+          "size": 9033,
+          "sha256": "7016c38c8d2789d9b9538e3adc8b2601946043fbe837032ee2b4476634928f6d"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/search.obj",
+          "size": 2599,
+          "sha256": "7146816166b12275cad4244d110d1391bd078f986d7ad4726ac35dfabebe3421"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/selection_model.obj",
+          "size": 20065,
+          "sha256": "f586e219848649ee8950c0c5d2ad2cd6e8aa0da339d0ff71efbafd3fe9d7e5ef"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/series.obj",
+          "size": 3621,
+          "sha256": "71370871be017697c2693acbec683fa234a1dfc9d470c33d8976a9d951a8442a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/shape.obj",
+          "size": 8446,
+          "sha256": "290aeb7259e49ef9b70037f66ed9b915d0015cfb9434c813e96837d0fd8294ec"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/sim_channel.obj",
+          "size": 9600,
+          "sha256": "0c105778f62c9596e38848aacaaa076f7c453e83efefdadfffd0273774e4298e"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/snapshot.obj",
+          "size": 8241,
+          "sha256": "ce5f02e99d7e60c3609be2373c0141e2c33a7ac63e90cf48e3d4745196ba2d2f"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/snapshot_lock.obj",
+          "size": 2054,
+          "sha256": "26c6f38dfbcc7edf3cf30eccd1a24c0801ceb4c7c92b93df84a0f28a8aaf961c"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/table.obj",
+          "size": 5078,
+          "sha256": "4e1f39d4ff3bca37915a545ce9afbaeaafc5ebf2432450c28ebea36cd80712cb"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/text_buffer.obj",
+          "size": 38515,
+          "sha256": "6e5235e9670edb5d50600528952c6fef9dd42ac3793cea61cdd88e482d841995"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/text_layout.obj",
+          "size": 32044,
+          "sha256": "ab2257d39e048df3270fb5f9b4a4c732ac38fab6ab9bb40b742628d584aec197"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/text_stamp.obj",
+          "size": 12398,
+          "sha256": "7df890a811fb8d34d8615130374d2c4b448e43aadb935cea8909e37ebb08ce77"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/theme.obj",
+          "size": 7356,
+          "sha256": "87bd6fe2050f1beb24a12c047ed20418ce68372695a73082009ce7d54c02c5f0"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/tree.obj",
+          "size": 4465,
+          "sha256": "14f35379201d839a1369a1daa2c08cf8099ce800103e9bd253e1799e3b728a70"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/unicode_data.obj",
+          "size": 148862,
+          "sha256": "f7a76337f0961ca834fd0ce8da1a512b5f4c6053d731000b0a8cb552ca0074fb"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/uri_list.obj",
+          "size": 6420,
+          "sha256": "02873d600a123609840a449d2e53493c51beb4856085b26a99768ceeda1e8e82"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/utf8.obj",
+          "size": 2096,
+          "sha256": "7d0c8c56373cce3a054cb1573df490040c39d199bb58573c33c09c1a6e0bbd82"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/virtual_list.obj",
+          "size": 19573,
+          "sha256": "b7a75378502a4e0950c80fb573ce4a31767d8f262779e9b335e2493260ec8675"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/window.obj",
+          "size": 71484,
+          "sha256": "f79a9d86c3c1b75ec1a407c024a0dd391411ce5c9900745211a6dce95a3028df"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.dir/Release/word.obj",
+          "size": 4121,
+          "sha256": "5ec27640324e95e85fbb44e4ba3aa42a1130903afd1c6d3bff2f98f224af07c3"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_close_request_tests.dir/Release/test_close_request.obj",
+          "size": 3276,
+          "sha256": "cbf5ceca69003a1bf5d32d7c2a7d40c56e2dd1e13a301f085f55b01b531c8d42"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_windows_management_tests.dir/Release/test_windows_management.obj",
+          "size": 43340,
+          "sha256": "27d4424700720613688f8292932f111bf8d71b8ce9959ace7e8627d4ffb1d356"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_tests.dir/Release/test_nexaui.obj",
+          "size": 37522,
+          "sha256": "e0e801b3b470af554da05194e368ea3a7ff57c4f67b1fc783ec095ac968b6275"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer/close_request_consumer.dir/Release/main.obj",
+          "size": 1840,
+          "sha256": "c034149070e31cb6d4d59eaff2d48b22d382ec15e62fbea5b4f21feac7ddcfab"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui.vcxproj",
+          "size": 62174,
+          "sha256": "1974d40d62ba3d92d51cd1fc1c9cdcd5d4bce33d4d5b2cdfc962e2ba8de1d170"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_close_request_tests.vcxproj",
+          "size": 57633,
+          "sha256": "f730bde30f61a799da278bf586d029741c0858ca571b8816a920b599c33c2353"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_windows_management_tests.vcxproj",
+          "size": 57191,
+          "sha256": "ccbbd27ea111d87f6318412cbf78a068b7b13bffe2a9e7400da7ac71e77a4e97"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/nexaui_tests.vcxproj",
+          "size": 56812,
+          "sha256": "1de36b36f86a1d27650e4ba3bce6ec55ef364940e29b32466dce935f3612a1cd"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-build.log",
+          "size": 1921,
+          "sha256": "665566624979fecb488d681769b7785d5cf98ca43678d3110a1287422cec955a"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-install.log",
+          "size": 1364,
+          "sha256": "4e096fe300160c9bb7bc9c97200458cf8963d5a83a16611ea01c5b54be3a1854"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer-configure.log",
+          "size": 564,
+          "sha256": "8cb12b5c928d4d13f677223ba2a43e7b6e64b28df78014fd11fb7a0fc484851e"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer-build.log",
+          "size": 407,
+          "sha256": "47a22e4f9013e6793dc4caa6166c04c55089b4ac802560c645f6964a94414182"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer-run.log",
+          "size": 83,
+          "sha256": "74185207c37a5f11d46a8b0271359f8d9e90ced36fc48c08aebc845f43e305bf"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/CMakeCache.txt",
+          "size": 16609,
+          "sha256": "c1db089742d390649d73f8db002d86809f6fa75fea84d2f5eeb4155c111162f3"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/Release/nexaui.dll",
+          "size": 583168,
+          "sha256": "072e7ab449e93721979e1446512711b641e01c8170455f0eb6b8323f3a0eb5f9"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/Release/nexaui.lib",
+          "size": 73372,
+          "sha256": "bfabd48b5e323ad5a06b9a35e737762909f374ba76294b7677d92fff97771e0f"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/Release/nexaui_close_request_tests.exe",
+          "size": 10240,
+          "sha256": "49afe1b7a42b9ff8a92f9fa07d51318ae89f6a583f3443501ea7669041b4a668"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/Release/nexaui_tests.exe",
+          "size": 22528,
+          "sha256": "65b925c698ed9798b35718206794e62396e7798e338702639ed7e6d432931787"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/Release/nexaui_windows_management_tests.exe",
+          "size": 27136,
+          "sha256": "08173fdec874fc2dfd609925e7cd020e96ff2464abc6b01a821983dcb5bbe9cf"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared/CMakeFiles/4.3.2/CompilerIdC/CompilerIdC.exe",
+          "size": 14848,
+          "sha256": "ad3c04c056477a3e01be103ae6ef744aa2d49fb8e478ceceeec0655e7951d0a6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer/CMakeCache.txt",
+          "size": 13204,
+          "sha256": "7b0ec4824819d05cf52cb6463178409c291e030403c423f917fe347a3bdb8911"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer/Release/close_request_consumer.exe",
+          "size": 11264,
+          "sha256": "6e328396337b86709d6010cd22791641e3842f899d68b83c3f3c0054420585b6"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-consumer/CMakeFiles/4.3.2/CompilerIdC/CompilerIdC.exe",
+          "size": 14848,
+          "sha256": "121d4f3b8e3a6f9406b72a8e389f4f3128cd193b663c7c1843c375cb200a76bf"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-prefix/bin/nexaui.dll",
+          "size": 583168,
+          "sha256": "072e7ab449e93721979e1446512711b641e01c8170455f0eb6b8323f3a0eb5f9"
+        },
+        {
+          "path": "D:/NexaUI/out/close-win2-shared-prefix/lib/nexaui.lib",
+          "size": 73372,
+          "sha256": "bfabd48b5e323ad5a06b9a35e737762909f374ba76294b7677d92fff97771e0f"
+        }
+      ]
+    }
+  ],
+  "consumer_commands": [
+    {
+      "phase": "configure",
+      "log": "D:/NexaUI/out/close-win2-static-consumer-configure.log",
+      "profile": "static",
+      "program": "cmake",
+      "arguments": [
+        "-S",
+        "D:/NexaUI/out/close-sdk-source2/tests/close_request_consumer",
+        "-B",
+        "D:/NexaUI/out/close-win2-static-consumer",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_PREFIX_PATH=D:/NexaUI/out/close-win2-static-prefix"
+      ],
+      "exit": 0
+    },
+    {
+      "phase": "build",
+      "log": "D:/NexaUI/out/close-win2-static-consumer-build.log",
+      "profile": "static",
+      "program": "cmake",
+      "arguments": [
+        "--build",
+        "D:/NexaUI/out/close-win2-static-consumer",
+        "--config",
+        "Release",
+        "--parallel",
+        "4"
+      ],
+      "exit": 0
+    },
+    {
+      "phase": "run",
+      "log": "D:/NexaUI/out/close-win2-static-consumer-run.log",
+      "profile": "static",
+      "program": "D:/NexaUI/out/close-win2-static-consumer/Release/close_request_consumer.exe",
+      "arguments": [],
+      "exit": 0
+    },
+    {
+      "phase": "configure",
+      "log": "D:/NexaUI/out/close-win2-shared-consumer-configure.log",
+      "profile": "shared",
+      "program": "cmake",
+      "arguments": [
+        "-S",
+        "D:/NexaUI/out/close-sdk-source2/tests/close_request_consumer",
+        "-B",
+        "D:/NexaUI/out/close-win2-shared-consumer",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_PREFIX_PATH=D:/NexaUI/out/close-win2-shared-prefix"
+      ],
+      "exit": 0
+    },
+    {
+      "phase": "build",
+      "log": "D:/NexaUI/out/close-win2-shared-consumer-build.log",
+      "profile": "shared",
+      "program": "cmake",
+      "arguments": [
+        "--build",
+        "D:/NexaUI/out/close-win2-shared-consumer",
+        "--config",
+        "Release",
+        "--parallel",
+        "4"
+      ],
+      "exit": 0
+    },
+    {
+      "phase": "run",
+      "log": "D:/NexaUI/out/close-win2-shared-consumer-run.log",
+      "profile": "shared",
+      "program": "D:/NexaUI/out/close-win2-shared-consumer/Release/close_request_consumer.exe",
+      "arguments": [],
+      "exit": 0
+    }
+  ],
+  "scope": "Two actual local native Windows builds and installed export/ABI consumers. Source staged before commit; exact source binding is separate. First configure raced incomplete export and failed; source2 was completed before the successful fresh builds."
+}

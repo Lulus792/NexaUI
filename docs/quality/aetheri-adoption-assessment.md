@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## W01 cancellable-close SDK foundation (2026-11-08)
+
+SDK0.1.27 source `47ec4e640a8a0f54bc8a09d1fe825b57956df6d7` implements
+opt-in native close take/resolve on all desktop adapters. Tokens acknowledge the
+legacy flag for review, permit cancellation and reject stale/foreign/duplicate
+answers; accepted or forced closes cannot be revived. Existing layouts and
+legacy-only loops remain compatible. Local Windows and three Wayland-only
+profiles, five installed C17 export/ABI consumers, two compiled native defects
+and seven hosted CI jobs pass. See [exact source, native scope, archives and
+remaining gates](close-request-report.md). This is the missing reusable SDK
+foundation, not adoption of the full original-editor review/Cancel/new-close/
+editing/idle/management workflow. No independent Aetheri source/pin/default is
+changed. All103 IDs, remaining packet6, packets7–8 and physical/human/performance/
+service gates remain; the previous AT-SPI stability finding is still open.
+
 ## Software private output removal/recreation (2026-11-08)
 
 Source `8c3537dc9b1dbe7cd605d63ec8d393d3ef208ff1` adds optional native snapshot/
@@ -13,8 +28,8 @@ No SDK/API/version, ordinary host/view/model/worker, independent Aetheri source
 or pin/default changes. Production policy, all-output loss, long-run budgets,
 physical/session-resume, full inventory/services and final human/design/performance
 remain open across103 IDs, remaining packet6 and packets7–8. The prior AT-SPI
-stability finding is unchanged. W01's cancellable native-close contract is the
-next reusable SDK gap to reconcile while physical tests remain unavailable.
+stability finding is unchanged. This checkpoint preceded the W01 SDK protocol
+above; physical tests remain unavailable.
 
 ## Software controlled output transitions (2026-11-08)
 

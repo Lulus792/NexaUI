@@ -1,5 +1,14 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+W01 reusable window lifecycle: SDK0.1.27/`47ec4e640a8a0f54bc8a09d1fe825b57956df6d7`,
+[cancellable native close requests and terminal guards](close-request-report.md).
+Local Windows/Wayland-only profiles, installed C17 availability/ABI consumers,
+two native mutation controls and all seven required exact-source CI jobs pass.
+Full original-editor review/Cancel/repeated native close, retained editing/idle/
+move-resize-zoom and independent owner adoption remain open. This SDK step does
+not change any system service, privileged role, Aetheri source/pin/default or
+the prior AT-SPI finding. Remaining packet6, packets7–8 and all103 IDs persist.
+
 Software output removal/recreation: `8c3537dc9b1dbe7cd605d63ec8d393d3ef208ff1`,
 [real private hotplug, fresh registry identities and maximized-window failover](software-hotplug-report.md).
 Sixteen positive cases retain414 checkpoints,194 transitions,42 snapshot/poll

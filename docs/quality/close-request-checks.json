@@ -1,0 +1,24 @@
+{
+  "result": "passed",
+  "source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "local_linux_executed_ctests": 45,
+  "local_linux_display_skips": 3,
+  "local_windows_executed_ctests": 6,
+  "installed_local_consumers": 5,
+  "native_protocol_mutants_detected": 2,
+  "actual_old_package_minimum_version_refused": true,
+  "source_binding_counts": {
+    "byte_identical": 951,
+    "line_endings_only": 74,
+    "exceptions": 3
+  },
+  "all_vm_receipt_artifacts_bound": 370,
+  "windows_bound_artifacts": 138,
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "scope": "Scoped SDK cancellation foundation. Full original Aetheri editor unsaved-review, idle/input/window management workflow, application adoption, physical/human/performance acceptance and other catalogue requirements remain open.",
+  "preserved_failures": [
+    "Initial Windows configure started before source export completed: missing input files; successful builds use completed source2.",
+    "Cleanup refused unreadable /proc/954920/cwd before deletion; no capture retirement performed.",
+    "Earlier Software ASan AT-SPI Read-action instability remains unresolved and is not explained by this SDK step."
+  ]
+}
