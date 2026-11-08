@@ -31,7 +31,7 @@ def main():
     if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
     if a.clipboard and (a.held or a.navigation):p.error('Clipboard has a separate ordinary-peer sequence')
     if bool(a.clipboard)!=bool(a.clipboard_tools):p.error('Clipboard requires its explicitly selected private tools')
-    if a.issuer_fixture and (a.kind!='system' or a.clipboard):p.error('Root11 issuer metadata requires a Root host; run clipboard separately')
+    if a.issuer_fixture and a.kind!='system':p.error('Root11 issuer metadata requires a Root host')
     if not a.issuer_fixture and a.issuer_mode!='fresh':p.error('Issuer mode requires its explicitly selected original fixture')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
