@@ -1,0 +1,143 @@
+{
+  "archives": [
+    {
+      "sha256": "161d982a0f3518651d9ba09ff5d45edec3370c38625e78bf1486f4d0278820af",
+      "files": 844,
+      "links": 4,
+      "directories": 509,
+      "verified": true,
+      "name": "nexaui-editor-accessible-model-20261108-r2.tar.gz",
+      "size": 9111978,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "99a3cb26d3f17dd340db367885732698436399ffef075cb9c2e68dd2eb467d94",
+      "files": 52,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-accessible-model-evidence-20261108.tar.gz",
+      "size": 261705,
+      "scope": "Host-side provenance/archive/check drivers, complete guarded retirement records including refused missing-root plan, and seven successful SDK CI logs. Windows modes are WSL view, not ACLs. Local evidence only."
+    }
+  ],
+  "reused_archives": [
+    {
+      "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+      "files": 1585,
+      "links": 4,
+      "directories": 1200,
+      "verified": true,
+      "name": "nexaui-close-sdk-20261108.tar.gz",
+      "size": 36277344,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "bf160ca5f0d3e7a4255a65bf8dba03778852c56f05ba30efd9e937103365a1c7",
+      "files": 1377,
+      "links": 4,
+      "directories": 587,
+      "verified": true,
+      "name": "nexaui-editor-native-ime-20261108.tar.gz",
+      "size": 11880799,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+      "files": 2145,
+      "links": 10,
+      "directories": 1345,
+      "verified": true,
+      "name": "nexaui-editor-native-ime-progress-20261108.tar.gz",
+      "size": 21833713,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    }
+  ],
+  "artifact_files_bound": 541,
+  "reused_sdk_libraries": 3,
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-19-release",
+          "editor-close-19-shared",
+          "editor-close-19-asan"
+        ],
+        "bytes": 84353158,
+        "files": 324,
+        "links": 3,
+        "directories": 339,
+        "fingerprint": "68ea10d179269dc849976bffac499708a692d37f108ceba26b890ddc0b8a262b",
+        "archive_sha256": "bf160ca5f0d3e7a4255a65bf8dba03778852c56f05ba30efd9e937103365a1c7",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive native19 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-19-release",
+          "editor-close-19-shared",
+          "editor-close-19-asan"
+        ],
+        "bytes": 84353158,
+        "files": 324,
+        "links": 3,
+        "directories": 339,
+        "fingerprint": "68ea10d179269dc849976bffac499708a692d37f108ceba26b890ddc0b8a262b",
+        "archive_sha256": "bf160ca5f0d3e7a4255a65bf8dba03778852c56f05ba30efd9e937103365a1c7",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-11-release",
+          "editor-close-11-shared",
+          "editor-close-11-asan",
+          "editor-close-17-release"
+        ],
+        "bytes": 105522468,
+        "files": 426,
+        "links": 4,
+        "directories": 446,
+        "fingerprint": "e9fd49b9a4020a0ffce7ad92d1f7779a6783311062ce80078180d9dd5e699804",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive model11/native17 Release builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-11-release",
+          "editor-close-11-shared",
+          "editor-close-11-asan",
+          "editor-close-17-release"
+        ],
+        "bytes": 105522468,
+        "files": 426,
+        "links": 4,
+        "directories": 446,
+        "fingerprint": "e9fd49b9a4020a0ffce7ad92d1f7779a6783311062ce80078180d9dd5e699804",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    }
+  ],
+  "retired_bytes": 189875626,
+  "scope": "All final archive member/mode/hash/link checks passed; every selected artifact individually bound, three SDK libraries in prior SDK archive. Two exact inactive old-build retirement receipts, with root process reads then permanent UID/GID1000 drop before artifact verification/deletion. Current22, original exports and SDK prefixes retained. Initial missing-root guard refused before deletion. No quota/driver/mount/cache changes. Local evidence archives only.",
+  "superseded_collector_archive": {
+    "sha256": "c514e4e1fb5b4053d9f54f42f191b14ac34246eb4fa78b04525b71fe9db53dc6",
+    "files": 843,
+    "links": 4,
+    "directories": 509,
+    "verified": true,
+    "name": "nexaui-editor-accessible-model-20261108.tar.gz",
+    "size": 9111828,
+    "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized",
+    "scope": "Superseded first collector export: full archive members verified, but one selected own-log artifact changed after collection. Not used as a passing final artifact binding; final r2 excludes mutable collector logs."
+  }
+}

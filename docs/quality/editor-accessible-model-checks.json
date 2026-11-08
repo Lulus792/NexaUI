@@ -1,0 +1,29 @@
+{
+  "result": "passed",
+  "source_revision": "e6cd1d0b61b451589b7708f402e95fef534267f8",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "sdk_source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "profiles": 3,
+  "ctests": 42,
+  "default_original_ctests": 11,
+  "skips": 0,
+  "consumer_c17_objects": 90,
+  "default_original_c17_objects": 25,
+  "negative_c17_objects": 2,
+  "functional_mutants_detected": 2,
+  "retained_native_ime_tasks": 3,
+  "decoded_native_captures": 171,
+  "artifact_files_bound": 541,
+  "repo_inputs": 30,
+  "original_inputs": 53,
+  "generated_replays": 19,
+  "scope": "App-owned model prerequisite only. Native tasks preserve existing complete IME/editing/window/save behavior; they do not call a native accessible document provider.",
+  "remaining": [
+    "Reusable SDK app-owned document provider with native lifetime/request completion",
+    "Native document Text/EditableText publication, events, geometry and original-model actions",
+    "Independent AT-SPI clients and delayed clipboard/composition interaction",
+    "Installed IMEs, output/manual offscreen-caret behavior and normal Aetheri adoption",
+    "Remaining packet6/packets7-8/all103 IDs, physical/human/design/performance and earlier Software AT-SPI finding"
+  ]
+}

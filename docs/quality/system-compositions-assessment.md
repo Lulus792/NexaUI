@@ -1,5 +1,14 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor accessible model: `e6cd1d0b61b451589b7708f402e95fef534267f8`,
+[scalar reads, original replacements and atomic selection prerequisite](editor-accessible-model-report.md).
+Three profiles pass42 tests plus171 retained native IME/edit/save/window captures;
+default original models pass11 tests. Two compiled defects and83 exact inputs,
+19 generated C outputs and541 selected artifacts are checked. This does not yet
+publish a native editable document or prove independent assistive-client tasks.
+SDK/pin/default/application authority remain unchanged; all103 IDs, remaining
+packet6/packets7–8 and prior AT-SPI/final adoption gates remain active.
+
 Original Editor native IME: consumer `52d59e45c67b59c10b05b9c51bb8015b00ad9334`,
 [original model/history with complete native batches, clipped preedit and bounded context](editor-native-ime-report.md).
 Three profiles pass39 tests and171 native captures; default original models

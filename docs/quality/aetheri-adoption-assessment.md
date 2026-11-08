@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Original Editor accessible-model prerequisite (2026-11-08)
+
+Consumer `e6cd1d0b61b451589b7708f402e95fef534267f8` supplies scalar reads,
+original atomic replacements and preflight of both selection endpoints without
+a second document buffer. Three profiles pass42 tests and retain171 full native
+IME/edit/save/window captures; default original models pass11 tests and two
+compiled functional defects are detected. See [83 checked inputs,19 generated C
+replays,541 artifacts and the native-provider boundary](editor-accessible-model-report.md).
+This is a model prerequisite; native document accessibility publication, request
+completion/events/geometry and an independent assistive client remain open.
+SDK/API/version and active Aetheri source/pin/default are unchanged. Earlier
+Software AT-SPI instability, all103 IDs, remaining packet6/packets7–8 and final
+physical/human/design/performance/adoption gates persist.
+
 ## Original Editor native document IME (2026-11-08)
 
 Consumer `52d59e45c67b59c10b05b9c51bb8015b00ad9334` composes complete native
