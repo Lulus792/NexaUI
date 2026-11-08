@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/T04/P04/P05/Q02/Q03/Q06/Q08: consumer
+`33511dade22194f10ec8399460fe93d51f1decf6` adds an optional, generated atomic
+replacement seam into the original Editor model. It retains the original
+preflight/gap-buffer/history and ordinary grapheme policy, checks all six
+direct-input token fields and records native byte-range replacement as one undo
+group. Three profiles pass36 model tests, the default original path passes11,
+and three full native Editor regressions retain90 checked captures. Two compiled
+model defects are rejected;72 source inputs and431 artifact records are bound.
+See [atomic model prerequisite and precise remaining native work](editor-ime-model-report.md).
+Document BEGIN/END assembly, preedit/surrounding/candidate publication and editable
+accessibility remain open; this option alone does not enable document IME.
+
 W01/W03/W04/B03/B04/T01/I01/I05/P04/P05/Q02/Q03/Q04/Q06/Q08:
 `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee` supplies a separately generated,
 installed SDK0.1.27 consumer of original Editor7bbe704. Three profiles each

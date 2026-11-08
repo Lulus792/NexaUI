@@ -1,5 +1,16 @@
 # Aetheri adoption: initial source assessment
 
+## Original Editor atomic IME model prerequisite (2026-11-08)
+
+Consumer `33511dade22194f10ec8399460fe93d51f1decf6` adds a correlated atomic
+replacement into the separately generated original model. It reuses the original
+document engine and history, with36 ON-profile tests,11 default-model tests,
+three complete native Editor regressions and two rejected compiled defects.
+The native regressions preserve existing editing/save/window behavior; they do
+not exercise document IME. Complete native transaction admission, transient
+preedit, surrounding/candidate geometry, editable accessibility and ordinary
+adoption remain open. [Exact sources, tests, archives and next work](editor-ime-model-report.md).
+
 ## Installed original Editor native-close workflow (2026-11-08)
 
 Consumer `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee` composes original

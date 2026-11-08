@@ -1,5 +1,10 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor model: consumer `33511dade22194f10ec8399460fe93d51f1decf6`,
+[atomic original-model IME prerequisite with rollback/undo and native regressions](editor-ime-model-report.md).
+Native document transaction assembly, preedit/surrounding/candidate publication
+and editable accessibility remain open; this option alone does not enable IME.
+
 Original Editor lifecycle: consumer `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee`,
 [installed original models/dialogs/save with repeated native close and retained-window management](editor-close-report.md).
 Three profiles pass33 original regression groups and three full native tasks

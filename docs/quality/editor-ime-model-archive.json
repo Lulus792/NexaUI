@@ -1,0 +1,57 @@
+{
+  "archives": [
+    {
+      "sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+      "files": 1050,
+      "links": 7,
+      "directories": 815,
+      "verified": true,
+      "name": "nexaui-editor-ime-model-20261108.tar.gz",
+      "size": 14398030,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "d39d0820a3b4ac079c0b571f9dd8bdabd0388b2ba8b99818f11d68841472c45f",
+      "files": 23,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-ime-model-evidence-20261108.tar.gz",
+      "size": 250700,
+      "scope": "Host-side provenance/archive verification drivers and seven complete successful SDK CI job logs. Windows modes are WSL view, not ACLs. Uncommitted later batch-collector work is excluded."
+    }
+  ],
+  "reused_archives": [
+    {
+      "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+      "files": 1585,
+      "links": 4,
+      "directories": 1200,
+      "verified": true,
+      "name": "nexaui-close-sdk-20261108.tar.gz",
+      "size": 36277344,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+      "files": 2402,
+      "links": 10,
+      "directories": 1536,
+      "verified": true,
+      "name": "nexaui-editor-close-full-20261108.tar.gz",
+      "size": 22843970,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    }
+  ],
+  "artifact_files_bound": 431,
+  "new_archive_artifacts": 428,
+  "resolved_archive_links": [
+    {
+      "artifact": "editor-ime-default-10-release/editor-files-KSBgLN/link",
+      "link_target": "new",
+      "archived_target": "editor-ime-default-10-release/editor-files-KSBgLN/new"
+    }
+  ],
+  "reused_sdk_libraries": 3,
+  "scope": "Full new archive member/mode/hash/directory/link verification. One default original-test fixture link is separately bound to its recorded internal target bytes. Reused SDK libraries are individually hash-bound in the prior verified SDK archive; producer7 and fonts retain the prior Editor archive/source bindings. Local evidence archives, not GitHub release assets. No retirement performed."
+}

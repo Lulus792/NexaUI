@@ -1,0 +1,28 @@
+{
+  "result": "passed",
+  "source_revision": "33511dade22194f10ec8399460fe93d51f1decf6",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "sdk_source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "model_profiles": 3,
+  "model_ctests": 36,
+  "default_original_ctests": 11,
+  "skips": 0,
+  "consumer_c17_objects": 78,
+  "default_original_c17_objects": 25,
+  "functional_mutants_detected": 2,
+  "full_native_regression_tasks": 3,
+  "decoded_native_captures": 90,
+  "artifact_files_bound": 431,
+  "repo_inputs": 19,
+  "original_inputs": 53,
+  "scope": "T03/T04 prerequisite: atomic original-model seam only. Native tasks prove retained original editing/save/window regressions, not document IME integration.",
+  "remaining": [
+    "Native canvas BEGIN/END assembly, context and stale/interruption admission",
+    "Transient preedit and logical candidate rectangle after scroll/font/scale",
+    "Bounded surrounding-text publication and same-epoch queued commits",
+    "Document editable accessibility and independent assistive clients",
+    "Normal Aetheri owner/pin adoption; packet6/packets7-8 and full103-ID quality scope",
+    "Physical/human/installed-IME/performance acceptance; earlier Software AT-SPI finding"
+  ]
+}
