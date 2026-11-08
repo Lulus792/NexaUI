@@ -1,0 +1,192 @@
+{
+  "source_revision": "713c26ee3db9c9fd3da61370bd290d54732b29ef",
+  "sha256": "4afe31983fe92863b9bc196667180cba0947fc8acd58a93a6dc35b32eabdda54",
+  "files": 6480,
+  "links": 59,
+  "directories": 3079,
+  "verified": true,
+  "name": "nexaui-files-paste-20261108.tar.gz",
+  "size": 69965895,
+  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+  "supporting_archives": [
+    {
+      "sha256": "54cfa23d4c37d1d9ae2f0ab4e6637d293b3f23a4f59c1c875aadd5c64a7ca94a",
+      "files": 2063,
+      "links": 4,
+      "directories": 1220,
+      "verified": true,
+      "name": "nexaui-files-paste-sdk-20261108.tar.gz",
+      "size": 54895466,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+      "scope": "All three actual new glibc AT-SPI SDK build trees,23 CTests each and installed probes before retirement"
+    },
+    {
+      "source_revision": "2aaa7aa151471193fd7e15452d2033ed97e3fd8d",
+      "sha256": "6554d0557ef00bd78210b2bcbfbe5a60a63a1e2efae018c0c6357e5d14306f48",
+      "files": 5864,
+      "links": 59,
+      "directories": 3097,
+      "verified": true,
+      "name": "nexaui-files-appearance-20261108.tar.gz",
+      "size": 59344931,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+      "supporting_archives": [
+        {
+          "source_revision": "da18553a912cd1972cbcf536491ab60b3cc2d359",
+          "sha256": "11f4f73f0f3231d0de6d5cf556e1a04e40d53db86a4a80de5f9d2bf4b2deeac9",
+          "files": 5041,
+          "links": 54,
+          "directories": 2580,
+          "verified": true,
+          "name": "nexaui-files-clipboard-20261108.tar.gz",
+          "size": 46538032,
+          "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+          "supporting_archives": [
+            {
+              "sha256": "5a9606a36624bd8e7722618802c75bc1aa44a0bde257e02c8e2021efee7c3c2b",
+              "files": 3904,
+              "links": 29,
+              "directories": 3075,
+              "verified": true,
+              "name": "nexaui-files-clipboard-before-wake-20261108.tar.gz",
+              "size": 54770034,
+              "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+              "scope": "All snapshot13 compiled objects, C17 commands, caches, 3x24 tests and retired prototype outputs"
+            },
+            {
+              "name": "nexaui-recovery-clipboard-20261107.tar.gz",
+              "size": 21745599,
+              "sha256": "9fbec408e074b0904847a4ffdf1d3cdf3801772ee5185eebda4959a2c2aca10e",
+              "files": 2340,
+              "links": 6,
+              "directories": 421,
+              "excluded_special": [],
+              "path": "D:/NexaUI/out/nexaui-recovery-clipboard-20261107.tar.gz",
+              "source_revision": "0ddad5ea1a09a480abfef7f1c44077bd2a82b162",
+              "host_revision": "38210e00ea34fe9611ac01145f05a4828d852bf7",
+              "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+              "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally.",
+              "scope": "Accepted five-file independent wl-clipboard tool/runtime provenance"
+            },
+            {
+              "source_revision": "0a1f806c2de57ca864b59369f9aefd94cbe8038e",
+              "sha256": "d60e90e67e58e5ebc480f6e5658b8b6a500ba8210cdf1ca14c0ce6339620943a",
+              "files": 3262,
+              "links": 19,
+              "directories": 2173,
+              "verified": true,
+              "name": "nexaui-files-ime-atomic-20261108.tar.gz",
+              "size": 50190165,
+              "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+              "supporting_archives": [
+                {
+                  "sha256": "84d188bf2391b8e59d9c9bf93c0bb5eb379fc220f4e8549d29af29bf40707d0b",
+                  "files": 2791,
+                  "links": 27,
+                  "directories": 2852,
+                  "verified": true,
+                  "name": "nexaui-files-atomic-atspi-sdk-20261108.tar.gz",
+                  "size": 68993013,
+                  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+                  "scope": "Accepted glibc SDK builds, final AT-SPI runtime probe and 3x16 affected SDK CTests"
+                },
+                {
+                  "sha256": "bd1dfb67587b7626e871f6fc4a974449976078bd859c09c58e18b128cb5893f4",
+                  "files": 2722,
+                  "links": 23,
+                  "directories": 2683,
+                  "verified": true,
+                  "name": "nexaui-files-atomic-pre-atspi-20261108.tar.gz",
+                  "size": 65960145,
+                  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+                  "scope": "Initial SDK without AT-SPI and preserved failed admission"
+                },
+                {
+                  "sha256": "bc7ce3c7bfdafef6334f339dc15e9af99fd7a58ff728958333990799d2a2e2ef",
+                  "files": 3095,
+                  "links": 40,
+                  "directories": 2856,
+                  "verified": true,
+                  "name": "nexaui-files-atomic-before-recovery-20261108.tar.gz",
+                  "size": 45899483,
+                  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+                  "scope": "Preserved earlier consumer builds/native successes and actual missing-END negative"
+                },
+                {
+                  "name": "nexaui-files-ime-20261108.tar.gz",
+                  "size": 79553744,
+                  "sha256": "120b11b9d0306ca0dfc04196719485e055584734b0cbe13a0b4fbd42d3a5d045",
+                  "files": 4605,
+                  "links": 95,
+                  "directories": 5859,
+                  "excluded_special": [
+                    "files-ime-1-asan/editor-files-gI6yq6/fifo",
+                    "files-ime-1-asan/files-launch-5GBxBd/release",
+                    "files-ime-1-asan/files-model-hsNNLZ/pipe",
+                    "files-ime-1-release/editor-files-AX9PTr/fifo",
+                    "files-ime-1-release/files-launch-Z0MHBc/release",
+                    "files-ime-1-release/files-model-xn23nv/pipe",
+                    "files-ime-1-shared/editor-files-MdSCck/fifo",
+                    "files-ime-1-shared/files-launch-414vXz/release",
+                    "files-ime-1-shared/files-model-ifadZO/pipe",
+                    "files-ime-2-asan/editor-files-8RdfwW/fifo",
+                    "files-ime-2-asan/files-launch-nX4yLj/release",
+                    "files-ime-2-asan/files-model-Wa23Ee/pipe",
+                    "files-ime-2-release/editor-files-LF0Ctr/fifo",
+                    "files-ime-2-release/files-launch-rYm7b1/release",
+                    "files-ime-2-release/files-model-e1WnYW/pipe",
+                    "files-ime-2-shared/editor-files-AmgPdG/fifo",
+                    "files-ime-2-shared/files-launch-2m1azk/release",
+                    "files-ime-2-shared/files-model-JWzTeG/pipe",
+                    "files-ime-3-asan/editor-files-Wvqvv5/fifo",
+                    "files-ime-3-asan/files-launch-DgTfyi/release",
+                    "files-ime-3-asan/files-model-ydgkdH/pipe",
+                    "files-ime-3-release/editor-files-zhDZgo/fifo",
+                    "files-ime-3-release/files-launch-Yx9HBH/release",
+                    "files-ime-3-release/files-model-7GZhAo/pipe",
+                    "files-ime-3-shared/editor-files-tbS19u/fifo",
+                    "files-ime-3-shared/files-launch-a9Qh70/release",
+                    "files-ime-3-shared/files-model-ilnXpH/pipe",
+                    "files-ime-4-asan/editor-files-horcLj/fifo",
+                    "files-ime-4-asan/files-launch-y83F3a/release",
+                    "files-ime-4-asan/files-model-AWX26J/pipe",
+                    "files-ime-4-release/editor-files-hSF0J9/fifo",
+                    "files-ime-4-release/files-launch-0n2Hz5/release",
+                    "files-ime-4-release/files-model-NtMoQK/pipe",
+                    "files-ime-4-shared/editor-files-t9tO5R/fifo",
+                    "files-ime-4-shared/files-launch-NhS4zx/release",
+                    "files-ime-4-shared/files-model-S6qF1l/pipe"
+                  ],
+                  "host_verification": {
+                    "all_file_bytes_sizes_modes_links_directories": true,
+                    "verified_files": 4605,
+                    "verified_links": 95,
+                    "verified_directories": 5859
+                  },
+                  "paired_sdk": {
+                    "name": "nexaui-recovery-root-v11-20261108.tar.gz",
+                    "sha256": "3abbf006b52920dce903f8ea11c1c895cc22b81fa549f90c27f74aa1e2e4da28"
+                  },
+                  "scope": "Prior 0.1.23 Files checkpoint and archived obsolete build copies"
+                },
+                {
+                  "name": "nexaui-recovery-root-v11-20261108.tar.gz",
+                  "size": 40176766,
+                  "sha256": "3abbf006b52920dce903f8ea11c1c895cc22b81fa549f90c27f74aa1e2e4da28",
+                  "files": 2217,
+                  "links": 2,
+                  "directories": 674,
+                  "excluded_special": [],
+                  "scope": "Prior paired installed 0.1.23 SDK artifacts"
+                }
+              ],
+              "scope": "Previous accepted Files/SDK/source checkpoint and its supporting archives"
+            }
+          ],
+          "scope": "Previous accepted clipboard checkpoint, retired old generated sources/build objects and supporting archives"
+        }
+      ],
+      "scope": "Previous accepted generated app view, retired old build/source copies, font and historical archive lineage"
+    }
+  ]
+}

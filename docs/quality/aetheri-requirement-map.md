@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/B04/T01/T03/I05/A02/A04/P04/P05/Q02/Q03/Q06/Q08: Files consumer
+`713c26ee3db9c9fd3da61370bd290d54732b29ef` adopts the existing0.1.26 paste
+validator with original whole-draft rules. Three profiles pass27/27 CTests
+(28 new component cases each),326 native checkpoints and five startup refusals
+each. Retained reversed selection, independent AT-SPI rejection and query policy
+have native evidence; exact retained history has separate component evidence.
+All21 non-README inputs bind to Git; three compiled preceding-view failure controls
+and180 final virtual captures are retained. See [source and limits](files-paste-report.md).
+The original rejection barrier/explicit clear policy remains; broader clipboard,
+remaining packet6, packets7-8 and final gates stay open across103 IDs. Active
+Aetheri, its reviewed pin and the default original0.1.23 consumer are unchanged.
+
 B03/B04/T03/I05/A04/P04/P05/Q02/Q03/Q06/Q08: SDK
 `794be7cec49f427fcc56e2604cddb44245347021`/0.1.26 adds opt-in whole-splice
 paste admission through `nx_text_field_set_paste_validator`. Three profiles pass

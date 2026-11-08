@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Files whole-proposal paste admission (2026-11-08)
+
+Consumer `713c26ee3db9c9fd3da61370bd290d54732b29ef` requires SDK0.1.26 and
+reuses its paste validator before changing original Files drafts. Three profiles
+pass27/27 CTests and326 native checkpoints each;28 component cases prove retained
+history and selection, while independent native clients prove reversed-selection
+retention, explicit assistive rejection and query validation. Three preceding-view
+controls fail on the intended old selection/history behavior. See [exact source,
+artifacts, original barrier policy and limits](files-paste-report.md).
+The default original0.1.23 consumer and Aetheri's separate source/pin remain
+unchanged. Normal Files migration, broader clipboard/provider/font acceptance,
+remaining packet6, packets7-8 and final physical/human/performance/adoption gates
+remain active across all103 catalogue IDs. No1.0 release is declared.
+
 ## Paste admission before editor mutation (2026-11-08)
 
 SDK `794be7cec49f427fcc56e2604cddb44245347021`/0.1.26 supplies the optional

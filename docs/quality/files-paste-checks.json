@@ -1,0 +1,38 @@
+{
+  "source_revision": "713c26ee3db9c9fd3da61370bd290d54732b29ef",
+  "result": "passed",
+  "final_archive_sha256": "4afe31983fe92863b9bc196667180cba0947fc8acd58a93a6dc35b32eabdda54",
+  "artifact_rows": 65,
+  "git_bound_non_readme_inputs": 21,
+  "sdk_source_files": 1434,
+  "sdk_ctests_each": 23,
+  "consumer_ctests_each": 27,
+  "c17_werror_objects_each": 50,
+  "paste_component_cases_each": 28,
+  "native_checkpoints_each": 326,
+  "native_clipboard_observations_each": 28,
+  "native_font_refusals_each": 5,
+  "final_virtual_captures": 180,
+  "nonuniform_capture_groups": 60,
+  "lossless_pngs": 4,
+  "visually_inspected": [
+    "capture-9-output-1.png",
+    "capture-10-output-1.png",
+    "capture-12-output-1.png"
+  ],
+  "original_git_inputs": 104,
+  "foreign_tool_files": 5,
+  "component_before_run_exits": [
+    1,
+    1
+  ],
+  "native_before_exit": 1,
+  "old_package_refusal_exit": 1,
+  "all_103_requirement_rows_unchanged": true,
+  "limits": [
+    "Original rejection barrier remains; history observed by a separate public-widget component probe",
+    "Explicit clear and other defensive rollbacks retain their original history-reset policy",
+    "32MiB/5s native keyboard transport unchanged; no full budget/pressure/deadline or transport-error feedback acceptance",
+    "No active Aetheri build/repin/normal migration or physical/human/performance/three-output acceptance"
+  ]
+}

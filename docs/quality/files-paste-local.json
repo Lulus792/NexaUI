@@ -1,0 +1,2658 @@
+{
+  "source_revision": "713c26ee3db9c9fd3da61370bd290d54732b29ef",
+  "input": {
+    "archive": "files-atomic-input-24.tar.gz",
+    "sha256": "5ce84f77b239f47540e7e2bc6a8e3bf3ee926a9910e0b8b618c4e7649abecafe",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "3d7ac615aa15d3e4897bd73df098e817e7ef4a07b0bceb206695d63e79c3a9e5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 13274,
+        "sha256": "5919e6390099c2fa2858678ae983afb8e713ff2de8042534263e230639e81258"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance-font-inputs.json",
+        "size": 795,
+        "sha256": "d4dd644d502307dbd6d004e4a3159a685961dea636a9abc8ce36a1685024f259"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance.inc",
+        "size": 1007,
+        "sha256": "f8f9d0d259bb2b70acd724f7ffa168a6c8043a4aa05c85c4948ffa481a1936fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance_test.c",
+        "size": 5823,
+        "sha256": "487efaa2897049fa63cd8f6784701a116a569e9910eefe9d426ded72f43b4413"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 12153,
+        "sha256": "e87fb2cc8279c3f4e53b1c52fe9c5e19f67cc3ce504448d8fcb638d1a911e3da"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 4484,
+        "sha256": "fb74bcaf8005ea576f9318d358ea30d527996a45d84fd6aae867fc424567f36a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 4632,
+        "sha256": "2448596351f5d763057e7cd23e81910b5b2fe64a53d21a2830720700513b2730"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/paste_admission.inc",
+        "size": 1279,
+        "sha256": "8c3aea6b0d07bffbfc7d06777ea1157e3cc2bcb4c5a109ab0f5dda932dbbca0f"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/paste_admission_test.c",
+        "size": 6777,
+        "sha256": "777aae8719d56bb6c65b4b4cbcafe6fe2c1e696fd8b8d70a57bfa74dd47e983e"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 14157,
+        "sha256": "87e1dc121381b041e12a5c40ec9fed18f6f0a64ae2053055fe490ac29641845d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 21115,
+        "sha256": "158330a937cb4c62cc288fd9d0d58a0de715b733855c35bbee21c0e0eed60d72"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "compiled_input": {
+    "archive": "files-atomic-input-23.tar.gz",
+    "sha256": "3af0211cd572f60be81c99d53ce5afb1193c5a3ea169dd6c314f1e95ce2aa0b5",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "3d7ac615aa15d3e4897bd73df098e817e7ef4a07b0bceb206695d63e79c3a9e5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 13274,
+        "sha256": "5919e6390099c2fa2858678ae983afb8e713ff2de8042534263e230639e81258"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance-font-inputs.json",
+        "size": 795,
+        "sha256": "d4dd644d502307dbd6d004e4a3159a685961dea636a9abc8ce36a1685024f259"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance.inc",
+        "size": 1007,
+        "sha256": "f8f9d0d259bb2b70acd724f7ffa168a6c8043a4aa05c85c4948ffa481a1936fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/appearance_test.c",
+        "size": 5823,
+        "sha256": "487efaa2897049fa63cd8f6784701a116a569e9910eefe9d426ded72f43b4413"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 9496,
+        "sha256": "6bb491e7990d988058a95461137495c01659f01e000d386676e1a5b184e98564"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 4103,
+        "sha256": "391fdc43861f3e0ac237ae74a8b4af3aafd90191a6b5208672594a9293115f01"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 4632,
+        "sha256": "2448596351f5d763057e7cd23e81910b5b2fe64a53d21a2830720700513b2730"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/paste_admission.inc",
+        "size": 1279,
+        "sha256": "8c3aea6b0d07bffbfc7d06777ea1157e3cc2bcb4c5a109ab0f5dda932dbbca0f"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/paste_admission_test.c",
+        "size": 6777,
+        "sha256": "777aae8719d56bb6c65b4b4cbcafe6fe2c1e696fd8b8d70a57bfa74dd47e983e"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 14157,
+        "sha256": "87e1dc121381b041e12a5c40ec9fed18f6f0a64ae2053055fe490ac29641845d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 21115,
+        "sha256": "158330a937cb4c62cc288fd9d0d58a0de715b733855c35bbee21c0e0eed60d72"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "build_commands": [
+    {
+      "profile": "shared",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-23/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_TEST_FALLBACK_FONT=/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-shared-configure.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-shared-build.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-shared-test.log"
+    },
+    {
+      "profile": "release",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-23/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_TEST_FALLBACK_FONT=/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-release-configure.log"
+    },
+    {
+      "profile": "release",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-release-build.log"
+    },
+    {
+      "profile": "release",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-release-test.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-23/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_TEST_FALLBACK_FONT=/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-asan-configure.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-asan-build.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-23-asan-test.log"
+    }
+  ],
+  "native_commands": [
+    {
+      "profile": "shared",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-24/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared",
+        "--original",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "--atspi-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-atspi-fixture",
+        "--sdk-input",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-input.json",
+        "--expected-sdk-revision",
+        "794be7cec49f427fcc56e2604cddb44245347021",
+        "--linkage",
+        "shared",
+        "--server",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-1/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared",
+        "--transactions",
+        "--clipboard-tools",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "--font-errors"
+      ],
+      "log": "files-paste-native-shared.log",
+      "exit": 0
+    },
+    {
+      "profile": "release",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-24/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release",
+        "--original",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "--atspi-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-atspi-fixture",
+        "--sdk-input",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-input.json",
+        "--expected-sdk-revision",
+        "794be7cec49f427fcc56e2604cddb44245347021",
+        "--linkage",
+        "static",
+        "--server",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-1/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release",
+        "--transactions",
+        "--clipboard-tools",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "--font-errors"
+      ],
+      "log": "files-paste-native-release.log",
+      "exit": 0
+    },
+    {
+      "profile": "asan",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-24/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan",
+        "--original",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "--atspi-fixture",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-atspi-fixture",
+        "--sdk-input",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-input.json",
+        "--expected-sdk-revision",
+        "794be7cec49f427fcc56e2604cddb44245347021",
+        "--linkage",
+        "static",
+        "--server",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-1/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan",
+        "--transactions",
+        "--clipboard-tools",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+        "--font-errors"
+      ],
+      "log": "files-paste-native-asan.log",
+      "exit": 0
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "shared",
+      "ctests": 27,
+      "c17_werror_objects": 50,
+      "paste_component_cases": 28,
+      "caption_cases": 96,
+      "checks": 326,
+      "images": 60,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Rejected native keyboard paste preserves reversed Unicode selection and blocks confirmation",
+        {
+          "foreign_read_exit": 0,
+          "length": 3,
+          "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Independent AT-SPI Paste reports rejection while original draft and caret remain unchanged",
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7ffdffa376b0",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7ffdffa37628",
+            "0x7fb69ce308f3"
+          ],
+          "sockets": {
+            "3": "socket:[4514205]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "8763bbe32f1aef6629ca15f0dfeaaa8f999d90651f14babd59b1ba60a6bf76ac"
+        },
+        "Original query validation rejects control characters without changing text or reversed selection",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "font_startup_checks": [
+        {
+          "case": "missing-option",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "excess",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "missing-file",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/absent-font.ttf"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "oversized",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/oversized-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "malformed",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/invalid-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "[06:18:39.244027] {Default Queue}  -> wl_display#1.get_registry(new id wl_registry#2)\n[06:18:39.244069] {Default Queue}  -> wl_display#1.sync(new id wl_callback#3)\n[06:18:39.244219] {Display Queue} wl_display#1.delete_id(3)\n[06:18:39.244250] {Default Queue} wl_registry#2.global(1, \"wl_shm\", 2)\n[06:18:39.244257] {Default Queue}  -> wl_registry#2.bind(1, \"wl_shm\", 1, new id [unknown]#4)\n[06:18:39.244260] {Default Queue} wl_registry#2.global(2, \"wl_compositor\", 6)\n[06:18:39.244263] {Default Queue}  -> wl_registry#2.bind(2, \"wl_compositor\", 4, new id [unknown]#5)\n[06:18:39.244265] {Default Queue} wl_registry#2.global(3, \"wl_subcompositor\", 1)\n[06:18:39.244268] {Default Queue} wl_registry#2.global(4, \"wl_data_device_manager\", 3)\n[06:18:39.244271] {Default Queue}  -> wl_registry#2.bind(4, \"wl_data_device_manager\", 3, new id [unknown]#6)\n[06:18:39.244273] {Default Queue} wl_registry#2.global(5, \"wp_viewporter\", 1)\n[06:18:39.244276] {Default Queue}  -> wl_registry#2.bind(5, \"wp_viewporter\", 1, new id [unknown]#7)\n[06:18:39.244278] {Default Queue} wl_registry#2.global(6, \"wl_seat\", 9)\n[06:18:39.244281] {Default Queue}  -> wl_registry#2.bind(6, \"wl_seat\", 5, new id [unknown]#8)\n[06:18:39.244283] {Default Queue} wl_registry#2.global(7, \"wl_output\", 4)\n[06:18:39.244289] {Default Queue}  -> wl_registry#2.bind(7, \"wl_output\", 4, new id [unknown]#9)\n[06:18:39.244295] {Default Queue} wl_registry#2.global(8, \"wl_output\", 4)\n[06:18:39.244297] {Default Queue}  -> wl_registry#2.bind(8, \"wl_output\", 4, new id [unknown]#10)\n[06:18:39.244300] {Default Queue} wl_registry#2.global(9, \"wl_output\", 4)\n[06:18:39.244302] {Default Queue}  -> wl_registry#2.bind(9, \"wl_output\", 4, new id [unknown]#11)\n[06:18:39.244305] {Default Queue} wl_registry#2.global(10, \"xdg_wm_base\", 5)\n[06:18:39.244307] {Default Queue}  -> wl_registry#2.bind(10, \"xdg_wm_base\", 5, new id [unknown]#12)\n[06:18:39.244310] {Default Queue} wl_registry#2.global(11, \"zwp_text_input_manager_v3\", 1)\n[06:18:39.244312] {Default Queue}  -> wl_registry#2.bind(11, \"zwp_text_input_manager_v3\", 1, new id [unknown]#13)\n[06:18:39.244314] {Default Queue} wl_callback#3.done(0)\n[06:18:39.244318] {Default Queue}  -> wl_data_device_manager#6.get_data_device(new id wl_data_device#3, wl_seat#8)\n[06:18:39.244320] {Default Queue}  -> wl_compositor#5.create_surface(new id wl_surface#14)\n[06:18:39.244323] {Default Queue}  -> zwp_text_input_manager_v3#13.get_text_input(new id zwp_text_input_v3#15, wl_seat#8)\n[06:18:39.244328] {Default Queue}  -> xdg_wm_base#12.get_xdg_surface(new id xdg_surface#16, wl_surface#14)\n[06:18:39.244331] {Default Queue}  -> xdg_surface#16.get_toplevel(new id xdg_toplevel#17)\n[06:18:39.244333] {Default Queue}  -> xdg_toplevel#17.set_title(\"Aetheri Files\")\n[06:18:39.244336] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"nexaui\")\n[06:18:39.244338] {Default Queue}  -> wl_surface#14.commit()\n[06:18:39.244343] {Default Queue}  -> wl_display#1.sync(new id wl_callback#18)\n[06:18:39.244797] {Display Queue} wl_display#1.delete_id(18)\n[06:18:39.244931] {Default Queue} discarded wl_shm#4.format(0)\n[06:18:39.244936] {Default Queue} discarded wl_shm#4.format(875709016)\n[06:18:39.244940] {Default Queue} discarded wl_shm#4.format(1)\n[06:18:39.244943] {Default Queue} discarded wl_shm#4.format(875708993)\n[06:18:39.244946] {Default Queue} discarded wl_shm#4.format(875708754)\n[06:18:39.244949] {Default Queue} discarded wl_shm#4.format(875714642)\n[06:18:39.244952] {Default Queue} discarded wl_shm#4.format(875708738)\n[06:18:39.244955] {Default Queue} discarded wl_shm#4.format(875714626)\n[06:18:39.244958] {Default Queue} discarded wl_shm#4.format(909199186)\n[06:18:39.244961] {Default Queue} discarded wl_shm#4.format(909199170)\n[06:18:39.244964] {Default Queue} discarded wl_shm#4.format(808669761)\n[06:18:39.244967] {Default Queue} discarded wl_shm#4.format(808669784)\n[06:18:39.244970] {Default Queue} discarded wl_shm#4.format(808665665)\n[06:18:39.244973] {Default Queue} discarded wl_shm#4.format(808665688)\n[06:18:39.244976] {Default Queue} discarded wl_shm#4.format(942948929)\n[06:18:39.244979] {Default Queue} wl_seat#8.name(\"seat0\")\n[06:18:39.244984] {Default Queue} wl_seat#8.capabilities(3)\n[06:18:39.244991] {Default Queue}  -> wl_seat#8.get_pointer(new id wl_pointer#19)\n[06:18:39.245001] {Default Queue}  -> wl_seat#8.get_keyboard(new id wl_keyboard#20)\n[06:18:39.245030] {Default Queue} wl_output#9.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:18:39.245038] {Default Queue} wl_output#9.mode(1, 1920, 1080, 60000)\n[06:18:39.245043] {Default Queue} wl_output#9.scale(1)\n[06:18:39.245047] {Default Queue} wl_output#9.name(\"HEADLESS-1\")\n[06:18:39.245054] {Default Queue} wl_output#9.description(\"Headless output 1\")\n[06:18:39.245061] {Default Queue} wl_output#9.done()\n[06:18:39.245065] {Default Queue} wl_output#10.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:18:39.245070] {Default Queue} wl_output#10.mode(1, 2560, 1440, 60000)\n[06:18:39.245074] {Default Queue} wl_output#10.scale(1)\n[06:18:39.245077] {Default Queue} wl_output#10.name(\"HEADLESS-2\")\n[06:18:39.245082] {Default Queue} wl_output#10.description(\"Headless output 2\")\n[06:18:39.245089] {Default Queue} wl_output#10.done()\n[06:18:39.245093] {Default Queue} wl_output#11.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:18:39.245125] {Default Queue} wl_output#11.mode(1, 3840, 2160, 60000)\n[06:18:39.245130] {Default Queue} wl_output#11.scale(1)\n[06:18:39.245133] {Default Queue} wl_output#11.name(\"HEADLESS-3\")\n[06:18:39.245136] {Default Queue} wl_output#11.description(\"Headless output 3\")\n[06:18:39.245139] {Default Queue} wl_output#11.done()\n[06:18:39.245142] {Default Queue} wl_callback#18.done(1)\n[06:18:39.245146] {Default Queue} xdg_toplevel#17.configure_bounds(1840, 1000)\n[06:18:39.245155] {Default Queue} xdg_toplevel#17.wm_capabilities(array[8])\n[06:18:39.245164] {Default Queue} xdg_toplevel#17.configure(0, 0, array[0])\n[06:18:39.245168] {Default Queue} xdg_surface#16.configure(1)\n[06:18:39.245171] {Default Queue}  -> xdg_surface#16.ack_configure(1)\n[06:18:39.245174] {Default Queue}  -> xdg_surface#16.set_window_geometry(0, 0, 1000, 680)\n[06:18:39.247656] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#18, fd 8, 2720000)\n[06:18:39.247693] {Default Queue}  -> wl_shm_pool#18.create_buffer(new id wl_buffer#21, 0, 1000, 680, 4000, 1)\n[06:18:39.247698] {Default Queue}  -> wl_shm_pool#18.destroy()\n[06:18:39.248920] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:18:39.248950] {Default Queue}  -> wl_surface#14.attach(wl_buffer#21, 0, 0)\n[06:18:39.248955] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:18:39.248957] {Default Queue}  -> wl_surface#14.commit()\n[06:18:39.248966] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"org.aetheri.Files\")\nfiles: fallback font is unsupported or invalid\n[06:18:39.251504] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#22, fd 8, 2720000)\n[06:18:39.251551] {Default Queue}  -> wl_shm_pool#22.create_buffer(new id wl_buffer#23, 0, 1000, 680, 4000, 1)\n[06:18:39.251560] {Default Queue}  -> wl_shm_pool#22.destroy()\n[06:18:39.252820] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:18:39.252849] {Default Queue}  -> wl_surface#14.attach(wl_buffer#23, 0, 0)\n[06:18:39.252853] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:18:39.252855] {Default Queue}  -> wl_surface#14.commit()\n[06:18:39.253142] {Default Queue}  -> wl_buffer#23.destroy()\n[06:18:39.253286] {Default Queue}  -> wl_buffer#21.destroy()\n[06:18:39.253422] {Default Queue}  -> xdg_toplevel#17.destroy()\n[06:18:39.253448] {Default Queue}  -> xdg_surface#16.destroy()\n[06:18:39.253452] {Default Queue}  -> zwp_text_input_v3#15.destroy()\n[06:18:39.253455] {Default Queue}  -> zwp_text_input_manager_v3#13.destroy()\n[06:18:39.253457] {Default Queue}  -> wp_viewporter#7.destroy()\n[06:18:39.253459] {Default Queue}  -> wl_surface#14.destroy()\n[06:18:39.253461] {Default Queue}  -> xdg_wm_base#12.destroy()\n[06:18:39.253465] {Default Queue}  -> wl_pointer#19.release()\n[06:18:39.253468] {Default Queue}  -> wl_keyboard#20.release()\n[06:18:39.253470] {Default Queue}  -> wl_seat#8.release()\n[06:18:39.253473] {Default Queue}  -> wl_output#11.release()\n[06:18:39.253475] {Default Queue}  -> wl_output#10.release()\n[06:18:39.253477] {Default Queue}  -> wl_output#9.release()\n"
+        }
+      ],
+      "font_inputs": [
+        {
+          "path": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "size": 410712,
+          "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "size": 656852,
+          "sha256": "630846d528dbe4c4981370a4d0a9475a1fd1491a129bb411f8e157cdb5de13c6"
+        }
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-shared/aetheri_files_ime_candidate": "103b78a085650b1bfd40e73cecfaec6fa280baddd839d508dd558475d0e9635a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-shared/peer": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+      },
+      "capture_content": [
+        {
+          "case": "native query preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "query after Escape cancellation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native Unicode query",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native preedit at 200 percent",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native combining preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign Unicode clipboard pasted into original filename",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI clipboard copy cut and paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign replacement and one undo preserve selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected foreign paste retains reversed Unicode selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI reports rejected whole paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected search paste retains reversed selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native deletion and Unicode replacement",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "two native packets keep separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "invalid whole filename retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "atomic deletion avoids intermediate grapheme caret snapping",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "valid first packet retained with rejected second packet",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native name commit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "filtered native commit retains prefix and disables confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "original rename with native packets and separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        }
+      ],
+      "closed_line": "CLOSED files frames=498 failed=0"
+    },
+    {
+      "profile": "release",
+      "ctests": 27,
+      "c17_werror_objects": 50,
+      "paste_component_cases": 28,
+      "caption_cases": 96,
+      "checks": 326,
+      "images": 60,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Rejected native keyboard paste preserves reversed Unicode selection and blocks confirmation",
+        {
+          "foreign_read_exit": 0,
+          "length": 3,
+          "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Independent AT-SPI Paste reports rejection while original draft and caret remain unchanged",
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7fffcf715b10",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7fffcf715a88",
+            "0x7f4c1d91f8f3"
+          ],
+          "sockets": {
+            "3": "socket:[4515070]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "8763bbe32f1aef6629ca15f0dfeaaa8f999d90651f14babd59b1ba60a6bf76ac"
+        },
+        "Original query validation rejects control characters without changing text or reversed selection",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "font_startup_checks": [
+        {
+          "case": "missing-option",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "excess",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "missing-file",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/absent-font.ttf"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "oversized",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/oversized-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "malformed",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/invalid-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "[06:19:03.608118] {Default Queue}  -> wl_display#1.get_registry(new id wl_registry#2)\n[06:19:03.608173] {Default Queue}  -> wl_display#1.sync(new id wl_callback#3)\n[06:19:03.608306] {Display Queue} wl_display#1.delete_id(3)\n[06:19:03.608338] {Default Queue} wl_registry#2.global(1, \"wl_shm\", 2)\n[06:19:03.608353] {Default Queue}  -> wl_registry#2.bind(1, \"wl_shm\", 1, new id [unknown]#4)\n[06:19:03.608367] {Default Queue} wl_registry#2.global(2, \"wl_compositor\", 6)\n[06:19:03.608379] {Default Queue}  -> wl_registry#2.bind(2, \"wl_compositor\", 4, new id [unknown]#5)\n[06:19:03.608391] {Default Queue} wl_registry#2.global(3, \"wl_subcompositor\", 1)\n[06:19:03.608403] {Default Queue} wl_registry#2.global(4, \"wl_data_device_manager\", 3)\n[06:19:03.608414] {Default Queue}  -> wl_registry#2.bind(4, \"wl_data_device_manager\", 3, new id [unknown]#6)\n[06:19:03.608426] {Default Queue} wl_registry#2.global(5, \"wp_viewporter\", 1)\n[06:19:03.608430] {Default Queue}  -> wl_registry#2.bind(5, \"wp_viewporter\", 1, new id [unknown]#7)\n[06:19:03.608433] {Default Queue} wl_registry#2.global(6, \"wl_seat\", 9)\n[06:19:03.608436] {Default Queue}  -> wl_registry#2.bind(6, \"wl_seat\", 5, new id [unknown]#8)\n[06:19:03.608438] {Default Queue} wl_registry#2.global(7, \"wl_output\", 4)\n[06:19:03.608443] {Default Queue}  -> wl_registry#2.bind(7, \"wl_output\", 4, new id [unknown]#9)\n[06:19:03.608446] {Default Queue} wl_registry#2.global(8, \"wl_output\", 4)\n[06:19:03.608448] {Default Queue}  -> wl_registry#2.bind(8, \"wl_output\", 4, new id [unknown]#10)\n[06:19:03.608451] {Default Queue} wl_registry#2.global(9, \"wl_output\", 4)\n[06:19:03.608453] {Default Queue}  -> wl_registry#2.bind(9, \"wl_output\", 4, new id [unknown]#11)\n[06:19:03.608456] {Default Queue} wl_registry#2.global(10, \"xdg_wm_base\", 5)\n[06:19:03.608458] {Default Queue}  -> wl_registry#2.bind(10, \"xdg_wm_base\", 5, new id [unknown]#12)\n[06:19:03.608461] {Default Queue} wl_registry#2.global(11, \"zwp_text_input_manager_v3\", 1)\n[06:19:03.608463] {Default Queue}  -> wl_registry#2.bind(11, \"zwp_text_input_manager_v3\", 1, new id [unknown]#13)\n[06:19:03.608465] {Default Queue} wl_callback#3.done(0)\n[06:19:03.608468] {Default Queue}  -> wl_data_device_manager#6.get_data_device(new id wl_data_device#3, wl_seat#8)\n[06:19:03.608471] {Default Queue}  -> wl_compositor#5.create_surface(new id wl_surface#14)\n[06:19:03.608473] {Default Queue}  -> zwp_text_input_manager_v3#13.get_text_input(new id zwp_text_input_v3#15, wl_seat#8)\n[06:19:03.608476] {Default Queue}  -> xdg_wm_base#12.get_xdg_surface(new id xdg_surface#16, wl_surface#14)\n[06:19:03.608479] {Default Queue}  -> xdg_surface#16.get_toplevel(new id xdg_toplevel#17)\n[06:19:03.608482] {Default Queue}  -> xdg_toplevel#17.set_title(\"Aetheri Files\")\n[06:19:03.608484] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"nexaui\")\n[06:19:03.608486] {Default Queue}  -> wl_surface#14.commit()\n[06:19:03.608488] {Default Queue}  -> wl_display#1.sync(new id wl_callback#18)\n[06:19:03.608730] {Display Queue} wl_display#1.delete_id(18)\n[06:19:03.608783] {Default Queue} discarded wl_shm#4.format(0)\n[06:19:03.608797] {Default Queue} discarded wl_shm#4.format(875709016)\n[06:19:03.608810] {Default Queue} discarded wl_shm#4.format(1)\n[06:19:03.608821] {Default Queue} discarded wl_shm#4.format(875708993)\n[06:19:03.608833] {Default Queue} discarded wl_shm#4.format(875708754)\n[06:19:03.608845] {Default Queue} discarded wl_shm#4.format(875714642)\n[06:19:03.608856] {Default Queue} discarded wl_shm#4.format(875708738)\n[06:19:03.608866] {Default Queue} discarded wl_shm#4.format(875714626)\n[06:19:03.608876] {Default Queue} discarded wl_shm#4.format(909199186)\n[06:19:03.608886] {Default Queue} discarded wl_shm#4.format(909199170)\n[06:19:03.608896] {Default Queue} discarded wl_shm#4.format(808669761)\n[06:19:03.608899] {Default Queue} discarded wl_shm#4.format(808669784)\n[06:19:03.608901] {Default Queue} discarded wl_shm#4.format(808665665)\n[06:19:03.608903] {Default Queue} discarded wl_shm#4.format(808665688)\n[06:19:03.608905] {Default Queue} discarded wl_shm#4.format(942948929)\n[06:19:03.608906] {Default Queue} wl_seat#8.name(\"seat0\")\n[06:19:03.608909] {Default Queue} wl_seat#8.capabilities(3)\n[06:19:03.608913] {Default Queue}  -> wl_seat#8.get_pointer(new id wl_pointer#19)\n[06:19:03.608919] {Default Queue}  -> wl_seat#8.get_keyboard(new id wl_keyboard#20)\n[06:19:03.608922] {Default Queue} wl_output#9.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:03.608926] {Default Queue} wl_output#9.mode(1, 1920, 1080, 60000)\n[06:19:03.608929] {Default Queue} wl_output#9.scale(1)\n[06:19:03.608932] {Default Queue} wl_output#9.name(\"HEADLESS-1\")\n[06:19:03.608939] {Default Queue} wl_output#9.description(\"Headless output 1\")\n[06:19:03.608941] {Default Queue} wl_output#9.done()\n[06:19:03.608944] {Default Queue} wl_output#10.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:03.608947] {Default Queue} wl_output#10.mode(1, 2560, 1440, 60000)\n[06:19:03.608950] {Default Queue} wl_output#10.scale(1)\n[06:19:03.608952] {Default Queue} wl_output#10.name(\"HEADLESS-2\")\n[06:19:03.608954] {Default Queue} wl_output#10.description(\"Headless output 2\")\n[06:19:03.608956] {Default Queue} wl_output#10.done()\n[06:19:03.608958] {Default Queue} wl_output#11.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:03.608961] {Default Queue} wl_output#11.mode(1, 3840, 2160, 60000)\n[06:19:03.608964] {Default Queue} wl_output#11.scale(1)\n[06:19:03.608966] {Default Queue} wl_output#11.name(\"HEADLESS-3\")\n[06:19:03.608968] {Default Queue} wl_output#11.description(\"Headless output 3\")\n[06:19:03.608970] {Default Queue} wl_output#11.done()\n[06:19:03.608972] {Default Queue} wl_callback#18.done(1)\n[06:19:03.608974] {Default Queue} xdg_toplevel#17.configure_bounds(1840, 1000)\n[06:19:03.608976] {Default Queue} xdg_toplevel#17.wm_capabilities(array[8])\n[06:19:03.608979] {Default Queue} xdg_toplevel#17.configure(0, 0, array[0])\n[06:19:03.608982] {Default Queue} xdg_surface#16.configure(1)\n[06:19:03.608984] {Default Queue}  -> xdg_surface#16.ack_configure(1)\n[06:19:03.608987] {Default Queue}  -> xdg_surface#16.set_window_geometry(0, 0, 1000, 680)\n[06:19:03.609751] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#18, fd 8, 2720000)\n[06:19:03.609771] {Default Queue}  -> wl_shm_pool#18.create_buffer(new id wl_buffer#21, 0, 1000, 680, 4000, 1)\n[06:19:03.609784] {Default Queue}  -> wl_shm_pool#18.destroy()\n[06:19:03.610963] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:19:03.611000] {Default Queue}  -> wl_surface#14.attach(wl_buffer#21, 0, 0)\n[06:19:03.611014] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:19:03.611026] {Default Queue}  -> wl_surface#14.commit()\n[06:19:03.611041] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"org.aetheri.Files\")\nfiles: fallback font is unsupported or invalid\n[06:19:03.611987] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#22, fd 8, 2720000)\n[06:19:03.612023] {Default Queue}  -> wl_shm_pool#22.create_buffer(new id wl_buffer#23, 0, 1000, 680, 4000, 1)\n[06:19:03.612039] {Default Queue}  -> wl_shm_pool#22.destroy()\n[06:19:03.613188] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:19:03.613226] {Default Queue}  -> wl_surface#14.attach(wl_buffer#23, 0, 0)\n[06:19:03.613241] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:19:03.613253] {Default Queue}  -> wl_surface#14.commit()\n[06:19:03.613575] {Default Queue}  -> wl_buffer#23.destroy()\n[06:19:03.613703] {Default Queue}  -> wl_buffer#21.destroy()\n[06:19:03.613812] {Default Queue}  -> xdg_toplevel#17.destroy()\n[06:19:03.613828] {Default Queue}  -> xdg_surface#16.destroy()\n[06:19:03.613841] {Default Queue}  -> zwp_text_input_v3#15.destroy()\n[06:19:03.613853] {Default Queue}  -> zwp_text_input_manager_v3#13.destroy()\n[06:19:03.613865] {Default Queue}  -> wp_viewporter#7.destroy()\n[06:19:03.613876] {Default Queue}  -> wl_surface#14.destroy()\n[06:19:03.613888] {Default Queue}  -> xdg_wm_base#12.destroy()\n[06:19:03.613901] {Default Queue}  -> wl_pointer#19.release()\n[06:19:03.613913] {Default Queue}  -> wl_keyboard#20.release()\n[06:19:03.613925] {Default Queue}  -> wl_seat#8.release()\n[06:19:03.613936] {Default Queue}  -> wl_output#11.release()\n[06:19:03.613948] {Default Queue}  -> wl_output#10.release()\n[06:19:03.613960] {Default Queue}  -> wl_output#9.release()\n"
+        }
+      ],
+      "font_inputs": [
+        {
+          "path": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "size": 410712,
+          "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "size": 656852,
+          "sha256": "630846d528dbe4c4981370a4d0a9475a1fd1491a129bb411f8e157cdb5de13c6"
+        }
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-release/aetheri_files_ime_candidate": "f1832bcbb18a278fbd4897254a7f3244d18063d29aef88bc1a33ff43a60a3116",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-release/peer": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+      },
+      "capture_content": [
+        {
+          "case": "native query preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "query after Escape cancellation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native Unicode query",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native preedit at 200 percent",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native combining preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign Unicode clipboard pasted into original filename",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI clipboard copy cut and paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign replacement and one undo preserve selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected foreign paste retains reversed Unicode selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI reports rejected whole paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected search paste retains reversed selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native deletion and Unicode replacement",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "two native packets keep separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "invalid whole filename retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "atomic deletion avoids intermediate grapheme caret snapping",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "valid first packet retained with rejected second packet",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native name commit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "filtered native commit retains prefix and disables confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "original rename with native packets and separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        }
+      ],
+      "closed_line": "CLOSED files frames=486 failed=0"
+    },
+    {
+      "profile": "asan",
+      "ctests": 27,
+      "c17_werror_objects": 50,
+      "paste_component_cases": 28,
+      "caption_cases": 96,
+      "checks": 326,
+      "images": 60,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Rejected native keyboard paste preserves reversed Unicode selection and blocks confirmation",
+        {
+          "foreign_read_exit": 0,
+          "length": 3,
+          "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        "Independent AT-SPI Paste reports rejection while original draft and caret remain unchanged",
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7ffdb71a95c0",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7ffdb71a9538",
+            "0x7f41bac7e8f3"
+          ],
+          "sockets": {
+            "3": "socket:[4516522]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "8763bbe32f1aef6629ca15f0dfeaaa8f999d90651f14babd59b1ba60a6bf76ac"
+        },
+        "Original query validation rejects control characters without changing text or reversed selection",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "font_startup_checks": [
+        {
+          "case": "missing-option",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "excess",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--fallback-font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf"
+          ],
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "missing-file",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/absent-font.ttf"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "oversized",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/oversized-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "files: fallback font could not be loaded within its byte limit\n"
+        },
+        {
+          "case": "malformed",
+          "command": [
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate",
+            "--root",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/documents",
+            "--font",
+            "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+            "--cache",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/cache",
+            "--terminal",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_terminal_candidate",
+            "--editor",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_editor_candidate",
+            "--terminal-font",
+            "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+            "--diagnostics",
+            "--fallback-font",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/invalid-font.bin"
+          ],
+          "exit": 1,
+          "stdout": "CLOSED files frames=0 failed=1\n",
+          "stderr": "[06:19:26.642574] {Default Queue}  -> wl_display#1.get_registry(new id wl_registry#2)\n[06:19:26.642691] {Default Queue}  -> wl_display#1.sync(new id wl_callback#3)\n[06:19:26.643022] {Display Queue} wl_display#1.delete_id(3)\n[06:19:26.643092] {Default Queue} wl_registry#2.global(1, \"wl_shm\", 2)\n[06:19:26.643191] {Default Queue}  -> wl_registry#2.bind(1, \"wl_shm\", 1, new id [unknown]#4)\n[06:19:26.643260] {Default Queue} wl_registry#2.global(2, \"wl_compositor\", 6)\n[06:19:26.643330] {Default Queue}  -> wl_registry#2.bind(2, \"wl_compositor\", 4, new id [unknown]#5)\n[06:19:26.643677] {Default Queue} wl_registry#2.global(3, \"wl_subcompositor\", 1)\n[06:19:26.643736] {Default Queue} wl_registry#2.global(4, \"wl_data_device_manager\", 3)\n[06:19:26.643798] {Default Queue}  -> wl_registry#2.bind(4, \"wl_data_device_manager\", 3, new id [unknown]#6)\n[06:19:26.643871] {Default Queue} wl_registry#2.global(5, \"wp_viewporter\", 1)\n[06:19:26.643932] {Default Queue}  -> wl_registry#2.bind(5, \"wp_viewporter\", 1, new id [unknown]#7)\n[06:19:26.644033] {Default Queue} wl_registry#2.global(6, \"wl_seat\", 9)\n[06:19:26.644219] {Default Queue}  -> wl_registry#2.bind(6, \"wl_seat\", 5, new id [unknown]#8)\n[06:19:26.644311] {Default Queue} wl_registry#2.global(7, \"wl_output\", 4)\n[06:19:26.644447] {Default Queue}  -> wl_registry#2.bind(7, \"wl_output\", 4, new id [unknown]#9)\n[06:19:26.644510] {Default Queue} wl_registry#2.global(8, \"wl_output\", 4)\n[06:19:26.644573] {Default Queue}  -> wl_registry#2.bind(8, \"wl_output\", 4, new id [unknown]#10)\n[06:19:26.644621] {Default Queue} wl_registry#2.global(9, \"wl_output\", 4)\n[06:19:26.644665] {Default Queue}  -> wl_registry#2.bind(9, \"wl_output\", 4, new id [unknown]#11)\n[06:19:26.644711] {Default Queue} wl_registry#2.global(10, \"xdg_wm_base\", 5)\n[06:19:26.644772] {Default Queue}  -> wl_registry#2.bind(10, \"xdg_wm_base\", 5, new id [unknown]#12)\n[06:19:26.644848] {Default Queue} wl_registry#2.global(11, \"zwp_text_input_manager_v3\", 1)\n[06:19:26.644914] {Default Queue}  -> wl_registry#2.bind(11, \"zwp_text_input_manager_v3\", 1, new id [unknown]#13)\n[06:19:26.645011] {Default Queue} wl_callback#3.done(0)\n[06:19:26.645085] {Default Queue}  -> wl_data_device_manager#6.get_data_device(new id wl_data_device#3, wl_seat#8)\n[06:19:26.645170] {Default Queue}  -> wl_compositor#5.create_surface(new id wl_surface#14)\n[06:19:26.645244] {Default Queue}  -> zwp_text_input_manager_v3#13.get_text_input(new id zwp_text_input_v3#15, wl_seat#8)\n[06:19:26.645360] {Default Queue}  -> xdg_wm_base#12.get_xdg_surface(new id xdg_surface#16, wl_surface#14)\n[06:19:26.645444] {Default Queue}  -> xdg_surface#16.get_toplevel(new id xdg_toplevel#17)\n[06:19:26.645528] {Default Queue}  -> xdg_toplevel#17.set_title(\"Aetheri Files\")\n[06:19:26.645644] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"nexaui\")\n[06:19:26.645720] {Default Queue}  -> wl_surface#14.commit()\n[06:19:26.645811] {Default Queue}  -> wl_display#1.sync(new id wl_callback#18)\n[06:19:26.646156] {Display Queue} wl_display#1.delete_id(18)\n[06:19:26.646229] {Default Queue} discarded wl_shm#4.format(0)\n[06:19:26.646302] {Default Queue} discarded wl_shm#4.format(875709016)\n[06:19:26.646345] {Default Queue} discarded wl_shm#4.format(1)\n[06:19:26.646398] {Default Queue} discarded wl_shm#4.format(875708993)\n[06:19:26.646445] {Default Queue} discarded wl_shm#4.format(875708754)\n[06:19:26.646488] {Default Queue} discarded wl_shm#4.format(875714642)\n[06:19:26.646511] {Default Queue} discarded wl_shm#4.format(875708738)\n[06:19:26.646567] {Default Queue} discarded wl_shm#4.format(875714626)\n[06:19:26.646612] {Default Queue} discarded wl_shm#4.format(909199186)\n[06:19:26.646653] {Default Queue} discarded wl_shm#4.format(909199170)\n[06:19:26.646674] {Default Queue} discarded wl_shm#4.format(808669761)\n[06:19:26.646712] {Default Queue} discarded wl_shm#4.format(808669784)\n[06:19:26.646732] {Default Queue} discarded wl_shm#4.format(808665665)\n[06:19:26.646802] {Default Queue} discarded wl_shm#4.format(808665688)\n[06:19:26.646849] {Default Queue} discarded wl_shm#4.format(942948929)\n[06:19:26.646889] {Default Queue} wl_seat#8.name(\"seat0\")\n[06:19:26.646943] {Default Queue} wl_seat#8.capabilities(3)\n[06:19:26.647000] {Default Queue}  -> wl_seat#8.get_pointer(new id wl_pointer#19)\n[06:19:26.647079] {Default Queue}  -> wl_seat#8.get_keyboard(new id wl_keyboard#20)\n[06:19:26.647149] {Default Queue} wl_output#9.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:26.647199] {Default Queue} wl_output#9.mode(1, 1920, 1080, 60000)\n[06:19:26.647241] {Default Queue} wl_output#9.scale(1)\n[06:19:26.647267] {Default Queue} wl_output#9.name(\"HEADLESS-1\")\n[06:19:26.647317] {Default Queue} wl_output#9.description(\"Headless output 1\")\n[06:19:26.647362] {Default Queue} wl_output#9.done()\n[06:19:26.647380] {Default Queue} wl_output#10.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:26.647426] {Default Queue} wl_output#10.mode(1, 2560, 1440, 60000)\n[06:19:26.647449] {Default Queue} wl_output#10.scale(1)\n[06:19:26.647469] {Default Queue} wl_output#10.name(\"HEADLESS-2\")\n[06:19:26.647486] {Default Queue} wl_output#10.description(\"Headless output 2\")\n[06:19:26.647530] {Default Queue} wl_output#10.done()\n[06:19:26.647558] {Default Queue} wl_output#11.geometry(0, 0, 0, 0, 0, \"Unknown\", \"Unknown\", 0)\n[06:19:26.647607] {Default Queue} wl_output#11.mode(1, 3840, 2160, 60000)\n[06:19:26.647651] {Default Queue} wl_output#11.scale(1)\n[06:19:26.647676] {Default Queue} wl_output#11.name(\"HEADLESS-3\")\n[06:19:26.647717] {Default Queue} wl_output#11.description(\"Headless output 3\")\n[06:19:26.647740] {Default Queue} wl_output#11.done()\n[06:19:26.647810] {Default Queue} wl_callback#18.done(1)\n[06:19:26.647860] {Default Queue} xdg_toplevel#17.configure_bounds(1840, 1000)\n[06:19:26.647908] {Default Queue} xdg_toplevel#17.wm_capabilities(array[8])\n[06:19:26.647950] {Default Queue} xdg_toplevel#17.configure(0, 0, array[0])\n[06:19:26.647976] {Default Queue} xdg_surface#16.configure(1)\n[06:19:26.648027] {Default Queue}  -> xdg_surface#16.ack_configure(1)\n[06:19:26.648102] {Default Queue}  -> xdg_surface#16.set_window_geometry(0, 0, 1000, 680)\n[06:19:26.649254] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#18, fd 8, 2720000)\n[06:19:26.649338] {Default Queue}  -> wl_shm_pool#18.create_buffer(new id wl_buffer#21, 0, 1000, 680, 4000, 1)\n[06:19:26.649413] {Default Queue}  -> wl_shm_pool#18.destroy()\n[06:19:26.654352] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:19:26.654440] {Default Queue}  -> wl_surface#14.attach(wl_buffer#21, 0, 0)\n[06:19:26.654521] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:19:26.654586] {Default Queue}  -> wl_surface#14.commit()\n[06:19:26.654684] {Default Queue}  -> xdg_toplevel#17.set_app_id(\"org.aetheri.Files\")\nfiles: fallback font is unsupported or invalid\n[06:19:26.657060] {Default Queue}  -> wl_shm#4.create_pool(new id wl_shm_pool#22, fd 8, 2720000)\n[06:19:26.657168] {Default Queue}  -> wl_shm_pool#22.create_buffer(new id wl_buffer#23, 0, 1000, 680, 4000, 1)\n[06:19:26.657246] {Default Queue}  -> wl_shm_pool#22.destroy()\n[06:19:26.662081] {Default Queue}  -> wl_surface#14.set_buffer_scale(1)\n[06:19:26.662172] {Default Queue}  -> wl_surface#14.attach(wl_buffer#23, 0, 0)\n[06:19:26.662224] {Default Queue}  -> wl_surface#14.damage(0, 0, 1000, 680)\n[06:19:26.662287] {Default Queue}  -> wl_surface#14.commit()\n[06:19:26.662810] {Default Queue}  -> wl_buffer#23.destroy()\n[06:19:26.663135] {Default Queue}  -> wl_buffer#21.destroy()\n[06:19:26.663361] {Default Queue}  -> xdg_toplevel#17.destroy()\n[06:19:26.663449] {Default Queue}  -> xdg_surface#16.destroy()\n[06:19:26.663522] {Default Queue}  -> zwp_text_input_v3#15.destroy()\n[06:19:26.663608] {Default Queue}  -> zwp_text_input_manager_v3#13.destroy()\n[06:19:26.663712] {Default Queue}  -> wp_viewporter#7.destroy()\n[06:19:26.663793] {Default Queue}  -> wl_surface#14.destroy()\n[06:19:26.663891] {Default Queue}  -> xdg_wm_base#12.destroy()\n[06:19:26.663966] {Default Queue}  -> wl_pointer#19.release()\n[06:19:26.664039] {Default Queue}  -> wl_keyboard#20.release()\n[06:19:26.664112] {Default Queue}  -> wl_seat#8.release()\n[06:19:26.664192] {Default Queue}  -> wl_output#11.release()\n[06:19:26.664258] {Default Queue}  -> wl_output#10.release()\n[06:19:26.664323] {Default Queue}  -> wl_output#9.release()\n"
+        }
+      ],
+      "font_inputs": [
+        {
+          "path": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "size": 410712,
+          "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "size": 656852,
+          "sha256": "630846d528dbe4c4981370a4d0a9475a1fd1491a129bb411f8e157cdb5de13c6"
+        }
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-23-asan/aetheri_files_ime_candidate": "e2aa5fe25d63dcf3bf958dce5c67a9d7d517d2f986173ec8de7d17fd86573db8",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-native-asan/peer": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+      },
+      "capture_content": [
+        {
+          "case": "native query preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "query after Escape cancellation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native Unicode query",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native preedit at 200 percent",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native combining preedit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign Unicode clipboard pasted into original filename",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI clipboard copy cut and paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "foreign replacement and one undo preserve selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected foreign paste retains reversed Unicode selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "independent AT-SPI reports rejected whole paste",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "rejected search paste retains reversed selection",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native deletion and Unicode replacement",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "two native packets keep separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "invalid whole filename retains prefix and blocks confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "atomic deletion avoids intermediate grapheme caret snapping",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "valid first packet retained with rejected second packet",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "native name commit",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "filtered native commit retains prefix and disables confirmation",
+          "nonuniform_outputs": [
+            1
+          ]
+        },
+        {
+          "case": "original rename with native packets and separate undo",
+          "nonuniform_outputs": [
+            1
+          ]
+        }
+      ],
+      "closed_line": "CLOSED files frames=486 failed=0"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "files-atomic-23-shared-test.log",
+      "size": 2996,
+      "sha256": "867d9283b56faa927c51e8cc13db3ebc41e238af1b14c93cd9b1d0b4d81d8ec2"
+    },
+    {
+      "path": "files-atomic-23-shared/files-ime-generated/nexaui_view.h",
+      "size": 2074,
+      "sha256": "7912ba247703bb7cac9d0f226b5d588052afa152bdea26fcc4e1ce0e1117d73a"
+    },
+    {
+      "path": "files-atomic-23-shared/files-ime-generated/nexaui_view.c",
+      "size": 66058,
+      "sha256": "906f143d1bdeda8a5a94482865336dbb3b449ae2f3e659d0ef9cce260ab08260"
+    },
+    {
+      "path": "files-atomic-23-shared/files-ime-generated/nexaui_main.c",
+      "size": 18233,
+      "sha256": "762a7466a0d0207e8bf35204d98a3e322ba6a6ec01e0a3586d95582ddeb57230"
+    },
+    {
+      "path": "fpad-native-shared/result.json",
+      "size": 121557,
+      "sha256": "a888fd9c2f9605f97cab1e08d3f7eefef98ac1d48304fd05a6c7715118311ecb"
+    },
+    {
+      "path": "fpad-native-shared/app.log",
+      "size": 1186007,
+      "sha256": "59bf1a848b6792b9ef91e0f9a5e3f6bafaf286da99735ce802a4abacdb17715c"
+    },
+    {
+      "path": "fpad-native-shared/server.log",
+      "size": 172632,
+      "sha256": "ee60af8c01c4c0e90f176cb78f8d9b393da5abd813fe6a9e4c75c58bc0c485f7"
+    },
+    {
+      "path": "fpad-native-shared/maps.txt",
+      "size": 5959,
+      "sha256": "cb7127ad5438036c14f9f018da66038720c63675891415f188e89f9f958cf180"
+    },
+    {
+      "path": "fpad-native-shared/peer",
+      "size": 36880,
+      "sha256": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+    },
+    {
+      "path": "fpad-native-shared/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-23-shared/compile_commands.json",
+      "size": 44819,
+      "sha256": "6192c95bee22394fadc1f74d4a7a7408682e984334513843c27947d56a5165fc"
+    },
+    {
+      "path": "files-atomic-23-shared/CMakeCache.txt",
+      "size": 25585,
+      "sha256": "eba42c6bbf6055931c166dda93571aa01eb8fe64c20c7b09fb5ffceae5a93183"
+    },
+    {
+      "path": "files-atomic-23-shared/Testing/Temporary/LastTest.log",
+      "size": 22476,
+      "sha256": "b7eeb38ca267bf63786356ffea962288173aa4906f35e4b6a6886818f5ae337f"
+    },
+    {
+      "path": "files-atomic-23-shared/aetheri_files_ime_candidate",
+      "size": 179880,
+      "sha256": "103b78a085650b1bfd40e73cecfaec6fa280baddd839d508dd558475d0e9635a"
+    },
+    {
+      "path": "files-atomic-23-shared/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-23-shared/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-atomic-23-shared/files_paste_admission_test",
+      "size": 170344,
+      "sha256": "e73cf77583aee480d46dd097072867c07b2c01fa4cb99104ae8afd7c4ef2b2eb"
+    },
+    {
+      "path": "files-atomic-23-shared/files-ime-generated/source-delta.json",
+      "size": 24817,
+      "sha256": "2707848db10247564a093a94ec6b7f69aceb2d692773d7fc585936c24d301956"
+    },
+    {
+      "path": "files-atomic-23-release-test.log",
+      "size": 2997,
+      "sha256": "3921c49ddf05060f4af0627fe9464e221fa689de6d4ebd0916c738eb6fb57d58"
+    },
+    {
+      "path": "files-atomic-23-release/files-ime-generated/nexaui_view.h",
+      "size": 2074,
+      "sha256": "7912ba247703bb7cac9d0f226b5d588052afa152bdea26fcc4e1ce0e1117d73a"
+    },
+    {
+      "path": "files-atomic-23-release/files-ime-generated/nexaui_view.c",
+      "size": 66058,
+      "sha256": "906f143d1bdeda8a5a94482865336dbb3b449ae2f3e659d0ef9cce260ab08260"
+    },
+    {
+      "path": "files-atomic-23-release/files-ime-generated/nexaui_main.c",
+      "size": 18233,
+      "sha256": "762a7466a0d0207e8bf35204d98a3e322ba6a6ec01e0a3586d95582ddeb57230"
+    },
+    {
+      "path": "fpad-native-release/result.json",
+      "size": 121733,
+      "sha256": "a365d646ca6663de4b1cd6c4103cfa875ea691c42640be3b86b5b84ee705c31b"
+    },
+    {
+      "path": "fpad-native-release/app.log",
+      "size": 1167480,
+      "sha256": "916066d4f67897e3213329fbb78ce21fb817b6347907b4b6fc52cf2d7fbfda43"
+    },
+    {
+      "path": "fpad-native-release/server.log",
+      "size": 173131,
+      "sha256": "5354e1bae232ac8e887bc34f3e3a244e26c5acc7661c3b9908269ba54c30884d"
+    },
+    {
+      "path": "fpad-native-release/maps.txt",
+      "size": 5331,
+      "sha256": "3ebce1e4104355409b92c876fc8a81f476c4d0ec2d32ba031434f9d52b65f9e2"
+    },
+    {
+      "path": "fpad-native-release/peer",
+      "size": 36880,
+      "sha256": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+    },
+    {
+      "path": "fpad-native-release/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-23-release/compile_commands.json",
+      "size": 44767,
+      "sha256": "bf783ea421849822223b6d5298cc393c52a6dbe798152eb061b043da0029871f"
+    },
+    {
+      "path": "files-atomic-23-release/CMakeCache.txt",
+      "size": 25590,
+      "sha256": "d78aa65fdd4a371ee47152f269b2db7c6f0f9cb3da05b33018e2fa07002a9176"
+    },
+    {
+      "path": "files-atomic-23-release/Testing/Temporary/LastTest.log",
+      "size": 22530,
+      "sha256": "8b1efdec397ba91d8c98821bcb6482e868608d714182aaec155982788cb1adf7"
+    },
+    {
+      "path": "files-atomic-23-release/aetheri_files_ime_candidate",
+      "size": 968064,
+      "sha256": "f1832bcbb18a278fbd4897254a7f3244d18063d29aef88bc1a33ff43a60a3116"
+    },
+    {
+      "path": "files-atomic-23-release/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-23-release/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-atomic-23-release/files_paste_admission_test",
+      "size": 963872,
+      "sha256": "36ff65f21abc0fd0ffbe49449ef792c71c88e3a0dcd03ba097bfd183a2185a72"
+    },
+    {
+      "path": "files-atomic-23-release/files-ime-generated/source-delta.json",
+      "size": 24817,
+      "sha256": "2707848db10247564a093a94ec6b7f69aceb2d692773d7fc585936c24d301956"
+    },
+    {
+      "path": "files-atomic-23-asan-test.log",
+      "size": 2994,
+      "sha256": "3152c815043b763a5953da4f6aa17505a516754047332573d088a1e1baeae4b9"
+    },
+    {
+      "path": "files-atomic-23-asan/files-ime-generated/nexaui_view.h",
+      "size": 2074,
+      "sha256": "7912ba247703bb7cac9d0f226b5d588052afa152bdea26fcc4e1ce0e1117d73a"
+    },
+    {
+      "path": "files-atomic-23-asan/files-ime-generated/nexaui_view.c",
+      "size": 66058,
+      "sha256": "906f143d1bdeda8a5a94482865336dbb3b449ae2f3e659d0ef9cce260ab08260"
+    },
+    {
+      "path": "files-atomic-23-asan/files-ime-generated/nexaui_main.c",
+      "size": 18233,
+      "sha256": "762a7466a0d0207e8bf35204d98a3e322ba6a6ec01e0a3586d95582ddeb57230"
+    },
+    {
+      "path": "fpad-native-asan/result.json",
+      "size": 121205,
+      "sha256": "f2f012e89fe5e46f13d763b449aea565654de28a1f7fb9a52b719a916af2b748"
+    },
+    {
+      "path": "fpad-native-asan/app.log",
+      "size": 1170987,
+      "sha256": "fc2fdf0355b8ad2fe3ee29a09e6be4a269e237828f6deba22034a8243e3052c5"
+    },
+    {
+      "path": "fpad-native-asan/server.log",
+      "size": 173675,
+      "sha256": "4b2027e2a728de2a1326f91a422f326dc263e8d038117959037ea66c579501d7"
+    },
+    {
+      "path": "fpad-native-asan/maps.txt",
+      "size": 15331,
+      "sha256": "81f3419675fd1f90937d6e94a6061e3bd64bdbbaded2b3457b92b82655c7ef1e"
+    },
+    {
+      "path": "fpad-native-asan/peer",
+      "size": 36880,
+      "sha256": "b07c7c06277f69aa2608ab0f8ccf203bd462383e25caabf0a94915c59997c065"
+    },
+    {
+      "path": "fpad-native-asan/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-23-asan/compile_commands.json",
+      "size": 46545,
+      "sha256": "f4dfe497e197c69912de7eb8bf917fec66a0d89707d84095b13f61b600f6383c"
+    },
+    {
+      "path": "files-atomic-23-asan/CMakeCache.txt",
+      "size": 25653,
+      "sha256": "97127b24520246160fa9ccf0ae4b5e3a3ca41dedb96e02e26bf8b0bbe45725d2"
+    },
+    {
+      "path": "files-atomic-23-asan/Testing/Temporary/LastTest.log",
+      "size": 22368,
+      "sha256": "a7c763c07da5918788779274b6e3d4f5485b0928e873f56366c990f528858ab2"
+    },
+    {
+      "path": "files-atomic-23-asan/aetheri_files_ime_candidate",
+      "size": 9207480,
+      "sha256": "e2aa5fe25d63dcf3bf958dce5c67a9d7d517d2f986173ec8de7d17fd86573db8"
+    },
+    {
+      "path": "files-atomic-23-asan/aetheri_terminal_candidate",
+      "size": 1227104,
+      "sha256": "8ae087cca736aa1f60834813e75708d45659fc0220eebf37f8dfcf189494e41f"
+    },
+    {
+      "path": "files-atomic-23-asan/aetheri_editor_candidate",
+      "size": 775672,
+      "sha256": "fe1eb957d0b6234498a777cb14ba4f307dcc3a32cfc80433d4e77902c72752cd"
+    },
+    {
+      "path": "files-atomic-23-asan/files_paste_admission_test",
+      "size": 9111896,
+      "sha256": "3aa6a54d1d9955cb78c441f5d3e105e4bdf684a8a1b4eef8f19f144d7729a175"
+    },
+    {
+      "path": "files-atomic-23-asan/files-ime-generated/source-delta.json",
+      "size": 24817,
+      "sha256": "2707848db10247564a093a94ec6b7f69aceb2d692773d7fc585936c24d301956"
+    },
+    {
+      "path": "files-paste-before-commands.json",
+      "size": 1366,
+      "sha256": "373e71257165d0ae62f87f64f5035253caa603e280eab89a2fb3a3ea850e4e2a"
+    },
+    {
+      "path": "files-paste-before-selection.log",
+      "size": 82,
+      "sha256": "97b058fc97cc712faf1aff9380918cf91106f02d733ae12d0cbdad73653d1ded"
+    },
+    {
+      "path": "files-paste-before-history.log",
+      "size": 127,
+      "sha256": "b7b980a57fc223b4f6957abb212e45ab52f27574df31138ee89e4655ab9088b9"
+    },
+    {
+      "path": "files-paste-before-history-delta.json",
+      "size": 952,
+      "sha256": "5a20f9154379c674add4f83dd68a804c623b446fc8528de1900e78419e655e2c"
+    },
+    {
+      "path": "files-paste-before-native-evidence.json",
+      "size": 1897,
+      "sha256": "14c66052881511c6f94522c644fa39724a6f2a9c528ad4a29a9db7957590d983"
+    },
+    {
+      "path": "fpad-before-native/result.json",
+      "size": 69670,
+      "sha256": "d05866d0483e5340aec003040deb47cb1bfcafa7049d49ecab55bc3d565831a3"
+    },
+    {
+      "path": "files-paste-native-commands.json",
+      "size": 4430,
+      "sha256": "6c31113877ee70b1bacb48f06caadc178ff1e77f9fc2081ae1531dde1884f49d"
+    },
+    {
+      "path": "files-paste-sdk-input.json",
+      "size": 3317,
+      "sha256": "ceff62de0218b2b1c67b9160f81036c5749c1dfde1192c7e75a994dda3400afa"
+    },
+    {
+      "path": "files-paste-sdk-probe.json",
+      "size": 419,
+      "sha256": "2218d390201df00e4919d7c38916856dfae2f139ab2f74873693b61183e59471"
+    },
+    {
+      "path": "files-paste-sdk-probe-commands.json",
+      "size": 3470,
+      "sha256": "7483010836699dcc7f34a0268e0121d71aad091f2eb6a50d16e8cf7ab43f6186"
+    },
+    {
+      "path": "files-paste-sdk-commands.json",
+      "size": 12139,
+      "sha256": "7776c0126fd23380d70cd77181ae2c7117bb8ece16e77ca9b596aa4a7e4256dc"
+    }
+  ],
+  "input_differences": [
+    "examples/35_aetheri_files_consumer/clipboard_task.py",
+    "examples/35_aetheri_files_consumer/ime_atspi.c"
+  ],
+  "before_commands": [
+    {
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-source",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-prefix/lib64/cmake/NexaUI"
+      ],
+      "exit": 0,
+      "log": "files-paste-before-configure.log"
+    },
+    {
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-build",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-paste-before-build.log"
+    },
+    {
+      "phase": "selection",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-build/before_selection",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf"
+      ],
+      "exit": 1,
+      "log": "files-paste-before-selection.log"
+    },
+    {
+      "phase": "history",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-build/before_history",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf"
+      ],
+      "exit": 1,
+      "log": "files-paste-before-history.log"
+    }
+  ],
+  "native_before": {
+    "command": [
+      "python3",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-24/examples/35_aetheri_files_consumer/run_ime.py",
+      "--binaries",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-before-build",
+      "--original",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+      "--atspi-fixture",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-atspi-fixture",
+      "--sdk-input",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-input.json",
+      "--expected-sdk-revision",
+      "794be7cec49f427fcc56e2604cddb44245347021",
+      "--linkage",
+      "shared",
+      "--server",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-1/files_ime_producer",
+      "--font",
+      "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "--mono",
+      "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+      "--work-dir",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-before-native",
+      "--transactions",
+      "--clipboard-tools",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+      "--clipboard-budget",
+      "--fallback-font",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+      "--font-errors"
+    ],
+    "exit": 1,
+    "result": "failed",
+    "checks": 96,
+    "images": 24,
+    "last_check": {
+      "native_peer": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fpad-before-native/peer",
+        "1183101",
+        "Name",
+        "a\u00e9bc",
+        "1",
+        "1",
+        "2"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Native IME committed-text/caret expectation failed\n"
+    },
+    "scope": "Actual preceding accepted app view and original model on the same installed0.1.26 SDK; independent AT-SPI observes lost reversed Unicode selection after rejected keyboard paste"
+  },
+  "sdk_commands": [
+    {
+      "profile": "shared",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DBUILD_SHARED_LIBS=ON",
+        "-DNEXAUI_BUILD_EXAMPLES=OFF",
+        "-DNEXAUI_BUILD_BENCHMARKS=OFF",
+        "-DNEXAUI_BUILD_VULKAN=OFF",
+        "-DNEXAUI_ENABLE_X11=OFF",
+        "-DCMAKE_C_STANDARD=17",
+        "-DCMAKE_C_EXTENSIONS=OFF",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_EXE_LINKER_FLAGS=",
+        "-DCMAKE_INSTALL_PREFIX=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-prefix",
+        "-DCMAKE_INSTALL_LIBDIR=lib64",
+        "-DNEXAUI_SOURCE_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-configure.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared",
+        "--parallel",
+        "2",
+        "--target",
+        "nexaui_text_paste_tests",
+        "nexaui_wayland_paste_validation_tests",
+        "nexaui_ime_field_atomic_tests",
+        "nexaui_text_field_tests",
+        "nexaui_numeric_field_tests",
+        "nexaui_text_buffer_tests",
+        "nexaui_text_buffer_alloc_tests",
+        "nexaui_input_tests",
+        "nexaui_tests",
+        "nexaui_wayland_ime_transactions_tests",
+        "nexaui_wayland_ime_atomic_tests",
+        "nexaui_wayland_text_input_v1_tests",
+        "nexaui_wayland_text_input_v3_tests",
+        "nexaui_text_value_tests",
+        "nexaui_text_value_completion_tests",
+        "nexaui_text_value_ancestry_tests",
+        "nexaui_wayland_async_clipboard_tests"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-build.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared",
+        "-R",
+        "^(nexaui_(core|input|text_field|text_paste|text_value|text_value_completion|text_value_ancestry|numeric_field|text_buffer(_alloc)?|ime_field_atomic)$|nexaui_wayland_(paste_validation|async_clipboard|numeric_clipboard|ime_transactions|ime_atomic|text_input_v[13]))",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-test.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "install",
+      "command": [
+        "cmake",
+        "--install",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-install.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "consumer-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c/tests/paste_validator_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-prefix",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_EXE_LINKER_FLAGS="
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-consumer-configure.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "consumer-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-consumer",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-consumer-build.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "consumer-run",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-consumer/paste_validator_consumer"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-shared-consumer-run.log"
+    },
+    {
+      "profile": "release",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DNEXAUI_BUILD_EXAMPLES=OFF",
+        "-DNEXAUI_BUILD_BENCHMARKS=OFF",
+        "-DNEXAUI_BUILD_VULKAN=OFF",
+        "-DNEXAUI_ENABLE_X11=OFF",
+        "-DCMAKE_C_STANDARD=17",
+        "-DCMAKE_C_EXTENSIONS=OFF",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_EXE_LINKER_FLAGS=",
+        "-DCMAKE_INSTALL_PREFIX=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-prefix",
+        "-DCMAKE_INSTALL_LIBDIR=lib64",
+        "-DNEXAUI_SOURCE_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-configure.log"
+    },
+    {
+      "profile": "release",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release",
+        "--parallel",
+        "2",
+        "--target",
+        "nexaui_text_paste_tests",
+        "nexaui_wayland_paste_validation_tests",
+        "nexaui_ime_field_atomic_tests",
+        "nexaui_text_field_tests",
+        "nexaui_numeric_field_tests",
+        "nexaui_text_buffer_tests",
+        "nexaui_text_buffer_alloc_tests",
+        "nexaui_input_tests",
+        "nexaui_tests",
+        "nexaui_wayland_ime_transactions_tests",
+        "nexaui_wayland_ime_atomic_tests",
+        "nexaui_wayland_text_input_v1_tests",
+        "nexaui_wayland_text_input_v3_tests",
+        "nexaui_text_value_tests",
+        "nexaui_text_value_completion_tests",
+        "nexaui_text_value_ancestry_tests",
+        "nexaui_wayland_async_clipboard_tests"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-build.log"
+    },
+    {
+      "profile": "release",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release",
+        "-R",
+        "^(nexaui_(core|input|text_field|text_paste|text_value|text_value_completion|text_value_ancestry|numeric_field|text_buffer(_alloc)?|ime_field_atomic)$|nexaui_wayland_(paste_validation|async_clipboard|numeric_clipboard|ime_transactions|ime_atomic|text_input_v[13]))",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-test.log"
+    },
+    {
+      "profile": "release",
+      "phase": "install",
+      "command": [
+        "cmake",
+        "--install",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-install.log"
+    },
+    {
+      "profile": "release",
+      "phase": "consumer-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c/tests/paste_validator_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-prefix",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_EXE_LINKER_FLAGS="
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-consumer-configure.log"
+    },
+    {
+      "profile": "release",
+      "phase": "consumer-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-consumer",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-consumer-build.log"
+    },
+    {
+      "profile": "release",
+      "phase": "consumer-run",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-release-consumer/paste_validator_consumer"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-release-consumer-run.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DNEXAUI_BUILD_EXAMPLES=OFF",
+        "-DNEXAUI_BUILD_BENCHMARKS=OFF",
+        "-DNEXAUI_BUILD_VULKAN=OFF",
+        "-DNEXAUI_ENABLE_X11=OFF",
+        "-DCMAKE_C_STANDARD=17",
+        "-DCMAKE_C_EXTENSIONS=OFF",
+        "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+        "-DCMAKE_INSTALL_PREFIX=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-prefix",
+        "-DCMAKE_INSTALL_LIBDIR=lib64",
+        "-DNEXAUI_SOURCE_REVISION=794be7cec49f427fcc56e2604cddb44245347021",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-configure.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan",
+        "--parallel",
+        "2",
+        "--target",
+        "nexaui_text_paste_tests",
+        "nexaui_wayland_paste_validation_tests",
+        "nexaui_ime_field_atomic_tests",
+        "nexaui_text_field_tests",
+        "nexaui_numeric_field_tests",
+        "nexaui_text_buffer_tests",
+        "nexaui_text_buffer_alloc_tests",
+        "nexaui_input_tests",
+        "nexaui_tests",
+        "nexaui_wayland_ime_transactions_tests",
+        "nexaui_wayland_ime_atomic_tests",
+        "nexaui_wayland_text_input_v1_tests",
+        "nexaui_wayland_text_input_v3_tests",
+        "nexaui_text_value_tests",
+        "nexaui_text_value_completion_tests",
+        "nexaui_text_value_ancestry_tests",
+        "nexaui_wayland_async_clipboard_tests"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-build.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan",
+        "-R",
+        "^(nexaui_(core|input|text_field|text_paste|text_value|text_value_completion|text_value_ancestry|numeric_field|text_buffer(_alloc)?|ime_field_atomic)$|nexaui_wayland_(paste_validation|async_clipboard|numeric_clipboard|ime_transactions|ime_atomic|text_input_v[13]))",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-test.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "install",
+      "command": [
+        "cmake",
+        "--install",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-install.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "consumer-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-source-794be7c/tests/paste_validator_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-prefix",
+        "-DCMAKE_C_COMPILER=cc",
+        "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-consumer-configure.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "consumer-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-consumer",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-consumer-build.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "consumer-run",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-asan-consumer/paste_validator_consumer"
+      ],
+      "exit": 0,
+      "log": "files-paste-sdk-asan-consumer-run.log"
+    }
+  ],
+  "sdk_probes": [
+    {
+      "profile": "shared",
+      "version": "0.1.26",
+      "features": 116,
+      "revision": "794be7cec49f427fcc56e2604cddb44245347021"
+    },
+    {
+      "profile": "release",
+      "version": "0.1.26",
+      "features": 116,
+      "revision": "794be7cec49f427fcc56e2604cddb44245347021"
+    },
+    {
+      "profile": "asan",
+      "version": "0.1.26",
+      "features": 116,
+      "revision": "794be7cec49f427fcc56e2604cddb44245347021"
+    }
+  ],
+  "sdk": {
+    "revision": "794be7cec49f427fcc56e2604cddb44245347021",
+    "version": "0.1.26",
+    "atspi_compiled": true,
+    "library": "/dev/shm/nexaui-recovery-live-tty-20261107/files-paste-sdk-shared-prefix/lib64/libnexaui.so.0.1.26",
+    "sha256": "41609bbf056317c4d16abd5032a8868566b648d2f8ebae453ae56b106eae43a8",
+    "dbus_sdk": "/home/aetheri/deps/nexaui-settings-release-05/dbus-sdk",
+    "dbus_headers": [
+      {
+        "path": "include/dbus-1.0/dbus/dbus-address.h",
+        "sha256": "5a6834badb73f871acaaea7f03f6497f50e958232a1dbe64f1f098e56c4557ce"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-bus.h",
+        "sha256": "c50a3f89fab412a98544d98a1c94dc07ad5b540ebbf63e63105877039ff2f374"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-connection.h",
+        "sha256": "f9496c07830e44fbda1668328b40c78527251c99e62919c80af479631ff794bf"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-errors.h",
+        "sha256": "00292ccbbc3d30603c293122155151fd21aa26aa0adbc8333972440544f37ded"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-macros.h",
+        "sha256": "78fc922e402466c826145dbfe31d2ae87682ef2df6233d436dc3399552f6362f"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-memory.h",
+        "sha256": "7e0487d09e88e705bd166432e3d581aafe2e90c5654224505b73c56ae8d8cf2f"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-message.h",
+        "sha256": "2dd354759e49fad23f25b3b85e73d9e6d4ad0034c08828af1d5f7226971f66d6"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-misc.h",
+        "sha256": "6ff2e2f874f55a6b4738aea905ee413d814fec320b48ffd7f30a2df3237894aa"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-pending-call.h",
+        "sha256": "0aee41fe9624a284935fee0d4b572a313f83230ac31bdead59dff96309b7d1e0"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-protocol.h",
+        "sha256": "533fd55283662d1c013792a29e9993e31babe20d5a5dfedae2c4b8e8bebafc6a"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-server.h",
+        "sha256": "f63bbd5503d13b1486b66a76cc9f289e19ff46d7b3c5f39df9953af3e6df0323"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-shared.h",
+        "sha256": "97ed7edf5baf42bdee4d5777d63158599667078499ca1b0360ccedb013d3531c"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-signature.h",
+        "sha256": "13a10246dee6a378899c88a9ac37e0eb618a1f91766fc27de0053309e6aac941"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-syntax.h",
+        "sha256": "200170d6ee508b6daa8a17dc9b804a0a35fa555d8d8c8768258edd75dd36cd43"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-threads.h",
+        "sha256": "16c10fafae90e9aaeaf0506f41432bfa389dfdf333115f8934680d88d83ae12d"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-types.h",
+        "sha256": "0228e51763888e7319f0b8c862f0ee928e3079340408512f7e4a594e1eeae48d"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus.h",
+        "sha256": "56ff456922bf6df191958a291fc5d6d66f39b82b156bc2d715ef87add155cea5"
+      },
+      {
+        "path": "lib64/dbus-1.0/include/dbus/dbus-arch-deps.h",
+        "sha256": "599da3a9e936fdd5a1702b48cf1c0db5226e37931ff5f957f5d2fbfe63f89eca"
+      }
+    ],
+    "scope": "New separately built installed SDK ca1, runtime version/source declaration and compiled features checked. Exact source/archive binding is separate; active Aetheri reviewed pin unchanged.",
+    "features": 116
+  }
+}
