@@ -39,6 +39,7 @@ typedef struct test_server {
     atomic_int attached_width, attached_height, buffer_scale;
     atomic_int geometry_before_configure, geometry_after_configure;
     void (*surface_committed)(struct test_server *server,struct wl_client *client);
+    void (*text_committed)(struct test_server *server,struct wl_resource *resource);
     void (*buffer_attached)(struct test_server *server,struct wl_resource *buffer);
     void (*selection_changed)(struct test_server *server,struct wl_resource *source);
     atomic_int keyboard_press_requested, selection_serial_seen;
@@ -453,6 +454,7 @@ static void text_commit(struct wl_client *client,
     test_server *server = wl_resource_get_user_data(resource);
     (void)client;
     ++server->commit_serial;
+    if (server->text_committed) { server->text_committed(server,resource); return; }
     if (server->enabled) {
         atomic_fetch_add(&server->enable_commits, 1);
         if (server->commit_serial == 1) {

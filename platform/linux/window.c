@@ -424,6 +424,13 @@ nx_result nx_window_set_ime_enabled(nx_window *window, int enabled) {
         nx_x11_window_set_ime_enabled(window->native.x11, enabled));
 }
 
+nx_result nx_window_set_ime_transaction_events(nx_window *window, int enabled) {
+    if (!window || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
+    return NX_LINUX_DISPATCH(nx_wayland_window_set_ime_transaction_events(
+        window->native.wayland, enabled), NX_ERROR_UNSUPPORTED);
+}
+
 nx_result nx_window_set_ime_purpose(nx_window *window,
                                     nx_ime_purpose purpose) {
     if (!window || (purpose != NX_IME_PURPOSE_NORMAL &&

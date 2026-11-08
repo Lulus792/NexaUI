@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.23 LANGUAGES C)
+project(NexaUI VERSION 0.1.24 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -668,6 +668,9 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_text_input_v1
                 COMMAND nexaui_wayland_text_input_v1_tests)
             set_tests_properties(nexaui_wayland_text_input_v1 PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_text_input_v1_transactions
+                COMMAND nexaui_wayland_text_input_v1_tests --transactions)
+            set_tests_properties(nexaui_wayland_text_input_v1_transactions PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_text_input_v3_tests
                 tests/test_wayland_text_input_v3.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -691,6 +694,18 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_text_input_v3_field_replace
                 COMMAND nexaui_wayland_text_input_v3_tests --field-replace)
             set_tests_properties(nexaui_wayland_text_input_v3_field_replace PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_ime_transactions_tests
+                tests/test_wayland_ime_transactions.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_ime_transactions_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_ime_transactions_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_ime_transactions_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            add_test(NAME nexaui_wayland_ime_transactions COMMAND nexaui_wayland_ime_transactions_tests)
+            add_test(NAME nexaui_wayland_ime_transactions_legacy COMMAND nexaui_wayland_ime_transactions_tests --legacy)
+            set_tests_properties(nexaui_wayland_ime_transactions nexaui_wayland_ime_transactions_legacy PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_clipboard_tests
                 tests/test_wayland_async_clipboard.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c

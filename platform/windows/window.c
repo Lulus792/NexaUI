@@ -980,6 +980,13 @@ void nx_windows_window_set_ime_target(nx_window *window, uint64_t target, uint64
     }
 }
 
+nx_result nx_window_set_ime_transaction_events(nx_window *window, int enabled) {
+    if (!window || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (GetCurrentThreadId() != window->owner_thread || !window->hwnd)
+        return NX_ERROR_STATE;
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_set_ime_purpose(nx_window *window,
                                     nx_ime_purpose purpose) {
     if (!window || (purpose != NX_IME_PURPOSE_NORMAL &&

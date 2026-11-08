@@ -856,6 +856,8 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         case NX_EVENT_TEXT:
         case NX_EVENT_TEXT_COMMAND:
         case NX_EVENT_IME_PREEDIT_CHANGED:
+        case NX_EVENT_IME_TRANSACTION_BEGIN:
+        case NX_EVENT_IME_TRANSACTION_END:
         case NX_EVENT_WAKE:
         case NX_EVENT_IME_DELETE_SURROUNDING:
         case NX_EVENT_IME_DELETE_RANGE:
@@ -944,6 +946,12 @@ static int nx_valid_event(const nx_event *event) {
     case NX_EVENT_IME_PREEDIT_CHANGED:
     case NX_EVENT_WAKE:
         return 1;
+    case NX_EVENT_IME_TRANSACTION_BEGIN:
+    case NX_EVENT_IME_TRANSACTION_END:
+        return ((event->ime_target == 0) == (event->ime_revision == 0)) &&
+            (event->ime_before & (NX_IME_TRANSACTION_COMMIT | NX_IME_TRANSACTION_DELETE)) &&
+            !(event->ime_before & ~(NX_IME_TRANSACTION_COMMIT | NX_IME_TRANSACTION_DELETE |
+                                    NX_IME_TRANSACTION_REJECTED));
     case NX_EVENT_IME_DELETE_SURROUNDING:
         return event->ime_target != 0 && event->ime_revision != 0 &&
                (event->ime_before != 0 || event->ime_after != 0);

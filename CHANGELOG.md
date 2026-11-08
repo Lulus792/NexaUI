@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.24 — Development snapshot
+
+- Added opt-in Wayland v1/v3 IME transaction boundaries, including explicit empty commits and whole-transaction rejection flags for filtered input. Existing event enum values and structure layout are retained; other backends report unsupported. Consumer buffering, validation and atomic application remain separate responsibilities.
+
 ## 0.1.23 — Development snapshot
 
 - Added an external original-model Aetheri catalogue observer experiment, covering exact target identity, query failure and uncertain view replacement without replay. Its private metadata tests do not establish actual installation or native composition acceptance.

@@ -76,6 +76,11 @@ nx_result nx_window_set_ime_enabled(nx_window *window, int enabled) {
     return NX_ERROR_UNSUPPORTED;
 }
 
+nx_result nx_window_set_ime_transaction_events(nx_window *window, int enabled) {
+    if (!window || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    return NX_ERROR_UNSUPPORTED;
+}
+
 nx_result nx_window_set_ime_purpose(nx_window *window,
                                     nx_ime_purpose purpose) {
     (void)window; (void)purpose;

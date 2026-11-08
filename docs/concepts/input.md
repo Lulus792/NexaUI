@@ -1,5 +1,9 @@
 # Input and frame transitions
 
+Custom editors that need to reject a complete native delete/commit operation can
+opt in to [Wayland IME transaction boundaries](ime-transactions.md) from 0.1.24.
+The default event stream and ordinary widget routing remain unchanged.
+
 NexaUI uses a backend-neutral `nx_event` stream. Native window backends translate OS messages into logical coordinates, key names, pointer buttons, touch contacts, wheel units, Unicode scalar text, focus and resize events. A window's event queue preserves order, except consecutive mouse pointer moves are coalesced to the newest position. Win32 implements the full current input set, UTF-8 plain-text clipboard and filesystem drops. The Linux/X11 adapter implements mouse, wheel, basic key/text, focus and resize events, clipboard transfer and local-file drops. It accepts committed UTF-8 from an optional XIM context; the keysym fallback still has limited keyboard-layout coverage. The initial Wayland adapter implements pointer buttons, movement, scroll, focus, basic XKB key/text, key repeat, cursor shapes, resize events, UTF-8 clipboard transfer and local-file drops. Optional text-input-v3, or v1 as a fallback, accepts committed UTF-8 when enabled for a focused editor; the text-field widget manages this when given `ime_window`, and custom editors can use the activation API directly. Preedit from Windows, X11 callback-style XIM, Wayland v3/v1 and AppKit is available to focused text fields. The initial AppKit adapter implements windows, normalized input, composition, native editor commands, pasteboard and file URL drops. Static/shared native CI checks pass; physical input/installed-IME acceptance and full-document AppKit text-input integration remain pending. See the [AppKit contract](macos.md).
 
 Wayland text-input-v1 keysym events use the modifier indices supplied by that

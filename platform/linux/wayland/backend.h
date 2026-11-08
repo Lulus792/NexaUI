@@ -43,6 +43,8 @@ nx_result nx_wayland_window_set_ime_rect(nx_wayland_window *window,
                                          nx_rect caret);
 nx_result nx_wayland_window_set_ime_enabled(nx_wayland_window *window,
                                             int enabled);
+nx_result nx_wayland_window_set_ime_transaction_events(nx_wayland_window *window,
+                                                        int enabled);
 nx_result nx_wayland_window_set_ime_purpose(nx_wayland_window *window,
                                             nx_ime_purpose purpose);
 nx_result nx_wayland_window_get_ime_preedit(nx_wayland_window *window,

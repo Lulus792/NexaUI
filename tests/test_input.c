@@ -15,6 +15,7 @@ _Static_assert(sizeof(nx_event)==sizeof(prior_event_layout),"event ABI size");
 _Static_assert(offsetof(nx_event,text_command)==offsetof(prior_event_layout,scalar),"event payload ABI");
 _Static_assert(offsetof(nx_event,window_state)==offsetof(prior_event_layout,scalar),"window state payload ABI");
 _Static_assert(offsetof(nx_event,ime_target)==offsetof(prior_event_layout,ime_target),"event target ABI");
+_Static_assert(NX_EVENT_WAKE==21,"prior event enum values");
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -286,6 +287,30 @@ static int test_consumed_key_and_text_command(void) {
     nx_context_destroy(ctx); return 0;
 }
 
+static int test_ime_transaction_markers(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(nx_window_set_ime_transaction_events(NULL,1)==NX_ERROR_ARGUMENT);
+    nx_event event={0};event.type=NX_EVENT_IME_TRANSACTION_BEGIN;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.ime_before=NX_IME_TRANSACTION_REJECTED;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.ime_before=NX_IME_TRANSACTION_COMMIT;event.ime_target=81;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.ime_revision=7;event.ime_before=8;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_ERROR_ARGUMENT);
+    event.ime_before=NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_REJECTED;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    event.type=NX_EVENT_IME_TRANSACTION_END;
+    CHECK(nx_context_queue_event(ctx,&event)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,100,0)==NX_OK);
+    const nx_event *events;size_t count;
+    CHECK(nx_frame_events(ctx,&events,&count)==NX_OK && count==2);
+    CHECK(events[0].type==NX_EVENT_IME_TRANSACTION_BEGIN && events[1].type==NX_EVENT_IME_TRANSACTION_END);
+    nx_input_snapshot input;CHECK(nx_frame_input(ctx,&input)==NX_OK);
+    CHECK(!input.buttons_down && !input.modifiers && !input.focused && !nx_focus_id(ctx));
+    CHECK(nx_end_frame(ctx)==NX_OK);nx_context_destroy(ctx);return 0;
+}
+
 int main(void) {
     nx_context *state_context=NULL;
     CHECK(nx_context_create(NULL,&state_context)==NX_OK);
@@ -302,6 +327,7 @@ int main(void) {
     CHECK(nx_frame_input(state_context,&state_input)==NX_OK && !state_input.buttons_down && !state_input.focused);
     CHECK(nx_end_frame(state_context)==NX_OK); nx_context_destroy(state_context);
     if (test_consumed_key_and_text_command()) return 1;
+    if (test_ime_transaction_markers()) return 1;
     if (test_frame_transitions()) return 1;
     if (test_focus_and_validation()) return 1;
     if (test_event_allocation_failure()) return 1;

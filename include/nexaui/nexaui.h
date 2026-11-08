@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 23
+#define NX_VERSION_PATCH 24
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -316,7 +316,10 @@ typedef enum nx_event_type {
        edit/action. Widgets must not repeat it from this key event. */
     NX_EVENT_KEY_DOWN_CONSUMED,
     NX_EVENT_WINDOW_STATE, /* Opt-in native state change; window_state below. */
-    NX_EVENT_WAKE /* Native asynchronous work needs a frame; no input action. */
+    NX_EVENT_WAKE, /* Native asynchronous work needs a frame; no input action. */
+    /* Opt-in native IME boundaries; appended to preserve prior enum values. */
+    NX_EVENT_IME_TRANSACTION_BEGIN,
+    NX_EVENT_IME_TRANSACTION_END
 } nx_event_type;
 
 /* Wayland IME commit boundaries in NX_EVENT_TEXT. A consumer that requires a
@@ -325,6 +328,14 @@ typedef enum nx_event_type {
 #define NX_IME_COMMIT_START UINT32_C(1)
 #define NX_IME_COMMIT_END UINT32_C(2)
 #define NX_IME_COMMIT_FILTERED UINT32_C(4)
+
+/* ime_before on both IME_TRANSACTION boundary events. COMMIT includes an
+   explicitly empty/null commit; DELETE means a nonempty native delete request.
+   REJECTED means the commit contains filtered controls or malformed UTF-8.
+   Discard the whole transaction in that case, including its delete events. */
+#define NX_IME_TRANSACTION_COMMIT UINT32_C(1)
+#define NX_IME_TRANSACTION_DELETE UINT32_C(2)
+#define NX_IME_TRANSACTION_REJECTED UINT32_C(4)
 
 /* Every field is backend-neutral. Unused fields are zero. Mouse and touch
    coordinates and dimensions are logical pixels; wheel deltas are abstract
@@ -634,6 +645,19 @@ NX_API nx_result nx_window_set_ime_rect(nx_window *window, nx_rect caret);
    preedit presentation where available. Call again when focus leaves the
    editor. Other backends may return NX_ERROR_UNSUPPORTED. */
 NX_API nx_result nx_window_set_ime_enabled(nx_window *window, int enabled);
+/* Opt in to BEGIN/END events around each accepted Wayland v1 commit/v3 done
+   containing a commit or nonempty delete. Default OFF; legacy event streams
+   remain unchanged. Owner thread, before the first successful IME enable.
+   Changing the mode afterwards returns NX_ERROR_STATE; setting the same mode
+   is a no-op. Other backends/no text-input protocol return UNSUPPORTED.
+   Both boundaries carry the same target/revision and NX_IME_TRANSACTION_* flags
+   in ime_before; DELETE/TEXT/PREEDIT events retain their existing meanings.
+   Buffer edits until a matching END. Reject REJECTED, stale or interrupted
+   batches, and discard any buffer on a polling error or context/focus change.
+   These boundaries do not apply, validate or make edits atomic by themselves.
+   Unavailable complete boundaries must not be inferred from queue exhaustion. */
+NX_API nx_result nx_window_set_ime_transaction_events(nx_window *window,
+                                                       int enabled);
 typedef enum nx_ime_purpose {
     NX_IME_PURPOSE_NORMAL = 0,
     NX_IME_PURPOSE_PASSWORD = 1

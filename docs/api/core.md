@@ -1,4 +1,4 @@
-# Core API (0.1.23)
+# Core API (0.1.24)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -27,7 +27,10 @@ or newer. `nx_window_fullscreen` and `NX_WINDOW_CAP_FULLSCREEN` require
 not compositor acceptance; the observed state remains separate. Windows and
 macOS currently return unsupported for fullscreen requests.
 `nx_text_field_widget_described` and `nx_text_field_widget_styled` require
-0.1.22 or newer. `nx_activity` requires 0.1.23 or newer. This does not declare a
+0.1.22 or newer. `nx_activity` requires 0.1.23 or newer.
+`nx_window_set_ime_transaction_events` and the opt-in Wayland v1/v3 transaction
+boundaries require 0.1.24 or newer. Unsupported backends report that explicitly;
+existing callers retain their legacy event stream. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full

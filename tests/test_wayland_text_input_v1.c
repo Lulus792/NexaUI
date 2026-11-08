@@ -32,6 +32,7 @@ typedef struct test_server {
     atomic_int send_old_commit;
     atomic_int send_race_preedit, send_real_leave, send_old_preedit;
     atomic_int normal_content, password_content;
+    atomic_int transaction_case;
     char surrounding[64];
     uint32_t surrounding_cursor, surrounding_anchor;
     atomic_int surrounding_count;
@@ -260,6 +261,13 @@ static void text_commit_state(struct wl_client *client,
     (void)client;
     CHECK(server->enabled);
     server->serial = serial;
+    int transaction=atomic_exchange(&server->transaction_case,0);
+    if (transaction) {
+        if (transaction!=4) zwp_text_input_v1_send_delete_surrounding_text(resource,transaction==5?-3:-1,1);
+        zwp_text_input_v1_send_commit_string(resource,serial-(transaction==6?100u:0u),
+            transaction==2?"\x1b\n\x7f":transaction==3 || transaction==4?"":transaction==7?"\xc0":"x\xc3\xa9");
+        return;
+    }
     if (atomic_load(&server->send_race_preedit) &&
         strcmp(server->surrounding, "race") == 0) {
         atomic_store(&server->send_race_preedit, 0);
@@ -392,7 +400,57 @@ static void *run_server(void *data) {
     return NULL;
 }
 
-int main(void) {
+static nx_event transaction_event(nx_window *window,nx_event_type type) {
+    nx_event event;int available=0;
+    nx_result result=nx_window_next_event(window,&event,&available);
+    if (result!=NX_OK || !available || event.type!=type)
+        fprintf(stderr,"v1 expected type=%d, actual result=%d available=%d type=%d target=%llu revision=%llu flags=%u\n",
+            (int)type,(int)result,available,(int)event.type,(unsigned long long)event.ime_target,(unsigned long long)event.ime_revision,event.ime_before);
+    CHECK(result==NX_OK && available && event.type==type);
+    CHECK(event.ime_target==81 && event.ime_revision==7);
+    return event;
+}
+
+static void transaction_cases(test_server *server,nx_window *window) {
+    nx_event focus;int available=0;
+    CHECK(nx_window_next_event(window,&focus,&available)==NX_OK && available &&
+        focus.type==NX_EVENT_FOCUS && focus.focused && !focus.ime_target && !focus.ime_revision);
+    CHECK(nx_window_next_event(window,&focus,&available)==NX_OK && !available);
+    CHECK(nx_window_set_ime_transaction_events(window,1)==NX_OK);
+    CHECK(nx_window_set_ime_surrounding_text(window,81,7,"ab\xc3\xa9" "cd",6,6,6)==NX_OK);
+    atomic_store(&server->transaction_case,1);
+    CHECK(nx_window_set_ime_enabled(window,1)==NX_OK);
+    for (int test=1;test<=7;++test) {
+        printf("v1 transaction case %d\n",test);fflush(stdout);
+        if (test>1) {
+            atomic_store(&server->transaction_case,test);
+            CHECK(nx_window_set_ime_rect(window,(nx_rect){(float)(12+test),34,2,18})==NX_OK);
+        }
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+        if (test<5) {
+            uint32_t flags=NX_IME_TRANSACTION_COMMIT | (test==4?0u:NX_IME_TRANSACTION_DELETE) |
+                (test==2?NX_IME_TRANSACTION_REJECTED:0u);
+            CHECK(transaction_event(window,NX_EVENT_IME_TRANSACTION_BEGIN).ime_before==flags);
+            if (test!=4) {
+                nx_event deletion=transaction_event(window,NX_EVENT_IME_DELETE_RANGE);
+                CHECK(deletion.ime_index==-1 && deletion.ime_length==1);
+            }
+            if (test==1) {
+                nx_event first=transaction_event(window,NX_EVENT_TEXT),last=transaction_event(window,NX_EVENT_TEXT);
+                CHECK(first.scalar=='x' && first.ime_before==NX_IME_COMMIT_START);
+                CHECK(last.scalar==0xe9 && last.ime_before==NX_IME_COMMIT_END);
+            }
+            CHECK(transaction_event(window,NX_EVENT_IME_TRANSACTION_END).ime_before==flags);
+        }
+        nx_event event;int available=0;CHECK(nx_window_next_event(window,&event,&available)==NX_OK && !available);
+    }
+    CHECK(nx_window_set_ime_transaction_events(window,0)==NX_ERROR_STATE);
+    puts("Wayland v1 IME boundaries:7 wire cases passed");
+}
+
+int main(int argc,char **argv) {
+    int transactions=argc==2 && !strcmp(argv[1],"--transactions");
+    CHECK(argc==1 || transactions);
     test_server server = {0};
     char runtime[] = "/tmp/nexaui-wayland-v1-XXXXXX";
     CHECK(mkdtemp(runtime));
@@ -426,6 +484,7 @@ int main(void) {
     nx_window *window = NULL;
     CHECK(nx_window_create(&desc, &window) == NX_OK && window);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    if (transactions) { transaction_cases(&server,window);goto window_done; }
     CHECK(nx_window_set_ime_rect(window, (nx_rect){12, 34, 2, 18}) == NX_OK);
     CHECK(nx_window_set_ime_enabled(window, 1) == NX_OK);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
@@ -779,6 +838,7 @@ int main(void) {
           available && event.type == NX_EVENT_IME_PREEDIT_CHANGED);
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK && !available);
     CHECK(nx_window_set_ime_enabled(window, 0) == NX_OK);
+window_done:
     nx_window_destroy(window);
     wl_display_terminate(server.display);
     CHECK(pthread_join(thread, NULL) == 0);

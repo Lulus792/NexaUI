@@ -107,6 +107,7 @@ struct nx_wayland_window {
     struct zwp_text_input_v3 *text_input_v3;
     char *ime_pending_commit;
     size_t ime_pending_length;
+    int ime_pending_commit_received;
     char *ime_preedit, *ime_pending_preedit;
     size_t ime_preedit_length, ime_pending_preedit_length;
     uint64_t ime_preedit_target, ime_preedit_revision;
@@ -131,6 +132,7 @@ struct nx_wayland_window {
     int ime_surrounding_withdrawn;
     uint32_t ime_serial, ime_activation_serial;
     int ime_requested, ime_activated, ime_entered, ime_caret_set;
+    int ime_transaction_events, ime_transaction_events_locked;
     int ime_password;
     int ime_v3_focused;
     nx_rect ime_caret;
@@ -1084,6 +1086,7 @@ static void nx_wayland_ime_clear_pending_commit(nx_wayland_window *window) {
     }
     window->ime_pending_commit = NULL;
     window->ime_pending_length = 0;
+    window->ime_pending_commit_received = 0;
 }
 
 static void nx_wayland_ime_clear_pending(nx_wayland_window *window) {
@@ -1153,6 +1156,31 @@ static void nx_wayland_ime_clear_preedit(nx_wayland_window *window,
         event.ime_revision = revision;
         nx_platform_event_queue_push(&window->event_queue, event);
     }
+}
+
+static uint32_t nx_wayland_ime_transaction_flags(const char *text, size_t length,
+                                                 int commit, int deleted) {
+    uint32_t flags = (commit ? NX_IME_TRANSACTION_COMMIT : 0u) |
+                     (deleted ? NX_IME_TRANSACTION_DELETE : 0u);
+    if (nx_utf8_validate(text, length, NULL) != NX_OK)
+        return flags | NX_IME_TRANSACTION_REJECTED;
+    size_t offset = 0;
+    while (offset < length) {
+        uint32_t scalar = 0;
+        if (nx_utf8_decode(text, length, &offset, &scalar) != NX_OK ||
+            scalar < 0x20u || scalar == 0x7fu)
+            return flags | NX_IME_TRANSACTION_REJECTED;
+    }
+    return flags;
+}
+
+static void nx_wayland_ime_transaction_boundary(nx_wayland_window *window,
+    nx_event_type type, uint64_t target, uint64_t revision, uint32_t flags) {
+    if (!window->ime_transaction_events) return;
+    nx_event event = {0};
+    event.type = type; event.ime_target = target; event.ime_revision = revision;
+    event.ime_before = flags;
+    nx_platform_event_queue_push(&window->event_queue, event);
 }
 
 static void nx_wayland_ime_emit_utf8(nx_wayland_window *window,
@@ -1355,6 +1383,7 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
         nx_wayland_ime_v1_clear_delete(window);
         return;
     }
+    nx_event deletion = {0};
     if (window->ime_v1_delete_pending && window->ime_v1_delete_length) {
         if (!snapshot_current) {
             nx_wayland_ime_v1_clear_delete(window);
@@ -1386,14 +1415,19 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
             nx_wayland_ime_v1_clear_delete(window);
             return;
         }
-        nx_event event = {0};
-        event.type = NX_EVENT_IME_DELETE_RANGE;
-        event.ime_target = window->ime_surrounding_target;
-        event.ime_revision = window->ime_surrounding_revision;
-        event.ime_index = window->ime_v1_delete_index;
-        event.ime_length = window->ime_v1_delete_length;
-        nx_platform_event_queue_push(&window->event_queue, event);
+        deletion.type = NX_EVENT_IME_DELETE_RANGE;
+        deletion.ime_target = window->ime_surrounding_target;
+        deletion.ime_revision = window->ime_surrounding_revision;
+        deletion.ime_index = window->ime_v1_delete_index;
+        deletion.ime_length = window->ime_v1_delete_length;
     }
+    uint64_t target = snapshot_current ? window->ime_surrounding_target : 0;
+    uint64_t revision = snapshot_current ? window->ime_surrounding_revision : 0;
+    uint32_t flags = window->ime_transaction_events ?
+        nx_wayland_ime_transaction_flags(text, length, 1, deletion.type != 0) : 0;
+    nx_wayland_ime_transaction_boundary(window, NX_EVENT_IME_TRANSACTION_BEGIN,
+        target, revision, flags);
+    if (deletion.type) nx_platform_event_queue_push(&window->event_queue, deletion);
     nx_wayland_ime_v1_clear_delete(window);
     if (window->event_queue.error != NX_OK) return;
     window->ime_v1_preedit_cursor_set = 0;
@@ -1401,6 +1435,8 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
     nx_wayland_ime_emit_utf8(window, text, length,
         snapshot_current ? window->ime_surrounding_target : 0,
         snapshot_current ? window->ime_surrounding_revision : 0);
+    nx_wayland_ime_transaction_boundary(window, NX_EVENT_IME_TRANSACTION_END,
+        target, revision, flags);
 }
 
 static void nx_wayland_ime_cursor_position(void *data,
@@ -1551,7 +1587,9 @@ static void nx_wayland_ime_v3_commit(void *data,
     (void)input;
     nx_wayland_ime_clear_pending_commit(window);
     if (!window->ime_requested || !window->ime_activated ||
-        !window->ime_v3_focused || !text) return;
+        !window->ime_v3_focused) return;
+    window->ime_pending_commit_received = 1;
+    if (!text) return;
     size_t length = strnlen(text, 1048577u);
     if (length > 1048576u) {
         window->event_queue.error = NX_ERROR_LIMIT;
@@ -1591,6 +1629,7 @@ static void nx_wayland_ime_v3_done(void *data,
     int has_delete = window->ime_pending_delete_before ||
                      window->ime_pending_delete_after;
     int delete_valid = !has_delete;
+    nx_event deletion = {0};
     if (valid && has_delete && snapshot_current) {
         size_t selection_start = window->ime_surrounding_cursor <
             window->ime_surrounding_anchor ?
@@ -1610,15 +1649,23 @@ static void nx_wayland_ime_v3_done(void *data,
                  ((unsigned char)window->ime_surrounding[end] & 0xc0u) != 0x80u);
         }
         if (delete_valid) {
-            nx_event event = {0};
-            event.type = NX_EVENT_IME_DELETE_SURROUNDING;
-            event.ime_target = window->ime_surrounding_target;
-            event.ime_revision = window->ime_surrounding_revision;
-            event.ime_before = window->ime_pending_delete_before;
-            event.ime_after = window->ime_pending_delete_after;
-            nx_platform_event_queue_push(&window->event_queue, event);
+            deletion.type = NX_EVENT_IME_DELETE_SURROUNDING;
+            deletion.ime_target = window->ime_surrounding_target;
+            deletion.ime_revision = window->ime_surrounding_revision;
+            deletion.ime_before = window->ime_pending_delete_before;
+            deletion.ime_after = window->ime_pending_delete_after;
         }
     }
+    uint64_t transaction_target = snapshot_current ? window->ime_surrounding_target : 0;
+    uint64_t transaction_revision = transaction_target ? window->ime_surrounding_revision : 0;
+    int transaction = valid && delete_valid &&
+        (window->ime_pending_commit_received || has_delete);
+    uint32_t transaction_flags = transaction && window->ime_transaction_events ?
+        nx_wayland_ime_transaction_flags(window->ime_pending_commit,
+            window->ime_pending_length, window->ime_pending_commit_received, has_delete) : 0;
+    if (transaction) nx_wayland_ime_transaction_boundary(window,
+        NX_EVENT_IME_TRANSACTION_BEGIN, transaction_target, transaction_revision, transaction_flags);
+    if (deletion.type) nx_platform_event_queue_push(&window->event_queue, deletion);
     if (valid && delete_valid && window->ime_pending_commit &&
         window->event_queue.error == NX_OK)
         nx_wayland_ime_emit_utf8(window, window->ime_pending_commit,
@@ -1654,6 +1701,8 @@ static void nx_wayland_ime_v3_done(void *data,
             nx_platform_event_queue_push(&window->event_queue, event);
         }
     }
+    if (transaction) nx_wayland_ime_transaction_boundary(window,
+        NX_EVENT_IME_TRANSACTION_END, transaction_target, transaction_revision, transaction_flags);
     nx_wayland_ime_clear_pending(window);
 }
 
@@ -3022,8 +3071,20 @@ nx_result nx_wayland_window_set_ime_enabled(nx_wayland_window *window,
     if (!window->text_input && !window->text_input_v3)
         return NX_ERROR_UNSUPPORTED;
     window->ime_requested = enabled;
+    if (enabled) window->ime_transaction_events_locked = 1;
     if (enabled) nx_wayland_ime_activate(window);
     else nx_wayland_ime_deactivate(window);
+    return NX_OK;
+}
+
+nx_result nx_wayland_window_set_ime_transaction_events(nx_wayland_window *window,
+                                                        int enabled) {
+    if (!window || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    if (!nx_wayland_on_owner_thread(window)) return NX_ERROR_STATE;
+    if (!window->text_input && !window->text_input_v3) return NX_ERROR_UNSUPPORTED;
+    if (window->ime_transaction_events_locked && window->ime_transaction_events != enabled)
+        return NX_ERROR_STATE;
+    window->ime_transaction_events = enabled;
     return NX_OK;
 }
 

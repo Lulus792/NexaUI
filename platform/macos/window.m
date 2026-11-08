@@ -798,6 +798,10 @@ nx_result nx_window_set_ime_enabled(nx_window *w, int enabled) {
     if (!nx_mac_owner(w)) return NX_ERROR_STATE;
     @autoreleasepool { w->ime_enabled = !!enabled; if (!enabled) nx_mac_discard(w); return NX_OK; }
 }
+nx_result nx_window_set_ime_transaction_events(nx_window *w, int enabled) {
+    if (!w || (enabled != 0 && enabled != 1)) return NX_ERROR_ARGUMENT;
+    return nx_mac_owner(w) ? NX_ERROR_UNSUPPORTED : NX_ERROR_STATE;
+}
 nx_result nx_window_set_ime_purpose(nx_window *w, nx_ime_purpose purpose) {
     if (!w || (purpose != NX_IME_PURPOSE_NORMAL && purpose != NX_IME_PURPOSE_PASSWORD)) return NX_ERROR_ARGUMENT;
     if (!nx_mac_owner(w)) return NX_ERROR_STATE;
