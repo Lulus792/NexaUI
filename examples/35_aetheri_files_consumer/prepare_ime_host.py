@@ -46,8 +46,11 @@ def main():
         "/* Before the first frame; borrowed font bytes outlive the view. At most four, 4 MiB each. */\n"
         "bool ae_files_view_add_fallback(struct ae_files_view *,const void *,size_t);")])
     transform("nexaui_view.c", [(
+        "struct edit { nx_text_field *field;",
+        "struct paste_rule { struct ae_files_view *view;bool name; };\nstruct edit { nx_text_field *field;"
+    ), (
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
-        "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n"
+        "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];struct paste_rule paste_rules[2];\n"
         """    nx_font *fallback_fonts[4];size_t fallback_count;
     nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;
     nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;
@@ -102,6 +105,14 @@ def main():
     ), (
         "nx_text_field_set_read_only(e->field,invalid || v->s->composing)",
         "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
+    ), (
+        "static bool field(struct ae_files_view *v,enum ae_files_control c,",
+        (here / "paste_admission.inc").read_text() + "\nstatic bool field(struct ae_files_view *v,enum ae_files_control c,"
+    ), (
+        "struct edit *e=&v->edits[c==AE_FV_NAME?1:0];if(!edit_sync(e,value)) return false;",
+        "struct edit *e=&v->edits[c==AE_FV_NAME?1:0];if(!edit_sync(e,value)) return false;\n"
+        "    unsigned which=c==AE_FV_NAME?1u:0u;v->paste_rules[which]=(struct paste_rule){v,which!=0};\n"
+        "    if(nx_text_field_set_paste_validator(e->field,paste_valid,&v->paste_rules[which])!=NX_OK) return false;"
     ), (
         ".validate=field_valid,.validate_user=&validation};",
         ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window,.clipboard=v->clipboard};"

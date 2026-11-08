@@ -3,6 +3,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_host.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/ime_transactions.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/appearance.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/paste_admission.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/check_source.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json" files_ime_manifest)
@@ -21,6 +22,14 @@ add_executable(aetheri_files_ime_candidate "${files_ime_generated}/nexaui_main.c
 target_link_libraries(aetheri_files_ime_candidate PRIVATE files_ime_view Threads::Threads)
 list(APPEND checked_targets files_ime_view aetheri_files_ime_candidate)
 if(FILES_BUILD_TESTS)
+    add_executable(files_paste_admission_test "${CMAKE_CURRENT_SOURCE_DIR}/paste_admission_test.c")
+    target_compile_definitions(files_paste_admission_test PRIVATE
+        AE_FILES_GENERATED_VIEW="${files_ime_generated}/nexaui_view.c")
+    target_include_directories(files_paste_admission_test PRIVATE "${files_ime_generated}" "${original}/files")
+    target_link_libraries(files_paste_admission_test PRIVATE files_original_session NexaUI::NexaUI m)
+    list(APPEND checked_targets files_paste_admission_test)
+    add_test(NAME files_paste_admission COMMAND files_paste_admission_test "${FILES_TEST_FONT}")
+    set_tests_properties(files_paste_admission PROPERTIES TIMEOUT 30)
     add_executable(files_appearance_test "${CMAKE_CURRENT_SOURCE_DIR}/appearance_test.c")
     target_compile_definitions(files_appearance_test PRIVATE
         AE_FILES_GENERATED_VIEW="${files_ime_generated}/nexaui_view.c")

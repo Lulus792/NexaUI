@@ -82,8 +82,8 @@ original export and `aetheri_files_candidate` are retained unchanged. The bindin
 reuses the installed public text-field/window APIs and original bounded commit
 validation. It is an integration experiment, not an approved Aetheri migration.
 
-The IME variant now requires installed SDK **0.1.25**, with the explicitly
-selected source declaration `ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18` in the
+The IME variant now requires installed SDK **0.1.26**, with the explicitly
+selected source declaration `794be7cec49f427fcc56e2604cddb44245347021` in the
 executed experiment. The default-OFF original consumer still selects exactly
 0.1.23. Keep the two SDK installations and build directories separate.
 
@@ -95,7 +95,7 @@ python3 examples/35_aetheri_files_consumer/run_ime.py \
   --binaries /path/to/files-build --original /path/to/exported-original-source \
   --atspi-fixture /path/to/private-atspi-fixture \
   --sdk-input /path/to/checked-sdk-input.json \
-  --expected-sdk-revision ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18 \
+  --expected-sdk-revision 794be7cec49f427fcc56e2604cddb44245347021 \
   --linkage shared --server /path/to/test_compositor_server \
   --font /path/to/borrowed-sans.ttf --mono /path/to/borrowed-mono.ttf \
   --work-dir /short/fresh/private-output
@@ -157,10 +157,27 @@ Wayland reads are asynchronous and retain the existing SDK focus, field revision
 selection and close checks. Copy owns an immutable snapshot; Cut removes the
 selection only after a successful copy. Ordinary single-line paste converts
 CR/LF to spaces under the existing widget contract, then the original Files
-whole-proposal validator accepts or rejects the complete draft. Invalid/oversized
-names retain the app's previous text and block confirmation until explicit clear.
-That original rollback uses `nx_text_field_set_text`, including its history-reset
-semantics; it does not preserve the field's preceding history on rejection.
+whole-proposal validator accepts or rejects the complete draft. The current
+variant installs `nx_text_field_set_paste_validator` with persistent per-field
+application data, so an invalid/oversized paste is refused before changing text,
+selection or undo/redo. The original error message and confirmation barrier remain:
+explicit clear is still required before further editing. That deliberate clear
+uses `nx_text_field_set_text` and resets history; Undo is not a bypass of the
+rejection barrier. The defensive post-edit rollback for other edits retains its
+original behavior.
+
+The application combines the current prefix, insertion and suffix into a bounded
+256-byte stack buffer and invokes the original whole-draft rule. It checks the
+complete byte budget before copying and refuses further coqueued pastes after a
+rejection. Function/user identities stay stable across frames, preserving pending
+native transfers. Keyboard, logical and independent assistive Paste share that
+admission point. The latter reports a rejected edit as rejected.
+
+`files_paste_admission` adds 28 original-view component cases for name/query and
+keyboard/logical paths. It checks retained reversed selection, size boundaries,
+dot drafts, coqueued rejection and actual retained history/redo. The history probe
+temporarily submits the same field through a separate public widget; this is a
+component observation, not an extra Files user action or a way around its barrier.
 
 The normal SDK keyboard-paste transport budget remains 32 MiB and five seconds
 per read; the accepted app draft remains at most 255 bytes. This is not a new 255-byte
@@ -177,6 +194,10 @@ EOF alone remains no proof that an external source sent its complete value.
 Wayland clipboard writes also require this window's current native input serial.
 The private task supplies a fresh Shift key before AT-SPI Cut after a foreign
 receiver's focus popup; it does not synthesize a serial or grant app admission.
+The extended task also checks rejected reversed Unicode selection, explicit
+independent AT-SPI rejection and the original query control-character rule. Its
+`clipboard-paste-rejected` peer mode requires an attempted Paste to return false;
+the driver separately observes the app's new rejection state and retained text.
 
 ## Explicit font fallback and complete naming captions
 

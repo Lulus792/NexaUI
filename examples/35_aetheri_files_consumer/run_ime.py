@@ -16,7 +16,7 @@ parser.add_argument('--clipboard-budget',action='store_true',help='Also exercise
 parser.add_argument('--fallback-font',type=Path,action='append',default=[],help='Explicit optional app fallback font; may be repeated up to four times')
 parser.add_argument('--font-errors',action='store_true',help='Check private startup refusals for missing, oversized, malformed and excess fallback inputs')
 args=parser.parse_args();b=args.binaries.resolve(strict=True);original=args.original.resolve(strict=True);fixture=args.atspi_fixture.resolve(strict=True);src=Path(__file__).resolve().parent;sdk=json.loads(args.sdk_input.read_text());profile=args.linkage;case='native-ime-'+profile
-if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.25' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
+if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.26' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
 library=Path(sdk['library']).resolve(strict=True)
 if library.name!='libnexaui.so.'+sdk['version'] or hashlib.sha256(library.read_bytes()).hexdigest()!=sdk['sha256']:raise SystemExit('Changed candidate SDK library')
 dbus=Path(sdk['dbus_sdk']).resolve(strict=True)

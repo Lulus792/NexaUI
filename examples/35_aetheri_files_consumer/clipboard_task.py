@@ -99,6 +99,22 @@ class ClipboardTask:
         self.offer(b'Z');self.key(47,True);self.expect('aZbc',2)
         self.key(44,True);self.expect('aébc',2,(1,2));self.key(21,True);self.expect('aZbc',2)
         self.capture('foreign replacement and one undo preserve selection')
+        # Rejection is admission before edit, so even a reversed Unicode range
+        # remains intact. Files' original rejection barrier still requires clear.
+        self.clear();self.offer('aébc'.encode());self.key(47,True);self.expect('aébc',4)
+        self.key(102);self.key(106);self.key(106);self.key(105,shift=True);self.expect('aébc',1,(1,2))
+        self.offer(b'bad/name');self.key(47,True)
+        self.wait(lambda:self.state(name_bad=1),'invalid foreign paste refused before changing reversed Unicode selection')
+        self.text('Name','aébc',1,(1,2));self.native_case('invalid');self.key(28)
+        assert self.state(dialog=1,name_bad=1)
+        self.capture('rejected foreign paste retains reversed Unicode selection')
+        self.result['clipboard_checks'].append('Rejected native keyboard paste preserves reversed Unicode selection and blocks confirmation')
+        self.clear();self.offer(b'abc');self.key(47,True);self.expect('abc',3)
+        self.offer(b'bad/name');self.native_case('clipboard-paste-rejected')
+        self.wait(lambda:self.state(name_bad=1),'independent AT-SPI paste rejected by original whole-proposal rule')
+        self.text('Name','abc',3);self.native_case('invalid')
+        self.capture('independent AT-SPI reports rejected whole paste')
+        self.result['clipboard_checks'].append('Independent AT-SPI Paste reports rejection while original draft and caret remain unchanged')
         for payload in (b'bad/name',b'x'*256,*([b'x'*65537] if budget else [])):
             self.seed();self.offer(payload);self.key(47,True)
             self.wait(lambda:self.state(name_bad=1),'whole foreign clipboard proposal rejected '+str(len(payload)))
@@ -112,6 +128,20 @@ class ClipboardTask:
         self.key(42);self.text('Name','s',1);self.key(15,shift=True);self.expect('s',1)
         self.result['clipboard_checks'].append('Late completed paste after Tab did not change the original draft')
         self.clear()
+        # Search has a different original rule: tabs are forbidden even though
+        # single-line CR/LF conversion remains valid. Exercise the actual field.
+        self.key(1);self.wait(lambda:self.state(dialog=0),'close naming scope before query admission')
+        self.key(38,True);self.offer(b'alpha');self.key(47,True)
+        self.text('Search this folder','alpha',5);self.wait(lambda:self.state(count=1),'original query accepted through paste admission')
+        self.key(102);self.key(106);self.key(106);self.key(105,shift=True)
+        self.text('Search this folder','alpha',1,(1,2))
+        self.offer(b'bad\tquery');self.key(47,True)
+        self.wait(lambda:self.state(query_bad=1),'original query control-character rule rejects whole paste')
+        self.text('Search this folder','alpha',1,(1,2));self.capture('rejected search paste retains reversed selection')
+        self.result['clipboard_checks'].append('Original query validation rejects control characters without changing text or reversed selection')
+        self.key(38,True);self.text('Search this folder','',0)
+        self.key(49,True);self.wait(lambda:self.state(dialog=1),'reopen naming scope after query rejection')
+        self.expect('',0)
 
     def pending_close(self):
         # The preceding IME task intentionally leaves active preedit. Retire it

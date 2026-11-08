@@ -5,7 +5,8 @@
 #undef main
 
 int main(int argc,char **argv) {
-    if(argc==3 && (!strcmp(argv[2],"clipboard-copy") || !strcmp(argv[2],"clipboard-cut") || !strcmp(argv[2],"clipboard-paste"))) {
+    if(argc==3 && (!strcmp(argv[2],"clipboard-copy") || !strcmp(argv[2],"clipboard-cut") || !strcmp(argv[2],"clipboard-paste") || !strcmp(argv[2],"clipboard-paste-rejected"))) {
+        int expected_rejection=!strcmp(argv[2],"clipboard-paste-rejected"),tried=0;
         char *end=NULL;unsigned long pid=strtoul(argv[1],&end,10);
         if(!pid || !end || *end || atspi_init()) return 2;
         atspi_set_timeout(1000,1000);
@@ -15,6 +16,7 @@ int main(int argc,char **argv) {
         AtspiText *text=field?atspi_accessible_get_text_iface(field):NULL;GError *error=NULL;
         int count=text?atspi_text_get_character_count(text,&error):-1,okay=0;
         if(edit && !error && count>=0) {
+            tried=1;
             if(!strcmp(argv[2],"clipboard-copy")) okay=atspi_editable_text_copy_text(edit,0,count,&error);
             else if(!strcmp(argv[2],"clipboard-cut")) okay=atspi_editable_text_cut_text(edit,0,count,&error);
             else okay=atspi_editable_text_paste_text(edit,0,&error);
@@ -27,6 +29,10 @@ int main(int argc,char **argv) {
         if(app) g_object_unref(app);
         if(desktop) g_object_unref(desktop);
         atspi_exit();
+        if(expected_rejection) {
+            if(!tried || okay) {fputs("Native clipboard AT-SPI paste was not rejected\n",stderr);return 1;}
+            puts("Native clipboard AT-SPI paste proposal rejected");return 0;
+        }
         if(!okay) {fputs("Native clipboard AT-SPI operation failed\n",stderr);return 1;}
         puts("Native clipboard AT-SPI operation completed");return 0;
     }
