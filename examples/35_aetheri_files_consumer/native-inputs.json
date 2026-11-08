@@ -1,0 +1,529 @@
+{
+  "aetheri_revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+  "archive": "aetheri-files-native-complete-7483286-20261108.tar",
+  "archive_sha256": "3a44a500f99e45fd27e6ce19e2570f121a3df2ffefe529902ec56de157b43186",
+  "files": [
+    {
+      "path": "CMakeLists.txt",
+      "size": 120143,
+      "sha256": "1a4bc41111849a50ae983bd8044b6f58c94133a78432f45458dfa564017f194e",
+      "mode": 436
+    },
+    {
+      "path": "LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a",
+      "mode": 436
+    },
+    {
+      "path": "spec/editor.md",
+      "size": 28578,
+      "sha256": "85d466cbed98d062e14bd208454e96f65340c2d43b8ab8250d096ec2b189e8c5",
+      "mode": 436
+    },
+    {
+      "path": "spec/files.md",
+      "size": 37486,
+      "sha256": "1d4644aca3a6e362e6801aa26ed9a56323cc2e894f8aa01971ff853c5d3a7d76",
+      "mode": 436
+    },
+    {
+      "path": "spec/nexaui-inputs.json",
+      "size": 2060,
+      "sha256": "1a959c46974d3b351df0f75afc3b0ff59f172f7367cead46deea06efda43790e",
+      "mode": 436
+    },
+    {
+      "path": "spec/terminal.md",
+      "size": 53148,
+      "sha256": "8481f690c8ba2c9d947291505bea5b07583647a4acca60fded1a18edd1889912",
+      "mode": 436
+    },
+    {
+      "path": "spec/ui-inputs.json",
+      "size": 19855,
+      "sha256": "7567ec936c8ed3c8a8562ba2ed7074a81eb6df72ca67c6b8ae6e57e220eff014",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/direct.c",
+      "size": 9623,
+      "sha256": "d959f86a2220c750bab2d5fb1a170268ad4ff4f5c9f9294c48b047491c270b1d",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/direct.h",
+      "size": 3602,
+      "sha256": "eac32523bbf174b4bb5f0cb2e71b59aabf103b0d7a901ce675ee5e9c5a2547cc",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/document.c",
+      "size": 19757,
+      "sha256": "6dc6ae372641cc2621b71c26a5f11c56e35aa8457c15305440c4458d9943090f",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/document.h",
+      "size": 5894,
+      "sha256": "83ce31d0b09762eb66f49066566400812036d64676bc31cea4561200fe4ba010",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/file.c",
+      "size": 16421,
+      "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/file.h",
+      "size": 3344,
+      "sha256": "3684c8b72d2bdc409b837bc760f278024eac4b6631296cce81cc539014218264",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/graphical_main.c",
+      "size": 66454,
+      "sha256": "706707eed7e7d7df4e33eb1c3afd84efcbaa855749ee6cb5943d18db67a11517",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/main.c",
+      "size": 26802,
+      "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/modal.c",
+      "size": 15063,
+      "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/modal.h",
+      "size": 3224,
+      "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/view.c",
+      "size": 12627,
+      "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/view.h",
+      "size": 1125,
+      "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/workspace.c",
+      "size": 18595,
+      "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3",
+      "mode": 436
+    },
+    {
+      "path": "src/editor/workspace.h",
+      "size": 7378,
+      "sha256": "900182c71a7841dde1c9cff9018394426a16569e488f584824ab890dc059577a",
+      "mode": 436
+    },
+    {
+      "path": "src/files/create.c",
+      "size": 4508,
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42",
+      "mode": 436
+    },
+    {
+      "path": "src/files/create.h",
+      "size": 2039,
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60",
+      "mode": 436
+    },
+    {
+      "path": "src/files/launch.c",
+      "size": 3501,
+      "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28",
+      "mode": 436
+    },
+    {
+      "path": "src/files/launch.h",
+      "size": 1046,
+      "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83",
+      "mode": 436
+    },
+    {
+      "path": "src/files/layout.c",
+      "size": 3879,
+      "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c",
+      "mode": 436
+    },
+    {
+      "path": "src/files/layout.h",
+      "size": 1432,
+      "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f",
+      "mode": 436
+    },
+    {
+      "path": "src/files/main.c",
+      "size": 50043,
+      "sha256": "b2d8af2d6051abcd1675274ff3f842470870524c8a83fe0ad2984a8abce86a4f",
+      "mode": 436
+    },
+    {
+      "path": "src/files/model.c",
+      "size": 9531,
+      "sha256": "a4ce9a9e9035f4d0aae53d4f3511eeeec36ec18c77012b0ee1a52fe0ea0b2ef3",
+      "mode": 436
+    },
+    {
+      "path": "src/files/model.h",
+      "size": 3885,
+      "sha256": "70a7298064afa822f4f45f13c3dae04f61bbfe6b8290f99a7ca2d9e0164e70f0",
+      "mode": 436
+    },
+    {
+      "path": "src/files/nexaui_main.c",
+      "size": 16421,
+      "sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d",
+      "mode": 436
+    },
+    {
+      "path": "src/files/nexaui_view.c",
+      "size": 50973,
+      "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc",
+      "mode": 436
+    },
+    {
+      "path": "src/files/nexaui_view.h",
+      "size": 1755,
+      "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649",
+      "mode": 436
+    },
+    {
+      "path": "src/files/rename.c",
+      "size": 6818,
+      "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72",
+      "mode": 436
+    },
+    {
+      "path": "src/files/rename.h",
+      "size": 2637,
+      "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99",
+      "mode": 436
+    },
+    {
+      "path": "src/files/session.c",
+      "size": 25845,
+      "sha256": "bc4d93fed3a86d7382fe5ee6494d9859be50d0d213667b2a12d6c9a3eeeb0358",
+      "mode": 436
+    },
+    {
+      "path": "src/files/session.h",
+      "size": 4850,
+      "sha256": "9d58aa9e756695cfa1d64284c182d96cdc489b3c79b4a0446dc72c4de71f3512",
+      "mode": 436
+    },
+    {
+      "path": "src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/clipboard.c",
+      "size": 22988,
+      "sha256": "7c5d6923cb0a235b15929576e3e5f5a2da925b80f5d5f4edf8fa9bc9f1c63aa4",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/clipboard.h",
+      "size": 2743,
+      "sha256": "34cd8052244638b949c9870f798d645e63eb944936281c2acfc03bc9285b9fc2",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/composition.c",
+      "size": 3145,
+      "sha256": "d01270a1e0e5fe260cd0e3f90857b7374b30f8976f68ce8f8cb50bea2f5a5be1",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/composition.h",
+      "size": 1352,
+      "sha256": "1eb9bc93bebc5f974a1ba5fd30170cf598203232685fa252607c0c882f39beaf",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/main.c",
+      "size": 97945,
+      "sha256": "5a7a7c56fd8774f790eb0331709310d7b52f0d093b4eef730763c093bb0bacef",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/model.c",
+      "size": 21909,
+      "sha256": "07f960f267ac4937e5ba92fef4e5876a45b3aa0d97549fe686d72ae15c9dbd04",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/model.h",
+      "size": 3981,
+      "sha256": "fea264b8ef55cd18c3c5e3c2083c4ccf774837d023e09f93e1032bfa21fed0d4",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/nexaui_view.c",
+      "size": 29047,
+      "sha256": "219237a2baad628fee5968cdbfa3f19fc09f71b9d33bcc95f462bb5e34640cbe",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/nexaui_view.h",
+      "size": 5175,
+      "sha256": "24bf8995eb1e7452899a9a6414d09839f5c1f3cd90eacf1e05b4916d7df31872",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/paste.c",
+      "size": 3214,
+      "sha256": "4ae25aafdc16fe8c9fdd82561b0ec5a4a6f666106361b1e05c2cc87296a4e493",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/paste.h",
+      "size": 1342,
+      "sha256": "5e5968d701ecb009f70dd92bae6b9c0a2b234651f6dcc03359ee8d98abca32bd",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/pty.c",
+      "size": 6930,
+      "sha256": "6248cc4ad76d6577cdcd623cf5bf08380f7faaa0a040883f44ff91db90155020",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/pty.h",
+      "size": 2009,
+      "sha256": "6cec87625f6c75344c2edf3f3936bd13f63b4a896c96b8ba32eab44f76b04b13",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/pty_starter.c",
+      "size": 1590,
+      "sha256": "93f0a3ab4832e6342c1bc1173c4a5dfa1916d4bfa1dc94d440bcf2eee70f9786",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/session.c",
+      "size": 2855,
+      "sha256": "3636b2c2b318e1c49f23710966cfea486e44db2ffd7af98a2249cdb29e768842",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/session.h",
+      "size": 2882,
+      "sha256": "72c361fe5724c3380f1ee2446dfa97648efd6deb172b89ea8709d96a13e26ce2",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/spawn.c",
+      "size": 6629,
+      "sha256": "7c72dc1b48cb6e061111c0d806ea353cc9081a220a13ad8490d2e4f00c1df169",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/spawn.h",
+      "size": 1964,
+      "sha256": "f4a1285be9172922b853f2c6c3363943985e93c6d99e750e58f94d83bc5aea84",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/workspace.c",
+      "size": 9652,
+      "sha256": "bdda7511ed16f9840ec1fa5698edafbc163a63f19c962b3d13eee67955164305",
+      "mode": 436
+    },
+    {
+      "path": "src/terminal/workspace.h",
+      "size": 2472,
+      "sha256": "cf82b8dd99c154f55dfd0ed5410aa9a1f626cf4168f8819bda3930919d842ff6",
+      "mode": 436
+    },
+    {
+      "path": "src/text/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "mode": 436
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4",
+      "mode": 436
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145",
+      "mode": 436
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1",
+      "mode": 436
+    },
+    {
+      "path": "tests/files_create_fault.c",
+      "size": 1397,
+      "sha256": "6cf3fb55f14e9e5804ea0da8b20ca7909f59056da2a4390eeea9ed5e69857cae",
+      "mode": 436
+    },
+    {
+      "path": "tests/files_view_atspi.c",
+      "size": 13200,
+      "sha256": "4ba47dbf47388364fcf4a957ee09e77cbfeb7d7707181a5006a2f26da1759360",
+      "mode": 436
+    },
+    {
+      "path": "tests/grapheme_vectors.h",
+      "size": 39942,
+      "sha256": "3417d821429581d8bb7a5626f01857399899ca2ea020c9d18ec3d29960fc8aa5",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_document.c",
+      "size": 6958,
+      "sha256": "5cfbfd30fa824199563ed1662222bbd1a95744101e0ed0564fafd3ac8f744746",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_editor_file.c",
+      "size": 12705,
+      "sha256": "c06972027a7d5bbf3923c4bbb24ba282cdb9ce3a4c3a5e213869964cb5dabc6f",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_editor_view.c",
+      "size": 4222,
+      "sha256": "2827e964bf96441e9bbbe5a5f8f426bfefe59f1600d29c9663c6f82d7631dddf",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files.c",
+      "size": 9631,
+      "sha256": "31234307f81ed54df29dd539e22f28b72f7f2201411eb542f85a80f3626dea59",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_create.c",
+      "size": 5517,
+      "sha256": "3ec5f8342884a686e8c27b103ee158c8dd497f1c95112b259efd7e725722b359",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_launch.c",
+      "size": 3888,
+      "sha256": "189cb8a19d9993c470d330f83c86033b10540273016d0314b15b7ccaf3cfbb7f",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_layout.c",
+      "size": 4914,
+      "sha256": "9db1ef6429fea57d0a97110d720ed788f9773034d91a9361893e4032bf273a11",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_move.c",
+      "size": 6713,
+      "sha256": "3c9ec438be246f1fad196c9db5f03a4bcbae18dd20d2e85d091d861df7f465bf",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_rename.c",
+      "size": 6569,
+      "sha256": "d3e4e6a39b1aecf8fe0b06646d0636646d12c4efbd1d2465ff19cd722175db38",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_session.c",
+      "size": 7105,
+      "sha256": "d9acd56adf5cf9590184a04feca8bf461f5dcce5164e72c30d8d3f40bc191277",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_files_view.c",
+      "size": 17471,
+      "sha256": "f1cb96285b16e6ca3a451570225aaba268d85c07cc10235924c109c6e789222a",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_grapheme.c",
+      "size": 2148,
+      "sha256": "59d2a13a47a0446af6157fe2ac2310ed7dd50e6679304dc0ac921ad6bcfe578d",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_history.c",
+      "size": 8947,
+      "sha256": "65a1f4a25ef6aa2d20232e4ce0b6e6ea2968fdf8de6f0ac95b2b0cf26108bdb9",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_modal.c",
+      "size": 4255,
+      "sha256": "2f036df1af70d6b285d23e7d7184ea2156c922bf817a6e2f4f9619000f42ad41",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_search.c",
+      "size": 4636,
+      "sha256": "7d2dac2ebf838a5eaaf4435834cf606e0a5cbf1ffddd12736983d83e183f1be6",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_selection.c",
+      "size": 8275,
+      "sha256": "1febdff9638e20a9cfe6a57ad1fc80ab2071c0a0b1c3e8a617117ff360efb06d",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_terminal_composition.c",
+      "size": 2700,
+      "sha256": "d371ac1301169b81837884f06223157f3480aa316354360420d1b96542301d57",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_terminal_model.c",
+      "size": 2883,
+      "sha256": "0489168c4597753501e6159d31a7adbff4a8d6fbee23e32e7e2df4153dc78b0b",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_terminal_paste.c",
+      "size": 2980,
+      "sha256": "40981dbddc1b6e2a31ffa88c3071427974de8f9f3f62409ba55bc1f35ca8579f",
+      "mode": 436
+    },
+    {
+      "path": "tests/test_terminal_selection.c",
+      "size": 8111,
+      "sha256": "ea6a32eaf3fe002f4490fae843c2a7a832aab31d125b2d76ea2551ff3ad6c0de",
+      "mode": 436
+    },
+    {
+      "path": "tools/test_files_view.py",
+      "size": 23665,
+      "sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c",
+      "mode": 436
+    },
+    {
+      "path": "tools/test_files_view_fault.py",
+      "size": 9033,
+      "sha256": "9e8cd0930163b56982306ecb9a67fc678a1d42920a39e9b187c4a71b7d75b3a0",
+      "mode": 436
+    }
+  ]
+}

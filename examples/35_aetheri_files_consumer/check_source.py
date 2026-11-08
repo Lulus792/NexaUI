@@ -3,10 +3,11 @@ import hashlib,json,sys
 from pathlib import Path
 
 def main():
-    if len(sys.argv)!=2:raise SystemExit('usage: check_source.py EXPORTED_AETHERI_SOURCE')
+    if len(sys.argv) not in (2,3):raise SystemExit('usage: check_source.py EXPORTED_AETHERI_SOURCE [INPUT_MANIFEST]')
     root=Path(sys.argv[1]).resolve(strict=True)
     if (root/'.git').exists():raise SystemExit('Use an exported snapshot, not the independently developed Aetheri checkout')
-    manifest=json.loads(Path(__file__).with_name('source-inputs.json').read_text())
+    manifest_path=Path(sys.argv[2]) if len(sys.argv)==3 else Path(__file__).with_name('source-inputs.json')
+    manifest=json.loads(manifest_path.read_text())
     for item in manifest['files']:
         path=root/item['path']
         if path.is_symlink() or not path.is_file() or root not in path.resolve().parents:
