@@ -1,0 +1,33 @@
+{
+  "source_revision": "da18553a912cd1972cbcf536491ab60b3cc2d359",
+  "result": "passed",
+  "final_archive_sha256": "11f4f73f0f3231d0de6d5cf556e1a04e40d53db86a4a80de5f9d2bf4b2deeac9",
+  "artifact_rows": 48,
+  "git_bound_inputs": 16,
+  "compiled_profiles": {
+    "shared": 24,
+    "release": 24,
+    "asan": 24
+  },
+  "c17_werror_objects_each": 48,
+  "controller_cases_each": 10,
+  "native_checkpoints_each": 290,
+  "native_clipboard_observations_each": 19,
+  "final_virtual_captures": 153,
+  "lossless_png_conversions": 4,
+  "visually_inspected": [
+    "capture-6-output-0.png",
+    "capture-8-output-0.png",
+    "capture-9-output-0.png"
+  ],
+  "foreign_tool_files": 5,
+  "frozen_sdk_source_files": 1397,
+  "compiled_before_binding_control_exit": 1,
+  "all_103_requirement_rows_preserved": true,
+  "limits": [
+    "32MiB/5s keyboard transport budget unchanged; 65537-byte proposal tested",
+    "Original invalid-draft rollback resets field history",
+    "AT-SPI Cut fixture requires fresh actual input serial after foreign focus popup",
+    "No active Aetheri build/repin/admission; no full CI external-consumer/physical/human/performance acceptance"
+  ]
+}

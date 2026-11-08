@@ -1,5 +1,18 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/B03/B04/I01/I02/I05/I07/T01/T03/T06/T11/A02/A04/P04/P05/Q02/Q03/Q06/Q08:
+Files clipboard binding `da18553a912cd1972cbcf536491ab60b3cc2d359` reuses
+the installed native adapter and original whole-proposal validation. Three
+profiles pass 24/24 affected CTests and 290 native checkpoints each, with
+independent wl-clipboard/AT-SPI clients, 153 final virtual captures and an actual
+preceding-binary failure control. All 16 executed inputs bind to Git; the static
+native outputs are recovered byte-for-byte from their verified build archive.
+See [source, admission conditions, budgets and open work](files-clipboard-report.md).
+The 255-byte app draft does not reduce the SDK's keyboard-paste transport budget;
+original rejection rollback still resets history. Font/localization, full clipboard
+pressure/lifetime, remaining packet 6 and packets 7–8/final gates remain open.
+All 103 catalogue IDs, active Aetheri and its reviewed SDK pin are preserved.
+
 B01/B03/B04/I01/I02/T01/T03/T04/T10/A02/A04/P04/P05/Q02/Q03/Q06/Q08:
 Files consumer `0a1f806c2de57ca864b59369f9aefd94cbe8038e` integrates complete
 native transactions with the installed 0.1.25 SDK and original whole-proposal

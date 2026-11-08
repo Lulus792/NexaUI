@@ -1,0 +1,1343 @@
+{
+  "source_revision": "da18553a912cd1972cbcf536491ab60b3cc2d359",
+  "input": {
+    "archive": "files-atomic-input-16.tar.gz",
+    "sha256": "7effa5149db75ae78d080a5bf65abc6623994ad60b89f770bb6f6822413aafa3",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 10538,
+        "sha256": "514f34b74b76c67d07dac381aaaa6fb78c28bcb01305522b4543dbf7047fc0f8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 9496,
+        "sha256": "6bb491e7990d988058a95461137495c01659f01e000d386676e1a5b184e98564"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 4103,
+        "sha256": "391fdc43861f3e0ac237ae74a8b4af3aafd90191a6b5208672594a9293115f01"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 2673,
+        "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 9557,
+        "sha256": "776d5bb8d5d02fdb52b4dc49195cbf58d25cac7e4227093ff0bc57f214711bd5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 18826,
+        "sha256": "f1fa685d192e6c6bb3eeea5f7efb083f36b8fa400fe3bc8f8e7e9afcb07df00d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "compiled_input": {
+    "archive": "files-atomic-input-13.tar.gz",
+    "sha256": "968bd93d0ac33ecf77721a32d8d200bdd80bebadc10a53549a798669c308db10",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 8757,
+        "sha256": "1bfe4affcc4ef64717140f8dbc127f58a8931aad5ce4782e177a43cffb920383"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 8988,
+        "sha256": "f9ec56a156afb15d0b1a11493c802d9ef3a26af3e87ecf5352d5bc20b16d662f"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 3953,
+        "sha256": "c86eff3aa91c58cd9e32b0c1b2b75e3df4c408c4903a8517ff79fdeffcf9b2a8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 2673,
+        "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 9557,
+        "sha256": "776d5bb8d5d02fdb52b4dc49195cbf58d25cac7e4227093ff0bc57f214711bd5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 18776,
+        "sha256": "ff2416b0a926a2a711e51ff644b334cc777c6c836e02a57e00307d3c4ba18665"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "build_commands": [
+    {
+      "profile": "shared",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-13/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-sdk2-shared-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-shared-configure.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-shared",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-shared-build.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-shared",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-shared-test.log"
+    },
+    {
+      "profile": "release",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-13/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-sdk2-release-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-release-configure.log"
+    },
+    {
+      "profile": "release",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-release",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-release-build.log"
+    },
+    {
+      "profile": "release",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-release",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-release-test.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-13/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-sdk2-asan-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DFILES_BUILD_NATIVE_CHILDREN=ON",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DCMAKE_PREFIX_PATH=/home/aetheri/deps/ui-gles-release-02/prefix",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-asan-configure.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-asan",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-asan-build.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-asan",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-atomic-13-asan-test.log"
+    }
+  ],
+  "native": [
+    {
+      "profile": "shared",
+      "checks": 290,
+      "images": 51,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7fff252e7790",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7fff252e7708",
+            "0x7ff1667b48f3"
+          ],
+          "sockets": {
+            "3": "socket:[4470938]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "source_delta": {
+        "files": [
+          {
+            "original": "src/files/nexaui_view.h",
+            "original_sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649",
+            "generated": "nexaui_view.h",
+            "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9",
+            "changes": [
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *);",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *);\n/* Bind once before the first frame. The native window outlives the view. */\nbool ae_files_view_set_ime_window(struct ae_files_view *,nx_window *);"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_view.c",
+            "original_sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc",
+            "generated": "nexaui_view.c",
+            "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b",
+            "changes": [
+              {
+                "before": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
+                "after": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;\n    nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;\n    bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;\n    nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"
+              },
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }\nbool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n    if(!v || !window || v->ime_window || v->width || v->height) return false;\n    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n    if(nx_text_clipboard_for_window(window,&v->clipboard)!=NX_OK) return false;\n    v->ime_window=window;return true;\n}"
+              },
+              {
+                "before": "nx_text_field_create(value,n,0,&e->field)",
+                "after": "nx_text_field_create(value,n,32768,&e->field)"
+              },
+              {
+                "before": "nx_context_destroy(v->ui);\n    for(unsigned i=0;i<2;++i)",
+                "after": "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);\n    for(unsigned i=0;i<2;++i)"
+              },
+              {
+                "before": "static bool apply_fields(struct ae_files_view *,bool *);",
+                "after": "static bool apply_fields(struct ae_files_view *,bool *);\nstatic void reject_text(struct ae_files_view *);"
+              },
+              {
+                "before": "*changed=false;struct ae_files_session *s=v->s;\n    if(!isfinite(s->scale)",
+                "after": "*changed=false;struct ae_files_session *s=v->s;\n    nx_text_buffer_destroy(v->native_preview);v->native_preview=NULL;\n    if(!isfinite(s->scale)"
+              },
+              {
+                "before": "bool edited=false;if(!apply_fields(v,&edited)) return false;",
+                "after": "bool edited=false;if(!apply_fields(v,&edited)) return false;\n    if(v->native_reject_pending) {\n        v->native_reject_pending=false;\n        if(v->native_reject_scope==v->base) {reject_text(v);edited=true;*changed=true;}\n    }"
+              },
+              {
+                "before": "nx_text_field_set_read_only(e->field,invalid || v->s->composing)",
+                "after": "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
+              },
+              {
+                "before": ".validate=field_valid,.validate_user=&validation};",
+                "after": ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window,.clipboard=v->clipboard};"
+              },
+              {
+                "before": "if(!draft.length) {",
+                "after": "size_t native_preedit=0;int32_t native_begin=0,native_end=0;\n    if(v->ime_window && nx_focus_id(v->ui)==id && !disabled && !invalid && !v->ime_cancel && !v->s->composing) {\n        nx_result current=nx_window_get_ime_preedit(v->ime_window,NULL,0,&native_preedit,&native_begin,&native_end);\n        if(current!=NX_OK && current!=NX_ERROR_UNSUPPORTED) return false;\n    }\n    if(!draft.length && !native_preedit) {"
+              },
+              {
+                "before": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    bool edited=false;",
+                "after": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    if(v->ime_cancel) {v->ime_cancel=false;s->dirty=true;*changed=true;}\n    bool edited=false;"
+              },
+              {
+                "before": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(e->type==NX_EVENT_FOCUS)",
+                "after": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(v->ime_window) {\n        bool handled=false;if(!native_transaction(v,e,&handled)) return false;if(handled) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED)\n            return nx_context_queue_event(v->ui,e)==NX_OK;\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ENTER && v->ime_enter_down) {v->ime_enter_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ESCAPE && v->ime_escape_down) {v->ime_escape_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_DOWN && ((e->key==NX_KEY_ENTER && v->ime_enter_down) ||\n           (e->key==NX_KEY_ESCAPE && v->ime_escape_down))) return true;\n        size_t bytes=0;int32_t begin=0,end=0;\n        nx_result ime=nx_window_get_ime_preedit(v->ime_window,NULL,0,&bytes,&begin,&end);\n        if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;\n        if(e->type==NX_EVENT_TEXT_COMMAND &&\n           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO ||\n            e->text_command==NX_TEXT_COMMAND_COPY || e->text_command==NX_TEXT_COMMAND_CUT || e->text_command==NX_TEXT_COMMAND_PASTE))\n            return bytes || !editing(v) || nx_context_queue_event(v->ui,e)==NX_OK;\n        if(bytes && e->type==NX_EVENT_TEXT && !e->ime_target && !e->ime_revision) return true;\n        if(bytes && e->type==NX_EVENT_KEY_DOWN) {\n            if(e->key==NX_KEY_ESCAPE) {v->ime_escape_down=true;v->ime_cancel=true;return true;}\n            if(e->key==NX_KEY_ENTER) {v->ime_enter_down=true;return true;}\n            if(e->key!=NX_KEY_TAB && !((e->modifiers&NX_MOD_CONTROL) && e->key==NX_KEY_Q)) return true;\n        }\n        if(e->type==NX_EVENT_FOCUS && !e->focused) v->ime_enter_down=v->ime_escape_down=false;\n    }\n    if(e->type==NX_EVENT_FOCUS)"
+              },
+              {
+                "before": "bool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {",
+                "after": "/* Included in the separately generated view after its original edit helpers.\n   Preview uses public buffers; only the real field receives the marked edit. */\nstatic bool native_current(struct ae_files_view *v,const nx_event *begin,bool *current) {\n    *current=false;\n    uint64_t id=control(v,v->s->dialog?AE_FV_NAME:AE_FV_SEARCH);\n    if(!editing(v) || v->native_reject_pending ||\n       (v->s->dialog?v->s->name_bad:v->s->query_bad) ||\n       begin->ime_target!=id || nx_focus_id(v->ui)!=id || !begin->ime_revision) return true;\n    size_t length=0;int32_t a=0,c=0;\n    nx_result result=nx_window_get_ime_preedit_for(v->ime_window,id,begin->ime_revision,NULL,0,&length,&a,&c);\n    if(result==NX_ERROR_STATE || result==NX_ERROR_UNSUPPORTED) return true;\n    if(result!=NX_OK) return false;\n    *current=true;return true;\n}\nstatic void native_reject(struct ae_files_view *v) {\n    v->native_reject_pending=true;v->native_reject_scope=v->base;\n}\nstatic bool native_proposal(struct ae_files_view *v,bool *accepted) {\n    *accepted=false;\n    const nx_event *begin=&v->native_events[0],*deletion=NULL;\n    uint32_t flags=begin->ime_before;\n    if(!(flags&(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE)) ||\n       (flags&~(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE))) return true;\n    char commit[AE_FILES_NAME+1];size_t bytes=0,texts=0;bool ended=false;\n    for(size_t i=1;i+1<v->native_count;++i) {\n        const nx_event *e=&v->native_events[i];\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED && !e->ime_target && !e->ime_revision) continue;\n        if(e->ime_target!=begin->ime_target || e->ime_revision!=begin->ime_revision) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED) continue;\n        if(e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_IME_DELETE_RANGE) {\n            if(deletion || texts || !(flags&NX_IME_TRANSACTION_DELETE)) return true;\n            deletion=e;continue;\n        }\n        char encoded[4];size_t n=e->type==NX_EVENT_TEXT?scalar(e->scalar,encoded):0;\n        if(!n || !(flags&NX_IME_TRANSACTION_COMMIT) || ended ||\n           (e->ime_before&~(NX_IME_COMMIT_START|NX_IME_COMMIT_END)) ||\n           (!!(e->ime_before&NX_IME_COMMIT_START)!=!texts) ||\n           e->scalar<32 || e->scalar==127 || (e->modifiers&NX_MOD_SUPER) ||\n           ((e->modifiers&NX_MOD_CONTROL) && !(e->modifiers&NX_MOD_ALT)) ||\n           n>AE_FILES_NAME-bytes) return true;\n        memcpy(commit+bytes,encoded,n);bytes+=n;++texts;ended=(e->ime_before&NX_IME_COMMIT_END)!=0;\n    }\n    if(!!deletion!=!!(flags&NX_IME_TRANSACTION_DELETE) || (texts && !ended)) return true;\n    nx_utf8_span source={0};size_t anchor=0,cursor=0;\n    bool previous=v->native_preview && v->native_preview_target==begin->ime_target &&\n        v->native_preview_revision==begin->ime_revision && v->native_preview_scope==v->base;\n    if(previous) {\n        if(nx_text_buffer_text(v->native_preview,&source.data,&source.length)!=NX_OK ||\n           nx_text_buffer_selection(v->native_preview,&anchor,&cursor)!=NX_OK) return false;\n    } else {\n        struct edit *edit=&v->edits[v->s->dialog?1:0];\n        if(!edit->field || nx_text_field_text(edit->field,&source)!=NX_OK ||\n           nx_text_field_selection(edit->field,&anchor,&cursor)!=NX_OK) return false;\n    }\n    /* Form the complete byte proposal before asking the public buffer for its\n       grapheme-aligned caret. A separate delete followed by insert would snap\n       the intermediate caret and could insert past a newly joined cluster. */\n    size_t start=anchor<cursor?anchor:cursor,finish=anchor>cursor?anchor:cursor;\n    if(deletion && deletion->type==NX_EVENT_IME_DELETE_SURROUNDING) {\n        if((!deletion->ime_before && !deletion->ime_after) || deletion->ime_before>start ||\n           deletion->ime_after>source.length-finish) return true;\n        start-=deletion->ime_before;finish+=deletion->ime_after;\n    } else if(deletion) {\n        if(!deletion->ime_length) return true;\n        if(deletion->ime_index<0) {\n            uint64_t before=(uint64_t)-(int64_t)deletion->ime_index;\n            if(before>cursor) return true;\n            start=cursor-(size_t)before;\n        } else {\n            size_t after=(size_t)deletion->ime_index;\n            if(after>source.length-cursor) return true;\n            start=cursor+after;\n        }\n        if(deletion->ime_length>source.length-start) return true;\n        finish=start+deletion->ime_length;\n    }\n    if((start<source.length && ((unsigned char)source.data[start]&0xc0u)==0x80u) ||\n       (finish<source.length && ((unsigned char)source.data[finish]&0xc0u)==0x80u)) return true;\n    size_t remaining=source.length-(finish-start);\n    if(remaining>AE_FILES_NAME || bytes>AE_FILES_NAME-remaining) return true;\n    char next[AE_FILES_NAME+1];size_t length=remaining+bytes;\n    memcpy(next,source.data,start);memcpy(next+start,commit,bytes);\n    memcpy(next+start+bytes,source.data+finish,source.length-finish);next[length]=0;\n    nx_utf8_span proposed={next,length};struct field_validation rule={v->s->dialog,false};\n    if(field_valid(proposed,&rule)) {\n        nx_text_buffer *candidate=NULL;\n        if(nx_text_buffer_create(next,length,0,&candidate)!=NX_OK) return false;\n        size_t caret=start+bytes;nx_result selected;\n        do {selected=nx_text_buffer_set_selection(candidate,caret,caret);\n            if(selected==NX_ERROR_ARGUMENT && caret<length) ++caret;else break;\n        } while(caret<=length);\n        if(selected!=NX_OK) {nx_text_buffer_destroy(candidate);return false;}\n        for(size_t i=0;i<v->native_count;++i) if(nx_context_queue_event(v->ui,&v->native_events[i])!=NX_OK) {\n            nx_text_buffer_destroy(candidate);return false;\n        }\n        nx_text_buffer_destroy(v->native_preview);v->native_preview=candidate;\n        v->native_preview_target=begin->ime_target;v->native_preview_revision=begin->ime_revision;\n        v->native_preview_scope=v->base;*accepted=true;return true;\n    }\n    return true;\n}\nstatic void native_discard(struct ae_files_view *v) {\n    v->native_depth=v->native_count=0;v->native_bad=v->native_ignore=false;\n}\nstatic bool native_transaction(struct ae_files_view *v,const nx_event *e,bool *handled) {\n    *handled=false;\n    if(v->native_depth && v->native_scope!=v->base) native_discard(v);\n    if(e->type==NX_EVENT_IME_TRANSACTION_BEGIN) {\n        *handled=true;\n        if(v->native_depth && (e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision)) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            if(current) native_discard(v);\n        }\n        if(v->native_depth==SIZE_MAX) return false;\n        if(!v->native_depth) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            v->native_begin=*e;v->native_scope=v->base;v->native_ignore=!current;\n            v->native_bad=false;v->native_count=1;v->native_events[0]=*e;\n        } else v->native_bad=true;\n        ++v->native_depth;return true;\n    }\n    if(e->type==NX_EVENT_IME_TRANSACTION_END) {\n        *handled=true;\n        if(!v->native_depth) return true;\n        if(v->native_depth>1) {--v->native_depth;v->native_bad=true;return true;}\n        if(e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision ||\n           e->ime_before!=v->native_begin.ime_before) {v->native_bad=true;return true;}\n        v->native_depth=0;\n        if(v->native_ignore || v->native_scope!=v->base) return true;\n        bool current;if(!native_current(v,&v->native_begin,&current)) return false;\n        if(!current) return true;\n        bool accepted=false;\n        if(!v->native_bad && v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0])) {\n            v->native_events[v->native_count++]=*e;\n            if(!native_proposal(v,&accepted)) return false;\n        }\n        if(!accepted) native_reject(v);\n        return true;\n    }\n    bool payload=e->type==NX_EVENT_TEXT || e->type==NX_EVENT_IME_DELETE_SURROUNDING ||\n        e->type==NX_EVENT_IME_DELETE_RANGE || e->type==NX_EVENT_IME_PREEDIT_CHANGED ||\n        (e->type==NX_EVENT_TEXT_COMMAND && (e->ime_target || e->ime_revision));\n    if(v->native_depth && payload) {\n        *handled=true;\n        if(v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0]))\n            v->native_events[v->native_count++]=*e;\n        else v->native_bad=true;\n        return true;\n    }\n    if(v->native_depth) {\n        if(!v->native_ignore && v->native_scope==v->base) reject_text(v);\n        native_discard(v);\n    }\n    if((e->ime_target || e->ime_revision) && payload && e->type!=NX_EVENT_IME_PREEDIT_CHANGED) *handled=true;\n    return true;\n}\n\nbool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_main.c",
+            "original_sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d",
+            "generated": "nexaui_main.c",
+            "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b",
+            "changes": [
+              {
+                "before": "!ae_files_view_create(&h.s,font,font_size,&h.view) || nx_software_view_open",
+                "after": "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open"
+              },
+              {
+                "before": "int main(int argc,char **argv) {",
+                "after": "/* Defer native payload and neutral key releases until the queue is drained.\n   Flush completed edits before an ordinary command observes the app model. */\nstatic bool ime_deferred(const nx_event *e) {\n    return e->type==NX_EVENT_IME_TRANSACTION_BEGIN || e->type==NX_EVENT_IME_TRANSACTION_END ||\n        e->type==NX_EVENT_IME_PREEDIT_CHANGED || e->type==NX_EVENT_IME_DELETE_RANGE ||\n        e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_KEY_UP ||\n        e->type==NX_EVENT_KEY_DOWN_CONSUMED ||\n        ((e->type==NX_EVENT_TEXT || e->type==NX_EVENT_TEXT_COMMAND) && (e->ime_target || e->ime_revision));\n}\nint main(int argc,char **argv) {"
+              },
+              {
+                "before": "if(nx_window_get_status(h.window,&status)!=NX_OK || !chrome(&h,&event,&status,&handled) ||\n                   (!handled && !ae_files_view_event(h.view,&event)) || !draw(&h))",
+                "after": "if((!ime_deferred(&event) && !draw(&h)) || nx_window_get_status(h.window,&status)!=NX_OK ||\n                   !chrome(&h,&event,&status,&handled) || (!handled && !ae_files_view_event(h.view,&event)) ||\n                   (!ime_deferred(&event) && !draw(&h)))"
+              }
+            ]
+          }
+        ],
+        "scope": "Distinct consumer IME integration; original model/controller/host source export unchanged"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-13-shared/aetheri_files_ime_candidate": "8a6aa8e98bd440c4f8878f1581b00337b56c99465258d86c72eb6cb3c4b2a531",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fclip-serial-shared/peer": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+      },
+      "closed_line": "CLOSED files frames=444 failed=0"
+    },
+    {
+      "profile": "release",
+      "checks": 290,
+      "images": 51,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7fffdda928b0",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7fffdda92828",
+            "0x7fdb939a48f3"
+          ],
+          "sockets": {
+            "3": "socket:[4472588]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "source_delta": {
+        "files": [
+          {
+            "original": "src/files/nexaui_view.h",
+            "original_sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649",
+            "generated": "nexaui_view.h",
+            "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9",
+            "changes": [
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *);",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *);\n/* Bind once before the first frame. The native window outlives the view. */\nbool ae_files_view_set_ime_window(struct ae_files_view *,nx_window *);"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_view.c",
+            "original_sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc",
+            "generated": "nexaui_view.c",
+            "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b",
+            "changes": [
+              {
+                "before": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
+                "after": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;\n    nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;\n    bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;\n    nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"
+              },
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }\nbool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n    if(!v || !window || v->ime_window || v->width || v->height) return false;\n    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n    if(nx_text_clipboard_for_window(window,&v->clipboard)!=NX_OK) return false;\n    v->ime_window=window;return true;\n}"
+              },
+              {
+                "before": "nx_text_field_create(value,n,0,&e->field)",
+                "after": "nx_text_field_create(value,n,32768,&e->field)"
+              },
+              {
+                "before": "nx_context_destroy(v->ui);\n    for(unsigned i=0;i<2;++i)",
+                "after": "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);\n    for(unsigned i=0;i<2;++i)"
+              },
+              {
+                "before": "static bool apply_fields(struct ae_files_view *,bool *);",
+                "after": "static bool apply_fields(struct ae_files_view *,bool *);\nstatic void reject_text(struct ae_files_view *);"
+              },
+              {
+                "before": "*changed=false;struct ae_files_session *s=v->s;\n    if(!isfinite(s->scale)",
+                "after": "*changed=false;struct ae_files_session *s=v->s;\n    nx_text_buffer_destroy(v->native_preview);v->native_preview=NULL;\n    if(!isfinite(s->scale)"
+              },
+              {
+                "before": "bool edited=false;if(!apply_fields(v,&edited)) return false;",
+                "after": "bool edited=false;if(!apply_fields(v,&edited)) return false;\n    if(v->native_reject_pending) {\n        v->native_reject_pending=false;\n        if(v->native_reject_scope==v->base) {reject_text(v);edited=true;*changed=true;}\n    }"
+              },
+              {
+                "before": "nx_text_field_set_read_only(e->field,invalid || v->s->composing)",
+                "after": "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
+              },
+              {
+                "before": ".validate=field_valid,.validate_user=&validation};",
+                "after": ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window,.clipboard=v->clipboard};"
+              },
+              {
+                "before": "if(!draft.length) {",
+                "after": "size_t native_preedit=0;int32_t native_begin=0,native_end=0;\n    if(v->ime_window && nx_focus_id(v->ui)==id && !disabled && !invalid && !v->ime_cancel && !v->s->composing) {\n        nx_result current=nx_window_get_ime_preedit(v->ime_window,NULL,0,&native_preedit,&native_begin,&native_end);\n        if(current!=NX_OK && current!=NX_ERROR_UNSUPPORTED) return false;\n    }\n    if(!draft.length && !native_preedit) {"
+              },
+              {
+                "before": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    bool edited=false;",
+                "after": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    if(v->ime_cancel) {v->ime_cancel=false;s->dirty=true;*changed=true;}\n    bool edited=false;"
+              },
+              {
+                "before": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(e->type==NX_EVENT_FOCUS)",
+                "after": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(v->ime_window) {\n        bool handled=false;if(!native_transaction(v,e,&handled)) return false;if(handled) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED)\n            return nx_context_queue_event(v->ui,e)==NX_OK;\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ENTER && v->ime_enter_down) {v->ime_enter_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ESCAPE && v->ime_escape_down) {v->ime_escape_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_DOWN && ((e->key==NX_KEY_ENTER && v->ime_enter_down) ||\n           (e->key==NX_KEY_ESCAPE && v->ime_escape_down))) return true;\n        size_t bytes=0;int32_t begin=0,end=0;\n        nx_result ime=nx_window_get_ime_preedit(v->ime_window,NULL,0,&bytes,&begin,&end);\n        if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;\n        if(e->type==NX_EVENT_TEXT_COMMAND &&\n           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO ||\n            e->text_command==NX_TEXT_COMMAND_COPY || e->text_command==NX_TEXT_COMMAND_CUT || e->text_command==NX_TEXT_COMMAND_PASTE))\n            return bytes || !editing(v) || nx_context_queue_event(v->ui,e)==NX_OK;\n        if(bytes && e->type==NX_EVENT_TEXT && !e->ime_target && !e->ime_revision) return true;\n        if(bytes && e->type==NX_EVENT_KEY_DOWN) {\n            if(e->key==NX_KEY_ESCAPE) {v->ime_escape_down=true;v->ime_cancel=true;return true;}\n            if(e->key==NX_KEY_ENTER) {v->ime_enter_down=true;return true;}\n            if(e->key!=NX_KEY_TAB && !((e->modifiers&NX_MOD_CONTROL) && e->key==NX_KEY_Q)) return true;\n        }\n        if(e->type==NX_EVENT_FOCUS && !e->focused) v->ime_enter_down=v->ime_escape_down=false;\n    }\n    if(e->type==NX_EVENT_FOCUS)"
+              },
+              {
+                "before": "bool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {",
+                "after": "/* Included in the separately generated view after its original edit helpers.\n   Preview uses public buffers; only the real field receives the marked edit. */\nstatic bool native_current(struct ae_files_view *v,const nx_event *begin,bool *current) {\n    *current=false;\n    uint64_t id=control(v,v->s->dialog?AE_FV_NAME:AE_FV_SEARCH);\n    if(!editing(v) || v->native_reject_pending ||\n       (v->s->dialog?v->s->name_bad:v->s->query_bad) ||\n       begin->ime_target!=id || nx_focus_id(v->ui)!=id || !begin->ime_revision) return true;\n    size_t length=0;int32_t a=0,c=0;\n    nx_result result=nx_window_get_ime_preedit_for(v->ime_window,id,begin->ime_revision,NULL,0,&length,&a,&c);\n    if(result==NX_ERROR_STATE || result==NX_ERROR_UNSUPPORTED) return true;\n    if(result!=NX_OK) return false;\n    *current=true;return true;\n}\nstatic void native_reject(struct ae_files_view *v) {\n    v->native_reject_pending=true;v->native_reject_scope=v->base;\n}\nstatic bool native_proposal(struct ae_files_view *v,bool *accepted) {\n    *accepted=false;\n    const nx_event *begin=&v->native_events[0],*deletion=NULL;\n    uint32_t flags=begin->ime_before;\n    if(!(flags&(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE)) ||\n       (flags&~(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE))) return true;\n    char commit[AE_FILES_NAME+1];size_t bytes=0,texts=0;bool ended=false;\n    for(size_t i=1;i+1<v->native_count;++i) {\n        const nx_event *e=&v->native_events[i];\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED && !e->ime_target && !e->ime_revision) continue;\n        if(e->ime_target!=begin->ime_target || e->ime_revision!=begin->ime_revision) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED) continue;\n        if(e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_IME_DELETE_RANGE) {\n            if(deletion || texts || !(flags&NX_IME_TRANSACTION_DELETE)) return true;\n            deletion=e;continue;\n        }\n        char encoded[4];size_t n=e->type==NX_EVENT_TEXT?scalar(e->scalar,encoded):0;\n        if(!n || !(flags&NX_IME_TRANSACTION_COMMIT) || ended ||\n           (e->ime_before&~(NX_IME_COMMIT_START|NX_IME_COMMIT_END)) ||\n           (!!(e->ime_before&NX_IME_COMMIT_START)!=!texts) ||\n           e->scalar<32 || e->scalar==127 || (e->modifiers&NX_MOD_SUPER) ||\n           ((e->modifiers&NX_MOD_CONTROL) && !(e->modifiers&NX_MOD_ALT)) ||\n           n>AE_FILES_NAME-bytes) return true;\n        memcpy(commit+bytes,encoded,n);bytes+=n;++texts;ended=(e->ime_before&NX_IME_COMMIT_END)!=0;\n    }\n    if(!!deletion!=!!(flags&NX_IME_TRANSACTION_DELETE) || (texts && !ended)) return true;\n    nx_utf8_span source={0};size_t anchor=0,cursor=0;\n    bool previous=v->native_preview && v->native_preview_target==begin->ime_target &&\n        v->native_preview_revision==begin->ime_revision && v->native_preview_scope==v->base;\n    if(previous) {\n        if(nx_text_buffer_text(v->native_preview,&source.data,&source.length)!=NX_OK ||\n           nx_text_buffer_selection(v->native_preview,&anchor,&cursor)!=NX_OK) return false;\n    } else {\n        struct edit *edit=&v->edits[v->s->dialog?1:0];\n        if(!edit->field || nx_text_field_text(edit->field,&source)!=NX_OK ||\n           nx_text_field_selection(edit->field,&anchor,&cursor)!=NX_OK) return false;\n    }\n    /* Form the complete byte proposal before asking the public buffer for its\n       grapheme-aligned caret. A separate delete followed by insert would snap\n       the intermediate caret and could insert past a newly joined cluster. */\n    size_t start=anchor<cursor?anchor:cursor,finish=anchor>cursor?anchor:cursor;\n    if(deletion && deletion->type==NX_EVENT_IME_DELETE_SURROUNDING) {\n        if((!deletion->ime_before && !deletion->ime_after) || deletion->ime_before>start ||\n           deletion->ime_after>source.length-finish) return true;\n        start-=deletion->ime_before;finish+=deletion->ime_after;\n    } else if(deletion) {\n        if(!deletion->ime_length) return true;\n        if(deletion->ime_index<0) {\n            uint64_t before=(uint64_t)-(int64_t)deletion->ime_index;\n            if(before>cursor) return true;\n            start=cursor-(size_t)before;\n        } else {\n            size_t after=(size_t)deletion->ime_index;\n            if(after>source.length-cursor) return true;\n            start=cursor+after;\n        }\n        if(deletion->ime_length>source.length-start) return true;\n        finish=start+deletion->ime_length;\n    }\n    if((start<source.length && ((unsigned char)source.data[start]&0xc0u)==0x80u) ||\n       (finish<source.length && ((unsigned char)source.data[finish]&0xc0u)==0x80u)) return true;\n    size_t remaining=source.length-(finish-start);\n    if(remaining>AE_FILES_NAME || bytes>AE_FILES_NAME-remaining) return true;\n    char next[AE_FILES_NAME+1];size_t length=remaining+bytes;\n    memcpy(next,source.data,start);memcpy(next+start,commit,bytes);\n    memcpy(next+start+bytes,source.data+finish,source.length-finish);next[length]=0;\n    nx_utf8_span proposed={next,length};struct field_validation rule={v->s->dialog,false};\n    if(field_valid(proposed,&rule)) {\n        nx_text_buffer *candidate=NULL;\n        if(nx_text_buffer_create(next,length,0,&candidate)!=NX_OK) return false;\n        size_t caret=start+bytes;nx_result selected;\n        do {selected=nx_text_buffer_set_selection(candidate,caret,caret);\n            if(selected==NX_ERROR_ARGUMENT && caret<length) ++caret;else break;\n        } while(caret<=length);\n        if(selected!=NX_OK) {nx_text_buffer_destroy(candidate);return false;}\n        for(size_t i=0;i<v->native_count;++i) if(nx_context_queue_event(v->ui,&v->native_events[i])!=NX_OK) {\n            nx_text_buffer_destroy(candidate);return false;\n        }\n        nx_text_buffer_destroy(v->native_preview);v->native_preview=candidate;\n        v->native_preview_target=begin->ime_target;v->native_preview_revision=begin->ime_revision;\n        v->native_preview_scope=v->base;*accepted=true;return true;\n    }\n    return true;\n}\nstatic void native_discard(struct ae_files_view *v) {\n    v->native_depth=v->native_count=0;v->native_bad=v->native_ignore=false;\n}\nstatic bool native_transaction(struct ae_files_view *v,const nx_event *e,bool *handled) {\n    *handled=false;\n    if(v->native_depth && v->native_scope!=v->base) native_discard(v);\n    if(e->type==NX_EVENT_IME_TRANSACTION_BEGIN) {\n        *handled=true;\n        if(v->native_depth && (e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision)) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            if(current) native_discard(v);\n        }\n        if(v->native_depth==SIZE_MAX) return false;\n        if(!v->native_depth) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            v->native_begin=*e;v->native_scope=v->base;v->native_ignore=!current;\n            v->native_bad=false;v->native_count=1;v->native_events[0]=*e;\n        } else v->native_bad=true;\n        ++v->native_depth;return true;\n    }\n    if(e->type==NX_EVENT_IME_TRANSACTION_END) {\n        *handled=true;\n        if(!v->native_depth) return true;\n        if(v->native_depth>1) {--v->native_depth;v->native_bad=true;return true;}\n        if(e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision ||\n           e->ime_before!=v->native_begin.ime_before) {v->native_bad=true;return true;}\n        v->native_depth=0;\n        if(v->native_ignore || v->native_scope!=v->base) return true;\n        bool current;if(!native_current(v,&v->native_begin,&current)) return false;\n        if(!current) return true;\n        bool accepted=false;\n        if(!v->native_bad && v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0])) {\n            v->native_events[v->native_count++]=*e;\n            if(!native_proposal(v,&accepted)) return false;\n        }\n        if(!accepted) native_reject(v);\n        return true;\n    }\n    bool payload=e->type==NX_EVENT_TEXT || e->type==NX_EVENT_IME_DELETE_SURROUNDING ||\n        e->type==NX_EVENT_IME_DELETE_RANGE || e->type==NX_EVENT_IME_PREEDIT_CHANGED ||\n        (e->type==NX_EVENT_TEXT_COMMAND && (e->ime_target || e->ime_revision));\n    if(v->native_depth && payload) {\n        *handled=true;\n        if(v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0]))\n            v->native_events[v->native_count++]=*e;\n        else v->native_bad=true;\n        return true;\n    }\n    if(v->native_depth) {\n        if(!v->native_ignore && v->native_scope==v->base) reject_text(v);\n        native_discard(v);\n    }\n    if((e->ime_target || e->ime_revision) && payload && e->type!=NX_EVENT_IME_PREEDIT_CHANGED) *handled=true;\n    return true;\n}\n\nbool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_main.c",
+            "original_sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d",
+            "generated": "nexaui_main.c",
+            "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b",
+            "changes": [
+              {
+                "before": "!ae_files_view_create(&h.s,font,font_size,&h.view) || nx_software_view_open",
+                "after": "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open"
+              },
+              {
+                "before": "int main(int argc,char **argv) {",
+                "after": "/* Defer native payload and neutral key releases until the queue is drained.\n   Flush completed edits before an ordinary command observes the app model. */\nstatic bool ime_deferred(const nx_event *e) {\n    return e->type==NX_EVENT_IME_TRANSACTION_BEGIN || e->type==NX_EVENT_IME_TRANSACTION_END ||\n        e->type==NX_EVENT_IME_PREEDIT_CHANGED || e->type==NX_EVENT_IME_DELETE_RANGE ||\n        e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_KEY_UP ||\n        e->type==NX_EVENT_KEY_DOWN_CONSUMED ||\n        ((e->type==NX_EVENT_TEXT || e->type==NX_EVENT_TEXT_COMMAND) && (e->ime_target || e->ime_revision));\n}\nint main(int argc,char **argv) {"
+              },
+              {
+                "before": "if(nx_window_get_status(h.window,&status)!=NX_OK || !chrome(&h,&event,&status,&handled) ||\n                   (!handled && !ae_files_view_event(h.view,&event)) || !draw(&h))",
+                "after": "if((!ime_deferred(&event) && !draw(&h)) || nx_window_get_status(h.window,&status)!=NX_OK ||\n                   !chrome(&h,&event,&status,&handled) || (!handled && !ae_files_view_event(h.view,&event)) ||\n                   (!ime_deferred(&event) && !draw(&h)))"
+              }
+            ]
+          }
+        ],
+        "scope": "Distinct consumer IME integration; original model/controller/host source export unchanged"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-clipboard-restored-release/aetheri_files_ime_candidate": "dd26f08cd0b8b79a4d538812c3d790a3216700ac860c0a5e86f5835163e2ad8d",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fclip-serial-release/peer": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+      },
+      "closed_line": "CLOSED files frames=443 failed=0"
+    },
+    {
+      "profile": "asan",
+      "checks": 290,
+      "images": 51,
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 16,
+          "sha256": "bde0245e1bebc0cae4736b545d4ef7429b7a56d2b98b9bedfde14d0be2c9bb27"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "ac9e2cacfba09524c9ce8f3c7ed4a567ddf99881b99e412423ed7d38a2dfc181"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 5,
+          "sha256": "acffee611d02cf846c05ac4a3d84675aef7a0a8f67c8b4aae31a5f65d3ac8a43"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 1,
+          "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 8,
+          "sha256": "f209ddc9341cc72fb06d7876cfa266ae5db799e093d453d43c8adfe577fe1dc5"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 256,
+          "sha256": "85e62acd750c4eb56b7b6a1d66dca5bfaac5f062608a1a893410d0288936c09a"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 65537,
+          "sha256": "1abe08ebecf1c18cab71f6fe28aaddf20268f85bad78bb9a72f88ca47c874662"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 9,
+          "sha256": "ff96560c87b4bc98a2213d110bd7fdc390d1182b5076b73e9c5f6c87a9ae2ebe"
+        },
+        "Single-line newline-to-space conversion follows the existing SDK clipboard contract",
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "send_return_witness": [
+            "271",
+            "0x7ffcfcf0b020",
+            "0x1",
+            "0x0",
+            "0x0",
+            "0x8",
+            "0x0",
+            "0x7ffcfcf0af98",
+            "0x7f6f9249e8f3"
+          ],
+          "sockets": {
+            "3": "socket:[4473726]"
+          },
+          "sends": 2
+        },
+        "Late completed paste after Tab did not change the original draft",
+        {
+          "foreign_read_exit": 0,
+          "length": 13,
+          "sha256": "c7be7ccd6589bb48da18950fb1cebd763edb0551259cfe69376adc080272ecaa"
+        },
+        "App close requested while independent clipboard producer remains stopped",
+        "App exited 0 before the stopped foreign producer was resumed"
+      ],
+      "foreign_tool_files": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "source_delta": {
+        "files": [
+          {
+            "original": "src/files/nexaui_view.h",
+            "original_sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649",
+            "generated": "nexaui_view.h",
+            "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9",
+            "changes": [
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *);",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *);\n/* Bind once before the first frame. The native window outlives the view. */\nbool ae_files_view_set_ime_window(struct ae_files_view *,nx_window *);"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_view.c",
+            "original_sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc",
+            "generated": "nexaui_view.c",
+            "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b",
+            "changes": [
+              {
+                "before": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
+                "after": "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;\n    nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;\n    bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;\n    nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"
+              },
+              {
+                "before": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }",
+                "after": "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }\nbool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n    if(!v || !window || v->ime_window || v->width || v->height) return false;\n    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n    if(nx_text_clipboard_for_window(window,&v->clipboard)!=NX_OK) return false;\n    v->ime_window=window;return true;\n}"
+              },
+              {
+                "before": "nx_text_field_create(value,n,0,&e->field)",
+                "after": "nx_text_field_create(value,n,32768,&e->field)"
+              },
+              {
+                "before": "nx_context_destroy(v->ui);\n    for(unsigned i=0;i<2;++i)",
+                "after": "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);\n    for(unsigned i=0;i<2;++i)"
+              },
+              {
+                "before": "static bool apply_fields(struct ae_files_view *,bool *);",
+                "after": "static bool apply_fields(struct ae_files_view *,bool *);\nstatic void reject_text(struct ae_files_view *);"
+              },
+              {
+                "before": "*changed=false;struct ae_files_session *s=v->s;\n    if(!isfinite(s->scale)",
+                "after": "*changed=false;struct ae_files_session *s=v->s;\n    nx_text_buffer_destroy(v->native_preview);v->native_preview=NULL;\n    if(!isfinite(s->scale)"
+              },
+              {
+                "before": "bool edited=false;if(!apply_fields(v,&edited)) return false;",
+                "after": "bool edited=false;if(!apply_fields(v,&edited)) return false;\n    if(v->native_reject_pending) {\n        v->native_reject_pending=false;\n        if(v->native_reject_scope==v->base) {reject_text(v);edited=true;*changed=true;}\n    }"
+              },
+              {
+                "before": "nx_text_field_set_read_only(e->field,invalid || v->s->composing)",
+                "after": "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
+              },
+              {
+                "before": ".validate=field_valid,.validate_user=&validation};",
+                "after": ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window,.clipboard=v->clipboard};"
+              },
+              {
+                "before": "if(!draft.length) {",
+                "after": "size_t native_preedit=0;int32_t native_begin=0,native_end=0;\n    if(v->ime_window && nx_focus_id(v->ui)==id && !disabled && !invalid && !v->ime_cancel && !v->s->composing) {\n        nx_result current=nx_window_get_ime_preedit(v->ime_window,NULL,0,&native_preedit,&native_begin,&native_end);\n        if(current!=NX_OK && current!=NX_ERROR_UNSUPPORTED) return false;\n    }\n    if(!draft.length && !native_preedit) {"
+              },
+              {
+                "before": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    bool edited=false;",
+                "after": "if(nx_end_frame(v->ui)!=NX_OK) return false;\n    if(v->ime_cancel) {v->ime_cancel=false;s->dirty=true;*changed=true;}\n    bool edited=false;"
+              },
+              {
+                "before": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(e->type==NX_EVENT_FOCUS)",
+                "after": "struct ae_files_session *s=v->s;s->dirty=true;\n    if(v->ime_window) {\n        bool handled=false;if(!native_transaction(v,e,&handled)) return false;if(handled) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED)\n            return nx_context_queue_event(v->ui,e)==NX_OK;\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ENTER && v->ime_enter_down) {v->ime_enter_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ESCAPE && v->ime_escape_down) {v->ime_escape_down=false;return true;}\n        if(e->type==NX_EVENT_KEY_DOWN && ((e->key==NX_KEY_ENTER && v->ime_enter_down) ||\n           (e->key==NX_KEY_ESCAPE && v->ime_escape_down))) return true;\n        size_t bytes=0;int32_t begin=0,end=0;\n        nx_result ime=nx_window_get_ime_preedit(v->ime_window,NULL,0,&bytes,&begin,&end);\n        if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;\n        if(e->type==NX_EVENT_TEXT_COMMAND &&\n           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO ||\n            e->text_command==NX_TEXT_COMMAND_COPY || e->text_command==NX_TEXT_COMMAND_CUT || e->text_command==NX_TEXT_COMMAND_PASTE))\n            return bytes || !editing(v) || nx_context_queue_event(v->ui,e)==NX_OK;\n        if(bytes && e->type==NX_EVENT_TEXT && !e->ime_target && !e->ime_revision) return true;\n        if(bytes && e->type==NX_EVENT_KEY_DOWN) {\n            if(e->key==NX_KEY_ESCAPE) {v->ime_escape_down=true;v->ime_cancel=true;return true;}\n            if(e->key==NX_KEY_ENTER) {v->ime_enter_down=true;return true;}\n            if(e->key!=NX_KEY_TAB && !((e->modifiers&NX_MOD_CONTROL) && e->key==NX_KEY_Q)) return true;\n        }\n        if(e->type==NX_EVENT_FOCUS && !e->focused) v->ime_enter_down=v->ime_escape_down=false;\n    }\n    if(e->type==NX_EVENT_FOCUS)"
+              },
+              {
+                "before": "bool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {",
+                "after": "/* Included in the separately generated view after its original edit helpers.\n   Preview uses public buffers; only the real field receives the marked edit. */\nstatic bool native_current(struct ae_files_view *v,const nx_event *begin,bool *current) {\n    *current=false;\n    uint64_t id=control(v,v->s->dialog?AE_FV_NAME:AE_FV_SEARCH);\n    if(!editing(v) || v->native_reject_pending ||\n       (v->s->dialog?v->s->name_bad:v->s->query_bad) ||\n       begin->ime_target!=id || nx_focus_id(v->ui)!=id || !begin->ime_revision) return true;\n    size_t length=0;int32_t a=0,c=0;\n    nx_result result=nx_window_get_ime_preedit_for(v->ime_window,id,begin->ime_revision,NULL,0,&length,&a,&c);\n    if(result==NX_ERROR_STATE || result==NX_ERROR_UNSUPPORTED) return true;\n    if(result!=NX_OK) return false;\n    *current=true;return true;\n}\nstatic void native_reject(struct ae_files_view *v) {\n    v->native_reject_pending=true;v->native_reject_scope=v->base;\n}\nstatic bool native_proposal(struct ae_files_view *v,bool *accepted) {\n    *accepted=false;\n    const nx_event *begin=&v->native_events[0],*deletion=NULL;\n    uint32_t flags=begin->ime_before;\n    if(!(flags&(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE)) ||\n       (flags&~(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE))) return true;\n    char commit[AE_FILES_NAME+1];size_t bytes=0,texts=0;bool ended=false;\n    for(size_t i=1;i+1<v->native_count;++i) {\n        const nx_event *e=&v->native_events[i];\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED && !e->ime_target && !e->ime_revision) continue;\n        if(e->ime_target!=begin->ime_target || e->ime_revision!=begin->ime_revision) return true;\n        if(e->type==NX_EVENT_IME_PREEDIT_CHANGED) continue;\n        if(e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_IME_DELETE_RANGE) {\n            if(deletion || texts || !(flags&NX_IME_TRANSACTION_DELETE)) return true;\n            deletion=e;continue;\n        }\n        char encoded[4];size_t n=e->type==NX_EVENT_TEXT?scalar(e->scalar,encoded):0;\n        if(!n || !(flags&NX_IME_TRANSACTION_COMMIT) || ended ||\n           (e->ime_before&~(NX_IME_COMMIT_START|NX_IME_COMMIT_END)) ||\n           (!!(e->ime_before&NX_IME_COMMIT_START)!=!texts) ||\n           e->scalar<32 || e->scalar==127 || (e->modifiers&NX_MOD_SUPER) ||\n           ((e->modifiers&NX_MOD_CONTROL) && !(e->modifiers&NX_MOD_ALT)) ||\n           n>AE_FILES_NAME-bytes) return true;\n        memcpy(commit+bytes,encoded,n);bytes+=n;++texts;ended=(e->ime_before&NX_IME_COMMIT_END)!=0;\n    }\n    if(!!deletion!=!!(flags&NX_IME_TRANSACTION_DELETE) || (texts && !ended)) return true;\n    nx_utf8_span source={0};size_t anchor=0,cursor=0;\n    bool previous=v->native_preview && v->native_preview_target==begin->ime_target &&\n        v->native_preview_revision==begin->ime_revision && v->native_preview_scope==v->base;\n    if(previous) {\n        if(nx_text_buffer_text(v->native_preview,&source.data,&source.length)!=NX_OK ||\n           nx_text_buffer_selection(v->native_preview,&anchor,&cursor)!=NX_OK) return false;\n    } else {\n        struct edit *edit=&v->edits[v->s->dialog?1:0];\n        if(!edit->field || nx_text_field_text(edit->field,&source)!=NX_OK ||\n           nx_text_field_selection(edit->field,&anchor,&cursor)!=NX_OK) return false;\n    }\n    /* Form the complete byte proposal before asking the public buffer for its\n       grapheme-aligned caret. A separate delete followed by insert would snap\n       the intermediate caret and could insert past a newly joined cluster. */\n    size_t start=anchor<cursor?anchor:cursor,finish=anchor>cursor?anchor:cursor;\n    if(deletion && deletion->type==NX_EVENT_IME_DELETE_SURROUNDING) {\n        if((!deletion->ime_before && !deletion->ime_after) || deletion->ime_before>start ||\n           deletion->ime_after>source.length-finish) return true;\n        start-=deletion->ime_before;finish+=deletion->ime_after;\n    } else if(deletion) {\n        if(!deletion->ime_length) return true;\n        if(deletion->ime_index<0) {\n            uint64_t before=(uint64_t)-(int64_t)deletion->ime_index;\n            if(before>cursor) return true;\n            start=cursor-(size_t)before;\n        } else {\n            size_t after=(size_t)deletion->ime_index;\n            if(after>source.length-cursor) return true;\n            start=cursor+after;\n        }\n        if(deletion->ime_length>source.length-start) return true;\n        finish=start+deletion->ime_length;\n    }\n    if((start<source.length && ((unsigned char)source.data[start]&0xc0u)==0x80u) ||\n       (finish<source.length && ((unsigned char)source.data[finish]&0xc0u)==0x80u)) return true;\n    size_t remaining=source.length-(finish-start);\n    if(remaining>AE_FILES_NAME || bytes>AE_FILES_NAME-remaining) return true;\n    char next[AE_FILES_NAME+1];size_t length=remaining+bytes;\n    memcpy(next,source.data,start);memcpy(next+start,commit,bytes);\n    memcpy(next+start+bytes,source.data+finish,source.length-finish);next[length]=0;\n    nx_utf8_span proposed={next,length};struct field_validation rule={v->s->dialog,false};\n    if(field_valid(proposed,&rule)) {\n        nx_text_buffer *candidate=NULL;\n        if(nx_text_buffer_create(next,length,0,&candidate)!=NX_OK) return false;\n        size_t caret=start+bytes;nx_result selected;\n        do {selected=nx_text_buffer_set_selection(candidate,caret,caret);\n            if(selected==NX_ERROR_ARGUMENT && caret<length) ++caret;else break;\n        } while(caret<=length);\n        if(selected!=NX_OK) {nx_text_buffer_destroy(candidate);return false;}\n        for(size_t i=0;i<v->native_count;++i) if(nx_context_queue_event(v->ui,&v->native_events[i])!=NX_OK) {\n            nx_text_buffer_destroy(candidate);return false;\n        }\n        nx_text_buffer_destroy(v->native_preview);v->native_preview=candidate;\n        v->native_preview_target=begin->ime_target;v->native_preview_revision=begin->ime_revision;\n        v->native_preview_scope=v->base;*accepted=true;return true;\n    }\n    return true;\n}\nstatic void native_discard(struct ae_files_view *v) {\n    v->native_depth=v->native_count=0;v->native_bad=v->native_ignore=false;\n}\nstatic bool native_transaction(struct ae_files_view *v,const nx_event *e,bool *handled) {\n    *handled=false;\n    if(v->native_depth && v->native_scope!=v->base) native_discard(v);\n    if(e->type==NX_EVENT_IME_TRANSACTION_BEGIN) {\n        *handled=true;\n        if(v->native_depth && (e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision)) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            if(current) native_discard(v);\n        }\n        if(v->native_depth==SIZE_MAX) return false;\n        if(!v->native_depth) {\n            bool current;if(!native_current(v,e,&current)) return false;\n            v->native_begin=*e;v->native_scope=v->base;v->native_ignore=!current;\n            v->native_bad=false;v->native_count=1;v->native_events[0]=*e;\n        } else v->native_bad=true;\n        ++v->native_depth;return true;\n    }\n    if(e->type==NX_EVENT_IME_TRANSACTION_END) {\n        *handled=true;\n        if(!v->native_depth) return true;\n        if(v->native_depth>1) {--v->native_depth;v->native_bad=true;return true;}\n        if(e->ime_target!=v->native_begin.ime_target || e->ime_revision!=v->native_begin.ime_revision ||\n           e->ime_before!=v->native_begin.ime_before) {v->native_bad=true;return true;}\n        v->native_depth=0;\n        if(v->native_ignore || v->native_scope!=v->base) return true;\n        bool current;if(!native_current(v,&v->native_begin,&current)) return false;\n        if(!current) return true;\n        bool accepted=false;\n        if(!v->native_bad && v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0])) {\n            v->native_events[v->native_count++]=*e;\n            if(!native_proposal(v,&accepted)) return false;\n        }\n        if(!accepted) native_reject(v);\n        return true;\n    }\n    bool payload=e->type==NX_EVENT_TEXT || e->type==NX_EVENT_IME_DELETE_SURROUNDING ||\n        e->type==NX_EVENT_IME_DELETE_RANGE || e->type==NX_EVENT_IME_PREEDIT_CHANGED ||\n        (e->type==NX_EVENT_TEXT_COMMAND && (e->ime_target || e->ime_revision));\n    if(v->native_depth && payload) {\n        *handled=true;\n        if(v->native_count<sizeof(v->native_events)/sizeof(v->native_events[0]))\n            v->native_events[v->native_count++]=*e;\n        else v->native_bad=true;\n        return true;\n    }\n    if(v->native_depth) {\n        if(!v->native_ignore && v->native_scope==v->base) reject_text(v);\n        native_discard(v);\n    }\n    if((e->ime_target || e->ime_revision) && payload && e->type!=NX_EVENT_IME_PREEDIT_CHANGED) *handled=true;\n    return true;\n}\n\nbool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {"
+              }
+            ]
+          },
+          {
+            "original": "src/files/nexaui_main.c",
+            "original_sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d",
+            "generated": "nexaui_main.c",
+            "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b",
+            "changes": [
+              {
+                "before": "!ae_files_view_create(&h.s,font,font_size,&h.view) || nx_software_view_open",
+                "after": "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open"
+              },
+              {
+                "before": "int main(int argc,char **argv) {",
+                "after": "/* Defer native payload and neutral key releases until the queue is drained.\n   Flush completed edits before an ordinary command observes the app model. */\nstatic bool ime_deferred(const nx_event *e) {\n    return e->type==NX_EVENT_IME_TRANSACTION_BEGIN || e->type==NX_EVENT_IME_TRANSACTION_END ||\n        e->type==NX_EVENT_IME_PREEDIT_CHANGED || e->type==NX_EVENT_IME_DELETE_RANGE ||\n        e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_KEY_UP ||\n        e->type==NX_EVENT_KEY_DOWN_CONSUMED ||\n        ((e->type==NX_EVENT_TEXT || e->type==NX_EVENT_TEXT_COMMAND) && (e->ime_target || e->ime_revision));\n}\nint main(int argc,char **argv) {"
+              },
+              {
+                "before": "if(nx_window_get_status(h.window,&status)!=NX_OK || !chrome(&h,&event,&status,&handled) ||\n                   (!handled && !ae_files_view_event(h.view,&event)) || !draw(&h))",
+                "after": "if((!ime_deferred(&event) && !draw(&h)) || nx_window_get_status(h.window,&status)!=NX_OK ||\n                   !chrome(&h,&event,&status,&handled) || (!handled && !ae_files_view_event(h.view,&event)) ||\n                   (!ime_deferred(&event) && !draw(&h)))"
+              }
+            ]
+          }
+        ],
+        "scope": "Distinct consumer IME integration; original model/controller/host source export unchanged"
+      },
+      "binary_hashes": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-clipboard-restored-asan/aetheri_files_ime_candidate": "d4792659c6f9ef7cd10cdf9b0fc8889c953ad0fa54665ee3e5ddaf39046f6992",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fclip-serial-asan/peer": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+      },
+      "closed_line": "CLOSED files frames=436 failed=0"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "files-atomic-13-shared-test.log",
+      "size": 2660,
+      "sha256": "99d63ae7ba2b2f6335f4ced59fc9b2e1fd4b61cc94acbaa41e0f047ae47ca1ba"
+    },
+    {
+      "path": "fclip-serial-shared/result.json",
+      "size": 88890,
+      "sha256": "2725a1b064c30fec80b098a70deae1dc6b69558d75ce50dfca814acdf1a44415"
+    },
+    {
+      "path": "fclip-serial-shared/app.log",
+      "size": 1034269,
+      "sha256": "6f98169d1da2a5df0ac8507111097e0565e626a7c720264901a193f5dc843e87"
+    },
+    {
+      "path": "fclip-serial-shared/server.log",
+      "size": 157513,
+      "sha256": "5b40f483faa0c935ee5a4272b036434f83802bd9728e4776b021819580145356"
+    },
+    {
+      "path": "fclip-serial-shared/maps.txt",
+      "size": 5967,
+      "sha256": "caa799f314f0392c28a11b653344d4f3a26c83690c0494ab7a32454f2867d31c"
+    },
+    {
+      "path": "fclip-serial-shared/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-shared/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-13-release-test.log",
+      "size": 2661,
+      "sha256": "1e4f3ff8b8603dbd54f91dbb5d39690221fecca0dfda5fd81edd393c82923007"
+    },
+    {
+      "path": "fclip-serial-release/result.json",
+      "size": 89032,
+      "sha256": "27054818b6307fb8d11571d1fa35fa96e217c25e2bc8a539b1e1bbbc25030ced"
+    },
+    {
+      "path": "fclip-serial-release/app.log",
+      "size": 1034990,
+      "sha256": "ec5d115099683576560e8d8971ba2ba3cf5da332284590a46c2b9732a9a4be71"
+    },
+    {
+      "path": "fclip-serial-release/server.log",
+      "size": 159781,
+      "sha256": "ca1058fb8924ce0683295f872c8614a15abcc2cd3040e55a5c74259c392e04a5"
+    },
+    {
+      "path": "fclip-serial-release/maps.txt",
+      "size": 5367,
+      "sha256": "a89314b4bd80bbe125a5bcbf758818fadd88ad630a4a647a535ab7c091ecae7c"
+    },
+    {
+      "path": "fclip-serial-release/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-release/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-13-asan-test.log",
+      "size": 2658,
+      "sha256": "633016d6ba65bba21e4bb3642f77ea6f76f60b1084abf22eda1bbf1a891e0066"
+    },
+    {
+      "path": "fclip-serial-asan/result.json",
+      "size": 88633,
+      "sha256": "65e72ae0244e78d0b8eedf34b6531144e069943d0153efb0ea06033af548852d"
+    },
+    {
+      "path": "fclip-serial-asan/app.log",
+      "size": 1022137,
+      "sha256": "9425fbf04592fb30cb03774d57b956ea45de8713c1750c74750980f297b41c40"
+    },
+    {
+      "path": "fclip-serial-asan/server.log",
+      "size": 156851,
+      "sha256": "a6001c4c88cbecb532b6f455775bbc4c5801e39d9867717b24a0738c5a6511c3"
+    },
+    {
+      "path": "fclip-serial-asan/maps.txt",
+      "size": 15547,
+      "sha256": "87486e791e165a81d291513c3a852918e3ee82d7826ec33e3f081c101cf1a28c"
+    },
+    {
+      "path": "fclip-serial-asan/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-asan/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-clipboard-negative-evidence.json",
+      "size": 1708,
+      "sha256": "8db36471f5ec8defe57fe0b4ad97cad886965ebc0e86928ca6bffb646212e344"
+    },
+    {
+      "path": "files-clipboard-before-binding-2.log",
+      "size": 1799,
+      "sha256": "6839c9ffa7754978decb528859cdd64346fe3eaac1e8fb8ed31bc6f768c7f764"
+    },
+    {
+      "path": "files-clipboard-restored-binaries.json",
+      "size": 4601,
+      "sha256": "e2d386ce5d2e91b6b95481cd0649a0ef21e774b7b982f5e161ef9874df68c13b"
+    },
+    {
+      "path": "files-atomic-13-build-commands.json",
+      "size": 5118,
+      "sha256": "bc0fc59236f196ab0d0e64056c529effa7277502fc53c97780f7fa64efa78017"
+    },
+    {
+      "path": "files-clipboard-final-static-commands.json",
+      "size": 2689,
+      "sha256": "73974a922bd85389a4cc2459012e98b06c60ae0f2d2fdadb92ba31d9978d56ca"
+    },
+    {
+      "path": "files-atomic-sdk-input.json",
+      "size": 3319,
+      "sha256": "1be72d04af37603280f03385d0ee5f07a8909143f9afc45df4190627cbd6700a"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_files_ime_candidate",
+      "size": 179520,
+      "sha256": "8a6aa8e98bd440c4f8878f1581b00337b56c99465258d86c72eb6cb3c4b2a531"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_files_ime_candidate",
+      "size": 963616,
+      "sha256": "dd26f08cd0b8b79a4d538812c3d790a3216700ac860c0a5e86f5835163e2ad8d"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_files_ime_candidate",
+      "size": 9160992,
+      "sha256": "d4792659c6f9ef7cd10cdf9b0fc8889c953ad0fa54665ee3e5ddaf39046f6992"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_terminal_candidate",
+      "size": 1227104,
+      "sha256": "316fab4cf581f65a13384d5d2ac026c09d756969cf768aff0b99881d95cd41fd"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_editor_candidate",
+      "size": 775672,
+      "sha256": "29f8fcb95e93af48b0443671838788d7ca00ab628522b5d7dc1ebbd09089062b"
+    }
+  ],
+  "negative": {
+    "command": [
+      "python3",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-src-16/examples/35_aetheri_files_consumer/run_ime.py",
+      "--binaries",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-final-shared",
+      "--original",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-original-7483286-3",
+      "--atspi-fixture",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-native-atspi-fixture",
+      "--sdk-input",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-sdk-input.json",
+      "--expected-sdk-revision",
+      "ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+      "--linkage",
+      "shared",
+      "--server",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-1/files_ime_producer",
+      "--font",
+      "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "--mono",
+      "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+      "--work-dir",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/fclip-before-binding-2",
+      "--transactions",
+      "--clipboard-tools",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+      "--clipboard-budget"
+    ],
+    "exit": 1,
+    "result": "failed",
+    "last_check": {
+      "native_peer": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/fclip-before-binding-2/peer",
+        "1169632",
+        "Name",
+        "Gr\u00fc\u00dfe \ud83c\udf0d e\u0301",
+        "10"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Native IME committed-text/caret expectation failed\n"
+    },
+    "log": "files-clipboard-before-binding-2.log",
+    "scope": "Identical native task against accepted preceding Files IME executable without clipboard binding"
+  },
+  "sdk": {
+    "revision": "ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+    "version": "0.1.25",
+    "atspi_compiled": true,
+    "library": "/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-sdk2-shared-prefix/lib64/libnexaui.so.0.1.25",
+    "sha256": "27171428a6959f800ae4a12295b0af5b0556a4d0523c3ae51ee67ff2c24b9d98",
+    "dbus_sdk": "/home/aetheri/deps/nexaui-settings-release-05/dbus-sdk",
+    "dbus_headers": [
+      {
+        "path": "include/dbus-1.0/dbus/dbus-address.h",
+        "sha256": "5a6834badb73f871acaaea7f03f6497f50e958232a1dbe64f1f098e56c4557ce"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-bus.h",
+        "sha256": "c50a3f89fab412a98544d98a1c94dc07ad5b540ebbf63e63105877039ff2f374"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-connection.h",
+        "sha256": "f9496c07830e44fbda1668328b40c78527251c99e62919c80af479631ff794bf"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-errors.h",
+        "sha256": "00292ccbbc3d30603c293122155151fd21aa26aa0adbc8333972440544f37ded"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-macros.h",
+        "sha256": "78fc922e402466c826145dbfe31d2ae87682ef2df6233d436dc3399552f6362f"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-memory.h",
+        "sha256": "7e0487d09e88e705bd166432e3d581aafe2e90c5654224505b73c56ae8d8cf2f"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-message.h",
+        "sha256": "2dd354759e49fad23f25b3b85e73d9e6d4ad0034c08828af1d5f7226971f66d6"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-misc.h",
+        "sha256": "6ff2e2f874f55a6b4738aea905ee413d814fec320b48ffd7f30a2df3237894aa"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-pending-call.h",
+        "sha256": "0aee41fe9624a284935fee0d4b572a313f83230ac31bdead59dff96309b7d1e0"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-protocol.h",
+        "sha256": "533fd55283662d1c013792a29e9993e31babe20d5a5dfedae2c4b8e8bebafc6a"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-server.h",
+        "sha256": "f63bbd5503d13b1486b66a76cc9f289e19ff46d7b3c5f39df9953af3e6df0323"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-shared.h",
+        "sha256": "97ed7edf5baf42bdee4d5777d63158599667078499ca1b0360ccedb013d3531c"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-signature.h",
+        "sha256": "13a10246dee6a378899c88a9ac37e0eb618a1f91766fc27de0053309e6aac941"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-syntax.h",
+        "sha256": "200170d6ee508b6daa8a17dc9b804a0a35fa555d8d8c8768258edd75dd36cd43"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-threads.h",
+        "sha256": "16c10fafae90e9aaeaf0506f41432bfa389dfdf333115f8934680d88d83ae12d"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus-types.h",
+        "sha256": "0228e51763888e7319f0b8c862f0ee928e3079340408512f7e4a594e1eeae48d"
+      },
+      {
+        "path": "include/dbus-1.0/dbus/dbus.h",
+        "sha256": "56ff456922bf6df191958a291fc5d6d66f39b82b156bc2d715ef87add155cea5"
+      },
+      {
+        "path": "lib64/dbus-1.0/include/dbus/dbus-arch-deps.h",
+        "sha256": "599da3a9e936fdd5a1702b48cf1c0db5226e37931ff5f957f5d2fbfe63f89eca"
+      }
+    ],
+    "scope": "New separately built installed SDK ca1, runtime version/source declaration and compiled features checked. Exact source/archive binding is separate; active Aetheri reviewed pin unchanged.",
+    "features": 116
+  },
+  "input_differences": [
+    "examples/35_aetheri_files_consumer/README.md",
+    "examples/35_aetheri_files_consumer/clipboard_task.py",
+    "examples/35_aetheri_files_consumer/ime_atspi.c",
+    "examples/35_aetheri_files_consumer/run_ime.py"
+  ]
+}

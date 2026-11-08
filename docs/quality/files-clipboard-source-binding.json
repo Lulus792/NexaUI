@@ -1,0 +1,718 @@
+{
+  "source_revision": "da18553a912cd1972cbcf536491ab60b3cc2d359",
+  "files": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "size": 5182,
+      "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "size": 10811,
+      "sha256": "59d4f3b49be8a3c42893074f35e951b201de994383095408e930e768bbdca6aa"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1194,
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+      "size": 9496,
+      "sha256": "6bb491e7990d988058a95461137495c01659f01e000d386676e1a5b184e98564"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+      "size": 3139,
+      "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+      "size": 4103,
+      "sha256": "391fdc43861f3e0ac237ae74a8b4af3aafd90191a6b5208672594a9293115f01"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+      "size": 2673,
+      "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+      "size": 3692,
+      "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+      "size": 4292,
+      "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+      "size": 8546,
+      "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+      "size": 8709,
+      "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+      "size": 15427,
+      "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+      "size": 5132,
+      "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+      "size": 9557,
+      "sha256": "776d5bb8d5d02fdb52b4dc49195cbf58d25cac7e4227093ff0bc57f214711bd5"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_ime.py",
+      "size": 18826,
+      "sha256": "f1fa685d192e6c6bb3eeea5f7efb083f36b8fa400fe3bc8f8e7e9afcb07df00d"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_native.py",
+      "size": 4855,
+      "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "size": 8203,
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+    }
+  ],
+  "executed_git_bound_inputs": 16,
+  "compiled_input": {
+    "archive": "files-atomic-input-13.tar.gz",
+    "sha256": "968bd93d0ac33ecf77721a32d8d200bdd80bebadc10a53549a798669c308db10",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 8757,
+        "sha256": "1bfe4affcc4ef64717140f8dbc127f58a8931aad5ce4782e177a43cffb920383"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 8988,
+        "sha256": "f9ec56a156afb15d0b1a11493c802d9ef3a26af3e87ecf5352d5bc20b16d662f"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 3953,
+        "sha256": "c86eff3aa91c58cd9e32b0c1b2b75e3df4c408c4903a8517ff79fdeffcf9b2a8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 2673,
+        "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 9557,
+        "sha256": "776d5bb8d5d02fdb52b4dc49195cbf58d25cac7e4227093ff0bc57f214711bd5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 18776,
+        "sha256": "ff2416b0a926a2a711e51ff644b334cc777c6c836e02a57e00307d3c4ba18665"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "native_input": {
+    "archive": "files-atomic-input-16.tar.gz",
+    "sha256": "7effa5149db75ae78d080a5bf65abc6623994ad60b89f770bb6f6822413aafa3",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 10538,
+        "sha256": "514f34b74b76c67d07dac381aaaa6fb78c28bcb01305522b4543dbf7047fc0f8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+        "size": 9496,
+        "sha256": "6bb491e7990d988058a95461137495c01659f01e000d386676e1a5b184e98564"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 4103,
+        "sha256": "391fdc43861f3e0ac237ae74a8b4af3aafd90191a6b5208672594a9293115f01"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 2673,
+        "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 9557,
+        "sha256": "776d5bb8d5d02fdb52b4dc49195cbf58d25cac7e4227093ff0bc57f214711bd5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 18826,
+        "sha256": "f1fa685d192e6c6bb3eeea5f7efb083f36b8fa400fe3bc8f8e7e9afcb07df00d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "input_differences": [
+    "examples/35_aetheri_files_consumer/README.md",
+    "examples/35_aetheri_files_consumer/clipboard_task.py",
+    "examples/35_aetheri_files_consumer/ime_atspi.c",
+    "examples/35_aetheri_files_consumer/run_ime.py"
+  ],
+  "profiles": [
+    {
+      "profile": "shared",
+      "c17_werror_objects": 48,
+      "ctests": 24,
+      "controller_cases": 10,
+      "artifacts": [
+        {
+          "name": "files-atomic-13-shared/compile_commands.json",
+          "size": 42537,
+          "mode": 420,
+          "sha256": "4a8fbe310d5e9b3c15ed45669aae335bcb816d0370aaeb7175dee1e1c7541a7d"
+        },
+        {
+          "name": "files-atomic-13-shared/CMakeCache.txt",
+          "size": 25390,
+          "mode": 420,
+          "sha256": "62096d36d2b13813baf56d820b3cdf85d74a583778138c4f79b860abc61f6773"
+        },
+        {
+          "name": "files-atomic-13-shared/Testing/Temporary/LastTest.log",
+          "size": 18776,
+          "mode": 420,
+          "sha256": "ac9b8f83a4f0b214f54784d789c81d183498d183e8b6b6e1be424cc7bcfea4c9"
+        },
+        {
+          "name": "files-atomic-13-shared/aetheri_files_ime_candidate",
+          "size": 179520,
+          "mode": 493,
+          "sha256": "8a6aa8e98bd440c4f8878f1581b00337b56c99465258d86c72eb6cb3c4b2a531"
+        },
+        {
+          "name": "files-atomic-13-shared/aetheri_terminal_candidate",
+          "size": 120448,
+          "mode": 493,
+          "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+        },
+        {
+          "name": "files-atomic-13-shared/aetheri_editor_candidate",
+          "size": 100896,
+          "mode": 493,
+          "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+        }
+      ]
+    },
+    {
+      "profile": "release",
+      "c17_werror_objects": 48,
+      "ctests": 24,
+      "controller_cases": 10,
+      "artifacts": [
+        {
+          "name": "files-atomic-13-release/compile_commands.json",
+          "size": 42507,
+          "mode": 420,
+          "sha256": "ecaf63d700e9bd6ebfb6b44dc053ff6ac4c4e4eaa02a9c4af659aef8caad2126"
+        },
+        {
+          "name": "files-atomic-13-release/CMakeCache.txt",
+          "size": 25395,
+          "mode": 420,
+          "sha256": "b17a5b14e74b103c4ec306740df7d12e0c8245cefb943c34e0dd99b5ae6b149d"
+        },
+        {
+          "name": "files-atomic-13-release/Testing/Temporary/LastTest.log",
+          "size": 18824,
+          "mode": 420,
+          "sha256": "259deff9a0261e60f71862963ac7b9f55aec2e3bcbe11e8214a94964d9658694"
+        },
+        {
+          "name": "files-atomic-13-release/aetheri_files_ime_candidate",
+          "size": 963616,
+          "mode": 493,
+          "sha256": "dd26f08cd0b8b79a4d538812c3d790a3216700ac860c0a5e86f5835163e2ad8d"
+        },
+        {
+          "name": "files-atomic-13-release/aetheri_terminal_candidate",
+          "size": 120448,
+          "mode": 493,
+          "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+        },
+        {
+          "name": "files-atomic-13-release/aetheri_editor_candidate",
+          "size": 100896,
+          "mode": 493,
+          "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "c17_werror_objects": 48,
+      "ctests": 24,
+      "controller_cases": 10,
+      "artifacts": [
+        {
+          "name": "files-atomic-13-asan/compile_commands.json",
+          "size": 44229,
+          "mode": 420,
+          "sha256": "81a798b5518656b8e4a308779ccf9a67ea146938b118b431ef63072cc8c5141e"
+        },
+        {
+          "name": "files-atomic-13-asan/CMakeCache.txt",
+          "size": 25458,
+          "mode": 420,
+          "sha256": "ae8780034423115f66242579dff8a456c5a4d67896826a940f803f911e2adae2"
+        },
+        {
+          "name": "files-atomic-13-asan/Testing/Temporary/LastTest.log",
+          "size": 18680,
+          "mode": 420,
+          "sha256": "eb8cc0c2f11f7525154557b31757d0c1c2fc4b057cd9ac0b689bf89a3feb1459"
+        },
+        {
+          "name": "files-atomic-13-asan/aetheri_files_ime_candidate",
+          "size": 9160992,
+          "mode": 493,
+          "sha256": "d4792659c6f9ef7cd10cdf9b0fc8889c953ad0fa54665ee3e5ddaf39046f6992"
+        },
+        {
+          "name": "files-atomic-13-asan/aetheri_terminal_candidate",
+          "size": 1227104,
+          "mode": 493,
+          "sha256": "316fab4cf581f65a13384d5d2ac026c09d756969cf768aff0b99881d95cd41fd"
+        },
+        {
+          "name": "files-atomic-13-asan/aetheri_editor_candidate",
+          "size": 775672,
+          "mode": 493,
+          "sha256": "29f8fcb95e93af48b0443671838788d7ca00ab628522b5d7dc1ebbd09089062b"
+        }
+      ]
+    }
+  ],
+  "build_archive": {
+    "sha256": "5a9606a36624bd8e7722618802c75bc1aa44a0bde257e02c8e2021efee7c3c2b",
+    "files": 3904,
+    "links": 29,
+    "directories": 3075,
+    "verified": true,
+    "name": "nexaui-files-clipboard-before-wake-20261108.tar.gz",
+    "size": 54770034,
+    "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+  },
+  "foreign_tools_archive": {
+    "name": "nexaui-recovery-clipboard-20261107.tar.gz",
+    "size": 21745599,
+    "sha256": "9fbec408e074b0904847a4ffdf1d3cdf3801772ee5185eebda4959a2c2aca10e",
+    "files": 2340,
+    "links": 6,
+    "directories": 421,
+    "excluded_special": [],
+    "path": "D:/NexaUI/out/nexaui-recovery-clipboard-20261107.tar.gz",
+    "source_revision": "0ddad5ea1a09a480abfef7f1c44077bd2a82b162",
+    "host_revision": "38210e00ea34fe9611ac01145f05a4828d852bf7",
+    "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+    "verification": "Every file hash/size/mode, directory mode and symlink target independently verified locally."
+  },
+  "foreign_tools": [
+    {
+      "name": "clipboard-tools/bin/wl-copy",
+      "size": 39848,
+      "mode": 493,
+      "sha256": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921"
+    },
+    {
+      "name": "clipboard-tools/bin/wl-paste",
+      "size": 39784,
+      "mode": 493,
+      "sha256": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356"
+    },
+    {
+      "name": "clipboard-tools/lib/ld-musl-x86_64.so.1",
+      "size": 670312,
+      "mode": 493,
+      "sha256": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806"
+    },
+    {
+      "name": "clipboard-tools/lib/libffi.so.8",
+      "size": 38960,
+      "mode": 493,
+      "sha256": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2"
+    },
+    {
+      "name": "clipboard-tools/lib/libwayland-client.so.0",
+      "size": 51864,
+      "mode": 493,
+      "sha256": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "files-atomic-13-shared-test.log",
+      "size": 2660,
+      "sha256": "99d63ae7ba2b2f6335f4ced59fc9b2e1fd4b61cc94acbaa41e0f047ae47ca1ba"
+    },
+    {
+      "path": "fclip-serial-shared/result.json",
+      "size": 88890,
+      "sha256": "2725a1b064c30fec80b098a70deae1dc6b69558d75ce50dfca814acdf1a44415"
+    },
+    {
+      "path": "fclip-serial-shared/app.log",
+      "size": 1034269,
+      "sha256": "6f98169d1da2a5df0ac8507111097e0565e626a7c720264901a193f5dc843e87"
+    },
+    {
+      "path": "fclip-serial-shared/server.log",
+      "size": 157513,
+      "sha256": "5b40f483faa0c935ee5a4272b036434f83802bd9728e4776b021819580145356"
+    },
+    {
+      "path": "fclip-serial-shared/maps.txt",
+      "size": 5967,
+      "sha256": "caa799f314f0392c28a11b653344d4f3a26c83690c0494ab7a32454f2867d31c"
+    },
+    {
+      "path": "fclip-serial-shared/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-shared/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-13-release-test.log",
+      "size": 2661,
+      "sha256": "1e4f3ff8b8603dbd54f91dbb5d39690221fecca0dfda5fd81edd393c82923007"
+    },
+    {
+      "path": "fclip-serial-release/result.json",
+      "size": 89032,
+      "sha256": "27054818b6307fb8d11571d1fa35fa96e217c25e2bc8a539b1e1bbbc25030ced"
+    },
+    {
+      "path": "fclip-serial-release/app.log",
+      "size": 1034990,
+      "sha256": "ec5d115099683576560e8d8971ba2ba3cf5da332284590a46c2b9732a9a4be71"
+    },
+    {
+      "path": "fclip-serial-release/server.log",
+      "size": 159781,
+      "sha256": "ca1058fb8924ce0683295f872c8614a15abcc2cd3040e55a5c74259c392e04a5"
+    },
+    {
+      "path": "fclip-serial-release/maps.txt",
+      "size": 5367,
+      "sha256": "a89314b4bd80bbe125a5bcbf758818fadd88ad630a4a647a535ab7c091ecae7c"
+    },
+    {
+      "path": "fclip-serial-release/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-release/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-13-asan-test.log",
+      "size": 2658,
+      "sha256": "633016d6ba65bba21e4bb3642f77ea6f76f60b1084abf22eda1bbf1a891e0066"
+    },
+    {
+      "path": "fclip-serial-asan/result.json",
+      "size": 88633,
+      "sha256": "65e72ae0244e78d0b8eedf34b6531144e069943d0153efb0ea06033af548852d"
+    },
+    {
+      "path": "fclip-serial-asan/app.log",
+      "size": 1022137,
+      "sha256": "9425fbf04592fb30cb03774d57b956ea45de8713c1750c74750980f297b41c40"
+    },
+    {
+      "path": "fclip-serial-asan/server.log",
+      "size": 156851,
+      "sha256": "a6001c4c88cbecb532b6f455775bbc4c5801e39d9867717b24a0738c5a6511c3"
+    },
+    {
+      "path": "fclip-serial-asan/maps.txt",
+      "size": 15547,
+      "sha256": "87486e791e165a81d291513c3a852918e3ee82d7826ec33e3f081c101cf1a28c"
+    },
+    {
+      "path": "fclip-serial-asan/peer",
+      "size": 36880,
+      "sha256": "4c0f4de5709657f0e2cdfcf8fe95583b892feaceb4e9cac8ef666508f049b455"
+    },
+    {
+      "path": "fclip-serial-asan/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-clipboard-negative-evidence.json",
+      "size": 1708,
+      "sha256": "8db36471f5ec8defe57fe0b4ad97cad886965ebc0e86928ca6bffb646212e344"
+    },
+    {
+      "path": "files-clipboard-before-binding-2.log",
+      "size": 1799,
+      "sha256": "6839c9ffa7754978decb528859cdd64346fe3eaac1e8fb8ed31bc6f768c7f764"
+    },
+    {
+      "path": "files-clipboard-restored-binaries.json",
+      "size": 4601,
+      "sha256": "e2d386ce5d2e91b6b95481cd0649a0ef21e774b7b982f5e161ef9874df68c13b"
+    },
+    {
+      "path": "files-atomic-13-build-commands.json",
+      "size": 5118,
+      "sha256": "bc0fc59236f196ab0d0e64056c529effa7277502fc53c97780f7fa64efa78017"
+    },
+    {
+      "path": "files-clipboard-final-static-commands.json",
+      "size": 2689,
+      "sha256": "73974a922bd85389a4cc2459012e98b06c60ae0f2d2fdadb92ba31d9978d56ca"
+    },
+    {
+      "path": "files-atomic-sdk-input.json",
+      "size": 3319,
+      "sha256": "1be72d04af37603280f03385d0ee5f07a8909143f9afc45df4190627cbd6700a"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-atomic-13-shared/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_files_ime_candidate",
+      "size": 179520,
+      "sha256": "8a6aa8e98bd440c4f8878f1581b00337b56c99465258d86c72eb6cb3c4b2a531"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-13-shared/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-clipboard-restored-release/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_files_ime_candidate",
+      "size": 963616,
+      "sha256": "dd26f08cd0b8b79a4d538812c3d790a3216700ac860c0a5e86f5835163e2ad8d"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-clipboard-restored-release/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_view.c",
+      "size": 63039,
+      "sha256": "ea32f69a48225468f718826d3b007b20ba3d5bf90b3eb83b9cd7de6b4032767b"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-clipboard-restored-asan/files-ime-generated/source-delta.json",
+      "size": 17613,
+      "sha256": "96aefb8a920343bc0b13427c6a41279cdf99000d85205e03ac912d0fe0bc10f7"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_files_ime_candidate",
+      "size": 9160992,
+      "sha256": "d4792659c6f9ef7cd10cdf9b0fc8889c953ad0fa54665ee3e5ddaf39046f6992"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_terminal_candidate",
+      "size": 1227104,
+      "sha256": "316fab4cf581f65a13384d5d2ac026c09d756969cf768aff0b99881d95cd41fd"
+    },
+    {
+      "path": "files-clipboard-restored-asan/aetheri_editor_candidate",
+      "size": 775672,
+      "sha256": "29f8fcb95e93af48b0443671838788d7ca00ab628522b5d7dc1ebbd09089062b"
+    }
+  ],
+  "prior_sdk_original_source_binding": "files-ime-atomic-source-binding.json",
+  "aetheri_survey": {
+    "head": "aca8235dedc5c2b9c05eb059f8a66d8d225b8d9d",
+    "reviewed_sdk_pin": "97a42647480bb05167cee5e4ae08cedd9147d80d",
+    "scope": "Read-only committed Git survey; current checkout not built or changed"
+  },
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65"
+}

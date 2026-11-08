@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Original Files native clipboard (2026-11-08)
+
+Consumer `da18553a912cd1972cbcf536491ab60b3cc2d359` binds the existing native
+text clipboard adapter without changing original file-operation ownership or SDK
+source/version. Three profiles pass 24/24 CTests and 290 native checkpoints each,
+including foreign Unicode transfer, immutable copy, range undo, accessible
+Copy/Paste/Cut, complete-proposal rejection, late focus replies and close while a
+producer remains stopped. All 16 executed inputs bind to Git and all five foreign
+tool/runtime files match the prior accepted artifact. See [exact evidence and limits](files-clipboard-report.md).
+Native writes require available input serials; keyboard transfer retains the SDK
+32 MiB/five-second budget and original rejection rollback clears field history.
+Font fallback/layout/localization and broader clipboard/resource/adoption work
+remain open. No active Aetheri source/build/pin changes or 1.0 release. All 103 IDs,
+remaining packet 6, packets 7–8 and final physical/human/performance gates persist.
+
 ## Original Files native transactions and undo (2026-11-08)
 
 Consumer `0a1f806c2de57ca864b59369f9aefd94cbe8038e` uses the installed
