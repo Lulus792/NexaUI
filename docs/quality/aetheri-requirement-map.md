@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/L05/L11/I01/I05/A02/A06/P04/P05/P07/Q02/Q04/Q08: source `0d41883`
+extends existing original Root11 native held-query tests:18 current and eight
+legacy held cases plus two ordinary IME/navigation regressions pass. Thirteen
+native FD-wakeup and thirteen close-before-release cases check actual SQL
+transaction holding, input-free completion, retired issuer/field/action refusal,
+exactly-once late disposal and descriptor balance. Two compiled provider defects
+are detected. See [Root11 lifecycle evidence](recovery-root-v11-held-report.md).
+The existing reset viewport is explicitly revealed after completion; no automatic
+anchor/focus preservation is inferred. Clipboard/resize, current authority,
+further packet6, packets7–8 and final physical/human/performance/adoption remain
+open across the unchanged103 IDs; independent Aetheri source/pin is untouched.
+
 B01/D07/L05/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08: source `5a5a1b4`
 adds native Root11 issuer fixture/reference and independent OS-peer checks to
 the unchanged `e3031e0` provider. Nine Root11 and two default legacy native

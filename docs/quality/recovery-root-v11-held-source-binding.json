@@ -1,0 +1,170 @@
+{
+  "source_revision": "0d418830ac90270135ea26d9b1f8f0c317bd05ee",
+  "normalization": "CRLF to LF only",
+  "files": [
+    {
+      "path": "examples/33_aetheri_recovery/CMakeLists.txt",
+      "size": 6876,
+      "sha256": "0d779b02b554ce1b2e2a08fd15cba7d2ac0aa880c309550f0753e602c39dc6ee"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/README.md",
+      "size": 20529,
+      "sha256": "37da1cfbdbf7cb86af788b5738638647ece47d91ee0ceb7c5f853bf3defc80c3"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/atspi_client.c",
+      "size": 17254,
+      "sha256": "a45fecac935cdbe5807dcdcc4a9840641d0bb41d2ee708ab8faed4e8a29993ff"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/check_source.py",
+      "size": 831,
+      "sha256": "5990c75cc2a3ad7be051ec728ce12e11d7f9c3dc1ba91e2e1a7abccf2141b14d"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/issuer_fixture.py",
+      "size": 4314,
+      "sha256": "8a2ea6e0e309d61ace3116970b30ad931a49062a9b7402020c49373829b3ef96"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/lifecycle_atspi.c",
+      "size": 4629,
+      "sha256": "7dbf0d6c5b82481366ca9629c4d5597ba67d9f78f783368a7eb3701b61d02759"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/native.c",
+      "size": 7747,
+      "sha256": "1b017ff87512b3c561c870e03bc470f305a73975d1256b45a57e53d412241c84"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.c",
+      "size": 27835,
+      "sha256": "138037c5d58fe801024b6a7e863f983b86e12944e937f6aa642c0731c1693bd6"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_view.h",
+      "size": 2056,
+      "sha256": "7e6541e70a10a8076645d6576e3a152cb6957ef28fe3b1ee9b428b83e2c2d992"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.c",
+      "size": 6728,
+      "sha256": "e10db3b1b62624e3dfc95b4b2f861f2d913d2e86a71ad9fe3d5ee6fe7f09dead"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/recovery_worker.h",
+      "size": 2338,
+      "sha256": "580256c1c5379ce38a16e2458acc3f1a432d806c10921f55268f4541285051c2"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_model.py",
+      "size": 5278,
+      "sha256": "ad84735aae8be96e3a078d70913f766249fda9c7bafa1d35e17572fabe3d6c31"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_native.py",
+      "size": 34640,
+      "sha256": "ee10a756bcf30af73c6c2846e251648fa363e87928b042e0e5f917eb3b93d50b"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_root_v11.py",
+      "size": 3104,
+      "sha256": "d66d71fcf48ef6cc52748d3d781860d4096bbd8669a63da008f96c02c88d32a2"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_view.py",
+      "size": 2574,
+      "sha256": "1b768a359aa46e8f027ea44f5f383aed760c78ff5c5028d8349d632645f85158"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/run_worker.py",
+      "size": 2314,
+      "sha256": "bea2fc59ad31f01ef503cbd3064d704f682aa33350a51c65884ed830e4c4888f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/source-inputs-root-v11.json",
+      "size": 7714,
+      "sha256": "d7d83c91a51a31119c54e5615b9597fbc11544c5f9c89785da13a6cb8111ae71"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/source-inputs.json",
+      "size": 6793,
+      "sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_native_gate.c",
+      "size": 6149,
+      "sha256": "961cbf9994b5627991ce29ffdd814bcd607696e65965ff928f3ca1faab7eae2f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_view.c",
+      "size": 12484,
+      "sha256": "53ef80828e61b4f1943fad049c1adfefe3a3af04b969ff2bcab94f4be2f4cc41"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_recovery_worker.c",
+      "size": 8239,
+      "sha256": "8e4ebeea4ef0d16d2e4fa4a2c288fe59ab133ba0854a9dee68cf6e0a46b91ca7"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_root_v11.c",
+      "size": 9084,
+      "sha256": "72d38729ad1750a32230ef648d8f12c53a94bbc3f61c4b0c4710648f7908d7e2"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/test_view_model.c",
+      "size": 11189,
+      "sha256": "2e72a9182fe1ceb6c11901a08238a930fd9b50036dc81de95ad26e7bd031509f"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.c",
+      "size": 7120,
+      "sha256": "c6f58da4bc924d467b0535a3fe41a258c9d0c3b8979d1a08662fdac0e6d565d1"
+    },
+    {
+      "path": "examples/33_aetheri_recovery/view_model.h",
+      "size": 3560,
+      "sha256": "c0778edf1e8241ee63cab257973e5eb84994e6971e4ae6b83340a2c1a8a2deda"
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history.py",
+      "size": 6330,
+      "sha256": "062ffa22d4c267409138bb32adf6f09585562fb502a51422fda1b41d51ebb7f1"
+    },
+    {
+      "path": "examples/common/text_wrap.c",
+      "size": 3658,
+      "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "path": "examples/common/text_wrap.h",
+      "size": 349,
+      "sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    },
+    {
+      "path": "examples/30_async_hierarchy/hierarchy_view.c",
+      "size": 13272,
+      "sha256": "a699846df0a1903e74aa6a7a8b64a74b8eca1d7f27596c267495aae8a39f8068"
+    },
+    {
+      "path": "examples/30_async_hierarchy/hierarchy_view.h",
+      "size": 2702,
+      "sha256": "c9175003fb8aec2069d5c2519a24069e9dd7937998160aed5f0e52fb0aa33472"
+    },
+    {
+      "path": "examples/30_async_hierarchy/native.c",
+      "size": 21870,
+      "sha256": "47e211a245fb1d1e057569fcb5a0fb23b768f7db81886644ccc2df926a9acdbd"
+    },
+    {
+      "path": "examples/30_async_hierarchy/atspi_client.c",
+      "size": 11708,
+      "sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9"
+    }
+  ],
+  "tested_input": "nexaui-recovery-root-v11-input-6-20261108.tar.gz",
+  "tested_input_sha256": "b57ef970899a93f3e3b3a4b78c7c79149ce9ae68938137a5a4071b47ad9472ca",
+  "post_test_code_differences": [],
+  "unchanged_provider_source_revision": "e3031e0f382c67e41929d7c08e710ea7be7e4a7f"
+}

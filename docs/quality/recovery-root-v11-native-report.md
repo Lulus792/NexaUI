@@ -1,5 +1,9 @@
 # Original Root11 issuer through native Wayland and AT-SPI — 2026-11-08
 
+Subsequent [Root11 held-query checks](recovery-root-v11-held-report.md) on source
+`0d41883` add original-transaction/native-wakeup/close/disposal evidence. The
+ordinary results and historical open gates below retain their source boundary.
+
 Native peer/fixture-runner source: `5a5a1b4eff1ddcb581ca2d178c1469bff3005f17`.
 Unchanged model/view/worker/native provider: `e3031e0f382c67e41929d7c08e710ea7be7e4a7f`.
 Original current profile: `fa5347264054b05e8af57e6d0a210008a6c849d1`.
