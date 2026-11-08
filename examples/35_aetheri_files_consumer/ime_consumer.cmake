@@ -1,0 +1,28 @@
+set(files_ime_generated "${CMAKE_CURRENT_BINARY_DIR}/files-ime-generated")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_host.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/check_source.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json" files_ime_manifest)
+string(JSON files_ime_count LENGTH "${files_ime_manifest}" files)
+math(EXPR files_ime_last "${files_ime_count}-1")
+foreach(index RANGE ${files_ime_last})
+    string(JSON path GET "${files_ime_manifest}" files ${index} path)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${AETHERI_SOURCE_DIR}/${path}")
+endforeach()
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_host.py"
+    "${AETHERI_SOURCE_DIR}" "${files_ime_generated}" COMMAND_ERROR_IS_FATAL ANY)
+add_library(files_ime_view STATIC "${files_ime_generated}/nexaui_view.c")
+target_include_directories(files_ime_view PUBLIC "${files_ime_generated}" "${original}/files")
+target_link_libraries(files_ime_view PUBLIC files_original_session NexaUI::NexaUI m)
+add_executable(aetheri_files_ime_candidate "${files_ime_generated}/nexaui_main.c")
+target_link_libraries(aetheri_files_ime_candidate PRIVATE files_ime_view Threads::Threads)
+list(APPEND checked_targets files_ime_view aetheri_files_ime_candidate)
+if(FILES_BUILD_TESTS)
+    add_executable(files_ime_view_original_test "${AETHERI_SOURCE_DIR}/tests/test_files_view.c")
+    target_link_libraries(files_ime_view_original_test PRIVATE files_ime_view)
+    list(APPEND checked_targets files_ime_view_original_test)
+    add_test(NAME files_ime_view_1x COMMAND files_ime_view_original_test "${FILES_TEST_FONT}" 1)
+    add_test(NAME files_ime_view_2x COMMAND files_ime_view_original_test "${FILES_TEST_FONT}" 2)
+    set_tests_properties(files_ime_view_1x files_ime_view_2x PROPERTIES TIMEOUT 30)
+endif()

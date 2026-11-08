@@ -1,0 +1,86 @@
+"""Private native v3/AT-SPI checks for the explicitly changed Files IME variant.
+
+Uses fresh owned fixtures and real original child programs; not human/physical
+acceptance, normal app admission or the unchanged-original host.
+"""
+import argparse,gzip,hashlib,json,os,re,signal,socket,subprocess,sys,tempfile,time
+from pathlib import Path
+parser=argparse.ArgumentParser(description=__doc__)
+for name in ('binaries','original','atspi-fixture','sdk-input','server','font','mono','work-dir'):
+    parser.add_argument('--'+name,type=Path,required=True)
+parser.add_argument('--expected-sdk-revision',required=True)
+parser.add_argument('--linkage',choices=('static','shared'),required=True)
+args=parser.parse_args();b=args.binaries.resolve(strict=True);original=args.original.resolve(strict=True);fixture=args.atspi_fixture.resolve(strict=True);src=Path(__file__).resolve().parent;sdk=json.loads(args.sdk_input.read_text());profile=args.linkage;case='native-ime-'+profile
+if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.23' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
+library=Path(sdk['library']).resolve(strict=True)
+if library.name!='libnexaui.so.'+sdk['version'] or hashlib.sha256(library.read_bytes()).hexdigest()!=sdk['sha256']:raise SystemExit('Changed candidate SDK library')
+dbus=Path(sdk['dbus_sdk']).resolve(strict=True)
+for item in sdk['dbus_headers']:
+    if hashlib.sha256((dbus/item['path']).read_bytes()).hexdigest()!=item['sha256']:raise SystemExit('Changed peer D-Bus header')
+for name,value in json.loads((fixture/'inputs.json').read_text())['files'].items():
+    if hashlib.sha256((fixture/name.lstrip('/')).read_bytes()).hexdigest()!=value:raise SystemExit('Changed private AT-SPI fixture input')
+subprocess.run([sys.executable,str(src/'check_source.py'),str(original),str(src/'native-inputs.json')],check=True)
+server_binary=args.server.resolve(strict=True);font=args.font.resolve(strict=True);mono=args.mono.resolve(strict=True);root=args.work_dir.resolve()
+if len(str(root/'runtime'/'files-ime').encode())>=108:raise SystemExit('Use a short private Unix socket work directory')
+root.mkdir(mode=0o700);final=root
+runtime=root/'runtime';runtime.mkdir(mode=0o700);documents=root/'documents';documents.mkdir(mode=0o700);cache=root/'cache';cache.mkdir(mode=0o700);captures=root/'captures';captures.mkdir(mode=0o700);seeds={'alpha':b'first','é':b'second'}
+for name,data in seeds.items():(documents/name).write_bytes(data)
+address='unix:path='+str(runtime/'bus');conf=root/'bus.conf';conf.write_text('<busconfig><type>session</type><listen>'+address+'</listen><auth>EXTERNAL</auth><policy context="default"><allow user="'+str(os.getuid())+'"/><allow own="*"/><allow send_destination="*"/><allow receive_sender="*"/></policy></busconfig>\n');env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY='files-ime',NEXAUI_PLATFORM='wayland',DBUS_SESSION_BUS_ADDRESS=address,AT_SPI_BUS_ADDRESS=address,LD_LIBRARY_PATH=str(fixture/'usr/lib64'),GSETTINGS_BACKEND='memory',LIBGL_ALWAYS_SOFTWARE='1',GALLIUM_DRIVER='llvmpipe',LP_NUM_THREADS='2',ASAN_OPTIONS='detect_leaks=1:halt_on_error=1',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
+for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE','DBUS_STARTER_ADDRESS','DBUS_STARTER_BUS_TYPE'):env.pop(name,None)
+peer=root/'peer';dbus=Path(sdk['dbus_sdk']);command=['cc','-std=c17','-Wall','-Wextra','-Wpedantic','-Werror','-O2',str(src/'ime_atspi.c'),'-I'+str(original/'tests'),'-o',str(peer)]+['-I'+str(fixture/p) for p in ('usr/include/at-spi-2.0','usr/include/glib-2.0','usr/lib64/glib-2.0/include')]+['-I'+str(dbus/p) for p in ('include/dbus-1.0','lib64/dbus-1.0/include')]+[str(fixture/'usr/lib64/libatspi.so.0.0.1'),'-l:libgobject-2.0.so.0','-l:libglib-2.0.so.0','-Wl,-rpath,'+str(fixture/'usr/lib64'),'-Wl,-rpath-link,'+str(fixture/'usr/lib64')];compiled=subprocess.run(command,capture_output=True,text=True);(root/'peer-build.log').write_text(compiled.stdout+compiled.stderr);assert compiled.returncode==0,compiled.stderr
+left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];images=[];checks=[];app=None;server=None;result=dict(result='failed',case=case,peer_build_command=command,scope='Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change')
+def log(name='app'):return (root/(name+'.log')).read_text(errors='replace') if (root/(name+'.log')).exists() else ''
+def start(binary,name,*args,pass_fds=()):
+    stream=(root/(name+'.log')).open('xb');streams.append(stream);p=subprocess.Popen([str(binary),*map(str,args)],env=env,stdin=subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=pass_fds);children.append(p);return p
+def wait(predicate,label):
+    deadline=time.monotonic()+12
+    while not predicate():
+        assert all(p.poll() is None for p in children),(label,log(),log('server')[-3000:]);assert time.monotonic()<deadline,(label,log()[-3000:],log('server')[-3000:]);time.sleep(.01)
+    checks.append(label)
+def event(value):left.sendall(value.encode());assert left.recv(32)==b'OK',value
+def key(code,ctrl=False):
+    if ctrl:event('K 29 1')
+    event(f'K {code} 1');event(f'K {code} 0')
+    if ctrl:event('K 29 0')
+def state(**wanted):
+    rows=re.findall(r'^VIEW (.+)$',log(),re.M);values=dict(re.findall(r'(\w+)=([^ ]+)',rows[-1])) if rows else {};return all(values.get(k)==str(v) for k,v in wanted.items())
+def text(field,value,cursor):
+    command=[str(peer),str(app.pid),field,value,str(cursor)];done=subprocess.run(command,env=env,capture_output=True,text=True,timeout=12);checks.append(dict(native_peer=command,exit=done.returncode,stdout=done.stdout,stderr=done.stderr));assert done.returncode==0,(field,value,cursor,done.stdout,done.stderr)
+def native_case(mode):
+    command=[str(peer),str(app.pid),mode];done=subprocess.run(command,env=env,capture_output=True,text=True,timeout=12);checks.append(dict(native_peer=command,exit=done.returncode,stdout=done.stdout,stderr=done.stderr));assert done.returncode==0,(mode,done.stdout,done.stderr)
+def enabled():return log('server').rfind('IME commit enabled=1 ')>log('server').rfind('IME commit enabled=0 ')
+def capture(label):
+    server.send_signal(signal.SIGUSR1);sequence=len(images)//3+1;wait(lambda:all(f'CAPTURE {sequence} {i}\n' in log('server') for i in range(3)),label)
+    for i in range(3):
+        p=captures/f'capture-{sequence}-output-{i}.ppm';raw=p.read_bytes();magic,geometry,depth,pixels=raw.split(b'\n',3);w,h=map(int,geometry.split());assert magic==b'P6' and depth==b'255' and len(pixels)==w*h*3;packed=p.with_suffix('.ppm.gz');packed.write_bytes(gzip.compress(raw,mtime=0));p.unlink();images.append(dict(case=label,output=i,file=packed.name,sha256=hashlib.sha256(raw).hexdigest()))
+try:
+    bus=start(fixture/'usr/bin/dbus-daemon','bus','--nofork','--config-file='+str(conf));wait(lambda:(runtime/'bus').is_socket(),'private bus')
+    registry=start(fixture/'usr/libexec/at-spi2-registryd','registry')
+    def registry_ready():
+        p=subprocess.run(['busctl','--address='+address,'--timeout=1','call','org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','NameHasOwner','s','org.a11y.atspi.Registry'],env=env,capture_output=True,text=True,timeout=2);return p.returncode==0 and p.stdout.strip()=='b true'
+    wait(registry_ready,'private registry');server=start(server_binary,'server','--headless',env['WAYLAND_DISPLAY'],captures,right.fileno(),pass_fds=(right.fileno(),));right.close();wait(lambda:'READY ' in log('server'),'native server');event('I on')
+    app=start(b/'aetheri_files_ime_candidate','app','--root',documents,'--font',font,'--cache',cache,'--terminal',b/'aetheri_terminal_candidate','--editor',b/'aetheri_editor_candidate','--terminal-font',mono,'--diagnostics');wait(lambda:state(count=2,dialog=0),'original initial view')
+    maps=Path(f'/proc/{app.pid}/maps').read_text();assert (sdk['library'] in maps) if profile=='shared' else '/libnexaui.so' not in maps;assert not any(name in maps for name in ('libSDL','libX11','libvulkan','libEGL'));(root/'maps.txt').write_text(maps)
+    key(38,True);wait(lambda:enabled() and re.search(r'IME commit enabled=1 .*area=\d+,\d+,[1-9]\d*,[1-9]\d*',log('server')),'query native IME activation/candidate rectangle');text('Search this folder','',0)
+    frames=log().count('VIEW ');event('I 0');wait(lambda:log().count('VIEW ')>frames,'preedit repainted');text('Search this folder','',0);native_case('preedit-no-placeholder');capture('native query preedit')
+    key(28);text('Search this folder','',0);assert state(count=2,dialog=0) and 'OPEN pid=' not in log();checks.append('composition Enter did not activate retained file')
+    start_at=len(log('server'));key(1);wait(lambda:'IME commit enabled=0 ' in log('server')[start_at:] and enabled(),'Escape cancellation and reactivation');text('Search this folder','',0);capture('query after Escape cancellation')
+    event('I 1');wait(lambda:state(count=1,dialog=0),'Unicode commit filters original model');text('Search this folder','é',1);capture('native Unicode query')
+    for _ in range(3):key(66)
+    wait(lambda:state(scale='2.00'),'200-percent native text scale');event('I 0');text('Search this folder','é',1);capture('native preedit at 200 percent');key(1);wait(enabled,'200-percent composition cancelled');text('Search this folder','é',1)
+    key(66);wait(lambda:state(scale='1.00'),'native text scale restored');event('I 6');text('Search this folder','é',1);capture('native combining preedit');key(1);wait(enabled,'combining composition cancelled');text('Search this folder','é',1)
+    start_at=len(log('server'));key(15);wait(lambda:'IME commit enabled=0 ' in log('server')[start_at:],'Tab withdraws native input');text('Search this folder','é',1)
+    key(38,True);wait(enabled,'query reactivated');text('Search this folder','',0);event('I 0');key(49,True);assert state(dialog=0);checks.append('composition Ctrl+N did not open naming');key(1);wait(enabled,'composition cancelled before naming')
+    key(49,True);wait(lambda:state(dialog=1),'original naming opened');text('Name','',0);wait(enabled,'name native IME activation');event('I 1');text('Name','é',1);capture('native name commit')
+    event('I 5');wait(lambda:state(name_bad=1),'filtered native commit blocks retained prefix');native_case('invalid');text('Name','é',1);capture('filtered native commit retains prefix and disables confirmation');key(28);assert not (documents/'literalcommand').exists() and not (documents/'éliteralcommand').exists();checks.append('filtered commit cannot confirm retained prefix')
+    key(22,True);text('Name','',0);event('K 49 1');event('K 49 0');text('Name','n',1);event('I 1');text('Name','né',2);key(28);wait(lambda:(documents/'né').is_file() and state(dialog=0),'real original create after explicit clear');assert (documents/'né').read_bytes()==b''
+    for name,data in seeds.items():assert (documents/name).read_bytes()==data
+    key(16,True);assert app.wait(timeout=8)==0;children.remove(app);result['result']='passed'
+finally:
+    for p in reversed(children):
+        if p.poll() is None:
+            p.terminate()
+            try:p.wait(timeout=8)
+            except subprocess.TimeoutExpired:p.kill();p.wait(timeout=5)
+    for stream in streams:stream.close()
+    left.close();right.close();result.update(checks=checks,images=images,binaries={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in (b/'aetheri_files_ime_candidate',peer)},source_delta=json.loads((b/'files-ime-generated/source-delta.json').read_text()));(root/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(dict(result=result['result'],artifacts=str(final),checks=len(checks),images=len(images))))
