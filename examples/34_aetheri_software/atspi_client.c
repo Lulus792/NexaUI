@@ -64,15 +64,16 @@ cleanup:
 }
 #include "contents_peer.h"
 int main(int argc,char **argv){
-    int okay=0,initialized=0,ime=0,resizing=0,clipboard=0,large=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
-    CHECK(argc>=4&&argc<=11);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--large"))large=1;
+    int okay=0,initialized=0,ime=0,resizing=0,outputs=0,clipboard=0,large=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
+    CHECK(argc>=4&&argc<=12);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--large"))large=1;
         else if(!strcmp(argv[i],"--components")){CHECK(++i<argc&&strlen(argv[i])==519&&strspn(argv[i],"0123456789abcdef,")==519);expected_dependencies=argv[i];}
         else if(!strcmp(argv[i],"--component-failure"))expect_manifest_failure=1;
         else if(!strcmp(argv[i],"--contents")){CHECK(++i<argc);expected_contents=argv[i];}
         else if(!strcmp(argv[i],"--resize"))resizing=1;
+        else if(!strcmp(argv[i],"--outputs"))outputs=1;
         else if(!strcmp(argv[i],"--clipboard-normal"))clipboard=1;
         else if(!strcmp(argv[i],"--clipboard-close"))clipboard=2;else CHECK(0);}
-    CHECK(!(resizing&&clipboard)&&(!(resizing||clipboard)||(!expected_dependencies&&!expect_manifest_failure&&!expected_contents)));
+    CHECK(resizing+outputs+(clipboard!=0)<=1&&(!(resizing||outputs||clipboard)||(!expected_dependencies&&!expect_manifest_failure&&!expected_contents)));
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
     old_first=wait_node(desktop,pid,&app,argv[2],ATSPI_ROLE_LIST_ITEM);CHECK(old_first);
@@ -98,6 +99,45 @@ int main(int argc,char **argv){
     double until=now()+3;while(now()<until&&!text_equal(field,""))pump();CHECK(text_equal(field,""));puts("ACK 8");
     CHECK(checkpoint(9));CHECK(retired(field));g_object_unref(field);field=NULL;last=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_FOCUSED)&&state(last,ATSPI_STATE_SELECTED));
     button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 9");
+    if(outputs){
+        static const char draft[]="output draft \xc3\xa9";
+        g_object_unref(button);button=lookup(app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;
+        CHECK(checkpoint(10));field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"")&&state(field,ATSPI_STATE_FOCUSED)&&replace_text(field,draft));
+        until=now()+3;while(now()<until&&!text_equal(field,draft))pump();CHECK(text_equal(field,draft));
+        AtspiText *t=atspi_accessible_get_text_iface(field);GError *error=NULL;
+        int positioned=t&&atspi_text_set_caret_offset(t,5,&error)&&!error;
+        if(error)g_error_free(error);
+        if(t)g_object_unref(t);
+        CHECK(positioned);AtspiRect original_bounds;CHECK(rectangle(field,&original_bounds));puts("ACK 10");
+        for(unsigned step=11;step<=21;++step){
+            CHECK(checkpoint(step));CHECK(!retired(field)&&text_equal(field,draft)&&state(field,ATSPI_STATE_FOCUSED));
+            t=atspi_accessible_get_text_iface(field);error=NULL;
+            int caret=t?atspi_text_get_caret_offset(t,&error):-1;
+            int retained=t&&!error&&caret==5;
+            if(error)g_error_free(error);
+            if(t)g_object_unref(t);
+            CHECK(retained);
+            AtspiRect bounds;CHECK(rectangle(field,&bounds)&&bounds.x>=0&&bounds.y>=0&&bounds.width>16&&bounds.height>16);
+            int width=step==14||step==15?1920:step==16?1600:original_bounds.width+24;
+            CHECK(bounds.x==12&&bounds.width==width-24&&bounds.height==original_bounds.height);
+            const char *names[]={label("Apply","Anwenden"),label("Back","Zurück"),label("Close","Schließen")};
+            for(unsigned i=0;i<3;++i){
+                AtspiAccessible *header=lookup(app,names[i],ATSPI_ROLE_PUSH_BUTTON);AtspiRect b;
+                int fits=header&&rectangle(header,&b)&&b.x>=0&&b.y>=0&&b.width>0&&b.height>0&&b.x+b.width<=width&&b.y+b.height<=bounds.y;
+                if(header)g_object_unref(header);
+                CHECK(fits);
+            }
+            if(step==21)CHECK(bounds.x==original_bounds.x&&bounds.y==original_bounds.y&&bounds.width==original_bounds.width&&bounds.height==original_bounds.height);
+            if(step==21)printf("OUTPUT_FIELD %d %d %d %d\n",bounds.x,bounds.y,bounds.width,bounds.height);
+            printf("OUTPUT_FIELD_RETAINED step=%u caret=%d x=%d y=%d width=%d height=%d\n",step,caret,bounds.x,bounds.y,bounds.width,bounds.height);
+            printf("ACK %u\n",step);
+        }
+        CHECK(checkpoint(22));until=now()+3;while(now()<until&&!text_equal(field,"output draft \xc3\xa9x"))pump();CHECK(text_equal(field,"output draft \xc3\xa9x")&&state(field,ATSPI_STATE_FOCUSED));puts("ACK 22");
+        CHECK(checkpoint(23));CHECK(retired(field)&&!replace_text(field,"late output edit"));
+        button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));
+        g_object_unref(button);button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 23");
+        puts("SOFTWARE_NATIVE_OUTPUT_SCALE_WORKAREA_DRAFT_CARET_AND_HIT_OK");
+    }
     if(resizing||clipboard){g_object_unref(button);button=lookup(app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;}
     if(resizing){
         static const char draft[]="kept draft \xc3\xa9";

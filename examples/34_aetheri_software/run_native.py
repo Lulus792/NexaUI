@@ -24,13 +24,14 @@ def main():
     p.add_argument('--clipboard',choices=('normal','close'),help='Independent foreign clipboard transfer/focus or pending-close workflow')
     p.add_argument('--clipboard-tools',type=Path,help='Private wl-copy/wl-paste and their explicit loader/runtime')
     p.add_argument('--resize',action='store_true',help='Real pointer resize through compact filter retirement and restore')
+    p.add_argument('--outputs',action='store_true',help='Private compositor output migration, fractional scale and workarea transitions')
     p.add_argument('--capture',action='store_true',help='Retain native compositor frames during resize')
     a=p.parse_args()
     if a.held and (a.ime or a.components or a.contents):p.error('Run held lifetime, IME and metadata inspection workflows separately')
-    if (a.clipboard or a.resize) and (a.held or a.components or a.contents):p.error('Native window tasks use the ordinary selected-app host/peer')
-    if a.clipboard and a.resize:p.error('Run foreign clipboard and resize tasks separately')
+    if (a.clipboard or a.resize or a.outputs) and (a.held or a.components or a.contents):p.error('Native window tasks use the ordinary selected-app host/peer')
+    if sum(map(bool,(a.clipboard,a.resize,a.outputs)))>1:p.error('Run foreign clipboard, resize and output tasks separately')
     if bool(a.clipboard)!=bool(a.clipboard_tools):p.error('Clipboard requires explicitly selected independent tools')
-    if a.capture and not a.resize:p.error('Capture is attached to the resize task')
+    if a.capture and not (a.resize or a.outputs):p.error('Capture requires resize or output transitions')
     if a.contents and a.components!='match':p.error('--contents requires --components match')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source','model')}
@@ -66,12 +67,12 @@ def main():
     for name in ('german','large','small','contrast','light'):
         env.pop('SWG_'+name.upper(),None)
         if getattr(a,name):env['SWG_'+name.upper()]='1'
-    if a.ime or a.clipboard or a.resize:env['WAYLAND_DEBUG']='client'
+    if a.ime or a.clipboard or a.resize or a.outputs:env['WAYLAND_DEBUG']='client'
     gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
     if a.held:env['SWG_TEST_GATE_FD']=str(gate_read)
     else:env.pop('SWG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];background=set();stopped=set()
-    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components','held','clipboard','resize','capture')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3,'images':images}
+    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components','held','clipboard','resize','outputs','capture')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3,'images':images}
     if a.components:result['component_inputs']=json.loads((component_input/'inputs.json').read_text())
     def start(command,name,fds=(),input_pipe=False,may_exit=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
@@ -93,7 +94,22 @@ def main():
     def control(code):event('K 29 1');key(code);event('K 29 0')
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
-        return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',lines[-1])} if lines else {}
+        return {k:float(v) if '.' in v else int(v) for k,v in re.findall(r'(\w+)=([\d.]+)(?= |$)',lines[-1])} if lines else {}
+    def output_transition(command,width,height,scale):
+        before=view();offset=len(log('host'));server_offset=len(log('server'));event(command)
+        wait(lambda:'OUTPUT_POLICY command='+command+' ' in log('server')[server_offset:] if command[0]!='O' else 'xdg_toplevel#' in log('host')[offset:],'compositor output policy '+command)
+        pattern=r'^VIEW ([^\n]*)\nSOFTWARE_READY\nSURFACE pixels=(\d+)x(\d+) raster=([\d.]+)$'
+        expected_pixels=(int(width*scale+.999999),int(height*scale+.999999))
+        def presented():
+            for frame,pw,ph,raster in reversed(re.findall(pattern,log('host')[offset:],re.M)):
+                values=dict(re.findall(r'(\w+)=([\d.]+)(?= |$)',frame))
+                if (float(values.get('width',0)),float(values.get('height',0)),float(values.get('scale',0)))==(width,height,scale) and (int(pw),int(ph))==expected_pixels and float(raster)==scale:return True
+            return False
+        wait(presented,'submitted logical/pixel/raster transition '+command)
+        wait(lambda:f'OUTPUT_BUFFER pixels={expected_pixels[0]}x{expected_pixels[1]} logical={width}x{height}\n' in log('server')[server_offset:],'compositor consumed actual scaled buffer '+command)
+        after=view()
+        if any(after.get(k)!=before.get(k) for k in ('state','epoch','count','mode','request','focus')):raise RuntimeError('Output transition changed owner/draft focus state')
+        result.setdefault('output_transitions',[]).append(dict(command=command,before=before,after=after,pixels=list(expected_pixels)))
     def release_gate():
         nonlocal gate_write
         if gate_write>=0:
@@ -209,6 +225,7 @@ def main():
         peer_flags=(['--components',','.join(result['component_inputs']['dependencies'])] if a.components=='match' else ['--component-failure'] if a.components else [])
         if a.contents:peer_flags+=['--contents',str(component_input/'content-peer.txt')]
         if a.resize:peer_flags+=['--resize']
+        if a.outputs:peer_flags+=['--outputs']
         if a.clipboard:peer_flags+=['--clipboard-'+a.clipboard]
         if a.large:peer_flags+=['--large']
         if a.held:peer_flags=['--held',a.held]
@@ -239,8 +256,25 @@ def main():
                 if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
-        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 20 if a.resize else 10)):
+        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 24 if a.outputs else 20 if a.resize else 10)):
             peer_line('STEP '+str(step))
+            if a.outputs and step>=10:
+                if step==10:
+                    key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter before output transitions');result['output_origin']=view()
+                origin=result['output_origin'];width,height=origin['width'],origin['height']
+                if step==12:event('P 1 180')
+                if step==13:event('P 2 240')
+                transitions={11:[('P 0 150',width,height,1.25)],12:[('V 1',width,height,1.5)],13:[('V 2',width,height,2)],14:[('Z 1',1920,1080,2)],15:[('H 2 96',1920,984,2)],16:[('O 2 3200 1800',1600,804,2)],17:[('Z 0',width,height,2)],18:[('V 1',width,height,1.5)],19:[('P 1 120',width,height,1)],20:[('V 0',width,height,1.25)],21:[('P 0 120',width,height,1)]}
+                for command,w,h,scale in transitions.get(step,[]):output_transition(command,w,h,scale)
+                if step==22:
+                    matches=re.findall(r'^OUTPUT_FIELD (\d+) (\d+) (\d+) (\d+)$',log('client'),re.M)
+                    if not matches:raise RuntimeError('Missing independent output field geometry')
+                    x,y,w,h=map(int,matches[-1]);event(f'M {40+x+w-8} {40+y+h//2}');event('B 272 1');event('B 272 0');key(45)
+                    wait(lambda:view().get('focus')==45,'native field hit after output transitions')
+                if step==23:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40,'cancel after output transitions')
+                peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush();peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
+                if step in (11,13,15,21):capture('scale125' if step==11 else 'scale200' if step==13 else 'workarea' if step==15 else 'returned')
+                continue
             if a.clipboard and step>=10:
                 sample='Grüße 🌍 e\u0301'.encode()
                 if step==10:key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'clipboard filter focus')
@@ -333,6 +367,7 @@ def main():
         marker=('SOFTWARE_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'SOFTWARE_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'SOFTWARE_NATIVE_SELECTED_ROWS_READONLY_DETAILS_RETIRED_REFERENCES_KEYBOARD_FILTER_SELECTION_OK'
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.resize and 'SOFTWARE_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
+        if a.outputs and 'SOFTWARE_NATIVE_OUTPUT_SCALE_WORKAREA_DRAFT_CARET_AND_HIT_OK' not in log('client'):raise RuntimeError('Missing independent output transition checks')
         if a.clipboard:
             marker='SOFTWARE_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK' if a.clipboard=='close' else 'SOFTWARE_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK'
             if marker not in log('client'):raise RuntimeError('Missing independent clipboard checks')

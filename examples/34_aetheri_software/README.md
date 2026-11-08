@@ -75,6 +75,34 @@ and reopens the preserved draft. The [caption/focus report](../../docs/quality/s
 records exact sources, checked16/32/48-pixel styles, actual prior-view controls
 and separate native/physical/visual acceptance boundaries.
 
+`output_producer` builds a separate source-checked test compositor, reusing the
+existing Files IME producer and its frozen d56 inputs. It adds compositor-owned
+output migration, fractional scale, workarea and maximize/restore policy through
+the inherited private test socket. It is neither a new installed desktop API nor
+a change to Aetheri's active compositor. Its generated copies retain every source
+transformation in `source-delta.json`.
+
+```sh
+cmake -S examples/34_aetheri_software/output_producer -B build-output \
+  -DAETHERI_PRODUCER_SOURCE_DIR=/path/to/immutable-d56-producer-export
+cmake --build build-output
+```
+
+Select `build-output/base/software_output_producer` as `--server`. The existing
+Files producer pins the required system-library versions and checks all17
+original inputs; no library is added to NexaUI itself.
+
+Use that producer with `run_native.py --outputs` and the ordinary host/OS peer.
+The task retains a Unicode filter draft and caret across 1x/1.25x/1.5x/2x,
+three-output migration, workarea changes, output-mode shrink and restore. It
+checks actual compositor-consumed buffer dimensions as well as public logical/
+pixel size and context raster scale. The independent OS peer checks unchanged
+draft/caret/focus and logical control bounds; a final real pointer/key edit
+checks input geometry after returning. `--capture` records four three-output
+image sets. These are controlled compositor transitions; physical monitor,
+hotplug/removal, suspend and normal-owner acceptance remain separate gates.
+See the [executed output-transition report](../../docs/quality/software-output-report.md).
+
 The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
 alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
 selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical

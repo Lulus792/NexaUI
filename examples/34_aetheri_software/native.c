@@ -86,11 +86,14 @@ int main(int argc,char **argv){
             if(intent.resize){nx_result resized=nx_window_begin_resize(window,NX_WINDOW_RESIZE_BOTTOM_RIGHT);printf("RESIZE_REQUEST status=%d\n",(int)resized);}
             if(intent.refresh){REQUIRE(request(worker,owner,&scope,targets,count,&sequence,&current));dirty=1;continue;}
             nx_context *ctx=swg_context(view);const nx_command *commands;size_t command_count;nx_color background;nx_software_view_outcome outcome;
+            nx_pixel_size pixels;float raster_scale=0;
+            REQUIRE(nx_window_get_pixel_size(window,&pixels)==NX_OK&&nx_context_get_text_raster_scale(ctx,&raster_scale)==NX_OK);
             REQUIRE(nx_window_publish_semantics(window,ctx)==NX_OK&&nx_frame_commands(ctx,&commands,&command_count)==NX_OK&&nx_theme_color(ctx,NX_COLOR_BACKGROUND,&background)==NX_OK&&nx_software_view_render(renderer,commands,command_count,background,&outcome)==NX_OK);
             dirty=outcome!=NX_SOFTWARE_VIEW_READY;++frames;
             printf("VIEW state=%d epoch=%" PRIu64 " count=%zu mode=%d focus=%" PRIu64 " width=%.0f height=%.0f scale=%g frames=%" PRIu64 " polls=%" PRIu64 " keys=%" PRIu64 " request=%" PRIu64 "\n",
                 (int)sw_owner_state(owner),sw_owner_epoch(owner),swg_matches(view),(int)swg_current_mode(view),nx_focus_id(ctx),(double)info.width,(double)info.height,(double)info.scale,frames,polls,keys,sequence);
             if(outcome==NX_SOFTWARE_VIEW_READY)puts("SOFTWARE_READY");
+            printf("SURFACE pixels=%ux%u raster=%g\n",pixels.width,pixels.height,(double)raster_scale);
         }
         uint32_t ready=0;++polls;REQUIRE(nx_window_poll_with_fd(window,UINT32_MAX,sww_wake_fd(worker),&ready)==NX_OK&&!(ready&NX_WINDOW_FD_ERROR));
         nx_event event;int available=0;
