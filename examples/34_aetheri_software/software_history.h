@@ -3,10 +3,17 @@
 #include "software_model.h"
 #include "catalogue/execution.h"
 #include "catalogue/unit.h"
+#include "catalogue/lifetime.h"
 /* Trusted owner supplies explicit original profiles, never numeric PID lookup
    or catalogue enumeration. This is historical enrollment metadata, not a live
    process/resource/image observation, permission, replay or drain authority. */
 enum { SWH_MAX_PROFILES=64 };
+enum { SWH_RUN_RECEIPTS=3 };
+typedef struct swh_run_receipt {
+    int error; /* 0 only for an available, profile-bound original receipt. */
+    struct ae_run_receipt value;
+    uint8_t digest[32];
+} swh_run_receipt;
 typedef struct swh_record {
     sw_row observed; /* Exact selected-app observation anchoring this inspection. */
     struct ae_execution_profile profile; /* Own original generation/runtime. */
@@ -16,12 +23,21 @@ typedef struct swh_record {
     int unit_error,custody_error; /* Independent historical metadata availability. */
     struct ae_unit_allocation_snapshot unit;
     struct ae_unit_custody_snapshot custody;
+    int reservation_error;
+    /* system_runtime is the CURRENT query Root, not profile.system_runtime.
+       A copied query context is no broker/process authentication. */
+    struct ae_reservation_receipt reservation;
+    /* Original Root-local closing, counterpart quiet, released receipts, in
+       enum ae_run_receipt_kind order. No User catalogue or recovery API opened.
+       ESTALE: original Root runtime differs; ENODATA: no retained starter
+       evidence; EXDEV: reservation not bound to this profile. Zero on error. */
+    swh_run_receipt run[SWH_RUN_RECEIPTS];
 } swh_record;
 typedef struct swh_batch swh_batch;
 /* Worker-only on the serialized original Root handle. Copies profiles, scope
    and selected rows before any original read. Foreign epoch/account/boot or
    duplicate launch/profile inputs reject the whole request before reading.
-   Unselected/ineligible targets cause no process/unit/custody queries. Original
+   Unselected/ineligible targets cause no process/unit/custody/receipt queries. Original
    unit/custody getters bind the complete historical profile under the current
    same-epoch Root owner; these records grant no current custody or effect right.
    ENOENT and unsupported
@@ -32,7 +48,7 @@ typedef struct swh_batch swh_batch;
    *out must be NULL. Original negative errno is returned on failure. */
 int swh_read(struct ae_catalogue *,const sw_result *,const struct ae_execution_profile *,size_t,swh_batch **out);
 /* UI-thread borrowed range, sorted by full profile digest within installation.
-   Check each original role/unit/custody error before its zero-on-error snapshot.
+   Check each original role/unit/custody/receipt error before its zero-on-error snapshot.
    No selected profile (including a NULL batch) yields count=0, not no processes.
    Current source/recipient/row/revision must match exactly. Historical profile
    runtime/generation/artifact may differ from that current selected app; retain

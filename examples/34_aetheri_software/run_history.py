@@ -4,7 +4,7 @@ from contextlib import closing
 from pathlib import Path
 p=argparse.ArgumentParser(description=__doc__)
 for name in ('source','fixture','model','test','work'):p.add_argument('--'+name,type=Path,required=True)
-p.add_argument('--prepare-only',choices=('history','replacement','unsupported','corrupt','unit','unit-replacement','custody','custody-max','custody-replacement'))
+p.add_argument('--prepare-only',choices=('history','replacement','unsupported','corrupt','unit','unit-replacement','custody','custody-max','custody-replacement','withdrawn'))
 a=p.parse_args();a.work.mkdir(exist_ok=True);root=Path(tempfile.mkdtemp(prefix='run-',dir=a.work))
 sys.dont_write_bytecode=True;sys.path.insert(0,str(a.source.resolve()/'tools'))
 import runtime_contracts as reference
@@ -29,7 +29,7 @@ def run(name,command):
     assert done.returncode==0,(name,done.stdout,done.stderr)
     assert not any(s in done.stderr for s in ('AddressSanitizer','LeakSanitizer','runtime error:'))
     return done
-for mode,scenario in (('history','exec-process-fresh'),('replacement','exec-process-root-replace'),('unsupported',None),('corrupt','exec-process-corrupt'),('unit','exec-unit-fresh'),('unit-replacement','exec-unit-replacement'),('custody','exec-custody-fresh'),('custody-max','exec-custody-max'),('custody-replacement','exec-custody-replacement')):
+for mode,scenario in (('history','exec-process-fresh'),('replacement','exec-process-root-replace'),('unsupported',None),('corrupt','exec-process-corrupt'),('unit','exec-unit-fresh'),('unit-replacement','exec-unit-replacement'),('custody','exec-custody-fresh'),('custody-max','exec-custody-max'),('custody-replacement','exec-custody-replacement'),('withdrawn','exec-user-prepare-fresh')):
     if not a.prepare_only and mode not in ('history','replacement','unsupported','corrupt'):continue
     if a.prepare_only and a.prepare_only!=mode:continue
     if scenario:

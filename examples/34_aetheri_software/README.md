@@ -414,3 +414,40 @@ page through the independent OS peer; its added `unit`, `unit-replacement`,
 original metadata. They do not run actual bus/unit/process effects. Further
 lease, operation/diagnostic/reason and actual current owner observations remain
 separate composition work.
+
+## Reservation and original lifetime receipts
+
+The same bounded history batch now also copies `ae_catalogue_get_receipt` and,
+when admitted, the three original `ae_catalogue_get_run_receipt` results. Reads
+run on the existing serialized Root worker; the GUI does no original query.
+This foundation does not yet add a receipt page to the native view.
+
+Reservation lookup uses the selected account/UID, checked current Root
+epoch/boot/runtime and the explicit profile's broker epoch. Its returned
+`system_runtime` is the **current query Root**, whereas the copied execution
+profile retains its **original Root runtime**. These query fields authenticate
+no broker/process. Lease lookup is insufficient: the copied reservation also
+matches the profile's request fingerprint, broker runtime, operation and launch.
+A different request is explicitly unavailable (`-EXDEV`) with zero output;
+malformed source/lease, flags, optional values, canonical unit or bounds reject
+the whole batch. A withdrawn receipt and recorded cause remain historical
+metadata, never a present stop, holder-drain or authorization result.
+
+Lifetime reads require retained original starter evidence and the original Root
+runtime. Missing evidence yields `-ENODATA`; replacement yields `-ESTALE` without
+using recovery APIs or reconstructing an invocation. Root-local closing,
+counterpart quiet and release receipts retain all original fields and canonical
+digests. The original codec/matcher validates the exact profile/invocation; each
+later receipt must reference the preceding digest. A missing stage stays
+unavailable (`-ENOENT`), and a later stage without its predecessor rejects the
+batch. No foreign User catalogue, recovered lifetime capability or current
+process evidence is acquired. Missing snapshots and hashes are zeroed.
+
+`software_history_receipts` prepares unchanged original completed, withdrawn,
+replacement, unsupported, unit/custody and corrupted metadata fixtures. It checks
+database bytes and rows, source/request/chain faults, error propagation after
+successful prefixes, explicit missing values, worker-only getters, independently
+valid app replies and detach-once owned lifetime. Earlier snapshot/64-profile,
+copying, row/revision and GUI regressions remain in the full example suite.
+Receipt presentation and further operation/diagnostic/reason relationships,
+actual current observations and the remaining catalogue gates remain open.

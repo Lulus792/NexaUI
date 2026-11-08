@@ -51,6 +51,53 @@ static int unit_links(struct ae_catalogue *c,const sw_scope *scope,swh_record *r
     if(!status&&r->unit_error)return -EBADMSG;
     r->custody_error=status;if(!status)r->custody=custody;return 0;
 }
+static int uuid(const uint8_t v[16]){return (v[6]&0xf0)==0x40&&(v[8]&0xc0)==0x80;}
+static int nonzero(const uint8_t *v,size_t size){unsigned bits=0;for(size_t i=0;i<size;++i)bits|=v[i];return bits!=0;}
+static int reservation_valid(const sw_scope *scope,const swh_record *r,const struct ae_reservation_receipt *v){
+    const struct ae_dispatch_snapshot *d=&v->dispatch;
+    if(memcmp(v->system_epoch,scope->identity.authority_epoch,16)||memcmp(v->system_runtime,scope->context.runtime_incarnation,16)||
+        memcmp(v->boot,scope->context.boot_id,16)||memcmp(v->lease,r->profile.lease,16)||!uuid(v->plan)||!uuid(v->broker_runtime)||
+        !uuid(d->operation)||!uuid(d->launch)||d->revision<1||d->install_gate_revision<1||
+        (d->invocation_present!=0&&d->invocation_present!=1)||(v->cause_present!=0&&v->cause_present!=1)||
+        (v->withdrawn!=0&&v->withdrawn!=1)||!memchr(d->state,0,sizeof d->state)||!memchr(d->unit,0,sizeof d->unit))return 0;
+    const char *states[]={"reserved","dispatching","observed","uncertain","terminal"};int known=0;
+    for(size_t i=0;i<sizeof states/sizeof *states;++i)if(!strcmp(d->state,states[i]))known=1;
+    char unit[80]="aetheri-app-";static const char hex[]="0123456789abcdef";
+    for(size_t i=0;i<16;++i){unit[12+i*2]=hex[d->launch[i]>>4];unit[13+i*2]=hex[d->launch[i]&15];}
+    memcpy(unit+44,".service",9);
+    return known&&!strcmp(d->unit,unit)&&
+        (d->invocation_present?nonzero(d->invocation,16):!nonzero(d->invocation,16))&&
+        (v->cause_present?uuid(v->cause_epoch)&&uuid(v->cause):!nonzero(v->cause_epoch,16)&&!nonzero(v->cause,16))&&
+        (!v->withdrawn||(v->cause_present&&!d->invocation_present&&!strcmp(d->state,"terminal")));
+}
+static int receipt_links(struct ae_catalogue *c,const sw_scope *scope,swh_record *r){
+    struct ae_launch_context query={.uid=scope->os_uid};
+    memcpy(query.system_runtime,scope->context.runtime_incarnation,16);memcpy(query.boot,scope->context.boot_id,16);
+    memcpy(query.account,scope->account,16);memcpy(query.broker_epoch,r->profile.broker_epoch,16);memcpy(query.broker_runtime,r->profile.broker_runtime,16);
+    struct ae_reservation_receipt reservation={0};int status=ae_catalogue_get_receipt(c,r->profile.lease,&query,&reservation);
+    if(status&&status!=-ENOENT&&status!=-EPROTONOSUPPORT)return status;
+    if(!status&&!reservation_valid(scope,r,&reservation))return -EBADMSG;
+    /* Lease lookup alone is not full execution-profile binding. An unrelated
+       canonical explicit profile must not inherit another launch's receipt. */
+    if(!status&&(memcmp(reservation.fingerprint,r->profile.request_digest,32)||memcmp(reservation.broker_runtime,r->profile.broker_runtime,16)||
+        memcmp(reservation.dispatch.operation,r->profile.root_operation,16)||memcmp(reservation.dispatch.launch,r->profile.launch,16)))status=-EXDEV;
+    r->reservation_error=status;if(!status)r->reservation=reservation;
+    int unavailable=status;
+    if(!unavailable&&memcmp(r->profile.system_runtime,scope->context.runtime_incarnation,16))unavailable=-ESTALE;
+    if(!unavailable&&r->starter_error)unavailable=-ENODATA;
+    if(unavailable){for(unsigned i=0;i<SWH_RUN_RECEIPTS;++i)r->run[i].error=unavailable;return 0;}
+    if(!reservation.dispatch.invocation_present||memcmp(reservation.dispatch.invocation,r->starter.process.invocation,16))return -EBADMSG;
+    struct ae_execution_evidence evidence;memcpy(evidence.invocation,r->starter.process.invocation,16);memcpy(evidence.context_digest,r->starter.process.evidence_digest,32);
+    for(unsigned i=0;i<SWH_RUN_RECEIPTS;++i){
+        enum ae_run_receipt_kind kind=(enum ae_run_receipt_kind)(i+1);struct ae_run_receipt value={0};uint8_t digest[32];
+        status=ae_catalogue_get_run_receipt(c,&r->profile,&evidence,kind,&value);
+        if(status&&status!=-ENOENT&&status!=-EPROTONOSUPPORT)return status;
+        if(!status&&(ae_run_receipt_match(&r->profile,&evidence,kind,&value)||ae_run_receipt_digest(&value,digest)))return -EBADMSG;
+        if(!status&&i&&(r->run[i-1].error||memcmp(value.previous_digest,r->run[i-1].digest,32)))return -EBADMSG;
+        r->run[i].error=status;if(!status){r->run[i].value=value;memcpy(r->run[i].digest,digest,32);}
+    }
+    return 0;
+}
 void swh_free(swh_batch **p){if(p&&*p){free(*p);*p=NULL;}}
 int swh_read(struct ae_catalogue *catalogue,const sw_result *apps,const struct ae_execution_profile *profiles,size_t n,swh_batch **out){
     if(!catalogue||!out||*out||(n&&!profiles)||!sw_result_valid(apps))return -EINVAL;
@@ -67,6 +114,7 @@ int swh_read(struct ae_catalogue *catalogue,const sw_result *apps,const struct a
         size_t at=selected(apps,p->install);memcpy(r->observed.install.bytes,p->install,16);
         if(at!=SIZE_MAX)r->observed=apps->rows[at];else r->observed.error=-ENOENT;
         r->starter_error=r->app_error=r->unit_error=r->custody_error=-ENOENT;
+        r->reservation_error=-ENOENT;for(unsigned j=0;j<SWH_RUN_RECEIPTS;++j)r->run[j].error=-ENOENT;
     }
     struct ae_catalogue_info before,after;
     if(!error)error=ae_catalogue_get_info(catalogue,&before);
@@ -81,6 +129,7 @@ int swh_read(struct ae_catalogue *catalogue,const sw_result *apps,const struct a
             else{r->app_error=status;if(!status)r->app=value;}
         }
         if(!error)error=unit_links(catalogue,&b->scope,r);
+        if(!error)error=receipt_links(catalogue,&b->scope,r);
     }
     if(!error)error=ae_catalogue_get_info(catalogue,&after);
     if(!error&&!context_same(&before,&after))error=-ESTALE;

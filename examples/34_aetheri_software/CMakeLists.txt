@@ -70,11 +70,20 @@ target_link_options(software_history_worker_test PRIVATE -Wl,--wrap=swh_read,--w
 add_executable(software_history_links_test test_history_links.c)
 target_link_libraries(software_history_links_test PRIVATE software_view software_worker)
 target_link_options(software_history_links_test PRIVATE -Wl,--wrap=ae_catalogue_get_unit,--wrap=ae_catalogue_get_unit_custody)
+add_executable(software_history_receipts_test test_history_receipts.c)
+target_link_libraries(software_history_receipts_test PRIVATE software_worker)
+target_link_options(software_history_receipts_test PRIVATE -Wl,--wrap=ae_catalogue_get_receipt,--wrap=ae_catalogue_get_run_receipt)
+set_target_properties(software_history_receipts_test PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+target_compile_options(software_history_receipts_test PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
 foreach(target software_model software_model_test software_manifest_document software_components software_history software_history_test software_history_fixture software_worker software_worker_test software_view software_native software_view_test software_components_test software_history_worker_test software_history_links_test)
     set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
     target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
 endforeach()
 enable_testing()
+add_test(NAME software_history_receipts COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_history_receipts.py"
+    --source "${AETHERI_SOURCE_DIR}" --fixture "$<TARGET_FILE:software_history_fixture>" --model "$<TARGET_FILE:software_model_test>"
+    --reader "$<TARGET_FILE:software_history_test>" --test "$<TARGET_FILE:software_history_receipts_test>" --work "${CMAKE_CURRENT_BINARY_DIR}/history-receipts-test")
+set_tests_properties(software_history_receipts PROPERTIES TIMEOUT 600 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
 add_test(NAME software_history_original COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/run_history.py"
     --source "${AETHERI_SOURCE_DIR}" --fixture "$<TARGET_FILE:software_history_fixture>" --model "$<TARGET_FILE:software_model_test>" --test "$<TARGET_FILE:software_history_test>"
     --work "${CMAKE_CURRENT_BINARY_DIR}/history-test")
