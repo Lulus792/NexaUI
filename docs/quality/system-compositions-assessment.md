@@ -1,5 +1,10 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Files candidate build: `23c0699960d67812d59fd60e5eec690d19a37d21`,
+[unchanged Aetheri 7483286 controller/view/host with installed SDK c4f467d; three original tests on each profile](files-consumer-report.md).
+This is an independent candidate experiment. Aetheri retains its own reviewed
+SDK 97a4264 pin; actual native document/IME/clipboard/OS-peer adoption is next.
+
 Selective recovery presentation: `8b29872a2bccec620f453cc2a97e7ef796ecee64`,
 [complete profile-bound relationship/reason fields, keyboard/read-only Text, focus and retirement](software-recovery-view-report.md).
 This implements the presentation pending in the earlier data-foundation entry;
@@ -35,6 +40,7 @@ exercised older header exactly; this is not current-runtime acceptance.
 
 | Required composition | Existing source/evidence | Next consumer work | External owner obligation |
 | --- | --- | --- | --- |
+| Files application | Original 7483286 Files model/session/NexaUI view/native host now have a separate checked candidate build and original controller/view tests on three installed SDK profiles | Run original native Files/document/unknown-worker/independent AT-SPI workflows against the candidate, then complete host-bound IME and clipboard integration | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
 | Settings and devices | Original Settings model contains transient display observations and appearance/language/text settings; [example21](../../examples/21_aetheri_model/README.md) and ordinary Settings evidence already exist | Reuse controls/status/wakeup for additional actual device models, with unavailable/pending/error/reconnect states | Real audio, network, Bluetooth/input, power/account observations and authorized control; compositor output observation alone changes no display/device configuration |
 | Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker and native list/filter/full details with keyboard/controlled IME/OS AT-SPI | Native held-query close/wake, foreign clipboard/late-completion and resize/output migration checks; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
 | Components/dependencies | Original manifest decoder and shared owned document reader expose declared component/version/publisher/files/actions/dependency IDs; example34 binds exact observed artifact/component/publisher and shows all declared dependencies plus complete file/action inspection | Compose actual dependency/ownership/process graph data; retain missing/unverified state and expand native lifetime/resource checks | Installed dependency/ownership state, trusted expected artifact provenance and complete inventory; declarations are no installed-files or current-process inventory |

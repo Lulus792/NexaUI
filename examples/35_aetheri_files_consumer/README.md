@@ -44,3 +44,14 @@ Reconnecting/reopening, actual native file/document/operation flows and the
 original independent AT-SPI task remain follow-up evidence for this candidate.
 Device/installer/login/lock service observations and authorization retain their
 external owners; this Files build supplies none of those capabilities.
+
+## Checked source and evidence
+
+Export committed Aetheri `7483286bcaafbeaced5831f72cb4d0e0cad9a158` with
+`git archive` into a separate directory; a full export is accepted, while the
+46 inputs in `source-inputs.json` are checked before configuration. The executed
+SDK declaration is `c4f467d85b0147944d2456f5e7602a39ac18e579`, distinct from
+Aetheri's own reviewed 97a4264 pin. See the [candidate report](../../docs/quality/files-consumer-report.md)
+for actual 3×3 results, four refusals, binary/source/archive bindings and the
+native, IME, child/document, adoption and physical/human/performance work still
+required. A successful build is not that remaining acceptance.

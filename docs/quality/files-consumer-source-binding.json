@@ -1,0 +1,29 @@
+{
+  "source_revision": "23c0699960d67812d59fd60e5eec690d19a37d21",
+  "files": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "size": 4728,
+      "sha256": "c023fe72d2303ebf8df32637ba37548523b014f4e225bee33af35bb7b59b070b"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "size": 2792,
+      "sha256": "d3f515c3be0b9255059e40656d7a843a4b14f9e627adc2ca8b92a0204acbace9"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1092,
+      "sha256": "87dd8bb4b10dad713a861045fcdac457f8152617d974108710c6c0789ae4a42d"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "size": 8203,
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+    }
+  ],
+  "normalization": "CRLF to LF only",
+  "tested_input": "nexaui-files-consumer-1-20261108.tar.gz",
+  "tested_input_sha256": "703cd2fa57f38d1cb85705cb8d3552a65a8314fe7dfe49ec22328b245ee7adca",
+  "post_test_code_differences": []
+}

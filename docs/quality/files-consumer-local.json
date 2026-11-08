@@ -1,0 +1,960 @@
+{
+  "attempt": "1",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "sdk_version": "0.1.23",
+  "original_source": {
+    "original_revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+    "archive_sha256": "db0effa4f71b2b7341d058f260a270d8c0e0aaf5527049596a1789c7f9205be0",
+    "files": [
+      {
+        "path": "CMakeLists.txt",
+        "size": 120143,
+        "sha256": "1a4bc41111849a50ae983bd8044b6f58c94133a78432f45458dfa564017f194e",
+        "mode": 436
+      },
+      {
+        "path": "LICENSE",
+        "size": 1077,
+        "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a",
+        "mode": 436
+      },
+      {
+        "path": "spec/files.md",
+        "size": 37486,
+        "sha256": "1d4644aca3a6e362e6801aa26ed9a56323cc2e894f8aa01971ff853c5d3a7d76",
+        "mode": 436
+      },
+      {
+        "path": "spec/nexaui-inputs.json",
+        "size": 2060,
+        "sha256": "1a959c46974d3b351df0f75afc3b0ff59f172f7367cead46deea06efda43790e",
+        "mode": 436
+      },
+      {
+        "path": "spec/ui-inputs.json",
+        "size": 19855,
+        "sha256": "7567ec936c8ed3c8a8562ba2ed7074a81eb6df72ca67c6b8ae6e57e220eff014",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/direct.c",
+        "size": 9623,
+        "sha256": "d959f86a2220c750bab2d5fb1a170268ad4ff4f5c9f9294c48b047491c270b1d",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/direct.h",
+        "size": 3602,
+        "sha256": "eac32523bbf174b4bb5f0cb2e71b59aabf103b0d7a901ce675ee5e9c5a2547cc",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/document.c",
+        "size": 19757,
+        "sha256": "6dc6ae372641cc2621b71c26a5f11c56e35aa8457c15305440c4458d9943090f",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/document.h",
+        "size": 5894,
+        "sha256": "83ce31d0b09762eb66f49066566400812036d64676bc31cea4561200fe4ba010",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/file.c",
+        "size": 16421,
+        "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/file.h",
+        "size": 3344,
+        "sha256": "3684c8b72d2bdc409b837bc760f278024eac4b6631296cce81cc539014218264",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/graphical_main.c",
+        "size": 66454,
+        "sha256": "706707eed7e7d7df4e33eb1c3afd84efcbaa855749ee6cb5943d18db67a11517",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/main.c",
+        "size": 26802,
+        "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/modal.c",
+        "size": 15063,
+        "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/modal.h",
+        "size": 3224,
+        "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/view.c",
+        "size": 12627,
+        "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/view.h",
+        "size": 1125,
+        "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/workspace.c",
+        "size": 18595,
+        "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3",
+        "mode": 436
+      },
+      {
+        "path": "src/editor/workspace.h",
+        "size": 7378,
+        "sha256": "900182c71a7841dde1c9cff9018394426a16569e488f584824ab890dc059577a",
+        "mode": 436
+      },
+      {
+        "path": "src/files/create.c",
+        "size": 4508,
+        "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42",
+        "mode": 436
+      },
+      {
+        "path": "src/files/create.h",
+        "size": 2039,
+        "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60",
+        "mode": 436
+      },
+      {
+        "path": "src/files/launch.c",
+        "size": 3501,
+        "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28",
+        "mode": 436
+      },
+      {
+        "path": "src/files/launch.h",
+        "size": 1046,
+        "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83",
+        "mode": 436
+      },
+      {
+        "path": "src/files/layout.c",
+        "size": 3879,
+        "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c",
+        "mode": 436
+      },
+      {
+        "path": "src/files/layout.h",
+        "size": 1432,
+        "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f",
+        "mode": 436
+      },
+      {
+        "path": "src/files/main.c",
+        "size": 50043,
+        "sha256": "b2d8af2d6051abcd1675274ff3f842470870524c8a83fe0ad2984a8abce86a4f",
+        "mode": 436
+      },
+      {
+        "path": "src/files/model.c",
+        "size": 9531,
+        "sha256": "a4ce9a9e9035f4d0aae53d4f3511eeeec36ec18c77012b0ee1a52fe0ea0b2ef3",
+        "mode": 436
+      },
+      {
+        "path": "src/files/model.h",
+        "size": 3885,
+        "sha256": "70a7298064afa822f4f45f13c3dae04f61bbfe6b8290f99a7ca2d9e0164e70f0",
+        "mode": 436
+      },
+      {
+        "path": "src/files/nexaui_main.c",
+        "size": 16421,
+        "sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d",
+        "mode": 436
+      },
+      {
+        "path": "src/files/nexaui_view.c",
+        "size": 50973,
+        "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc",
+        "mode": 436
+      },
+      {
+        "path": "src/files/nexaui_view.h",
+        "size": 1755,
+        "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649",
+        "mode": 436
+      },
+      {
+        "path": "src/files/rename.c",
+        "size": 6818,
+        "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72",
+        "mode": 436
+      },
+      {
+        "path": "src/files/rename.h",
+        "size": 2637,
+        "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99",
+        "mode": 436
+      },
+      {
+        "path": "src/files/session.c",
+        "size": 25845,
+        "sha256": "bc4d93fed3a86d7382fe5ee6494d9859be50d0d213667b2a12d6c9a3eeeb0358",
+        "mode": 436
+      },
+      {
+        "path": "src/files/session.h",
+        "size": 4850,
+        "sha256": "9d58aa9e756695cfa1d64284c182d96cdc489b3c79b4a0446dc72c4de71f3512",
+        "mode": 436
+      },
+      {
+        "path": "src/settings/NEXAUI-NOTICE.txt",
+        "size": 1150,
+        "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096",
+        "mode": 436
+      },
+      {
+        "path": "src/text/UNICODE-LICENSE.txt",
+        "size": 1995,
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+        "mode": 436
+      },
+      {
+        "path": "src/text/grapheme.c",
+        "size": 3857,
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4",
+        "mode": 436
+      },
+      {
+        "path": "src/text/grapheme.h",
+        "size": 874,
+        "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145",
+        "mode": 436
+      },
+      {
+        "path": "src/text/grapheme_data.h",
+        "size": 39894,
+        "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1",
+        "mode": 436
+      },
+      {
+        "path": "tests/files_create_fault.c",
+        "size": 1397,
+        "sha256": "6cf3fb55f14e9e5804ea0da8b20ca7909f59056da2a4390eeea9ed5e69857cae",
+        "mode": 436
+      },
+      {
+        "path": "tests/files_view_atspi.c",
+        "size": 13200,
+        "sha256": "4ba47dbf47388364fcf4a957ee09e77cbfeb7d7707181a5006a2f26da1759360",
+        "mode": 436
+      },
+      {
+        "path": "tests/test_files_session.c",
+        "size": 7105,
+        "sha256": "d9acd56adf5cf9590184a04feca8bf461f5dcce5164e72c30d8d3f40bc191277",
+        "mode": 436
+      },
+      {
+        "path": "tests/test_files_view.c",
+        "size": 17471,
+        "sha256": "f1cb96285b16e6ca3a451570225aaba268d85c07cc10235924c109c6e789222a",
+        "mode": 436
+      },
+      {
+        "path": "tools/test_files_view.py",
+        "size": 23665,
+        "sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c",
+        "mode": 436
+      },
+      {
+        "path": "tools/test_files_view_fault.py",
+        "size": 9033,
+        "sha256": "9e8cd0930163b56982306ecb9a67fc678a1d42920a39e9b187c4a71b7d75b3a0",
+        "mode": 436
+      }
+    ],
+    "all_bytes_modes_verified": true,
+    "mode_restoration": "After safe data-filter extraction, restore only recorded regular-file modes after checking every file byte.",
+    "mtime_normalization": "Extracted regular file mtimes set to0 only, retaining original archive timestamps; VM clock unchanged."
+  },
+  "original_recheck": {
+    "command": [
+      "python3",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer/check_source.py",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286"
+    ],
+    "exit": 0,
+    "stdout": "CHECKED original Aetheri 7483286bcaafbeaced5831f72cb4d0e0cad9a158; 46 exact inputs\n",
+    "stderr": ""
+  },
+  "commands": [
+    {
+      "profile": "release",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=c4f467d85b0147944d2456f5e7602a39ac18e579",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-release-configure.log"
+    },
+    {
+      "profile": "release",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-release-build.log"
+    },
+    {
+      "profile": "release",
+      "phase": "ctest",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-release-ctest.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=c4f467d85b0147944d2456f5e7602a39ac18e579",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-shared-configure.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-shared-build.log"
+    },
+    {
+      "profile": "shared",
+      "phase": "ctest",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-shared-ctest.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI",
+        "-DNEXAUI_EXPECTED_REVISION=c4f467d85b0147944d2456f5e7602a39ac18e579",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286",
+        "-DFILES_TEST_FONT=/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "-DFILES_BUILD_FAULT_HOST=ON",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-asan-configure.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-asan-build.log"
+    },
+    {
+      "profile": "asan",
+      "phase": "ctest",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "files-consumer-1-asan-ctest.log"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "release",
+      "ctest_log": "Test project /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release\n    Start 1: files_original_session\n1/3 Test #1: files_original_session ...........   Passed    0.02 sec\n    Start 2: files_original_view_1x\n2/3 Test #2: files_original_view_1x ...........   Passed    0.36 sec\n    Start 3: files_original_view_2x\n3/3 Test #3: files_original_view_2x ...........   Passed    0.54 sec\n\n100% tests passed, 0 tests failed out of 3\n\nTotal Test time (real) =   0.92 sec\n",
+      "test_log": "Start testing: Nov 07 22:27 CET\n----------------------------------------------------------\n1/3 Testing: files_original_session\n1/3 Test: files_original_session\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/files_session_original_test\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release\n\"files_original_session\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles session: deferred worker, failed start, close fence, rename/move, unknown outcome and rejected intent\n<end of output>\nTest time =   0.02 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_session\" end time: Nov 07 22:27 CET\n\"files_original_session\" time elapsed: 00:00:00\n----------------------------------------------------------\n\n2/3 Testing: files_original_view_1x\n2/3 Test: files_original_view_1x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"1\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release\n\"files_original_view_1x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 1; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   0.36 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_1x\" end time: Nov 07 22:27 CET\n\"files_original_view_1x\" time elapsed: 00:00:00\n----------------------------------------------------------\n\n3/3 Testing: files_original_view_2x\n3/3 Test: files_original_view_2x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"2\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release\n\"files_original_view_2x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 2; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   0.54 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_2x\" end time: Nov 07 22:27 CET\n\"files_original_view_2x\" time elapsed: 00:00:00\n----------------------------------------------------------\n\nEnd testing: Nov 07 22:27 CET\n",
+      "binaries": {
+        "aetheri_files_candidate": {
+          "size": 950920,
+          "sha256": "a31c3312cf2c5c62b87f5bbd882a02f6291f73d80fadd6a8001240c97d6be737"
+        },
+        "aetheri_files_fault_candidate": {
+          "size": 951160,
+          "sha256": "70510f5204c3f7816bd3af1a4b7f85eb2a667b2d0fa83a39d020d9a15bb98197"
+        },
+        "files_session_original_test": {
+          "size": 116904,
+          "sha256": "278dfbe31e47018c97fa0ef8aca5c6b9b4e29aa1e2910104f78fdbfe4ff39daf"
+        },
+        "files_view_original_test": {
+          "size": 967400,
+          "sha256": "48311c24a41586b8a3bc84eb71f90e169dd12d0bf414d28e497a6b45b9fcaf49"
+        }
+      },
+      "compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -D_GNU_SOURCE -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "ctest_log": "Test project /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared\n    Start 1: files_original_session\n1/3 Test #1: files_original_session ...........   Passed    0.01 sec\n    Start 2: files_original_view_1x\n2/3 Test #2: files_original_view_1x ...........   Passed    0.37 sec\n    Start 3: files_original_view_2x\n3/3 Test #3: files_original_view_2x ...........   Passed    0.59 sec\n\n100% tests passed, 0 tests failed out of 3\n\nTotal Test time (real) =   0.98 sec\n",
+      "test_log": "Start testing: Nov 07 22:27 CET\n----------------------------------------------------------\n1/3 Testing: files_original_session\n1/3 Test: files_original_session\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/files_session_original_test\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared\n\"files_original_session\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles session: deferred worker, failed start, close fence, rename/move, unknown outcome and rejected intent\n<end of output>\nTest time =   0.01 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_session\" end time: Nov 07 22:27 CET\n\"files_original_session\" time elapsed: 00:00:00\n----------------------------------------------------------\n\n2/3 Testing: files_original_view_1x\n2/3 Test: files_original_view_1x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"1\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared\n\"files_original_view_1x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 1; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   0.37 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_1x\" end time: Nov 07 22:27 CET\n\"files_original_view_1x\" time elapsed: 00:00:00\n----------------------------------------------------------\n\n3/3 Testing: files_original_view_2x\n3/3 Test: files_original_view_2x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"2\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared\n\"files_original_view_2x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 2; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   0.59 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_2x\" end time: Nov 07 22:27 CET\n\"files_original_view_2x\" time elapsed: 00:00:00\n----------------------------------------------------------\n\nEnd testing: Nov 07 22:27 CET\n",
+      "binaries": {
+        "aetheri_files_candidate": {
+          "size": 170592,
+          "sha256": "5392f6719fc8a0f74c7d665cc7be65a780332cb57af2868ccfac97ef42683aa6"
+        },
+        "aetheri_files_fault_candidate": {
+          "size": 170816,
+          "sha256": "2f5a9bb61104724ad65499f7216750c35b68096e1367836cc70e794366903267"
+        },
+        "files_session_original_test": {
+          "size": 116904,
+          "sha256": "278dfbe31e47018c97fa0ef8aca5c6b9b4e29aa1e2910104f78fdbfe4ff39daf"
+        },
+        "files_view_original_test": {
+          "size": 186120,
+          "sha256": "12c9f3474a49412018a13edfeb618b948970b1b2194bf6a411c5f1cd7c844321"
+        }
+      },
+      "compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -D_GNU_SOURCE -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -DNEXAUI_SHARED -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "ctest_log": "Test project /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan\n    Start 1: files_original_session\n1/3 Test #1: files_original_session ...........   Passed    0.02 sec\n    Start 2: files_original_view_1x\n2/3 Test #2: files_original_view_1x ...........   Passed    4.49 sec\n    Start 3: files_original_view_2x\n3/3 Test #3: files_original_view_2x ...........   Passed    5.40 sec\n\n100% tests passed, 0 tests failed out of 3\n\nTotal Test time (real) =   9.91 sec\n",
+      "test_log": "Start testing: Nov 07 22:27 CET\n----------------------------------------------------------\n1/3 Testing: files_original_session\n1/3 Test: files_original_session\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/files_session_original_test\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan\n\"files_original_session\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles session: deferred worker, failed start, close fence, rename/move, unknown outcome and rejected intent\n<end of output>\nTest time =   0.02 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_session\" end time: Nov 07 22:27 CET\n\"files_original_session\" time elapsed: 00:00:00\n----------------------------------------------------------\n\n2/3 Testing: files_original_view_1x\n2/3 Test: files_original_view_1x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"1\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan\n\"files_original_view_1x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 1; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   4.49 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_1x\" end time: Nov 07 22:27 CET\n\"files_original_view_1x\" time elapsed: 00:00:04\n----------------------------------------------------------\n\n3/3 Testing: files_original_view_2x\n3/3 Test: files_original_view_2x\nCommand: \"/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/files_view_original_test\" \"/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf\" \"2\"\nDirectory: /dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan\n\"files_original_view_2x\" start time: Nov 07 22:27 CET\nOutput:\n----------------------------------------------------------\nFiles view: 128 layouts at density 2; stale snapshot/selection/dialog/sidebar, modal keyboard/200% bounds and whole-commit guards\n<end of output>\nTest time =   5.40 sec\n----------------------------------------------------------\nTest Passed.\n\"files_original_view_2x\" end time: Nov 07 22:27 CET\n\"files_original_view_2x\" time elapsed: 00:00:05\n----------------------------------------------------------\n\nEnd testing: Nov 07 22:27 CET\n",
+      "binaries": {
+        "aetheri_files_candidate": {
+          "size": 8943920,
+          "sha256": "e33d103f14a88e641d8da95168934a78a751a26a32b73af159d2b51c2c95cf53"
+        },
+        "aetheri_files_fault_candidate": {
+          "size": 8948072,
+          "sha256": "7a5aa57d8c36b6659e067d72b9cac305fe72eddb224e30314919186bdf864af6"
+        },
+        "files_session_original_test": {
+          "size": 929136,
+          "sha256": "3539aaf6a6b4527a90b5640761b5f0f5a30ef3e544db0d996214ae7129ced87a"
+        },
+        "files_view_original_test": {
+          "size": 8967792,
+          "sha256": "bba218f47091557d315d28807652220739da5be61acad5947f81558394278eba"
+        }
+      },
+      "compile_commands": [
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_text.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/text/grapheme.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/document.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -D_GNU_SOURCE -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_file.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/editor/file.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/model.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/launch.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/create.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/rename.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_model.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/layout.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_session.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_original_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/aetheri_files_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_session_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_session.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/files_view_original_test.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/test_files_view.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src/files/nexaui_main.c.o"
+        },
+        {
+          "directory": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan",
+          "command": "/usr/bin/cc -DAETHERI_FAULT_ATTEMPTS -I/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/src -isystem /dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o -c /dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "file": "/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c",
+          "output": "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/CMakeFiles/aetheri_files_fault_candidate.dir/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286/tests/files_create_fault.c.o"
+        }
+      ]
+    }
+  ],
+  "controls": {
+    "negative_admission": [
+      {
+        "name": "changed-source",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer/check_source.py",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-controls-1/changed-source"
+        ],
+        "exit": 1,
+        "expected_diagnostic": "Changed original input: src/files/nexaui_view.c",
+        "stdout": "",
+        "stderr": "Changed original input: src/files/nexaui_view.c\n"
+      },
+      {
+        "name": "live-checkout",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer/check_source.py",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-controls-1/live-checkout"
+        ],
+        "exit": 1,
+        "expected_diagnostic": "Use an exported snapshot",
+        "stdout": "",
+        "stderr": "Use an exported snapshot, not the independently developed Aetheri checkout\n"
+      },
+      {
+        "name": "indirect-source",
+        "command": [
+          "python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer/check_source.py",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-controls-1/indirect-source"
+        ],
+        "exit": 1,
+        "expected_diagnostic": "Missing or indirect original input: src/files/nexaui_view.c",
+        "stdout": "",
+        "stderr": "Missing or indirect original input: src/files/nexaui_view.c\n"
+      },
+      {
+        "name": "wrong-sdk",
+        "command": [
+          "cmake",
+          "-S",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-src-1/examples/35_aetheri_files_consumer",
+          "-B",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-controls-1/wrong-sdk",
+          "-G",
+          "Ninja",
+          "-DNexaUI_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI",
+          "-DNEXAUI_EXPECTED_REVISION=0000000000000000000000000000000000000000",
+          "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/original-files-7483286",
+          "-DFILES_BUILD_TESTS=OFF"
+        ],
+        "exit": 1,
+        "expected_diagnostic": "Select the exact installed SDK source declaration",
+        "stdout": "-- The C compiler identification is GNU 16.2.1\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Found Python3: /usr/bin/python3.14 (found suitable version \"3.14.3\", minimum required is \"3.11\") found components: Interpreter\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n-- Found Threads: TRUE\n-- Found PkgConfig: /usr/bin/pkg-config (found version \"2.5.1\")\n-- Checking for module 'wayland-client'\n--   Found wayland-client, version 1.26.0\n-- Checking for module 'xkbcommon'\n--   Found xkbcommon, version 1.13.1\n-- Configuring incomplete, errors occurred!\n",
+        "stderr": "CMake Error at CMakeLists.txt:14 (message):\n  Select the exact installed SDK source declaration with\n  NEXAUI_EXPECTED_REVISION\n\n\n"
+      }
+    ],
+    "profiles": [
+      {
+        "profile": "release",
+        "symbols": {
+          "aetheri_files_candidate": [],
+          "aetheri_files_fault_candidate": [
+            "__wrap_mkdirat",
+            "__wrap_renameat2"
+          ]
+        },
+        "linkage": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-release/aetheri_files_candidate"
+          ],
+          "exit": 0,
+          "stdout": "\tlinux-vdso.so.1 (0x00007f59b36ef000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f59b36d1000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f59b35ba000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f59b355b000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f59b3362000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f59b3352000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f59b36f1000)\n"
+        },
+        "compiled_translation_units": 15,
+        "compile_commands_sha256": "3d8891a880bf069d274b8d885d1ccd54ba1f9d1021d71f496071989461e1fb47"
+      },
+      {
+        "profile": "shared",
+        "symbols": {
+          "aetheri_files_candidate": [],
+          "aetheri_files_fault_candidate": [
+            "__wrap_mkdirat",
+            "__wrap_renameat2"
+          ]
+        },
+        "linkage": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-shared/aetheri_files_candidate"
+          ],
+          "exit": 0,
+          "stdout": "\tlinux-vdso.so.1 (0x00007f16b6c16000)\n\tlibnexaui.so.0 => /dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/libnexaui.so.0 (0x00007f16b6b36000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f16b6a19000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f16b6820000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f16b6810000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f16b67b1000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f16b6c18000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f16b679f000)\n"
+        },
+        "compiled_translation_units": 15,
+        "compile_commands_sha256": "4d64c3e993e27bddc002069bde4fac23e0d8c71c72cbd25c27b80d164ae46460"
+      },
+      {
+        "profile": "asan",
+        "symbols": {
+          "aetheri_files_candidate": [],
+          "aetheri_files_fault_candidate": [
+            "__wrap_mkdirat",
+            "__wrap_renameat2"
+          ]
+        },
+        "linkage": {
+          "command": [
+            "ldd",
+            "/dev/shm/nexaui-recovery-live-tty-20261107/files-consumer-1-asan/aetheri_files_candidate"
+          ],
+          "exit": 0,
+          "stdout": "\tlinux-vdso.so.1 (0x00007f2108364000)\n\tlibasan.so.8 => /lib64/libasan.so.8 (0x00007f2107c00000)\n\tlibwayland-client.so.0 => /lib64/libwayland-client.so.0 (0x00007f2108346000)\n\tlibm.so.6 => /lib64/libm.so.6 (0x00007f2107ae9000)\n\tlibxkbcommon.so.0 => /lib64/libxkbcommon.so.0 (0x00007f2107a8a000)\n\tlibubsan.so.1 => /lib64/libubsan.so.1 (0x00007f2107400000)\n\tlibc.so.6 => /lib64/libc.so.6 (0x00007f2107207000)\n\tlibstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f2106e00000)\n\tlibgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f2108317000)\n\tlibffi.so.8 => /lib64/libffi.so.8 (0x00007f2108307000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f2108366000)\n"
+        },
+        "compiled_translation_units": 15,
+        "compile_commands_sha256": "f68e88312fad14e3dd6c70d732d1707326e239a9614e6284517372754c9b01bd"
+      }
+    ],
+    "scope": "Actual source/checkout/SDK rejection and binary separation/linkage. No native window or production admission claim."
+  },
+  "font": {
+    "path": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+    "size": 410712,
+    "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+    "redistributed": false
+  },
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "initial_extraction_log": "Traceback (most recent call last):\n  File \"/dev/shm/nexaui-recovery-live-tty-20261107/build_files_consumer.py\", line 9, in <module>\n    p=source/f['path'];data=p.read_bytes();assert len(data)==f['size'] and hashlib.sha256(data).hexdigest()==f['sha256'] and stat.S_IMODE(p.stat().st_mode)==f['mode'];os.utime(p,(0,0))\n                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "scope": "Unchanged original Aetheri Files native host build and controller/headless view tests against an independently selected installed SDK. Not a native window/IME/clipboard/assistive/document workflow run, Aetheri pin change, production admission, physical or performance acceptance.",
+  "source_revision": "23c0699960d67812d59fd60e5eec690d19a37d21",
+  "source_binding": {
+    "source_revision": "23c0699960d67812d59fd60e5eec690d19a37d21",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 4728,
+        "sha256": "c023fe72d2303ebf8df32637ba37548523b014f4e225bee33af35bb7b59b070b"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 2792,
+        "sha256": "d3f515c3be0b9255059e40656d7a843a4b14f9e627adc2ca8b92a0204acbace9"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1092,
+        "sha256": "87dd8bb4b10dad713a861045fcdac457f8152617d974108710c6c0789ae4a42d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ],
+    "normalization": "CRLF to LF only",
+    "tested_input": "nexaui-files-consumer-1-20261108.tar.gz",
+    "tested_input_sha256": "703cd2fa57f38d1cb85705cb8d3552a65a8314fe7dfe49ec22328b245ee7adca",
+    "post_test_code_differences": []
+  }
+}

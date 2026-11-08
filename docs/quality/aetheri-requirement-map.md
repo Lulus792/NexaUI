@@ -1,5 +1,15 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/B03/B04/D07/L05/L06/L11/I01/A06/P04/P05/P07/Q02/Q04/Q08:
+Original Files consumer source `23c0699960d67812d59fd60e5eec690d19a37d21` adds a separate checked
+build of unchanged Aetheri 7483286 Files model/session/NexaUI view/host. Three
+installed SDK profiles pass 3/3 original tests each (768 layout checks); four
+admission refusals and normal/fault/linkage separation pass. See [candidate build](files-consumer-report.md).
+This is no native Files/document/IME/clipboard/OS-peer run or approved migration;
+the actual Aetheri SDK 97a4264 pin, SDL app and independent checkout are untouched.
+Further packet 6, packets 7–8 and final physical/human/performance/adoption remain
+open across all 103 IDs. Public SDK API/ABI/version is unchanged.
+
 D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08:
 Recovery presentation source `8b29872a2bccec620f453cc2a97e7ef796ecee64` adds a complete read-only
 Recovery-links page using existing copied data/public controls. Three profiles
