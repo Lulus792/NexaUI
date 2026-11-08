@@ -45,6 +45,26 @@ before releasing the query. Run IME and manifest/history workflows separately.
 The [native lifecycle report](../../docs/quality/software-lifecycle-report.md)
 records exact sources, profiles, compiled negative controls and open gates.
 
+The ordinary host/`software_atspi` peer also supports these separate native
+workflows through `run_native.py`:
+
+- `--clipboard normal --clipboard-tools /path/to/private-tools`: paste actual
+  foreign Unicode, copy to an independent reader, then refuse a delayed reply
+  after focus leaves the filter. The stopped foreign source and its later
+  send/socket-wait boundary are observed directly.
+- `--clipboard close --clipboard-tools /path/to/private-tools`: close the GUI
+  while the foreign source is stopped; retained OS field/button references
+  refuse edits/actions before cleanup resumes that source.
+- `--resize`: use the real pointer grip to resize the filter to64×64,240×96 and
+  back. The independent peer checks bounded reachable Close, retired old field,
+  retained Unicode draft and restored focus. `--capture` retains the original
+  compositor's three-output images before, during and after the compact state.
+
+These tasks reuse the existing Recovery transport witnesses and installed
+window/clipboard APIs. Run them separately from metadata/held-query tasks. No
+inventory or service effect is introduced. See the [source-bound window report](../../docs/quality/software-window-report.md)
+for actual profiles, negative controls, capture review and open output/visual gates.
+
 The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
 alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
 selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical
