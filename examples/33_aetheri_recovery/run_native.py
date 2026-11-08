@@ -31,7 +31,7 @@ def main():
     if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
     if a.clipboard and (a.held or a.navigation):p.error('Clipboard has a separate ordinary-peer sequence')
     if bool(a.clipboard)!=bool(a.clipboard_tools):p.error('Clipboard requires its explicitly selected private tools')
-    if a.issuer_fixture and (a.kind!='system' or a.held or a.clipboard):p.error('Root11 issuer metadata uses the ordinary Root peer; run held/clipboard separately')
+    if a.issuer_fixture and (a.kind!='system' or a.clipboard):p.error('Root11 issuer metadata requires a Root host; run clipboard separately')
     if not a.issuer_fixture and a.issuer_mode!='fresh':p.error('Issuer mode requires its explicitly selected original fixture')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
@@ -75,6 +75,8 @@ def main():
     gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
     if a.held:env['RVG_TEST_GATE_FD']=str(gate_read)
     else:env.pop('RVG_TEST_GATE_FD',None)
+    env.pop('RVG_TEST_ROOT11_RUNTIME',None)
+    if a.held and issuer_runtime:env['RVG_TEST_ROOT11_RUNTIME']=issuer_runtime
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];background=set();stopped=set()
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
             'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation','resize','capture','clipboard')},'checks':[],'expected_records':len(reference),'images':images}
@@ -218,7 +220,10 @@ def main():
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else [])+(['--clipboard-'+a.clipboard] if a.clipboard else [])+(['--issuer-runtime',issuer_runtime] if issuer_runtime else []),'client',input_pipe=True)
+        if a.held and issuer_runtime:
+            key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'initial held issuer row')
+        issuer_flags=(['--issuer'] if a.held else ['--issuer-runtime',issuer_runtime]) if issuer_runtime else []
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else [])+(['--clipboard-'+a.clipboard] if a.clipboard else [])+issuer_flags,'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         if a.held:
             for step in (0,1):
@@ -243,6 +248,13 @@ def main():
                 returns=re.findall(r'^HELD_WAIT_RETURN ready=(\d+) status=0$',log('host')[offset:],re.M)
                 if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
                 result['completion_without_further_input']=True
+                if issuer_runtime:
+                    # The existing snapshot refresh resets the viewport. Prove
+                    # completion without input first, then explicitly reveal the
+                    # new issuer row for the independent retained-reference check.
+                    result['issuer_completion_before_reveal']=view()
+                    key(107);wait(lambda:view().get('focus')==1000+len(reference)-1,'issuer after independently observed completion')
+                    result['issuer_after_explicit_reveal']=view()
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
         else:
             for step in range((15 if a.clipboard=='close' else 16) if a.clipboard else 30 if a.resize else 25 if a.navigation else 10):
@@ -345,7 +357,9 @@ def main():
         marker=('RECOVERY_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'RECOVERY_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK'
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.navigation and 'RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Missing independent native navigation checks')
-        if issuer_runtime and 'RECOVERY_NATIVE_ROOT11_ISSUER_FULL_ID_RELATED_RUNTIME_REASON_READONLY_OK' not in log('client'):raise RuntimeError('Missing independent Root11 issuer Text checks')
+        if issuer_runtime:
+            marker='RECOVERY_NATIVE_HELD_ROOT11_ISSUER_ROW_LIFETIME_OK' if a.held else 'RECOVERY_NATIVE_ROOT11_ISSUER_FULL_ID_RELATED_RUNTIME_REASON_READONLY_OK'
+            if marker not in log('client'):raise RuntimeError('Missing independent Root11 issuer checks')
         if a.resize and 'RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
         if a.clipboard:
             marker='RECOVERY_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK' if a.clipboard=='close' else 'RECOVERY_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK'
@@ -358,6 +372,8 @@ def main():
         host.wait(timeout=7)
         if host.returncode!=0 or 'RECOVERY_GUI_GONE\n' not in log('host') or 'failed=0\n' not in log('host'):raise RuntimeError('Host did not close normally')
         if a.held and 'RECOVERY_NATIVE_HELD_ORIGINAL_QUERY_RETIREMENT_DISPOSAL_AND_FDS_OK' not in log('host'):raise RuntimeError('Missing original late-result disposal or descriptor balance')
+        if a.held and issuer_runtime:
+            if [int(n) for n in re.findall(r'^HELD_ROOT11_ISSUER_QUERY ordinal=(\d+) schema=11 runtime_match=1\n',log('host'),re.M)]!=[1,2]:raise RuntimeError('Missing actual Root11 issuer query/runtime checks')
         if a.held=='close' and 'RECOVERY_CLOSED requests=2 adopted=1 ignored=0 failed=0' not in log('host'):raise RuntimeError('Closed GUI adopted the late observation')
         if hashlib.sha256(db_path.read_bytes()).hexdigest()!=before_sha:raise RuntimeError('Owner database bytes changed')
         with closing(sqlite3.connect(db_path)) as db:

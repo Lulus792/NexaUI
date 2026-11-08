@@ -18,6 +18,9 @@ static _Thread_local unsigned active_read;
 static atomic_int entered,released,view_gone,window_gone,late_frees;
 static _Atomic(void *) late_inventory;
 static int gate_fd=-1;
+#if RV_UNIT_ISSUER
+static int root11;static uint8_t root11_runtime[16];
+#endif
 static void original_thread(void){GATE_CHECK(!pthread_equal(pthread_self(),gui_thread)&&pthread_equal(pthread_self(),query_thread));}
 int __real_ae_catalogue_open(const char *,const struct ae_catalogue_identity *,struct ae_catalogue **);
 int __wrap_ae_catalogue_open(const char *path,const struct ae_catalogue_identity *id,struct ae_catalogue **out){
@@ -26,6 +29,15 @@ int __wrap_ae_catalogue_open(const char *path,const struct ae_catalogue_identity
 int __real_ae_catalogue_recovery_inventory(struct ae_catalogue *,size_t,struct ae_recovery_inventory **);
 int __wrap_ae_catalogue_recovery_inventory(struct ae_catalogue *catalogue,size_t limit,struct ae_recovery_inventory **out){
     original_thread();active_read=++calls;int error=__real_ae_catalogue_recovery_inventory(catalogue,limit,out);
+#if RV_UNIT_ISSUER
+    if(root11){
+        GATE_CHECK(!error&&*out&&(*out)->schema_version==11&&(*out)->by_kind[AE_RECOVERY_UNIT_ISSUER]==1&&!memcmp((*out)->context.runtime_incarnation,root11_runtime,16));
+        uint8_t id[16],related[16];GATE_CHECK(parse_id("0000000000004000800000000000005a",id)&&parse_id("00000000000040008000000000000029",related));
+        size_t i=0;while(i<(*out)->count&&(*out)->records[i].kind!=AE_RECOVERY_UNIT_ISSUER)++i;GATE_CHECK(i<(*out)->count);
+        const struct ae_recovery_record *row=&(*out)->records[i];GATE_CHECK(!memcmp(row->id,id,16)&&row->has_related&&!memcmp(row->related,related,16)&&!strcmp(row->reason,"issuer_retirement_unsettled"));
+        printf("HELD_ROOT11_ISSUER_QUERY ordinal=%u schema=11 runtime_match=1\n",active_read);
+    }
+#endif
     if(active_read==2){GATE_CHECK(atomic_load(&entered)&&atomic_load(&released)&&!error&&*out);atomic_store(&late_inventory,*out);printf("HELD_QUERY_DONE ordinal=2 status=%d\n",error);}
     active_read=0;return error;
 }
@@ -62,6 +74,12 @@ nx_result __wrap_nx_window_poll_with_fd(nx_window *window,uint32_t timeout,int f
 }
 static unsigned descriptor_count(void){DIR *d=opendir("/proc/self/fd");GATE_CHECK(d);unsigned n=0;struct dirent *e;while((e=readdir(d)))if(e->d_name[0]!='.')++n;GATE_CHECK(!closedir(d));return n;}
 int main(int argc,char **argv){
+    const char *runtime=getenv("RVG_TEST_ROOT11_RUNTIME");
+#if RV_UNIT_ISSUER
+    if(runtime){GATE_CHECK(parse_id(runtime,root11_runtime));root11=1;}
+#else
+    GATE_CHECK(!runtime);
+#endif
     gui_thread=pthread_self();const char *input=getenv("RVG_TEST_GATE_FD");GATE_CHECK(input&&*input&&strspn(input,"0123456789")==strlen(input));
     char *end;long fd=strtol(input,&end,10);GATE_CHECK(!*end&&fd>=3&&fd<=INT_MAX);gate_fd=(int)fd;
     struct stat info;GATE_CHECK(!fstat(gate_fd,&info)&&S_ISFIFO(info.st_mode));unsigned before=descriptor_count();
