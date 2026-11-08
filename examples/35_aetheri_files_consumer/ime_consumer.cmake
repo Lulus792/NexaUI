@@ -2,6 +2,7 @@ set(files_ime_generated "${CMAKE_CURRENT_BINARY_DIR}/files-ime-generated")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_host.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/ime_transactions.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/appearance.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/check_source.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json" files_ime_manifest)
@@ -20,6 +21,22 @@ add_executable(aetheri_files_ime_candidate "${files_ime_generated}/nexaui_main.c
 target_link_libraries(aetheri_files_ime_candidate PRIVATE files_ime_view Threads::Threads)
 list(APPEND checked_targets files_ime_view aetheri_files_ime_candidate)
 if(FILES_BUILD_TESTS)
+    add_executable(files_appearance_test "${CMAKE_CURRENT_SOURCE_DIR}/appearance_test.c")
+    target_compile_definitions(files_appearance_test PRIVATE
+        AE_FILES_GENERATED_VIEW="${files_ime_generated}/nexaui_view.c")
+    target_include_directories(files_appearance_test PRIVATE "${files_ime_generated}" "${original}/files")
+    target_link_libraries(files_appearance_test PRIVATE files_original_session NexaUI::NexaUI m)
+    list(APPEND checked_targets files_appearance_test)
+    add_test(NAME files_appearance_layout COMMAND files_appearance_test "${FILES_TEST_FONT}")
+    set_tests_properties(files_appearance_layout PROPERTIES TIMEOUT 30)
+    set(FILES_TEST_FALLBACK_FONT "" CACHE FILEPATH "Optional explicitly selected fallback font for the appearance test")
+    if(FILES_TEST_FALLBACK_FONT)
+        if(NOT EXISTS "${FILES_TEST_FALLBACK_FONT}")
+            message(FATAL_ERROR "FILES_TEST_FALLBACK_FONT must name a readable font")
+        endif()
+        add_test(NAME files_appearance_fallback COMMAND files_appearance_test "${FILES_TEST_FONT}" "${FILES_TEST_FALLBACK_FONT}")
+        set_tests_properties(files_appearance_fallback PROPERTIES TIMEOUT 30)
+    endif()
     add_executable(files_ime_transaction_test "${CMAKE_CURRENT_SOURCE_DIR}/ime_transaction_test.c")
     target_compile_definitions(files_ime_transaction_test PRIVATE
         AE_FILES_GENERATED_VIEW="${files_ime_generated}/nexaui_view.c")

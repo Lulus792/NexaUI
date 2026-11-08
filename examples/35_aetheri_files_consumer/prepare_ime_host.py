@@ -42,11 +42,14 @@ def main():
         "nx_context *ae_files_view_context(struct ae_files_view *);",
         "nx_context *ae_files_view_context(struct ae_files_view *);\n"
         "/* Bind once before the first frame. The native window outlives the view. */\n"
-        "bool ae_files_view_set_ime_window(struct ae_files_view *,nx_window *);")])
+        "bool ae_files_view_set_ime_window(struct ae_files_view *,nx_window *);\n"
+        "/* Before the first frame; borrowed font bytes outlive the view. At most four, 4 MiB each. */\n"
+        "bool ae_files_view_add_fallback(struct ae_files_view *,const void *,size_t);")])
     transform("nexaui_view.c", [(
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n"
-        """    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;
+        """    nx_font *fallback_fonts[4];size_t fallback_count;
+    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;
     nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;
     bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;
     nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"""), (
@@ -63,6 +66,25 @@ def main():
     ), (
         "nx_context_destroy(v->ui);\n    for(unsigned i=0;i<2;++i)",
         "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);\n    for(unsigned i=0;i<2;++i)"
+    ), (
+        "nx_font_collection_destroy(v->fonts);nx_font_close(v->font);free(v);",
+        "nx_font_collection_destroy(v->fonts);\n"
+        "    for(size_t i=0;i<v->fallback_count;++i) nx_font_close(v->fallback_fonts[i]);\n"
+        "    nx_font_close(v->font);free(v);"
+    ), (
+        "static bool naming(struct ae_files_view *v,nx_rect r,bool review,struct intent *intent) {",
+        (here / "appearance.inc").read_text() + "\nstatic bool naming(struct ae_files_view *v,nx_rect r,bool review,struct intent *intent) {"
+    ), (
+        """        v->cancel=(nx_rect){r.x+r.width-72*z,r.y+6,32*z,r.height-12};
+        v->confirm=(nx_rect){r.x+r.width-36*z,r.y+6,32*z,r.height-12};
+        v->name=(nx_rect){r.x+6,r.y+6,r.width-84*z,r.height-12};""",
+        """        float cancel_width=0,confirm_width=0,gap=4*z;
+        if(!naming_button_width(v,tr(v,"Cancel","Abbrechen"),&cancel_width) ||
+           !naming_button_width(v,"OK",&confirm_width)) return false;
+        v->confirm=(nx_rect){r.x+r.width-6-confirm_width,r.y+6,confirm_width,r.height-12};
+        v->cancel=(nx_rect){v->confirm.x-gap-cancel_width,r.y+6,cancel_width,r.height-12};
+        v->name=(nx_rect){r.x+6,r.y+6,v->cancel.x-gap-r.x-6,r.height-12};
+        if(v->name.width<1) return false;"""
     ), (
         "static bool apply_fields(struct ae_files_view *,bool *);",
         "static bool apply_fields(struct ae_files_view *,bool *);\nstatic void reject_text(struct ae_files_view *);"
@@ -128,6 +150,42 @@ def main():
         (here / "ime_transactions.inc").read_text() + "\nbool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {"
     )])
     transform("nexaui_main.c", [(
+        "static unsigned char *load_font(const char *path,size_t *length) {",
+        "static unsigned char *load_font_limit(const char *path,size_t *length,size_t limit) {"
+    ), (
+        "(size=ftell(f))>0 && size<64*1024*1024",
+        "(size=ftell(f))>0 && (uint64_t)size<=(uint64_t)limit"
+    ), (
+        "static bool accepted(nx_result r)",
+        "static unsigned char *load_font(const char *path,size_t *length) { return load_font_limit(path,length,64u*1024u*1024u-1u); }\nstatic bool accepted(nx_result r)"
+    ), (
+        "const char *root=NULL,*font_path=NULL;",
+        "const char *root=NULL,*font_path=NULL,*fallback_paths[4]={0};size_t fallback_count=0,fallback_sizes[4]={0};\n"
+        "    unsigned char *fallback_bytes[4]={0};"
+    ), (
+        "for(int i=1;i<argc;++i) {",
+        "for(int i=1;i<argc;++i) {\n"
+        "        if(!strcmp(argv[i],\"--fallback-font\")) {\n"
+        "            if(fallback_count==4 || i+1==argc) return 2;\n"
+        "            fallback_paths[fallback_count++]=argv[++i];continue;\n        }"
+    ), (
+        "size_t font_size=0;unsigned char *font=load_font(font_path,&font_size);",
+        "size_t font_size=0;unsigned char *font=load_font(font_path,&font_size);bool fallback_ok=true;\n"
+        "    for(size_t i=0;i<fallback_count;++i) {\n"
+        "        fallback_bytes[i]=load_font_limit(fallback_paths[i],&fallback_sizes[i],4u*1024u*1024u);\n"
+        "        if(!fallback_bytes[i]) {fputs(\"files: fallback font could not be loaded within its byte limit\\n\",stderr);fallback_ok=false;}\n    }"
+    ), (
+        "if(!font || pipe2(h.wake",
+        "if(!font || !fallback_ok || pipe2(h.wake"
+    ), (
+        "if(h.s.diagnostics) puts(\"READY files nexaui software\");",
+        "for(size_t i=0;i<fallback_count;++i) if(!ae_files_view_add_fallback(h.view,fallback_bytes[i],fallback_sizes[i])) {\n"
+        "        fputs(\"files: fallback font is unsupported or invalid\\n\",stderr);h.failed=true;goto done;\n    }\n"
+        "    if(h.s.diagnostics) puts(\"READY files nexaui software\");"
+    ), (
+        "free(font);ae_files_destroy(h.s.files);",
+        "for(size_t i=0;i<fallback_count;++i) free(fallback_bytes[i]);\n    free(font);ae_files_destroy(h.s.files);"
+    ), (
         "!ae_files_view_create(&h.s,font,font_size,&h.view) || nx_software_view_open",
         "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open"), (
         "int main(int argc,char **argv) {",

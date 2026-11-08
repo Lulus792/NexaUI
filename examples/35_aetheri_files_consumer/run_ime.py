@@ -13,6 +13,8 @@ parser.add_argument('--linkage',choices=('static','shared'),required=True)
 parser.add_argument('--transactions',action='store_true',help='Require the separately built private producer and exercise replacement/undo packets')
 parser.add_argument('--clipboard-tools',type=Path,help='Private checked wl-clipboard tools and musl loader/runtime')
 parser.add_argument('--clipboard-budget',action='store_true',help='Also exercise a 65537-byte foreign paste proposal')
+parser.add_argument('--fallback-font',type=Path,action='append',default=[],help='Explicit optional app fallback font; may be repeated up to four times')
+parser.add_argument('--font-errors',action='store_true',help='Check private startup refusals for missing, oversized, malformed and excess fallback inputs')
 args=parser.parse_args();b=args.binaries.resolve(strict=True);original=args.original.resolve(strict=True);fixture=args.atspi_fixture.resolve(strict=True);src=Path(__file__).resolve().parent;sdk=json.loads(args.sdk_input.read_text());profile=args.linkage;case='native-ime-'+profile
 if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.25' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
 library=Path(sdk['library']).resolve(strict=True)
@@ -40,6 +42,8 @@ address='unix:path='+str(runtime/'bus');conf=root/'bus.conf';conf.write_text('<b
 for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE','DBUS_STARTER_ADDRESS','DBUS_STARTER_BUS_TYPE'):env.pop(name,None)
 if args.clipboard_tools:env['WAYLAND_DEBUG']='client'
 clipboard_task=None
+fallback_fonts=[p.resolve(strict=True) for p in args.fallback_font]
+fallback_arguments=[value for p in fallback_fonts for value in ('--fallback-font',str(p))]
 peer=root/'peer';dbus=Path(sdk['dbus_sdk']);command=['cc','-std=c17','-Wall','-Wextra','-Wpedantic','-Werror','-O2',str(src/'ime_atspi.c'),'-I'+str(original/'tests'),'-o',str(peer)]+['-I'+str(fixture/p) for p in ('usr/include/at-spi-2.0','usr/include/glib-2.0','usr/lib64/glib-2.0/include')]+['-I'+str(dbus/p) for p in ('include/dbus-1.0','lib64/dbus-1.0/include')]+[str(fixture/'usr/lib64/libatspi.so.0.0.1'),'-l:libgobject-2.0.so.0','-l:libglib-2.0.so.0','-Wl,-rpath,'+str(fixture/'usr/lib64'),'-Wl,-rpath-link,'+str(fixture/'usr/lib64')];compiled=subprocess.run(command,capture_output=True,text=True);(root/'peer-build.log').write_text(compiled.stdout+compiled.stderr);assert compiled.returncode==0,compiled.stderr
 left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];images=[];checks=[];app=None;server=None;result=dict(result='failed',case=case,peer_build_command=command,transactions=args.transactions,sdk=sdk,producer=dict(path=str(server_binary),sha256=hashlib.sha256(server_binary.read_bytes()).hexdigest(),source_delta=producer_delta),scope='Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change')
 def log(name='app'):return (root/(name+'.log')).read_text(errors='replace') if (root/(name+'.log')).exists() else ''
@@ -68,8 +72,12 @@ def native_case(mode):
 def enabled():return log('server').rfind('IME commit enabled=1 ')>log('server').rfind('IME commit enabled=0 ')
 def capture(label):
     server.send_signal(signal.SIGUSR1);sequence=len(images)//3+1;wait(lambda:all(f'CAPTURE {sequence} {i}\n' in log('server') for i in range(3)),label)
+    visible=False
     for i in range(3):
-        p=captures/f'capture-{sequence}-output-{i}.ppm';raw=p.read_bytes();magic,geometry,depth,pixels=raw.split(b'\n',3);w,h=map(int,geometry.split());assert magic==b'P6' and depth==b'255' and len(pixels)==w*h*3;packed=p.with_suffix('.ppm.gz');packed.write_bytes(gzip.compress(raw,mtime=0));p.unlink();images.append(dict(case=label,output=i,file=packed.name,sha256=hashlib.sha256(raw).hexdigest()))
+        p=captures/f'capture-{sequence}-output-{i}.ppm';raw=p.read_bytes();magic,geometry,depth,pixels=raw.split(b'\n',3);w,h=map(int,geometry.split());assert magic==b'P6' and depth==b'255' and len(pixels)==w*h*3
+        nonuniform=pixels!=pixels[:3]*(w*h);visible=visible or nonuniform
+        packed=p.with_suffix('.ppm.gz');packed.write_bytes(gzip.compress(raw,mtime=0));p.unlink();images.append(dict(case=label,output=i,file=packed.name,sha256=hashlib.sha256(raw).hexdigest(),nonuniform=nonuniform))
+    assert visible,('all three captures contain only uniform backgrounds',label)
 
 def snapshot(value,cursor,selection=None,after=0):
     anchor=cursor if selection is None else selection[1] if cursor==selection[0] else selection[0]
@@ -129,7 +137,25 @@ try:
     def registry_ready():
         p=subprocess.run(['busctl','--address='+address,'--timeout=1','call','org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','NameHasOwner','s','org.a11y.atspi.Registry'],env=env,capture_output=True,text=True,timeout=2);return p.returncode==0 and p.stdout.strip()=='b true'
     wait(registry_ready,'private registry');server=start(server_binary,'server','--headless',env['WAYLAND_DISPLAY'],captures,right.fileno(),pass_fds=(right.fileno(),));right.close();wait(lambda:'READY ' in log('server'),'native server');event('I on')
-    app=start(b/'aetheri_files_ime_candidate','app','--root',documents,'--font',font,'--cache',cache,'--terminal',b/'aetheri_terminal_candidate','--editor',b/'aetheri_editor_candidate','--terminal-font',mono,'--diagnostics');wait(lambda:state(count=2,dialog=0),'original initial view')
+    result['font_inputs']=[dict(path=str(p),size=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in (font,*fallback_fonts)]
+    host_arguments=['--root',str(documents),'--font',str(font),'--cache',str(cache),'--terminal',str(b/'aetheri_terminal_candidate'),'--editor',str(b/'aetheri_editor_candidate'),'--terminal-font',str(mono),'--diagnostics']
+    if args.font_errors:
+        invalid=root/'invalid-font.bin';invalid.write_bytes(b'x');oversized=root/'oversized-font.bin'
+        with oversized.open('xb') as stream:stream.truncate(4*1024*1024+1)
+        trials=[('missing-option',['--fallback-font'],2,None),
+                ('excess',['--fallback-font',str(font)]*5,2,None),
+                ('missing-file',['--fallback-font',str(root/'absent-font.ttf')],1,'could not be loaded within its byte limit'),
+                ('oversized',['--fallback-font',str(oversized)],1,'could not be loaded within its byte limit'),
+                ('malformed',['--fallback-font',str(invalid)],1,'unsupported or invalid')]
+        result['font_startup_checks']=[]
+        for label,extra,expected,diagnostic in trials:
+            command=[str(b/'aetheri_files_ime_candidate'),*host_arguments,*extra]
+            done=subprocess.run(command,env=env,capture_output=True,text=True,timeout=12)
+            result['font_startup_checks'].append(dict(case=label,command=command,exit=done.returncode,stdout=done.stdout,stderr=done.stderr))
+            assert done.returncode==expected and (diagnostic is None or diagnostic in done.stderr),(label,done.returncode,done.stdout,done.stderr)
+            if expected==1:assert 'CLOSED files frames=0 failed=1' in done.stdout
+            assert {p.name:p.read_bytes() for p in documents.iterdir()}==seeds
+    app=start(b/'aetheri_files_ime_candidate','app',*host_arguments,*fallback_arguments);wait(lambda:state(count=2,dialog=0),'original initial view')
     maps=Path(f'/proc/{app.pid}/maps').read_text();assert (sdk['library'] in maps) if profile=='shared' else '/libnexaui.so' not in maps;assert not any(name in maps for name in ('libSDL','libX11','libvulkan','libEGL'));(root/'maps.txt').write_text(maps)
     key(38,True);wait(lambda:enabled() and re.search(r'IME commit enabled=1 .*area=\d+,\d+,[1-9]\d*,[1-9]\d*',log('server')),'query native IME activation/candidate rectangle');text('Search this folder','',0)
     frames=log().count('VIEW ');event('I 0');wait(lambda:log().count('VIEW ')>frames,'preedit repainted');text('Search this folder','',0);native_case('preedit-no-placeholder');capture('native query preedit')

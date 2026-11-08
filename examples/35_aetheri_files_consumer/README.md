@@ -145,7 +145,7 @@ processed native surrounding-text snapshots before sending each transaction.
 All producer diagnostics contain only the private fixture's synthetic text;
 do not use this producer for ordinary application input.
 
-Real installed input methods, broader clipboard pressure/lifetime acceptance, localization/font fallback,
+Real installed input methods, broader clipboard pressure/lifetime acceptance, broader localization/font coverage,
 normal admission/migration and physical/human/performance acceptance remain open.
 
 ## Native text clipboard in the generated variant
@@ -177,3 +177,41 @@ EOF alone remains no proof that an external source sent its complete value.
 Wayland clipboard writes also require this window's current native input serial.
 The private task supplies a fresh Shift key before AT-SPI Cut after a foreign
 receiver's focus popup; it does not synthesize a serial or grant app admission.
+
+## Explicit font fallback and complete naming captions
+
+The generated IME host accepts repeated `--fallback-font /path/to/font.ttf`
+arguments, at most four fonts of 4 MiB each. It uses the existing public font
+collection API; the primary font keeps precedence. Fonts are explicit host inputs:
+there is no system discovery, download or installation. The primary font retains
+the original less-than-64-MiB limit. Missing, oversized or unsupported fallback
+files fail startup with a diagnostic and release resources.
+
+`ae_files_view_add_fallback` belongs only to this generated application view.
+Call it before its first frame. It owns the opened font faces and borrows the
+host's byte buffers until view destruction. Layouts/fields/context and collection
+are destroyed before those faces; host buffers are freed afterward. Runtime
+replacement of the collection is deliberately refused.
+
+List naming controls measure the complete localized Cancel/Abbrechen and OK
+captions, retain the original minimum button width and give the remaining width
+to the name field. Their original action IDs, keyboard and semantic labels stay
+in use. `files_appearance_layout` checks 96 actual drawn-label/layout cases across
+English/German, list/grid, four text scales, three window sizes and two raster
+densities. Add `-DFILES_TEST_FALLBACK_FONT=/path/to/checked-font.ttf` for the
+separate fallback admission/selection/lifetime CTest. That particular test requires
+a primary without U+1F30D and a fallback containing it, as specified by the test.
+
+For the native task add `--fallback-font` and optionally `--font-errors` to the
+runner above. The latter checks five startup refusals in the private fixture;
+its briefly mapped failed host can change which virtual output receives the
+following valid window. Every capture retains all three outputs and requires
+nonuniform pixels on at least one; select the actual mapped output for review.
+This is not proof of rendering on all three outputs or physical migration.
+
+The optional [font input manifest](appearance-font-inputs.json) pins Noto Sans
+Symbols2 Regular 2.003 and its OFL-1.1 license for the executed selected-symbol
+test. Font bytes are not shipped by this example. U+1F30D is rendered as a
+monochrome outline; this does not establish color emoji or complete script
+coverage. Broader localization, font distribution/admission, normal Aetheri
+migration and physical/human/performance acceptance remain separate gates.

@@ -1,0 +1,21 @@
+{
+  "purpose": "Optional explicit native appearance-test fallback; no automatic installation or download",
+  "repository": "https://github.com/notofonts/noto-fonts",
+  "revision": "be555adc61c20b2240bce79203b1ab1459765171",
+  "font": {
+    "name": "Noto Sans Symbols2 Regular",
+    "version": "2.003",
+    "path": "hinted/ttf/NotoSansSymbols2/NotoSansSymbols2-Regular.ttf",
+    "size": 656852,
+    "sha256": "630846d528dbe4c4981370a4d0a9475a1fd1491a129bb411f8e157cdb5de13c6",
+    "git_blob": "d786ee8fd3e7d6b0c431ab10fdcab0003fd27897",
+    "tested_scalar": 127757
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "path": "LICENSE",
+    "size": 4377,
+    "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+    "git_blob": "c82d72e422e2d08c5ab439b6bac7c2177ea0c565"
+  }
+}
