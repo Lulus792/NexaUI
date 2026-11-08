@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Files selected-symbol fallback and naming captions (2026-11-08)
+
+Consumer `2aaa7aa151471193fd7e15452d2033ed97e3fd8d` adds explicit bounded
+pre-frame font fallbacks through existing public APIs and measures complete
+Cancel/Abbrechen captions. Three profiles pass26/26 CTests,96 EN/DE layout cases,
+290 native checkpoints and five startup refusals each. All20 final example inputs
+bind to Git; the compiled preceding-view control detects the original elision.
+Actual native output shows the selected monochrome globe and full Cancel.
+See [source, ownership, font/license provenance and limits](files-appearance-report.md).
+This is a reviewable optional Files integration, not normal Aetheri adoption,
+color emoji, full localization or runtime font-change acceptance. SDK0.1.25 and
+the independent Aetheri source/pin stay unchanged. All103 catalogue IDs, remaining
+packet6, packets7-8 and final physical/human/performance gates remain active.
+
 ## Original Files native clipboard (2026-11-08)
 
 Consumer `da18553a912cd1972cbcf536491ab60b3cc2d359` binds the existing native

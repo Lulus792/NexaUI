@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T02/L01/L02/D02/P04/P05/Q02/Q03/Q06/Q08: Files consumer
+`2aaa7aa151471193fd7e15452d2033ed97e3fd8d` reuses public font collections
+for bounded explicit pre-frame fallbacks and measures full naming captions.
+Three profiles pass26/26 CTests (96 actual EN/DE caption/layout cases each),
+290 native checkpoints and five startup refusals each. All20 final inputs bind
+to Git; the real previous-view counter detects `C…`. Checked selected-symbol
+font/license inputs and153 final virtual captures support the scoped result.
+See [appearance evidence and remaining gates](files-appearance-report.md).
+Broader font/locale/runtime-change, remaining packet6, packets7-8 and final
+physical/human/performance/adoption work remain open across all103 IDs.
+SDK source/version, active Aetheri and its reviewed pin are unchanged.
+
 B01/B03/B04/I01/I02/I05/I07/T01/T03/T06/T11/A02/A04/P04/P05/Q02/Q03/Q06/Q08:
 Files clipboard binding `da18553a912cd1972cbcf536491ab60b3cc2d359` reuses
 the installed native adapter and original whole-proposal validation. Three

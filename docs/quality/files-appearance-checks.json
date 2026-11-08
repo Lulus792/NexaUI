@@ -1,0 +1,37 @@
+{
+  "source_revision": "2aaa7aa151471193fd7e15452d2033ed97e3fd8d",
+  "result": "passed",
+  "final_archive_sha256": "6554d0557ef00bd78210b2bcbfbe5a60a63a1e2efae018c0c6357e5d14306f48",
+  "artifact_rows": 66,
+  "git_bound_inputs": 20,
+  "compiled_profiles": {
+    "shared": 26,
+    "release": 26,
+    "asan": 26
+  },
+  "c17_werror_objects_each": 49,
+  "actual_caption_cases_each": 96,
+  "controller_cases_each": 10,
+  "native_checkpoints_each": 290,
+  "native_clipboard_observations_each": 19,
+  "native_startup_refusals_each": 5,
+  "final_virtual_captures": 153,
+  "nonuniform_capture_groups": 51,
+  "lossless_png_conversions": 4,
+  "visually_inspected": [
+    "capture-6-output-1.png",
+    "capture-8-output-1.png",
+    "capture-9-output-1.png"
+  ],
+  "original_git_inputs": 104,
+  "frozen_sdk_source_files": 1397,
+  "compiled_previous_caption_control_exit": 1,
+  "font_upstream_git_blobs_checked": 2,
+  "all_103_requirement_rows_preserved": true,
+  "limits": [
+    "Selected monochrome globe, not color emoji or full script/localization acceptance",
+    "Font byte admission bounds do not measure total parsed-font/RSS costs",
+    "No runtime font replacement or full clipboard budget/pressure acceptance",
+    "Virtual output1 reviewed; no physical/human/three-output/performance/adoption acceptance"
+  ]
+}
