@@ -1,5 +1,15 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B03/B04/T03/I05/A04/P04/P05/Q02/Q03/Q06/Q08: SDK
+`794be7cec49f427fcc56e2604cddb44245347021`/0.1.26 adds opt-in whole-splice
+paste admission through `nx_text_field_set_paste_validator`. Three profiles pass
+14/14 affected tests, including three native async routes and policy-change
+retirement. Three installed C17 consumers, actual old-package/DSO refusals and
+two compiled counterexamples pass their expected outcomes. All1434 source files
+have explicit Git/raw-export bindings. See [contract, checks and limits](paste-validation-report.md).
+Files0.1.25 adoption is next; its prior experiment, active Aetheri and reviewed pin
+are unchanged. All103 IDs, remaining packet6, packets7-8 and final gates remain.
+
 T02/L01/L02/D02/P04/P05/Q02/Q03/Q06/Q08: Files consumer
 `2aaa7aa151471193fd7e15452d2033ed97e3fd8d` reuses public font collections
 for bounded explicit pre-frame fallbacks and measures full naming captions.

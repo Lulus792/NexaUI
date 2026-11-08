@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Paste admission before editor mutation (2026-11-08)
+
+SDK `794be7cec49f427fcc56e2604cddb44245347021`/0.1.26 supplies the optional
+`nx_text_field_set_paste_validator` contract for whole-splice application rules
+before changing text, selection or undo/redo. Three profiles pass14/14 scoped
+tests, including controlled native async clipboard/assistive-request routes and
+policy retirement; three installed C17 consumers and two compiled negative
+controls are checked. Actual0.1.25 package and runtime-library refusal is proved.
+See [source, compatibility, evidence and open work](paste-validation-report.md).
+The existing Files0.1.25 example still uses its old post-edit rollback and needs
+separate integration/native acceptance of this API. Aetheri's independently
+evolving source and0.1.23 reviewed pin stay untouched. All103 catalogue IDs,
+remaining packet6, packets7-8 and final physical/human/performance gates persist.
+
 ## Files selected-symbol fallback and naming captions (2026-11-08)
 
 Consumer `2aaa7aa151471193fd7e15452d2033ed97e3fd8d` adds explicit bounded

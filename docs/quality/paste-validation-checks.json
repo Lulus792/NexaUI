@@ -1,0 +1,43 @@
+{
+  "source_revision": "794be7cec49f427fcc56e2604cddb44245347021",
+  "version": "0.1.26",
+  "result": "passed",
+  "archive": {
+    "sha256": "4e57625e9cad1ce6341f0336df1080fdc6cbdc7957fca42c97dd1ddae978d026",
+    "files": 3621,
+    "links": 8,
+    "directories": 1752,
+    "verified": true,
+    "name": "nexaui-paste-validation-20261108.tar.gz",
+    "size": 90796640,
+    "excluded_special": []
+  },
+  "artifact_rows": 326,
+  "source_files": 1434,
+  "crlf_materialized_exports": 1244,
+  "compiled_objects_each": 76,
+  "affected_ctests_each": 14,
+  "installed_consumers": 3,
+  "old_package_exit": 1,
+  "old_library_exit": 127,
+  "compiled_counterexample_run_exits": [
+    1,
+    1
+  ],
+  "public_added": [
+    "nx_text_field_set_paste_validator"
+  ],
+  "public_removed": [],
+  "all_103_requirement_rows_unchanged": true,
+  "aetheri_survey": {
+    "head": "141260d0c9e55f75bae89d11267fd4f0c78c89b3",
+    "pin": "97a42647480bb05167cee5e4ae08cedd9147d80d",
+    "scope": "Read-only committed Git survey, no current Aetheri checkout build or mutation"
+  },
+  "limits": [
+    "Optional Files0.1.25 integration remains next",
+    "Controlled Wayland/assistive-request API tests, not an independent AT-SPI-client acceptance",
+    "X11/Vulkan/AT-SPI transport not built in local matrix; cross-platform full CI remains separate",
+    "No physical/human/performance/adoption/three-output or1.0 acceptance"
+  ]
+}
