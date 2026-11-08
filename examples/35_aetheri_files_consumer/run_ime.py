@@ -11,6 +11,8 @@ for name in ('binaries','original','atspi-fixture','sdk-input','server','font','
 parser.add_argument('--expected-sdk-revision',required=True)
 parser.add_argument('--linkage',choices=('static','shared'),required=True)
 parser.add_argument('--transactions',action='store_true',help='Require the separately built private producer and exercise replacement/undo packets')
+parser.add_argument('--clipboard-tools',type=Path,help='Private checked wl-clipboard tools and musl loader/runtime')
+parser.add_argument('--clipboard-budget',action='store_true',help='Also exercise a 65537-byte foreign paste proposal')
 args=parser.parse_args();b=args.binaries.resolve(strict=True);original=args.original.resolve(strict=True);fixture=args.atspi_fixture.resolve(strict=True);src=Path(__file__).resolve().parent;sdk=json.loads(args.sdk_input.read_text());profile=args.linkage;case='native-ime-'+profile
 if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.25' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
 library=Path(sdk['library']).resolve(strict=True)
@@ -36,6 +38,8 @@ runtime=root/'runtime';runtime.mkdir(mode=0o700);documents=root/'documents';docu
 for name,data in seeds.items():(documents/name).write_bytes(data)
 address='unix:path='+str(runtime/'bus');conf=root/'bus.conf';conf.write_text('<busconfig><type>session</type><listen>'+address+'</listen><auth>EXTERNAL</auth><policy context="default"><allow user="'+str(os.getuid())+'"/><allow own="*"/><allow send_destination="*"/><allow receive_sender="*"/></policy></busconfig>\n');env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY='files-ime',NEXAUI_PLATFORM='wayland',DBUS_SESSION_BUS_ADDRESS=address,AT_SPI_BUS_ADDRESS=address,LD_LIBRARY_PATH=str(fixture/'usr/lib64'),GSETTINGS_BACKEND='memory',LIBGL_ALWAYS_SOFTWARE='1',GALLIUM_DRIVER='llvmpipe',LP_NUM_THREADS='2',ASAN_OPTIONS='detect_leaks=1:halt_on_error=1',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1')
 for name in ('DISPLAY','WAYLAND_SOCKET','NO_AT_BRIDGE','DBUS_STARTER_ADDRESS','DBUS_STARTER_BUS_TYPE'):env.pop(name,None)
+if args.clipboard_tools:env['WAYLAND_DEBUG']='client'
+clipboard_task=None
 peer=root/'peer';dbus=Path(sdk['dbus_sdk']);command=['cc','-std=c17','-Wall','-Wextra','-Wpedantic','-Werror','-O2',str(src/'ime_atspi.c'),'-I'+str(original/'tests'),'-o',str(peer)]+['-I'+str(fixture/p) for p in ('usr/include/at-spi-2.0','usr/include/glib-2.0','usr/lib64/glib-2.0/include')]+['-I'+str(dbus/p) for p in ('include/dbus-1.0','lib64/dbus-1.0/include')]+[str(fixture/'usr/lib64/libatspi.so.0.0.1'),'-l:libgobject-2.0.so.0','-l:libglib-2.0.so.0','-Wl,-rpath,'+str(fixture/'usr/lib64'),'-Wl,-rpath-link,'+str(fixture/'usr/lib64')];compiled=subprocess.run(command,capture_output=True,text=True);(root/'peer-build.log').write_text(compiled.stdout+compiled.stderr);assert compiled.returncode==0,compiled.stderr
 left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];images=[];checks=[];app=None;server=None;result=dict(result='failed',case=case,peer_build_command=command,transactions=args.transactions,sdk=sdk,producer=dict(path=str(server_binary),sha256=hashlib.sha256(server_binary.read_bytes()).hexdigest(),source_delta=producer_delta),scope='Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change')
 def log(name='app'):return (root/(name+'.log')).read_text(errors='replace') if (root/(name+'.log')).exists() else ''
@@ -138,6 +142,10 @@ try:
     start_at=len(log('server'));key(15);wait(lambda:'IME commit enabled=0 ' in log('server')[start_at:],'Tab withdraws native input');text('Search this folder','é',1)
     key(38,True);wait(enabled,'query reactivated');text('Search this folder','',0);event('I 0');key(49,True);assert state(dialog=0);checks.append('composition Ctrl+N did not open naming');key(1);wait(enabled,'composition cancelled before naming')
     key(49,True);wait(lambda:state(dialog=1),'original naming opened');text('Name','',0);wait(enabled,'name native IME activation')
+    if args.clipboard_tools:
+        from clipboard_task import ClipboardTask
+        clipboard_task=ClipboardTask(root,args.clipboard_tools,env,key,text,snapshot,state,native_case,wait,capture,result,lambda:app)
+        clipboard_task.run(args.clipboard_budget)
     if args.transactions:transaction_cases()
     event('I 1');text('Name','é',1);capture('native name commit')
     event('I 5');wait(lambda:state(name_bad=1),'filtered native commit blocks retained prefix');native_case('invalid');text('Name','é',1);capture('filtered native commit retains prefix and disables confirmation');key(28);assert not (documents/'literalcommand').exists() and not (documents/'éliteralcommand').exists();checks.append('filtered commit cannot confirm retained prefix')
@@ -156,8 +164,12 @@ try:
         assert (documents/'xy').read_bytes()==b''
         for name,data in seeds.items():assert (documents/name).read_bytes()==data
         key(38,True);wait(enabled,'native input reactivated before close');event('I 0')
-    key(16,True);assert app.wait(timeout=8)==0;children.remove(app);result['result']='passed'
+    if clipboard_task:clipboard_task.pending_close()
+    key(16,True);assert app.wait(timeout=8)==0
+    if clipboard_task:clipboard_task.closed()
+    children.remove(app);result['result']='passed'
 finally:
+    if clipboard_task:clipboard_task.close()
     for p in reversed(children):
         if p.poll() is None:
             p.terminate()

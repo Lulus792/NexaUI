@@ -145,5 +145,35 @@ processed native surrounding-text snapshots before sending each transaction.
 All producer diagnostics contain only the private fixture's synthetic text;
 do not use this producer for ordinary application input.
 
-Real installed input methods, foreign clipboard, localization/font fallback,
+Real installed input methods, broader clipboard pressure/lifetime acceptance, localization/font fallback,
 normal admission/migration and physical/human/performance acceptance remain open.
+
+## Native text clipboard in the generated variant
+
+The generated variant also supplies `nx_text_clipboard_for_window` to its fields.
+Keyboard and logical Copy/Cut/Paste reuse the installed SDK's clipboard path;
+file Cut/Paste outside an editor remains the original app-owned file operation.
+Wayland reads are asynchronous and retain the existing SDK focus, field revision,
+selection and close checks. Copy owns an immutable snapshot; Cut removes the
+selection only after a successful copy. Ordinary single-line paste converts
+CR/LF to spaces under the existing widget contract, then the original Files
+whole-proposal validator accepts or rejects the complete draft. Invalid/oversized
+names retain the app's previous text and block confirmation until explicit clear.
+That original rollback uses `nx_text_field_set_text`, including its history-reset
+semantics; it does not preserve the field's preceding history on rejection.
+
+The normal SDK keyboard-paste transport budget remains 32 MiB and five seconds
+per read; the accepted app draft remains at most 255 bytes. This is not a new 255-byte
+transport budget or full worst-case memory/performance acceptance.
+
+Add `--clipboard-tools /path/to/checked-private-wl-clipboard` to `run_ime.py`
+to exercise independent source/receiver processes and AT-SPI clipboard edits.
+The fixture must contain the checked `bin/wl-copy`, `bin/wl-paste` and private
+musl loader/runtime under `lib`; normal desktop clipboard access is not used.
+`--clipboard-budget` additionally tests a 65,537-byte foreign proposal. The task
+checks immutable copies, range replacement and undo, complete rejection, late
+replies after Tab and app-driven close while the foreign producer is stopped.
+EOF alone remains no proof that an external source sent its complete value.
+Wayland clipboard writes also require this window's current native input serial.
+The private task supplies a fresh Shift key before AT-SPI Cut after a foreign
+receiver's focus popup; it does not synthesize a serial or grant app admission.

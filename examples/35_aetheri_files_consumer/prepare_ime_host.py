@@ -46,7 +46,7 @@ def main():
     transform("nexaui_view.c", [(
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n"
-        """    nx_window *ime_window;bool ime_cancel,ime_enter_down,ime_escape_down;
+        """    nx_window *ime_window;nx_text_clipboard clipboard;bool ime_cancel,ime_enter_down,ime_escape_down;
     nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;
     bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;
     nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"""), (
@@ -55,6 +55,7 @@ def main():
         "bool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n"
         "    if(!v || !window || v->ime_window || v->width || v->height) return false;\n"
         "    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n"
+        "    if(nx_text_clipboard_for_window(window,&v->clipboard)!=NX_OK) return false;\n"
         "    v->ime_window=window;return true;\n}"
     ), (
         "nx_text_field_create(value,n,0,&e->field)",
@@ -81,7 +82,7 @@ def main():
         "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
     ), (
         ".validate=field_valid,.validate_user=&validation};",
-        ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window};"
+        ".validate=field_valid,.validate_user=&validation,.ime_window=v->ime_window,.clipboard=v->clipboard};"
     ), (
         "if(!draft.length) {",
         """size_t native_preedit=0;int32_t native_begin=0,native_end=0;
@@ -110,7 +111,8 @@ def main():
         nx_result ime=nx_window_get_ime_preedit(v->ime_window,NULL,0,&bytes,&begin,&end);
         if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;
         if(e->type==NX_EVENT_TEXT_COMMAND &&
-           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO))
+           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO ||
+            e->text_command==NX_TEXT_COMMAND_COPY || e->text_command==NX_TEXT_COMMAND_CUT || e->text_command==NX_TEXT_COMMAND_PASTE))
             return bytes || !editing(v) || nx_context_queue_event(v->ui,e)==NX_OK;
         if(bytes && e->type==NX_EVENT_TEXT && !e->ime_target && !e->ime_revision) return true;
         if(bytes && e->type==NX_EVENT_KEY_DOWN) {
