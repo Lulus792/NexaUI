@@ -1,0 +1,350 @@
+{
+  "source_revision": "0769fab8b26b6351613d870b638710baebbd6ed5",
+  "normalization": "CRLF to LF only",
+  "files": [
+    {
+      "path": "examples/34_aetheri_software/CMakeLists.txt",
+      "sha256": "8cefef8b17977bb344e5f4b8013489f6d1665db35f89ad984a4d59712a91d5d1",
+      "size": 10445
+    },
+    {
+      "path": "examples/34_aetheri_software/README.md",
+      "sha256": "e3c22203d67dc519583b2d17b8644d62a5f7a9359d54effddac9e63e805d54fb",
+      "size": 30831
+    },
+    {
+      "path": "examples/34_aetheri_software/atspi_client.c",
+      "sha256": "13524efdb77fb226143121c84ad2a005a6046adf26d9352e9059a3ba7c51bdc6",
+      "size": 10307
+    },
+    {
+      "path": "examples/34_aetheri_software/check_history_inputs.py",
+      "sha256": "18ce0519f55896a27afa56f9517861237848ea85b07e5fac5c5c8f0102fbc902",
+      "size": 527
+    },
+    {
+      "path": "examples/34_aetheri_software/check_manifest_inputs.py",
+      "sha256": "939a45b0dec1bf06662ca77beceabb3bce89270aa05309736871e1b3e1d7e215",
+      "size": 551
+    },
+    {
+      "path": "examples/34_aetheri_software/components_fixture.py",
+      "sha256": "d397a217fb3f4c8efcbf4d1f9c482a15b3652de81b12397f63cb3b652241b3f6",
+      "size": 2872
+    },
+    {
+      "path": "examples/34_aetheri_software/contents_peer.h",
+      "sha256": "dc3efe3c94cb9c1fde8040019a6fe71c0f1e787fa3383f64f3e8d15856b99b6b",
+      "size": 5458
+    },
+    {
+      "path": "examples/34_aetheri_software/history-inputs.json",
+      "sha256": "521e55bb03f184de9be788d924cf5062948b98981cd543f8afae5892335d4f41",
+      "size": 428
+    },
+    {
+      "path": "examples/34_aetheri_software/history_atspi.c",
+      "sha256": "7219ba36202680ebcbc8fcc3b2a87f1dab04c898dd0705607b34145c3724eb02",
+      "size": 15220
+    },
+    {
+      "path": "examples/34_aetheri_software/manifest-inputs.json",
+      "sha256": "c101cb9f3dfe7a70594693a7e8d64ca755b1596c82d25ebc5e7c88b69d1caa10",
+      "size": 413
+    },
+    {
+      "path": "examples/34_aetheri_software/native.c",
+      "sha256": "076a4d37c866b20f7ae4eff5a5f93f8defe68461f3dceb670a7d6d16528e57ec",
+      "size": 10135
+    },
+    {
+      "path": "examples/34_aetheri_software/run_components.py",
+      "sha256": "728a1eae7b0a7100fe7bc52c010409b24c9750af3b5e445b62c8ea5901a8f1f5",
+      "size": 3262
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history.py",
+      "sha256": "062ffa22d4c267409138bb32adf6f09585562fb502a51422fda1b41d51ebb7f1",
+      "size": 6330
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history_links.py",
+      "sha256": "da3cf111eb9a48486b59e34cb18465e117c7d4a485297355e21ace5420a09813",
+      "size": 2941
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history_native.py",
+      "sha256": "d6635fe7b4ec7cc08724452c719a104e0eedaa6627f42e9af635fc60dd3d222f",
+      "size": 11120
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history_receipts.py",
+      "sha256": "8729010df0b7279c526a46cd1f69002236a37ab541ff6e41672643dfe81177f4",
+      "size": 2899
+    },
+    {
+      "path": "examples/34_aetheri_software/run_history_worker.py",
+      "sha256": "484528814769fe073a72351dd021d477ac58879c3855f808cc3af1543292d952",
+      "size": 2881
+    },
+    {
+      "path": "examples/34_aetheri_software/run_model.py",
+      "sha256": "2e03e62429eba3de3a20cae4ea39fbf14b008f29ec50c0b929e9f8a79a10c1c0",
+      "size": 5952
+    },
+    {
+      "path": "examples/34_aetheri_software/run_native.py",
+      "sha256": "b2f7f66e95f4a96984289c7e5d047aca797bb01dadd4ac6bea59471857f13242",
+      "size": 13508
+    },
+    {
+      "path": "examples/34_aetheri_software/run_view.py",
+      "sha256": "666b5fb0e98b2da84f903c69187ef67b69bdaf2e5b0eb6460413b62c2b9fe4a8",
+      "size": 3174
+    },
+    {
+      "path": "examples/34_aetheri_software/run_worker.py",
+      "sha256": "70eded83bed06e3452d6fcbac3ac0b38a539b1e8a25bb23aabb212e921e7f661",
+      "size": 2978
+    },
+    {
+      "path": "examples/34_aetheri_software/software_components.c",
+      "sha256": "c9a73d6e89f22db5407e5c9ecedbfd53f10da097ddf941f88a4d2131f115aafe",
+      "size": 4008
+    },
+    {
+      "path": "examples/34_aetheri_software/software_components.h",
+      "sha256": "d28b3ac6c166994610fd864e68b9ed30c69fde14f39ee0ab1d8c350fe0daa71f",
+      "size": 1787
+    },
+    {
+      "path": "examples/34_aetheri_software/software_history.c",
+      "sha256": "ecfd97cf1373789dc3ef3846dc98826dfd46d7f175ef1f0064f8f11f9c8897e1",
+      "size": 11508
+    },
+    {
+      "path": "examples/34_aetheri_software/software_history.h",
+      "sha256": "2ad29db578bf51fb72bc1d765861ccab95fd24c6fb9b9f177f0784c336ace68e",
+      "size": 3541
+    },
+    {
+      "path": "examples/34_aetheri_software/software_model.c",
+      "sha256": "e537425759ceeddde95a0709067279072126ceabd589ea38188b9b116c4a15e1",
+      "size": 10447
+    },
+    {
+      "path": "examples/34_aetheri_software/software_model.h",
+      "sha256": "f83a25b39eb32255bcb60e9521d685652b7df8c55d83de29ee1a26aa63c4b143",
+      "size": 3597
+    },
+    {
+      "path": "examples/34_aetheri_software/software_view.c",
+      "sha256": "6cdf659d85abe783671a2d4e48cdf52f551f4504135d0dbdeb01e6e4459afc3a",
+      "size": 65428
+    },
+    {
+      "path": "examples/34_aetheri_software/software_view.h",
+      "sha256": "75200fd6dc128a3c77d9cbd703da7fde376a36173796fe48113f8ac0de18a8dc",
+      "size": 3262
+    },
+    {
+      "path": "examples/34_aetheri_software/software_worker.c",
+      "sha256": "1bf4ce35e0fd4224d794d28aac093e4320171779f3c484a38cb152605dce67ec",
+      "size": 10422
+    },
+    {
+      "path": "examples/34_aetheri_software/software_worker.h",
+      "sha256": "b82618c4b501b54bda8ac2a9990f3f96a16787e816bd0a7dd2af05c788eb611b",
+      "size": 3660
+    },
+    {
+      "path": "examples/34_aetheri_software/test_history_links.c",
+      "sha256": "ed54805dd5479285a2dff7b9ba3f9b53c92db6b2a2912791de32045f010adf15",
+      "size": 19722
+    },
+    {
+      "path": "examples/34_aetheri_software/test_history_receipts.c",
+      "sha256": "a7cfa7d9e247662081f754a76826bd9e334f2523f7a09cc6788ba01af53b8f59",
+      "size": 9608
+    },
+    {
+      "path": "examples/34_aetheri_software/test_history_worker.c",
+      "sha256": "ef583083ad8286414ede1c94a076fdc8741fe85af7d2a0f489eabe081e300ff1",
+      "size": 17214
+    },
+    {
+      "path": "examples/34_aetheri_software/test_software_components.c",
+      "sha256": "a5fa0b83185cdb85afe4ca576e61c9ef0618fbffb0fc304cfa0e8a1ba216afc1",
+      "size": 17925
+    },
+    {
+      "path": "examples/34_aetheri_software/test_software_history.c",
+      "sha256": "60df37274b9b7814b487cb7369629d948c1625e1ccbc00d383e10a3810c39f80",
+      "size": 9988
+    },
+    {
+      "path": "examples/34_aetheri_software/test_software_model.c",
+      "sha256": "0cfc2e95935c363f0473c5f4acd3a934f4f9e1a0293a739f9ccff337271bef22",
+      "size": 12171
+    },
+    {
+      "path": "examples/34_aetheri_software/test_software_view.c",
+      "sha256": "66ed94e7df300af983d30594142e8ea1f06f2d5fb71b8ccfa267dc641f55957d",
+      "size": 13007
+    },
+    {
+      "path": "examples/34_aetheri_software/test_software_worker.c",
+      "sha256": "24bf5ee5770ff4d5844139897210cb519594c630da16623ceaa36b53e1635ec0",
+      "size": 10844
+    },
+    {
+      "path": "examples/31_aetheri_manifest/CMakeLists.txt",
+      "sha256": "e46fa470130ab018ef15aceba9cecd460f3acb97d54c06f1799edeb6b9e166be",
+      "size": 4295
+    },
+    {
+      "path": "examples/31_aetheri_manifest/README.md",
+      "sha256": "0ae733d775235917c47a083f6ab9de606ec4ca384db46d83366f8bdadce9ba6f",
+      "size": 6792
+    },
+    {
+      "path": "examples/31_aetheri_manifest/atspi_client.c",
+      "sha256": "72da527e2044c0e50576f278c03631d048430e0a7898a4084f2bed28ba632e3c",
+      "size": 4078
+    },
+    {
+      "path": "examples/31_aetheri_manifest/check_source.py",
+      "sha256": "c563d72396acee8c013b9100fc3a950b5fdf6b7f67d66ce3d6c3103fbafedfde",
+      "size": 585
+    },
+    {
+      "path": "examples/31_aetheri_manifest/manifest_document.c",
+      "sha256": "6696fbc2e897f7cada45f6bb4166d3c7b200694132286fd45ca2a0cb530851b0",
+      "size": 2414
+    },
+    {
+      "path": "examples/31_aetheri_manifest/manifest_document.h",
+      "sha256": "ba5e4ee8c27b7a22aa685acfae41d07931231ea8d5cc07402e92e3497c9a2f27",
+      "size": 1110
+    },
+    {
+      "path": "examples/31_aetheri_manifest/manifest_source.c",
+      "sha256": "c12e276a8ec786646721d08b6e542cd2bea04f97ea4552ed54eebfc52c82340f",
+      "size": 2647
+    },
+    {
+      "path": "examples/31_aetheri_manifest/manifest_source.h",
+      "sha256": "fa6798b553aaff2975c4c87ce02b6909f0e6dbdf7981666b9613ca9ac625e288",
+      "size": 1357
+    },
+    {
+      "path": "examples/31_aetheri_manifest/peer_helpers.h",
+      "sha256": "5ea52f118356dc1b9cc0606e00f5b601201375a9630988e678690b145a1dd16d",
+      "size": 4554
+    },
+    {
+      "path": "examples/31_aetheri_manifest/run_native.py",
+      "sha256": "94d065635de08dbf9bde807eea9562a26bf393fce05120b188ee6f926f53f838",
+      "size": 12741
+    },
+    {
+      "path": "examples/31_aetheri_manifest/run_source.py",
+      "sha256": "0abb63855dc918ba7d3035be7752a9cd882d30e232266ffb61337db714652c7d",
+      "size": 3077
+    },
+    {
+      "path": "examples/31_aetheri_manifest/run_source_switch.py",
+      "sha256": "52ba9cb9c74cb8d286c6e86995e3bc484c737a7710f76546e78fb9eb92212a8d",
+      "size": 12353
+    },
+    {
+      "path": "examples/31_aetheri_manifest/source-inputs.json",
+      "sha256": "64769e86a6c959a580248285c0281d0d580ed5d9cfdd8e3d78266bbe5769a47e",
+      "size": 1999
+    },
+    {
+      "path": "examples/31_aetheri_manifest/source_binding.c",
+      "sha256": "c1c476a144af1a788843f563996a80a6c30f07c82c6f70ecee5d32334f67cab6",
+      "size": 2234
+    },
+    {
+      "path": "examples/31_aetheri_manifest/source_binding.h",
+      "sha256": "e1eca239193657ea7682c70d240e50a28b1a0625a485105959debfa78cd2fb23",
+      "size": 1140
+    },
+    {
+      "path": "examples/31_aetheri_manifest/source_switch_atspi.c",
+      "sha256": "8dcb348b85055350d286106b0f4bd17fb9c7f715a6e42cb9e53cc64c81ad0411",
+      "size": 9720
+    },
+    {
+      "path": "examples/31_aetheri_manifest/test_source.c",
+      "sha256": "e84c5d10a5b1eba83f8f5308fc775351000a9d41ff9a6f589c82fa24239bfb1a",
+      "size": 7913
+    },
+    {
+      "path": "examples/31_aetheri_manifest/test_source_binding.c",
+      "sha256": "4dde43a969451ab89a30b124b5483688e025b8589ebb1fe0a5c8ec2daa073299",
+      "size": 2103
+    },
+    {
+      "path": "examples/30_async_hierarchy/hierarchy_view.c",
+      "sha256": "a699846df0a1903e74aa6a7a8b64a74b8eca1d7f27596c267495aae8a39f8068",
+      "size": 13272
+    },
+    {
+      "path": "examples/30_async_hierarchy/hierarchy_view.h",
+      "sha256": "c9175003fb8aec2069d5c2519a24069e9dd7937998160aed5f0e52fb0aa33472",
+      "size": 2702
+    },
+    {
+      "path": "examples/30_async_hierarchy/native.c",
+      "sha256": "47e211a245fb1d1e057569fcb5a0fb23b768f7db81886644ccc2df926a9acdbd",
+      "size": 21870
+    },
+    {
+      "path": "examples/30_async_hierarchy/atspi_client.c",
+      "sha256": "92025745d923e305e94835413aa4ccef5c24f69e284937726b7aa2ab9c09caf9",
+      "size": 11708
+    },
+    {
+      "path": "examples/common/text_wrap.c",
+      "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae",
+      "size": 3658
+    },
+    {
+      "path": "examples/common/text_wrap.h",
+      "sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d",
+      "size": 349
+    },
+    {
+      "path": "examples/33_aetheri_recovery/check_source.py",
+      "sha256": "b6e860a19c338321457d654da9fd7e51cca4d853ef7419c160230efbaf70fc90",
+      "size": 585
+    },
+    {
+      "path": "examples/33_aetheri_recovery/source-inputs.json",
+      "sha256": "3d32e86844d37fb3906ccb477a85b2785b8dac34248f9847bc6846b2b7add833",
+      "size": 6793
+    },
+    {
+      "path": "tests/test_async_hierarchy.c",
+      "sha256": "a3c61f82492e265a0d157f14f0d08335cff27e6c6ea25a32272584081aed9a20",
+      "size": 10409
+    }
+  ],
+  "tested_input": "nexaui-software-links-receipt-view-4-20261108.tar.gz",
+  "tested_input_sha256": "1f109ce7a856497574e54c40822576a25c19c84792e1f4bcc8e5d30b52ffbd34",
+  "post_test_code_differences": [],
+  "component_ctest_input": "nexaui-software-links-receipt-view-2-20261108.tar.gz",
+  "component_ctest_input_sha256": "cdd7eb1a7f53f3e5c73bff433830b188b03bb8cffcdfb3d8a256baea9f57995c",
+  "component_source_revision": "d890f38a2727820f14ee3e6a97b3afe06dc0c515",
+  "component_to_final_differences": [
+    {
+      "path": "examples/34_aetheri_software/run_history_native.py",
+      "component_sha256": "ec69368016bded70662054d77ccdc09f5545dd715cd03d5a7de76bc414ff4b82",
+      "final_sha256": "d6635fe7b4ec7cc08724452c719a104e0eedaa6627f42e9af635fc60dd3d222f"
+    }
+  ],
+  "difference_scope": "Native test driver only; not consumed by the nine CTests. All compiled application/core/component-test inputs are identical. Native tests use final input4."
+}

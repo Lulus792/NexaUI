@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Native receipt inspection (2026-11-08)
+
+D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08: source
+`0769fab` adds the native read-only Receipts page using existing original
+worker data and public SDK controls/Text/focus/scroll. Three profiles pass 9/9
+CTests, including 27 association/receipt scenarios at three styles; 14 native
+cases, two IME/manifest regressions and three compiled presentation defects are
+checked. All 66 final inputs and eight inspected lossless images are bound to
+exact source/artifact bytes. See [receipt presentation](software-receipt-view-report.md).
+Historical release/quiet/withdrawal remains no current authority. Broader
+packet6, packets7–8 and physical/human/performance gates remain across all 103
+IDs; SDK API/ABI/version and independent Aetheri source/pin are unchanged.
+
 ## Original reservation and lifetime data (2026-11-08)
 
 D07/L11/P04/P05/P07/Q02/Q04/Q08: source `45cdbba` copies original

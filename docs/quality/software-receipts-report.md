@@ -145,3 +145,9 @@ clipboard/resize acceptance remain. Aetheri independently remains at
 built, reset or pushed. All 103 catalogue IDs and the remaining packet6,
 packets7–8 and physical/human/performance gates stay active. No 1.0 release or
 whole-goal completion is declared.
+
+## Subsequent presentation
+
+Source `0769fab` opens the retained data in a native read-only Receipts
+page. See [receipt presentation evidence](software-receipt-view-report.md);
+further owner/service and broader catalogue acceptance remain open.

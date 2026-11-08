@@ -1,0 +1,15 @@
+{
+  "name": "nexaui-software-receipt-view-20261108.tar.gz",
+  "size": 59742066,
+  "sha256": "7dc669ebf2ceee8ec7de5028b9c6bd022d866aca2832598a004ce27868faf109",
+  "files": 3100,
+  "links": 7,
+  "directories": 1012,
+  "excluded_special": [
+    "software-receipt-view-2-asan/components-test/run-zrss_dor/fifo",
+    "software-receipt-view-2-release/components-test/run-40q5u3vh/fifo",
+    "software-receipt-view-2-shared/components-test/run-n8ix3sro/fifo",
+    "swrv4-legacy-asan/manifests/fifo",
+    "swrv4-legacy-release/manifests/fifo"
+  ]
+}
