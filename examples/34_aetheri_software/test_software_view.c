@@ -9,6 +9,16 @@
 static int fail_malloc;
 void *__real_malloc(size_t);
 void *__wrap_malloc(size_t n){if(fail_malloc){fail_malloc=0;return NULL;}return __real_malloc(n);}
+static size_t checked_captions;
+nx_result __real_nx_button(nx_context *,const nx_control_desc *,nx_interaction_state *);
+nx_result __wrap_nx_button(nx_context *ctx,const nx_control_desc *desc,nx_interaction_state *out){
+    if(desc&&desc->label_layout&&desc->parent_id==SWG_ROOT&&desc->id>=SWG_FILTER_BUTTON&&desc->id<SWG_CONTENT_TREE){
+        CHECK(nx_text_layout_line_count(desc->label_layout)==1);
+        CHECK(nx_text_layout_width(desc->label_layout)+16<=desc->bounds.width+.02);
+        CHECK(nx_text_layout_height(desc->label_layout)+16<=desc->bounds.height+.02);++checked_captions;
+    }
+    return __real_nx_button(ctx,desc,out);
+}
 static sw_id id(uint32_t n){sw_id v={{0}};v.bytes[6]=0x40;v.bytes[8]=0x80;for(unsigned i=0;i<4;++i)v.bytes[15-i]=(uint8_t)(n>>(8*i));return v;}
 static void hex_id(sw_id v,char out[33]){for(size_t i=0;i<16;++i)(void)snprintf(out+i*2,3,"%02x",v.bytes[i]);}
 static int semantic(swg_view *v,uint64_t id_value,nx_semantic_view *out){uint32_t index;return nx_semantics_find(swg_context(v),id_value,&index)==NX_OK&&nx_semantics_get(swg_context(v),index,out)==NX_OK;}
@@ -56,6 +66,12 @@ static void exercise(const sw_result *base,nx_font_collection *fonts,swg_style s
     frame(v,240,96);CHECK(nx_focus_id(swg_context(v))==SWG_CLOSE);frame(v,w,h);CHECK(swg_current_mode(v)==SWG_DETAIL&&nx_focus_id(swg_context(v))==SWG_BACK);
     key(v,NX_KEY_ESCAPE,0,w,h);press(v,SWG_FILTER_BUTTON,NX_ACTION_PRESS,w,h);CHECK(swg_current_mode(v)==SWG_FILTER&&nx_focus_id(swg_context(v))==SWG_QUERY);
     input(v,"draft",w,h);capture(v,w,h,style,"filter");
+    frame(v,240,160);CHECK(semantic(v,SWG_CLOSE,&node)&&node.bounds.x>=0&&node.bounds.y>=0&&node.bounds.x+node.bounds.width<=240&&node.bounds.y+node.bounds.height<=160);
+    if(style.german&&style.text_size>=32)CHECK(!semantic(v,SWG_QUERY,&node)&&nx_focus_id(swg_context(v))==SWG_CLOSE);
+    frame(v,w,h);CHECK(semantic(v,SWG_QUERY,&node)&&node.value.length==5&&!memcmp(node.value.data,"draft",5)&&nx_focus_id(swg_context(v))==SWG_QUERY);
+    frame(v,240,160);key(v,NX_KEY_ESCAPE,0,240,160);frame(v,w,h);
+    CHECK(swg_current_mode(v)==SWG_LIST&&nx_focus_id(swg_context(v))==SWG_FILTER_BUTTON);
+    press(v,SWG_FILTER_BUTTON,NX_ACTION_PRESS,w,h);CHECK(semantic(v,SWG_QUERY,&node)&&node.value.length==5&&!memcmp(node.value.data,"draft",5)&&nx_focus_id(swg_context(v))==SWG_QUERY);
     CHECK(nx_semantics_request_text_value(swg_context(v),SWG_QUERY,(nx_utf8_span){"stale",5})==NX_OK);
     CHECK(sw_owner_expect(owner,2)==NX_OK);value=clone(base);CHECK(sw_owner_complete(owner,2,0,&value)==NX_OK&&!value&&swg_sync(v)==NX_OK);frame(v,w,h);
     CHECK(swg_current_mode(v)==SWG_FILTER&&nx_focus_id(swg_context(v))==SWG_QUERY&&semantic(v,SWG_QUERY,&node)&&node.value.length==5&&!memcmp(node.value.data,"draft",5));
@@ -105,7 +121,9 @@ int main(int argc,char **argv){
     sw_id targets[]={id(12),id(99),id(10),id(13),id(11)};sw_result *base=NULL;CHECK(sw_read(catalogue,&scope,targets,5,&base)==0&&base&&base->count==5);
     exercise(base,fonts,(swg_style){0,16,1,NX_THEME_DARK},800,600);
     exercise(base,fonts,(swg_style){1,32,2,NX_THEME_HIGH_CONTRAST},360,300);
-    exercise(base,fonts,(swg_style){0,16,1.25f,NX_THEME_LIGHT},480,360);maximum(&scope,fonts);
+    exercise(base,fonts,(swg_style){0,16,1.25f,NX_THEME_LIGHT},480,360);
+    exercise(base,fonts,(swg_style){1,48,1,NX_THEME_HIGH_CONTRAST},520,400);maximum(&scope,fonts);
     sw_result_free(&base);CHECK(ae_catalogue_close(&catalogue)==0);nx_font_collection_destroy(fonts);nx_font_close(font);free(bytes);
+    CHECK(checked_captions>0);printf("SOFTWARE_HEADER_SINGLE_LINE_COMPLETE_CAPTION_BOUNDS_OK count=%zu\n",checked_captions);
     puts("SOFTWARE_VIEW_KEYS_FULL_METADATA_FILTER_DRAFT_STALE_ACTION_FOCUS_COMPACT_ERROR_INTENTS_OK");return 0;
 }

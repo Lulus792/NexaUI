@@ -64,8 +64,8 @@ cleanup:
 }
 #include "contents_peer.h"
 int main(int argc,char **argv){
-    int okay=0,initialized=0,ime=0,resizing=0,clipboard=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
-    CHECK(argc>=4&&argc<=10);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;
+    int okay=0,initialized=0,ime=0,resizing=0,clipboard=0,large=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL;
+    CHECK(argc>=4&&argc<=11);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--large"))large=1;
         else if(!strcmp(argv[i],"--components")){CHECK(++i<argc&&strlen(argv[i])==519&&strspn(argv[i],"0123456789abcdef,")==519);expected_dependencies=argv[i];}
         else if(!strcmp(argv[i],"--component-failure"))expect_manifest_failure=1;
         else if(!strcmp(argv[i],"--contents")){CHECK(++i<argc);expected_contents=argv[i];}
@@ -103,6 +103,14 @@ int main(int argc,char **argv){
         static const char draft[]="kept draft \xc3\xa9";
         CHECK(checkpoint(10));field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,"")&&state(field,ATSPI_STATE_FOCUSED)&&replace_text(field,draft));
         until=now()+3;while(now()<until&&!text_equal(field,draft))pump();CHECK(text_equal(field,draft));
+        if(german&&large){
+            AtspiAccessible *apply=lookup(app,"Anwenden",ATSPI_ROLE_PUSH_BUTTON),*back=lookup(app,"Zurück",ATSPI_ROLE_PUSH_BUTTON),*close=lookup(app,"Schließen",ATSPI_ROLE_PUSH_BUTTON);AtspiRect a,b,c,f;
+            int fits=apply&&back&&close&&rectangle(apply,&a)&&rectangle(back,&b)&&rectangle(close,&c)&&rectangle(field,&f)&&a.y==b.y&&c.y>a.y&&a.x+a.width<=b.x&&c.y+c.height<=f.y;
+            if(apply)g_object_unref(apply);
+            if(back)g_object_unref(back);
+            if(close)g_object_unref(close);
+            CHECK(fits);puts("SOFTWARE_NATIVE_LARGE_GERMAN_ACTION_ROWS_ABOVE_FILTER_OK");
+        }
         button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button);puts("ACK 10");
         for(unsigned step=11;step<=12;++step){
             CHECK(checkpoint(step));CHECK(retired(field)&&!replace_text(field,"late compact edit")&&state(button,ATSPI_STATE_FOCUSED));
@@ -117,6 +125,15 @@ int main(int argc,char **argv){
         button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));g_object_unref(button);button=NULL;
         g_object_unref(last);last=lookup(app,argv[3],ATSPI_ROLE_LIST_ITEM);CHECK(last&&state(last,ATSPI_STATE_SELECTED));
         button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 14");
+        g_object_unref(button);button=lookup(app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));g_object_unref(button);button=NULL;
+        CHECK(checkpoint(15));field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&state(field,ATSPI_STATE_FOCUSED)&&text_equal(field,draft));
+        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button);puts("ACK 15");
+        CHECK(checkpoint(16));CHECK(retired(field)&&!replace_text(field,"late compact Escape edit")&&state(button,ATSPI_STATE_FOCUSED));puts("ACK 16");
+        CHECK(checkpoint(17));CHECK(retired(button)&&!action(button,"click"));g_object_unref(button);button=wait_node(desktop,pid,&app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));puts("ACK 17");
+        CHECK(checkpoint(18));CHECK(retired(field)&&!replace_text(field,"late list edit"));g_object_unref(button);button=wait_node(desktop,pid,&app,"Filter",ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));g_object_unref(button);button=NULL;puts("ACK 18");
+        CHECK(checkpoint(19));CHECK(retired(field));g_object_unref(field);field=wait_node(desktop,pid,&app,label("App filter","App-Filter"),ATSPI_ROLE_ENTRY);CHECK(field&&text_equal(field,draft)&&state(field,ATSPI_STATE_FOCUSED));
+        button=lookup(app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));puts("ACK 19");
+        puts("SOFTWARE_NATIVE_COMPACT_ESCAPE_RETIRED_REFERENCES_FILTER_FOCUS_AND_DRAFT_REOPEN_OK");
         puts("SOFTWARE_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_AND_FOCUS_RESTORED_OK");
     }
     if(clipboard){

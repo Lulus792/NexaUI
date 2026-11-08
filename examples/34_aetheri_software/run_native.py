@@ -210,6 +210,7 @@ def main():
         if a.contents:peer_flags+=['--contents',str(component_input/'content-peer.txt')]
         if a.resize:peer_flags+=['--resize']
         if a.clipboard:peer_flags+=['--clipboard-'+a.clipboard]
+        if a.large:peer_flags+=['--large']
         if a.held:peer_flags=['--held',a.held]
         peer=start([paths['client'],host.pid,first_name,last_name]+peer_flags+(['--german'] if a.german else [])+(['--ime'] if a.ime else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
@@ -238,7 +239,7 @@ def main():
                 if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
-        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 15 if a.resize else 10)):
+        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 20 if a.resize else 10)):
             peer_line('STEP '+str(step))
             if a.clipboard and step>=10:
                 sample='Grüße 🌍 e\u0301'.encode()
@@ -286,6 +287,13 @@ def main():
                 if step==13:
                     origin=result['resize_origin'];resize(origin['width'],origin['height']);wait(lambda:view().get('focus')==origin['focus'],'native restored field focus')
                 if step==14:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40 and view().get('count')==5,'Cancel after native restore')
+                if step==15:
+                    wait(lambda:view().get('mode')==0 and view().get('focus')==40,'Filter focus before compact Escape task');key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter before compact Escape')
+                if step==16:resize(240,96);wait(lambda:view().get('focus')==42,'compact Close before Escape')
+                if step==17:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==42,'Escape changes mode while retaining compact Close focus')
+                if step==18:
+                    origin=result['resize_origin'];resize(origin['width'],origin['height']);wait(lambda:view().get('mode')==0 and view().get('focus')==40,'enlargement restores mode-change Filter focus')
+                if step==19:key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'reopen retained draft after compact Escape')
             if step==1:key(inspection_key);wait(lambda:view().get('focus')==inspected_row,'logical target focus')
             if step==2:wait(lambda:view().get('mode')==2 and view().get('focus')==43,'selected target detail')
             if step==3:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==inspected_row,'Escape returns to selected target')

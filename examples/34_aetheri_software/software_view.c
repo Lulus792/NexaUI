@@ -20,7 +20,7 @@ struct swg_view {
     nx_context *ctx;nx_text_field *query;nx_virtual_list *index;size_t *matches,count;
     swg_style style;swg_mode mode;sw_id detail;
     uint64_t epoch,restore,resume_focus;sw_state state;int error;
-    char filter[129],status[192],body[8192];nx_text_layout *status_layout,*body_layout,*buttons[4];
+    char filter[129],status[192],body[8192];nx_text_layout *status_layout,*body_layout,*buttons[4],*compact_button;
     row_cache rows[ROW_BUDGET];size_t cached,measured;double cache_width;
     paragraph_cache paragraphs[BODY_PARAGRAPHS];size_t paragraph_count;float body_height;
     content_cache contents[CONTENT_ROWS];size_t content_count;uint64_t item,tree_selection,tree_focus;
@@ -40,6 +40,7 @@ static void clear_paragraphs(swg_view *v){for(size_t i=0;i<v->paragraph_count;++
 static void clear_layouts(swg_view *v){
     clear_rows(v);clear_paragraphs(v);nx_text_layout_destroy(v->status_layout);v->status_layout=NULL;nx_text_layout_destroy(v->body_layout);v->body_layout=NULL;
     for(unsigned i=0;i<4;++i){nx_text_layout_destroy(v->buttons[i]);v->buttons[i]=NULL;}
+    nx_text_layout_destroy(v->compact_button);v->compact_button=NULL;
     for(size_t i=0;i<v->content_count;++i)nx_text_layout_destroy(v->contents[i].layout);
     v->content_count=0;v->tree_focus=0;v->cache_width=0;
 }
@@ -546,6 +547,56 @@ static nx_result detail_layout(swg_view *v,double width){
     if(r!=NX_OK)clear_paragraphs(v);
     return r;
 }
+/* Keep complete captions on one line. Preserve the old equal columns when
+   they fit; otherwise pack contiguous actions into measured rows. */
+static nx_result action_header(swg_view *v,float width,float height,const char **labels,uint64_t *ids,size_t *count,nx_rect bounds[4],float *total){
+    const float margin=12,gap=8,available=width-24;int compact=width<240||height<160;nx_result r=NX_OK;
+    float minimum[4]={0},row_height=0,cell=(available-gap*(float)(*count-1))/(float)*count;
+    int equal=1;
+    if(!compact){
+        for(size_t i=0;i<*count&&r==NX_OK;++i){
+            if(!v->buttons[i])r=layout(v,labels[i],4096,&v->buttons[i]);
+            if(r==NX_OK){minimum[i]=fmaxf(48,(float)nx_text_layout_width(v->buttons[i])+16);row_height=fmaxf(row_height,(float)nx_text_layout_height(v->buttons[i])+16);if(minimum[i]>cell)equal=0;if(minimum[i]>available)compact=1;}
+        }
+        if(r!=NX_OK)return r;
+        if(equal){for(size_t i=0;i<*count;++i)bounds[i]=(nx_rect){margin+(cell+gap)*(float)i,margin,cell,row_height};*total=row_height;}
+        else{
+            float y=margin;size_t start=0;
+            while(start<*count){
+                size_t end=start+1;float used=minimum[start];
+                while(end<*count&&used+gap+minimum[end]<=available){used+=gap+minimum[end];++end;}
+                float extra=fmaxf(0,(available-used)/(float)(end-start)),x=margin;
+                for(size_t i=start;i<end;++i){float w=minimum[i]+extra;bounds[i]=(nx_rect){x,y,w,row_height};x+=w+gap;}
+                y+=row_height+gap;start=end;
+            }
+            *total=y-margin-gap;
+        }
+        float body=16;
+        if(v->mode==SWG_FILTER)body=v->style.text_size*2+16+12+16;
+        if(v->mode==SWG_LIST){if(!v->status_layout)r=layout(v,v->status,available,&v->status_layout);if(r!=NX_OK)return r;body=(float)nx_text_layout_height(v->status_layout)+12+16;}
+        if(*total+36+body>height)compact=1;
+    }
+    if(compact){
+        if(!v->compact_button)r=layout(v,"X",4096,&v->compact_button);
+        if(r!=NX_OK)return r;
+        double factor=fmax(nx_text_layout_width(v->compact_button)/(width-24),nx_text_layout_height(v->compact_button)/(height-24));
+        if(factor>1){
+            nx_text_layout_destroy(v->compact_button);v->compact_button=NULL;
+            r=nx_text_layout_create(v->fonts,"X",1,NX_BIDI_LTR,v->style.text_size/factor,4096,&v->compact_button);if(r!=NX_OK)return r;
+        }
+        labels[0]="X";ids[0]=SWG_CLOSE;*count=1;*total=fminf((float)nx_text_layout_height(v->compact_button)+16,height-8);bounds[0]=(nx_rect){4,4,width-8,*total};
+    }
+    if(compact){
+        /* A mode change can replace the intended full-view focus while the
+           field remains hidden. Keep that new destination, not the old one. */
+        if(!v->compact){v->resume_focus=v->restore?v->restore:nx_focus_id(v->ctx);v->restore=SWG_CLOSE;}
+        else if(v->restore&&v->restore!=SWG_CLOSE){v->resume_focus=v->restore;v->restore=SWG_CLOSE;}
+    }else if(v->compact){
+        uint64_t planned=v->restore&&v->restore!=SWG_CLOSE?v->restore:v->resume_focus;
+        v->restore=planned?planned:v->mode==SWG_DETAIL?SWG_BACK:v->mode==SWG_FILTER?SWG_QUERY:SWG_FILTER_BUTTON;v->resume_focus=0;
+    }
+    v->compact=compact;return NX_OK;
+}
 static nx_result frame_once(swg_view *v,float width,float height,swg_intent *intent,int *transition){
     uint64_t focus_before=nx_focus_id(v->ctx);
     const char *labels[4];uint64_t ids[4];size_t buttons=0;int clicked[4]={0};float top=12,button_height=0;nx_result r=NX_OK;
@@ -553,24 +604,21 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     if(v->mode==SWG_FILTER){nx_utf8_span query;r=nx_text_field_text(v->query,&query);if(r==NX_OK)apply_valid=valid_query(query,NULL);
         if(v->window&&r==NX_OK){int32_t start=0,end=0;nx_result ime=nx_window_get_ime_preedit(v->window,NULL,0,&active_preedit,&start,&end);if(ime!=NX_OK&&ime!=NX_ERROR_UNSUPPORTED)r=ime;}}
     if(r!=NX_OK)return r;
-    status(v);v->compact=width<240||height<160;
-    if(v->compact){labels[0]="X";ids[0]=SWG_CLOSE;buttons=1;}
-    else if(v->mode==SWG_LIST){labels[0]=word(v,"Filter","Filter");ids[0]=SWG_FILTER_BUTTON;labels[1]=word(v,"Read","Lesen");ids[1]=SWG_REFRESH;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
+    status(v);
+    if(v->mode==SWG_LIST){labels[0]=word(v,"Filter","Filter");ids[0]=SWG_FILTER_BUTTON;labels[1]=word(v,"Read","Lesen");ids[1]=SWG_REFRESH;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else if(v->mode==SWG_FILTER){labels[0]=word(v,"Apply","Anwenden");ids[0]=SWG_APPLY;labels[1]=word(v,"Back","Zurück");ids[1]=SWG_BACK;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else if(v->mode==SWG_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Contents","Inhalt");ids[1]=SWG_CONTENTS_BUTTON;labels[2]=word(v,"History","Historie");ids[2]=SWG_HISTORY_BUTTON;labels[3]=word(v,"Close","Schließen");ids[3]=SWG_CLOSE;buttons=4;}
     else if(v->mode==SWG_HISTORY_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Unit links","Unit-Bezüge");ids[1]=SWG_UNIT_LINKS_BUTTON;labels[2]=word(v,"Receipts","Belege");ids[2]=SWG_RECEIPTS_BUTTON;labels[3]=word(v,"Close","Schließen");ids[3]=SWG_CLOSE;buttons=4;}
     else if(v->mode==SWG_RECEIPTS){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Recovery links","Recovery-Bezüge");ids[1]=SWG_RECOVERY_BUTTON;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else {labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Close","Schließen");ids[1]=SWG_CLOSE;buttons=2;}
-    float margin=v->compact?4:12,gap=8,cell=(width-margin*2-gap*(float)(buttons-1))/(float)buttons;
     if(v->cache_width!=width){clear_layouts(v);v->cache_width=width;}
-    for(size_t i=0;i<buttons&&r==NX_OK;++i){if(!v->buttons[i])r=layout(v,labels[i],cell-16,&v->buttons[i]);if(v->buttons[i])button_height=fmaxf(button_height,(float)nx_text_layout_height(v->buttons[i])+16);}
-    if(v->compact)button_height=fminf(button_height,height-8);
+    nx_rect button_bounds[4];r=action_header(v,width,height,labels,ids,&buttons,button_bounds,&button_height);if(r!=NX_OK)return r;
     nx_virtual_range range={0};float list_top=0,viewport=0;
     if(!v->compact&&v->mode==SWG_LIST){
         if(!v->status_layout&&r==NX_OK)r=layout(v,v->status,width-24,&v->status_layout);
         list_top=top+button_height+12+(v->status_layout?(float)nx_text_layout_height(v->status_layout):0)+12;viewport=height-list_top-12;
-        if(viewport<16)v->compact=1;
-        else if(r==NX_OK){
+        if(viewport<16)return NX_ERROR_STATE;
+        if(r==NX_OK){
             /* A new snapshot starts with estimated heights. Keep the intended
                full-ID focus anchor visible after measuring preceding rows. */
             size_t anchor=focused_index(v,v->restore);
@@ -588,7 +636,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     for(size_t i=0;i<buttons&&r==NX_OK;++i){int disabled=(ids[i]==SWG_REFRESH&&v->state==SW_READING)||(ids[i]==SWG_APPLY&&(!apply_valid||active_preedit));
         disabled=disabled||(ids[i]==SWG_CONTENTS_BUTTON&&!manifest(v));
         disabled=disabled||(ids[i]==SWG_HISTORY_BUTTON&&!have_history(v));
-        r=button(v,ids[i],(nx_rect){margin+(cell+gap)*(float)i,margin,cell,button_height},ids[i]==SWG_CLOSE?word(v,"Close","Schließen"):labels[i],v->buttons[i],disabled,&clicked[i]);}
+        r=button(v,ids[i],button_bounds[i],ids[i]==SWG_CLOSE?word(v,"Close","Schließen"):labels[i],v->compact?v->compact_button:v->buttons[i],disabled,&clicked[i]);}
     if(v->compact){
         if(r==NX_OK)r=text(v,SWG_STATUS,SWG_ROOT,(nx_rect){4,button_height+8,width-8,fmaxf(0,height-button_height-12)},word(v,"Enlarge the window to inspect targets","Fenster zum Prüfen der Ziele vergrößern"),v->status,NULL,0);
     }else if(v->mode==SWG_LIST){
@@ -660,9 +708,6 @@ nx_result swg_frame(swg_view *v,float width,float height,swg_intent *out){
     if(!v||!out||!isfinite(width)||!isfinite(height)||width<48||height<48||width>4096||height>4096)return NX_ERROR_ARGUMENT;
     *out=(swg_intent){0};v->measured=0;
     if(v->width!=width||v->height!=height){
-        int compact=width<240||height<160;
-        if(compact&&!v->compact){v->resume_focus=nx_focus_id(v->ctx);v->restore=SWG_CLOSE;}
-        else if(!compact&&v->compact){v->restore=v->resume_focus?v->resume_focus:v->mode==SWG_DETAIL?SWG_BACK:v->mode==SWG_FILTER?SWG_QUERY:SWG_FILTER_BUTTON;v->resume_focus=0;}
         clear_layouts(v);v->width=width;v->height=height;
     }
     for(unsigned pass=0;pass<12;++pass){v->again=0;int transition=0;swg_intent intent={0};nx_result r=frame_once(v,width,height,&intent,&transition);if(r!=NX_OK)return r;

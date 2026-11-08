@@ -65,6 +65,16 @@ window/clipboard APIs. Run them separately from metadata/held-query tasks. No
 inventory or service effect is introduced. See the [source-bound window report](../../docs/quality/software-window-report.md)
 for actual profiles, negative controls, capture review and open output/visual gates.
 
+Action captions now use their measured one-line widths. The existing equal
+columns remain when they fit; otherwise actions occupy additional rows in their
+original keyboard/semantic order. When the header and usable content cannot fit,
+the compact Close-only view retains the intended full-view focus and draft.
+Changing mode with Escape while compact updates that return target. The resize
+workflow additionally cancels the hidden filter, enlarges back to Filter focus
+and reopens the preserved draft. The [caption/focus report](../../docs/quality/software-label-report.md)
+records exact sources, checked16/32/48-pixel styles, actual prior-view controls
+and separate native/physical/visual acceptance boundaries.
+
 The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
 alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
 selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical
