@@ -1,0 +1,62 @@
+{
+  "source_revision": "ce1b4108a2cb597173d55ec0677b0e5f955cd5b8",
+  "run_id": 42464978506,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42464978506",
+  "scope": "Exact-source GitHub job metadata for the preceding SDK 0.1.25 atomic field checkpoint: seven required successes and two optional skips. Not new Files controller, raw-log, physical/human or performance acceptance.",
+  "jobs": [
+    {
+      "id": 128682259603,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259801,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259805,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259810,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259815,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259840,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682259856,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128682260721,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 128682261002,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ]
+}

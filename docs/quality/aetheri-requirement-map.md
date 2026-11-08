@@ -1,5 +1,18 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/B03/B04/I01/I02/T01/T03/T04/T10/A02/A04/P04/P05/Q02/Q03/Q06/Q08:
+Files consumer `0a1f806c2de57ca864b59369f9aefd94cbe8038e` integrates complete
+native transactions with the installed 0.1.25 SDK and original whole-proposal
+policy. Three fresh profiles pass 24/24 affected CTests and 188 native OS-peer
+checks each; 117 final virtual captures and two compiled failure controls are
+retained. Original create/rename, selection and atomic/separate undo have scoped
+evidence. All 15 executed runtime/build/test inputs and 104 original app/producer
+inputs bind to Git. See [transaction evidence and open work](files-ime-atomic-report.md).
+The default-OFF 0.1.23 consumer remains separately checked; the active Aetheri
+checkout and reviewed pin are untouched. Foreign clipboard, font/localization,
+real provider/admission and final physical/human/performance gates remain open,
+as do all 103 IDs and remaining packets 6–8.
+
 B03/B04/I02/T01/T03/T04/P04/P05/Q02/Q03/Q06/Q08:
 SDK `ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18` (0.1.25) applies complete
 marked IME packets in text/numeric widgets as one validated edit and undo.

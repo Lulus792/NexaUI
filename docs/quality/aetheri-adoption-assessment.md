@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Original Files native transactions and undo (2026-11-08)
+
+Consumer `0a1f806c2de57ca864b59369f9aefd94cbe8038e` uses the installed
+0.1.25 marked-transaction APIs with original bounded whole-proposal validation.
+Three fresh profiles pass 24/24 affected CTests and 188 independent native
+Wayland/AT-SPI checks each, including actual original create/rename, reversed
+selection, atomic undo and separate undo for coqueued packets. All 15 executed
+runtime/build/test inputs, 104 original app/producer inputs and 1397 frozen SDK
+source files are bound to Git; three selected images and two compiled negative
+controls have scoped evidence. See [source, artifacts and remaining work](files-ime-atomic-report.md).
+Default-OFF 0.1.23 remains separately checked; active Aetheri and its reviewed pin
+are untouched. Real provider/clipboard/font/localization/admission work, remaining
+packet 6, packets 7–8 and all final physical/human/performance gates stay open.
+This does not close any of the 103 catalogue IDs or authorize a 1.0 release.
+
 ## Atomic marked IME field edits (2026-11-08)
 
 B03/B04/I02/T01/T03/T04/P04/P05/Q02/Q03/Q06/Q08:

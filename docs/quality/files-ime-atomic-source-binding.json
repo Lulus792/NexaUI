@@ -1,0 +1,1421 @@
+{
+  "source_revision": "0a1f806c2de57ca864b59369f9aefd94cbe8038e",
+  "files": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "size": 5182,
+      "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "size": 8757,
+      "sha256": "1bfe4affcc4ef64717140f8dbc127f58a8931aad5ce4782e177a43cffb920383"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1194,
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+      "size": 3139,
+      "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+      "size": 2451,
+      "sha256": "5a1cf563b77cec01a6b6862edd59542c521f02a9fc182356a896e63572a42164"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+      "size": 2673,
+      "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+      "size": 3692,
+      "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+      "size": 4292,
+      "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+      "size": 8546,
+      "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+      "size": 8709,
+      "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+      "size": 15427,
+      "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+      "size": 5132,
+      "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+      "size": 9278,
+      "sha256": "6b65f98c7e18e2cc29bdd56fc52dd02f374b459a74fb14982e9a5e8369fb492c"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_ime.py",
+      "size": 18105,
+      "sha256": "30d85c9c49ef1367296cffb65ea1074907f74c66ae00f94e946f8daeab0699b5"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_native.py",
+      "size": 4855,
+      "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "size": 8203,
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+    }
+  ],
+  "executed_input": {
+    "archive": "files-atomic-input-9.tar.gz",
+    "sha256": "1d7cc4d466563cfd71ddf5b598f18b2d850e855418a5a774edeebbb878d802b7",
+    "files": [
+      {
+        "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+        "size": 5182,
+        "sha256": "d6b4ad90835b5529d6b7bf9a3232a33c4850a3a3c3a11317a4f57a8b67bd93c8"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/README.md",
+        "size": 6277,
+        "sha256": "5c8bd9aea70f54a11945366236d2095ad450660a252d40352a2b61630bd4407d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/check_source.py",
+        "size": 1194,
+        "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+        "size": 3139,
+        "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+        "size": 2451,
+        "sha256": "5a1cf563b77cec01a6b6862edd59542c521f02a9fc182356a896e63572a42164"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+        "size": 2673,
+        "sha256": "fddd83a6e97b5eefcc5444ba01da97e09a65bc7ebc8399caa2740905546822e2"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+        "size": 3692,
+        "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+        "size": 4292,
+        "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+        "size": 8546,
+        "sha256": "6180a736f385b4d92686aec3613afebbdfe0a3f355e9b7a58143dd8c9e76b078"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+        "size": 8709,
+        "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+        "size": 15427,
+        "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+        "size": 5132,
+        "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+        "size": 9278,
+        "sha256": "6b65f98c7e18e2cc29bdd56fc52dd02f374b459a74fb14982e9a5e8369fb492c"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_ime.py",
+        "size": 18105,
+        "sha256": "30d85c9c49ef1367296cffb65ea1074907f74c66ae00f94e946f8daeab0699b5"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/run_native.py",
+        "size": 4855,
+        "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+      },
+      {
+        "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+        "size": 8203,
+        "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+      }
+    ]
+  },
+  "executed_runtime_build_test_inputs": 15,
+  "documentation_difference": "README updated after execution; all 15 runtime/build/test inputs identical",
+  "original_git_inputs": [
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "CMakeLists.txt",
+      "size": 120143,
+      "sha256": "1a4bc41111849a50ae983bd8044b6f58c94133a78432f45458dfa564017f194e"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "spec/editor.md",
+      "size": 28578,
+      "sha256": "85d466cbed98d062e14bd208454e96f65340c2d43b8ab8250d096ec2b189e8c5"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "spec/files.md",
+      "size": 37486,
+      "sha256": "1d4644aca3a6e362e6801aa26ed9a56323cc2e894f8aa01971ff853c5d3a7d76"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "spec/nexaui-inputs.json",
+      "size": 2060,
+      "sha256": "1a959c46974d3b351df0f75afc3b0ff59f172f7367cead46deea06efda43790e"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "spec/terminal.md",
+      "size": 53148,
+      "sha256": "8481f690c8ba2c9d947291505bea5b07583647a4acca60fded1a18edd1889912"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "spec/ui-inputs.json",
+      "size": 19855,
+      "sha256": "7567ec936c8ed3c8a8562ba2ed7074a81eb6df72ca67c6b8ae6e57e220eff014"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/direct.c",
+      "size": 9623,
+      "sha256": "d959f86a2220c750bab2d5fb1a170268ad4ff4f5c9f9294c48b047491c270b1d"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/direct.h",
+      "size": 3602,
+      "sha256": "eac32523bbf174b4bb5f0cb2e71b59aabf103b0d7a901ce675ee5e9c5a2547cc"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/document.c",
+      "size": 19757,
+      "sha256": "6dc6ae372641cc2621b71c26a5f11c56e35aa8457c15305440c4458d9943090f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/document.h",
+      "size": 5894,
+      "sha256": "83ce31d0b09762eb66f49066566400812036d64676bc31cea4561200fe4ba010"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/file.c",
+      "size": 16421,
+      "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/file.h",
+      "size": 3344,
+      "sha256": "3684c8b72d2bdc409b837bc760f278024eac4b6631296cce81cc539014218264"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/graphical_main.c",
+      "size": 66454,
+      "sha256": "706707eed7e7d7df4e33eb1c3afd84efcbaa855749ee6cb5943d18db67a11517"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/main.c",
+      "size": 26802,
+      "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/modal.c",
+      "size": 15063,
+      "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/modal.h",
+      "size": 3224,
+      "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/view.c",
+      "size": 12627,
+      "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/view.h",
+      "size": 1125,
+      "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/workspace.c",
+      "size": 18595,
+      "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/editor/workspace.h",
+      "size": 7378,
+      "sha256": "900182c71a7841dde1c9cff9018394426a16569e488f584824ab890dc059577a"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/create.c",
+      "size": 4508,
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/create.h",
+      "size": 2039,
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/launch.c",
+      "size": 3501,
+      "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/launch.h",
+      "size": 1046,
+      "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/layout.c",
+      "size": 3879,
+      "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/layout.h",
+      "size": 1432,
+      "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/main.c",
+      "size": 50043,
+      "sha256": "b2d8af2d6051abcd1675274ff3f842470870524c8a83fe0ad2984a8abce86a4f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/model.c",
+      "size": 9531,
+      "sha256": "a4ce9a9e9035f4d0aae53d4f3511eeeec36ec18c77012b0ee1a52fe0ea0b2ef3"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/model.h",
+      "size": 3885,
+      "sha256": "70a7298064afa822f4f45f13c3dae04f61bbfe6b8290f99a7ca2d9e0164e70f0"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/nexaui_main.c",
+      "size": 16421,
+      "sha256": "9bd09a0827ab62c71b08917c17b22560b06adb4b6ebbf7e58d158fe08ea6b01d"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/nexaui_view.c",
+      "size": 50973,
+      "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/nexaui_view.h",
+      "size": 1755,
+      "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/rename.c",
+      "size": 6818,
+      "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/rename.h",
+      "size": 2637,
+      "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/session.c",
+      "size": 25845,
+      "sha256": "bc4d93fed3a86d7382fe5ee6494d9859be50d0d213667b2a12d6c9a3eeeb0358"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/files/session.h",
+      "size": 4850,
+      "sha256": "9d58aa9e756695cfa1d64284c182d96cdc489b3c79b4a0446dc72c4de71f3512"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/clipboard.c",
+      "size": 22988,
+      "sha256": "7c5d6923cb0a235b15929576e3e5f5a2da925b80f5d5f4edf8fa9bc9f1c63aa4"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/clipboard.h",
+      "size": 2743,
+      "sha256": "34cd8052244638b949c9870f798d645e63eb944936281c2acfc03bc9285b9fc2"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/composition.c",
+      "size": 3145,
+      "sha256": "d01270a1e0e5fe260cd0e3f90857b7374b30f8976f68ce8f8cb50bea2f5a5be1"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/composition.h",
+      "size": 1352,
+      "sha256": "1eb9bc93bebc5f974a1ba5fd30170cf598203232685fa252607c0c882f39beaf"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/main.c",
+      "size": 97945,
+      "sha256": "5a7a7c56fd8774f790eb0331709310d7b52f0d093b4eef730763c093bb0bacef"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/model.c",
+      "size": 21909,
+      "sha256": "07f960f267ac4937e5ba92fef4e5876a45b3aa0d97549fe686d72ae15c9dbd04"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/model.h",
+      "size": 3981,
+      "sha256": "fea264b8ef55cd18c3c5e3c2083c4ccf774837d023e09f93e1032bfa21fed0d4"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/nexaui_view.c",
+      "size": 29047,
+      "sha256": "219237a2baad628fee5968cdbfa3f19fc09f71b9d33bcc95f462bb5e34640cbe"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/nexaui_view.h",
+      "size": 5175,
+      "sha256": "24bf8995eb1e7452899a9a6414d09839f5c1f3cd90eacf1e05b4916d7df31872"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/paste.c",
+      "size": 3214,
+      "sha256": "4ae25aafdc16fe8c9fdd82561b0ec5a4a6f666106361b1e05c2cc87296a4e493"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/paste.h",
+      "size": 1342,
+      "sha256": "5e5968d701ecb009f70dd92bae6b9c0a2b234651f6dcc03359ee8d98abca32bd"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/pty.c",
+      "size": 6930,
+      "sha256": "6248cc4ad76d6577cdcd623cf5bf08380f7faaa0a040883f44ff91db90155020"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/pty.h",
+      "size": 2009,
+      "sha256": "6cec87625f6c75344c2edf3f3936bd13f63b4a896c96b8ba32eab44f76b04b13"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/pty_starter.c",
+      "size": 1590,
+      "sha256": "93f0a3ab4832e6342c1bc1173c4a5dfa1916d4bfa1dc94d440bcf2eee70f9786"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/session.c",
+      "size": 2855,
+      "sha256": "3636b2c2b318e1c49f23710966cfea486e44db2ffd7af98a2249cdb29e768842"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/session.h",
+      "size": 2882,
+      "sha256": "72c361fe5724c3380f1ee2446dfa97648efd6deb172b89ea8709d96a13e26ce2"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/spawn.c",
+      "size": 6629,
+      "sha256": "7c72dc1b48cb6e061111c0d806ea353cc9081a220a13ad8490d2e4f00c1df169"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/spawn.h",
+      "size": 1964,
+      "sha256": "f4a1285be9172922b853f2c6c3363943985e93c6d99e750e58f94d83bc5aea84"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/workspace.c",
+      "size": 9652,
+      "sha256": "bdda7511ed16f9840ec1fa5698edafbc163a63f19c962b3d13eee67955164305"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/terminal/workspace.h",
+      "size": 2472,
+      "sha256": "cf82b8dd99c154f55dfd0ed5410aa9a1f626cf4168f8819bda3930919d842ff6"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/text/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/files_create_fault.c",
+      "size": 1397,
+      "sha256": "6cf3fb55f14e9e5804ea0da8b20ca7909f59056da2a4390eeea9ed5e69857cae"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/files_view_atspi.c",
+      "size": 13200,
+      "sha256": "4ba47dbf47388364fcf4a957ee09e77cbfeb7d7707181a5006a2f26da1759360"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/grapheme_vectors.h",
+      "size": 39942,
+      "sha256": "3417d821429581d8bb7a5626f01857399899ca2ea020c9d18ec3d29960fc8aa5"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_document.c",
+      "size": 6958,
+      "sha256": "5cfbfd30fa824199563ed1662222bbd1a95744101e0ed0564fafd3ac8f744746"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_editor_file.c",
+      "size": 12705,
+      "sha256": "c06972027a7d5bbf3923c4bbb24ba282cdb9ce3a4c3a5e213869964cb5dabc6f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_editor_view.c",
+      "size": 4222,
+      "sha256": "2827e964bf96441e9bbbe5a5f8f426bfefe59f1600d29c9663c6f82d7631dddf"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files.c",
+      "size": 9631,
+      "sha256": "31234307f81ed54df29dd539e22f28b72f7f2201411eb542f85a80f3626dea59"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_create.c",
+      "size": 5517,
+      "sha256": "3ec5f8342884a686e8c27b103ee158c8dd497f1c95112b259efd7e725722b359"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_launch.c",
+      "size": 3888,
+      "sha256": "189cb8a19d9993c470d330f83c86033b10540273016d0314b15b7ccaf3cfbb7f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_layout.c",
+      "size": 4914,
+      "sha256": "9db1ef6429fea57d0a97110d720ed788f9773034d91a9361893e4032bf273a11"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_move.c",
+      "size": 6713,
+      "sha256": "3c9ec438be246f1fad196c9db5f03a4bcbae18dd20d2e85d091d861df7f465bf"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_rename.c",
+      "size": 6569,
+      "sha256": "d3e4e6a39b1aecf8fe0b06646d0636646d12c4efbd1d2465ff19cd722175db38"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_session.c",
+      "size": 7105,
+      "sha256": "d9acd56adf5cf9590184a04feca8bf461f5dcce5164e72c30d8d3f40bc191277"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_files_view.c",
+      "size": 17471,
+      "sha256": "f1cb96285b16e6ca3a451570225aaba268d85c07cc10235924c109c6e789222a"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_grapheme.c",
+      "size": 2148,
+      "sha256": "59d2a13a47a0446af6157fe2ac2310ed7dd50e6679304dc0ac921ad6bcfe578d"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_history.c",
+      "size": 8947,
+      "sha256": "65a1f4a25ef6aa2d20232e4ce0b6e6ea2968fdf8de6f0ac95b2b0cf26108bdb9"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_modal.c",
+      "size": 4255,
+      "sha256": "2f036df1af70d6b285d23e7d7184ea2156c922bf817a6e2f4f9619000f42ad41"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_search.c",
+      "size": 4636,
+      "sha256": "7d2dac2ebf838a5eaaf4435834cf606e0a5cbf1ffddd12736983d83e183f1be6"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_selection.c",
+      "size": 8275,
+      "sha256": "1febdff9638e20a9cfe6a57ad1fc80ab2071c0a0b1c3e8a617117ff360efb06d"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_terminal_composition.c",
+      "size": 2700,
+      "sha256": "d371ac1301169b81837884f06223157f3480aa316354360420d1b96542301d57"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_terminal_model.c",
+      "size": 2883,
+      "sha256": "0489168c4597753501e6159d31a7adbff4a8d6fbee23e32e7e2df4153dc78b0b"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_terminal_paste.c",
+      "size": 2980,
+      "sha256": "40981dbddc1b6e2a31ffa88c3071427974de8f9f3f62409ba55bc1f35ca8579f"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tests/test_terminal_selection.c",
+      "size": 8111,
+      "sha256": "ea6a32eaf3fe002f4490fae843c2a7a832aab31d125b2d76ea2551ff3ad6c0de"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tools/test_files_view.py",
+      "size": 23665,
+      "sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c"
+    },
+    {
+      "revision": "7483286bcaafbeaced5831f72cb4d0e0cad9a158",
+      "path": "tools/test_files_view_fault.py",
+      "size": 9033,
+      "sha256": "9e8cd0930163b56982306ecb9a67fc678a1d42920a39e9b187c4a71b7d75b3a0"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "protocols/aetheri-development-desktop-v1.xml",
+      "size": 1653,
+      "sha256": "d4261b78f28cc5ee78abfde5852a57ee4eca65d48075b92f53e4165faa826be9"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "protocols/wlr-layer-shell-unstable-v1.xml",
+      "size": 19326,
+      "sha256": "87e0b9c837aecd6977f76f3c47d73088b7159871f5d979dc1840f6cadb5e2ed8"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/compose.c",
+      "size": 4813,
+      "sha256": "ae0d887ab0a4e58d8c1914b1cb02527e458429ca06912c16c95808661ba087c2"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/compose.h",
+      "size": 916,
+      "sha256": "d72f7edd6ea2e4a0ab3e2b57262e3bc2a4a4551d26c3df5bf66e1dddf4007393"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/desktop.c",
+      "size": 17887,
+      "sha256": "083f5b5d2194c74f8cb2dd0e0dd39f94f3e220addad43536d73133549bda3e33"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/desktop.h",
+      "size": 1029,
+      "sha256": "6d132bd513056769389ade7a691f46533137d5bce65b4d47d987e475215cfea3"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/input.c",
+      "size": 28961,
+      "sha256": "94270f3a562465451a83594f77b79f4e7e180f864de4e263bd8a28c9fcaf703b"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/input.h",
+      "size": 1302,
+      "sha256": "3b7e88d0cd477e258a49adb2ffaaeba15e9ee1b53d341ff1f61e1729c2568742"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/main.c",
+      "size": 28537,
+      "sha256": "ee13a5715f1dc5f2743a3b0d3e17f08bb8378a5d40d842fee7419a29a963aae2"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/server.h",
+      "size": 2128,
+      "sha256": "0b7f40b1e33df4c5e57b12fcdc581c163f98511d5874c0756d627dc36fc32e0d"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/text_input.c",
+      "size": 10903,
+      "sha256": "ab91bdcebe2ac3becc578f40f57d5205d4ab77603b87fcfddfd985ed177525c0"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "src/compositor/text_input.h",
+      "size": 1249,
+      "sha256": "4615203e8941fedf92f5314e319d73de265419c8e173afbc68afbc3146d5fdda"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "tests/compositor_input_driver.c",
+      "size": 8002,
+      "sha256": "c62892932c31cf65da39c67cb5faaac6696f11ab9ee8f3f2649db92054838302"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "tests/compositor_input_driver.h",
+      "size": 263,
+      "sha256": "679f76e9a3958e2209b6dbee03ae002cdeef2c4ed5f739ab541b3d72137ebb5b"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "tests/compositor_text_input.c",
+      "size": 5181,
+      "sha256": "e0900794877e31b8224b286662b5ea301d2eab5429e815ee9e2adaa58a0ff39d"
+    },
+    {
+      "revision": "d56d69523c33a48648af343e7d36526f84518c90",
+      "path": "tests/compositor_text_input.h",
+      "size": 370,
+      "sha256": "3cba728cee0f48e5ae987f9522a9c944836c8449550b8759ac94af8f196d10af"
+    }
+  ],
+  "aetheri_survey": {
+    "head": "4e6141da2c3f46827402c78129daab358dbadf2b",
+    "reviewed_sdk_pin": "97a42647480bb05167cee5e4ae08cedd9147d80d",
+    "changed_selected_inputs": [
+      "CMakeLists.txt"
+    ],
+    "scope": "Read-only committed Git survey; not a build/runtime of the current checkout"
+  },
+  "artifacts": [
+    {
+      "path": "files-atomic-final-shared/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-atomic-final-shared/files-ime-generated/nexaui_view.c",
+      "size": 62772,
+      "sha256": "289b7441a32c76593b475d55b4d904b1aa2acb7c21369ad083369d571088dcd6"
+    },
+    {
+      "path": "files-atomic-final-shared/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-atomic-final-shared/aetheri_files_candidate",
+      "size": 170592,
+      "sha256": "82f26f370699aa7f92604504abffe0d91fd6e9d2da45e5ad364f69e4eaf1f12e"
+    },
+    {
+      "path": "files-atomic-final-shared/aetheri_files_ime_candidate",
+      "size": 175360,
+      "sha256": "4d030f7ccef17b1c96e2467fa51a4241ad1f7e5212be83d6fec05b09be5d9415"
+    },
+    {
+      "path": "files-atomic-final-shared/files_ime_transaction_test",
+      "size": 174248,
+      "sha256": "f94640ded67194b585aa6f5b86093b5f47e78b3f060c51d60e013644684df38f"
+    },
+    {
+      "path": "files-atomic-final-shared/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-final-shared/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-atomic-final-shared-test.log",
+      "size": 2663,
+      "sha256": "75021d5154b9eb5a1e685bee31d22b4f03d80320fffa80d10bd725812959392c"
+    },
+    {
+      "path": "files-atomic-final-shared/Testing/Temporary/LastTest.log",
+      "size": 18920,
+      "sha256": "0b58d3ebc7c1e546d7076356ca8e5d7dd5a79a887f6d945370de5bc34a856ab7"
+    },
+    {
+      "path": "files-atomic-final-shared/compile_commands.json",
+      "size": 42850,
+      "sha256": "83b41a295a1f38e37201b8d8e9f19cb899a80f489f709cec54fc2663dd6b8ace"
+    },
+    {
+      "path": "files-atomic-final-shared/CMakeCache.txt",
+      "size": 25400,
+      "sha256": "7d5831e44173b7cb1c5a369ec6012dc06c04a9bbd574cf0dd4998af880b16d89"
+    },
+    {
+      "path": "files-atomic-final-shared/files-ime-generated/source-delta.json",
+      "size": 17344,
+      "sha256": "a94573539b08c7ead914953b6cdf16aa2ec7012e404c439368303d58f766c982"
+    },
+    {
+      "path": "fa25-final-shared/result.json",
+      "size": 66170,
+      "sha256": "49132a790690d76a6c2e0186fead0160d13d9695304f497110b4215490e78f69"
+    },
+    {
+      "path": "fa25-final-shared/app.log",
+      "size": 147664,
+      "sha256": "9d4c9c80341741ef68baa89396da6207a5475c7b1b6148c04e1a89b43a6ac304"
+    },
+    {
+      "path": "fa25-final-shared/server.log",
+      "size": 84234,
+      "sha256": "9ed17905b3f27a4164b78f8ee09f3e3cc9e960443d8088eeaf5ba1be7ffa6719"
+    },
+    {
+      "path": "fa25-final-shared/maps.txt",
+      "size": 5979,
+      "sha256": "cbac58b60905947cda0f0b8dfc27c12d719988c47977cd2096f9bebabae209f8"
+    },
+    {
+      "path": "fa25-final-shared/peer",
+      "size": 36688,
+      "sha256": "0481f5b04c15865bac1efb18c39ecaa524a8b46e0a87f7d74d5e103784c945da"
+    },
+    {
+      "path": "fa25-final-shared/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-final-release/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-atomic-final-release/files-ime-generated/nexaui_view.c",
+      "size": 62772,
+      "sha256": "289b7441a32c76593b475d55b4d904b1aa2acb7c21369ad083369d571088dcd6"
+    },
+    {
+      "path": "files-atomic-final-release/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-atomic-final-release/aetheri_files_candidate",
+      "size": 955264,
+      "sha256": "740f67ec1361faec92924ee3d3dcd069d39072dda87043e87b7f08675a70938e"
+    },
+    {
+      "path": "files-atomic-final-release/aetheri_files_ime_candidate",
+      "size": 963616,
+      "sha256": "6b48d3fcc0a61aea2f95f3350b6203e6c841c55836078b47d74f9d285d2f392f"
+    },
+    {
+      "path": "files-atomic-final-release/files_ime_transaction_test",
+      "size": 967784,
+      "sha256": "d8507ff13d7aab750385013101f18bd9e8e63e806216c3288403d26f1bffd97e"
+    },
+    {
+      "path": "files-atomic-final-release/aetheri_terminal_candidate",
+      "size": 120448,
+      "sha256": "2e8541aa390dd30e837e613fa1c2dd0784dd1487ddeba13954c81b6c57ed81e0"
+    },
+    {
+      "path": "files-atomic-final-release/aetheri_editor_candidate",
+      "size": 100896,
+      "sha256": "6689509cb229b7a0a839b0cd6f2efafeadda5aae9198ec55e6826b182d38f1d8"
+    },
+    {
+      "path": "files-atomic-final-release-test.log",
+      "size": 2664,
+      "sha256": "716a1d12186364a383903767f97b34ac942690ad66f89c0134516e4ba8512036"
+    },
+    {
+      "path": "files-atomic-final-release/Testing/Temporary/LastTest.log",
+      "size": 18968,
+      "sha256": "71ac1c45ee0b637312f0c96b78622163c461fde59e3d3668386a2ae023d87510"
+    },
+    {
+      "path": "files-atomic-final-release/compile_commands.json",
+      "size": 42820,
+      "sha256": "e1a53ac01239a341efb1d4d8831d3f09def8c94c00cd50169a342e22d9793e0c"
+    },
+    {
+      "path": "files-atomic-final-release/CMakeCache.txt",
+      "size": 25405,
+      "sha256": "5b4dd596c00a9120c8c070ed728cd0eec980e4716fcc18cd1b89088891b55442"
+    },
+    {
+      "path": "files-atomic-final-release/files-ime-generated/source-delta.json",
+      "size": 17344,
+      "sha256": "a94573539b08c7ead914953b6cdf16aa2ec7012e404c439368303d58f766c982"
+    },
+    {
+      "path": "fa25-final-release/result.json",
+      "size": 66259,
+      "sha256": "f4e8b6730e49819ac0431f108694ef401274f1b5954cc1f33cb4822a9688af6b"
+    },
+    {
+      "path": "fa25-final-release/app.log",
+      "size": 145483,
+      "sha256": "2720fe074689db1e92391d51a87a77ea4a468c497cab072a3cb20e65fa58cd7c"
+    },
+    {
+      "path": "fa25-final-release/server.log",
+      "size": 84167,
+      "sha256": "14aebc4eac6de9bd5fae3e0a52aaec63c8d818e9cf2597deebf9a37db6b7e604"
+    },
+    {
+      "path": "fa25-final-release/maps.txt",
+      "size": 5343,
+      "sha256": "b82ece7bb2bb0fc7f521d9a7764181b13db240848b4e3fd4dfb83751b2a7904a"
+    },
+    {
+      "path": "fa25-final-release/peer",
+      "size": 36688,
+      "sha256": "0481f5b04c15865bac1efb18c39ecaa524a8b46e0a87f7d74d5e103784c945da"
+    },
+    {
+      "path": "fa25-final-release/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-final-asan/files-ime-generated/nexaui_view.h",
+      "size": 1903,
+      "sha256": "0c4ff88949e58aed251808f50a3e925a9fa42f66f6ed3546fb02a96c60e8d0e9"
+    },
+    {
+      "path": "files-atomic-final-asan/files-ime-generated/nexaui_view.c",
+      "size": 62772,
+      "sha256": "289b7441a32c76593b475d55b4d904b1aa2acb7c21369ad083369d571088dcd6"
+    },
+    {
+      "path": "files-atomic-final-asan/files-ime-generated/nexaui_main.c",
+      "size": 17178,
+      "sha256": "a06d55a2796ef674cf950c9f379eb2ff2dededf552eb5375788f310631a4d29b"
+    },
+    {
+      "path": "files-atomic-final-asan/aetheri_files_candidate",
+      "size": 9045096,
+      "sha256": "e5dae56cd57412205ee3e575529d61a8c398781cc2d75f3dd4639332b50a3b69"
+    },
+    {
+      "path": "files-atomic-final-asan/aetheri_files_ime_candidate",
+      "size": 9155544,
+      "sha256": "edc771f5da4e765675f748734c9be661ff490c63e62d7c0027674be1aa4f0c64"
+    },
+    {
+      "path": "files-atomic-final-asan/files_ime_transaction_test",
+      "size": 9079528,
+      "sha256": "25040060a3cc72f19a5f8de803a8a18a3aae98bc0761ef04ae3e418415f16b22"
+    },
+    {
+      "path": "files-atomic-final-asan/aetheri_terminal_candidate",
+      "size": 1227104,
+      "sha256": "fd65bd1de6a15f9e8b24595e96eca26862948b8dab45e40f47f8b4976bc1f03c"
+    },
+    {
+      "path": "files-atomic-final-asan/aetheri_editor_candidate",
+      "size": 775680,
+      "sha256": "d358f4485e1d2b13ae7b5680139d0d8647dc9e4e985ad45d611314a051a78cc9"
+    },
+    {
+      "path": "files-atomic-final-asan-test.log",
+      "size": 2661,
+      "sha256": "c2ff722cd9a55f83607dc7f6373d88cdcb49744fe9a4527b8e8cbfaa5700c932"
+    },
+    {
+      "path": "files-atomic-final-asan/Testing/Temporary/LastTest.log",
+      "size": 18824,
+      "sha256": "72a3dc17abb4260f2240e6b1831e1c2f31a5f4f053ba930ab0a097d84734a249"
+    },
+    {
+      "path": "files-atomic-final-asan/compile_commands.json",
+      "size": 44542,
+      "sha256": "14234714f3312dd5d35cb85473ef048ef7669b4830ddad8ecf13b8245d1fca46"
+    },
+    {
+      "path": "files-atomic-final-asan/CMakeCache.txt",
+      "size": 25468,
+      "sha256": "9dddccd69a11f815f2574c464fffed320fced13cd8c022a130a4346372f670c0"
+    },
+    {
+      "path": "files-atomic-final-asan/files-ime-generated/source-delta.json",
+      "size": 17344,
+      "sha256": "a94573539b08c7ead914953b6cdf16aa2ec7012e404c439368303d58f766c982"
+    },
+    {
+      "path": "fa25-final-asan/result.json",
+      "size": 65992,
+      "sha256": "3d54ce2291872d663017115612db8062c588dfbac2c62e4b033b557caa00376f"
+    },
+    {
+      "path": "fa25-final-asan/app.log",
+      "size": 154003,
+      "sha256": "7f8ce42e3706a106792beec9a6fed78e354b146bee437f5b59dd3ce54dc51dbc"
+    },
+    {
+      "path": "fa25-final-asan/server.log",
+      "size": 83382,
+      "sha256": "fe4905682e24c29e9d91650cf06fde6d02810257422a51a9f516b093db2758d7"
+    },
+    {
+      "path": "fa25-final-asan/maps.txt",
+      "size": 15425,
+      "sha256": "89b534e15e826e53701417434492d2e0f50566f458afe3a82241867bafae85c0"
+    },
+    {
+      "path": "fa25-final-asan/peer",
+      "size": 36688,
+      "sha256": "0481f5b04c15865bac1efb18c39ecaa524a8b46e0a87f7d74d5e103784c945da"
+    },
+    {
+      "path": "fa25-final-asan/peer-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files-atomic-producer-1/generated/compositor_text_input.c",
+      "size": 6828,
+      "sha256": "4d237e46566d62271b5eabd82686a1b3339d42e06ec4e7e8418feb3788f99099"
+    },
+    {
+      "path": "files-atomic-producer-1/generated/compositor_input_driver.c",
+      "size": 8428,
+      "sha256": "33e03069af95deb9acfa279b11aa5e1baeca89502d65fcb7429ced123cd13f40"
+    },
+    {
+      "path": "files-atomic-producer-1/files_ime_producer",
+      "size": 79880,
+      "sha256": "1ab4ece87ae5f2436087baeb92e41f8dcdfcf9157a7f63712553699550dbf677"
+    },
+    {
+      "path": "files-atomic-counter-native.log",
+      "size": 7467,
+      "sha256": "f516f8c4ffee8186a0f1da913cc55219dcb67eb09771a965ddbcfba1973b2b70"
+    },
+    {
+      "path": "files-atomic-controller-before-4-test.log",
+      "size": 532,
+      "sha256": "618326d35b8c54273f6156563bc0980e44062bb24bb9f36ddfb92e2afb461c1d"
+    },
+    {
+      "path": "files-atomic-sdk-input.json",
+      "size": 3319,
+      "sha256": "1be72d04af37603280f03385d0ee5f07a8909143f9afc45df4190627cbd6700a"
+    },
+    {
+      "path": "files-atomic-sdk-probe.json",
+      "size": 1554,
+      "sha256": "33e6c412886d4652709175495294f3b47a552ed5f0c5ad3281f1a34b5f61d1ca"
+    },
+    {
+      "path": "files-atomic-sdk-atspi-commands.json",
+      "size": 16771,
+      "sha256": "9577c874866e7b874fdd3ede3a1887049ed53c7e4d8e0ebcbdf1208aa4608146"
+    },
+    {
+      "path": "files-atomic-final-build-commands.json",
+      "size": 5169,
+      "sha256": "13c3d3900c1b186a077274f18f0573a5aff79d29c29b72cdc2693d8c6005959a"
+    },
+    {
+      "path": "files-atomic-final-native-commands.json",
+      "size": 3647,
+      "sha256": "644ff5fb5f50bdaf0be9e0f8ac426922dcb4b6831623173cad54ef4e75184e05"
+    },
+    {
+      "path": "files-atomic-guard-evidence.json",
+      "size": 4296,
+      "sha256": "d03904898932d9f60f4a7979f47eb02bbc7dea011d5c8e77ebd43642195144e0"
+    },
+    {
+      "path": "files-atomic-counter-evidence.json",
+      "size": 2899,
+      "sha256": "4113519b7587906b1d3052bb922d651ffd4486967b16b843c6e6bf9026270b99"
+    },
+    {
+      "path": "files-atomic-image-index.json",
+      "size": 4433,
+      "sha256": "3236fffb94a1597ed37fa9f839e64bb69822a8567f7fecbdce24d39cc29742a2"
+    }
+  ],
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "sdk_source_and_package_binding": {
+    "result": "verified",
+    "source_revision": "ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18",
+    "source_files": 1397,
+    "archive_sha256": "dcbd92f83402d14a51946423da17f1b82b80723df94550335fc3f8cc0f1719e7",
+    "installed_package_files": [
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/cell_grid.h",
+        "size": 2941,
+        "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/linux_accessibility_host.h",
+        "size": 2336,
+        "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/nexaui.h",
+        "size": 152045,
+        "sha256": "a99ee35b0cd3151969b1722f2783f40bf007b5457c227f902ca9df6d8e1d003d"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/software.h",
+        "size": 1867,
+        "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/vulkan.h",
+        "size": 1824,
+        "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/wayland_clipboard.h",
+        "size": 2562,
+        "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/wayland_host.h",
+        "size": 3352,
+        "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/include/nexaui/wayland_outputs.h",
+        "size": 1588,
+        "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+        "size": 1665,
+        "sha256": "b066a054e078a1aa0af90ebae99caa972e69518034938d5c767c91b6958e3e53"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+        "size": 3678,
+        "sha256": "2cd8ec040fe24951694e1d136936656fed237c401c0cc43966cfd6a500948c00"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+        "size": 856,
+        "sha256": "ff50f087e3ef5a6564a40184e56ee1bdf4c2199e9e4a21f44dfc0a437e33b302"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+        "size": 4203,
+        "sha256": "35bbed1d2ad2206787d7d0b0cb4ae17964b67dc665faa5120c001089391531c5"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/lib64/libnexaui.so.0.1.25",
+        "size": 938952,
+        "sha256": "27171428a6959f800ae4a12295b0af5b0556a4d0523c3ae51ee67ff2c24b9d98"
+      },
+      {
+        "profile": "shared",
+        "path": "files-atomic-sdk2-shared-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+        "size": 1995,
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/cell_grid.h",
+        "size": 2941,
+        "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/linux_accessibility_host.h",
+        "size": 2336,
+        "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/nexaui.h",
+        "size": 152045,
+        "sha256": "a99ee35b0cd3151969b1722f2783f40bf007b5457c227f902ca9df6d8e1d003d"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/software.h",
+        "size": 1867,
+        "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/vulkan.h",
+        "size": 1824,
+        "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/wayland_clipboard.h",
+        "size": 2562,
+        "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/wayland_host.h",
+        "size": 3352,
+        "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/include/nexaui/wayland_outputs.h",
+        "size": 1588,
+        "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+        "size": 1665,
+        "sha256": "b066a054e078a1aa0af90ebae99caa972e69518034938d5c767c91b6958e3e53"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+        "size": 3678,
+        "sha256": "2cd8ec040fe24951694e1d136936656fed237c401c0cc43966cfd6a500948c00"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+        "size": 845,
+        "sha256": "2c7cb8641ed96dc8351075cc21e84f92d371ae2f1f29aebc745aff0e376a727c"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+        "size": 4327,
+        "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/lib64/libnexaui.a",
+        "size": 1191210,
+        "sha256": "3e52fe6413ee9299bee88fa7fc9fd4b0a378ec5964c67239b815c39bbbeef444"
+      },
+      {
+        "profile": "release",
+        "path": "files-atomic-sdk2-release-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+        "size": 1995,
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/cell_grid.h",
+        "size": 2941,
+        "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/linux_accessibility_host.h",
+        "size": 2336,
+        "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/nexaui.h",
+        "size": 152045,
+        "sha256": "a99ee35b0cd3151969b1722f2783f40bf007b5457c227f902ca9df6d8e1d003d"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/software.h",
+        "size": 1867,
+        "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/vulkan.h",
+        "size": 1824,
+        "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/wayland_clipboard.h",
+        "size": 2562,
+        "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/wayland_host.h",
+        "size": 3352,
+        "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/include/nexaui/wayland_outputs.h",
+        "size": 1588,
+        "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+        "size": 1665,
+        "sha256": "b066a054e078a1aa0af90ebae99caa972e69518034938d5c767c91b6958e3e53"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+        "size": 3678,
+        "sha256": "2cd8ec040fe24951694e1d136936656fed237c401c0cc43966cfd6a500948c00"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/lib64/cmake/NexaUI/NexaUITargets-debug.cmake",
+        "size": 835,
+        "sha256": "1151ab2ede6e2bfbd8cd76bcf2a47ada4f92cb4165ef8e792e6c0f6e8c0be0db"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+        "size": 4327,
+        "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/lib64/libnexaui.a",
+        "size": 14455974,
+        "sha256": "1ef4e1133a4b11088c54449f7c46158e85b0b6f047437a6f04420d3f829f0728"
+      },
+      {
+        "profile": "asan",
+        "path": "files-atomic-sdk2-asan-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+        "size": 1995,
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      }
+    ],
+    "full_git_manifest": "files-atomic-sdk-git-source.json in final artifact"
+  }
+}

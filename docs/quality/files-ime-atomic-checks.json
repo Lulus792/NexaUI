@@ -1,0 +1,38 @@
+{
+  "source_revision": "0a1f806c2de57ca864b59369f9aefd94cbe8038e",
+  "result": "passed",
+  "final_archive_sha256": "d60e90e67e58e5ebc480f6e5658b8b6a500ba8210cdf1ca14c0ce6339620943a",
+  "artifact_rows_checked": 70,
+  "executed_git_bound_inputs": 15,
+  "original_git_bound_inputs": 104,
+  "sdk_git_bound_source_files": 1397,
+  "installed_sdk_package_files": 42,
+  "ctests": {
+    "shared": 24,
+    "release": 24,
+    "asan": 24
+  },
+  "controller_cases_per_profile": 10,
+  "c17_werror_objects_per_profile": 48,
+  "native_checks_per_profile": 188,
+  "native_final_images": 117,
+  "lossless_png_conversions": 12,
+  "visually_inspected_pngs": [
+    "capture-4-output-0.png",
+    "capture-10-output-0.png",
+    "capture-13-output-0.png"
+  ],
+  "negative_controls": [
+    "Actual before-fix controller fails missing-END/clear recovery case4",
+    "Compiled wrong-preview-caret native control fails second coqueued invalid UTF-8 range"
+  ],
+  "default_original_ctests": 3,
+  "configure_refusals": 3,
+  "all_103_requirement_rows_preserved": true,
+  "limitations": [
+    "Not external Files execution in GitHub CI",
+    "Private producer and virtual outputs; no human/physical acceptance",
+    "No live Aetheri build, SDK repin or migration",
+    "No end-to-end performance or full catalogue acceptance"
+  ]
+}
