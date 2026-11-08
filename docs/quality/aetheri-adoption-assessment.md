@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Software controlled output transitions (2026-11-08)
+
+Consumer/test source `665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e` verifies the
+ordinary selected-app view on a separate checked compositor producer through
+three-output migration at1x/1.25x/1.5x/2x, workarea/mode changes and maximize/
+restore. Thirteen final native cases retain258 checkpoints,77 checked
+transitions and12 full captures across static/shared Release and sanitized
+consumer profiles. Native draft/caret/focus and returned pointer input survive;
+two compiled density/double-layout defects fail. See [source-bound results,
+images and adoption limits](software-output-report.md). Existing public APIs
+are reused; SDK/view/model/worker and the independent Aetheri checkout/pin are
+unchanged. The producer is test policy, not an installed desktop authority.
+No automatic pin/default-owner adoption is requested. Physical output,
+hotplug/removal/resume, full inventory/services, human/design/performance and
+remaining packet6/packets7–8 gates remain across103 IDs. The earlier native
+AT-SPI stability finding remains open despite these positive cases.
+
 ## Software measured captions and compact-mode focus (2026-11-08)
 
 Consumer source `750c7dce8e1d09d68f41bba5ea096934ac77e6ca` addresses the

@@ -1,5 +1,15 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Software output/scale/workarea: `665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e`,
+[private three-output fractional-scale, workarea/mode/maximize/restore and native
+draft/caret/focus/hit checks](software-output-report.md). Three consumer profiles
+plus capture repeat pass13 cases/258 checkpoints and77 checked transitions.
+Two compiled density/layout counterexamples fail;12 full native images and four
+inspected lossless previews remain bound to sources/artifacts. SDK/view/model/
+worker/pin unchanged. This is controlled compositor policy; actual output removal,
+hotplug/resume, normal-owner adoption and physical/human/performance/design gates
+remain. The prior AT-SPI stability finding remains unresolved.
+
 Software measured captions/compact focus: `750c7dce8e1d09d68f41bba5ea096934ac77e6ca`,
 [complete measured action rows, compact Escape and restored mode/draft focus](software-label-report.md).
 Three profiles pass4/4 UI CTests and24 final native cases/362 checkpoints. Two

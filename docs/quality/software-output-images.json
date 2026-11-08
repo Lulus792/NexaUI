@@ -1,0 +1,307 @@
+{
+  "native_images": [
+    {
+      "label": "scale125",
+      "file": "capture-1-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f467419001e5227f9ee59185ecf5a28c5f32efa2b8751c51bc52f82589a62344",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 114,
+        "polls": 1575,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale125",
+      "file": "capture-1-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 114,
+        "polls": 1575,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale125",
+      "file": "capture-1-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 114,
+        "polls": 1575,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 117,
+        "polls": 1862,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 117,
+        "polls": 1862,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "27c7aad9e652e106ee5479b4bea462645106cef0a8f86615b306a12078e9962b",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 117,
+        "polls": 1862,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 119,
+        "polls": 2145,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 119,
+        "polls": 2145,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "8381db68f8b690d656825288cb32c34f4ef6acbe4ebd99711767a31e63dabe39",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 119,
+        "polls": 2145,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9bcba6e3a7d260995d28f0388b1c898a7f17cb4ce36d69fcd125bcaebac26d0e",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 128,
+        "polls": 3001,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 128,
+        "polls": 3001,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-2.ppm",
+      "width": 3200,
+      "height": 1800,
+      "sha256": "c0442255dff21152a59714558879c6e9be654e9f1970f93b5b835251ab2046af",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 128,
+        "polls": 3001,
+        "keys": 118,
+        "request": 2
+      }
+    }
+  ],
+  "published_pngs": [
+    {
+      "label": "scale125",
+      "ppm": "capture-1-output-0.ppm",
+      "ppm_sha256": "f467419001e5227f9ee59185ecf5a28c5f32efa2b8751c51bc52f82589a62344",
+      "png": "scale125.png",
+      "png_sha256": "e3081a319bf85bea5428217c8f43576ff2ecd6f84d791699aafb27b5e2eb4961",
+      "width": 1920,
+      "height": 1080,
+      "output": 0,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-output-scale125.png"
+    },
+    {
+      "label": "scale200",
+      "ppm": "capture-2-output-2.ppm",
+      "ppm_sha256": "27c7aad9e652e106ee5479b4bea462645106cef0a8f86615b306a12078e9962b",
+      "png": "scale200.png",
+      "png_sha256": "8b799354dc422247d26b6009422ed0dc58d56c5a274ce2ecfa50541079044dc7",
+      "width": 3840,
+      "height": 2160,
+      "output": 2,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-output-scale200.png"
+    },
+    {
+      "label": "workarea",
+      "ppm": "capture-3-output-2.ppm",
+      "ppm_sha256": "8381db68f8b690d656825288cb32c34f4ef6acbe4ebd99711767a31e63dabe39",
+      "png": "workarea.png",
+      "png_sha256": "e67c17cc3a37dd03507a7220d41470060c41d2ae1e77a6cfd41e449fd5272a9a",
+      "width": 3840,
+      "height": 2160,
+      "output": 2,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-output-workarea.png"
+    },
+    {
+      "label": "returned",
+      "ppm": "capture-4-output-0.ppm",
+      "ppm_sha256": "9bcba6e3a7d260995d28f0388b1c898a7f17cb4ce36d69fcd125bcaebac26d0e",
+      "png": "returned.png",
+      "png_sha256": "d4d53cb33590f8bf8f76258f3c2ade29d4f7a266b46c9bb1ad0e3bc4d2473d86",
+      "width": 1920,
+      "height": 1080,
+      "output": 0,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-output-returned.png"
+    }
+  ],
+  "visual_review": "All four full output buffers inspected: complete measured German captions; retained Unicode draft/caret at1.25x/2x; one-row maximized header above filter;96 logical/192 physical pixels reserved at2x; original compact two-row header/field restored at1x. Scrollable help is clipped by its viewport. Controlled opaque high-contrast software presentation, not final design or physical sharpness acceptance."
+}

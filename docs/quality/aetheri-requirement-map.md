@@ -1,5 +1,20 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W03/W04/W05/D07/L05/L11/I01/I05/T11/A02/A06/P05/Q02/Q03/Q04/Q08: source
+`665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e` adds a separate checked private
+output producer and native Software task, reusing the existing public APIs.
+Static/shared Release and ASan/UBSan/LSan each pass EN/DE output, compact-resize
+and IME cases; a capture repeat brings the total to13 cases/258 checkpoints,
+77 checked transitions and12 full images. Logical/pixel/raster dimensions,
+actual committed buffers, draft/caret/focus and returned pointer input agree
+through three outputs at1x/1.25x/1.5x/2x and workarea/mode/maximize/restore.
+Two compiled density/double-layout defects are rejected. See [exact source,
+bindings, image review and scope](software-output-report.md). SDK/API/version,
+product view/model/worker and active Aetheri remain independent. The earlier
+native AT-SPI failure remains open; hotplug/removal/resume, physical/human,
+broader service/adoption and final gates persist across103 IDs and remaining
+packet6/packets7–8. No complete catalogue row is closed by this controlled scope.
+
 L01/L02/L05/L11/I01/I05/A02/A06/P04/P05/Q02/Q03/Q04/Q08: source
 `750c7dce8e1d09d68f41bba5ea096934ac77e6ca` measures complete Software action
 captions and reflows them into bounded rows, preserving compact-mode focus across

@@ -100,6 +100,11 @@ Aetheri checkout was changed. Intermediate attempts keep their own attribution.
 
 ## Source, artifacts and remaining scope
 
+The published documentation/source checkpoint `4e38c6189e7f12e53534005a7d234eb99c4a397c`
+passes all seven required CI jobs in [run42502377828](https://github.com/Lulus792/NexaUI/actions/runs/42502377828).
+Two optional jobs are skipped. The [exact-source job receipt](software-label-ci.json)
+does not replace the separate installed-consumer or physical/human/performance gates.
+
 [Source binding](software-label-source-binding.json) matches95 staged inputs to
 exact Git blobs after CRLF→LF only, with the README-only post-execution change
 explicit. [Local results](software-label-local.json) and [host checks](software-label-checks.json)

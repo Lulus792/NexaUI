@@ -1,0 +1,2365 @@
+{
+  "result": "passed",
+  "source_revision": "665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e",
+  "git_bound_inputs": 102,
+  "documentation_only_after_execution": 1,
+  "native_cases": 13,
+  "native_checkpoints": 258,
+  "output_transitions": 77,
+  "wire_migration_and_scale": [
+    {
+      "case": "swo-6-release-outputs-plain",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-release-outputs-plain/host.log"
+    },
+    {
+      "case": "swo-6-release-outputs-german",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-release-outputs-german/host.log"
+    },
+    {
+      "case": "swo-6-shared-outputs-plain",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-shared-outputs-plain/host.log"
+    },
+    {
+      "case": "swo-6-shared-outputs-german",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-shared-outputs-german/host.log"
+    },
+    {
+      "case": "swo-6-asan-outputs-plain",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-asan-outputs-plain/host.log"
+    },
+    {
+      "case": "swo-6-asan-outputs-german",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-asan-outputs-german/host.log"
+    },
+    {
+      "case": "swo-6-release-capture-german",
+      "surface": 14,
+      "output_object_ids": [
+        10,
+        11,
+        12
+      ],
+      "events": [
+        [
+          "enter",
+          10
+        ],
+        [
+          "leave",
+          10
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          12
+        ],
+        [
+          "leave",
+          12
+        ],
+        [
+          "enter",
+          11
+        ],
+        [
+          "leave",
+          11
+        ],
+        [
+          "enter",
+          10
+        ]
+      ],
+      "preferred_scale_120": [
+        120,
+        150,
+        180,
+        240,
+        180,
+        120,
+        150,
+        120
+      ],
+      "log": "swo-6-release-capture-german/host.log"
+    }
+  ],
+  "compiled_c17_werror_objects": {
+    "producer": 6,
+    "release": 28,
+    "shared": 28,
+    "asan": 28
+  },
+  "compiled_negative_controls": 2,
+  "original_inputs": 73,
+  "producer_inputs": 17,
+  "artifact_rows": 382,
+  "artifact_bindings": [
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/LICENSE",
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/protocols/aetheri-development-desktop-v1.xml",
+      "sha256": "d4261b78f28cc5ee78abfde5852a57ee4eca65d48075b92f53e4165faa826be9"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/protocols/wlr-layer-shell-unstable-v1.xml",
+      "sha256": "87e0b9c837aecd6977f76f3c47d73088b7159871f5d979dc1840f6cadb5e2ed8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/compose.c",
+      "sha256": "ae0d887ab0a4e58d8c1914b1cb02527e458429ca06912c16c95808661ba087c2"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/compose.h",
+      "sha256": "d72f7edd6ea2e4a0ab3e2b57262e3bc2a4a4551d26c3df5bf66e1dddf4007393"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/desktop.c",
+      "sha256": "083f5b5d2194c74f8cb2dd0e0dd39f94f3e220addad43536d73133549bda3e33"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/desktop.h",
+      "sha256": "6d132bd513056769389ade7a691f46533137d5bce65b4d47d987e475215cfea3"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/input.c",
+      "sha256": "94270f3a562465451a83594f77b79f4e7e180f864de4e263bd8a28c9fcaf703b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/input.h",
+      "sha256": "3b7e88d0cd477e258a49adb2ffaaeba15e9ee1b53d341ff1f61e1729c2568742"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/main.c",
+      "sha256": "ee13a5715f1dc5f2743a3b0d3e17f08bb8378a5d40d842fee7419a29a963aae2"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/server.h",
+      "sha256": "0b7f40b1e33df4c5e57b12fcdc581c163f98511d5874c0756d627dc36fc32e0d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/text_input.c",
+      "sha256": "ab91bdcebe2ac3becc578f40f57d5205d4ab77603b87fcfddfd985ed177525c0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/src/compositor/text_input.h",
+      "sha256": "4615203e8941fedf92f5314e319d73de265419c8e173afbc68afbc3146d5fdda"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/tests/compositor_input_driver.c",
+      "sha256": "c62892932c31cf65da39c67cb5faaac6696f11ab9ee8f3f2649db92054838302"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/tests/compositor_input_driver.h",
+      "sha256": "679f76e9a3958e2209b6dbee03ae002cdeef2c4ed5f739ab541b3d72137ebb5b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/tests/compositor_text_input.c",
+      "sha256": "e0900794877e31b8224b286662b5ea301d2eab5429e815ee9e2adaa58a0ff39d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "files-atomic-producer-original-d56-full/tests/compositor_text_input.h",
+      "sha256": "3cba728cee0f48e5ae987f9522a9c944836c8449550b8759ac94af8f196d10af"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/cell_grid.h",
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/linux_accessibility_host.h",
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/nexaui.h",
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/software.h",
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/vulkan.h",
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/wayland_clipboard.h",
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/wayland_host.h",
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/include/nexaui/wayland_outputs.h",
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/lib64/cmake/NexaUI/NexaUITargets-debug.cmake",
+      "sha256": "1151ab2ede6e2bfbd8cd76bcf2a47ada4f92cb4165ef8e792e6c0f6e8c0be0db"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/lib64/libnexaui.a",
+      "sha256": "a302d120a8e7375bcc0a97d2f0514698603394267690b48358125b369552e2ab"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-asan-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/cell_grid.h",
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/linux_accessibility_host.h",
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/nexaui.h",
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/software.h",
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/vulkan.h",
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/wayland_clipboard.h",
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/wayland_host.h",
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/include/nexaui/wayland_outputs.h",
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+      "sha256": "2c7cb8641ed96dc8351075cc21e84f92d371ae2f1f29aebc745aff0e376a727c"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/lib64/libnexaui.a",
+      "sha256": "815ccf9b7f2299402fd5d65b6d5ad6ca474c6935c6c94849560257a153662493"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-release-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/cell_grid.h",
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/linux_accessibility_host.h",
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/nexaui.h",
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/software.h",
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/vulkan.h",
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/wayland_clipboard.h",
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/wayland_host.h",
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/include/nexaui/wayland_outputs.h",
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+      "sha256": "a71b075325113cd9235ae91d2c8820bc15505b09a4bfd930972ce309ab152340"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "sha256": "35bbed1d2ad2206787d7d0b0cb4ae17964b67dc665faa5120c001089391531c5"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+      "sha256": "d9a058c1287b73c649c76602cec51210cef7567b0f4258e48dfc44268f709771"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "sdk-shared-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan-build.log",
+      "sha256": "3f76b004cb75c0f3b36f562e87981e94244e859b3ae5c2cef7cacd7e5b902cb1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan-commands.json",
+      "sha256": "0ec89e23f92c7a4c806f86bcf01b887b0f3ec435fc6dabeb2e19c1c34deaaa6b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan-configure.log",
+      "sha256": "720db62bfc4e51cfff7b02e2e7d96606187f32ee0c08435b0070d6efb57d02ec"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeCache.txt",
+      "sha256": "a84360be1443c82c8ddc3074e1bcc5cfa8074c388f726ce155895031b293b4ab"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_components.dir/software_components.c.o",
+      "sha256": "e09a6c52bb1cdc2df84566378b7ea76376c9eeaade1ed27eb0dd9823377400ff"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/33_aetheri_recovery/view_model.c.o",
+      "sha256": "83c23352c99cc57cf1503ae1078a9a7b5ea39b07003ade5eaf05ec1cace667f7"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_history.dir/software_history.c.o",
+      "sha256": "b7d7777c18084264d346a56483bf5ef82126281468656939940ee40e984d0880"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_history.dir/software_recovery.c.o",
+      "sha256": "ffc2e69d39d93f9107279a05f4507d1f563d424d7417eb79c496b8a47a339093"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/31_aetheri_manifest/manifest_document.c.o",
+      "sha256": "71da86f52c79a2b074c0c39ad88ab4ffb2eee87ea62bc47b1aea253f1605fbdd"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_model.dir/software_model.c.o",
+      "sha256": "cdfea9fd45bcf3d2fecc96563e8229abcbeacf9629e411b5badca446ab4fd31b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+      "sha256": "05ecb1e09887ccf34b569a9d1ceb4a2839e701ace427a08e45b4477885642990"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_native.dir/native.c.o",
+      "sha256": "d6cd4b9e15e383707f07ae6d87a50d0f43e6593987bb2ec48c282c93beb69088"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/common/text_wrap.c.o",
+      "sha256": "93b7408bb955e7bc5e4bcc7b4a264d98a5cd6d2bebb4790526e0c0547b59179e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_view.dir/software_view.c.o",
+      "sha256": "7b8e1dabbbf09d561aed17b4865385a9379b85768966690d22da3ac6428b5d8f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/CMakeFiles/software_worker.dir/software_worker.c.o",
+      "sha256": "b5783cb5a607d6be8b64f935c618624b217efa2ab12ecbbd13ea5f995caad365"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/generated/schema.c.o",
+      "sha256": "33ddfee573d2246d2b1a6466ea3385a309025d2f5a5216c19c7641ed80a54b6a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/data.c.o",
+      "sha256": "9e2114a6cd429667b55e09092076a6a901c226a17388f0efd1aeaa081751ee06"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/execution.c.o",
+      "sha256": "8a5af6355fa3330f0d987858f7d33e926542a6cb190213726f726ecbb303219f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/handoff.c.o",
+      "sha256": "bb8b74f7d21d37cea2d7c9b8e920fa61075b7fc4dd7de15073c66dc4266f6b5c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/interruption.c.o",
+      "sha256": "1b8466ede4523c766848bad6f69b2709a23b7ab4bc1ae6d6b2f45812ec625ae1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/lifetime.c.o",
+      "sha256": "7499da169e92e73ee1ce4fbe4b66d7e09e9e1309366f36a945da47fc43ea38ca"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/setup.c.o",
+      "sha256": "8a6654e64a0d6e32a0814bdcc91fa99882891894a16981e238569e0f4a7b3d9f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/store.c.o",
+      "sha256": "efb3e520676e22b2221b05af35f3b9fe3d3958dbfe1a8481a0b0fb2c0b8c772a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/allocation.c.o",
+      "sha256": "2ff20539333b7e77874cd02d82dac0f04e56294612bda0b88928fd765deb7502"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/digest.c.o",
+      "sha256": "fd36bf7121ab32dfe75fe47b64fb1502a1a8fb3883d9ba52eab38c0dc5e216b1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/fixture.c.o",
+      "sha256": "d34ff659935fda56f051b35903bc1732b494a6ac27ed361f8f35f04b447ef59e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/import.c.o",
+      "sha256": "66d47215eb62e2566e96af44f4f3a79058b4958aa8748ea68dd0dc69e2ea19ed"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/owner.c.o",
+      "sha256": "c2cfa6954ad214b6b526899f00e6f20cf7a22f9feff4493acfa3ff606e5ac1af"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/publish.c.o",
+      "sha256": "4d1940643d62ea48eb987d23a5a11d6648002edbcb3c49e1710509e28a9dfdb0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/root.c.o",
+      "sha256": "f1507c5a2793992b8546e4c35e109ec36c03d9747c2fb6d3e50fd80d8458688d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/storage.c.o",
+      "sha256": "43ddab7f998b570aec2ebbd5024184afd6a0c9b2f0761b3eb2c214e1b60366e8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/aetheri/CMakeFiles/aetheri_core.dir/src/core/unit_custody.c.o",
+      "sha256": "6fc46a5ef747fe5099d1b10bf85c7e603d07d9f803eef3cfe07cbdd6271aa9e7"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/build.ninja",
+      "sha256": "4bd3e0964ae04f287d19786910788fbf885f7248b3c9d3c2b83001ea90b8eddf"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/compile_commands.json",
+      "sha256": "def991a2e942ea94085f5c94e92284c04d0b7f1d9c01127f197db87076d5e72e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/software_model_test",
+      "sha256": "b7774e93d2958f2595ba5d24f6b67f2c98ae431922e6d83998d3eac900a953d1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-asan/software_native",
+      "sha256": "9f7da0269af7412c58d9f940ff706b80193ccd5a360ca7f0bc9730986144f822"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-producer-build.log",
+      "sha256": "fb364338cc30ed570d60faa6fc6e1c11bad516b7bc398169ce780eacbab07765"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-producer-commands.json",
+      "sha256": "b6c850d7e5965a6d4bb1dbb9c385f3cd26b1d41a15a6e8c60fa3fed66060c793"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-producer-configure.log",
+      "sha256": "9fa48dbc6cf52bd7e7cf43da5ec53e41fc120740e9d72c4908fcfdd6b018a474"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release-build.log",
+      "sha256": "813e297eb6c51bba28a992a8e75f36f87921b7baede0d2f79b61a1e2051556f3"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release-commands.json",
+      "sha256": "f002c45fcfa0d8b4b104075b47db2573a2616886a069403083f2bdef9d4a7581"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release-configure.log",
+      "sha256": "54b596d3f05b30838aef62df70028ee6bfbce5abd094f1fa1e52f59b6967c98e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release-peer.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeCache.txt",
+      "sha256": "23932b8e7753a3f28413edf2d8d2eac183934ecbdcfe6bb08471bdbf5651eb84"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_components.dir/software_components.c.o",
+      "sha256": "d43d1f2690315267abf5aeb1c35cfd51bc8a1eb9cb64ae69436e7f8a9e1a6b97"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/33_aetheri_recovery/view_model.c.o",
+      "sha256": "b1478b97314319d88ad11118eb1df7cbb9452dab03a21b12358d29f63dcf13ed"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_history.dir/software_history.c.o",
+      "sha256": "6a02cf21d481266a53da725047af2c9cdfc9e6f59697493194373bdae4ac83ea"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_history.dir/software_recovery.c.o",
+      "sha256": "7731c54e66f8bb64605a52a550d4c63a41beef23a4685350d5f0ac59fb440bce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/31_aetheri_manifest/manifest_document.c.o",
+      "sha256": "e7a62b587ee148c824d6ba7e8706b9d302aac2b48a73dd64609bc438120cf761"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_model.dir/software_model.c.o",
+      "sha256": "16084cbae7825f74a3aa87466a9608dbd30f550d3e80daf0403ac70f6ae7fa60"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+      "sha256": "f61f2179f1c52275d66791fa538cf6ed0ead534405d86b4492bf3bdb5d23e555"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_native.dir/native.c.o",
+      "sha256": "2bfcacd86a1a5eaf898d9d18be0e6048f6f836a0d476ec3aa18ad92791f30d9e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/common/text_wrap.c.o",
+      "sha256": "a285c5edeac903300705dd57c0360f37e54dec4c673a145535249f0d3f90e91a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_view.dir/software_view.c.o",
+      "sha256": "1c100b8cd5c466290860e189d13e739c869d06cc7b9866c5d6816ef11693dd52"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/CMakeFiles/software_worker.dir/software_worker.c.o",
+      "sha256": "a12a223ac3f5229d1d5e3e5ef1a93d403f45121b6db0881b921f76134e382fb0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/generated/schema.c.o",
+      "sha256": "55172636d4c87fb877f0f2f58f8d97e3761b0bd61219cfac4a80e42b6076d215"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/data.c.o",
+      "sha256": "dece33a0cf8d4b36a411e24a53241f935e230201310fecb290f432e54958bdd5"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/execution.c.o",
+      "sha256": "3c4836d7671022c95747efa33846ea818cdf59695b2eba7defa62889d56db776"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/handoff.c.o",
+      "sha256": "5ae510aa375142cb829706c05f932e482a48bb3cc2eab38dcbfb76f78558034e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/interruption.c.o",
+      "sha256": "24e229c9211ae52ef32a7e8d08bfde34389c32b31c145c8b78055ce6aea13f9d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/lifetime.c.o",
+      "sha256": "b1283ae2841e77466d715407c391cbcfa99b44832507670f9ae38d018de9f3c1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/setup.c.o",
+      "sha256": "e8714a6648b4f953090e2e749bc5d449633076693c5d25d32b8e90ca40655a1b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/store.c.o",
+      "sha256": "45da04ca3de9bc3ea3ffaedccddecb77a7530a74f84b44bf5cd2ec501112e386"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/allocation.c.o",
+      "sha256": "e4471c28508b32f8e40271475a452cfb494fd9cc3bc70b36e6dd7cc824917b95"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/digest.c.o",
+      "sha256": "a8d3336055703e85a57deb97c54df7d8cd4ab91911f2375430e6326f5e83c92d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/fixture.c.o",
+      "sha256": "75b9764df332a2e472bbb79f7bc7646be47b16969548e585379f11c698e625d8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/import.c.o",
+      "sha256": "c2d32ce938a45d0a147447d5e8284b3f910f9c2706ac3a080ae6be111033b5d5"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/owner.c.o",
+      "sha256": "7dde38ea6c1041c352e092df8a495dd7d194a3605076c09a5859ec19b52c932c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/publish.c.o",
+      "sha256": "c60097513d6cce948a55c7ba6eaca16ca48dd585c450c0a7e2992d908638e274"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/root.c.o",
+      "sha256": "e31eb126ebed57ff01a053057af9d8d6e2cf9df6e1a646276fb561d0cc2f95ce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/storage.c.o",
+      "sha256": "a31211108caaf43927f9640e31eb4c0194cf8c838c109a62d857271b06fe142b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/aetheri/CMakeFiles/aetheri_core.dir/src/core/unit_custody.c.o",
+      "sha256": "a3769610ce2884cb398483a8e1f5e4f127052d52ea5d575b246bd05c63812339"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/build.ninja",
+      "sha256": "74aa97d7eb1ab6d9f43d406d3f78da1c3cfc18a30ea9552bc7b9efa5f9bc8666"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/compile_commands.json",
+      "sha256": "23095cd512eedce198eebd85bfc8e70f8dda4073c2ab58e9fdb5363371ac7a10"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/software_model_test",
+      "sha256": "b060f549e77a62ca98a8ee18976fd7699eb350936352bfa8f1d751766f2e61a6"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-release/software_native",
+      "sha256": "dfc7733a696e0b292a78517463e83249d87bd77bd6a53feb2f1992b51c4a72f0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared-build.log",
+      "sha256": "030383c8f81f35ffafaa9faaa0d2e5c056e6b2b1c3495b78860302d1b7f5d3ef"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared-commands.json",
+      "sha256": "8fb7e04b1c46118f67020afc51315fbaa8f3647c152083a92083984abf2bfa5d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared-configure.log",
+      "sha256": "72a9ac9f4e318831411f5c352efde82f78a270e170bcba2aad0a19c05c3b979b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeCache.txt",
+      "sha256": "1257dec0c32e14d91338e039c54fba167d12f5ae574650f2d84cd72d5f0dc98a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_components.dir/software_components.c.o",
+      "sha256": "d43d1f2690315267abf5aeb1c35cfd51bc8a1eb9cb64ae69436e7f8a9e1a6b97"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/33_aetheri_recovery/view_model.c.o",
+      "sha256": "b1478b97314319d88ad11118eb1df7cbb9452dab03a21b12358d29f63dcf13ed"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_history.dir/software_history.c.o",
+      "sha256": "6a02cf21d481266a53da725047af2c9cdfc9e6f59697493194373bdae4ac83ea"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_history.dir/software_recovery.c.o",
+      "sha256": "7731c54e66f8bb64605a52a550d4c63a41beef23a4685350d5f0ac59fb440bce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/31_aetheri_manifest/manifest_document.c.o",
+      "sha256": "e7a62b587ee148c824d6ba7e8706b9d302aac2b48a73dd64609bc438120cf761"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_model.dir/software_model.c.o",
+      "sha256": "16084cbae7825f74a3aa87466a9608dbd30f550d3e80daf0403ac70f6ae7fa60"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+      "sha256": "f61f2179f1c52275d66791fa538cf6ed0ead534405d86b4492bf3bdb5d23e555"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_native.dir/native.c.o",
+      "sha256": "2bfcacd86a1a5eaf898d9d18be0e6048f6f836a0d476ec3aa18ad92791f30d9e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-output-src6/examples/common/text_wrap.c.o",
+      "sha256": "a285c5edeac903300705dd57c0360f37e54dec4c673a145535249f0d3f90e91a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_view.dir/software_view.c.o",
+      "sha256": "1c100b8cd5c466290860e189d13e739c869d06cc7b9866c5d6816ef11693dd52"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/CMakeFiles/software_worker.dir/software_worker.c.o",
+      "sha256": "a12a223ac3f5229d1d5e3e5ef1a93d403f45121b6db0881b921f76134e382fb0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/generated/schema.c.o",
+      "sha256": "55172636d4c87fb877f0f2f58f8d97e3761b0bd61219cfac4a80e42b6076d215"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/data.c.o",
+      "sha256": "dece33a0cf8d4b36a411e24a53241f935e230201310fecb290f432e54958bdd5"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/execution.c.o",
+      "sha256": "3c4836d7671022c95747efa33846ea818cdf59695b2eba7defa62889d56db776"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/handoff.c.o",
+      "sha256": "5ae510aa375142cb829706c05f932e482a48bb3cc2eab38dcbfb76f78558034e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/interruption.c.o",
+      "sha256": "24e229c9211ae52ef32a7e8d08bfde34389c32b31c145c8b78055ce6aea13f9d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/lifetime.c.o",
+      "sha256": "b1283ae2841e77466d715407c391cbcfa99b44832507670f9ae38d018de9f3c1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/setup.c.o",
+      "sha256": "e8714a6648b4f953090e2e749bc5d449633076693c5d25d32b8e90ca40655a1b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_catalogue.dir/src/catalogue/store.c.o",
+      "sha256": "45da04ca3de9bc3ea3ffaedccddecb77a7530a74f84b44bf5cd2ec501112e386"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/allocation.c.o",
+      "sha256": "e4471c28508b32f8e40271475a452cfb494fd9cc3bc70b36e6dd7cc824917b95"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/digest.c.o",
+      "sha256": "a8d3336055703e85a57deb97c54df7d8cd4ab91911f2375430e6326f5e83c92d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/fixture.c.o",
+      "sha256": "75b9764df332a2e472bbb79f7bc7646be47b16969548e585379f11c698e625d8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/import.c.o",
+      "sha256": "c2d32ce938a45d0a147447d5e8284b3f910f9c2706ac3a080ae6be111033b5d5"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/owner.c.o",
+      "sha256": "7dde38ea6c1041c352e092df8a495dd7d194a3605076c09a5859ec19b52c932c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/publish.c.o",
+      "sha256": "c60097513d6cce948a55c7ba6eaca16ca48dd585c450c0a7e2992d908638e274"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/root.c.o",
+      "sha256": "e31eb126ebed57ff01a053057af9d8d6e2cf9df6e1a646276fb561d0cc2f95ce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/storage.c.o",
+      "sha256": "a31211108caaf43927f9640e31eb4c0194cf8c838c109a62d857271b06fe142b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/aetheri/CMakeFiles/aetheri_core.dir/src/core/unit_custody.c.o",
+      "sha256": "a3769610ce2884cb398483a8e1f5e4f127052d52ea5d575b246bd05c63812339"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/build.ninja",
+      "sha256": "6e56f162a32b971f4d1e5836e62263049426f0624f752c80e78242a6e0a047eb"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/compile_commands.json",
+      "sha256": "874d2614be9aea5a5cf70083aea0995719cd3c3eaa1eff25e9973ce955462f93"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/software_model_test",
+      "sha256": "bbe1a70bf0c6d644d42276f8e2de090d7ad88e74f110002aa14035c56ec6dde8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-6-shared/software_native",
+      "sha256": "44111aa1250f21e66ff5469d9be93c3a39270af6f66b742bde0bb5fe0e530713"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-atspi-6",
+      "sha256": "063bb496f3b05a3733fc4f061aadae7739f7d4d918ac7f097ff462fe77944663"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative-commands.json",
+      "sha256": "5406be19dabb5935eb9148a90deebddaece2645cb5d395238658ee3a090de3d4"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout",
+      "sha256": "4295299364b9e3035826f35f9da5f9f53edc442c434c8c61a0892f44de96c8c8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout-link.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout-run.log",
+      "sha256": "e19e203eab02c2279b1fe0d69fbfa2700b2d5f16c708a1605e2babdbaf609136"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout.c",
+      "sha256": "d96d26c648200c35737953fcf15e913c8c7d5a5ff31f9c10d1a568820c987671"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout.d",
+      "sha256": "d034d3250bea6c3dfe69ee1a2350861d12945b424ea4e44000399761b30696a4"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/double-layout.o",
+      "sha256": "8aebfdcff63978abf00aac7a0c34d7f370e342366fd2f22b7eca13c160e6c795"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster",
+      "sha256": "3a277a4e76b3a18b646600048d4fa9727235d417e22811288f26298fb7bbbfee"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster-link.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster-run.log",
+      "sha256": "e808ec43dcb0d74ea5fe4795cd7d6b8076f8cb7f074b597c2d360ee247ee1599"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster.c",
+      "sha256": "05e7f9780ea349d8f0ff53cb0e4880f60879091da8f58c9c8c10448a411f52b1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster.d",
+      "sha256": "f20c18fe8358f0c22464b1049abd9e248cc83756c66cb5e159de70f2b545da62"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-negative/raster.o",
+      "sha256": "51e9e2068d431be679037b48cae55f30b9566dcceeac646e8e7bb1a206064a87"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/CMakeCache.txt",
+      "sha256": "4b58d0f5692836104b2813bc3b82978566391c9d4f9c6ab4784a34d6c99ddeab"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/CMakeFiles/4.3.0/CompilerIdC/CMakeCCompilerId.c",
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/CMakeFiles/InstallScripts.json",
+      "sha256": "03dcf9e9dab327f77cd665d2dcc8c887a6d451786f27903260cbe865d257de41"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/__/output-generated/compositor_input_driver.c.o",
+      "sha256": "44e78de535bd7f76c995f938b9242f35c78ca28c944dc3586c1535e6c60ef300"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/__/output-generated/main.c.o",
+      "sha256": "526b0923d8f58e92c8d8ec09efc8a0900719c90a935d4fac6036716c18698d1e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-original-d56-full/src/compositor/desktop.c.o",
+      "sha256": "b70f3ee2d8c2e35cf9fe18a353feaf52451400abd8ee20b025b0271fc2e03e4b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/dev/shm/nexaui-recovery-live-tty-20261107/files-atomic-producer-original-d56-full/src/compositor/input.c.o",
+      "sha256": "d03c34559493470dff46efac7bf4cccdb7eb258a29628fae02f6f1d523cbf4ac"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/generated/aetheri-development-desktop-v1.c.o",
+      "sha256": "33c6f9ab8e5f99814a248f4b8ee59ee5709190612263059098743dc70272d40c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/CMakeFiles/files_ime_producer.dir/generated/compositor_text_input.c.o",
+      "sha256": "38dc646608a7cd8445d747ea6176e3f280657ca696a82dd4852e84cf1c420725"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/aetheri-development-desktop-v1-server.h",
+      "sha256": "8a841026a5fe3022c12a185e031795d662b3e5df1231ae2d50c5358e2e145ce4"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/aetheri-development-desktop-v1.c",
+      "sha256": "fb9edad4b3aee19811ab7b5c32a9843b8d4bc0bf74285bdb05a67ddf75580667"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/compositor_input_driver.c",
+      "sha256": "33e03069af95deb9acfa279b11aa5e1baeca89502d65fcb7429ced123cd13f40"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/compositor_text_input.c",
+      "sha256": "4d237e46566d62271b5eabd82686a1b3339d42e06ec4e7e8418feb3788f99099"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/source-delta.json",
+      "sha256": "0d9b66eecd68ddec565fb53ed343e1fca88c0c5324f078ba5867160bb003fa3e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/wlr-layer-shell-unstable-v1-protocol.h",
+      "sha256": "4cb6b7db28f9231547e137fa35160a5644860f80d007581e299addc2055db78b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/generated/xdg-shell-protocol.h",
+      "sha256": "53cef09c271379c57c95d87d09b85856daf82897f76e5f4a504e012ae9180815"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/base/software_output_producer",
+      "sha256": "eb0bed09b5dad99aa28a8b3250a15eaea2e078efc21eb8854e255400f1b5dc97"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/build.ninja",
+      "sha256": "d5189f2dcf4b2cc5d3b62a57c3956b70b55b161922db9d42629a0663eeb4a837"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/compile_commands.json",
+      "sha256": "f9d373842a807d5586629a6a5ac776b569989ba883071b6e236b1f7755c4ada5"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/output-generated/compositor_input_driver.c",
+      "sha256": "cdbdda73a530a80d5c67074ebc5ce8227771a964173ce00bdc699a9076507902"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/output-generated/main.c",
+      "sha256": "5edfa755eed15bb758346797ddda7877ee767a51fa6375326c37596a27870ac0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "software-output-producer-6/output-generated/source-delta.json",
+      "sha256": "43d8210e3333534065c354174d32e7071f355be67e46e85967231ee8ef3c467e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german-command.json",
+      "sha256": "00c038b89b5d77f5612c2ad41e4c8eb63bacae34157000c6936d90544d4488dc"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german/client.log",
+      "sha256": "69432fbdfe477931e36907c0c8ba36cc81e08f20ac13d6ce2e0978a47d8252d2"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german/host.log",
+      "sha256": "e511057bb574a533dd4cb6d6347cb6da100a41dfc615efa5ed4ea2888f039b16"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german/prepare.log",
+      "sha256": "83c61481df5ff31875a4991c1d2a0bc8fbfd2e92fb91c20efef86df4c4c955a0"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german/result.json",
+      "sha256": "ad81cbc911d3a4131bc9b6bab3b87a4e2778c644772fc3fd5980de7024bb74c9"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-ime-german/server.log",
+      "sha256": "2aa877248a62e35ad5e43160ff2325414544878541bb076eb1e1d399ae4de461"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german-command.json",
+      "sha256": "df1eba1c12ee40766082e91242443cdc48d6b8ae17e23dd3e19dbb6dfa4bd237"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german/client.log",
+      "sha256": "41304e36c8cf9d6fba76f1946373a5669ac4e36dfff66555102355603c404a32"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german/host.log",
+      "sha256": "6136f33c416d33b822bb14587ac0be861b6f294d62f237f88d9382c55b5b0c6f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german/prepare.log",
+      "sha256": "bdb8e4cc002b48f20ce7432e3f447ce67e2a4a20f32e5d0c224b6f71562eac62"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german/result.json",
+      "sha256": "0c6ef4d1b6fb4090337ecc2fccfaf0d01697ac11796a27e813e5af5aea20ab81"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-german/server.log",
+      "sha256": "901c2b44e548516084ca43ab6ea7dfda3de241df92b5ce7f5305178b0db66910"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain-command.json",
+      "sha256": "8d782fd7f1c2466be45f1073b49db5cc4787378a7b9b658ca6518bdfbbd670ba"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain/client.log",
+      "sha256": "db12522329a6e03ccc77d71bbba5255e0ee46a83eb19bb11407a77ce0085d224"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain/host.log",
+      "sha256": "e89f5164fdac238f2ea25dedb1586aa57ec5f5c4754e4580d24a45bc63b6419a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain/prepare.log",
+      "sha256": "b21efc346b0dbd5dee4e8b0d89eb61360a5f8f3097319e430db1544114658ef7"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain/result.json",
+      "sha256": "59baa04c6f0b0738328b12ddff08c26690c43dc760d256aa58fe922f96d90a6c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-outputs-plain/server.log",
+      "sha256": "6068c0ff94121d58b17e039f1bc52351eaf7112a6782dc6930174727da64a2dd"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german-command.json",
+      "sha256": "0971a4d5add595b66f910ae99bc5ff37def79c9f1214b6f9f29f6f02a32fad6a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german/client.log",
+      "sha256": "9754d94153d1449c74f21957712cdc7c58d26154f8789fc8b36e36b89395a114"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german/host.log",
+      "sha256": "f3bc9c05ef18324f70ef3dfaf2edaaacdacef09e89403db3eb6fb72ddd201819"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german/prepare.log",
+      "sha256": "d893960111a66f6ea27bcbfd7fb4ff42bc848a1d38cadc87da2a46acb4995fbf"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german/result.json",
+      "sha256": "cd2fe25ff7146982b79962f94a4dc53882478d378cb650a10e91fa00ac86577c"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-asan-resize-german/server.log",
+      "sha256": "62c544ae4f03255321ffe3c9096d0ce078d9040e27ca40a3752405ed546d8e16"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-double-layout/client.log",
+      "sha256": "b9a99f84029a804aba8b598f5bd7cd5daf6e1eaf94c79922be933214f55d133b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-double-layout/host.log",
+      "sha256": "f1abe058900100cc99e3af9fc4fde1d81ecd00c4bf861a946a4023d9dfef0f99"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-double-layout/result.json",
+      "sha256": "f8ecac40ad5355fc1f1a4ef5b2a7575354d82644493cb8e0023544d7ccadc9e8"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-double-layout/server.log",
+      "sha256": "6084d04f70ed42adc0d77bb1eb947b3173d1e9f269f2f235f5cb4ebe3cdc500d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-raster/client.log",
+      "sha256": "264ed9cffae6ffb746b57a5daf3d22208b9f3501b88c3ed8e226141ca3654741"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-raster/host.log",
+      "sha256": "3b7e04eab6eada0ce1e494ad42b3d342fdf6c74ff0115d45f6bbc10f53121d03"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-raster/result.json",
+      "sha256": "fd7abbe8a2cf72237c4e12073c58099ac7a06d66d0cb86842acac011b567a3da"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-negative-raster/server.log",
+      "sha256": "047b84335cf95878263705b0dccad0a818ca921e241f77a549ce23157672040f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german-command.json",
+      "sha256": "710a3565cac5b01c1bea9ceeafdd2a84e5d9c4e4ae448fac7dc4c985e3430c77"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-1-output-0.ppm",
+      "sha256": "f467419001e5227f9ee59185ecf5a28c5f32efa2b8751c51bc52f82589a62344"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-1-output-1.ppm",
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-1-output-2.ppm",
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-2-output-0.ppm",
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-2-output-1.ppm",
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-2-output-2.ppm",
+      "sha256": "27c7aad9e652e106ee5479b4bea462645106cef0a8f86615b306a12078e9962b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-3-output-0.ppm",
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-3-output-1.ppm",
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-3-output-2.ppm",
+      "sha256": "8381db68f8b690d656825288cb32c34f4ef6acbe4ebd99711767a31e63dabe39"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-4-output-0.ppm",
+      "sha256": "9bcba6e3a7d260995d28f0388b1c898a7f17cb4ce36d69fcd125bcaebac26d0e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-4-output-1.ppm",
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/captures/capture-4-output-2.ppm",
+      "sha256": "c0442255dff21152a59714558879c6e9be654e9f1970f93b5b835251ab2046af"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/client.log",
+      "sha256": "41304e36c8cf9d6fba76f1946373a5669ac4e36dfff66555102355603c404a32"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/host.log",
+      "sha256": "d2da7bb7d1b6f9642132ba0475f600fcc8fd7728b2b35afb7898ab098210beef"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/prepare.log",
+      "sha256": "465119fdcb37af6888b865ae5044ec1d8ef0ab51c9a87c6041f614cfe7d0ff84"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/result.json",
+      "sha256": "7e1109a3b707899664de64abcc2f34c103c5e4cdebdd7b826ed0966fac413bf4"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-capture-german/server.log",
+      "sha256": "0719b334db7a7014eea5c8dc479e52fccdca4b50258f1c962c2cbc346d52018a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german-command.json",
+      "sha256": "6e9c046f183b720cca1dd0541d2d349b782baf60200eae6442c376f90af1a527"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german/client.log",
+      "sha256": "69432fbdfe477931e36907c0c8ba36cc81e08f20ac13d6ce2e0978a47d8252d2"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german/host.log",
+      "sha256": "6d019489a222c3bf07cc0b0ca37930d7e818cfc4d66e59cae3183c8a2f1550eb"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german/prepare.log",
+      "sha256": "d8f820dce4f51337a2eba78483374e929756e35fa45194a0ec1f32f583a68a8f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german/result.json",
+      "sha256": "ec88ab4ab4485b2eb5bf20e248d3085d6ec8467c3e3e40dd2bd3ccb2cc8dcabb"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-ime-german/server.log",
+      "sha256": "aca293a23f339ba8fc6b0ed99f7b39c712ba95d46aaf11747c176efa54d19acd"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german-command.json",
+      "sha256": "4b0d8ecb8f4990080000a1d0def75bf095b38461ebd17c67a90e63dd6befde34"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german/client.log",
+      "sha256": "41304e36c8cf9d6fba76f1946373a5669ac4e36dfff66555102355603c404a32"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german/host.log",
+      "sha256": "8f9131ca2c330a910cd6185cfd0440f4fb83faf88ba63b07cf5ae9a1c25e5729"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german/prepare.log",
+      "sha256": "deb0261dc4999b7c8216b731269ed3500748e495c60929b318fdcdb73b79b36e"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german/result.json",
+      "sha256": "30515821b5174af9fc458d8a8108640789c6b01857c5b722559d3fbe673bf614"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-german/server.log",
+      "sha256": "91f7bb9561151ca34001219e5603aba8bcc877a5cb268353269b43d041c8b441"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain-command.json",
+      "sha256": "2811cc803c1253b19bff64676227775708646e85b80370d567c0d4f98c52b195"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain/client.log",
+      "sha256": "db12522329a6e03ccc77d71bbba5255e0ee46a83eb19bb11407a77ce0085d224"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain/host.log",
+      "sha256": "bf47a9ea03d51cf40d6d622ba5ae0cfedcfdfd939807c2b18333ffb949f7e5ce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain/prepare.log",
+      "sha256": "348822fd1fa7c680a1c600a4f8fac47d355f04ed3566702e2f90eadfeee94f91"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain/result.json",
+      "sha256": "89be304bedb28f28c0d355303736fe94caf6a74ce8c2339d67964448563e065d"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-outputs-plain/server.log",
+      "sha256": "cf074f64f7f6ade60417427d202bbc2c66f10a7ada3a67d1a0e5b70c7843fd79"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german-command.json",
+      "sha256": "6f0404fdd893a11a65506ff5a974beb25a6043eab91a7c2f52b40ae9c1c9e7db"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german/client.log",
+      "sha256": "9754d94153d1449c74f21957712cdc7c58d26154f8789fc8b36e36b89395a114"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german/host.log",
+      "sha256": "40baeab3d683dc14d1a408d97e2f89423a1f1c012e11e3c7362d2970ca46e773"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german/prepare.log",
+      "sha256": "3d2360f38ab8c2cfa16ad444e2fbc42b50c77044bca566db251f1f034fa0b158"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german/result.json",
+      "sha256": "6e90a90054c9c412d861fe7b5bccafac72273c58370eb653b1f86ee9c463d3e1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-release-resize-german/server.log",
+      "sha256": "8146e72ee4ae3d74de5775f9028a4fad05be4a5d132b5e6368e78fa3e04f8b79"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german-command.json",
+      "sha256": "68d4abbbf6a1f54bc895161104d848b8b8aa63ede5801720e86d25f0c125cefa"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german/client.log",
+      "sha256": "69432fbdfe477931e36907c0c8ba36cc81e08f20ac13d6ce2e0978a47d8252d2"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german/host.log",
+      "sha256": "5940f590bf3fe148c9d85a458bda3c299b77c08a865e537ed38eec1e7277edeb"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german/prepare.log",
+      "sha256": "1835fc0e32b557c1a988aeed09a3b80c56251faf3dc144c7fd686d1fb1fffbe9"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german/result.json",
+      "sha256": "1bf2456494c2d8b58e4e84b269071338335c790747565e54d91ea7859a7cca88"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-ime-german/server.log",
+      "sha256": "c572f1bcc1301ea25a609508ea4934ffdd861fd85d043d07b5acdce37a796bf7"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german-command.json",
+      "sha256": "c740483a109911b0f16ac45cb10381d0c127d09ae786cd494abc4d1e4ac9a7ce"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german/client.log",
+      "sha256": "41304e36c8cf9d6fba76f1946373a5669ac4e36dfff66555102355603c404a32"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german/host.log",
+      "sha256": "77843bdc3b5c487c7253d68b8b125b4827c2f19da6c62047fb8f2a21b1d7baf9"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german/prepare.log",
+      "sha256": "2d9b2e9bdfd5fe830e3b4ee224739e44115753d832f648829fec1b04931dd2a1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german/result.json",
+      "sha256": "f1e7cd083d3888640732bae942538a8afb8e8650c4b7282214ca31697646b6a9"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-german/server.log",
+      "sha256": "8780d20459a4a2a2aaf28e7da1dfc84636d2bbfba05560979eaa1f4b07af3097"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain-command.json",
+      "sha256": "76da7add1469e1d491605ec005d723e46b2997b81a5ed3a14003928fcee3fc3f"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain/client.log",
+      "sha256": "db12522329a6e03ccc77d71bbba5255e0ee46a83eb19bb11407a77ce0085d224"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain/host.log",
+      "sha256": "7830a223a523c4913cda6a9f7740886cd5040507efe74d4e78aa7dd217ccc5be"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain/prepare.log",
+      "sha256": "404a95aa35a05ba106b585005badd072e0ac7a081d7c6dab0fc28c738e86e01b"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain/result.json",
+      "sha256": "4aae0e84f9ab74e79ffa099911bffcaf8efce6c3d338ecf7484f38ff4bd5249a"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-outputs-plain/server.log",
+      "sha256": "3367f74a8061dc5b836f0b70c9b41c13051fc3fa892fac44dbd23a68c7dd6ede"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german-command.json",
+      "sha256": "9ac29f46b56c6aa7ad913844f1505b61667d626c190787ff3f14fe4b339a1451"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german/client.log",
+      "sha256": "9754d94153d1449c74f21957712cdc7c58d26154f8789fc8b36e36b89395a114"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german/host.log",
+      "sha256": "20bd41ae82ff6ac76f9b753195dd56553a30a49f75cb89ebc3c04c754e0bf8c1"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german/prepare.log",
+      "sha256": "9d96c998e44144286aa798123c909daa8c10f1562728ba1d5d4f1af64d0ae0ba"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german/result.json",
+      "sha256": "74554ddf45df3e19027a6f499b5b2bdb9afa50493cd861a5327dc56fb0c76d36"
+    },
+    {
+      "archive": "nexaui-software-output-20261108.tar.gz",
+      "name": "swo-6-shared-resize-german/server.log",
+      "sha256": "a24ecc6dd0e7617935fff6dea88bda2916ff364f7795dcab9d44a9bba6947dea"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+      "sha256": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/CMakeLists.txt",
+      "sha256": "47bc8e64d472e11c45e23fcaefea2c0a60d1cf5f418db86f4c746f9e268774e7"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/runtime.md",
+      "sha256": "0af2ddb3fabcfa9ad9b93b0b970af94fc650687f6d83b165709e6912eee961fd"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v1.sql",
+      "sha256": "5a7d370f2ccfffd0aaa5ba8368477be35c088dd9b3a9cf9b8b64e22772c6ee0b"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v2.sql",
+      "sha256": "7a9fe66bab6237d89d9026c4a14da71e92d90006591bdcd56493d723d5145883"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v3.sql",
+      "sha256": "100d24e7b7413b4d151b0d4a8bce1297fe89aec5fbcda84781639db51fb45e8e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v4.sql",
+      "sha256": "0b094567685d63ebc54452be42c4dad0d98ad4010c2bf1d934de24866cff8b46"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v7.sql",
+      "sha256": "682c6efaa940cbb07d64c8a0330a95da49a9769b431c129d5ae63ed792e2bceb"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v8.sql",
+      "sha256": "91a8ac10efb176bd752f0fd7f8f2007253fd50eac0004c94e4755c059c9df37f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v1.sql",
+      "sha256": "0f32adbe053f75ba29908dee30c45d5720776cf9a95c02ab1d3bc51305f5c7e6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v10.sql",
+      "sha256": "21faf871c08437d771ae8313f0ebacf49e2da63532a80da1574dece7d167e799"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v2.sql",
+      "sha256": "9a606e7469a4a35db357a9ce296f2a57cdf7848b8c7bdc541219951494dcdbc8"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v3.sql",
+      "sha256": "fa9e3ff271a7a1db66934475a1ba0557c64ca9969ff05e8c726799f217a66033"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v4.sql",
+      "sha256": "bccb7f29f8b4ea034b66f2e3e68cea3818a52627fe8c046bcf639887b9751c3f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v5.sql",
+      "sha256": "6aaf5f948c33f7ac00ad1646eaf0030f05e67d89f08f64cc63b8b646097579b0"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v6.sql",
+      "sha256": "6f065ee2e6d85300743a13ae52781cde8c54f4b9540a8c7e123ceca00da0abd7"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v7.sql",
+      "sha256": "2953223788621c3bcd954acf91f0d4ab09763bcdfadc6eb951188c8e2f4773a8"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v8.sql",
+      "sha256": "62219597e849d9bb736018046fd01211927396c10caa5b9857202d68a32322ad"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v9.sql",
+      "sha256": "87e8e8c50531805adaa7f0cda1b31ff0017577e3449ec5d8ecd4a192ca75de59"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v1.sql",
+      "sha256": "235b95b978cc2ce8535273cc8407b33daee5f822a6ef942965c95550b1d68526"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v2.sql",
+      "sha256": "dad2cc892c2432bc4950a446e06fda69774a8d5bc0ec31265c181dca0bbc5cd7"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v3.sql",
+      "sha256": "9c0331df80438a76d4a8630c9ecf849f879a9b9f0f02f61fadc65bf8e9ec15f4"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v4.sql",
+      "sha256": "9307e329929a9ba9eac4c0e8ca8dc0c93c8b67c702a559e925c05553c5cdbe62"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v7.sql",
+      "sha256": "747b98a6e8be1e5bd41affa61e9cf81143144be16e94b007cb348887729a4601"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v8.sql",
+      "sha256": "ebabcae73c7912e5f2a755e5aca1eefb6a97a325f6abfde43fc8853076cc3c70"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/vectors/execution-process-v1.json",
+      "sha256": "7d90fa39e8811e9c8b0e23f8f2b0fd5466f83ff0dfac8ca3bbad87949e81bc60"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/vectors/runtime-v1.json",
+      "sha256": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/data.c",
+      "sha256": "35cf03e702b7b6ef75dcdf11c7fb97ed6a4b595ba77d153f241683b795ee2b9d"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/data.h",
+      "sha256": "e0d13895ddd91c118747153d2ba92fe184e3b5b7b97578a601acd30c05462a9f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/effect.h",
+      "sha256": "1c1205c98d9396e3a28ccaa150f5603b76dc1b285e16778f691c52b4979ac6de"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.c",
+      "sha256": "006738d4399ac99a82629be5855328768a54130d1e0fb13bdb8f6f5a248b14bb"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.h",
+      "sha256": "16ed456cd60a9403531c7f442bda72cbe76ce6ac1d3a01ede37cfed07a68d8b4"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.c",
+      "sha256": "ad57e3334400d3b4dde9fbc526ea2b937077d41c496b2e88a28b8bb19d293681"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.h",
+      "sha256": "881b045b165562e3a682590a345b3cf919fde1c9181bf553fe2825ae417b3904"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.c",
+      "sha256": "5c72792f4579ebf5cdc76c3a848c1471b82cf8d8e01d0dcd013e0aeea038fc4b"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.h",
+      "sha256": "511c77202b847f1100cfda832ef707e7690369ffa31521d61b728c943d672b65"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/launch.h",
+      "sha256": "97c66c0407bd640f59f4c28b053ed10c308c1467982a954ff04f82a770b3380f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.c",
+      "sha256": "bcb18a4dd6ab60e490b84384c9f114ec620de715f3e89766c9a38df5fec01cbe"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.h",
+      "sha256": "c6416de982278fc8b758d82c9023f1639e2e7fdc5b8f6f64bb3082d99dd27f43"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/projection.h",
+      "sha256": "f011fd5034fe9d373749d9312794db7eb18b64ac0a6500ca8b690223276dce75"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/recovery.h",
+      "sha256": "cb9760b16a6e660117b0fc963b5aafe3ddc558f0ed164c7e78fcd71df42e886e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/reservation.h",
+      "sha256": "5f35fbed070fce45063049662f3043f19bbbbfbedb7d936f94d3912c714a8c77"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/schema.h",
+      "sha256": "51ec3e0e3e184d41297b2164a05945fb1300c8ba0142c371fc9bbdfb20e045fc"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.c",
+      "sha256": "dc831694c5060bae484ac0ab819b743eedfd804210c41d143d3c801f352e04e1"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.h",
+      "sha256": "49c8d171462306dc17cb110442b64d54b1a4f46da06b58301266cda0ea774d30"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/store.c",
+      "sha256": "e1a5637e364f55252e90f24c6975922e9b9415a96823146952d24efbac2ceaed"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/store.h",
+      "sha256": "290a9434b3b0554a136ee6624aed25bc91922bf4897d70a5a4b1a050849615ac"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/unit.h",
+      "sha256": "fd969644704abcd5634992f1f0d2cfbcfbdbcc53d89265c7b2284cff5777d6c5"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/allocation.c",
+      "sha256": "cab4e9d44650813bb00af16f20032a78894a6ccac69713233ca39e173e3bc968"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/allocation.h",
+      "sha256": "402f0c36ed06537f73ded1fb0902d1bdd5da8b4f6e4fa1f7c9fefac044b373ae"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/digest.c",
+      "sha256": "8e52909e6f61b3c753df6312c05fcb2f93c53d1c96a35aabd8467bf95539b8ee"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/digest.h",
+      "sha256": "03c846e4f179c42eaf9cde56a6b2c8bb69a93c16e68a1ad0ae1157192f5d5eea"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/fixture.c",
+      "sha256": "15fd6ce5a251a94669bb07dd868ebd991db1d47c9a3684b5c275e9514f0bc21d"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/fixture.h",
+      "sha256": "ea1ac801587ebfc912b3ee2882f400fb43a8b916e4c2bf553af56df5b141b410"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/import.c",
+      "sha256": "da0b53b68607bbcf9d94d5403d4388ed6ce018a39223a2014ad263e16a81f146"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/import.h",
+      "sha256": "96ab5c665cba7f15d03f0d1676bb4347a06665ffdaf5fe6ee5a5c4c0378ae039"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/owner.c",
+      "sha256": "e4990af56e85666c8140e21ce80ab528b37718a072d547cbebbdb3f0dc936a1e"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/owner.h",
+      "sha256": "3ae5b9d8e9f69ce1bd09e26bdcebfa185a7d37e3bd837d6e22db45e207f03c9a"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/publish.c",
+      "sha256": "145825c8413e8c9df31bb17119636eb097d753e9e71b214257d64d0e62419441"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/publish.h",
+      "sha256": "bde78ba0072f3951b4d224c3e29f12f9bd9519806eec2d874fb10caa30e206de"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/root.c",
+      "sha256": "5f77d34c80361a1c2dd36da255c74f3b04163d5789f0d359ed2f16d5b44345c2"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/root.h",
+      "sha256": "4067cd1152e702d65c12c8152436d261da612c96c2ff2502afe49ddce7c96253"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/storage.c",
+      "sha256": "f8370ed48bdfd877d27b0f3c26b2f2680c75927e852ca8f1789e307391a553b9"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/storage.h",
+      "sha256": "95c76b632093fa9160f7723fd824f4a8d57d97ecdb9b0f150983992e9dec45fe"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.c",
+      "sha256": "c4e3003f58c0c360133ae3155b34d56f167fc0f06cb0bb0e9b9b7a62e74b22c6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.h",
+      "sha256": "fe2b8d7fc0b5888cfb9de3fb8509269337c9f4e5dfce92cd3810ebfe4136dbc7"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tests/test_launch.c",
+      "sha256": "696d4bcc5df691ef9920c001dd101cf135e52e6b6c860627b0e45de9232dd60c"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/catalogue_contracts.py",
+      "sha256": "2b021afd2b2c5eede0ac3b94345169663df315037094f930e8ebee348a80b0a6"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/embed_schema.py",
+      "sha256": "21f20d2efe88596f093198e1ad22dec7606a1e27c9e7a04f0a3246a1b2cbbdaf"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/runtime_contracts.py",
+      "sha256": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_contracts.py",
+      "sha256": "909332c89c8f28f289bf2ba0e751e8af509479602e5338356243bc3e859fcff9"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_launch_native.py",
+      "sha256": "b7d60b21360925477c08cc5098c98d531d1ed4e88f2d4274e6dcdf62e6e3889f"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_recovery_inventory.py",
+      "sha256": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a"
+    },
+    {
+      "archive": "nexaui-software-lifecycle-20261108.tar.gz",
+      "name": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/validate_contracts.py",
+      "sha256": "6fca28aae82bde10a1a6cf77b1257c82e826fed87983fb327a17bf96b2143ba8"
+    }
+  ],
+  "native_captures": 12,
+  "published_lossless_images": 4,
+  "scope": "Controlled private producer only; no physical/human/performance/hotplug/resume or normal-owner acceptance",
+  "open_stability_finding": "Prior750c7dc ASan native Read action failed before resize; unchanged retry passed. Cause remains unproven; these positive cases do not close it.",
+  "preliminary_attempts": [
+    {
+      "source": "input1",
+      "result": "producer include-path build failure; corrected generated-main include directory"
+    },
+    {
+      "source": "input3",
+      "result": "peer pkg-config dependency missing; retained original exact private OS include/link recipe reused"
+    },
+    {
+      "source": "input4",
+      "result": "new output task retained Close focus before Enter, causing ordinary successful host close; test focus corrected"
+    },
+    {
+      "source": "input5",
+      "result": "24 checkpoints exited0 but cleanup emitted GLib critical from extra NULL unref; excluded from final matrix; extra unref removed"
+    },
+    {
+      "source": "collector-v1",
+      "result": "manifest list incorrectly treated as mapping; corrected collector shape without changing native checks/results"
+    }
+  ]
+}

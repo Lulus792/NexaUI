@@ -1,0 +1,62 @@
+{
+  "source_revision": "4e38c6189e7f12e53534005a7d234eb99c4a397c",
+  "run_id": 42502377828,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42502377828",
+  "scope": "Exact-source job metadata: seven required successes and two optional skips. External Software consumer evidence is separate; no physical/human/performance acceptance.",
+  "jobs": [
+    {
+      "id": 128797712546,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712674,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712688,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712765,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712818,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712888,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797712914,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128797713714,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 128797714158,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ]
+}
