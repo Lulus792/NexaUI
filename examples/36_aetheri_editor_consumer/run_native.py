@@ -6,6 +6,7 @@ def main():
     p=argparse.ArgumentParser()
     for name in ('original','server','app','font','mono','output','sdk_library','sdk_receipt','sdk_source_binding'):
         p.add_argument('--'+name.replace('_','-'),type=Path,required=True)
+    p.add_argument('--ime',action='store_true',help='Enable the private native v3 producer and test the document IME variant')
     args=p.parse_args();here=Path(__file__).resolve().parent;original=args.original.resolve(strict=True)
     subprocess.run([sys.executable,str(here/'../35_aetheri_files_consumer/check_source.py'),str(original),str(here/'source-inputs.json')],check=True)
     receipt=json.loads(args.sdk_receipt.read_text());binding=json.loads(args.sdk_source_binding.read_text())
@@ -34,10 +35,15 @@ def main():
         assert delta <= 2 and log().count('FRAME ') == before, (delta, before, log().count('FRAME '))
         key(16, ctrl=True); assert app.wait(timeout=8) == 0; children.remove(app)
 '''
-    flow=here/'native_flow.py.inc';replace(before,flow.read_text())
+    flow=here/'native_flow.py.inc';native_flow=flow.read_text();ime_flow=here/'native_ime_flow.py.inc'
+    if args.ime:
+        replace("        wait(lambda: 'READY ' in log('server'), 'private compositor')", "        wait(lambda: 'READY ' in log('server'), 'private compositor')\n        event('I on')")
+        replace("            capture(name+' selected document')", "            capture(name+' selected document')\n            ime_style(name)")
+        native_flow=ime_flow.read_text()+native_flow
+    replace(before,native_flow)
     args.output.mkdir(parents=True,exist_ok=True)
     adapted=args.output/'candidate-editor-native.py';adapted.write_text(source)
-    (args.output/'driver-adaptation.json').write_text(json.dumps(dict(original_driver_sha256=digest(original/'tools/test_editor_graphical.py'),adapted_sha256=digest(adapted),flow_sha256=digest(flow),changes=changes,sdk_library=str(library),sdk_library_sha256=digest(library),sdk_receipt_sha256=digest(args.sdk_receipt),sdk_source_binding_sha256=digest(args.sdk_source_binding),source_revision=binding['source_revision'],scope='Original native workflows/assertions/deadlines retained; original empty-view idle/keyboard quit replaced by stronger retained dirty-document repeated-native-close task. SDK declaration is bound externally, not fabricated in the library.'),indent=2)+'\n')
+    (args.output/'driver-adaptation.json').write_text(json.dumps(dict(original_driver_sha256=digest(original/'tools/test_editor_graphical.py'),adapted_sha256=digest(adapted),flow_sha256=digest(flow),ime=args.ime,ime_flow_sha256=digest(ime_flow) if args.ime else None,changes=changes,sdk_library=str(library),sdk_library_sha256=digest(library),sdk_receipt_sha256=digest(args.sdk_receipt),sdk_source_binding_sha256=digest(args.sdk_source_binding),source_revision=binding['source_revision'],scope='Original native workflows/assertions/deadlines retained; original empty-view idle/keyboard quit replaced by stronger retained dirty-document repeated-native-close task. Optional IME flow explicitly enables a private v3 producer and adds original document transactions/preedit checks. SDK declaration is bound externally, not fabricated in the library.'),indent=2)+'\n')
     sys.argv=[str(original/'tools/test_editor_graphical.py')]+[str(getattr(args,k).resolve(strict=True)) for k in ('server','app','font','mono','output')]
     namespace=dict(__name__='__main__',__file__=str(original/'tools/test_editor_graphical.py'),_candidate_library=library,_candidate_metadata=dict(version=receipt['sdk_version'],revision=binding['source_revision'],sha256=digest(library)))
     exec(compile(source,str(adapted),'exec'),namespace)

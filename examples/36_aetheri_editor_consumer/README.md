@@ -97,6 +97,53 @@ Other original entry points retain their existing grapheme-boundary policy.
 The owning native adapter must still admit the focused window/document/target
 and epoch, collect a complete non-rejected BEGIN/END transaction, discard stale
 or interrupted batches, and publish surrounding text and composition geometry.
-Those native canvas connections, preedit presentation and editable accessibility
-remain separate work. This seam adds no SDK API, dependency, document authority,
+The optional native variant below supplies the canvas connections and preedit
+presentation; editable accessibility remains separate work. This seam adds no SDK API, dependency, document authority,
 file operation or active Aetheri change.
+
+## Native document IME variant
+
+Configure with both `-DEDITOR_BUILD_IME_MODEL=ON` and
+`-DEDITOR_BUILD_NATIVE_IME=ON`. The latter requires the former. Thirteen tests
+cover the original models, atomic seam and complete batch collector. The native
+variant is generated from the same checked native-close host; each additional
+substitution is recorded in `generated/ime-host/ime-host-delta.json`.
+
+The document host opts in to complete SDK transactions before enabling IME.
+It checks the native target/revision, original controller token and focused
+document before collecting a bounded commit. It changes the model only at a
+matching END. Filtered, malformed, stale and interrupted batches are discarded.
+Own accepted batches update the original token while preserving the advertised
+native revision through already queued batches. A fresh context is published
+after the native queue drains; exhaustion discards an incomplete batch without
+inventing END. Focus/tab/review/ordinary-input changes retire the old binding.
+
+The original document remains the only content and history authority. A separate
+bounded preedit is drawn with existing text-layout/selection APIs and exposed as
+a read-only composition snapshot. Native hidden-caret state is respected.
+Long preedits scroll inside their own clip; their text cannot overwrite the
+original prefix. Candidate geometry comes from the current logical layout,
+including text scale and output density, without multiplying logical coordinates
+by the backing scale. Paragraph preedit is bounded to4000 UTF-8 bytes; unsupported
+composition is reported without changing the document. Nonempty preedit cancels
+an older pending clipboard receive through the original owner's cancellation
+function. A delayed independent paste/composition peer still needs separate
+acceptance.
+
+Surrounding context reuses the original host's render snapshot and sends at most
+4000 bytes, preserving scalar/CRLF endpoints and the complete selection. A larger
+selection advertises identity only; the original controller still owns that
+selection and its atomic replacement. No full-document SDK buffer is created.
+The original filename field retains its own native path. If complete native
+boundaries are unavailable, ordinary original document editing remains available.
+
+`run_native.py --ime` enables the private producer before launching the original
+Editor. It adds processed native context/candidate and original-model revision
+barriers, replacement/Undo/Redo/queue/focus/large-document cases and complete
+captures to the original task. The producer's extra commands28/29 exercise a
+commit with continuing preedit and a hidden caret. Other original producer,
+window/save/assertion/deadline behavior is retained. A full before/after pixel
+comparison checks that long preedit leaves the original prefix unchanged.
+These are controlled native-v3 tests; installed IMEs, independent editable
+accessibility, human/physical input, performance and normal Aetheri adoption
+remain separate gates.
