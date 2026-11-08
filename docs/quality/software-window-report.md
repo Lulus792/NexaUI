@@ -1,6 +1,10 @@
 # Software foreign clipboard and native compact resize — 2026-11-08
 
 Test/consumer source: `ad7c933fe2763a4893758d31c3558ac56ad6bf31`.
+Published checkpoint `70408963bd6f52ea43cb07a82c28f06cb79bcee1` has
+[seven successful required CI jobs and two optional skips](software-window-ci.json).
+The later [measured-caption/compact-focus increment](software-label-report.md)
+addresses the observed label wrapping with its own source and evidence boundary.
 Unchanged ordinary host/model/view/worker: `8b29872a2bccec620f453cc2a97e7ef796ecee64`.
 Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI0.1.23.
 Original catalogue: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`,73 checked inputs.

@@ -1,0 +1,227 @@
+{
+  "native_images": [
+    {
+      "label": "filter",
+      "file": "capture-1-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "56df4599e97332615e4c65d3174c29f3107637bab9aca2e0aac14278c6816849",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 99,
+        "polls": 1550,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "filter",
+      "file": "capture-1-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 99,
+        "polls": 1550,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "filter",
+      "file": "capture-1-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 99,
+        "polls": 1550,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e433fd80a10d3c226629ff30042a87bbc7381caf3ab151b851680e536c27739a",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 104,
+        "polls": 1739,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 104,
+        "polls": 1739,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "compact",
+      "file": "capture-2-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 42,
+        "width": 64,
+        "height": 64,
+        "scale": 1,
+        "frames": 104,
+        "polls": 1739,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "56df4599e97332615e4c65d3174c29f3107637bab9aca2e0aac14278c6816849",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 113,
+        "polls": 1869,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 113,
+        "polls": 1869,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "restored",
+      "file": "capture-3-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 113,
+        "polls": 1869,
+        "keys": 118,
+        "request": 2
+      }
+    }
+  ],
+  "published_pngs": [
+    {
+      "label": "filter",
+      "ppm": "capture-1-output-0.ppm",
+      "ppm_sha256": "56df4599e97332615e4c65d3174c29f3107637bab9aca2e0aac14278c6816849",
+      "png": "filter.png",
+      "png_sha256": "8a3b1dcac98654c84e9c817189577a5b4a5c246da28d390489016ec3b374a96c",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-label-filter.png"
+    },
+    {
+      "label": "compact",
+      "ppm": "capture-2-output-0.ppm",
+      "ppm_sha256": "e433fd80a10d3c226629ff30042a87bbc7381caf3ab151b851680e536c27739a",
+      "png": "compact.png",
+      "png_sha256": "1c5edf20fbc86ae36db73a0e0edd7a78d426a42e4ca4a26ec42c602b09e0b2a4",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-label-compact.png"
+    },
+    {
+      "label": "restored",
+      "ppm": "capture-3-output-0.ppm",
+      "ppm_sha256": "56df4599e97332615e4c65d3174c29f3107637bab9aca2e0aac14278c6816849",
+      "png": "restored.png",
+      "png_sha256": "8a3b1dcac98654c84e9c817189577a5b4a5c246da28d390489016ec3b374a96c",
+      "width": 1920,
+      "height": 1080,
+      "published": "images/software-label-restored.png"
+    }
+  ],
+  "visual_review": "Inspected all three full output0 PNGs: complete single-line Anwenden/Zur\u00fcck captions on the first row, complete Schlie\u00dfen on the second row, bounded focused compact Close and restored draft/caret. Broader fonts/physical/human/final design remain open.",
+  "roundtrip_rgb_equal": true
+}

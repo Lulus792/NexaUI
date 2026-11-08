@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Software measured captions and compact-mode focus (2026-11-08)
+
+Consumer source `750c7dce8e1d09d68f41bba5ea096934ac77e6ca` addresses the
+observed large-German-caption wrapping with real measured action rows. Compact
+Escape now retains the new mode's focus destination and restores Filter/draft
+correctly. Static/shared Release and Debug ASan/UBSan/LSan each pass four affected
+UI CTests;24 final native cases retain362 checkpoints, nine full captures and two
+actual preceding-view failure controls. See [source, comparison images and
+artifact binding](software-label-report.md). One initial native ASan AT-SPI Read
+action failure remains an open stability finding; the identical retry passes
+without changed checks/deadlines. The narrow Software view is improved, while
+SDK/model/worker and Aetheri's independent source/pin remain unchanged. Output/
+scale/workarea, broader font/locale/IME/clipboard/service, normal adoption and
+final physical/human/performance/design gates stay open across all103 IDs,
+remaining packet6 and packets7–8. No1.0 release is declared.
+
 ## Software foreign clipboard and compact resize (2026-11-08)
 
 Test/consumer source `ad7c933fe2763a4893758d31c3558ac56ad6bf31` exercises the

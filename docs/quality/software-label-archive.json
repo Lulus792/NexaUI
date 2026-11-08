@@ -1,0 +1,96 @@
+{
+  "archives": [
+    {
+      "sha256": "c95d75a1e99b76ef5b0f429d9b9b86ccb540c0f414dc9e904304a9dd1dbd99b8",
+      "files": 1047,
+      "links": 0,
+      "directories": 489,
+      "verified": true,
+      "name": "nexaui-software-label-final-20261108.tar.gz",
+      "size": 33569607,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "cf7d742b6022107982ff4c2358b69a77580f984fd637698a84dc3e3a987305ab",
+      "files": 978,
+      "links": 1,
+      "directories": 220,
+      "verified": true,
+      "name": "nexaui-software-label-final-release-20261108.tar.gz",
+      "size": 17074895,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "0ee0636e51dac17353f15a9406473fda723cf9eab4f0e622c9dc37462185b4b5",
+      "files": 1062,
+      "links": 1,
+      "directories": 303,
+      "verified": true,
+      "name": "nexaui-software-label-final-shared-20261108.tar.gz",
+      "size": 19924508,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "f1b76202c7aa9912d65eb72f776cb42b09cf7de7bd7d86010dfd1cb9bb5f515f",
+      "files": 1147,
+      "links": 1,
+      "directories": 386,
+      "verified": true,
+      "name": "nexaui-software-label-final-asan-20261108.tar.gz",
+      "size": 39100890,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "85425fff953e7a34f8a07064e4d53b33322f8239b97cfe0837669dd379a10f70",
+      "files": 1044,
+      "links": 2,
+      "directories": 588,
+      "verified": true,
+      "name": "nexaui-software-lifecycle-20261108.tar.gz",
+      "size": 24148295,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "6f15b7dce3e259d41494b1167551fde150cc5903d6d880f1e131ff3705a1768a",
+      "files": 641,
+      "links": 0,
+      "directories": 251,
+      "verified": true,
+      "name": "nexaui-software-window-20261108.tar.gz",
+      "size": 4547340,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    }
+  ],
+  "intermediate_archives": [
+    {
+      "sha256": "31710caccad7b1f3547d6c0c386d7be6f0c22a2453b6389f0fe6bbf6800d1987",
+      "files": 574,
+      "links": 0,
+      "directories": 222,
+      "verified": true,
+      "name": "nexaui-software-label-space-20261108.tar.gz",
+      "size": 11290065,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "b2ca05b9c3b0923a15d7fdf782490ebf1f2c5a359cd85cef6615d507d2027bc4",
+      "files": 813,
+      "links": 1,
+      "directories": 204,
+      "verified": true,
+      "name": "nexaui-software-label-release-20261108.tar.gz",
+      "size": 14381413,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "146393f8eae77cd8a1e55e4ca704cf3fc7f34b9184caf72e2bc835dea51d1371",
+      "files": 907,
+      "links": 1,
+      "directories": 287,
+      "verified": true,
+      "name": "nexaui-software-label-shared-pre-focus-20261108.tar.gz",
+      "size": 17811439,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    }
+  ]
+}

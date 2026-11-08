@@ -1,5 +1,19 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+L01/L02/L05/L11/I01/I05/A02/A06/P04/P05/Q02/Q03/Q04/Q08: source
+`750c7dce8e1d09d68f41bba5ea096934ac77e6ca` measures complete Software action
+captions and reflows them into bounded rows, preserving compact-mode focus across
+Escape/mode changes. Three profiles pass4/4 affected UI CTests, including24
+style/schema/profile cases with16/32/48px fonts;24 final native cases retain362
+checkpoints and nine full captures. Two compiled actual preceding-view controls
+fail the final caption/OS geometry checks. The initial native ASan Read-action
+failure remains an open AT-SPI stability finding despite an unchanged successful
+retry; no timeout/assertion/instrumentation was weakened. See [exact source,
+artifacts, images and limits](software-label-report.md). SDK/API/version and
+independent Aetheri/model/worker are unchanged. Output/scale/workarea, broader
+font/locale/IME/clipboard/service/adoption and final gates remain across103 IDs,
+remaining packet6 and packets7–8. No complete row is closed by this checkpoint.
+
 W03/D07/L05/L11/I01/I05/T11/A02/A06/P05/P07/Q02/Q04/Q08: source
 `ad7c933fe2763a4893758d31c3558ac56ad6bf31` extends the ordinary Software OS
 peer/driver with foreign clipboard and real pointer resize checks. Three
