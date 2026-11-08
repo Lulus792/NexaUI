@@ -1,0 +1,44 @@
+{
+  "source_revision": "d5018d36261da45289a46db51e8fa6dbe0e99a5e",
+  "files": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "size": 4923,
+      "sha256": "1cce33884974fa073388f1ecb3e3dc314c05f81f7e29a5c8dc6d46107a6f717b"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "size": 3464,
+      "sha256": "199a84f9a10d08ba0f29c94267d126fad8e23c1e3966d6988c54623380e378cb"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1194,
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+      "size": 15427,
+      "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+      "size": 5132,
+      "sha256": "dd09465d09fd3ec15ed9b2f15c491f461575c1436e4ea2f442f2c36368f360fc"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_native.py",
+      "size": 4855,
+      "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "size": 8203,
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+    }
+  ],
+  "tested_input": "nexaui-files-native-input-3-20261108.tar.gz",
+  "tested_input_sha256": "2717aed4aa2d65aa6a1ce00e5d8e37a6ccd726e2eff1018530c956d49cd3d0fd",
+  "normalization": "CRLF to LF only",
+  "post_test_code_differences": []
+}

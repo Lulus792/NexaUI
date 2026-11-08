@@ -1,0 +1,19 @@
+{
+  "name": "nexaui-files-native-20261108.tar.gz",
+  "size": 30374759,
+  "sha256": "eb3f9da26d16ca4c1dca23404b141f98340c2ce731afb33b151c8771e80e59ec",
+  "files": 2794,
+  "links": 50,
+  "directories": 2497,
+  "excluded_special": [
+    "files-native-3-asan/editor-files-LGxHXG/fifo",
+    "files-native-3-asan/files-launch-47ssJC/release",
+    "files-native-3-asan/files-model-Pawxp6/pipe",
+    "files-native-3-release/editor-files-fw1SuY/fifo",
+    "files-native-3-release/files-launch-G3okzN/release",
+    "files-native-3-release/files-model-vQNvQs/pipe",
+    "files-native-3-shared/editor-files-sKXE3U/fifo",
+    "files-native-3-shared/files-launch-qREuWx/release",
+    "files-native-3-shared/files-model-sp835L/pipe"
+  ]
+}

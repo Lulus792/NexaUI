@@ -1,5 +1,14 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/B03/B04/D07/L05/L06/L11/I01/I05/T01/T02/A02/A06/P04/P05/P07/Q02/Q04/Q08:
+Original Files native consumer `d5018d36261da45289a46db51e8fa6dbe0e99a5e` now executes the real original
+Files/controller/Terminal/editor workflow and independent OS AT-SPI tasks, plus
+nine actual lost-result operations. Three profiles pass 21/21 original CTests;
+five final native runs pass with 144 checked virtual captures. [Source and limits](files-native-report.md).
+Visible emoji fallback is missing with the borrowed single font; IME target/
+revision, foreign clipboard, localization and normal adoption remain open.
+No live Aetheri/pin/API/ABI/version change; all 103 IDs and remaining packets persist.
+
 B01/B03/B04/D07/L05/L06/L11/I01/A06/P04/P05/P07/Q02/Q04/Q08:
 Original Files consumer source `23c0699960d67812d59fd60e5eec690d19a37d21` adds a separate checked
 build of unchanged Aetheri 7483286 Files model/session/NexaUI view/host. Three

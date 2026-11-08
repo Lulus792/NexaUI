@@ -1,0 +1,62 @@
+{
+  "source_revision": "222c9308a1110f2a29bfc2a250222c9bd203f43a",
+  "run_id": 42449894576,
+  "run_url": "https://github.com/Lulus792/NexaUI/actions/runs/42449894576",
+  "scope": "Exact-source job metadata for the preceding Files consumer checkpoint; not execution of this optional external native consumer.",
+  "jobs": [
+    {
+      "id": 128636652420,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652516,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652576,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652590,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652633,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652694,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636652808,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128636653228,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 128636653656,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ]
+}

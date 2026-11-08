@@ -55,3 +55,20 @@ Aetheri's own reviewed 97a4264 pin. See the [candidate report](../../docs/qualit
 for actual 3×3 results, four refusals, binary/source/archive bindings and the
 native, IME, child/document, adoption and physical/human/performance work still
 required. A successful build is not that remaining acceptance.
+
+## Native original workflows
+
+Add `-DFILES_BUILD_NATIVE_CHILDREN=ON -DFILES_BUILD_FAULT_HOST=ON` to build the
+unchanged original SDL Terminal and modal editor plus affected original tests.
+The expanded 87 inputs are in `native-inputs.json`; use their separate immutable
+export. SDL3/SDL_ttf/FreeType/HarfBuzz/Wayland versions follow original CMake.
+`run_native.py --help` describes the private normal/fault driver arguments.
+Its SDK input JSON binds revision/version, exact shared library/hash, the
+`atspi_compiled` declaration, `dbus_sdk` prefix and `dbus_headers` path/hash rows.
+Use a short owned runtime output path for Unix sockets, real child programs,
+and the original private compositor/AT-SPI fixture, never a normal desktop seat.
+
+See [native evidence](../../docs/quality/files-native-report.md) for the actual
+3×21 CTests, five native runs, nine lost-result operations, exact artifacts and
+observed missing emoji fallback. Host-bound IME, foreign clipboard, localization,
+font fallback, normal adoption and physical/human/performance remain open.
