@@ -100,4 +100,12 @@ nx_result nx_semantics_request_text_paste_with_completion(nx_context *context,
     const nx_text_value_guard *guard, void (*complete)(void *user, int applied));
 nx_result nx_text_buffer_replace_range_private(nx_text_buffer *buffer,
     size_t start, size_t end, const char *bytes, size_t length);
+/* One complete marked IME transaction, one existing undo record. Invalid or
+   rejected input preserves text/selection/history and returns ARGUMENT. Scratch
+   is bounded to 1MiB, freed on every path and wiped for sensitive buffers. */
+#if !defined(_WIN32) && (defined(__GNUC__) || defined(__clang__))
+__attribute__((visibility("hidden")))
+#endif
+nx_result nx_text_buffer_ime_transaction_private(nx_text_buffer *buffer,
+    const nx_event *events, size_t count, int *applied);
 #endif

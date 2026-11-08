@@ -96,11 +96,19 @@ static void failures(int operation, int sensitive) {
             if (operation != 1) CHECK(nx_text_buffer_undo(b) == NX_OK);
         }
         if (operation == 0) CHECK(nx_text_buffer_set_selection(b, 0, b->length) == NX_OK);
-        if (operation == 3 || operation == 4) CHECK(nx_text_buffer_set_selection(b, b->length, 1) == NX_OK);
+        if (operation == 3 || operation == 4 || operation == 5) CHECK(nx_text_buffer_set_selection(b, b->length, 1) == NX_OK);
         saved_state before = save(b);
         size_t before_live = live;
         attempts = 0; fail_at = failure;
-        r = operation == 0 ? nx_text_buffer_replace(b, "ne\xcc\x81w", 5) :
+        nx_event transaction[]={
+            {.type=NX_EVENT_IME_TRANSACTION_BEGIN,.ime_target=1,.ime_revision=1,.ime_before=NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE},
+            {.type=NX_EVENT_IME_DELETE_RANGE,.ime_target=1,.ime_revision=1,.ime_index=0,.ime_length=1},
+            {.type=NX_EVENT_TEXT,.ime_target=1,.ime_revision=1,.scalar=0x1f30d,.ime_before=NX_IME_COMMIT_START|NX_IME_COMMIT_END},
+            {.type=NX_EVENT_IME_TRANSACTION_END,.ime_target=1,.ime_revision=1,.ime_before=NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE}};
+        if(sensitive) {transaction[0].ime_before=transaction[3].ime_before=NX_IME_TRANSACTION_COMMIT;transaction[1].type=NX_EVENT_IME_PREEDIT_CHANGED;}
+        int applied=0;
+        r = operation == 5 ? nx_text_buffer_ime_transaction_private(b,transaction,4,&applied) :
+            operation == 0 ? nx_text_buffer_replace(b, "ne\xcc\x81w", 5) :
             operation == 1 ? nx_text_buffer_undo(b) :
             operation == 2 ? nx_text_buffer_redo(b) :
             operation == 3 ? nx_text_buffer_replace_all(b, "ne\xcc\x81w", 5) :
@@ -114,7 +122,7 @@ static void failures(int operation, int sensitive) {
                 CHECK(nx_text_buffer_undo(b) == NX_OK);
                 CHECK(nx_text_buffer_redo(b) == NX_OK);
                 unchanged(b, &before);
-            } else if (!sensitive && operation != 1 && operation != 3 && operation != 4) {
+            } else if (!sensitive && operation != 1 && operation != 3 && operation != 4 && operation != 5) {
                 CHECK(nx_text_buffer_redo(b) == NX_OK);
                 CHECK(nx_text_buffer_undo(b) == NX_OK);
                 unchanged(b, &before);
@@ -130,10 +138,27 @@ static void failures(int operation, int sensitive) {
     }
     CHECK(0 && "expected successful allocation control");
 }
+static void ime_limit_admission(void) {
+    sensitive_allocations=0;fail_at=0;
+    nx_text_buffer *buffer=NULL;CHECK(nx_text_buffer_create("seed",4,4096,&buffer)==NX_OK);
+    saved_state before=save(buffer);size_t before_live=live;
+    const size_t scalars=1048576u/4u;nx_event *events=calloc(scalars+3u,sizeof(*events));CHECK(events);
+    events[0]=(nx_event){.type=NX_EVENT_IME_TRANSACTION_BEGIN,.ime_target=1,.ime_revision=1,.ime_before=NX_IME_TRANSACTION_COMMIT};
+    for(size_t i=1;i<=scalars+1u;++i)events[i]=(nx_event){.type=NX_EVENT_TEXT,.ime_target=1,.ime_revision=1,.scalar=0x1f30d,.ime_before=i==1?NX_IME_COMMIT_START:0u};
+    events[scalars].ime_before|=NX_IME_COMMIT_END;events[scalars+1u]=(nx_event){.type=NX_EVENT_IME_TRANSACTION_END,.ime_target=1,.ime_revision=1,.ime_before=NX_IME_TRANSACTION_COMMIT};
+    int applied=1;attempts=0;fail_at=1;
+    CHECK(nx_text_buffer_ime_transaction_private(buffer,events,scalars+2u,&applied)==NX_ERROR_MEMORY && !applied && attempts==1);
+    fail_at=0;unchanged(buffer,&before);CHECK(live==before_live);
+    events[scalars].ime_before=0;events[scalars+2u]=events[scalars+1u];events[scalars+1u]=(nx_event){.type=NX_EVENT_TEXT,.ime_target=1,.ime_revision=1,.scalar=0x1f30d,.ime_before=NX_IME_COMMIT_END};
+    attempts=0;CHECK(nx_text_buffer_ime_transaction_private(buffer,events,scalars+3u,&applied)==NX_ERROR_LIMIT && !applied && !attempts);
+    unchanged(buffer,&before);CHECK(live==before_live);free(events);nx_text_buffer_destroy(buffer);CHECK(!live);
+}
 int main(void) {
     failures(0, 0); failures(1, 0); failures(2, 0); failures(0, 1);
     failures(3, 0); failures(3, 1);
     failures(4, 0); failures(4, 1);
+    failures(5, 0); failures(5, 1);
+    ime_limit_admission();
     puts("text-buffer edit/undo/redo OOM atomicity, boundary/history preservation and sensitive scrubbing passed");
     return 0;
 }

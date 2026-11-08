@@ -1,4 +1,4 @@
-# Core API (0.1.24)
+# Core API (0.1.25)
 
 Public declarations are in `<nexaui/nexaui.h>`. The ABI is pre-1.0. All functions that mutate a context require exclusive access on its UI thread. Separate contexts may be owned by separate threads. `nx_headless_render` accesses no context and can run on another thread after command data is copied or while the producing context and its command storage are kept unchanged.
 
@@ -30,7 +30,11 @@ macOS currently return unsupported for fullscreen requests.
 0.1.22 or newer. `nx_activity` requires 0.1.23 or newer.
 `nx_window_set_ime_transaction_events` and the opt-in Wayland v1/v3 transaction
 boundaries require 0.1.24 or newer. Unsupported backends report that explicitly;
-existing callers retain their legacy event stream. This does not declare a
+existing callers retain their legacy event stream. Atomic application of complete
+marked packets by general/numeric field widgets requires 0.1.25 or newer;
+submit the full packet before beginning one frame. See the
+[transaction contract](../concepts/ime-transactions.md) for limits, rejection,
+undo and application-owned buffering. This does not declare a
 1.0.0 release or establish a general pre-1.0 ABI compatibility guarantee.
 
 `nx_get_source_revision` returns an immutable borrowed string with the full

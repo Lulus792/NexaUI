@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.24 LANGUAGES C)
+project(NexaUI VERSION 0.1.25 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -706,6 +706,17 @@ if(NEXAUI_BUILD_TESTS)
             add_test(NAME nexaui_wayland_ime_transactions COMMAND nexaui_wayland_ime_transactions_tests)
             add_test(NAME nexaui_wayland_ime_transactions_legacy COMMAND nexaui_wayland_ime_transactions_tests --legacy)
             set_tests_properties(nexaui_wayland_ime_transactions nexaui_wayland_ime_transactions_legacy PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_ime_atomic_tests tests/test_wayland_ime_atomic.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_ime_atomic_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_ime_atomic_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_ime_atomic_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            set_target_properties(nexaui_wayland_ime_atomic_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            add_test(NAME nexaui_wayland_ime_atomic COMMAND nexaui_wayland_ime_atomic_tests)
+            set_tests_properties(nexaui_wayland_ime_atomic PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_async_clipboard_tests
                 tests/test_wayland_async_clipboard.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
@@ -1423,6 +1434,11 @@ if(NEXAUI_BUILD_TESTS)
     add_executable(nexaui_text_field_tests tests/test_text_field.c)
     target_link_libraries(nexaui_text_field_tests PRIVATE NexaUI::NexaUI)
     add_test(NAME nexaui_text_field COMMAND nexaui_text_field_tests)
+    add_executable(nexaui_ime_field_atomic_tests tests/test_ime_field_atomic.c)
+    target_link_libraries(nexaui_ime_field_atomic_tests PRIVATE NexaUI::NexaUI)
+    set_target_properties(nexaui_ime_field_atomic_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    add_test(NAME nexaui_ime_field_atomic COMMAND nexaui_ime_field_atomic_tests)
+    set_tests_properties(nexaui_ime_field_atomic PROPERTIES TIMEOUT 30)
     set_tests_properties(nexaui_text_field PROPERTIES TIMEOUT 15)
     add_executable(nexaui_text_value_tests tests/test_text_value.c)
     target_link_libraries(nexaui_text_value_tests PRIVATE NexaUI::NexaUI)

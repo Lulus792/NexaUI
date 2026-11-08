@@ -57,6 +57,7 @@ nx_result nx_get_build_features(uint64_t *out_features) {
 
 typedef struct nx_event_route {
     uint64_t pointer_id, focus_id, focus_serial;
+    size_t ime_end; /* BEGIN: exclusive matching end; SIZE_MAX: payload; 0: ordinary. */
 } nx_event_route;
 /* Routing metadata shares the event allocation, but never changes public
    events. sizeof(nx_event) preserves the uint64_t alignment of the tail. */
@@ -235,6 +236,9 @@ struct nx_context {
     int reduced_motion;
     float text_raster_scale;
     nx_event_buffer pending_events, frame_events;
+    size_t ime_transaction_depth;
+    uint64_t ime_transaction_target, ime_transaction_revision;
+    uint32_t ime_transaction_flags;
     size_t event_initial_capacity;
     size_t region_initial_capacity;
     nx_input_snapshot input;
@@ -286,6 +290,11 @@ typedef struct nx_field_pointer {
     uint64_t tick_serial, id;
 } nx_field_pointer;
 
+typedef struct nx_ime_sequence {
+    uint64_t target, revision, after_revision, focus_serial;
+    const nx_window *window;
+} nx_ime_sequence;
+
 struct nx_numeric_field {
     nx_text_buffer *buffer;
     nx_text_value_target text_value;
@@ -300,6 +309,7 @@ struct nx_numeric_field {
     uint64_t ime_published_revision;
     uint64_t ime_batch_target, ime_batch_revision;
     int ime_batch_accepted;
+    nx_ime_sequence ime_sequence;
     double committed;
     size_t history_bytes;
     const nx_context *last_context;
@@ -319,6 +329,7 @@ struct nx_text_field {
     nx_text_value_target text_value;
     size_t history_bytes;
     int sensitive, read_only;
+    nx_ime_sequence ime_sequence;
     const nx_context *last_context;
     uint64_t last_frame_serial;
     size_t next_event_index;
@@ -350,6 +361,43 @@ static void nx_context_change_focus(nx_context *ctx, uint64_t id) {
         if (ctx->focus_serial != UINT64_MAX) ++ctx->focus_serial;
         ctx->focused_id = id;
     }
+}
+
+/* Mark payload independently of any field. An incomplete envelope stays
+   quarantined across frames until balanced END; it can never fall back to the
+   legacy scalar path. Ordinary key/pointer events keep their own routing. */
+static nx_result nx_route_ime_transactions(nx_context *ctx) {
+    size_t depth=ctx->ime_transaction_depth,start=SIZE_MAX;
+    for (size_t i=0;i<ctx->frame_events.count;++i) {
+        const nx_event *event=&ctx->frame_events.data[i];
+        nx_event_route *route=&ctx->frame_events.routes[i];
+        if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
+            route->ime_end=SIZE_MAX;
+            if (depth==SIZE_MAX) return NX_ERROR_LIMIT;
+            if (!depth) {
+                ctx->ime_transaction_target=event->ime_target;
+                ctx->ime_transaction_revision=event->ime_revision;
+                ctx->ime_transaction_flags=event->ime_before;
+            }
+            start=depth?SIZE_MAX:i;++depth;
+        } else if (event->type==NX_EVENT_IME_TRANSACTION_END) {
+            route->ime_end=SIZE_MAX;
+            if (depth>1u) --depth;
+            else if (depth && event->ime_target==ctx->ime_transaction_target &&
+                event->ime_revision==ctx->ime_transaction_revision && event->ime_before==ctx->ime_transaction_flags) {
+                --depth;
+                if (start!=SIZE_MAX) ctx->frame_events.routes[start].ime_end=i+1u;
+            } else if (depth) start=SIZE_MAX;
+            if (!depth) start=SIZE_MAX;
+        } else if (depth && (event->type==NX_EVENT_TEXT ||
+            event->type==NX_EVENT_IME_DELETE_RANGE || event->type==NX_EVENT_IME_DELETE_SURROUNDING ||
+            event->type==NX_EVENT_IME_PREEDIT_CHANGED ||
+            (event->type==NX_EVENT_TEXT_COMMAND && (event->ime_target || event->ime_revision)))) {
+            route->ime_end=SIZE_MAX;
+        }
+    }
+    ctx->ime_transaction_depth=depth;
+    return NX_OK;
 }
 
 static nx_region *nx_region_find(const nx_region_buffer *buffer, uint64_t id);
@@ -880,6 +928,8 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             route->focus_serial = ctx->focus_serial;
         }
     }
+    nx_result ime_routes=nx_route_ime_transactions(ctx);
+    if (ime_routes!=NX_OK) return ime_routes;
     ctx->selection_request_count = 0;
     ctx->expansion_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
@@ -6613,6 +6663,29 @@ static uint64_t nx_buffer_ime_revision(const nx_text_buffer *buffer,
     return hash ? hash : 1u;
 }
 
+static int nx_ime_sequence_current(const nx_ime_sequence *sequence,
+    const nx_event *event,const nx_event_route *route,uint64_t current,const nx_window *window) {
+    return sequence->target==event->ime_target && sequence->revision==event->ime_revision &&
+        sequence->after_revision==current && sequence->focus_serial==route->focus_serial &&
+        sequence->window==window;
+}
+
+static nx_result nx_apply_field_ime_transaction(nx_context *ctx,nx_text_buffer *buffer,
+    size_t first,int *applied) {
+    *applied=0;const nx_event *begin=&ctx->frame_events.data[first];
+    const nx_event_route *route=&ctx->frame_events.routes[first];
+    size_t end=route->ime_end;
+    if (!end || end==SIZE_MAX || end<=first+1u || end>ctx->frame_events.count ||
+        route->focus_id!=begin->ime_target || route->focus_serial==UINT64_MAX) return NX_OK;
+    for (size_t i=first+1u;i<end;++i) {
+        const nx_event_route *next=&ctx->frame_events.routes[i];
+        if (next->focus_id!=route->focus_id || next->focus_serial!=route->focus_serial) return NX_OK;
+    }
+    nx_result result=nx_text_buffer_ime_transaction_private(buffer,
+        ctx->frame_events.data+first,end-first,applied);
+    return result==NX_ERROR_ARGUMENT?NX_OK:result;
+}
+
 static int nx_field_ime_surrounding(nx_utf8_span text, size_t anchor,
                                     size_t cursor, size_t *out_start,
                                     size_t *out_length);
@@ -6929,6 +7002,7 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
         field->last_frame_serial = ctx->frame_serial;
         field->next_event_index = 0;
         ime_batch_target=ime_batch_revision=0; ime_batch_accepted=0;
+        field->ime_sequence=(nx_ime_sequence){0};
     }
     nx_text_field_desc pointer_desc={0};
     pointer_desc.id=desc->id; pointer_desc.bounds=desc->bounds;
@@ -6945,6 +7019,28 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             size_t event_index=field->next_event_index;
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
+            if (route->ime_end) {
+                int applied=0;
+                uint64_t current=nx_buffer_ime_revision(field->buffer,field,&field->text_value);
+                if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN && field->ime_window &&
+                    event->ime_target==desc->id && (event->ime_revision==current ||
+                    nx_ime_sequence_current(&field->ime_sequence,event,route,current,field->ime_window))) {
+                    result=nx_apply_field_ime_transaction(ctx,field->buffer,event_index,&applied);
+                    if (result!=NX_OK) goto rollback;
+                }
+                ime_batch_target=ime_batch_revision=0;ime_batch_accepted=0;
+                if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
+                    field->ime_sequence=(nx_ime_sequence){0};
+                    if (applied) {
+                        field->ime_sequence=(nx_ime_sequence){event->ime_target,event->ime_revision,
+                            nx_buffer_ime_revision(field->buffer,field,&field->text_value),route->focus_serial,field->ime_window};
+                        field->pointer.active=0;field->suppress_caret_reveal=0;
+                        field->command_caret_valid=field->vertical_x_valid=0;
+                        field->next_event_index=route->ime_end;continue;
+                    }
+                }
+                ++field->next_event_index;continue;
+            }
 #if defined(__linux__)
             if (event->type==NX_EVENT_WAKE && field->paste_token) {
                 result=nx_numeric_paste_op(ctx,&pointer_desc,field,2,0,NULL);
@@ -7941,6 +8037,7 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
         field->last_frame_serial = ctx->frame_serial;
         field->next_event_index = 0;
         field->submitted = 0;
+        field->ime_sequence=(nx_ime_sequence){0};
     }
     if (field->pointer.id!=desc->id || desc->disabled) field->pointer.active=0;
 #if defined(__linux__)
@@ -7956,6 +8053,28 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
             nx_text_value_target event_model=field->text_value;
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
+            if (route->ime_end) {
+                int applied=0;
+                uint64_t current=desc->ime_window?nx_field_ime_revision(field):nx_field_host_ime_revision(ctx,field);
+                if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN && !field->read_only &&
+                    event->ime_target==desc->id && (nx_field_ime_event_current(ctx,desc,field,event,route) ||
+                    nx_ime_sequence_current(&field->ime_sequence,event,route,current,desc->ime_window))) {
+                    result=nx_apply_field_ime_transaction(ctx,field->buffer,event_index,&applied);
+                    if (result!=NX_OK) goto rollback;
+                }
+                ime_batch_target=ime_batch_revision=0;ime_batch_accepted=0;
+                if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
+                    field->ime_sequence=(nx_ime_sequence){0};
+                    if (applied) {
+                        current=desc->ime_window?nx_field_ime_revision(field):nx_field_host_ime_revision(ctx,field);
+                        field->ime_sequence=(nx_ime_sequence){event->ime_target,event->ime_revision,current,route->focus_serial,desc->ime_window};
+                        field->pointer.active=0;field->suppress_caret_reveal=0;
+                        field->command_caret_valid=field->vertical_x_valid=0;
+                        field->next_event_index=route->ime_end;continue;
+                    }
+                }
+                ++field->next_event_index;continue;
+            }
             if (event->type==NX_EVENT_POINTER_CANCEL ||
                 (event->type==NX_EVENT_FOCUS && !event->focused)) field->pointer.active=0;
 #if defined(__linux__)

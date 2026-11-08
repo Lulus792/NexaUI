@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(NexaUIIMETransactionConsumer LANGUAGES C)
-find_package(NexaUI 0.1.24 EXACT CONFIG REQUIRED)
+find_package(NexaUI 0.1.25 EXACT CONFIG REQUIRED)
 add_executable(ime_transaction_consumer main.c)
 set_target_properties(ime_transaction_consumer PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
 target_link_libraries(ime_transaction_consumer PRIVATE NexaUI::NexaUI)

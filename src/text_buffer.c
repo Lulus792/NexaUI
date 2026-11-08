@@ -569,6 +569,84 @@ nx_result nx_text_buffer_erase_internal(nx_text_buffer *buffer,size_t start,size
     return nx_tb_edit(buffer,start,end-start,NULL,0);
 }
 
+nx_result nx_text_buffer_ime_transaction_private(nx_text_buffer *buffer,
+    const nx_event *events, size_t count, int *applied) {
+    if (!applied) return NX_ERROR_ARGUMENT;
+    *applied=0;
+    if (!buffer || !events || count<2 ||
+        events[0].type!=NX_EVENT_IME_TRANSACTION_BEGIN ||
+        events[count-1].type!=NX_EVENT_IME_TRANSACTION_END) return NX_ERROR_ARGUMENT;
+    const nx_event *begin=&events[0],*end=&events[count-1],*deletion=NULL;
+    uint32_t flags=begin->ime_before;
+    if (!begin->ime_target || !begin->ime_revision ||
+        !(flags&(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE)) ||
+        (flags&~(NX_IME_TRANSACTION_COMMIT|NX_IME_TRANSACTION_DELETE)) ||
+        end->ime_target!=begin->ime_target || end->ime_revision!=begin->ime_revision ||
+        end->ime_before!=flags || (buffer->sensitive && (flags&NX_IME_TRANSACTION_DELETE)))
+        return NX_ERROR_ARGUMENT;
+    size_t bytes=0,texts=0;int text_end=0;
+    for (size_t i=1;i<count-1;++i) {
+        const nx_event *event=&events[i];
+        if (event->type==NX_EVENT_IME_PREEDIT_CHANGED && !event->ime_target && !event->ime_revision) continue;
+        if (event->ime_target!=begin->ime_target || event->ime_revision!=begin->ime_revision)
+            return NX_ERROR_ARGUMENT;
+        if (event->type==NX_EVENT_IME_PREEDIT_CHANGED) continue;
+        if (event->type==NX_EVENT_IME_DELETE_SURROUNDING || event->type==NX_EVENT_IME_DELETE_RANGE) {
+            if (deletion || texts || !(flags&NX_IME_TRANSACTION_DELETE)) return NX_ERROR_ARGUMENT;
+            deletion=event;continue;
+        }
+        if (event->type!=NX_EVENT_TEXT || !(flags&NX_IME_TRANSACTION_COMMIT) || text_end ||
+            (event->ime_before&~(NX_IME_COMMIT_START|NX_IME_COMMIT_END)) ||
+            (!!(event->ime_before&NX_IME_COMMIT_START)!=!texts) ||
+            event->scalar<0x20u || event->scalar==0x7fu || event->scalar>0x10ffffu ||
+            (event->scalar>=0xd800u && event->scalar<=0xdfffu) ||
+            (event->modifiers&NX_MOD_SUPER) ||
+            ((event->modifiers&NX_MOD_CONTROL) && !(event->modifiers&NX_MOD_ALT)))
+            return NX_ERROR_ARGUMENT;
+        size_t n=event->scalar<0x80u?1u:event->scalar<0x800u?2u:event->scalar<0x10000u?3u:4u;
+        if (n>1048576u-bytes) return NX_ERROR_LIMIT;
+        bytes+=n;++texts;text_end=(event->ime_before&NX_IME_COMMIT_END)!=0;
+    }
+    if (!!deletion!=!!(flags&NX_IME_TRANSACTION_DELETE) || (texts && !text_end)) return NX_ERROR_ARGUMENT;
+    size_t start=buffer->anchor<buffer->cursor?buffer->anchor:buffer->cursor;
+    size_t finish=buffer->anchor>buffer->cursor?buffer->anchor:buffer->cursor;
+    if (deletion && deletion->type==NX_EVENT_IME_DELETE_SURROUNDING) {
+        if ((!deletion->ime_before && !deletion->ime_after) ||
+            deletion->ime_before>start || deletion->ime_after>buffer->length-finish) return NX_ERROR_ARGUMENT;
+        start-=deletion->ime_before;finish+=deletion->ime_after;
+    } else if (deletion) {
+        if (!deletion->ime_length) return NX_ERROR_ARGUMENT;
+        if (deletion->ime_index<0) {
+            uint64_t before=(uint64_t)-(int64_t)deletion->ime_index;
+            if (before>buffer->cursor) return NX_ERROR_ARGUMENT;
+            start=buffer->cursor-(size_t)before;
+        } else {
+            size_t after=(size_t)deletion->ime_index;
+            if (after>buffer->length-buffer->cursor) return NX_ERROR_ARGUMENT;
+            start=buffer->cursor+after;
+        }
+        if (deletion->ime_length>buffer->length-start) return NX_ERROR_ARGUMENT;
+        finish=start+deletion->ime_length;
+    }
+    if ((start<buffer->length && ((unsigned char)buffer->bytes[start]&0xc0u)==0x80u) ||
+        (finish<buffer->length && ((unsigned char)buffer->bytes[finish]&0xc0u)==0x80u)) return NX_ERROR_ARGUMENT;
+    char *inserted=NULL;
+    if (bytes) {
+        inserted=malloc(bytes);
+        if (!inserted) return NX_ERROR_MEMORY;
+        size_t at=0;
+        for (size_t i=1;i<count-1;++i) if (events[i].type==NX_EVENT_TEXT)
+            at+=nx_tb_encode_scalar(events[i].scalar,inserted+at);
+    }
+    nx_result result=nx_tb_edit(buffer,start,finish-start,inserted,bytes);
+    if (inserted) {
+        if (buffer->sensitive) nx_private_secure_zero(inserted,bytes);
+        free(inserted);
+    }
+    if (result==NX_OK) *applied=1;
+    return result;
+}
+
 static nx_result nx_tb_command(nx_text_buffer *buffer,uint32_t value,int *handled) {
     if (!nx_text_command_valid(value)) return NX_ERROR_ARGUMENT;
     uint32_t command=nx_text_command_base(value);

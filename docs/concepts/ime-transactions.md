@@ -41,13 +41,43 @@ A valid empty commit has COMMIT without REJECTED and no TEXT scalars. A delete
 without a commit has DELETE without COMMIT. Consecutive transactions retain
 separate BEGIN/END pairs even when their target/revision match.
 
-The application must keep a bounded buffer, reject nested/mismatched/incomplete
-transactions and retain its own target, focus, selection, scope and model
-revision. Apply accepted edits together only after matching END; reject the
-entire operation when REJECTED is set. Discard buffered work on input/polling
-errors, focus/context retirement or intervening commands. Queue exhaustion is
-not a transaction boundary. These notifications do not provide automatic
-atomic application, undo grouping, authorization or complete consumer adoption.
+## Field application from 0.1.25
+
+General and numeric field widgets apply a complete marked transaction queued
+before one `nx_begin_frame` as one buffer edit. Deletion and the complete UTF-8
+commit share one undo record under the field's existing history budget; undo
+restores the previous text and selection,
+including reversed selections and identical-byte replacements. Empty commits
+replace the selection; delete-only packets remain distinct. Numeric edits
+change the draft: Enter or `nx_numeric_field_commit` still confirms its value.
+Sensitive fields accept commits without undo history and reject surrounding
+deletion. Read-only and disabled fields do not accept edits.
+
+The operation must match the field's target, model/selection revision, input
+provider and routed focus generation. Consecutive packets received for the same
+published revision can apply in that frame while those identities and the
+result of the preceding edit remain current. Each packet has separate undo.
+Replaying the old revision in a later frame is rejected.
+
+REJECTED, nested, mismatched, stale or malformed packets do not apply a partial
+edit. Marked payload never falls back to individual scalar processing. An
+incomplete envelope stays suppressed across frames until its matching END;
+it is not retained and later applied. Ordinary key/pointer commands retain
+their routing and invalidate an interrupted edit. UTF-8 commit scratch is
+limited to 1 MiB per operation; larger input returns `NX_ERROR_LIMIT` before
+scratch allocation. Allocation failure preserves text, selection and history.
+A successful edit followed by failed painting can be retried in the same
+frame without replaying that edit. Sensitive scratch is cleared before free.
+
+## Application-owned queues and controllers
+
+The application must keep a bounded buffer and submit complete packets before
+beginning a frame. A temporary empty queue is not END. Discard buffered work on
+input/polling errors, focus/context retirement or intervening commands. A
+controller using raw buffer/event APIs must perform its own whole-operation
+validation and application; widget grouping does not extend to those APIs.
+The 0.1.24 transport alone does not group edits. These notifications provide
+no authorization or complete consumer adoption.
 
 The protocol applies deletion before insertion; see the pinned
 [text-input-v3 1.48 `done` contract](https://raw.githubusercontent.com/wayland-mirror/wayland-protocols/1.48/unstable/text-input/text-input-unstable-v3.xml).
@@ -55,7 +85,10 @@ The [wire tests](../../tests/test_wayland_ime_transactions.c) exercise real
 private Wayland messages with opt-in and unchanged default streams. The
 [v1 test](../../tests/test_wayland_text_input_v1.c) covers the fallback protocol.
 The [installed C17 probe](../../tests/ime_transaction_consumer/CMakeLists.txt)
-checks the new symbol and matching 0.1.24 header/library/package versions.
+checks the symbol and matching 0.1.25 header/library/package versions.
+The [public field regression](../../tests/test_ime_field_atomic.c) and
+[native widget regression](../../tests/test_wayland_ime_atomic.c) check atomic
+application independently of the transport-only wire tests.
 
 Files' existing separate consumer remains on its reviewed 0.1.23 experiment
 until its complete buffering/application path is connected and tested against

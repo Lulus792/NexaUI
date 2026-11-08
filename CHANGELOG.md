@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.25 — Development snapshot
+
+- General and numeric fields apply complete opt-in IME transactions queued in one frame as one edit, with whole-operation validation and one undo restoring text and selection. Consecutive native packets retain separate undo; stale, rejected, malformed and interrupted packets do not partially edit. Password commits retain no history. Numeric draft confirmation and default legacy event streams are unchanged. Application-owned packet buffering and raw controller integration remain separate responsibilities.
+
 ## 0.1.24 — Development snapshot
 
 - Added opt-in Wayland v1/v3 IME transaction boundaries, including explicit empty commits and whole-transaction rejection flags for filtered input. Existing event enum values and structure layout are retained; other backends report unsupported. Consumer buffering, validation and atomic application remain separate responsibilities.
