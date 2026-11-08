@@ -1,0 +1,94 @@
+[
+  {
+    "source": "filter.ppm",
+    "source_archive_path": "rv11w7-c-release-fresh-resize/captures/capture-1-output-0.ppm",
+    "source_sha256": "208b141a0acc2fe84c8c8b62a0b5b793561ab48e065ad8965d240c12d0a799dc",
+    "view": {
+      "state": 2,
+      "epoch": 3,
+      "count": 7,
+      "mode": 1,
+      "focus": 45,
+      "width": 360,
+      "height": 300,
+      "scale": 1,
+      "frames": 98,
+      "polls": 2465,
+      "keys": 116,
+      "request": 3
+    },
+    "png": "recovery-root11-window-filter.png",
+    "sha256": "4591f5d4ab9a1d93cf46f4c8f0106198a1af1c7bb37671862f4f1373001edc67",
+    "width": 1920,
+    "height": 1080
+  },
+  {
+    "source": "tiny.ppm",
+    "source_archive_path": "rv11w7-c-release-fresh-resize/captures/capture-2-output-0.ppm",
+    "source_sha256": "e433fd80a10d3c226629ff30042a87bbc7381caf3ab151b851680e536c27739a",
+    "view": {
+      "state": 2,
+      "epoch": 3,
+      "count": 7,
+      "mode": 1,
+      "focus": 42,
+      "width": 64,
+      "height": 64,
+      "scale": 1,
+      "frames": 104,
+      "polls": 2590,
+      "keys": 116,
+      "request": 3
+    },
+    "png": "recovery-root11-window-tiny.png",
+    "sha256": "1c5edf20fbc86ae36db73a0e0edd7a78d426a42e4ca4a26ec42c602b09e0b2a4",
+    "width": 1920,
+    "height": 1080
+  },
+  {
+    "source": "compact.ppm",
+    "source_archive_path": "rv11w7-c-release-fresh-resize/captures/capture-3-output-0.ppm",
+    "source_sha256": "48240b01b1e5ced23456c8e3340551892a72e659118090a1d18d65213f093b0c",
+    "view": {
+      "state": 2,
+      "epoch": 3,
+      "count": 7,
+      "mode": 1,
+      "focus": 42,
+      "width": 240,
+      "height": 96,
+      "scale": 1,
+      "frames": 109,
+      "polls": 2658,
+      "keys": 116,
+      "request": 3
+    },
+    "png": "recovery-root11-window-compact.png",
+    "sha256": "a0499237ef7b9badbecc1ec54b0a1150bf8fc6014bbf30bac18d6b23f793d917",
+    "width": 1920,
+    "height": 1080
+  },
+  {
+    "source": "restored.ppm",
+    "source_archive_path": "rv11w7-c-release-fresh-resize/captures/capture-4-output-0.ppm",
+    "source_sha256": "208b141a0acc2fe84c8c8b62a0b5b793561ab48e065ad8965d240c12d0a799dc",
+    "view": {
+      "state": 2,
+      "epoch": 3,
+      "count": 7,
+      "mode": 1,
+      "focus": 45,
+      "width": 360,
+      "height": 300,
+      "scale": 1,
+      "frames": 114,
+      "polls": 2725,
+      "keys": 116,
+      "request": 3
+    },
+    "png": "recovery-root11-window-restored.png",
+    "sha256": "4591f5d4ab9a1d93cf46f4c8f0106198a1af1c7bb37671862f4f1373001edc67",
+    "width": 1920,
+    "height": 1080
+  }
+]

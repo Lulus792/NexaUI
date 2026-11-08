@@ -1,5 +1,16 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W03/D07/D11/L04/L05/L11/I01/I05/T11/A02/A06/P05/P07/Q02/Q04/Q08: source `cc8b5e7`
+admits original Root11 fixtures to existing native clipboard workflows.27 current
+and six legacy User clipboard/resize cases pass671 checkpoints across static,
+shared and sanitizer profiles. Foreign Unicode ownership/late-focus/pending-close,
+compact/restore draft/focus and two compiled provider defects are checked.32 exact
+inputs, eight unchanged provider/fixture binaries, five foreign tool files and
+four inspected lossless captures have source/artifact bindings. See [Root11
+clipboard/resize](recovery-root-v11-window-report.md). Current authority, broader
+packet6 compositions, packets7–8 and final physical/human/performance/adoption gates
+remain open across the unchanged103 IDs; independent Aetheri/pin is untouched.
+
 D07/L05/L11/I01/I05/A02/A06/P04/P05/P07/Q02/Q04/Q08: source `0d41883`
 extends existing original Root11 native held-query tests:18 current and eight
 legacy held cases plus two ordinary IME/navigation regressions pass. Thirteen

@@ -323,7 +323,8 @@ in example34 alongside example33 and the peer built from the same checkout.
 The runner prepares private original metadata fixtures, not live service or
 process admission. Ordinary IME/navigation and `--held wake|close` are supported
 as separate workflows; held mode requires the test-only wrapped host and lifecycle
-OS peer. Clipboard remains a separate gate. Choose a short private
+OS peer. `--clipboard normal|close` with the private `--clipboard-tools` and
+`--resize` also accept the Root11 fixture as separate ordinary-peer workflows. Choose a short private
 `--work-dir` so both Wayland and D-Bus socket pathnames fit Linux limits.
 
 The independent peer checks the full issuer ID, related operation, schema,
@@ -333,3 +334,5 @@ retained setup failure and exact source/artifact bindings. Native physical,
 human assistive and actual current-authority acceptance remain open.
 
 [Root11 held-query evidence](../../docs/quality/recovery-root-v11-held-report.md) records original transactions, FD wakeup, GUI retirement, late disposal and descriptor balance.
+
+[Root11 clipboard/resize evidence](../../docs/quality/recovery-root-v11-window-report.md) records foreign ownership/late replies, pending close, compact restoration and exact captures.

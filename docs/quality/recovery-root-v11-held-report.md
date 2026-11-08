@@ -1,5 +1,9 @@
 # Root11 held-query wakeup and close lifetimes — 2026-11-08
 
+Subsequent [Root11 clipboard/resize checks](recovery-root-v11-window-report.md)
+on source `cc8b5e7` add those scoped native results. The held-query evidence and
+historical open gates below retain their original source boundary.
+
 Test source: `0d418830ac90270135ea26d9b1f8f0c317bd05ee`.
 Unchanged provider/model/view/worker source: `e3031e0f382c67e41929d7c08e710ea7be7e4a7f`.
 Explicit Root11 original source: `fa5347264054b05e8af57e6d0a210008a6c849d1`.
