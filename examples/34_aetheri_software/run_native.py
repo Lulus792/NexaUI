@@ -9,6 +9,7 @@ import re
 import signal
 import socket
 import sqlite3
+import struct
 import subprocess
 import sys
 import time
@@ -19,7 +20,9 @@ def main():
     for name in ('german','large','small','contrast','light','ime'):p.add_argument('--'+name,action='store_true')
     p.add_argument('--components',choices=('match','identity-failure'),help='Join private original canonical manifest metadata to the first selected app')
     p.add_argument('--contents',action='store_true',help='Inspect all declared files/actions through native keyboard and OS semantics')
+    p.add_argument('--held',choices=('wake','close'),help='Test-only original-query hold with the independent lifecycle OS peer')
     a=p.parse_args()
+    if a.held and (a.ime or a.components or a.contents):p.error('Run held lifetime, IME and metadata inspection workflows separately')
     if a.contents and a.components!='match':p.error('--contents requires --components match')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source','model')}
@@ -54,8 +57,11 @@ def main():
         env.pop('SWG_'+name.upper(),None)
         if getattr(a,name):env['SWG_'+name.upper()]='1'
     if a.ime:env['WAYLAND_DEBUG']='client'
+    gate_read,gate_write=os.pipe2(os.O_CLOEXEC) if a.held else (-1,-1)
+    if a.held:env['SWG_TEST_GATE_FD']=str(gate_read)
+    else:env.pop('SWG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[]
-    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3}
+    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components','held')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3}
     if a.components:result['component_inputs']=json.loads((component_input/'inputs.json').read_text())
     def start(command,name,fds=(),input_pipe=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
@@ -75,6 +81,28 @@ def main():
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
         return {k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',lines[-1])} if lines else {}
+    def release_gate():
+        nonlocal gate_write
+        if gate_write>=0:
+            try:os.write(gate_write,b'R')
+            finally:os.close(gate_write);gate_write=-1
+    def sleeping_with_worker_fd():
+        # Same parent-owned syscall/pollfd witness as the Recovery consumer.
+        if sys.platform!='linux' or os.uname().machine!='x86_64':raise RuntimeError('Native wait witness requires the selected Linux x86-64 carrier')
+        matches=re.findall(r'^HELD_WAIT_ENTER fd=(\d+) timeout=(\d+)$',log('host'),re.M)
+        if not matches:return False
+        try:
+            raw=Path(f'/proc/{host.pid}/syscall').read_text().split()
+            if len(raw)<4 or raw[0]!='7':return False
+            address,nfds=int(raw[1],0),int(raw[2],0)
+            if not 1<=nfds<=32:return False
+            with Path(f'/proc/{host.pid}/mem').open('rb',buffering=0) as memory:data=os.pread(memory.fileno(),nfds*8,address)
+            if len(data)!=nfds*8:return False
+            descriptors=[{'fd':fd,'events':events,'revents':revents} for fd,events,revents in struct.iter_unpack('<ihh',data)]
+            wake_fd=int(matches[-1][0])
+            if not any(d['fd']==wake_fd and d['events']&1 for d in descriptors):return False
+            result['native_wait_witness']={'syscall':raw,'descriptors':descriptors,'worker_fd':wake_fd,'view':view()};return True
+        except (FileNotFoundError,ProcessLookupError):return False
     def ime_barrier(bytes_count):
         marker=f'PREEDIT bytes={bytes_count}\n';wait(lambda:marker in log('host'),'native preedit change')
         wait(lambda:re.search(r'^VIEW ',log('host')[log('host').rfind(marker)+len(marker):],re.M) is not None,'field frame after preedit')
@@ -90,15 +118,42 @@ def main():
             probe=subprocess.run(['dbus-send','--bus='+address,'--print-reply','--dest=org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus.NameHasOwner','string:org.a11y.atspi.Registry'],env=env,capture_output=True,text=True,timeout=2)
             return probe.returncode==0 and 'boolean true' in probe.stdout
         wait(registered,'registry')
-        host=start([paths['host'],paths['font'],databases[0].parent,uid(1),uid(2),'1000',*[uid(n) for n in (12,99,10,13,11)]]+(['--manifest',uid(10),manifest,'--manifest',uid(12),component_input/'malformed.bin','--manifest',uid(99),component_input/'fifo'] if manifest else []),'host')
+        host=start([paths['host'],paths['font'],databases[0].parent,uid(1),uid(2),'1000',*[uid(n) for n in (12,99,10,13,11)]]+(['--manifest',uid(10),manifest,'--manifest',uid(12),component_input/'malformed.bin','--manifest',uid(99),component_input/'fifo'] if manifest else []),'host',(gate_read,) if a.held else ())
+        if gate_read>=0:os.close(gate_read);gate_read=-1
         wait(lambda:view().get('state')==2 and view().get('count')==5 and 'SOFTWARE_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial selected-app observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
         peer_flags=(['--components',','.join(result['component_inputs']['dependencies'])] if a.components=='match' else ['--component-failure'] if a.components else [])
         if a.contents:peer_flags+=['--contents',str(component_input/'content-peer.txt')]
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+peer_flags,'client',input_pipe=True)
+        if a.held:peer_flags=['--held',a.held]
+        peer=start([paths['client'],host.pid,first_name,last_name]+peer_flags+(['--german'] if a.german else [])+(['--ime'] if a.ime else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
-        for step in range(10):
+        if a.held:
+            # The lifecycle peer takes --held before its optional locale flag.
+            for step in (0,1):
+                peer_line('STEP '+str(step))
+                if step==1:
+                    wait(lambda:'HELD_QUERY_ENTERED ordinal=2 transaction=1\n' in log('host'),'original SQL transaction held')
+                    wait(lambda:view().get('state')==1 and view().get('epoch')==1 and view().get('request')==2,'Reading while original query held')
+                peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush();peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
+            peer_line('STEP 2')
+            if 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Original query completed before gate release')
+            if a.held=='close':
+                wait(lambda:view().get('mode')==1 and view().get('focus')==42,'Close focused beside retained field')
+                key(28)
+                wait(lambda:'SOFTWARE_GUI_GONE\n' in log('host') and 'UNMAP 0\n' in log('server'),'native GUI unmaps while original query is held')
+                if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Host did not retain its held worker after GUI close')
+                result['gui_gone_before_gate_release']=True
+            else:
+                wait(sleeping_with_worker_fd,'native main thread asleep in poll with worker FD')
+                before_keys=view().get('keys');offset=len(log('host'));release_gate()
+                wait(lambda:'HELD_QUERY_DONE ordinal=2 status=0 eligible=2 unknown=3\n' in log('host') and view().get('epoch')==2 and view().get('state')==2,'completion adopts without further input')
+                if view().get('keys')!=before_keys:raise RuntimeError('Unexpected native key while waiting for worker completion')
+                returns=re.findall(r'^HELD_WAIT_RETURN ready=(\d+) status=0$',log('host')[offset:],re.M)
+                if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
+                result['completion_without_further_input']=True
+            peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
+        for step in (() if a.held else range(10)):
             peer_line('STEP '+str(step))
             if step==1:key(inspection_key);wait(lambda:view().get('focus')==inspected_row,'logical target focus')
             if step==2:wait(lambda:view().get('mode')==2 and view().get('focus')==43,'selected target detail')
@@ -135,10 +190,17 @@ def main():
                     result['contents_commands']=commands
             peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
         peer.wait(timeout=7)
-        if peer.returncode!=0 or 'SOFTWARE_NATIVE_SELECTED_ROWS_READONLY_DETAILS_RETIRED_REFERENCES_KEYBOARD_FILTER_SELECTION_OK' not in log('client'):raise RuntimeError('Independent peer failed')
+        marker=('SOFTWARE_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'SOFTWARE_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'SOFTWARE_NATIVE_SELECTED_ROWS_READONLY_DETAILS_RETIRED_REFERENCES_KEYBOARD_FILTER_SELECTION_OK'
+        if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if view().get('request')!=2:raise RuntimeError('Local inspection/filtering posted backend work')
-        key(28);host.wait(timeout=7)
+        if a.held=='close':
+            if host.poll() is not None or 'HELD_QUERY_DONE' in log('host'):raise RuntimeError('Held worker ended before retirement peer finished')
+            release_gate()
+        else:key(28)
+        host.wait(timeout=7)
         if host.returncode!=0 or 'SOFTWARE_GUI_GONE\n' not in log('host') or 'failed=0\n' not in log('host'):raise RuntimeError('Host did not close normally')
+        if a.held and 'SOFTWARE_NATIVE_HELD_ORIGINAL_QUERY_RETIREMENT_DISPOSAL_AND_FDS_OK' not in log('host'):raise RuntimeError('Missing late-result disposal or descriptor balance')
+        if a.held and 'SOFTWARE_CLOSED requests=2 adopted='+('1' if a.held=='close' else '2')+' ignored=0 failed=0\n' not in log('host'):raise RuntimeError('Unexpected late-result adoption')
         for index,path in enumerate(databases):
             if hashlib.sha256(path.read_bytes()).hexdigest()!=before_sha[str(path)]:raise RuntimeError('Original catalogue bytes changed')
             with closing(sqlite3.connect(path)) as db:
@@ -147,6 +209,8 @@ def main():
             if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:',log(name)):raise RuntimeError('Sanitizer diagnostic')
         result.update(status='passed',host_exit=host.returncode,peer_exit=peer.returncode,sha256_before_after=before_sha,database_rows_unchanged=True)
     finally:
+        if gate_read>=0:os.close(gate_read)
+        if gate_write>=0:os.close(gate_write)
         cleanup=[]
         for name,child in reversed(children):
             forced=False

@@ -26,6 +26,25 @@ cmake --build build-software --target software_model_test software_worker_test \
 ctest --test-dir build-software --output-on-failure
 ```
 
+The optional `SWG_BUILD_LIFECYCLE_HOST=ON` adds `software_held_native`, a test
+host that includes the ordinary `native.c` entry verbatim. Link wrappers hold
+the second selected-app read inside the original SQLite transaction. They
+check serialized original access, view/window retirement, GUI-thread disposal
+of both late result allocations, original worker close and descriptor balance.
+The ordinary executable has no gate or SQL wrapper. With
+`SWG_BUILD_ATSPI_CLIENT=ON`, `software_lifecycle_atspi` is an independent OS peer,
+linked to system libatspi rather than NexaUI.
+
+Use the existing `run_native.py` arguments with `--host /path/software_held_native`,
+`--client /path/software_lifecycle_atspi` and `--held wake` or `--held close`.
+The driver creates and releases the inherited control pipe itself. Wake cases
+inspect the Linux x86-64 child syscall/pollfd state and require completion without
+more native input. Close cases retain a real editable filter draft, close the
+window while SQL remains held, and require stale AT-SPI edits/actions to fail
+before releasing the query. Run IME and manifest/history workflows separately.
+The [native lifecycle report](../../docs/quality/software-lifecycle-report.md)
+records exact sources, profiles, compiled negative controls and open gates.
+
 The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
 alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
 selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical
