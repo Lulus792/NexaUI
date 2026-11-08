@@ -3,6 +3,7 @@
 #include "../30_async_hierarchy/atspi_client.c"
 #undef main
 static const char *label(const char *en,const char *de){return german?de:en;}
+static const char *issuer_runtime;
 static AtspiAccessible *wait_node(AtspiAccessible *desktop,unsigned long pid,AtspiAccessible **app,const char *name,AtspiRole role){
     double until=now()+4;AtspiAccessible *node=NULL;
     while(!node&&now()<until){AtspiAccessible *fresh=target(desktop,pid);if(fresh){if(*app)g_object_unref(*app);*app=fresh;node=lookup(*app,name,role);}if(!node)pump();}return node;
@@ -30,6 +31,11 @@ static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessib
     int okay=0;AtspiAccessible *area=lookup(app,label("Record details","Eintragsdetails"),ATSPI_ROLE_SCROLL_PANE);AtspiText *t=atspi_accessible_get_text_iface(node);GError *error=NULL;
     char *text=t?atspi_text_get_text(t,0,-1,&error):NULL;char expected[40];snprintf(expected,sizeof expected,"ID: %s",id);
     CHECK(t&&!error&&text&&strstr(text,expected)&&strstr(text,"Runtime:")&&strstr(text,label("Catalogue revision:","Katalogrevision:"))&&g_utf8_validate(text,-1,NULL));
+    if(issuer_runtime){
+        char runtime[64];snprintf(runtime,sizeof runtime,"Runtime: %s",issuer_runtime);
+        CHECK(!strcmp(id,"0000000000004000800000000000005a")&&strstr(text,label("Unit issuer","Unit-Aussteller"))&&strstr(text,"Schema: 11")&&strstr(text,runtime));
+        CHECK(strstr(text,label("Related: 00000000000040008000000000000029","Verknüpft: 00000000000040008000000000000029"))&&strstr(text,label("State: observed","Zustand: observed"))&&strstr(text,"issuer_retirement_unsettled"));
+    }
     CHECK(atspi_text_get_caret_offset(t,&error)==-1&&!error&&atspi_text_get_n_selections(t,&error)==0&&!error&&!replace_text(node,"changed"));
     AtspiRect first,outer,current;CHECK(rectangle(node,&first)&&rectangle(area,&outer)&&first.height>0&&outer.height>0&&state(back,ATSPI_STATE_FOCUSED));
     long long overflow=(long long)first.y+first.height-outer.y-outer.height;unsigned pages=overflow>0?(unsigned)((2*overflow+outer.height-1)/outer.height):0;CHECK(pages<256);
@@ -42,13 +48,13 @@ static int read_details(AtspiAccessible *app,AtspiAccessible *node,AtspiAccessib
         if(!direction&&i+1==pages)CHECK((long long)current.y+current.height<=outer.y+outer.height&&(long long)current.y+current.height>outer.y+outer.height/2);
         printf("PAGE_ACK %c %u\n",direction?'U':'D',i);
     }
-    CHECK(current.y==first.y);okay=1;
+    CHECK(current.y==first.y);if(issuer_runtime)puts("RECOVERY_NATIVE_ROOT11_ISSUER_FULL_ID_RELATED_RUNTIME_REASON_READONLY_OK");okay=1;
 cleanup:
     g_free(text);if(error)g_error_free(error);if(t)g_object_unref(t);if(area)g_object_unref(area);return okay;
 }
 int main(int argc,char **argv){
     int okay=0,initialized=0,ime=0,navigation=0,resizing=0,clipboard=0;AtspiAccessible *desktop=NULL,*app=NULL,*old_first=NULL,*last=NULL,*detail=NULL,*field=NULL,*button=NULL,*scrollbar=NULL;
-    CHECK(argc>=4&&argc<=9);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else if(!strcmp(argv[i],"--resize"))resizing=1;else if(!strcmp(argv[i],"--clipboard-normal"))clipboard=1;else if(!strcmp(argv[i],"--clipboard-close"))clipboard=2;else CHECK(0);}
+    CHECK(argc>=4&&argc<=11);for(int i=4;i<argc;++i){if(!strcmp(argv[i],"--german"))german=1;else if(!strcmp(argv[i],"--ime"))ime=1;else if(!strcmp(argv[i],"--navigation"))navigation=1;else if(!strcmp(argv[i],"--resize"))resizing=1;else if(!strcmp(argv[i],"--clipboard-normal"))clipboard=1;else if(!strcmp(argv[i],"--clipboard-close"))clipboard=2;else if(!strcmp(argv[i],"--issuer-runtime")){CHECK(!issuer_runtime&&i+1<argc);issuer_runtime=argv[++i];CHECK(strlen(issuer_runtime)==32&&strspn(issuer_runtime,"0123456789abcdef")==32);}else CHECK(0);}
     CHECK((!resizing||navigation)&&(!clipboard||(!resizing&&!navigation)));
     char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);const char *id=strrchr(argv[3],'\n');CHECK(id&&strlen(++id)==32);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);

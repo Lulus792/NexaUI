@@ -18,6 +18,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('server','registry','host','client','font','source','work-dir'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--kind',choices=('system','user'),default='system')
+    p.add_argument('--issuer-fixture',type=Path,help='Original Root11 metadata-only test_launch executable')
+    p.add_argument('--issuer-mode',choices=('fresh','lost','replacement'),default='fresh')
     p.add_argument('--held',choices=('wake','close'),help='Test-only held host and lifecycle OS peer')
     p.add_argument('--clipboard',choices=('normal','close'),help='Independent wl-clipboard transfer/focus or pending-close workflow')
     p.add_argument('--clipboard-tools',type=Path,help='Private bin/wl-copy, bin/wl-paste and lib/loader+runtime directory')
@@ -29,26 +31,37 @@ def main():
     if a.held and a.navigation:p.error('Run ordinary navigation separately from the held-transaction peer')
     if a.clipboard and (a.held or a.navigation):p.error('Clipboard has a separate ordinary-peer sequence')
     if bool(a.clipboard)!=bool(a.clipboard_tools):p.error('Clipboard requires its explicitly selected private tools')
+    if a.issuer_fixture and (a.kind!='system' or a.held or a.clipboard):p.error('Root11 issuer metadata uses the ordinary Root peer; run held/clipboard separately')
+    if not a.issuer_fixture and a.issuer_mode!='fresh':p.error('Issuer mode requires its explicitly selected original fixture')
     if os.getuid()==0:p.error('Use an unprivileged private owner')
     paths={name:getattr(a,name).resolve(strict=True) for name in ('server','registry','host','client','font','source')}
-    work=a.work_dir.absolute();work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
+    if a.issuer_fixture:paths['issuer_fixture']=a.issuer_fixture.resolve(strict=True)
+    work=a.work_dir.absolute()
+    if sys.platform=='linux' and any(len(os.fsencode(work/'r'/name))>=108 for name in ('recovery','bus')):p.error('Private Linux socket path is too long; choose a shorter --work-dir')
+    work.mkdir(mode=0o700);runtime=work/'r';runtime.mkdir(mode=0o700);directory=work/'owner';directory.mkdir(mode=0o700);db_path=directory/'catalogue.sqlite3'
     captures=work/'captures';images=[]
     if a.capture:captures.mkdir(mode=0o700)
     sys.dont_write_bytecode=True;sys.path.insert(0,str(paths['source']/'tools'))
     import catalogue_contracts as cc
     from test_contracts import legacy,rows,plan,accept
     from test_recovery_inventory import pending_metadata,expected
-    with closing(sqlite3.connect(db_path)) as db,closing(sqlite3.connect(work/'backup.sqlite3')) as backup:
-        fixture=legacy(db,a.kind);cc.migrate_v1_to_v2(db,a.kind,backup=backup);pending_metadata(db,fixture,a.kind)
-        for i in range(35):accept(db,plan(db,fixture))
-        db.commit()
-        versions=(3,4,5,6,7,8,9,10) if a.kind=='system' else (3,4,7,8)
-        for version in versions:
-            migrate={7:cc.migrate_owner_recovery,9:cc.migrate_units,10:cc.migrate_unit_custody}.get(version)
-            (migrate if migrate else getattr(cc,f'migrate_v{version-1}_to_v{version}'))(db,a.kind)
-        before_rows=rows(db);reference=expected(db,a.kind,versions[-1])
+    issuer_runtime=None;issuer_commands=[];issuer_user=None
+    if a.issuer_fixture:
+        from issuer_fixture import prepare
+        fixture,reference,issuer_runtime,issuer_commands,issuer_user=prepare(paths['source'],paths['issuer_fixture'],paths['host'],work,directory,a.issuer_mode)
+        with closing(sqlite3.connect(db_path)) as db:before_rows=rows(db)
+    else:
+        with closing(sqlite3.connect(db_path)) as db,closing(sqlite3.connect(work/'backup.sqlite3')) as backup:
+            fixture=legacy(db,a.kind);cc.migrate_v1_to_v2(db,a.kind,backup=backup);pending_metadata(db,fixture,a.kind)
+            for i in range(35):accept(db,plan(db,fixture))
+            db.commit()
+            versions=(3,4,5,6,7,8,9,10) if a.kind=='system' else (3,4,7,8)
+            for version in versions:
+                migrate={7:cc.migrate_owner_recovery,9:cc.migrate_units,10:cc.migrate_unit_custody}.get(version)
+                (migrate if migrate else getattr(cc,f'migrate_v{version-1}_to_v{version}'))(db,a.kind)
+            before_rows=rows(db);reference=expected(db,a.kind,versions[-1])
     db_path.chmod(0o600);before_sha=hashlib.sha256(db_path.read_bytes()).hexdigest()
-    kinds={1:('Operation','Vorgang'),5:('Code lease','Code-Lease'),11:('Data epoch','Datenepoche')}
+    kinds={1:('Operation','Vorgang'),5:('Code lease','Code-Lease'),11:('Data epoch','Datenepoche'),17:('Unit issuer','Unit-Aussteller')}
     def row_name(record):return kinds[record[0]][bool(a.german)]+' · '+record[5]+'\n'+record[1]
     first_name,last_name=row_name(reference[0]),row_name(reference[-1])
     address='unix:path='+str(runtime/'bus')
@@ -65,6 +78,7 @@ def main():
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];background=set();stopped=set()
     result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},
             'configuration':{name:getattr(a,name) for name in ('kind','german','large','small','contrast','light','ime','held','navigation','resize','capture','clipboard')},'checks':[],'expected_records':len(reference),'images':images}
+    if issuer_runtime:result['issuer']={'mode':a.issuer_mode,'runtime':issuer_runtime,'commands':issuer_commands,'scope':'Original stored metadata; no current process/issuer/service authority'}
     def start(command,name,fds=(),input_pipe=False,may_exit=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
         child=subprocess.Popen(list(map(str,command)),env=env,stdin=subprocess.PIPE if input_pipe else subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=fds,start_new_session=True)
@@ -204,7 +218,7 @@ def main():
         wait(lambda:view().get('state')==2 and view().get('count')==len(reference) and 'RECOVERY_READY\n' in log('host') and 'FOCUS active=1\n' in log('host'),'initial original observation and native focus')
         result['maps']=Path(f'/proc/{host.pid}/maps').read_text()
         if any(s in result['maps'] for s in ('libSDL','libX11','libEGL','libvulkan')):raise RuntimeError('Unexpected presentation stack')
-        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else [])+(['--clipboard-'+a.clipboard] if a.clipboard else []),'client',input_pipe=True)
+        peer=start([paths['client'],host.pid,first_name,last_name]+(['--held',a.held] if a.held else [])+(['--german'] if a.german else [])+(['--ime'] if a.ime else [])+(['--navigation'] if a.navigation else [])+(['--resize'] if a.resize else [])+(['--clipboard-'+a.clipboard] if a.clipboard else [])+(['--issuer-runtime',issuer_runtime] if issuer_runtime else []),'client',input_pipe=True)
         def peer_line(text):wait(lambda:text+'\n' in log('client'),text,(peer,))
         if a.held:
             for step in (0,1):
@@ -331,6 +345,7 @@ def main():
         marker=('RECOVERY_NATIVE_WHOLE_WINDOW_RETIRED_TEXT_AND_ACTIONS_REFUSED_OK' if a.held=='close' else 'RECOVERY_NATIVE_COMPLETION_REPLACED_ROWS_AND_REENABLED_READ_OK') if a.held else 'RECOVERY_NATIVE_ORIGINAL_ROWS_FULL_READONLY_TEXT_RETIRED_REFERENCES_KEYBOARD_FILTER_AND_SELECTION_OK'
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.navigation and 'RECOVERY_NATIVE_TAB_REVERSE_TAB_READ_BACK_ESCAPE_RETAINED_DRAFT_AND_SELECTION_OK' not in log('client'):raise RuntimeError('Missing independent native navigation checks')
+        if issuer_runtime and 'RECOVERY_NATIVE_ROOT11_ISSUER_FULL_ID_RELATED_RUNTIME_REASON_READONLY_OK' not in log('client'):raise RuntimeError('Missing independent Root11 issuer Text checks')
         if a.resize and 'RECOVERY_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_SELECTION_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
         if a.clipboard:
             marker='RECOVERY_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK' if a.clipboard=='close' else 'RECOVERY_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK'
@@ -347,6 +362,12 @@ def main():
         if hashlib.sha256(db_path.read_bytes()).hexdigest()!=before_sha:raise RuntimeError('Owner database bytes changed')
         with closing(sqlite3.connect(db_path)) as db:
             if rows(db)!=before_rows:raise RuntimeError('Owner rows changed')
+        if issuer_user:
+            user_path,user_sha,user_rows=issuer_user
+            if hashlib.sha256(user_path.read_bytes()).hexdigest()!=user_sha:raise RuntimeError('Fixture User database bytes changed')
+            with closing(sqlite3.connect(user_path)) as db:
+                if rows(db)!=user_rows:raise RuntimeError('Fixture User rows changed')
+            result['issuer']['user_sha256_before_after']=user_sha;result['issuer']['user_rows_unchanged']=True
         for name in ('host','client'):
             if re.search(r'AddressSanitizer|LeakSanitizer|runtime error:',log(name)):raise RuntimeError('Sanitizer diagnostic')
         result.update(status='passed',host_exit=host.returncode,peer_exit=peer.returncode,owner_sha256_before_after=before_sha,owner_rows_unchanged=True)
