@@ -28,7 +28,8 @@ def main():
         text = data.decode()
         for before, after in changes:
             if text.count(before) != 1:
-                raise SystemExit("Original input does not match reviewed IME change: " + name)
+                raise SystemExit("Original input does not match reviewed IME change: "
+                                 + name + " count=" + str(text.count(before)) + " " + repr(before))
             text = text.replace(before, after)
         generated = text.encode()
         (output / name).write_bytes(generated)
@@ -45,12 +46,36 @@ def main():
     transform("nexaui_view.c", [(
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];",
         "struct edit edits[2];bool unfocused,rebuilding;char filter[AE_FILES_QUERY+1];\n"
-        "    nx_window *ime_window;bool ime_cancel,ime_enter_down,ime_escape_down;uint64_t ime_commit_target,ime_commit_revision;"), (
+        """    nx_window *ime_window;bool ime_cancel,ime_enter_down,ime_escape_down;
+    nx_event native_begin,native_events[AE_FILES_NAME+8];size_t native_count,native_depth;
+    bool native_bad,native_ignore,native_reject_pending;uint64_t native_scope,native_reject_scope;
+    nx_text_buffer *native_preview;uint64_t native_preview_target,native_preview_revision,native_preview_scope;"""), (
         "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }",
         "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }\n"
         "bool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n"
         "    if(!v || !window || v->ime_window || v->width || v->height) return false;\n"
+        "    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n"
         "    v->ime_window=window;return true;\n}"
+    ), (
+        "nx_text_field_create(value,n,0,&e->field)",
+        "nx_text_field_create(value,n,32768,&e->field)"
+    ), (
+        "nx_context_destroy(v->ui);\n    for(unsigned i=0;i<2;++i)",
+        "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);\n    for(unsigned i=0;i<2;++i)"
+    ), (
+        "static bool apply_fields(struct ae_files_view *,bool *);",
+        "static bool apply_fields(struct ae_files_view *,bool *);\nstatic void reject_text(struct ae_files_view *);"
+    ), (
+        "*changed=false;struct ae_files_session *s=v->s;\n    if(!isfinite(s->scale)",
+        "*changed=false;struct ae_files_session *s=v->s;\n"
+        "    nx_text_buffer_destroy(v->native_preview);v->native_preview=NULL;\n    if(!isfinite(s->scale)"
+    ), (
+        "bool edited=false;if(!apply_fields(v,&edited)) return false;",
+        """bool edited=false;if(!apply_fields(v,&edited)) return false;
+    if(v->native_reject_pending) {
+        v->native_reject_pending=false;
+        if(v->native_reject_scope==v->base) {reject_text(v);edited=true;*changed=true;}
+    }"""
     ), (
         "nx_text_field_set_read_only(e->field,invalid || v->s->composing)",
         "nx_text_field_set_read_only(e->field,invalid || v->s->composing || v->ime_cancel)"
@@ -74,6 +99,7 @@ def main():
         "struct ae_files_session *s=v->s;s->dirty=true;\n    if(e->type==NX_EVENT_FOCUS)",
         """struct ae_files_session *s=v->s;s->dirty=true;
     if(v->ime_window) {
+        bool handled=false;if(!native_transaction(v,e,&handled)) return false;if(handled) return true;
         if(e->type==NX_EVENT_IME_PREEDIT_CHANGED)
             return nx_context_queue_event(v->ui,e)==NX_OK;
         if(e->type==NX_EVENT_KEY_UP && e->key==NX_KEY_ENTER && v->ime_enter_down) {v->ime_enter_down=false;return true;}
@@ -83,6 +109,9 @@ def main():
         size_t bytes=0;int32_t begin=0,end=0;
         nx_result ime=nx_window_get_ime_preedit(v->ime_window,NULL,0,&bytes,&begin,&end);
         if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;
+        if(e->type==NX_EVENT_TEXT_COMMAND &&
+           (e->text_command==NX_TEXT_COMMAND_UNDO || e->text_command==NX_TEXT_COMMAND_REDO))
+            return bytes || !editing(v) || nx_context_queue_event(v->ui,e)==NX_OK;
         if(bytes && e->type==NX_EVENT_TEXT && !e->ime_target && !e->ime_revision) return true;
         if(bytes && e->type==NX_EVENT_KEY_DOWN) {
             if(e->key==NX_KEY_ESCAPE) {v->ime_escape_down=true;v->ime_cancel=true;return true;}
@@ -93,43 +122,30 @@ def main():
     }
     if(e->type==NX_EVENT_FOCUS)"""
     ), (
-        "if(e->ime_target || e->ime_revision) { reject_text(v);v->commit_active=false;return true; }",
-        """if(e->ime_target || e->ime_revision) {
-            if(!v->ime_window) { reject_text(v);v->commit_active=false;return true; }
-            size_t length=0;int32_t begin=0,end=0;
-            nx_result current=nx_window_get_ime_preedit_for(v->ime_window,e->ime_target,e->ime_revision,NULL,0,&length,&begin,&end);
-            if(current==NX_ERROR_STATE || current==NX_ERROR_UNSUPPORTED || !editing(v) || nx_focus_id(v->ui)!=e->ime_target) {
-                v->commit_active=false;return true;
-            }
-            if(current!=NX_OK) return false;
-        }"""
-    ), (
-        "v->commit_bad=false;v->commit_scope=v->base;",
-        "v->commit_bad=false;v->commit_scope=v->base;v->ime_commit_target=e->ime_target;v->ime_commit_revision=e->ime_revision;"
-    ), (
-        "if(!n || n>sizeof(v->commit)-1-v->commit_size || v->commit_scope!=v->base)",
-        "if(!n || n>sizeof(v->commit)-1-v->commit_size || v->commit_scope!=v->base || v->ime_commit_target!=e->ime_target || v->ime_commit_revision!=e->ime_revision)"
-    ), (
-        "else append(v,v->commit,v->commit_size);v->commit_active=false;",
-        "else if(v->ime_commit_target) append_native(v,v->commit,v->commit_size,v->ime_commit_target,v->ime_commit_revision);else append(v,v->commit,v->commit_size);v->commit_active=false;"
-    ), (
-        "static bool edit_key(struct ae_files_view *v,const nx_event *event,bool *handled)",
-        """/* Publish a complete, fresh native batch in one widget frame. Partial native
-   scalars must not update the original model/scope before END. */
-static void append_native(struct ae_files_view *v,const char *bytes,size_t length,uint64_t target,uint64_t revision) {
-    if(!editing(v) || (v->s->dialog?v->s->name_bad:v->s->query_bad)) return;
-    size_t at=0;
-    while(at<length) {
-        uint32_t scalar;if(!ae_utf8_next(bytes,length,&at,&scalar)) {reject_text(v);return;}
-        nx_event event={.type=NX_EVENT_TEXT,.scalar=scalar,.ime_target=target,.ime_revision=revision};
-        if(nx_context_queue_event(v->ui,&event)!=NX_OK) {reject_text(v);return;}
-    }
-}
-static bool edit_key(struct ae_files_view *v,const nx_event *event,bool *handled)"""
+        "bool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {",
+        (here / "ime_transactions.inc").read_text() + "\nbool ae_files_view_event(struct ae_files_view *v,const nx_event *e) {"
     )])
     transform("nexaui_main.c", [(
         "!ae_files_view_create(&h.s,font,font_size,&h.view) || nx_software_view_open",
-        "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open")])
+        "!ae_files_view_create(&h.s,font,font_size,&h.view) || !ae_files_view_set_ime_window(h.view,h.window) || nx_software_view_open"), (
+        "int main(int argc,char **argv) {",
+        """/* Defer native payload and neutral key releases until the queue is drained.
+   Flush completed edits before an ordinary command observes the app model. */
+static bool ime_deferred(const nx_event *e) {
+    return e->type==NX_EVENT_IME_TRANSACTION_BEGIN || e->type==NX_EVENT_IME_TRANSACTION_END ||
+        e->type==NX_EVENT_IME_PREEDIT_CHANGED || e->type==NX_EVENT_IME_DELETE_RANGE ||
+        e->type==NX_EVENT_IME_DELETE_SURROUNDING || e->type==NX_EVENT_KEY_UP ||
+        e->type==NX_EVENT_KEY_DOWN_CONSUMED ||
+        ((e->type==NX_EVENT_TEXT || e->type==NX_EVENT_TEXT_COMMAND) && (e->ime_target || e->ime_revision));
+}
+int main(int argc,char **argv) {"""
+    ), (
+        "if(nx_window_get_status(h.window,&status)!=NX_OK || !chrome(&h,&event,&status,&handled) ||\n"
+        "                   (!handled && !ae_files_view_event(h.view,&event)) || !draw(&h))",
+        "if((!ime_deferred(&event) && !draw(&h)) || nx_window_get_status(h.window,&status)!=NX_OK ||\n"
+        "                   !chrome(&h,&event,&status,&handled) || (!handled && !ae_files_view_event(h.view,&event)) ||\n"
+        "                   (!ime_deferred(&event) && !draw(&h)))"
+    )])
     (output / "source-delta.json").write_text(json.dumps({"files": records,
         "scope": "Distinct consumer IME integration; original model/controller/host source export unchanged"}, indent=2) + "\n")
     print("GENERATED three explicitly changed IME consumer files from checked original inputs")

@@ -1,6 +1,7 @@
 set(files_ime_generated "${CMAKE_CURRENT_BINARY_DIR}/files-ime-generated")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_host.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ime_transactions.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/check_source.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/native-inputs.json" files_ime_manifest)
@@ -19,6 +20,14 @@ add_executable(aetheri_files_ime_candidate "${files_ime_generated}/nexaui_main.c
 target_link_libraries(aetheri_files_ime_candidate PRIVATE files_ime_view Threads::Threads)
 list(APPEND checked_targets files_ime_view aetheri_files_ime_candidate)
 if(FILES_BUILD_TESTS)
+    add_executable(files_ime_transaction_test "${CMAKE_CURRENT_SOURCE_DIR}/ime_transaction_test.c")
+    target_compile_definitions(files_ime_transaction_test PRIVATE
+        AE_FILES_GENERATED_VIEW="${files_ime_generated}/nexaui_view.c")
+    target_include_directories(files_ime_transaction_test PRIVATE "${files_ime_generated}" "${original}/files")
+    target_link_libraries(files_ime_transaction_test PRIVATE files_original_session NexaUI::NexaUI m)
+    list(APPEND checked_targets files_ime_transaction_test)
+    add_test(NAME files_ime_transactions COMMAND files_ime_transaction_test "${FILES_TEST_FONT}")
+    set_tests_properties(files_ime_transactions PROPERTIES TIMEOUT 30)
     add_executable(files_ime_view_original_test "${AETHERI_SOURCE_DIR}/tests/test_files_view.c")
     target_link_libraries(files_ime_view_original_test PRIVATE files_ime_view)
     list(APPEND checked_targets files_ime_view_original_test)

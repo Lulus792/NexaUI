@@ -82,6 +82,11 @@ original export and `aetheri_files_candidate` are retained unchanged. The bindin
 reuses the installed public text-field/window APIs and original bounded commit
 validation. It is an integration experiment, not an approved Aetheri migration.
 
+The IME variant now requires installed SDK **0.1.25**, with the explicitly
+selected source declaration `ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18` in the
+executed experiment. The default-OFF original consumer still selects exactly
+0.1.23. Keep the two SDK installations and build directories separate.
+
 For the native task also enable `FILES_BUILD_NATIVE_CHILDREN` and use the original
 private compositor/AT-SPI fixture described above. Run:
 
@@ -90,7 +95,7 @@ python3 examples/35_aetheri_files_consumer/run_ime.py \
   --binaries /path/to/files-build --original /path/to/exported-original-source \
   --atspi-fixture /path/to/private-atspi-fixture \
   --sdk-input /path/to/checked-sdk-input.json \
-  --expected-sdk-revision c4f467d85b0147944d2456f5e7602a39ac18e579 \
+  --expected-sdk-revision ca1cb3db26badde2c6fbe3cc1bae1de1b149ad18 \
   --linkage shared --server /path/to/test_compositor_server \
   --font /path/to/borrowed-sans.ttf --mono /path/to/borrowed-mono.ttf \
   --work-dir /short/fresh/private-output
@@ -99,8 +104,46 @@ python3 examples/35_aetheri_files_consumer/run_ime.py \
 Select `--linkage static` for a static SDK profile; the runner checks actual
 process mappings. The work directory must be fresh and short enough for Unix
 sockets. It performs real create operations only in its own document fixture.
-See [IME evidence](../../docs/quality/files-ime-report.md) for 3×23 CTests,
-three native IME tasks, the original document regression, lossless images and
-negative controls. Native delete/replacement grouping, late/interrupted/empty
-transactions, real installed IMEs, foreign clipboard and full acceptance remain
-open. The preceding sections describe their historical checkpoint scopes.
+See [earlier IME evidence](../../docs/quality/files-ime-report.md) for its
+0.1.23 checkpoint. The preceding sections describe their historical scopes.
+
+The current generated view buffers a complete marked native transaction before
+passing it to the real field. It validates the whole proposed name/query using
+the original app policy, including deletion, replacement and empty commits.
+Rejected proposals retain the draft and block confirmation until an explicit
+clear. A temporary public text buffer tracks the byte proposal and grapheme
+caret for coqueued transactions; it never mutates the original model. Each real
+field has a bounded 32 KiB undo history. A complete native packet occupies one
+undo entry, including its original selection direction. The controller's event
+buffer has 263 slots and its proposal is bounded by the original 255-byte limit.
+Scope, revision and focus changes retire stale/incomplete input. Native payloads
+are drained before drawing; ordinary app commands observe completed edits first.
+
+`files_ime_transactions` adds ten public-host-token controller/model cases. Its
+substituted native guard is explicitly not a native-window test. The independent
+Wayland/AT-SPI task supplies that separate evidence, including actual original
+file creation and rename, selection, undo/redo, rejection and close.
+
+For the extended native task, separately export committed Aetheri
+`d56d69523c33a48648af343e7d36526f84518c90`. The 17 producer inputs in
+`ime-producer-inputs.json` must match. Build its private producer independently:
+
+```sh
+cmake -S examples/35_aetheri_files_consumer/ime_producer \
+  -B /path/to/fresh-private-producer \
+  -DAETHERI_PRODUCER_SOURCE_DIR=/path/to/frozen-d56-export \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build /path/to/fresh-private-producer --parallel 2
+```
+
+Its exact wlroots/Wayland/protocol dependency versions are checked by CMake.
+Only two test-fixture C files are generated; their reversible substitutions are
+recorded in `generated/source-delta.json`. No SDL or NexaUI is linked into this
+producer. Pass its `files_ime_producer` as `--server` and add `--transactions`
+to the runner above. The runner checks generated-source hashes and uses
+processed native surrounding-text snapshots before sending each transaction.
+All producer diagnostics contain only the private fixture's synthetic text;
+do not use this producer for ordinary application input.
+
+Real installed input methods, foreign clipboard, localization/font fallback,
+normal admission/migration and physical/human/performance acceptance remain open.

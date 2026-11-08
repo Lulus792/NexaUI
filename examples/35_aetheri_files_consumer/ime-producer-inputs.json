@@ -1,0 +1,107 @@
+{
+  "aetheri_revision": "d56d69523c33a48648af343e7d36526f84518c90",
+  "files": [
+    {
+      "path": "LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a",
+      "mode": 511
+    },
+    {
+      "path": "protocols/aetheri-development-desktop-v1.xml",
+      "size": 1653,
+      "sha256": "d4261b78f28cc5ee78abfde5852a57ee4eca65d48075b92f53e4165faa826be9",
+      "mode": 511
+    },
+    {
+      "path": "protocols/wlr-layer-shell-unstable-v1.xml",
+      "size": 19326,
+      "sha256": "87e0b9c837aecd6977f76f3c47d73088b7159871f5d979dc1840f6cadb5e2ed8",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/compose.c",
+      "size": 4813,
+      "sha256": "ae0d887ab0a4e58d8c1914b1cb02527e458429ca06912c16c95808661ba087c2",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/compose.h",
+      "size": 916,
+      "sha256": "d72f7edd6ea2e4a0ab3e2b57262e3bc2a4a4551d26c3df5bf66e1dddf4007393",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/desktop.c",
+      "size": 17887,
+      "sha256": "083f5b5d2194c74f8cb2dd0e0dd39f94f3e220addad43536d73133549bda3e33",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/desktop.h",
+      "size": 1029,
+      "sha256": "6d132bd513056769389ade7a691f46533137d5bce65b4d47d987e475215cfea3",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/input.c",
+      "size": 28961,
+      "sha256": "94270f3a562465451a83594f77b79f4e7e180f864de4e263bd8a28c9fcaf703b",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/input.h",
+      "size": 1302,
+      "sha256": "3b7e88d0cd477e258a49adb2ffaaeba15e9ee1b53d341ff1f61e1729c2568742",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/main.c",
+      "size": 28537,
+      "sha256": "ee13a5715f1dc5f2743a3b0d3e17f08bb8378a5d40d842fee7419a29a963aae2",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/server.h",
+      "size": 2128,
+      "sha256": "0b7f40b1e33df4c5e57b12fcdc581c163f98511d5874c0756d627dc36fc32e0d",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/text_input.c",
+      "size": 10903,
+      "sha256": "ab91bdcebe2ac3becc578f40f57d5205d4ab77603b87fcfddfd985ed177525c0",
+      "mode": 511
+    },
+    {
+      "path": "src/compositor/text_input.h",
+      "size": 1249,
+      "sha256": "4615203e8941fedf92f5314e319d73de265419c8e173afbc68afbc3146d5fdda",
+      "mode": 511
+    },
+    {
+      "path": "tests/compositor_input_driver.c",
+      "size": 8002,
+      "sha256": "c62892932c31cf65da39c67cb5faaac6696f11ab9ee8f3f2649db92054838302",
+      "mode": 511
+    },
+    {
+      "path": "tests/compositor_input_driver.h",
+      "size": 263,
+      "sha256": "679f76e9a3958e2209b6dbee03ae002cdeef2c4ed5f739ab541b3d72137ebb5b",
+      "mode": 511
+    },
+    {
+      "path": "tests/compositor_text_input.c",
+      "size": 5181,
+      "sha256": "e0900794877e31b8224b286662b5ea301d2eab5429e815ee9e2adaa58a0ff39d",
+      "mode": 511
+    },
+    {
+      "path": "tests/compositor_text_input.h",
+      "size": 370,
+      "sha256": "3cba728cee0f48e5ae987f9522a9c944836c8449550b8759ac94af8f196d10af",
+      "mode": 511
+    }
+  ]
+}
