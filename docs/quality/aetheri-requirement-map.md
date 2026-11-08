@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+B01/B04/D07/L05/L11/P04/P05/P07/Q02/Q04/Q08: source `e3031e0` adds an
+explicit reviewed Root11/Unit issuer original-source profile to the existing
+Recovery model/view/worker while retaining the legacy default and unchanged SDK.
+Current static/shared/sanitizer builds pass4/4 each; legacy builds pass3/3 each.
+Nine original Root11 metadata scenarios exercise three styles each; catalogue
+bytes/rows, owner lifetimes, two compiled defects and four source rejections are
+checked. See [Root11 compatibility evidence](recovery-root-v11-report.md).
+Stored issuer metadata grants no current authority. Native OS-peer acceptance
+for the new profile, further packet6 compositions, packets7–8 and final
+physical/human/performance gates remain open across the unchanged103 IDs.
+Independent Aetheri development and its consumer pin remain separate.
+
 D07/L04/L05/L06/L11/I01/I05/T11/A02/A06/P04/P05/P07/Q02/Q04/Q08: source
 `0769fab` adds the native read-only Receipts page using existing original
 worker data and public SDK controls/Text/focus/scroll. Three profiles pass 9/9
