@@ -1,0 +1,213 @@
+{
+  "source_revision": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+  "run_id": 42516928629,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629",
+  "scope": "Seven required core SDK jobs succeeded at exact source; two optional skips. These jobs execute SDK regressions and installed ABI consumers, not the external original Editor project. Three original Editor native/installed consumer profiles are separately source-bound in the local receipt. No physical/human or normal Aetheri owner adoption inferred.",
+  "jobs": [
+    {
+      "id": 128841879648,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841879648",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "test_summaries": [
+        259,
+        259
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:54:26.7289961Z   1/259 Test   #1: nexaui_close_request ..................................................   Passed    0.01 sec",
+        "2026-11-08T19:55:08.3785268Z  32/259 Test  #32: nexaui_wayland_management_native ......................................   Passed    0.06 sec",
+        "2026-11-08T19:55:08.7750197Z  44/259 Test  #44: nexaui_wayland_management .............................................   Passed    0.06 sec",
+        "2026-11-08T19:55:27.3726466Z  88/259 Test  #88: nexaui_x11_window .....................................................   Passed    0.52 sec",
+        "2026-11-08T19:58:43.9872690Z   1/259 Test   #1: nexaui_close_request ..................................................   Passed    0.01 sec",
+        "2026-11-08T19:59:25.0953559Z  32/259 Test  #32: nexaui_wayland_management_native ......................................   Passed    0.06 sec",
+        "2026-11-08T19:59:25.4901853Z  44/259 Test  #44: nexaui_wayland_management .............................................   Passed    0.06 sec",
+        "2026-11-08T19:59:43.8442043Z  88/259 Test  #88: nexaui_x11_window .....................................................   Passed    0.36 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841879648.log",
+        "size": 330918,
+        "sha256": "5fee75715d09bee52d4700a62c530e87b199855c41eda9e6480e71e426ff6105"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841879812,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841879812",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)"
+      ],
+      "test_summaries": [
+        259,
+        1
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:49:59.7737094Z   1/259 Test   #1: nexaui_close_request ..................................................   Passed    0.00 sec",
+        "2026-11-08T19:50:33.7803805Z  32/259 Test  #32: nexaui_wayland_management_native ......................................   Passed    0.04 sec",
+        "2026-11-08T19:50:34.0045463Z  44/259 Test  #44: nexaui_wayland_management .............................................   Passed    0.03 sec",
+        "2026-11-08T19:50:51.9229001Z  88/259 Test  #88: nexaui_x11_window .....................................................   Passed    0.55 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841879812.log",
+        "size": 298747,
+        "sha256": "4ef25659452414e65ca824c74b074910b193a1d36d99a8712670a6bbf6e01c34"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841879887,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841879887",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)"
+      ],
+      "test_summaries": [
+        141
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:50:14.5119319Z   1/141 Test   #1: nexaui_close_request .......................   Passed    0.20 sec",
+        "2026-11-08T19:50:45.0267016Z  76/141 Test  #76: nexaui_windows_management ..................   Passed    0.14 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841879887.log",
+        "size": 99531,
+        "sha256": "209c60b1d46262f21544b44c4e63c401b5a62eab5c3c3fe85f869f755cd39fb6"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841879923,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841879923",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)"
+      ],
+      "test_summaries": [
+        142
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:50:51.0649694Z   1/142 Test   #1: nexaui_close_request .......................   Passed    0.23 sec",
+        "2026-11-08T19:51:21.1202941Z  76/142 Test  #76: nexaui_windows_management ..................   Passed    0.14 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841879923.log",
+        "size": 99665,
+        "sha256": "2ced7656788672585d75e618a8ba0d8decc32b4f9ab2457b21fb08849b36c377"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841880025,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841880025",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)"
+      ],
+      "test_summaries": [
+        117
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:49:47.0269090Z   1/117 Test   #1: nexaui_close_request .......................   Passed    0.03 sec",
+        "2026-11-08T19:50:03.2079740Z  65/117 Test  #65: nexaui_macos_window ........................   Passed    1.84 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841880025.log",
+        "size": 109794,
+        "sha256": "3e91543d17808bfec42dec9ecd26cfda835ca85ce5e05ed608132f6bb619a162"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841880030,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841880030",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)"
+      ],
+      "test_summaries": [
+        257
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:49:55.9953366Z   1/257 Test   #1: nexaui_close_request ..................................................   Passed    0.00 sec",
+        "2026-11-08T19:50:31.0868528Z  32/257 Test  #32: nexaui_wayland_management_native ......................................   Passed    0.05 sec",
+        "2026-11-08T19:50:31.3131136Z  44/257 Test  #44: nexaui_wayland_management .............................................   Passed    0.03 sec",
+        "2026-11-08T19:50:49.2134365Z  88/257 Test  #88: nexaui_x11_window .....................................................   Passed    0.52 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841880030.log",
+        "size": 292448,
+        "sha256": "1faa4c50119e270a55b208ab4b1803b35d609bbb2c0a808513ad32d2d78f6d3a"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841880039,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841880039",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+      "installed_close_consumer_steps": [
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)"
+      ],
+      "test_summaries": [
+        118
+      ],
+      "native_test_lines": [
+        "2026-11-08T19:49:57.6296660Z   1/118 Test   #1: nexaui_close_request .......................   Passed    0.02 sec",
+        "2026-11-08T19:50:16.0559110Z  65/118 Test  #65: nexaui_macos_window ........................   Passed    2.46 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-ci-128841880039.log",
+        "size": 110101,
+        "sha256": "4804eeaf22d9bbe773d3c8c1eff87486a96e061979a9756f054a68817503fa6d"
+      },
+      "scope": "Decoded job log saved with a final file newline. All reported test runs have zero skips. Summary arrays include separate repeat runs; not a count of unique tests."
+    },
+    {
+      "id": 128841881153,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841881153",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee"
+    },
+    {
+      "id": 128841881402,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42516928629/job/128841881402",
+      "head_sha": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee"
+    }
+  ]
+}

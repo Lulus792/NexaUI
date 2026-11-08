@@ -6,6 +6,9 @@ SDK **0.1.27**, not a 1.0 release. The follow-up corrects the X11 test to consum
 the second window's already delivered first close, preserving its original
 isolation and clipboard-owner-loss assertions.
 
+Follow-up: the [installed original Editor workflow](editor-close-report.md)
+provides application-level controlled evidence on a separate consumer revision.
+
 ## Requirement and behavior
 
 Catalogue W01 requires Cancel, another native close, continued editing/idle and

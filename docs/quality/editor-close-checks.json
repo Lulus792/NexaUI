@@ -1,0 +1,30 @@
+{
+  "result": "passed",
+  "source_revision": "a494ddd453d57b733fbc62bfbe51b3b3b72d4bee",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "sdk_source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "profiles": 3,
+  "executed_original_ctests": 33,
+  "skips": 0,
+  "full_native_tasks": 3,
+  "verified_native_images": 90,
+  "actual_consumer_c17_objects": 75,
+  "actual_producer_c17_objects": 6,
+  "functional_mutants_detected": 2,
+  "artifact_files_bound": 391,
+  "repo_inputs_bound": 16,
+  "original_editor_inputs_bound": 53,
+  "producer_inputs_bound": 17,
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "remaining": "Independent normal Aetheri owner/pin adoption; actual installed IME/editable accessibility; physical/human/design/performance acceptance and remaining103-ID/packet6/packets7\u20138 scope. Earlier Software AT-SPI instability remains open.",
+  "preserved_findings": [
+    "First export omitted original grapheme test vectors; added exact fixture before successful original regressions.",
+    "Private producer used removed wlroots geometry getter; corrected using the pinned installed0.20 header.",
+    "Initial producer SIGBUS preceded UI launch; diagnostic encountered EDQUOT. Same binary ran after strict verified artifact retirement; exact kernel fault attribution remains limited.",
+    "Native oracle first used Wayland edge10 instead of public SDK bottom-right enum5.",
+    "Maximize submission was observed before committed geometry; final predicate requires actual1920x1080 client and scene extent. Observer now reports scene coordinates, not stored normal position.",
+    "Older producer lacked the original later integer-density command; final generator copies that branch unchanged from the checked current original fixture.",
+    "First ASan idle sample saw one extra frame immediately after Escape; final sample waits for final Escape release and native sleeping owner.",
+    "An added uninterrupted-poll oracle was invalid for permitted protocol wakes; original no-frame and <=2 CPU-tick/1.2s requirements retained. Final waits and observed returns recorded."
+  ]
+}

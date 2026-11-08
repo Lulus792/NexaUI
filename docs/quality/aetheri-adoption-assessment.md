@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Installed original Editor native-close workflow (2026-11-08)
+
+Consumer `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee` composes original
+Editor7bbe704 with installed SDK0.1.27/47ec4e6 through a generated native-owner
+adapter. Three profiles each pass11 original model/file/workspace/save/input
+regressions and the full retained-window repeated-native-close/Cancel/idle/edit/
+move/resize/zoom/Save workflow. Ninety complete captures, four lossless reviewed
+previews and two compiled functional defects are retained. See [exact source,
+wait boundaries, artifact binding, preserved failures and adoption limits](editor-close-report.md).
+This supplies the controlled original-editor workflow missing from the preceding
+SDK foundation. Normal owner/admission/pin adoption, installed IME/editable
+accessibility, physical/human/design/performance/service acceptance remain open.
+The independent Aetheri checkout/pin/default, SDK/API/version and earlier Software
+AT-SPI finding are unchanged. All103 IDs, remaining packet6 and packets7–8 persist.
+
 ## W01 cancellable-close SDK foundation (2026-11-08)
 
 SDK0.1.27 source `47ec4e640a8a0f54bc8a09d1fe825b57956df6d7` implements

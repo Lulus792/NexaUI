@@ -1,0 +1,59 @@
+{
+  "images": [
+    {
+      "profile": "release",
+      "source_member": "ed-native-8-release/ed-pdr1c_9l/captures/capture-6-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "b5e8588c01041bceab26400deb61dbfb20c6bdff3f82a20924f4a7c377acf228",
+      "png": "editor-close-review.png",
+      "png_size": 18218,
+      "png_sha256": "efab47f598df4b8aceb74c65544ecee79e5511e66ea7c4872a4303c087ded5f9",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "release",
+      "source_member": "ed-native-8-release/ed-pdr1c_9l/captures/capture-7-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "70b91a05a5e43d77062c001bbf0ead54446a11d9254f8338d0fbd7277a25d16a",
+      "png": "editor-close-retained.png",
+      "png_size": 16444,
+      "png_sha256": "25690554e8b91bdd5d2daea28dc08429eccdb9080f931b97a09bf172155e32e1",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "shared",
+      "source_member": "ed-native-8-shared/ed-711iqyzg/captures/capture-9-output-1.ppm.gz",
+      "width": 2560,
+      "height": 1440,
+      "source_raw_sha256": "2834c8a4b0e216f808b14eb895a22567d8f24b3232cdf2bb76f0011f04289d6b",
+      "png": "editor-close-contrast.png",
+      "png_size": 24197,
+      "png_sha256": "b4d25c11cc5908284fb31393aad2479e4f5fa9b02934cdd493b190193495235c",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "asan",
+      "source_member": "ed-native-8-asan/ed-_lv27qar/captures/capture-10-output-2.ppm.gz",
+      "width": 3840,
+      "height": 2160,
+      "source_raw_sha256": "51c93a879e76fbf39de6d1dfa30fdd77c1956120a395f157aaa65f28b14a3794",
+      "png": "editor-close-density.png",
+      "png_size": 46641,
+      "png_sha256": "6d0ccae88b3ebe88e83e6027d73ab886b32c68d5965b8ed026b770c2e77aa5d4",
+      "all_rgb_bytes_equal": true
+    }
+  ],
+  "scope": "Full lossless captures, no cropping or resizing. RGB payloads compared completely after PNG encoding; visual review recorded separately.",
+  "visual_review": {
+    "reviewed_full_images": 4,
+    "findings": [
+      "Native unsaved-work review shows retained text, complete question and Discard/Cancel/Save controls.",
+      "After cancellation and move/resize/zoom restoration, retainedxz is visible in the retained editor; the deliberately activated zoom button owns focus.",
+      "German200% high-contrast controls and selected text are complete in this corpus.",
+      "Light150% text at2x output density is readable with preserved selection and bounds."
+    ],
+    "limits": "Current opaque development design only; no accepted glass-design, physical-display or human assistive approval."
+  }
+}

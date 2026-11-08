@@ -1,5 +1,14 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor lifecycle: consumer `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee`,
+[installed original models/dialogs/save with repeated native close and retained-window management](editor-close-report.md).
+Three profiles pass33 original regression groups and three full native tasks
+with90 checked captures. Two real compiled token/cancellation defects fail.
+Actual post-Cancel sleeping/editing/move/resize/zoom and saved bytes are checked;
+normal owner/pin adoption, IME/editable accessibility and final gates remain.
+No SDK/API/version or independent Aetheri source/pin/default changes. The prior
+Software AT-SPI finding, all103 IDs and remaining packet6/packets7–8 persist.
+
 W01 reusable window lifecycle: SDK0.1.27/`47ec4e640a8a0f54bc8a09d1fe825b57956df6d7`,
 [cancellable native close requests and terminal guards](close-request-report.md).
 Local Windows/Wayland-only profiles, installed C17 availability/ABI consumers,

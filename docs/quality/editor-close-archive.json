@@ -1,0 +1,159 @@
+{
+  "archives": [
+    {
+      "sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+      "files": 2402,
+      "links": 10,
+      "directories": 1536,
+      "verified": true,
+      "name": "nexaui-editor-close-full-20261108.tar.gz",
+      "size": 22843970,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+      "files": 1585,
+      "links": 4,
+      "directories": 1200,
+      "verified": true,
+      "name": "nexaui-close-sdk-20261108.tar.gz",
+      "size": 36277344,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "67465b3d135545397c7c2fbbb825f2c8b627a0747cbd41e2f446155ce0802909",
+      "files": 45,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-close-evidence-20261108.tar.gz",
+      "size": 259827,
+      "scope": "Hosted CI logs/metadata and host-side build/source/image/archive/retirement verification drivers. Windows modes are WSL view, not ACLs."
+    }
+  ],
+  "recorded_native_artifacts_bound": 391,
+  "sdk_libraries_bound": 3,
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "swo-6-release-capture-german/captures"
+        ],
+        "bytes": 161049804,
+        "files": 12,
+        "links": 0,
+        "directories": 1,
+        "fingerprint": "bf15a791f58418fb2904f686997d8d580b70ec61c29cc509123417a290d74a0f",
+        "archive_sha256": "f8f1b2382d0f4be3bba06a377f8c153d6e5ccea4449675730e491c21bfe7451f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified native capture tree",
+        "roots": [
+          "swo-6-release-capture-german/captures"
+        ],
+        "bytes": 161049804,
+        "files": 12,
+        "links": 0,
+        "directories": 1,
+        "fingerprint": "bf15a791f58418fb2904f686997d8d580b70ec61c29cc509123417a290d74a0f",
+        "archive_sha256": "f8f1b2382d0f4be3bba06a377f8c153d6e5ccea4449675730e491c21bfe7451f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "backing_archive": {
+        "sha256": "f8f1b2382d0f4be3bba06a377f8c153d6e5ccea4449675730e491c21bfe7451f",
+        "files": 1557,
+        "links": 0,
+        "directories": 809,
+        "verified": true,
+        "name": "nexaui-software-output-20261108.tar.gz",
+        "size": 16175593,
+        "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "swhp-1-release-capture-german/captures"
+        ],
+        "bytes": 230169906,
+        "files": 18,
+        "links": 0,
+        "directories": 1,
+        "fingerprint": "99efaae36e55389300bb4c3cc1192ae9bfad421d239f5be5fb88cc950ffbdffd",
+        "archive_sha256": "13bb6156d61b30629c69ae20ece0391c87b4b8b77e3d7395b7bfb185440e6616",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified native capture tree",
+        "roots": [
+          "swhp-1-release-capture-german/captures"
+        ],
+        "bytes": 230169906,
+        "files": 18,
+        "links": 0,
+        "directories": 1,
+        "fingerprint": "99efaae36e55389300bb4c3cc1192ae9bfad421d239f5be5fb88cc950ffbdffd",
+        "archive_sha256": "13bb6156d61b30629c69ae20ece0391c87b4b8b77e3d7395b7bfb185440e6616",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "backing_archive": {
+        "sha256": "13bb6156d61b30629c69ae20ece0391c87b4b8b77e3d7395b7bfb185440e6616",
+        "files": 683,
+        "links": 0,
+        "directories": 425,
+        "verified": true,
+        "name": "nexaui-software-hotplug-20261108.tar.gz",
+        "size": 12552495,
+        "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "close-sdk-2-asan"
+        ],
+        "bytes": 89699959,
+        "files": 133,
+        "links": 0,
+        "directories": 340,
+        "fingerprint": "53fd46c44b069cff3b159fba145b9b4b9855d6fb0f2a3185aabd7f70533e888d",
+        "archive_sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive SDK build; installed prefix retained",
+        "roots": [
+          "close-sdk-2-asan"
+        ],
+        "bytes": 89699959,
+        "files": 133,
+        "links": 0,
+        "directories": 340,
+        "fingerprint": "53fd46c44b069cff3b159fba145b9b4b9855d6fb0f2a3185aabd7f70533e888d",
+        "archive_sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "backing_archive": {
+        "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+        "files": 1585,
+        "links": 4,
+        "directories": 1200,
+        "verified": true,
+        "name": "nexaui-close-sdk-20261108.tar.gz",
+        "size": 36277344,
+        "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+      }
+    }
+  ],
+  "scope": "Full native archive verification separately checks every file/mode/directory/link. All391 selected artifacts are bound individually. Exact SDK libraries are in the prior verified SDK archive. Only archived inactive captures and one SDK ASan build were retired after live process inspection; installed prefixes and original sources retained. Privilege was used only for process reads, followed by permanent UID/GID1000 drop before artifact checks/deletion."
+}
