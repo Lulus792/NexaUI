@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Original reservation and lifetime data (2026-11-08)
+
+D07/L11/P04/P05/P07/Q02/Q04/Q08: source `45cdbba` copies original
+reservation/dispatch and original-runtime lifetime receipts through the existing
+bounded worker. Static/shared/ASan-UBSan each pass 9/9 CTests, including 27 new
+read-only receipt scenarios; seven native and two IME/manifest regressions and
+three compiled guard omissions are checked. All 66 final inputs match exact Git
+bytes. See [receipt data foundation](software-receipts-report.md). This adds no
+receipt page or current process/drain/ownership authority. Earlier failed test
+attempts and exact duplicate-retirement proofs remain preserved. Previous main
+`cfc03f8` has seven required CI successes/two optional skips. Receipt presentation,
+remaining packet6, packets7–8 and physical/human/performance gates stay open across
+all 103 IDs; SDK API/ABI/version and independent Aetheri source/pin are unchanged.
+
 ## Recovery list/filter/detail component (2026-11-07)
 
 Consumer `88d12b4a3c226437d4ddc92d4390196cdac4ca25` composes original recovery

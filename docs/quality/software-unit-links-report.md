@@ -156,3 +156,9 @@ trusted-service composition and software-specific held-query/clipboard/resize
 acceptance remain. Same-boot historical profile admission stays explicit. The
 remaining packet 6, packets 7–8 and physical/human/performance gates still span all
 103 original requirements. No overall completion or 1.0 release is declared.
+
+## Subsequent receipt foundation
+
+Source `45cdbba` adds original reservation/lifetime data to the same worker.
+See [receipt evidence](software-receipts-report.md); receipt presentation and
+current ownership/process/drain acceptance remain open.

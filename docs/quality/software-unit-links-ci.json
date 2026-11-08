@@ -1,0 +1,89 @@
+{
+  "source_revision": "cfc03f8dc4296e7f1fbe9511e8d3d07949603908",
+  "run_id": 42427945078,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078",
+  "scope": "GitHub API job metadata for the preceding main. No raw-log audit or receipt-consumer test evidence.",
+  "jobs": [
+    {
+      "id": 128570188421,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:19:02Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188421"
+    },
+    {
+      "id": 128570188638,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:06:05Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188638"
+    },
+    {
+      "id": 128570188679,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:03:48Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188679"
+    },
+    {
+      "id": 128570188684,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:07:34Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188684"
+    },
+    {
+      "id": 128570188731,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:04:10Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188731"
+    },
+    {
+      "id": 128570188753,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:08:30Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188753"
+    },
+    {
+      "id": 128570188792,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-08T00:02:45Z",
+      "completed_at": "2026-11-08T00:08:06Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570188792"
+    },
+    {
+      "id": 128570189120,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-08T00:02:42Z",
+      "completed_at": "2026-11-08T00:02:42Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570189120"
+    },
+    {
+      "id": 128570189551,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-08T00:02:43Z",
+      "completed_at": "2026-11-08T00:02:42Z",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42427945078/job/128570189551"
+    }
+  ]
+}
