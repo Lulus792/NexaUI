@@ -1,0 +1,1850 @@
+{
+  "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+  "run_id": 42423927526,
+  "run_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526",
+  "scope": "GitHub API job metadata for preceding published head; not raw log verification or optional original-Aetheri unit/custody consumer acceptance.",
+  "jobs": [
+    {
+      "id": 128558037105,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf4cQ",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037105",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037105",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:25:02Z",
+      "name": "sanitizers",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:25Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:27Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:27Z",
+          "completed_at": "2026-11-07T23:10:02Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T23:10:02Z",
+          "completed_at": "2026-11-07T23:10:03Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:10:03Z",
+          "completed_at": "2026-11-07T23:10:03Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:10:03Z",
+          "completed_at": "2026-11-07T23:10:08Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:10:08Z",
+          "completed_at": "2026-11-07T23:10:27Z"
+        },
+        {
+          "name": "Configure ASan counterexample",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:10:27Z",
+          "completed_at": "2026-11-07T23:10:27Z"
+        },
+        {
+          "name": "Verify ASan counterexample",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T23:10:27Z",
+          "completed_at": "2026-11-07T23:10:27Z"
+        },
+        {
+          "name": "Require paired Mesa unload cleanup evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:10:27Z",
+          "completed_at": "2026-11-07T23:15:25Z"
+        },
+        {
+          "name": "Test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:15:25Z",
+          "completed_at": "2026-11-07T23:20:04Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:20:04Z",
+          "completed_at": "2026-11-07T23:20:04Z"
+        },
+        {
+          "name": "Test reverse driver discovery order",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T23:20:04Z",
+          "completed_at": "2026-11-07T23:24:42Z"
+        },
+        {
+          "name": "Require executed reverse-order Wayland results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T23:24:42Z",
+          "completed_at": "2026-11-07T23:24:42Z"
+        },
+        {
+          "name": "Attribute Vulkan module lifetime reports",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-07T23:24:42Z",
+          "completed_at": "2026-11-07T23:24:48Z"
+        },
+        {
+          "name": "Compare two fixed Vulkan driver discovery orders",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-07T23:24:48Z",
+          "completed_at": "2026-11-07T23:24:52Z"
+        },
+        {
+          "name": "Save Linux sanitizer compositor diagnostics",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-07T23:24:52Z",
+          "completed_at": "2026-11-07T23:24:58Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34,
+          "started_at": "2026-11-07T23:24:58Z",
+          "completed_at": "2026-11-07T23:24:58Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35,
+          "started_at": "2026-11-07T23:24:58Z",
+          "completed_at": "2026-11-07T23:24:59Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037105",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000016684,
+      "runner_name": "GitHub Actions 1000016684",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037191,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf4xw",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037191",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037191",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:14:24Z",
+      "name": "core (windows-latest, OFF)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:25Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:34Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:34Z",
+          "completed_at": "2026-11-07T23:09:35Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:35Z",
+          "completed_at": "2026-11-07T23:09:35Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:35Z",
+          "completed_at": "2026-11-07T23:09:36Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:36Z",
+          "completed_at": "2026-11-07T23:09:37Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:37Z",
+          "completed_at": "2026-11-07T23:09:38Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:38Z",
+          "completed_at": "2026-11-07T23:10:04Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:10:04Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:14:09Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-11-07T23:14:09Z",
+          "completed_at": "2026-11-07T23:14:09Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T23:14:09Z",
+          "completed_at": "2026-11-07T23:14:09Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T23:14:09Z",
+          "completed_at": "2026-11-07T23:14:09Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:14:09Z",
+          "completed_at": "2026-11-07T23:14:09Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:14:09Z",
+          "completed_at": "2026-11-07T23:14:11Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:14:11Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:15Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:14:15Z",
+          "completed_at": "2026-11-07T23:14:20Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 27,
+          "started_at": "2026-11-07T23:14:20Z",
+          "completed_at": "2026-11-07T23:14:20Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-07T23:14:20Z",
+          "completed_at": "2026-11-07T23:14:20Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:14:20Z",
+          "completed_at": "2026-11-07T23:14:22Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:14:22Z",
+          "completed_at": "2026-11-07T23:14:22Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037191",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000016682,
+      "runner_name": "GitHub Actions 1000016682",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037274,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf5Gg",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037274",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037274",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:15:01Z",
+      "name": "core (ubuntu-latest, OFF)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:25Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:27Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:27Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:54Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:54Z",
+          "completed_at": "2026-11-07T23:09:55Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:55Z",
+          "completed_at": "2026-11-07T23:09:55Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:55Z",
+          "completed_at": "2026-11-07T23:09:55Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:55Z",
+          "completed_at": "2026-11-07T23:09:55Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:55Z",
+          "completed_at": "2026-11-07T23:09:55Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:55Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:58Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:09:58Z",
+          "completed_at": "2026-11-07T23:10:17Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T23:10:17Z",
+          "completed_at": "2026-11-07T23:10:20Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T23:10:20Z",
+          "completed_at": "2026-11-07T23:14:14Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:14:14Z",
+          "completed_at": "2026-11-07T23:14:14Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-07T23:14:14Z",
+          "completed_at": "2026-11-07T23:14:15Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-07T23:14:15Z",
+          "completed_at": "2026-11-07T23:14:22Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18,
+          "started_at": "2026-11-07T23:14:22Z",
+          "completed_at": "2026-11-07T23:14:22Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-11-07T23:14:22Z",
+          "completed_at": "2026-11-07T23:14:22Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-11-07T23:14:22Z",
+          "completed_at": "2026-11-07T23:14:50Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-11-07T23:14:50Z",
+          "completed_at": "2026-11-07T23:14:52Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:14:52Z",
+          "completed_at": "2026-11-07T23:14:52Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:14:52Z",
+          "completed_at": "2026-11-07T23:14:53Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:14:53Z",
+          "completed_at": "2026-11-07T23:14:53Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:14:53Z",
+          "completed_at": "2026-11-07T23:14:54Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:14:54Z",
+          "completed_at": "2026-11-07T23:14:59Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T23:14:59Z",
+          "completed_at": "2026-11-07T23:14:59Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 28,
+          "started_at": "2026-11-07T23:14:59Z",
+          "completed_at": "2026-11-07T23:14:59Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:14:59Z",
+          "completed_at": "2026-11-07T23:14:59Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:14:59Z",
+          "completed_at": "2026-11-07T23:14:59Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037274",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000016685,
+      "runner_name": "GitHub Actions 1000016685",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037289,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf5KQ",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037289",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037289",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:10:54Z",
+      "name": "core (macos-latest, OFF)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:24Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:28Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:28Z",
+          "completed_at": "2026-11-07T23:09:28Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:28Z",
+          "completed_at": "2026-11-07T23:09:28Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:28Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:35Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:09:35Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:09:56Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T23:09:56Z",
+          "completed_at": "2026-11-07T23:10:35Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-07T23:10:35Z",
+          "completed_at": "2026-11-07T23:10:37Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T23:10:37Z",
+          "completed_at": "2026-11-07T23:10:37Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T23:10:37Z",
+          "completed_at": "2026-11-07T23:10:37Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:10:37Z",
+          "completed_at": "2026-11-07T23:10:37Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:10:37Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:41Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:10:41Z",
+          "completed_at": "2026-11-07T23:10:50Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T23:10:50Z",
+          "completed_at": "2026-11-07T23:10:50Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 28,
+          "started_at": "2026-11-07T23:10:50Z",
+          "completed_at": "2026-11-07T23:10:50Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:10:50Z",
+          "completed_at": "2026-11-07T23:10:51Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:10:51Z",
+          "completed_at": "2026-11-07T23:10:52Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037289",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000016687,
+      "runner_name": "GitHub Actions 1000016687",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037332,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf5VA",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037332",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037332",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:24Z",
+      "completed_at": "2026-11-07T23:10:41Z",
+      "name": "core (macos-latest, ON)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:26Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:29Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:29Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:30Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:30Z",
+          "completed_at": "2026-11-07T23:09:31Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:31Z",
+          "completed_at": "2026-11-07T23:09:36Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:09:36Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:10:28Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-07T23:10:28Z",
+          "completed_at": "2026-11-07T23:10:30Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T23:10:30Z",
+          "completed_at": "2026-11-07T23:10:30Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T23:10:30Z",
+          "completed_at": "2026-11-07T23:10:30Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:10:30Z",
+          "completed_at": "2026-11-07T23:10:30Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:10:30Z",
+          "completed_at": "2026-11-07T23:10:31Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:10:31Z",
+          "completed_at": "2026-11-07T23:10:31Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:10:31Z",
+          "completed_at": "2026-11-07T23:10:32Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:10:32Z",
+          "completed_at": "2026-11-07T23:10:38Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T23:10:38Z",
+          "completed_at": "2026-11-07T23:10:38Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 28,
+          "started_at": "2026-11-07T23:10:38Z",
+          "completed_at": "2026-11-07T23:10:38Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:10:38Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:10:39Z",
+          "completed_at": "2026-11-07T23:10:39Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037332",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000016688,
+      "runner_name": "GitHub Actions 1000016688",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037338,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf5Wg",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037338",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037338",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:13:49Z",
+      "name": "core (ubuntu-latest, ON)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:23Z",
+          "completed_at": "2026-11-07T23:09:24Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:26Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:26Z",
+          "completed_at": "2026-11-07T23:09:51Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:51Z",
+          "completed_at": "2026-11-07T23:09:52Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:52Z",
+          "completed_at": "2026-11-07T23:09:52Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:52Z",
+          "completed_at": "2026-11-07T23:09:52Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:52Z",
+          "completed_at": "2026-11-07T23:09:52Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:52Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:53Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:53Z",
+          "completed_at": "2026-11-07T23:09:54Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:09:54Z",
+          "completed_at": "2026-11-07T23:10:02Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-07T23:10:02Z",
+          "completed_at": "2026-11-07T23:10:02Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-07T23:10:02Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:24Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-11-07T23:13:24Z",
+          "completed_at": "2026-11-07T23:13:40Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-11-07T23:13:40Z",
+          "completed_at": "2026-11-07T23:13:42Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:13:42Z",
+          "completed_at": "2026-11-07T23:13:42Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:13:42Z",
+          "completed_at": "2026-11-07T23:13:42Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:13:42Z",
+          "completed_at": "2026-11-07T23:13:42Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:13:42Z",
+          "completed_at": "2026-11-07T23:13:43Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:13:43Z",
+          "completed_at": "2026-11-07T23:13:46Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-07T23:13:46Z",
+          "completed_at": "2026-11-07T23:13:46Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 28,
+          "started_at": "2026-11-07T23:13:46Z",
+          "completed_at": "2026-11-07T23:13:46Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:13:46Z",
+          "completed_at": "2026-11-07T23:13:47Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:13:47Z",
+          "completed_at": "2026-11-07T23:13:47Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037338",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000016686,
+      "runner_name": "GitHub Actions 1000016686",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037339,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf5Ww",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037339",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037339",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-07T23:09:20Z",
+      "started_at": "2026-11-07T23:09:23Z",
+      "completed_at": "2026-11-07T23:14:28Z",
+      "name": "core (windows-latest, ON)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-07T23:09:24Z",
+          "completed_at": "2026-11-07T23:09:25Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-07T23:09:25Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Install Linux native dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Prepare present-fence-aware Vulkan validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:32Z"
+        },
+        {
+          "name": "Verify pinned Unicode tables",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-07T23:09:32Z",
+          "completed_at": "2026-11-07T23:09:34Z"
+        },
+        {
+          "name": "Verify embedded Metal source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-07T23:09:34Z",
+          "completed_at": "2026-11-07T23:09:35Z"
+        },
+        {
+          "name": "Verify embedded D3D12 source and bytecode integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-07T23:09:35Z",
+          "completed_at": "2026-11-07T23:09:35Z"
+        },
+        {
+          "name": "Verify D3D12 shader integrity counterexamples",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-07T23:09:35Z",
+          "completed_at": "2026-11-07T23:09:36Z"
+        },
+        {
+          "name": "Compare embedded D3D12 bytecode with the system compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-07T23:09:36Z",
+          "completed_at": "2026-11-07T23:09:36Z"
+        },
+        {
+          "name": "Verify fuzz campaign runner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-07T23:09:36Z",
+          "completed_at": "2026-11-07T23:09:38Z"
+        },
+        {
+          "name": "Configure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-07T23:09:38Z",
+          "completed_at": "2026-11-07T23:09:50Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-07T23:09:50Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Verify private Wayland fixture guards",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Test (Linux X11 and private Wayland)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Diagnose Wayland disconnect after Linux test failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Require executed Wayland results",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Repeat Linux presentation lifecycle without retirement tracing",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:10:22Z"
+        },
+        {
+          "name": "Test (Windows and macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-07T23:10:22Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Save macOS native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Profile Linux native Vulkan without injected validation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 20,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Save Linux native GPU captures",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 21,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:13Z"
+        },
+        {
+          "name": "Configure installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-07T23:14:13Z",
+          "completed_at": "2026-11-07T23:14:15Z"
+        },
+        {
+          "name": "Build installed consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-07T23:14:15Z",
+          "completed_at": "2026-11-07T23:14:17Z"
+        },
+        {
+          "name": "Configure add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-07T23:14:17Z",
+          "completed_at": "2026-11-07T23:14:19Z"
+        },
+        {
+          "name": "Build add_subdirectory consumer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-07T23:14:19Z",
+          "completed_at": "2026-11-07T23:14:23Z"
+        },
+        {
+          "name": "Run installed consumer (Unix)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 27,
+          "started_at": "2026-11-07T23:14:23Z",
+          "completed_at": "2026-11-07T23:14:23Z"
+        },
+        {
+          "name": "Run installed consumer (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-07T23:14:23Z",
+          "completed_at": "2026-11-07T23:14:23Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56,
+          "started_at": "2026-11-07T23:14:23Z",
+          "completed_at": "2026-11-07T23:14:26Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-11-07T23:14:26Z",
+          "completed_at": "2026-11-07T23:14:26Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037339",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000016683,
+      "runner_name": "GitHub Actions 1000016683",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 128558037997,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf77Q",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558037997",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558037997",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-07T23:09:21Z",
+      "started_at": "2026-11-07T23:09:21Z",
+      "completed_at": "2026-11-07T23:09:20Z",
+      "name": "fuzz-campaigns",
+      "steps": [],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558037997",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    },
+    {
+      "id": 128558038164,
+      "run_id": 42423927526,
+      "workflow_name": "C17 build and test",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Lulus792/NexaUI/actions/runs/42423927526",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVJnRg88AAAAd7qf8lA",
+      "head_sha": "3e24bd654d597337fab759091f87398e7d909254",
+      "url": "https://api.github.com/repos/Lulus792/NexaUI/actions/jobs/128558038164",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42423927526/job/128558038164",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-07T23:09:21Z",
+      "started_at": "2026-11-07T23:09:21Z",
+      "completed_at": "2026-11-07T23:09:20Z",
+      "name": "windows-asan",
+      "steps": [],
+      "check_run_url": "https://api.github.com/repos/Lulus792/NexaUI/check-runs/128558038164",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "nexaui-software-unit-links-20261108.tar.gz",
+  "size": 49723850,
+  "sha256": "8665e187fe2f97bc6971fcdad6978cb66b98c9d7ec3de7a98d63f9ac551b1904",
+  "files": 2764,
+  "links": 8,
+  "directories": 975,
+  "excluded_special": [
+    "software-history-links-1-release/components-test/run-5wkmkzrz/fifo",
+    "software-history-links-3-asan/components-test/run-k8oruxx7/fifo",
+    "software-history-links-3-release/components-test/run-v1nbmc66/fifo",
+    "software-history-links-3-shared/components-test/run-mb9jb33f/fifo",
+    "swu-legacy-asan/manifests/fifo",
+    "swu-legacy-release/manifests/fifo"
+  ]
+}

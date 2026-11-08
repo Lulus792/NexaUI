@@ -1,5 +1,9 @@
 # Native historical process inspection — 2026-11-07
 
+Continuation: [original unit/custody associations](software-unit-links-report.md)
+are implemented at `c566267`; the remaining-work notes below record the earlier
+`755a788` checkpoint.
+
 Consumer source: `755a7880d69e206b9eb775d94f761da5ab8b0080`.
 Original Aetheri: `46e2a21ef979d9a76db2a8487d1de167a6a79ef7`.
 Installed SDK: `c4f467d85b0147944d2456f5e7602a39ac18e579`, NexaUI 0.1.23.
