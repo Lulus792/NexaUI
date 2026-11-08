@@ -6,6 +6,7 @@ endif()
 find_package(NexaUI 0.1.27 EXACT CONFIG REQUIRED)
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
+option(EDITOR_BUILD_IME_MODEL "Build the original-model atomic IME adapter and its tests" OFF)
 set(AETHERI_SOURCE_DIR "" CACHE PATH "Immutable exported Aetheri snapshot; never the active checkout")
 set(original "${AETHERI_SOURCE_DIR}/src")
 set(generated "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -14,24 +15,44 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/pre
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/prepare_host.py" "${CMAKE_CURRENT_SOURCE_DIR}/source-inputs.json"
     "${CMAKE_CURRENT_SOURCE_DIR}/window_input.h" "${original}/editor/graphical_main.c")
-add_library(editor_original STATIC "${original}/text/grapheme.c"
-    "${original}/editor/document.c" "${original}/editor/direct.c"
+set(model editor_original)
+set(document "${original}/editor/document.c")
+set(direct "${original}/editor/direct.c")
+if(EDITOR_BUILD_IME_MODEL)
+    set(model editor_ime_model)
+    set(ime_generated "${generated}/ime-model")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_model.py"
+        "${AETHERI_SOURCE_DIR}" "${ime_generated}" COMMAND_ERROR_IS_FATAL ANY)
+    set(document "${ime_generated}/document.c")
+    set(direct "${ime_generated}/direct.c")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/prepare_ime_model.py")
+endif()
+add_library(${model} STATIC "${original}/text/grapheme.c"
+    "${document}" "${direct}"
     "${original}/editor/modal.c" "${original}/editor/file.c"
     "${original}/editor/workspace.c" "${original}/editor/view.c"
     "${original}/files/model.c" "${original}/files/launch.c" "${original}/files/create.c"
     "${original}/files/rename.c" "${original}/files/layout.c")
-target_include_directories(editor_original PUBLIC "${original}")
+target_include_directories(${model} PUBLIC "${original}" PRIVATE "${original}/editor" "${CMAKE_CURRENT_SOURCE_DIR}")
 set_source_files_properties("${original}/editor/file.c" "${original}/editor/workspace.c"
     "${original}/editor/view.c" PROPERTIES COMPILE_DEFINITIONS _GNU_SOURCE)
-target_link_libraries(editor_original PUBLIC Threads::Threads m)
+target_link_libraries(${model} PUBLIC Threads::Threads m)
 add_executable(aetheri_editor_candidate "${generated}/editor.c")
 target_include_directories(aetheri_editor_candidate PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(aetheri_editor_candidate PRIVATE editor_original NexaUI::NexaUI)
-set(checked editor_original aetheri_editor_candidate)
+target_link_libraries(aetheri_editor_candidate PRIVATE ${model} NexaUI::NexaUI)
+set(checked ${model} aetheri_editor_candidate)
 enable_testing()
+if(EDITOR_BUILD_IME_MODEL)
+    add_executable(editor_ime_model_test test_ime_model.c)
+    target_include_directories(editor_ime_model_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(editor_ime_model_test PRIVATE ${model})
+    target_link_options(editor_ime_model_test PRIVATE -Wl,--wrap=malloc)
+    list(APPEND checked editor_ime_model_test)
+    add_test(NAME editor.atomic_ime_model COMMAND editor_ime_model_test)
+endif()
 foreach(name IN ITEMS grapheme document direct editor_workspace editor_save_work modal history search selection editor_file editor_view)
     add_executable(original_${name} "${AETHERI_SOURCE_DIR}/tests/test_${name}.c")
-    target_link_libraries(original_${name} PRIVATE editor_original)
+    target_link_libraries(original_${name} PRIVATE ${model})
     if(name STREQUAL "editor_view")
         target_sources(original_${name} PRIVATE "${original}/terminal/model.c")
     endif()

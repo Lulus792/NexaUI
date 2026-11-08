@@ -76,3 +76,27 @@ broader catalogue gates require separate acceptance.
 
 Fonts and original application sources are borrowed inputs, not redistributed.
 The original scaffold's licence notice is checked with those inputs.
+
+## Atomic original-model IME prerequisite
+
+`-DEDITOR_BUILD_IME_MODEL=ON` selects an additional, separately generated model
+variant and registers `editor.atomic_ime_model` alongside all eleven original
+tests. This option alone does not enable native IME in the document canvas.
+The default continues to compile the original model sources directly.
+
+`prepare_ime_model.py` checks the same immutable export and records every
+substitution and generated-file hash. `ime_model.h` exposes one application-owned
+replacement through the original gap-buffer, preflight and undo engine. It
+requires all six fields of the original direct-input token. Native byte ranges
+may end inside an old grapheme, but must preserve complete UTF-8 scalars and
+CRLF; the resulting caret uses the original final-text grapheme preflight.
+Delete and insert become one replacement and one undo group. Invalid input,
+limits or allocation failure preserve content, selection, history and token.
+Other original entry points retain their existing grapheme-boundary policy.
+
+The owning native adapter must still admit the focused window/document/target
+and epoch, collect a complete non-rejected BEGIN/END transaction, discard stale
+or interrupted batches, and publish surrounding text and composition geometry.
+Those native canvas connections, preedit presentation and editable accessibility
+remain separate work. This seam adds no SDK API, dependency, document authority,
+file operation or active Aetheri change.
