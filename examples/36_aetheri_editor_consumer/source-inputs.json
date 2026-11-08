@@ -1,0 +1,271 @@
+{
+  "aetheri_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "scope": "Exact original Editor models, headers, regression/native drivers and licence notice; separate generated window adapter.",
+  "files": [
+    {
+      "path": "spec/nexaui-inputs.json",
+      "size": 2060,
+      "sha256": "1a959c46974d3b351df0f75afc3b0ff59f172f7367cead46deea06efda43790e"
+    },
+    {
+      "path": "spec/ui-inputs.json",
+      "size": 19855,
+      "sha256": "7567ec936c8ed3c8a8562ba2ed7074a81eb6df72ca67c6b8ae6e57e220eff014"
+    },
+    {
+      "path": "src/editor/direct.c",
+      "size": 9623,
+      "sha256": "d959f86a2220c750bab2d5fb1a170268ad4ff4f5c9f9294c48b047491c270b1d"
+    },
+    {
+      "path": "src/editor/direct.h",
+      "size": 3602,
+      "sha256": "eac32523bbf174b4bb5f0cb2e71b59aabf103b0d7a901ce675ee5e9c5a2547cc"
+    },
+    {
+      "path": "src/editor/document.c",
+      "size": 19757,
+      "sha256": "6dc6ae372641cc2621b71c26a5f11c56e35aa8457c15305440c4458d9943090f"
+    },
+    {
+      "path": "src/editor/document.h",
+      "size": 5894,
+      "sha256": "83ce31d0b09762eb66f49066566400812036d64676bc31cea4561200fe4ba010"
+    },
+    {
+      "path": "src/editor/file.c",
+      "size": 16421,
+      "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e"
+    },
+    {
+      "path": "src/editor/file.h",
+      "size": 3344,
+      "sha256": "3684c8b72d2bdc409b837bc760f278024eac4b6631296cce81cc539014218264"
+    },
+    {
+      "path": "src/editor/graphical_main.c",
+      "size": 66454,
+      "sha256": "706707eed7e7d7df4e33eb1c3afd84efcbaa855749ee6cb5943d18db67a11517"
+    },
+    {
+      "path": "src/editor/main.c",
+      "size": 26802,
+      "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556"
+    },
+    {
+      "path": "src/editor/modal.c",
+      "size": 15063,
+      "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721"
+    },
+    {
+      "path": "src/editor/modal.h",
+      "size": 3224,
+      "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642"
+    },
+    {
+      "path": "src/editor/view.c",
+      "size": 12627,
+      "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4"
+    },
+    {
+      "path": "src/editor/view.h",
+      "size": 1125,
+      "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5"
+    },
+    {
+      "path": "src/editor/workspace.c",
+      "size": 18595,
+      "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3"
+    },
+    {
+      "path": "src/editor/workspace.h",
+      "size": 7378,
+      "sha256": "900182c71a7841dde1c9cff9018394426a16569e488f584824ab890dc059577a"
+    },
+    {
+      "path": "src/files/create.c",
+      "size": 4508,
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+    },
+    {
+      "path": "src/files/create.h",
+      "size": 2039,
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60"
+    },
+    {
+      "path": "src/files/launch.c",
+      "size": 3501,
+      "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28"
+    },
+    {
+      "path": "src/files/launch.h",
+      "size": 1046,
+      "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83"
+    },
+    {
+      "path": "src/files/layout.c",
+      "size": 3879,
+      "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c"
+    },
+    {
+      "path": "src/files/layout.h",
+      "size": 1432,
+      "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f"
+    },
+    {
+      "path": "src/files/main.c",
+      "size": 50858,
+      "sha256": "598b272aa4c20ade5eb53d91b45f389817dc686a12fb203cee6d654d81469ad5"
+    },
+    {
+      "path": "src/files/model.c",
+      "size": 11773,
+      "sha256": "893afec78a77ad294e38527a512231b5f3a31f88cbeb3b81483f91dff1871f84"
+    },
+    {
+      "path": "src/files/model.h",
+      "size": 4367,
+      "sha256": "42cf658a7356446b789e90f2c33fad2c42cadcca46ded63ee09f8c5d34a31cf6"
+    },
+    {
+      "path": "src/files/nexaui_main.c",
+      "size": 17797,
+      "sha256": "762ce9171ac858df4315b178cebba01b7b7d92d72d8a602d969dde7da54a5fb3"
+    },
+    {
+      "path": "src/files/nexaui_view.c",
+      "size": 50973,
+      "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc"
+    },
+    {
+      "path": "src/files/nexaui_view.h",
+      "size": 1755,
+      "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649"
+    },
+    {
+      "path": "src/files/rename.c",
+      "size": 6818,
+      "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72"
+    },
+    {
+      "path": "src/files/rename.h",
+      "size": 2637,
+      "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99"
+    },
+    {
+      "path": "src/files/session.c",
+      "size": 26418,
+      "sha256": "553e69701815eb172351b694180b3be40c6e0ff0b50a2824c4d9875ece9c48f8"
+    },
+    {
+      "path": "src/files/session.h",
+      "size": 5087,
+      "sha256": "efbd494708e748d2db15eb467cfb7d64f7d487983d78d7d4c2df53019b64de75"
+    },
+    {
+      "path": "src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096"
+    },
+    {
+      "path": "src/terminal/model.c",
+      "size": 21909,
+      "sha256": "07f960f267ac4937e5ba92fef4e5876a45b3aa0d97549fe686d72ae15c9dbd04"
+    },
+    {
+      "path": "src/terminal/model.h",
+      "size": 3981,
+      "sha256": "fea264b8ef55cd18c3c5e3c2083c4ccf774837d023e09f93e1032bfa21fed0d4"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "tests/compositor_input_driver.c",
+      "size": 9655,
+      "sha256": "6652438b9251b071e7191b6d27cc751bab3fb9bc53c1d5f8ed262391b11eb1f8"
+    },
+    {
+      "path": "tests/grapheme_vectors.h",
+      "size": 39942,
+      "sha256": "3417d821429581d8bb7a5626f01857399899ca2ea020c9d18ec3d29960fc8aa5"
+    },
+    {
+      "path": "tests/test_direct.c",
+      "size": 10451,
+      "sha256": "75555885cffbb3cd00a392856c5ae6d209c4b5e6d8e1243a8a32f40bc63acd22"
+    },
+    {
+      "path": "tests/test_document.c",
+      "size": 6958,
+      "sha256": "5cfbfd30fa824199563ed1662222bbd1a95744101e0ed0564fafd3ac8f744746"
+    },
+    {
+      "path": "tests/test_editor_file.c",
+      "size": 12705,
+      "sha256": "c06972027a7d5bbf3923c4bbb24ba282cdb9ce3a4c3a5e213869964cb5dabc6f"
+    },
+    {
+      "path": "tests/test_editor_save_work.c",
+      "size": 11900,
+      "sha256": "242c225d363894d1b72bda39e195bbba9e5d9ff4da720b66c90c1672ea1451bc"
+    },
+    {
+      "path": "tests/test_editor_view.c",
+      "size": 4222,
+      "sha256": "2827e964bf96441e9bbbe5a5f8f426bfefe59f1600d29c9663c6f82d7631dddf"
+    },
+    {
+      "path": "tests/test_editor_workspace.c",
+      "size": 14730,
+      "sha256": "c423d52080419cb8028ef6df60acf1499e47a990a66800ce9dc103243f5d6256"
+    },
+    {
+      "path": "tests/test_grapheme.c",
+      "size": 2148,
+      "sha256": "59d2a13a47a0446af6157fe2ac2310ed7dd50e6679304dc0ac921ad6bcfe578d"
+    },
+    {
+      "path": "tests/test_history.c",
+      "size": 8947,
+      "sha256": "65a1f4a25ef6aa2d20232e4ce0b6e6ea2968fdf8de6f0ac95b2b0cf26108bdb9"
+    },
+    {
+      "path": "tests/test_modal.c",
+      "size": 4255,
+      "sha256": "2f036df1af70d6b285d23e7d7184ea2156c922bf817a6e2f4f9619000f42ad41"
+    },
+    {
+      "path": "tests/test_search.c",
+      "size": 4636,
+      "sha256": "7d2dac2ebf838a5eaaf4435834cf606e0a5cbf1ffddd12736983d83e183f1be6"
+    },
+    {
+      "path": "tests/test_selection.c",
+      "size": 8275,
+      "sha256": "1febdff9638e20a9cfe6a57ad1fc80ab2071c0a0b1c3e8a617117ff360efb06d"
+    },
+    {
+      "path": "tools/test_editor_graphical.py",
+      "size": 13784,
+      "sha256": "54bedf5faf71a24293fc3c752aba15cc66105fdd80a4fd78a04c804aa68ec3f6"
+    },
+    {
+      "path": "tools/test_editor_save_native.py",
+      "size": 10983,
+      "sha256": "f66a496fe8d2a5c9be9259651f2d74da5b46fadd7cad0896be7889bf85efe002"
+    }
+  ]
+}
