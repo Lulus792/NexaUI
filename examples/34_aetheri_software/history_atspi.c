@@ -22,8 +22,8 @@ static int readonly_text(AtspiAccessible *node,char **out){
     if(edit){if(atspi_editable_text_set_text_contents(edit,"changed",&error))yes=0;g_object_unref(edit);}if(error)g_error_free(error);return yes;
 }
 int main(int argc,char **argv){
-    int okay=0,initialized=0;AtspiAccessible *desktop=NULL,*app=NULL,*row=NULL,*button=NULL,*detail=NULL,*area=NULL,*links_detail=NULL,*receipt_detail=NULL;char *text=NULL,*links_text=NULL,*receipt_text=NULL;FILE *expected=NULL;
-    CHECK(argc==7||(argc==8&&(!strcmp(argv[7],"--unit-links")||!strcmp(argv[7],"--receipts"))));int links=argc==8&&!strcmp(argv[7],"--unit-links"),receipts=argc==8&&!strcmp(argv[7],"--receipts");german=!strcmp(argv[6],"de");char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);
+    int okay=0,initialized=0;AtspiAccessible *desktop=NULL,*app=NULL,*row=NULL,*button=NULL,*detail=NULL,*area=NULL,*links_detail=NULL,*receipt_detail=NULL,*recovery_detail=NULL;char *text=NULL,*links_text=NULL,*receipt_text=NULL,*recovery_text=NULL;FILE *expected=NULL;
+    CHECK(argc==7||(argc==8&&(!strcmp(argv[7],"--unit-links")||!strcmp(argv[7],"--receipts")||!strcmp(argv[7],"--recovery-links"))));int links=argc==8&&!strcmp(argv[7],"--unit-links"),recovery=argc==8&&!strcmp(argv[7],"--recovery-links"),receipts=recovery||(argc==8&&!strcmp(argv[7],"--receipts"));german=!strcmp(argv[6],"de");char *end;unsigned long pid=strtoul(argv[1],&end,10);CHECK(pid&&!*end&&pid<=2147483647UL);
     int unavailable=!strcmp(argv[5],"corrupt"),none=!strcmp(argv[5],"none"),unsupported=!strcmp(argv[5],"unsupported");
     int has_unit=!strncmp(argv[5],"unit",4)||!strncmp(argv[5],"custody",7),has_custody=!strncmp(argv[5],"custody",7);
     setvbuf(stdout,NULL,_IONBF,0);CHECK(!atspi_init());initialized=1;atspi_set_timeout(1000,1000);desktop=atspi_get_desktop(0);CHECK(desktop);
@@ -76,7 +76,17 @@ int main(int argc,char **argv){
             g_object_unref(button);button=lookup(app,label("Back","Zurück"),ATSPI_ROLE_PUSH_BUTTON);g_object_unref(area);area=lookup(app,label("App observation details","App-Beobachtungsdetails"),ATSPI_ROLE_SCROLL_PANE);AtspiRect first,outer,current;CHECK(button&&area&&rectangle(receipt_detail,&first)&&rectangle(area,&outer)&&outer.height>2&&state(button,ATSPI_STATE_FOCUSED));current=first;
             long long overflow=(long long)first.y+first.height-outer.y-outer.height;unsigned pages=overflow>0?(unsigned)((2*(overflow+2)+outer.height-3)/(outer.height-2)):0;CHECK(pages<512);
             for(unsigned direction=0;direction<2;++direction)for(unsigned i=0;i<pages;++i){CHECK(command("KEY",direction?104:109,0)&&rectangle(receipt_detail,&current)&&state(button,ATSPI_STATE_FOCUSED));if(!direction&&i+1==pages)CHECK((long long)current.y+current.height<=outer.y+outer.height);}
-            CHECK(current.y==first.y&&command("KEY",1,0)&&command("SYNC",6,51));g_object_unref(button);button=wait_node(desktop,pid,&app,label("Receipts","Belege"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED)&&retired(receipt_detail)&&!action(receipt_detail,"click"));
+            CHECK(current.y==first.y);
+            if(recovery){
+                CHECK(command("KEY",15,0)&&command("SYNC",8,52));g_object_unref(button);button=wait_node(desktop,pid,&app,label("Recovery links","Recovery-Bezüge"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED)&&command("KEY",28,0)&&command("SYNC",9,43));
+                recovery_detail=wait_node(desktop,pid,&app,label("Recorded recovery relationship details","Details aufgezeichneter Recovery-Bezüge"),ATSPI_ROLE_LABEL);CHECK(recovery_detail&&readonly_text(recovery_detail,&recovery_text)&&retired(receipt_detail)&&!action(receipt_detail,"click")&&strstr(recovery_text,label("Selective recovery metadata only","Nur selektive Recovery-Metadaten"))&&strstr(recovery_text,label("unknown","unbekannt")));
+                char *recovery_path=g_strdup_printf("%s.recovery",argv[4]);CHECK(recovery_path);expected=fopen(recovery_path,"rb");g_free(recovery_path);CHECK(expected);unsigned recovery_fields=0;char recovery_line[1024];while(fgets(recovery_line,sizeof recovery_line,expected)){recovery_line[strcspn(recovery_line,"\r\n")]=0;CHECK(*recovery_line&&strstr(recovery_text,recovery_line));++recovery_fields;}CHECK(recovery_fields>=17&&!ferror(expected)&&!fclose(expected));expected=NULL;
+                g_object_unref(button);button=lookup(app,label("Back","Zurück"),ATSPI_ROLE_PUSH_BUTTON);g_object_unref(area);area=lookup(app,label("App observation details","App-Beobachtungsdetails"),ATSPI_ROLE_SCROLL_PANE);AtspiRect first,outer,current;CHECK(button&&area&&rectangle(recovery_detail,&first)&&rectangle(area,&outer)&&outer.height>2&&state(button,ATSPI_STATE_FOCUSED));current=first;
+                long long overflow=(long long)first.y+first.height-outer.y-outer.height;unsigned pages=overflow>0?(unsigned)((2*(overflow+2)+outer.height-3)/(outer.height-2)):0;CHECK(pages<512);
+                for(unsigned direction=0;direction<2;++direction)for(unsigned i=0;i<pages;++i){CHECK(command("KEY",direction?104:109,0)&&rectangle(recovery_detail,&current)&&state(button,ATSPI_STATE_FOCUSED));if(!direction&&i+1==pages)CHECK((long long)current.y+current.height<=outer.y+outer.height);}
+                CHECK(current.y==first.y&&command("KEY",1,0)&&command("SYNC",8,52));g_object_unref(button);button=wait_node(desktop,pid,&app,label("Recovery links","Recovery-Bezüge"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED)&&retired(recovery_detail)&&!action(recovery_detail,"click"));
+            }
+            CHECK(command("KEY",1,0)&&command("SYNC",6,51));g_object_unref(button);button=wait_node(desktop,pid,&app,label("Receipts","Belege"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED)&&retired(receipt_detail)&&!action(receipt_detail,"click"));
         }
         CHECK(command("KEY",1,0)&&command("SYNC",5,600));g_object_unref(row);row=wait_node(desktop,pid,&app,argv[3],ATSPI_ROLE_TREE_ITEM);CHECK(row&&state(row,ATSPI_STATE_FOCUSED)&&retired(detail));
         CHECK(command("KEY",1,0)&&command("SYNC",2,49));g_object_unref(button);button=wait_node(desktop,pid,&app,label("History","Historie"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&state(button,ATSPI_STATE_FOCUSED));
@@ -86,7 +96,7 @@ int main(int argc,char **argv){
     g_object_unref(button);button=wait_node(desktop,pid,&app,label("Close","Schließen"),ATSPI_ROLE_PUSH_BUTTON);CHECK(button&&focus(button));double until=now()+3;while(now()<until&&!state(button,ATSPI_STATE_FOCUSED))pump();CHECK(state(button,ATSPI_STATE_FOCUSED)&&command("DONE",0,0));okay=1;
 cleanup:
     if(expected)fclose(expected);
-    g_free(text);g_free(links_text);g_free(receipt_text);if(receipt_detail)g_object_unref(receipt_detail);if(links_detail)g_object_unref(links_detail);if(area)g_object_unref(area);if(detail)g_object_unref(detail);if(button)g_object_unref(button);if(row)g_object_unref(row);if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();
+    g_free(text);g_free(links_text);g_free(receipt_text);g_free(recovery_text);if(recovery_detail)g_object_unref(recovery_detail);if(receipt_detail)g_object_unref(receipt_detail);if(links_detail)g_object_unref(links_detail);if(area)g_object_unref(area);if(detail)g_object_unref(detail);if(button)g_object_unref(button);if(row)g_object_unref(row);if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();
     if(okay)puts("HISTORY_NATIVE_ORIGINAL_READONLY_FULL_IDENTITIES_RETIRED_FOCUS_PAGES_REFRESH_UNKNOWN_CURRENT_OK");
     return okay?0:1;
 }

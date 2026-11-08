@@ -14,6 +14,22 @@
 #include <string.h>
 #define CHECK(x) do{if(!(x)){fprintf(stderr,"history links %d: %s\n",__LINE__,#x);exit(1);}}while(0)
 static int fault,stress,worker_phase;static pthread_t gui;
+static struct ae_execution_profile stress_profile;
+int __real_ae_catalogue_recovery_inventory(struct ae_catalogue *,size_t,struct ae_recovery_inventory **);
+int __wrap_ae_catalogue_recovery_inventory(struct ae_catalogue *c,size_t limit,struct ae_recovery_inventory **out){
+    if(worker_phase)CHECK(!pthread_equal(gui,pthread_self()));
+    int error=__real_ae_catalogue_recovery_inventory(c,limit,out);if(error||!stress)return error;
+    /* Explicitly synthetic maximum display inputs, after an actual original read.
+       All five records exercise legal text bounds/newlines, not service facts. */
+    struct ae_recovery_inventory *v=*out;free(v->records);v->records=calloc(SWH_RECOVERY_LINKS,sizeof(*v->records));CHECK(v->records);v->count=SWH_RECOVERY_LINKS;memset(v->by_kind,0,sizeof v->by_kind);
+    const enum ae_recovery_record_kind kinds[]={AE_RECOVERY_OPERATION,AE_RECOVERY_CODE_LEASE,AE_RECOVERY_DISPATCH,AE_RECOVERY_CLOSURE,AE_RECOVERY_HANDOFF};
+    const uint8_t *ids[]={stress_profile.root_operation,stress_profile.lease,stress_profile.launch,stress_profile.launch,stress_profile.launch};
+    const uint8_t *related[]={stress_profile.install,stress_profile.generation,stress_profile.lease,stress_profile.root_operation,NULL};
+    for(unsigned i=0;i<SWH_RECOVERY_LINKS;++i){struct ae_recovery_record *p=&v->records[i];p->kind=kinds[i];++v->by_kind[p->kind];memcpy(p->id,ids[i],16);p->has_related=related[i]!=NULL;if(related[i])memcpy(p->related,related[i],16);p->revision=INT64_MAX;p->unfinished_steps=INT64_MAX;
+        char *values[]={p->state,p->detail,p->phase,p->reason};const size_t sizes[]={sizeof p->state,sizeof p->detail,sizeof p->phase,sizeof p->reason};
+        for(unsigned j=0;j<4;++j){memset(values[j],'\n',sizes[j]-1);values[j][0]=(char)('A'+i);values[j][sizes[j]-2]='Z';values[j][sizes[j]-1]=0;}}
+    return 0;
+}
 int __real_ae_catalogue_get_unit(struct ae_catalogue *,const struct ae_execution_profile *,const struct ae_effect_owner *,struct ae_unit_allocation_snapshot *);
 int __wrap_ae_catalogue_get_unit(struct ae_catalogue *c,const struct ae_execution_profile *p,const struct ae_effect_owner *owner,struct ae_unit_allocation_snapshot *out){
     if(worker_phase)CHECK(!pthread_equal(gui,pthread_self()));
@@ -46,6 +62,26 @@ static void capture(swg_view *v,float w,float h,swg_style style,const char *name
 }
 static sw_owner *owner_for(sw_result **apps){sw_owner *owner=NULL;sw_id targets[]={id(10),id(99)};CHECK(sw_owner_create(&(*apps)->scope,targets,2,&owner)==NX_OK&&sw_owner_expect(owner,1)==NX_OK&&sw_owner_complete(owner,1,0,apps)==NX_OK&&!*apps);return owner;}
 static void receipt_field(nx_utf8_span body,swg_style style,const char *en,const char *de,const uint8_t *bytes,size_t size){char value[65],line[160];hex(bytes,size,value);snprintf(line,sizeof line,"%s: %s",style.german?de:en,value);CHECK(contains(body,line));}
+static void recovery(swg_view *v,const swh_record *record,swg_style style,float w,float h){
+    key(v,NX_KEY_TAB,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_RECOVERY_BUTTON);key(v,NX_KEY_ENTER,w,h);CHECK(swg_current_mode(v)==SWG_RECOVERY_LINKS&&nx_focus_id(swg_context(v))==SWG_BACK);
+    nx_semantic_view node,area;CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&(node.state&NX_SEM_READONLY)&&!(node.actions&NX_ACTION_SET_VALUE)&&contains(node.value,style.german?"Nur selektive Recovery-Metadaten":"Selective recovery metadata only")&&contains(node.value,style.german?"unbekannt":"unknown"));
+    receipt_field(node.value,style,"Historical profile SHA-256","Historischer Profil-SHA-256",record->digest,32);receipt_field(node.value,style,"Original Root runtime","Ursprüngliche Root-Runtime",record->profile.system_runtime,16);
+    char body[8192];CHECK(node.value.length<sizeof body);memcpy(body,node.value.data,node.value.length);body[node.value.length]=0;
+    const char *en[]={"Root operation","Code lease","Dispatch","Run closure","Execution handoff"},*de[]={"Root-Operation","Code-Lease","Dispatch","Run-Abschluss","Ausführungsübergabe"};char heading[80],next[80],line[384];
+    for(unsigned i=0;i<SWH_RECOVERY_LINKS;++i){snprintf(heading,sizeof heading,"\n%s\n",style.german?de[i]:en[i]);char *start=strstr(body,heading);CHECK(start);start+=strlen(heading);char *end=NULL;if(i+1<SWH_RECOVERY_LINKS){snprintf(next,sizeof next,"\n%s\n",style.german?de[i+1]:en[i+1]);end=strstr(start,next);CHECK(end);}nx_utf8_span part={start,end?(size_t)(end-start):strlen(start)};const swh_recovery_link *link=&record->recovery[i];
+        if(link->error){snprintf(line,sizeof line,style.german?"Nicht verfügbar (%d)":"Unavailable (%d)",link->error);CHECK(contains(part,line)&&!contains(part,style.german?"Aufgezeichnete ID:":"Recorded ID:"));continue;}
+        const struct ae_recovery_record *p=&link->value;receipt_field(part,style,"Recorded ID","Aufgezeichnete ID",p->id,16);
+        if(p->has_related)receipt_field(part,style,"Recorded related ID","Aufgezeichnete Bezugs-ID",p->related,16);else CHECK(contains(part,style.german?"Aufgezeichnete Bezugs-ID: keine":"Recorded related ID: none"));
+        snprintf(line,sizeof line,style.german?"Aufgezeichnete Art: %d":"Recorded kind: %d",(int)p->kind);CHECK(contains(part,line));snprintf(line,sizeof line,style.german?"Aufgezeichnete Revision: %" PRId64:"Recorded revision: %" PRId64,p->revision);CHECK(contains(part,line));snprintf(line,sizeof line,style.german?"Aufgezeichnete offene Schritte: %" PRId64:"Recorded unfinished steps: %" PRId64,p->unfinished_steps);CHECK(contains(part,line));
+        const char *names[]={"Recorded state","Recorded detail","Recorded phase","Recorded reason"},*german[]={"Aufgezeichneter Status","Aufgezeichnetes Detail","Aufgezeichnete Phase","Aufgezeichneter Grund"};const char *values[]={p->state,p->detail,p->phase,p->reason};
+        for(unsigned j=0;j<4;++j){snprintf(line,sizeof line,"%s: %s\n",style.german?german[j]:names[j],values[j]);CHECK(contains(part,line));}
+    }
+    if(record->recovery_error){snprintf(line,sizeof line,style.german?"Recovery-Abfrage nicht verfügbar (%d)":"Recovery query unavailable (%d)",record->recovery_error);CHECK(contains(node.value,line)&&!contains(node.value,style.german?"Abfrage-Recovery-Schema:":"Query recovery schema:"));}
+    else{snprintf(line,sizeof line,style.german?"Abfrage-Recovery-Schema: %u":"Query recovery schema: %u",record->recovery_schema);CHECK(contains(node.value,line));}
+    CHECK(nx_semantics_request_action(swg_context(v),SWG_DETAIL_TEXT,NX_ACTION_SET_VALUE)!=NX_OK);capture(v,w,h,style,"recovery-top");CHECK(semantic(v,SWG_SCROLL,&area));size_t pages=0;while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<4096);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&nx_focus_id(swg_context(v))==SWG_BACK);}capture(v,w,h,style,"recovery-bottom");
+    frame(v,64,64);CHECK(nx_focus_id(swg_context(v))==SWG_CLOSE);frame(v,w,h);CHECK(swg_current_mode(v)==SWG_RECOVERY_LINKS&&nx_focus_id(swg_context(v))==SWG_BACK);key(v,NX_KEY_ESCAPE,w,h);CHECK(swg_current_mode(v)==SWG_RECEIPTS&&nx_focus_id(swg_context(v))==SWG_RECOVERY_BUTTON);
+    nx_event e={0};e.key=NX_KEY_TAB;e.modifiers=NX_MOD_SHIFT;e.type=NX_EVENT_KEY_DOWN;CHECK(swg_queue_event(v,&e)==NX_OK);e.type=NX_EVENT_KEY_UP;CHECK(swg_queue_event(v,&e)==NX_OK);frame(v,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_BACK);
+}
 static void receipts(swg_view *v,const swh_record *record,swg_style style,float w,float h){
     press(v,SWG_RECEIPTS_BUTTON,NX_ACTION_PRESS,w,h);CHECK(swg_current_mode(v)==SWG_RECEIPTS&&nx_focus_id(swg_context(v))==SWG_BACK);nx_semantic_view node,area;CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&(node.state&NX_SEM_READONLY)&&!(node.actions&NX_ACTION_SET_VALUE)&&contains(node.value,style.german?"Nur aufgezeichnete Belege":"Recorded receipts only")&&contains(node.value,style.german?"unbekannt":"unknown"));
     receipt_field(node.value,style,"Selected installation","Ausgewählte Installation",record->observed.install.bytes,16);receipt_field(node.value,style,"Historical profile SHA-256","Historischer Profil-SHA-256",record->digest,32);receipt_field(node.value,style,"Original Root runtime","Ursprüngliche Root-Runtime",record->profile.system_runtime,16);
@@ -74,6 +110,7 @@ static void receipts(swg_view *v,const swh_record *record,swg_style style,float 
     }
     CHECK(contains(node.value,"ROOT_CLOSING")&&contains(node.value,"USER_QUIET")&&contains(node.value,"ROOT_RELEASED"));
     capture(v,w,h,style,"receipts-top");CHECK(semantic(v,SWG_SCROLL,&area));size_t pages=0;while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<512);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&nx_focus_id(swg_context(v))==SWG_BACK);}capture(v,w,h,style,"receipts-bottom");
+    recovery(v,record,style,w,h);
     frame(v,64,64);CHECK(nx_focus_id(swg_context(v))==SWG_CLOSE);frame(v,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_BACK);key(v,NX_KEY_ESCAPE,w,h);CHECK(swg_current_mode(v)==SWG_HISTORY_DETAIL&&nx_focus_id(swg_context(v))==SWG_RECEIPTS_BUTTON);
 
 }
@@ -90,14 +127,14 @@ static void inspect(sw_owner *owner,const swh_batch *batch,const swh_record *rec
         for(unsigned i=0;i<record->custody.count;++i){snprintf(text,sizeof text,style.german?"Aufgezeichneter Effekt %u:":"Recorded effect %u:",i+1);CHECK(contains(node.value,text));snprintf(text,sizeof text,"%" PRId64,record->custody.steps[i].intended_unix_ms);CHECK(contains(node.value,text));if(record->custody.steps[i].confirmed){snprintf(text,sizeof text,"%" PRId64,record->custody.steps[i].confirmed_unix_ms);CHECK(contains(node.value,text));}}}
     capture(v,w,h,style,"unit-links-top");CHECK(semantic(v,SWG_SCROLL,&area));size_t pages=0;while(node.bounds.y+node.bounds.height>area.bounds.y+area.bounds.height+.1f){CHECK(++pages<512);key(v,NX_KEY_PAGE_DOWN,w,h);CHECK(semantic(v,SWG_DETAIL_TEXT,&node)&&nx_focus_id(swg_context(v))==SWG_BACK);}capture(v,w,h,style,"unit-links-bottom");
     frame(v,64,64);CHECK(nx_focus_id(swg_context(v))==SWG_CLOSE);frame(v,w,h);CHECK(nx_focus_id(swg_context(v))==SWG_BACK);key(v,NX_KEY_ESCAPE,w,h);CHECK(swg_current_mode(v)==SWG_HISTORY_DETAIL&&nx_focus_id(swg_context(v))==SWG_UNIT_LINKS_BUTTON);
-    receipts(v,record,style,w,h);press(v,SWG_RECEIPTS_BUTTON,NX_ACTION_PRESS,w,h);
+    receipts(v,record,style,w,h);press(v,SWG_RECEIPTS_BUTTON,NX_ACTION_PRESS,w,h);press(v,SWG_RECOVERY_BUTTON,NX_ACTION_PRESS,w,h);
     CHECK(nx_semantics_request_action(swg_context(v),SWG_BACK,NX_ACTION_PRESS)==NX_OK&&swg_set_metadata(v,NULL,NX_OK,NULL,-EIO)==NX_OK);frame(v,w,h);CHECK(swg_current_mode(v)==SWG_DETAIL&&nx_focus_id(swg_context(v))==SWG_BACK);
-    CHECK(swg_set_metadata(v,NULL,NX_OK,batch,0)==NX_OK);frame(v,w,h);press(v,SWG_HISTORY_BUTTON,NX_ACTION_PRESS,w,h);key(v,NX_KEY_ENTER,w,h);press(v,SWG_RECEIPTS_BUTTON,NX_ACTION_PRESS,w,h);
+    CHECK(swg_set_metadata(v,NULL,NX_OK,batch,0)==NX_OK);frame(v,w,h);press(v,SWG_HISTORY_BUTTON,NX_ACTION_PRESS,w,h);key(v,NX_KEY_ENTER,w,h);press(v,SWG_RECEIPTS_BUTTON,NX_ACTION_PRESS,w,h);press(v,SWG_RECOVERY_BUTTON,NX_ACTION_PRESS,w,h);
     sw_snapshot *snapshot=NULL;CHECK(sw_owner_snapshot(owner,&snapshot)==NX_OK);const sw_result *old=sw_snapshot_data(snapshot);sw_result *copy=calloc(1,sizeof(*copy));CHECK(copy);*copy=*old;copy->rows=calloc(old->count,sizeof(*copy->rows));CHECK(copy->rows);memcpy(copy->rows,old->rows,old->count*sizeof(*copy->rows));
     CHECK(nx_semantics_request_action(swg_context(v),SWG_BACK,NX_ACTION_PRESS)==NX_OK&&sw_owner_expect(owner,sw_owner_epoch(owner)+100)==NX_OK);uint64_t ticket=sw_owner_pending(owner);CHECK(sw_owner_complete(owner,ticket,0,&copy)==NX_OK&&!copy&&swg_sync(v)==NX_OK);frame(v,w,h);CHECK(swg_current_mode(v)==SWG_DETAIL&&nx_focus_id(swg_context(v))==SWG_BACK);sw_snapshot_release(&snapshot);CHECK(swg_close(&v)==NX_OK);
 }
 int main(int argc,char **argv){
-    CHECK(argc==5);gui=pthread_self();unsigned before=fds();size_t n;unsigned char *raw=read_file(argv[2],&n);struct ae_execution_profile p;CHECK(!ae_execution_decode(raw,n,&p));free(raw);
+    CHECK(argc==5);gui=pthread_self();unsigned before=fds();size_t n;unsigned char *raw=read_file(argv[2],&n);struct ae_execution_profile p;CHECK(!ae_execution_decode(raw,n,&p));free(raw);stress_profile=p;
     int unit=!strncmp(argv[4],"unit",4)||!strncmp(argv[4],"custody",7),custody=!strncmp(argv[4],"custody",7),maximum=!strcmp(argv[4],"custody-max"),replacement=strstr(argv[4],"replacement")!=NULL;
     struct ae_catalogue_identity identity={.kind=AE_CATALOGUE_SYSTEM};memcpy(identity.authority_epoch,p.system_epoch,16);struct ae_catalogue *c=NULL;CHECK(!ae_catalogue_open(argv[1],&identity,&c));sw_scope scope={.identity=identity,.os_uid=1000};memcpy(scope.account,p.account,16);CHECK(!ae_catalogue_get_info(c,&scope.context));
     CHECK(replacement==(memcmp(p.system_runtime,scope.context.runtime_incarnation,16)!=0));sw_id targets[]={id(10),id(99)};sw_result *apps=NULL;CHECK(!sw_read(c,&scope,targets,2,&apps));swh_batch *batch=NULL;CHECK(!swh_read(c,apps,&p,1,&batch));

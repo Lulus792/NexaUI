@@ -69,7 +69,7 @@ target_link_libraries(software_history_worker_test PRIVATE software_view softwar
 target_link_options(software_history_worker_test PRIVATE -Wl,--wrap=swh_read,--wrap=ae_catalogue_get_execution_process)
 add_executable(software_history_links_test test_history_links.c)
 target_link_libraries(software_history_links_test PRIVATE software_view software_worker)
-target_link_options(software_history_links_test PRIVATE -Wl,--wrap=ae_catalogue_get_unit,--wrap=ae_catalogue_get_unit_custody)
+target_link_options(software_history_links_test PRIVATE -Wl,--wrap=ae_catalogue_get_unit,--wrap=ae_catalogue_get_unit_custody,--wrap=ae_catalogue_recovery_inventory)
 add_executable(software_history_receipts_test test_history_receipts.c)
 add_executable(software_history_recovery_test test_history_recovery.c)
 target_link_libraries(software_history_recovery_test PRIVATE software_worker)

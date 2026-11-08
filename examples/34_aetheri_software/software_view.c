@@ -7,7 +7,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-enum { ROW_BUDGET=192,BODY_PARAGRAPHS=256,CONTENT_ROWS=SWH_MAX_PROFILES };
+/* All five bounded recovery records may contain legal embedded newlines. */
+enum { ROW_BUDGET=192,BODY_PARAGRAPHS=2048,CONTENT_ROWS=SWH_MAX_PROFILES };
 _Static_assert(CONTENT_ROWS>=2+AE_FIXTURE_FILES+AE_FIXTURE_ACTIONS,"manifest cache capacity");
 typedef struct row_cache {size_t index;char text[256];nx_text_layout *layout;float height;} row_cache;
 typedef struct paragraph_cache {nx_text_layout *layout;float y,height;} paragraph_cache;
@@ -122,7 +123,7 @@ nx_result swg_set_metadata(swg_view *v,const sw_components *components,nx_result
     v->components=components;v->components_status=status_value;
     v->history=history;v->history_error=history_error;
     if(v->mode==SWG_DETAIL&&(focus==SWG_CONTENTS_BUTTON||focus==SWG_HISTORY_BUTTON))focus=SWG_BACK;
-    if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS){v->mode=SWG_DETAIL;focus=SWG_BACK;v->body_scroll=0;v->item=0;v->tree_selection=0;}
+    if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS||v->mode==SWG_RECOVERY_LINKS){v->mode=SWG_DETAIL;focus=SWG_BACK;v->body_scroll=0;v->item=0;v->tree_selection=0;}
     v->restore=focus?focus:v->mode==SWG_FILTER?SWG_QUERY:v->mode==SWG_DETAIL?SWG_BACK:SWG_FILTER_BUTTON;return NX_OK;
 }
 nx_result swg_sync(swg_view *v){
@@ -140,7 +141,7 @@ nx_result swg_sync(swg_view *v){
         if(r!=NX_OK){nx_context_destroy(next);nx_virtual_list_destroy(index);free(matches);sw_snapshot_release(&s);return r;}
         sw_snapshot_release(&v->snapshot);nx_virtual_list_destroy(v->index);free(v->matches);
         v->snapshot=s;v->matches=matches;v->count=count;v->index=index;v->epoch=epoch;v->scroll=0;
-        if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS){v->mode=SWG_DETAIL;v->body_scroll=0;v->item=0;v->tree_selection=0;}
+        if(v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS||v->mode==SWG_RECOVERY_LINKS){v->mode=SWG_DETAIL;v->body_scroll=0;v->item=0;v->tree_selection=0;}
         if(v->mode==SWG_DETAIL&&sw_snapshot_find(s,v->detail)==SIZE_MAX)v->mode=SWG_LIST;
         v->restore=v->mode==SWG_FILTER?SWG_QUERY:v->mode==SWG_DETAIL?SWG_BACK:SWG_FILTER_BUTTON;
         if(v->mode==SWG_LIST){
@@ -173,7 +174,7 @@ nx_result swg_queue_event(swg_view *v,const nx_event *e){
     if(!v||!e)return NX_ERROR_ARGUMENT;
     if(e->type==NX_EVENT_KEY_DOWN&&!e->modifiers){
         if(e->key==NX_KEY_ESCAPE){v->escape=1;return NX_OK;}
-        if((v->mode==SWG_DETAIL||v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS)&&(e->key==NX_KEY_PAGE_DOWN||e->key==NX_KEY_PAGE_UP)){
+        if((v->mode==SWG_DETAIL||v->mode==SWG_CONTENTS||v->mode==SWG_DECLARATION||v->mode==SWG_HISTORY||v->mode==SWG_HISTORY_DETAIL||v->mode==SWG_UNIT_LINKS||v->mode==SWG_RECEIPTS||v->mode==SWG_RECOVERY_LINKS)&&(e->key==NX_KEY_PAGE_DOWN||e->key==NX_KEY_PAGE_UP)){
             v->body_scroll+=v->viewport_height*.5f*(e->key==NX_KEY_PAGE_DOWN?1.f:-1.f);if(v->body_scroll<0)v->body_scroll=0;return NX_OK;}
         if((v->mode==SWG_CONTENTS||v->mode==SWG_HISTORY)&&v->content_count){
             uint64_t focused=nx_focus_id(v->ctx),wanted=0;size_t at=SIZE_MAX;
@@ -423,6 +424,38 @@ static nx_result receipts_body(swg_view *v){
     }
     return r;
 }
+static nx_result recovery_body(swg_view *v){
+    const swh_record *records=NULL;size_t count=0;nx_result r=histories(v,&records,&count);
+    if(r!=NX_OK||v->item<SWG_HISTORY_ROWS||v->item-SWG_HISTORY_ROWS>=count)return NX_ERROR_STATE;
+    const swh_record *record=&records[v->item-SWG_HISTORY_ROWS];
+    const sw_scope *scope=&sw_snapshot_data(v->snapshot)->scope;v->body[0]=0;
+    r=append(v,"%s",word(v,
+        "Selective recovery metadata only. Missing records are unknown, not proof of absence, completion or holder drain. Current process, ownership and permission state: unknown.\n\n",
+        "Nur selektive Recovery-Metadaten. Fehlende Einträge sind unbekannt und belegen weder Abwesenheit, Fertigstellung noch Holder-Ende. Aktueller Prozess-, Besitz- und Berechtigungsstatus: unbekannt.\n\n"));
+    const uint8_t *ids[]={record->observed.install.bytes,record->digest,record->profile.system_runtime,scope->context.runtime_incarnation,scope->context.authority_epoch,scope->context.boot_id};
+    const char *en[]={"Selected installation","Historical profile SHA-256","Original Root runtime","Query Root runtime","Query Root epoch","Query boot"};
+    const char *de[]={"Ausgewählte Installation","Historischer Profil-SHA-256","Ursprüngliche Root-Runtime","Abfrage-Root-Runtime","Abfrage-Root-Epoche","Abfrage-Boot"};
+    for(size_t i=0;i<6&&r==NX_OK;++i)r=receipt_id(v,en[i],de[i],ids[i],i==1?32:16);
+    if(r==NX_OK)r=append(v,word(v,"Query catalogue revision: %" PRId64 "\n","Abfrage-Katalogrevision: %" PRId64 "\n"),scope->context.revision);
+    if(record->recovery_error){if(r==NX_OK)r=append(v,word(v,"Recovery query unavailable (%d): %s. State remains unknown.\n\n","Recovery-Abfrage nicht verfügbar (%d): %s. Status bleibt unbekannt.\n\n"),record->recovery_error,receipt_error(v,record->recovery_error));}
+    else if(r==NX_OK)r=append(v,word(v,"Query recovery schema: %u\n\n","Abfrage-Recovery-Schema: %u\n\n"),record->recovery_schema);
+    const char *roles[]={"Root operation","Code lease","Dispatch","Run closure","Execution handoff"};
+    const char *german[]={"Root-Operation","Code-Lease","Dispatch","Run-Abschluss","Ausführungsübergabe"};
+    for(unsigned i=0;i<SWH_RECOVERY_LINKS&&r==NX_OK;++i){const swh_recovery_link *link=&record->recovery[i];
+        r=append(v,"%s\n",word(v,roles[i],german[i]));
+        if(link->error){if(r==NX_OK)r=append(v,word(v,"Unavailable (%d): %s. State remains unknown.\n\n","Nicht verfügbar (%d): %s. Status bleibt unbekannt.\n\n"),link->error,receipt_error(v,link->error));continue;}
+        const struct ae_recovery_record *value=&link->value;
+        if(r==NX_OK)r=append(v,word(v,"Recorded kind: %d\n","Aufgezeichnete Art: %d\n"),(int)value->kind);
+        if(r==NX_OK)r=receipt_id(v,"Recorded ID","Aufgezeichnete ID",value->id,16);
+        if(r==NX_OK&&value->has_related)r=receipt_id(v,"Recorded related ID","Aufgezeichnete Bezugs-ID",value->related,16);
+        else if(r==NX_OK)r=append(v,"%s",word(v,"Recorded related ID: none\n","Aufgezeichnete Bezugs-ID: keine\n"));
+        if(r==NX_OK)r=append(v,word(v,
+            "Recorded revision: %" PRId64 "\nRecorded unfinished steps: %" PRId64 "\nRecorded state: %s\nRecorded detail: %s\nRecorded phase: %s\nRecorded reason: %s\n\n",
+            "Aufgezeichnete Revision: %" PRId64 "\nAufgezeichnete offene Schritte: %" PRId64 "\nAufgezeichneter Status: %s\nAufgezeichnetes Detail: %s\nAufgezeichnete Phase: %s\nAufgezeichneter Grund: %s\n\n"),
+            value->revision,value->unfinished_steps,value->state,value->detail,value->phase,value->reason);
+    }
+    return r;
+}
 static nx_result declaration_body(swg_view *v){
     const amh_document *document=manifest(v);if(!document)return NX_ERROR_STATE;
     const struct ae_fixture *d=amh_document_data(document);uint32_t file=0;int is_action=0;
@@ -526,6 +559,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     else if(v->mode==SWG_FILTER){labels[0]=word(v,"Apply","Anwenden");ids[0]=SWG_APPLY;labels[1]=word(v,"Back","Zurück");ids[1]=SWG_BACK;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else if(v->mode==SWG_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Contents","Inhalt");ids[1]=SWG_CONTENTS_BUTTON;labels[2]=word(v,"History","Historie");ids[2]=SWG_HISTORY_BUTTON;labels[3]=word(v,"Close","Schließen");ids[3]=SWG_CLOSE;buttons=4;}
     else if(v->mode==SWG_HISTORY_DETAIL){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Unit links","Unit-Bezüge");ids[1]=SWG_UNIT_LINKS_BUTTON;labels[2]=word(v,"Receipts","Belege");ids[2]=SWG_RECEIPTS_BUTTON;labels[3]=word(v,"Close","Schließen");ids[3]=SWG_CLOSE;buttons=4;}
+    else if(v->mode==SWG_RECEIPTS){labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Recovery links","Recovery-Bezüge");ids[1]=SWG_RECOVERY_BUTTON;labels[2]=word(v,"Close","Schließen");ids[2]=SWG_CLOSE;buttons=3;}
     else {labels[0]=word(v,"Back","Zurück");ids[0]=SWG_BACK;labels[1]=word(v,"Close","Schließen");ids[1]=SWG_CLOSE;buttons=2;}
     float margin=v->compact?4:12,gap=8,cell=(width-margin*2-gap*(float)(buttons-1))/(float)buttons;
     if(v->cache_width!=width){clear_layouts(v);v->cache_width=width;}
@@ -599,10 +633,10 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
         }else if(v->mode==SWG_CONTENTS||v->mode==SWG_HISTORY){
             if(r==NX_OK)r=content_tree(v,(nx_rect){12,y,width-24,available},transition);
         }else{
-            if(!v->paragraph_count){if(v->mode==SWG_DECLARATION)r=declaration_body(v);else if(v->mode==SWG_HISTORY_DETAIL)r=history_body(v);else if(v->mode==SWG_UNIT_LINKS)r=unit_links_body(v);else if(v->mode==SWG_RECEIPTS)r=receipts_body(v);else{detail_body(v);if(r==NX_OK)r=component_details(v);if(r==NX_OK)r=history_summary(v);}if(r==NX_OK)r=detail_layout(v,width-44);}
+            if(!v->paragraph_count){if(v->mode==SWG_DECLARATION)r=declaration_body(v);else if(v->mode==SWG_HISTORY_DETAIL)r=history_body(v);else if(v->mode==SWG_UNIT_LINKS)r=unit_links_body(v);else if(v->mode==SWG_RECEIPTS)r=receipts_body(v);else if(v->mode==SWG_RECOVERY_LINKS)r=recovery_body(v);else{detail_body(v);if(r==NX_OK)r=component_details(v);if(r==NX_OK)r=history_summary(v);}if(r==NX_OK)r=detail_layout(v,width-44);}
             nx_scroll_area_desc area={0};area.id=SWG_SCROLL;area.parent_id=SWG_ROOT;area.thumb_y_id=SWG_THUMB;area.axes=NX_SCROLL_Y;area.name=sp(word(v,"App observation details","App-Beobachtungsdetails"));area.viewport=(nx_rect){12,y,width-24,available};area.content_size=(nx_size){width-24,v->body_height+16};
             float x=0;nx_scroll_info info;if(r==NX_OK)r=nx_scroll_area_begin(v->ctx,&area,&x,&v->body_scroll,&info);
-            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},v->mode==SWG_DECLARATION?word(v,"Declared entry details","Details des deklarierten Eintrags"):v->mode==SWG_HISTORY_DETAIL?word(v,"Historical enrollment details","Historische Registrierungsdetails"):v->mode==SWG_UNIT_LINKS?word(v,"Recorded unit association details","Details aufgezeichneter Unit-Bezüge"):v->mode==SWG_RECEIPTS?word(v,"Recorded receipt details","Details aufgezeichneter Belege"):word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,NULL,0);
+            if(r==NX_OK)r=text(v,SWG_DETAIL_TEXT,SWG_SCROLL,(nx_rect){info.viewport.x+4,info.viewport.y-v->body_scroll,info.viewport.width-20,area.content_size.height},v->mode==SWG_DECLARATION?word(v,"Declared entry details","Details des deklarierten Eintrags"):v->mode==SWG_HISTORY_DETAIL?word(v,"Historical enrollment details","Historische Registrierungsdetails"):v->mode==SWG_UNIT_LINKS?word(v,"Recorded unit association details","Details aufgezeichneter Unit-Bezüge"):v->mode==SWG_RECEIPTS?word(v,"Recorded receipt details","Details aufgezeichneter Belege"):v->mode==SWG_RECOVERY_LINKS?word(v,"Recorded recovery relationship details","Details aufgezeichneter Recovery-Bezüge"):word(v,"Selected installation details","Details der ausgewählten Installation"),v->body,NULL,0);
             nx_color color;if(r==NX_OK)r=nx_theme_color(v->ctx,NX_COLOR_TEXT,&color);
             for(size_t i=0;i<v->paragraph_count&&r==NX_OK;++i){const paragraph_cache *p=&v->paragraphs[i];float py=info.viewport.y-v->body_scroll+p->y;
                 if(py+p->height>info.viewport.y&&py<info.viewport.y+info.viewport.height)r=nx_draw_text_layout(v->ctx,p->layout,(nx_point){info.viewport.x+4,py},color,1024*1024);}
@@ -619,7 +653,7 @@ static nx_result frame_once(swg_view *v,float width,float height,swg_intent *int
     /* The pointer-only window grip must not discard the content's key focus. */
     if(intent->resize&&!v->restore)v->restore=focus_before;
     if(v->restore){uint32_t node;if(nx_semantics_find(v->ctx,v->restore,&node)==NX_OK){r=nx_focus_set(v->ctx,v->restore);if(r!=NX_OK)return r;v->restore=0;v->again=1;}}
-    for(size_t i=0;i<buttons;++i)if(clicked[i]){if(ids[i]==SWG_CLOSE)intent->close=1;else if(ids[i]==SWG_REFRESH)intent->refresh=1;else if(ids[i]==SWG_FILTER_BUTTON)*transition=1;else if(ids[i]==SWG_BACK)*transition=4;else if(ids[i]==SWG_CONTENTS_BUTTON)*transition=5;else if(ids[i]==SWG_HISTORY_BUTTON)*transition=7;else if(ids[i]==SWG_UNIT_LINKS_BUTTON)*transition=8;else if(ids[i]==SWG_RECEIPTS_BUTTON)*transition=9;}
+    for(size_t i=0;i<buttons;++i)if(clicked[i]){if(ids[i]==SWG_CLOSE)intent->close=1;else if(ids[i]==SWG_REFRESH)intent->refresh=1;else if(ids[i]==SWG_FILTER_BUTTON)*transition=1;else if(ids[i]==SWG_BACK)*transition=4;else if(ids[i]==SWG_CONTENTS_BUTTON)*transition=5;else if(ids[i]==SWG_HISTORY_BUTTON)*transition=7;else if(ids[i]==SWG_UNIT_LINKS_BUTTON)*transition=8;else if(ids[i]==SWG_RECEIPTS_BUTTON)*transition=9;else if(ids[i]==SWG_RECOVERY_BUTTON)*transition=10;}
     if(v->escape){v->escape=0;if(v->mode!=SWG_LIST)*transition=4;else intent->close=1;}return NX_OK;
 }
 nx_result swg_frame(swg_view *v,float width,float height,swg_intent *out){
@@ -642,6 +676,8 @@ nx_result swg_frame(swg_view *v,float width,float height,swg_intent *out){
             else if(transition==7){if(!have_history(v))return NX_ERROR_STATE;r=mode(v,SWG_HISTORY,SWG_HISTORY_ROWS);if(r==NX_OK){v->tree_selection=0;v->item=0;}}
             else if(transition==8)r=mode(v,SWG_UNIT_LINKS,SWG_BACK);
             else if(transition==9)r=mode(v,SWG_RECEIPTS,SWG_BACK);
+            else if(transition==10)r=mode(v,SWG_RECOVERY_LINKS,SWG_BACK);
+            else if(v->mode==SWG_RECOVERY_LINKS)r=mode(v,SWG_RECEIPTS,SWG_RECOVERY_BUTTON);
             else if(v->mode==SWG_RECEIPTS)r=mode(v,SWG_HISTORY_DETAIL,SWG_RECEIPTS_BUTTON);
             else if(v->mode==SWG_UNIT_LINKS)r=mode(v,SWG_HISTORY_DETAIL,SWG_UNIT_LINKS_BUTTON);
             else if(v->mode==SWG_HISTORY_DETAIL)r=mode(v,SWG_HISTORY,v->item);
