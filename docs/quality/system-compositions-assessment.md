@@ -1,5 +1,13 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Software output removal/recreation: `8c3537dc9b1dbe7cd605d63ec8d393d3ef208ff1`,
+[real private hotplug, fresh registry identities and maximized-window failover](software-hotplug-report.md).
+Sixteen positive cases retain414 checkpoints,194 transitions,42 snapshot/poll
+boundaries and18 raw captures across three profiles plus capture repeat. Two
+compiled wrong observers are rejected. Ordinary host/view/model/worker and SDK/
+pin are unchanged. Production output policy, all-output loss, long-run budgets,
+physical/session-resume and final gates remain; prior AT-SPI instability is open.
+
 Software output/scale/workarea: `665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e`,
 [private three-output fractional-scale, workarea/mode/maximize/restore and native
 draft/caret/focus/hit checks](software-output-report.md). Three consumer profiles

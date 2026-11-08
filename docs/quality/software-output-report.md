@@ -111,6 +111,11 @@ no cause or repair. See the [original finding](software-label-checks.json).
 
 ## Binding, adoption and remaining scope
 
+Published checkpoint `e0c7a7f4bda3e23cdbe5e07e07dbdf86e89db1de` passes all seven
+required CI jobs in [run42505097233](https://github.com/Lulus792/NexaUI/actions/runs/42505097233);
+two optional jobs are skipped. The [job receipt](software-output-ci.json) is tied
+to that source and does not replace the separate external-consumer evidence.
+
 [Source binding](software-output-source-binding.json) matches102 executed inputs
 to exact Git blobs after CRLF-to-LF normalization only. The README-only later
 build instructions/report link are explicit. Four generated source transforms

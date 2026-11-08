@@ -1,5 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+## Software private output removal/recreation (2026-11-08)
+
+Source `8c3537dc9b1dbe7cd605d63ec8d393d3ef208ff1` adds optional native snapshot/
+poll observation around the ordinary Software host and real private output
+destruction/recreation. Maximized failover, normal restore, fresh IDs/revisions,
+retained draft/caret/focus and actual input pass16 cases/414 checkpoints with
+194 transitions and42 snapshot/sleep boundaries. Two compiled wrong observers
+fail;18 raw captures and two full lossless previews are retained. See [exact
+source, profiles, artifacts and adoption limits](software-hotplug-report.md).
+No SDK/API/version, ordinary host/view/model/worker, independent Aetheri source
+or pin/default changes. Production policy, all-output loss, long-run budgets,
+physical/session-resume, full inventory/services and final human/design/performance
+remain open across103 IDs, remaining packet6 and packets7–8. The prior AT-SPI
+stability finding is unchanged. W01's cancellable native-close contract is the
+next reusable SDK gap to reconcile while physical tests remain unavailable.
+
 ## Software controlled output transitions (2026-11-08)
 
 Consumer/test source `665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e` verifies the

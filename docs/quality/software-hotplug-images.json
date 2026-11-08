@@ -1,0 +1,409 @@
+{
+  "native_images": [
+    {
+      "label": "scale125",
+      "file": "capture-1-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f467419001e5227f9ee59185ecf5a28c5f32efa2b8751c51bc52f82589a62344",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 109,
+        "polls": 1560,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale125",
+      "file": "capture-1-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 109,
+        "polls": 1560,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale125",
+      "file": "capture-1-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1.25,
+        "frames": 109,
+        "polls": 1560,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 114,
+        "polls": 1850,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 114,
+        "polls": 1850,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "scale200",
+      "file": "capture-2-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "27c7aad9e652e106ee5479b4bea462645106cef0a8f86615b306a12078e9962b",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 2,
+        "frames": 114,
+        "polls": 1850,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 116,
+        "polls": 2134,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 116,
+        "polls": 2134,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "workarea",
+      "file": "capture-3-output-2.ppm",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "8381db68f8b690d656825288cb32c34f4ef6acbe4ebd99711767a31e63dabe39",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 1920,
+        "height": 984,
+        "scale": 2,
+        "frames": 116,
+        "polls": 2134,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9bcba6e3a7d260995d28f0388b1c898a7f17cb4ce36d69fcd125bcaebac26d0e",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 2989,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 2989,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "returned",
+      "file": "capture-4-output-2.ppm",
+      "width": 3200,
+      "height": 1800,
+      "sha256": "c0442255dff21152a59714558879c6e9be654e9f1970f93b5b835251ab2046af",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 124,
+        "polls": 2989,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "recreated-output-with-failover-maximized",
+      "file": "capture-5-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 2560,
+        "height": 1440,
+        "scale": 1,
+        "frames": 132,
+        "polls": 3565,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "recreated-output-with-failover-maximized",
+      "file": "capture-5-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "f7bab3a188fb8e9627d419d6762d9dd54b2115bd9f74df58f8233f5449bb5a8a",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 2560,
+        "height": 1440,
+        "scale": 1,
+        "frames": 132,
+        "polls": 3565,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "recreated-output-with-failover-maximized",
+      "file": "capture-5-output-2.ppm",
+      "width": 3200,
+      "height": 1800,
+      "sha256": "c0442255dff21152a59714558879c6e9be654e9f1970f93b5b835251ab2046af",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 2560,
+        "height": 1440,
+        "scale": 1,
+        "frames": 132,
+        "polls": 3565,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "hotplug-returned",
+      "file": "capture-6-output-0.ppm",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "056b83d6c45fb0bf0e2bb20bd4432c26767e93e254727382724421232c1a3c99",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 145,
+        "polls": 4709,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "hotplug-returned",
+      "file": "capture-6-output-1.ppm",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "c9239b846e1211d393afb6ec9ee6566f94e19c19002bd37a898b3d9654bdbd4d",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 145,
+        "polls": 4709,
+        "keys": 118,
+        "request": 2
+      }
+    },
+    {
+      "label": "hotplug-returned",
+      "file": "capture-6-output-2.ppm",
+      "width": 3200,
+      "height": 1800,
+      "sha256": "c0442255dff21152a59714558879c6e9be654e9f1970f93b5b835251ab2046af",
+      "view": {
+        "state": 2,
+        "epoch": 2,
+        "count": 5,
+        "mode": 1,
+        "focus": 45,
+        "width": 360,
+        "height": 300,
+        "scale": 1,
+        "frames": 145,
+        "polls": 4709,
+        "keys": 118,
+        "request": 2
+      }
+    }
+  ],
+  "published_pngs": [
+    {
+      "label": "failover-maximized",
+      "ppm": "capture-5-output-1.ppm",
+      "ppm_sha256": "f7bab3a188fb8e9627d419d6762d9dd54b2115bd9f74df58f8233f5449bb5a8a",
+      "png": "failover-maximized.png",
+      "png_sha256": "f7603bcd1690ce5a708d4f6118ccd4c18c5dd4ccf71b20208ba249ba8495090a",
+      "width": 2560,
+      "height": 1440,
+      "output": 1,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-hotplug-failover-maximized.png"
+    },
+    {
+      "label": "returned",
+      "ppm": "capture-6-output-0.ppm",
+      "ppm_sha256": "056b83d6c45fb0bf0e2bb20bd4432c26767e93e254727382724421232c1a3c99",
+      "png": "returned.png",
+      "png_sha256": "a7d2a8819b7c296730236851978592b6c3b888bb33418adf6ba3e4383686770b",
+      "width": 1920,
+      "height": 1080,
+      "output": 0,
+      "roundtrip_rgb_equal": true,
+      "published": "images/software-hotplug-returned.png"
+    }
+  ],
+  "visual_review": "Both full original output buffers inspected: maximized failover window on output1 with complete German captions and retained Unicode draft; normal-size output0 field/draft/caret and two-row header restored after three output recreation cycles. Existing help uses its clipped scroll viewport. Opaque high contrast, not final design, physical sharpness or human acceptance."
+}

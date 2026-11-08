@@ -1,5 +1,19 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+W03/W04/W05/W10/L11/I01/I05/A02/A06/P05/Q02/Q03/Q04/Q08: source
+`8c3537dc9b1dbe7cd605d63ec8d393d3ef208ff1` extends the private Software output
+fixture with real destruction/recreation, maximized failover and an optional
+public-snapshot/poll observer around the ordinary native host. Three profiles
+and capture repeat pass16 cases/414 checkpoints,194 transitions and42 checked
+topology snapshots/sleep witnesses. Three recreation cycles receive fresh
+connection-local IDs; two compiled stale-snapshot/old-ID defects fail. See
+[source-bound raw wire, snapshots, images and limits](software-hotplug-report.md).
+SDK/API/version, ordinary host/view/model/worker and independent Aetheri/pin
+are unchanged. All-output loss, long-run budgets, physical/session-resume,
+services/adoption and final gates remain; earlier AT-SPI instability remains
+open. W01's cancellable native-close contract is the next reusable gap to
+reconcile. All103 IDs, remaining packet6 and packets7–8 retain their full scope.
+
 W03/W04/W05/D07/L05/L11/I01/I05/T11/A02/A06/P05/Q02/Q03/Q04/Q08: source
 `665f930a5ec5bdbcd6167411f2a5e44a78ce9e7e` adds a separate checked private
 output producer and native Software task, reusing the existing public APIs.
