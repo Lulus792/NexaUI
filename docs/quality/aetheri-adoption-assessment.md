@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Software native query/close lifetime (2026-11-08)
+
+Consumer/test source `7c45be1f166ade719bdc78688eca75840ac8c1e9` reuses the
+unchanged ordinary Software host/model/view/worker and installed SDKc4f467d/0.1.23.
+Static/shared Release and Debug ASan/UBSan/LSan each pass two affected CTests,
+four held-query wake/close cases and one ordinary IME/navigation regression.
+The15 native cases retain66 checkpoints and two compiled negative controls.
+An independent OS peer rejects stale edits/actions before SQL release on close;
+wake checks observe the actual main-thread pollfd and no additional input.
+See [source, exact artifacts and remaining scope](software-lifecycle-report.md).
+This is adoptable selected-target observation/lifetime evidence, not a complete
+software inventory or authorized management implementation. Foreign clipboard,
+native resize/output checks, actual service/device/trusted-owner seams, remaining
+packet6, packets7–8 and final physical/human/performance/adoption gates remain
+across all103 IDs. No Aetheri checkout, model or reviewed pin is changed, and
+no1.0 release is declared.
+
 ## Files whole-proposal paste admission (2026-11-08)
 
 Consumer `713c26ee3db9c9fd3da61370bd290d54732b29ef` requires SDK0.1.26 and

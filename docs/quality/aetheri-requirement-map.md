@@ -1,5 +1,19 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/L05/L11/I01/I05/A02/A06/P04/P05/P07/Q02/Q04/Q08: source
+`7c45be1f166ade719bdc78688eca75840ac8c1e9` adds a default-OFF Software native
+held-query host and independent OS peer, reusing ordinary host/model/view/worker
+and installed SDK0.1.23. Three profiles pass two affected CTests and five native
+cases each:12 held wake/close cases plus three ordinary IME regressions,66 total
+checkpoints. Actual worker-FD wakeup without input, GUI retirement before query
+completion, retained-reference refusal, exact-once late allocation disposal and
+FD balance are proven in the scoped fixture. Two compiled worker defects fail
+as intended. See [exact source, artifacts and limits](software-lifecycle-report.md).
+The stale Files summary in the system-composition assessment is reconciled with
+the newer paste/clipboard/font/transaction evidence. No full row is closed;
+remaining packet6, packets7–8 and final physical/human/performance/adoption gates
+persist across all103 IDs. Aetheri's independent source/pin remains unchanged.
+
 B03/B04/T01/T03/I05/A02/A04/P04/P05/Q02/Q03/Q06/Q08: Files consumer
 `713c26ee3db9c9fd3da61370bd290d54732b29ef` adopts the existing0.1.26 paste
 validator with original whole-draft rules. Three profiles pass27/27 CTests

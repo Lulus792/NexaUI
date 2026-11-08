@@ -1,0 +1,208 @@
+{
+  "source_revision": "7c45be1f166ade719bdc78688eca75840ac8c1e9",
+  "result": "passed",
+  "git_bound_inputs": 95,
+  "documentation_only_after_execution": 1,
+  "native_cases": 15,
+  "native_checkpoints": 66,
+  "held_cases": 12,
+  "ordinary_ime_cases": 3,
+  "compiled_negative_controls": 2,
+  "artifact_rows": 232,
+  "original_inputs": 73,
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": 2,
+      "compiled_c17_werror_objects": 14,
+      "original_objects": 17,
+      "compiled": [
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_components.dir/software_components.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_components.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_held_native.dir/test_native_gate.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_native_gate.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_history.dir/software_history.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_history.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_history.dir/software_recovery.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_recovery.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_model.dir/software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_native.dir/native.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/native.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_view.dir/software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_view_test.dir/test_software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_worker.dir/software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_worker.c"
+        },
+        {
+          "object": "software-lifecycle-2-release/CMakeFiles/software_worker_test.dir/test_software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_worker.c"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "ctests": 2,
+      "compiled_c17_werror_objects": 14,
+      "original_objects": 17,
+      "compiled": [
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_components.dir/software_components.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_components.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_held_native.dir/test_native_gate.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_native_gate.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_history.dir/software_history.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_history.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_history.dir/software_recovery.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_recovery.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_model.dir/software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_native.dir/native.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/native.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_view.dir/software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_view_test.dir/test_software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_worker.dir/software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_worker.c"
+        },
+        {
+          "object": "software-lifecycle-2-shared/CMakeFiles/software_worker_test.dir/test_software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_worker.c"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "ctests": 2,
+      "compiled_c17_werror_objects": 14,
+      "original_objects": 17,
+      "compiled": [
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_components.dir/software_components.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_components.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_held_native.dir/test_native_gate.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_native_gate.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_history.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/33_aetheri_recovery/view_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_history.dir/software_history.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_history.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_history.dir/software_recovery.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_recovery.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_manifest_document.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/31_aetheri_manifest/manifest_document.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_model.dir/software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_model_test.dir/test_software_model.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_model.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_native.dir/native.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/native.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_view.dir/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/common/text_wrap.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_view.dir/software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_view_test.dir/test_software_view.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_view.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_worker.dir/software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/software_worker.c"
+        },
+        {
+          "object": "software-lifecycle-2-asan/CMakeFiles/software_worker_test.dir/test_software_worker.c.o",
+          "source": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/test_software_worker.c"
+        }
+      ]
+    }
+  ],
+  "archive_sha256": "85425fff953e7a34f8a07064e4d53b33322f8239b97cfe0837669dd379a10f70"
+}

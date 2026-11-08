@@ -1,0 +1,20 @@
+{
+  "sha256": "85425fff953e7a34f8a07064e4d53b33322f8239b97cfe0837669dd379a10f70",
+  "files": 1044,
+  "links": 2,
+  "directories": 588,
+  "verified": true,
+  "name": "nexaui-software-lifecycle-20261108.tar.gz",
+  "size": 24148295,
+  "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized",
+  "early_archive": {
+    "sha256": "c6597e4cf2dcc5cca3425e24036da1ab73fa81b7d7dbcd33326b6643548017d2",
+    "files": 708,
+    "links": 0,
+    "directories": 305,
+    "verified": true,
+    "name": "nexaui-software-lifecycle-early-20261108.tar.gz",
+    "size": 10980733,
+    "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+  }
+}

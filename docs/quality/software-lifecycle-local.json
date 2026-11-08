@@ -1,0 +1,5015 @@
+{
+  "result": "passed",
+  "scope": "Original selected-app native held query wake/close; 12 held and 3 ordinary IME cases. No SDK implementation/API/version change, production inventory, TSan, hardware/human/performance or complete packet acceptance.",
+  "original_revision": "46e2a21ef979d9a76db2a8487d1de167a6a79ef7",
+  "sdk_revision": "c4f467d85b0147944d2456f5e7602a39ac18e579",
+  "native_cases": [
+    {
+      "name": "swl2-release-plain-wake",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 225,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 404,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7ffe1d0c6730",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffe1d0c66a8",
+          "0x7f58188f6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 225,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/fixture/run-q9761_do/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/fixture/run-q9761_do/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/result.json",
+          "size": 10108,
+          "sha256": "53ba4a508c1353ea70e9153b677081a77e46b7f9886ba4b67db7e6742be7857b"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/host.log",
+          "size": 9635,
+          "sha256": "aeda571c9fc27a17448dfa02ba7c729f8fee43e36106fe7b9f5a112a6cd4bc65"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-release-plain-close",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 325,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 330,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/fixture/run-9n7gwjw1/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/fixture/run-9n7gwjw1/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/result.json",
+          "size": 9427,
+          "sha256": "73c667fe3a714c70528d75960df512e6b1ac6b23a1d20338f1b7c21bf6e744d8"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/host.log",
+          "size": 17057,
+          "sha256": "86c947572dd42f1fd2876a47a228a5bb96a7de7ac874a4b746b59b7285a11e6e"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-release-german-large-wake",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 229,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 405,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7fff2835ef20",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7fff2835ee98",
+          "0x7f93eeaf6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 229,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/fixture/run-h7znau_d/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/fixture/run-h7znau_d/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/result.json",
+          "size": 10274,
+          "sha256": "084a71bbd650df4c704ca040faf9808e4c98e26c706cb3c2dac44eb0d0bafcc9"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/host.log",
+          "size": 9487,
+          "sha256": "96b0076b3fe3166be6550ff7bc60a1d49bb757993cd6f93971d34f1319108bbf"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-release-german-large-close",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 334,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 338,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/fixture/run-wqahw66o/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/fixture/run-wqahw66o/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/result.json",
+          "size": 9437,
+          "sha256": "38f0417018a8fd40b41220ff921d9b8b939d98e9767a03a984894f2883700c45"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/host.log",
+          "size": 17353,
+          "sha256": "2c8997494c955fa12797458f1b4bf781cdafa2da8d9eeb23f1830033409a87c6"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-release-ordinary-ime",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "components": null,
+        "held": null
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 109,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 119,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 116,
+            "polls": 860,
+            "keys": 118,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 118,
+            "polls": 867,
+            "keys": 120,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 119,
+            "polls": 998,
+            "keys": 120,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 122,
+            "polls": 1040,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 123,
+            "polls": 1102,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 124,
+            "polls": 1143,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 129,
+            "polls": 1356,
+            "keys": 124,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 134,
+            "polls": 1509,
+            "keys": 128,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/fixture/run-i7490pfn/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/fixture/run-i7490pfn/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/result.json",
+          "size": 11550,
+          "sha256": "a04f1ea1ee6c60804ed67a2f7bc29722100eaf3d7d9e7f2880eb19531b697658"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/host.log",
+          "size": 146967,
+          "sha256": "8cea2364335564dd0e5bb389cacc7a1349053eb9c6d98a0d2ac6a1bc92bfb419"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/client.log",
+          "size": 1097,
+          "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/server.log",
+          "size": 797,
+          "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+        }
+      ]
+    },
+    {
+      "name": "swl2-shared-plain-wake",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 403,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7ffe90da9910",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffe90da9818",
+          "0x7ff4474f6352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/fixture/run-cveg2q3_/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/fixture/run-cveg2q3_/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/result.json",
+          "size": 10846,
+          "sha256": "3273754908c14904487d2af9ec63a0c06a99c8a1cc7a6ed57d9ca8a4c115c84f"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/host.log",
+          "size": 9635,
+          "sha256": "8feeee98ff1d1444053067690b36b2c799b79a69ad3cc2fc785a0042faa0e355"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-shared-plain-close",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 325,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 329,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/fixture/run-fm5zykra/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/fixture/run-fm5zykra/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/result.json",
+          "size": 10115,
+          "sha256": "2acc91d260ac871ead339009705bac50820dad8c61e9f59dc17fd696eff59e18"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/host.log",
+          "size": 16983,
+          "sha256": "9cd25b6ca2d5fd2fc2509c3fec7b1b2f701f450fa93ee2103e992924528a013e"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-shared-german-large-wake",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 405,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7ffd6c16e580",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffd6c16e488",
+          "0x7f5369c82352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/fixture/run-f4scdhfd/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/fixture/run-f4scdhfd/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/result.json",
+          "size": 10856,
+          "sha256": "5e2e2e6d7b0579babfdea480878673078790e2fa69e0e416f8ea2b5ef37f2253"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/host.log",
+          "size": 9561,
+          "sha256": "a5094257795b01ac0bd496ec76283849a8867f50b86e8eafc9c2ce0beabeb20b"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-shared-german-large-close",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 331,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 335,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/fixture/run-09zphdk0/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/fixture/run-09zphdk0/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/result.json",
+          "size": 10075,
+          "sha256": "482de65a6c2b4ed8f725c5699950bfcfa5821fa1ff5ad42016fa3af43d2f375c"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/host.log",
+          "size": 17501,
+          "sha256": "3df2a4a14edfad01bccdbdd3feedb135b5acde3e3adcae1f9a9564abf7e35436"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-shared-ordinary-ime",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "components": null,
+        "held": null
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 110,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 118,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 96,
+            "polls": 813,
+            "keys": 118,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 97,
+            "polls": 819,
+            "keys": 120,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 99,
+            "polls": 990,
+            "keys": 120,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 101,
+            "polls": 993,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 102,
+            "polls": 1056,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 103,
+            "polls": 1097,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 108,
+            "polls": 1315,
+            "keys": 124,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 111,
+            "polls": 1470,
+            "keys": 128,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/fixture/run-2ktiie2z/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/fixture/run-2ktiie2z/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/result.json",
+          "size": 12232,
+          "sha256": "3b926d50c0b1bd5e7eec602a7b3cde0a36495128291ae18966c66b4e98939201"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/host.log",
+          "size": 126538,
+          "sha256": "39ea4e8aff730dadc69a863caa260501989c5d06740d9bb969bcc618d210f7f1"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/client.log",
+          "size": 1097,
+          "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/server.log",
+          "size": 797,
+          "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+        }
+      ]
+    },
+    {
+      "name": "swl2-asan-plain-wake",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 4,
+            "polls": 229,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 407,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7b061e786e20",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffc51866978",
+          "0x7f0620c82352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 800,
+          "height": 600,
+          "scale": 1,
+          "frames": 4,
+          "polls": 229,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/fixture/run-snzghx9n/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/fixture/run-snzghx9n/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/result.json",
+          "size": 21635,
+          "sha256": "db7a9e389086a1c2509ece7a534fbdd82e3150ad5f6bf88bca886e42f813d1e0"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/host.log",
+          "size": 9561,
+          "sha256": "dd24488263a6b697347caebb44f1de5b84a39626ab25803d27620cb7b8540a24"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-asan-plain-close",
+      "configuration": {
+        "german": false,
+        "large": false,
+        "small": false,
+        "contrast": false,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 6,
+            "polls": 324,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 800,
+            "height": 600,
+            "scale": 1,
+            "frames": 7,
+            "polls": 328,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/fixture/run-lwwjl04k/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/fixture/run-lwwjl04k/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/result.json",
+          "size": 20854,
+          "sha256": "d10eea02135dc0707acdb17c67fe7f0ad2e551a74fe4b23342f174497aa496fc"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/host.log",
+          "size": 16983,
+          "sha256": "6df0c14c9de79832d61ec097e7c6b04d0f10b1e8c89949106b59dc45a441222a"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-asan-german-large-wake",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "wake"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 4,
+            "polls": 224,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 404,
+            "keys": 0,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": {
+        "syscall": [
+          "7",
+          "0x7b120ff0ea20",
+          "0x3",
+          "0x7fffffff",
+          "0x0",
+          "0x0",
+          "0x0",
+          "0x7ffdbf3a0a18",
+          "0x7f1212482352"
+        ],
+        "descriptors": [
+          {
+            "fd": 9,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 10,
+            "events": 1,
+            "revents": 0
+          },
+          {
+            "fd": 4,
+            "events": 1,
+            "revents": 0
+          }
+        ],
+        "worker_fd": 4,
+        "view": {
+          "state": 1,
+          "epoch": 1,
+          "count": 5,
+          "mode": 0,
+          "focus": 42,
+          "width": 360,
+          "height": 300,
+          "scale": 1,
+          "frames": 4,
+          "polls": 224,
+          "keys": 0,
+          "request": 2
+        }
+      },
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": true,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/fixture/run-estohbvj/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/fixture/run-estohbvj/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/result.json",
+          "size": 21445,
+          "sha256": "9461cc88ffe8d72fbbe4ee3b2f0efa279637d1499a391bdd79f652ca3b354366"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/host.log",
+          "size": 9487,
+          "sha256": "b34bf5f820d72c24420eb73d9c753f926f5a3c19c4113772d5e18ad03580eb4f"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/client.log",
+          "size": 102,
+          "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-asan-german-large-close",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": false,
+        "components": null,
+        "held": "close"
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 2,
+            "polls": 1,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 6,
+            "polls": 330,
+            "keys": 0,
+            "request": 2
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 1,
+            "epoch": 1,
+            "count": 5,
+            "mode": 1,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 7,
+            "polls": 334,
+            "keys": 1,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": true,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/fixture/run-49_t8tnb/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/fixture/run-49_t8tnb/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [
+        [
+          "5",
+          "4"
+        ]
+      ],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/result.json",
+          "size": 20664,
+          "sha256": "86ba19a9e6ea6ef107f39d292ce9ec4aa5cc0c64049d933a92e9a29daf21bfb4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/host.log",
+          "size": 17057,
+          "sha256": "88949fed13217db67bf753e48d93d0b306884fdad6515d4eb9fb298863f083f9"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/client.log",
+          "size": 104,
+          "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/server.log",
+          "size": 55,
+          "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+        }
+      ]
+    },
+    {
+      "name": "swl2-asan-ordinary-ime",
+      "configuration": {
+        "german": true,
+        "large": true,
+        "small": true,
+        "contrast": true,
+        "light": false,
+        "ime": true,
+        "components": null,
+        "held": null
+      },
+      "checks": [
+        {
+          "step": 0,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 40,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 3,
+            "polls": 115,
+            "keys": 0,
+            "request": 1
+          }
+        },
+        {
+          "step": 1,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 5,
+            "polls": 124,
+            "keys": 2,
+            "request": 1
+          }
+        },
+        {
+          "step": 2,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 2,
+            "focus": 43,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 105,
+            "polls": 775,
+            "keys": 118,
+            "request": 1
+          }
+        },
+        {
+          "step": 3,
+          "view": {
+            "state": 2,
+            "epoch": 1,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 106,
+            "polls": 779,
+            "keys": 120,
+            "request": 1
+          }
+        },
+        {
+          "step": 4,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 1004,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 108,
+            "polls": 912,
+            "keys": 120,
+            "request": 2
+          }
+        },
+        {
+          "step": 5,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 111,
+            "polls": 950,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 6,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 112,
+            "polls": 1014,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 7,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 113,
+            "polls": 1055,
+            "keys": 122,
+            "request": 2
+          }
+        },
+        {
+          "step": 8,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 0,
+            "mode": 1,
+            "focus": 45,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 118,
+            "polls": 1262,
+            "keys": 124,
+            "request": 2
+          }
+        },
+        {
+          "step": 9,
+          "view": {
+            "state": 2,
+            "epoch": 2,
+            "count": 5,
+            "mode": 0,
+            "focus": 42,
+            "width": 360,
+            "height": 300,
+            "scale": 1,
+            "frames": 122,
+            "polls": 1411,
+            "keys": 128,
+            "request": 2
+          }
+        }
+      ],
+      "native_wait_witness": null,
+      "gui_gone_before_gate_release": null,
+      "completion_without_further_input": null,
+      "host_exit": 0,
+      "peer_exit": 0,
+      "database_rows_unchanged": true,
+      "sha256_before_after": {
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/fixture/run-7948t_if/system/catalogue.sqlite3": "7e797430e1448faef05826dcd7880a120309fad8ccb81654cc088ae531997182",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/fixture/run-7948t_if/user/catalogue.sqlite3": "e244d3ac490e017bac9887a00a1d0258f67df7e7d4ed979d43672d9e7cc1c7c0"
+      },
+      "cleanup": [
+        {
+          "name": "client",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "host",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "registry",
+          "exit": -15,
+          "forced": false
+        },
+        {
+          "name": "bus",
+          "exit": 0,
+          "forced": false
+        },
+        {
+          "name": "server",
+          "exit": 0,
+          "forced": false
+        }
+      ],
+      "fd_balance": [],
+      "evidence": [
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/result.json",
+          "size": 22876,
+          "sha256": "edfcd3379d08f7e580a701e50fbb43e027aec63024ec2eaefc2613436b1435a2"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/host.log",
+          "size": 136603,
+          "sha256": "83aa6a8045e00a0018b2fae8cdbc3a37257b1c9811ad5a95bd1dc31d06738926"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/client.log",
+          "size": 1097,
+          "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+        },
+        {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/server.log",
+          "size": 797,
+          "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": 2,
+      "ctest": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-release-ctest.log",
+        "size": 378,
+        "sha256": "5d1c971607f7ea0b721b06a8160fd51ded7a73f78d94a7b73e326dd40da0c2ac"
+      },
+      "compile_commands": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/compile_commands.json",
+        "size": 37913,
+        "sha256": "ad5a171eb9f19312066408a568362484d1c0c3cbd091337cad4c65fd1d268258"
+      },
+      "cache": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/CMakeCache.txt",
+        "size": 25322,
+        "sha256": "c9947fc498455e51f06df0b2a9690b52d19271772437da42091476fdf73c8430"
+      },
+      "configured_c17_werror_objects": 20,
+      "compiled_c17_werror_objects": 14
+    },
+    {
+      "profile": "shared",
+      "ctests": 2,
+      "ctest": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-shared-ctest.log",
+        "size": 377,
+        "sha256": "59101bd37c61f78c14b9347d8a680938ab9276b50201aef63caba6765966c398"
+      },
+      "compile_commands": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/compile_commands.json",
+        "size": 38111,
+        "sha256": "72707321b2b4f53dff38e0bea4aca90557b7a29b76ca6bd6b20c3534def9942a"
+      },
+      "cache": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/CMakeCache.txt",
+        "size": 25316,
+        "sha256": "8d8776156f103ed5c9acb6f91fc4d4d704d98d355fd6cf032e35aa997bdcbc78"
+      },
+      "configured_c17_werror_objects": 20,
+      "compiled_c17_werror_objects": 14
+    },
+    {
+      "profile": "asan",
+      "ctests": 2,
+      "ctest": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-asan-ctest.log",
+        "size": 375,
+        "sha256": "1fe27db3f5c2c33461e61f77d556b77d586d87e19adf9a141964b427905a6d83"
+      },
+      "compile_commands": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/compile_commands.json",
+        "size": 39697,
+        "sha256": "656ad36bbce3f4fccf3ceb563cfc916b2bd52b909b5ecfe234b1bb3669c236b9"
+      },
+      "cache": {
+        "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/CMakeCache.txt",
+        "size": 25382,
+        "sha256": "e68553cc81cbd6bd347aac2aad4448070e4549fcc65023aaea98968b99ded467"
+      },
+      "configured_c17_werror_objects": 20,
+      "compiled_c17_werror_objects": 14
+    }
+  ],
+  "negative_commands": [
+    {
+      "name": "no-second-wake",
+      "phase": "compile",
+      "command": [
+        "/usr/bin/cc",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/.",
+        "-I/tmp/nexaui-recovery-20261107/original/src",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/../31_aetheri_manifest",
+        "-isystem",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/software_worker.o",
+        "-c",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/software_worker.c"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "no-second-wake",
+      "phase": "link",
+      "command": [
+        "/usr/bin/cc",
+        "-O3",
+        "-DNDEBUG",
+        "-Wl,--wrap=ae_catalogue_open,--wrap=sw_read,--wrap=ae_catalogue_close,--wrap=free,--wrap=sqlite3_prepare_v2,--wrap=swg_close,--wrap=nx_window_destroy,--wrap=nx_window_poll_with_fd",
+        "-Wl,--dependency-file=/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/link.d",
+        "CMakeFiles/software_held_native.dir/test_native_gate.c.o",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/software_held_native",
+        "libsoftware_view.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/software_worker.o",
+        "libsoftware_components.a",
+        "libsoftware_manifest_document.a",
+        "libsoftware_history.a",
+        "libsoftware_model.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+        "-ldl",
+        "-lm",
+        "/usr/lib64/libwayland-client.so",
+        "-lm",
+        "/usr/lib64/libxkbcommon.so",
+        "aetheri/libaetheri_catalogue.a",
+        "aetheri/libaetheri_core.a",
+        "/usr/lib64/libcrypto.so",
+        "/usr/lib64/libsqlite3.so"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "no-second-wake",
+      "phase": "native negative",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-no-second-wake/software_held_native",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-lifecycle_atspi",
+        "--model",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_model_test",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--source",
+        "/tmp/nexaui-recovery-20261107/original",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl-negative-wake",
+        "--held",
+        "wake"
+      ],
+      "exit": 1,
+      "checks": 2,
+      "detected": true
+    },
+    {
+      "name": "worker-disposal",
+      "phase": "compile",
+      "command": [
+        "/usr/bin/cc",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/.",
+        "-I/tmp/nexaui-recovery-20261107/original/src",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/../31_aetheri_manifest",
+        "-isystem",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/software_worker.o",
+        "-c",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/software_worker.c"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "worker-disposal",
+      "phase": "link",
+      "command": [
+        "/usr/bin/cc",
+        "-O3",
+        "-DNDEBUG",
+        "-Wl,--wrap=ae_catalogue_open,--wrap=sw_read,--wrap=ae_catalogue_close,--wrap=free,--wrap=sqlite3_prepare_v2,--wrap=swg_close,--wrap=nx_window_destroy,--wrap=nx_window_poll_with_fd",
+        "-Wl,--dependency-file=/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/link.d",
+        "CMakeFiles/software_held_native.dir/test_native_gate.c.o",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/software_held_native",
+        "libsoftware_view.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/software_worker.o",
+        "libsoftware_components.a",
+        "libsoftware_manifest_document.a",
+        "libsoftware_history.a",
+        "libsoftware_model.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+        "-ldl",
+        "-lm",
+        "/usr/lib64/libwayland-client.so",
+        "-lm",
+        "/usr/lib64/libxkbcommon.so",
+        "aetheri/libaetheri_catalogue.a",
+        "aetheri/libaetheri_core.a",
+        "/usr/lib64/libcrypto.so",
+        "/usr/lib64/libsqlite3.so"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "worker-disposal",
+      "phase": "native negative",
+      "command": [
+        "python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/run_native.py",
+        "--server",
+        "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--host",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-worker-disposal/software_held_native",
+        "--client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-lifecycle_atspi",
+        "--model",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_model_test",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--source",
+        "/tmp/nexaui-recovery-20261107/original",
+        "--work-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/swl-negative-close",
+        "--held",
+        "close"
+      ],
+      "exit": 1,
+      "checks": 3,
+      "detected": true
+    }
+  ],
+  "sdk_probes": [
+    {
+      "profile": "release",
+      "command": [
+        "/usr/bin/cc",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/.",
+        "-I/tmp/nexaui-recovery-20261107/original/src",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/../31_aetheri_manifest",
+        "-isystem",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-release.o",
+        "-c",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-probe.c"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "release",
+      "command": [
+        "/usr/bin/cc",
+        "-O3",
+        "-DNDEBUG",
+        "-Wl,--dependency-file=/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-release.d",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-release.o",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-release",
+        "libsoftware_view.a",
+        "libsoftware_worker.a",
+        "libsoftware_components.a",
+        "libsoftware_manifest_document.a",
+        "libsoftware_history.a",
+        "libsoftware_model.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+        "-ldl",
+        "-lm",
+        "/usr/lib64/libwayland-client.so",
+        "-lm",
+        "/usr/lib64/libxkbcommon.so",
+        "aetheri/libaetheri_catalogue.a",
+        "aetheri/libaetheri_core.a",
+        "/usr/lib64/libcrypto.so",
+        "/usr/lib64/libsqlite3.so"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "release",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-release"
+      ],
+      "exit": 0,
+      "stdout": "{\"version\":\"0.1.23\",\"revision\":\"c4f467d85b0147944d2456f5e7602a39ac18e579\",\"features\":116}\n",
+      "stderr": ""
+    },
+    {
+      "profile": "shared",
+      "command": [
+        "/usr/bin/cc",
+        "-DNEXAUI_SHARED",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/.",
+        "-I/tmp/nexaui-recovery-20261107/original/src",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/../31_aetheri_manifest",
+        "-isystem",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-shared.o",
+        "-c",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-probe.c"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "shared",
+      "command": [
+        "/usr/bin/cc",
+        "-O3",
+        "-DNDEBUG",
+        "-Wl,--dependency-file=/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-shared.d",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-shared.o",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-shared",
+        "-Wl,-rpath,/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64",
+        "libsoftware_view.a",
+        "libsoftware_worker.a",
+        "-lm",
+        "libsoftware_components.a",
+        "libsoftware_manifest_document.a",
+        "libsoftware_history.a",
+        "libsoftware_model.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+        "aetheri/libaetheri_catalogue.a",
+        "aetheri/libaetheri_core.a",
+        "/usr/lib64/libcrypto.so",
+        "/usr/lib64/libsqlite3.so"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "shared",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-shared"
+      ],
+      "exit": 0,
+      "stdout": "{\"version\":\"0.1.23\",\"revision\":\"c4f467d85b0147944d2456f5e7602a39ac18e579\",\"features\":116}\n",
+      "stderr": ""
+    },
+    {
+      "profile": "asan",
+      "command": [
+        "/usr/bin/cc",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/.",
+        "-I/tmp/nexaui-recovery-20261107/original/src",
+        "-I/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-src2/examples/34_aetheri_software/../31_aetheri_manifest",
+        "-isystem",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-asan.o",
+        "-c",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-probe.c"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "asan",
+      "command": [
+        "/usr/bin/cc",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-Wl,--dependency-file=/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-asan.d",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-asan.o",
+        "-o",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-asan",
+        "libsoftware_view.a",
+        "libsoftware_worker.a",
+        "libsoftware_components.a",
+        "libsoftware_manifest_document.a",
+        "libsoftware_history.a",
+        "libsoftware_model.a",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/libnexaui.a",
+        "-ldl",
+        "-lm",
+        "/usr/lib64/libwayland-client.so",
+        "-lm",
+        "/usr/lib64/libxkbcommon.so",
+        "aetheri/libaetheri_catalogue.a",
+        "aetheri/libaetheri_core.a",
+        "/usr/lib64/libcrypto.so",
+        "/usr/lib64/libsqlite3.so"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "profile": "asan",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-asan"
+      ],
+      "exit": 0,
+      "stdout": "{\"version\":\"0.1.23\",\"revision\":\"c4f467d85b0147944d2456f5e7602a39ac18e579\",\"features\":116}\n",
+      "stderr": ""
+    }
+  ],
+  "original_inputs": {
+    "CMakeLists.txt": {
+      "path": "/tmp/nexaui-recovery-20261107/original/CMakeLists.txt",
+      "size": 114964,
+      "sha256": "47bc8e64d472e11c45e23fcaefea2c0a60d1cf5f418db86f4c746f9e268774e7"
+    },
+    "spec/schema/common-v1.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v1.sql",
+      "size": 9114,
+      "sha256": "5a7d370f2ccfffd0aaa5ba8368477be35c088dd9b3a9cf9b8b64e22772c6ee0b"
+    },
+    "spec/schema/common-v2.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v2.sql",
+      "size": 11455,
+      "sha256": "7a9fe66bab6237d89d9026c4a14da71e92d90006591bdcd56493d723d5145883"
+    },
+    "spec/schema/common-v3.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v3.sql",
+      "size": 2498,
+      "sha256": "100d24e7b7413b4d151b0d4a8bce1297fe89aec5fbcda84781639db51fb45e8e"
+    },
+    "spec/schema/common-v4.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v4.sql",
+      "size": 1037,
+      "sha256": "0b094567685d63ebc54452be42c4dad0d98ad4010c2bf1d934de24866cff8b46"
+    },
+    "spec/schema/common-v7.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v7.sql",
+      "size": 826,
+      "sha256": "682c6efaa940cbb07d64c8a0330a95da49a9769b431c129d5ae63ed792e2bceb"
+    },
+    "spec/schema/common-v8.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v8.sql",
+      "size": 2267,
+      "sha256": "91a8ac10efb176bd752f0fd7f8f2007253fd50eac0004c94e4755c059c9df37f"
+    },
+    "spec/schema/system-v1.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v1.sql",
+      "size": 7956,
+      "sha256": "0f32adbe053f75ba29908dee30c45d5720776cf9a95c02ab1d3bc51305f5c7e6"
+    },
+    "spec/schema/system-v10.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v10.sql",
+      "size": 5479,
+      "sha256": "21faf871c08437d771ae8313f0ebacf49e2da63532a80da1574dece7d167e799"
+    },
+    "spec/schema/system-v2.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v2.sql",
+      "size": 16834,
+      "sha256": "9a606e7469a4a35db357a9ce296f2a57cdf7848b8c7bdc541219951494dcdbc8"
+    },
+    "spec/schema/system-v3.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v3.sql",
+      "size": 968,
+      "sha256": "fa9e3ff271a7a1db66934475a1ba0557c64ca9969ff05e8c726799f217a66033"
+    },
+    "spec/schema/system-v4.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v4.sql",
+      "size": 1957,
+      "sha256": "bccb7f29f8b4ea034b66f2e3e68cea3818a52627fe8c046bcf639887b9751c3f"
+    },
+    "spec/schema/system-v5.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v5.sql",
+      "size": 5880,
+      "sha256": "6aaf5f948c33f7ac00ad1646eaf0030f05e67d89f08f64cc63b8b646097579b0"
+    },
+    "spec/schema/system-v6.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v6.sql",
+      "size": 3586,
+      "sha256": "6f065ee2e6d85300743a13ae52781cde8c54f4b9540a8c7e123ceca00da0abd7"
+    },
+    "spec/schema/system-v7.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v7.sql",
+      "size": 3522,
+      "sha256": "2953223788621c3bcd954acf91f0d4ab09763bcdfadc6eb951188c8e2f4773a8"
+    },
+    "spec/schema/system-v8.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v8.sql",
+      "size": 3167,
+      "sha256": "62219597e849d9bb736018046fd01211927396c10caa5b9857202d68a32322ad"
+    },
+    "spec/schema/system-v9.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v9.sql",
+      "size": 4919,
+      "sha256": "87e8e8c50531805adaa7f0cda1b31ff0017577e3449ec5d8ecd4a192ca75de59"
+    },
+    "spec/schema/user-v1.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v1.sql",
+      "size": 6455,
+      "sha256": "235b95b978cc2ce8535273cc8407b33daee5f822a6ef942965c95550b1d68526"
+    },
+    "spec/schema/user-v2.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v2.sql",
+      "size": 19340,
+      "sha256": "dad2cc892c2432bc4950a446e06fda69774a8d5bc0ec31265c181dca0bbc5cd7"
+    },
+    "spec/schema/user-v3.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v3.sql",
+      "size": 873,
+      "sha256": "9c0331df80438a76d4a8630c9ecf849f879a9b9f0f02f61fadc65bf8e9ec15f4"
+    },
+    "spec/schema/user-v4.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v4.sql",
+      "size": 1314,
+      "sha256": "9307e329929a9ba9eac4c0e8ca8dc0c93c8b67c702a559e925c05553c5cdbe62"
+    },
+    "spec/schema/user-v7.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v7.sql",
+      "size": 2448,
+      "sha256": "747b98a6e8be1e5bd41affa61e9cf81143144be16e94b007cb348887729a4601"
+    },
+    "spec/schema/user-v8.sql": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v8.sql",
+      "size": 2708,
+      "sha256": "ebabcae73c7912e5f2a755e5aca1eefb6a97a325f6abfde43fc8853076cc3c70"
+    },
+    "src/catalogue/data.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.c",
+      "size": 2026,
+      "sha256": "35cf03e702b7b6ef75dcdf11c7fb97ed6a4b595ba77d153f241683b795ee2b9d"
+    },
+    "src/catalogue/data.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.h",
+      "size": 1795,
+      "sha256": "e0d13895ddd91c118747153d2ba92fe184e3b5b7b97578a601acd30c05462a9f"
+    },
+    "src/catalogue/effect.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/effect.h",
+      "size": 2720,
+      "sha256": "1c1205c98d9396e3a28ccaa150f5603b76dc1b285e16778f691c52b4979ac6de"
+    },
+    "src/catalogue/execution.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.c",
+      "size": 13325,
+      "sha256": "006738d4399ac99a82629be5855328768a54130d1e0fb13bdb8f6f5a248b14bb"
+    },
+    "src/catalogue/execution.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.h",
+      "size": 13195,
+      "sha256": "16ed456cd60a9403531c7f442bda72cbe76ce6ac1d3a01ede37cfed07a68d8b4"
+    },
+    "src/catalogue/handoff.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.c",
+      "size": 5768,
+      "sha256": "ad57e3334400d3b4dde9fbc526ea2b937077d41c496b2e88a28b8bb19d293681"
+    },
+    "src/catalogue/handoff.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.h",
+      "size": 3353,
+      "sha256": "881b045b165562e3a682590a345b3cf919fde1c9181bf553fe2825ae417b3904"
+    },
+    "src/catalogue/interruption.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.c",
+      "size": 4529,
+      "sha256": "5c72792f4579ebf5cdc76c3a848c1471b82cf8d8e01d0dcd013e0aeea038fc4b"
+    },
+    "src/catalogue/interruption.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.h",
+      "size": 3888,
+      "sha256": "511c77202b847f1100cfda832ef707e7690369ffa31521d61b728c943d672b65"
+    },
+    "src/catalogue/launch.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/launch.h",
+      "size": 2614,
+      "sha256": "97c66c0407bd640f59f4c28b053ed10c308c1467982a954ff04f82a770b3380f"
+    },
+    "src/catalogue/lifetime.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.c",
+      "size": 5562,
+      "sha256": "bcb18a4dd6ab60e490b84384c9f114ec620de715f3e89766c9a38df5fec01cbe"
+    },
+    "src/catalogue/lifetime.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.h",
+      "size": 9183,
+      "sha256": "c6416de982278fc8b758d82c9023f1639e2e7fdc5b8f6f64bb3082d99dd27f43"
+    },
+    "src/catalogue/projection.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/projection.h",
+      "size": 2775,
+      "sha256": "f011fd5034fe9d373749d9312794db7eb18b64ac0a6500ca8b690223276dce75"
+    },
+    "src/catalogue/recovery.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/recovery.h",
+      "size": 2798,
+      "sha256": "cb9760b16a6e660117b0fc963b5aafe3ddc558f0ed164c7e78fcd71df42e886e"
+    },
+    "src/catalogue/reservation.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/reservation.h",
+      "size": 4404,
+      "sha256": "5f35fbed070fce45063049662f3043f19bbbbfbedb7d936f94d3912c714a8c77"
+    },
+    "src/catalogue/schema.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/schema.h",
+      "size": 816,
+      "sha256": "51ec3e0e3e184d41297b2164a05945fb1300c8ba0142c371fc9bbdfb20e045fc"
+    },
+    "src/catalogue/setup.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.c",
+      "size": 1254,
+      "sha256": "dc831694c5060bae484ac0ab819b743eedfd804210c41d143d3c801f352e04e1"
+    },
+    "src/catalogue/setup.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.h",
+      "size": 3108,
+      "sha256": "49c8d171462306dc17cb110442b64d54b1a4f46da06b58301266cda0ea774d30"
+    },
+    "src/catalogue/store.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.c",
+      "size": 303051,
+      "sha256": "e1a5637e364f55252e90f24c6975922e9b9415a96823146952d24efbac2ceaed"
+    },
+    "src/catalogue/store.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.h",
+      "size": 12561,
+      "sha256": "290a9434b3b0554a136ee6624aed25bc91922bf4897d70a5a4b1a050849615ac"
+    },
+    "src/catalogue/unit.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/unit.h",
+      "size": 3760,
+      "sha256": "fd969644704abcd5634992f1f0d2cfbcfbdbcc53d89265c7b2284cff5777d6c5"
+    },
+    "src/core/allocation.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.c",
+      "size": 10722,
+      "sha256": "cab4e9d44650813bb00af16f20032a78894a6ccac69713233ca39e173e3bc968"
+    },
+    "src/core/allocation.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.h",
+      "size": 2248,
+      "sha256": "402f0c36ed06537f73ded1fb0902d1bdd5da8b4f6e4fa1f7c9fefac044b373ae"
+    },
+    "src/core/digest.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/digest.c",
+      "size": 4353,
+      "sha256": "8e52909e6f61b3c753df6312c05fcb2f93c53d1c96a35aabd8467bf95539b8ee"
+    },
+    "src/core/digest.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/digest.h",
+      "size": 1365,
+      "sha256": "03c846e4f179c42eaf9cde56a6b2c8bb69a93c16e68a1ad0ae1157192f5d5eea"
+    },
+    "src/core/fixture.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.c",
+      "size": 9896,
+      "sha256": "15fd6ce5a251a94669bb07dd868ebd991db1d47c9a3684b5c275e9514f0bc21d"
+    },
+    "src/core/fixture.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.h",
+      "size": 3061,
+      "sha256": "ea1ac801587ebfc912b3ee2882f400fb43a8b916e4c2bf553af56df5b141b410"
+    },
+    "src/core/import.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/import.c",
+      "size": 15817,
+      "sha256": "da0b53b68607bbcf9d94d5403d4388ed6ce018a39223a2014ad263e16a81f146"
+    },
+    "src/core/import.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/import.h",
+      "size": 3767,
+      "sha256": "96ab5c665cba7f15d03f0d1676bb4347a06665ffdaf5fe6ee5a5c4c0378ae039"
+    },
+    "src/core/owner.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/owner.c",
+      "size": 2440,
+      "sha256": "e4990af56e85666c8140e21ce80ab528b37718a072d547cbebbdb3f0dc936a1e"
+    },
+    "src/core/owner.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/owner.h",
+      "size": 745,
+      "sha256": "3ae5b9d8e9f69ce1bd09e26bdcebfa185a7d37e3bd837d6e22db45e207f03c9a"
+    },
+    "src/core/publish.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/publish.c",
+      "size": 9661,
+      "sha256": "145825c8413e8c9df31bb17119636eb097d753e9e71b214257d64d0e62419441"
+    },
+    "src/core/publish.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/publish.h",
+      "size": 1941,
+      "sha256": "bde78ba0072f3951b4d224c3e29f12f9bd9519806eec2d874fb10caa30e206de"
+    },
+    "src/core/root.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/root.c",
+      "size": 4291,
+      "sha256": "5f77d34c80361a1c2dd36da255c74f3b04163d5789f0d359ed2f16d5b44345c2"
+    },
+    "src/core/root.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/root.h",
+      "size": 1362,
+      "sha256": "4067cd1152e702d65c12c8152436d261da612c96c2ff2502afe49ddce7c96253"
+    },
+    "src/core/storage.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/storage.c",
+      "size": 7859,
+      "sha256": "f8370ed48bdfd877d27b0f3c26b2f2680c75927e852ca8f1789e307391a553b9"
+    },
+    "src/core/storage.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/storage.h",
+      "size": 2543,
+      "sha256": "95c76b632093fa9160f7723fd824f4a8d57d97ecdb9b0f150983992e9dec45fe"
+    },
+    "src/core/unit_custody.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.c",
+      "size": 1976,
+      "sha256": "c4e3003f58c0c360133ae3155b34d56f167fc0f06cb0bb0e9b9b7a62e74b22c6"
+    },
+    "src/core/unit_custody.h": {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.h",
+      "size": 863,
+      "sha256": "fe2b8d7fc0b5888cfb9de3fb8509269337c9f4e5dfce92cd3810ebfe4136dbc7"
+    },
+    "tools/catalogue_contracts.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/catalogue_contracts.py",
+      "size": 18738,
+      "sha256": "2b021afd2b2c5eede0ac3b94345169663df315037094f930e8ebee348a80b0a6"
+    },
+    "tools/embed_schema.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/embed_schema.py",
+      "size": 3668,
+      "sha256": "21f20d2efe88596f093198e1ad22dec7606a1e27c9e7a04f0a3246a1b2cbbdaf"
+    },
+    "tools/test_contracts.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_contracts.py",
+      "size": 73032,
+      "sha256": "909332c89c8f28f289bf2ba0e751e8af509479602e5338356243bc3e859fcff9"
+    },
+    "tools/test_recovery_inventory.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_recovery_inventory.py",
+      "size": 11871,
+      "sha256": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a"
+    },
+    "tools/validate_contracts.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/validate_contracts.py",
+      "size": 16581,
+      "sha256": "6fca28aae82bde10a1a6cf77b1257c82e826fed87983fb327a17bf96b2143ba8"
+    },
+    "tools/runtime_contracts.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/runtime_contracts.py",
+      "size": 25528,
+      "sha256": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b"
+    },
+    "spec/vectors/runtime-v1.json": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/vectors/runtime-v1.json",
+      "size": 4608,
+      "sha256": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4"
+    },
+    "spec/runtime.md": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/runtime.md",
+      "size": 323600,
+      "sha256": "0af2ddb3fabcfa9ad9b93b0b970af94fc650687f6d83b165709e6912eee961fd"
+    },
+    "spec/vectors/execution-process-v1.json": {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/vectors/execution-process-v1.json",
+      "size": 2118,
+      "sha256": "7d90fa39e8811e9c8b0e23f8f2b0fd5466f83ff0dfac8ca3bbad87949e81bc60"
+    },
+    "tests/test_launch.c": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tests/test_launch.c",
+      "size": 171860,
+      "sha256": "696d4bcc5df691ef9920c001dd101cf135e52e6b6c860627b0e45de9232dd60c"
+    },
+    "tools/test_launch_native.py": {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_launch_native.py",
+      "size": 16586,
+      "sha256": "b7d60b21360925477c08cc5098c98d531d1ed4e88f2d4274e6dcdf62e6e3889f"
+    }
+  },
+  "artifact_files": [
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/cell_grid.h",
+      "size": 3006,
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2376,
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/nexaui.h",
+      "size": 153236,
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/software.h",
+      "size": 1909,
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/vulkan.h",
+      "size": 1866,
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2609,
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/wayland_host.h",
+      "size": 3416,
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/include/nexaui/wayland_outputs.h",
+      "size": 1619,
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI/NexaUITargets-debug.cmake",
+      "size": 835,
+      "sha256": "1151ab2ede6e2bfbd8cd76bcf2a47ada4f92cb4165ef8e792e6c0f6e8c0be0db"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4327,
+      "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/lib64/libnexaui.a",
+      "size": 14278216,
+      "sha256": "a302d120a8e7375bcc0a97d2f0514698603394267690b48358125b369552e2ab"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-asan-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/cell_grid.h",
+      "size": 3006,
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2376,
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/nexaui.h",
+      "size": 153236,
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/software.h",
+      "size": 1909,
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/vulkan.h",
+      "size": 1866,
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2609,
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/wayland_host.h",
+      "size": 3416,
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/include/nexaui/wayland_outputs.h",
+      "size": 1619,
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+      "size": 845,
+      "sha256": "2c7cb8641ed96dc8351075cc21e84f92d371ae2f1f29aebc745aff0e376a727c"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4327,
+      "sha256": "fa947c4bd5788671e490e5cd2b063088e9c7819389ed9b6495f038ac18701a74"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/lib64/libnexaui.a",
+      "size": 1184220,
+      "sha256": "815ccf9b7f2299402fd5d65b6d5ad6ca474c6935c6c94849560257a153662493"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-release-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/cell_grid.h",
+      "size": 3006,
+      "sha256": "887023828fb72f76086944167da203d8e5c567034af7c0431b916f040f80aa98"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2376,
+      "sha256": "cd85db5341d0b4b24926f4ee939a45d87eb179ffaaafb786819bc58da033298e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/nexaui.h",
+      "size": 153236,
+      "sha256": "17684782c7ddba980effbc02b1a20bf805ca58bcd86022dfaf0ca048d8c6e15e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/software.h",
+      "size": 1909,
+      "sha256": "f000d2cbb83748842f24208582698dca082d5b253d5599f27384f22c37c28be1"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/vulkan.h",
+      "size": 1866,
+      "sha256": "80554b382103819aabfa2e896900c17326d32fc6251d9dc05eae499468cf4da6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2609,
+      "sha256": "b412052b4a0bde726b703441c8c8eae1bf29bc145b1bbc758973a7a9c6ae0807"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/wayland_host.h",
+      "size": 3416,
+      "sha256": "96777785f3744ecd0bffe65d03ae2d4f951d53252f2b2d28579f29b9393891f3"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/include/nexaui/wayland_outputs.h",
+      "size": 1619,
+      "sha256": "ef0b0061e27f880b5f2ef9ce3f8345a35a2d564884466ce28cd7a548af8f9997"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "e64b0116a12b934f9ef8c5f7f567c0971b06b1bb0afc4edba819385e26d5587e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "b4d0c8ddde1c97300735eb24c46fd6fdbae5994d2ac3004b2af68065b152c24f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI/NexaUITargets-release.cmake",
+      "size": 856,
+      "sha256": "a71b075325113cd9235ae91d2c8820bc15505b09a4bfd930972ce309ab152340"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4203,
+      "sha256": "35bbed1d2ad2206787d7d0b0cb4ae17964b67dc665faa5120c001089391531c5"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/lib64/libnexaui.so.0.1.23",
+      "size": 934608,
+      "sha256": "d9a058c1287b73c649c76602cec51210cef7567b0f4258e48dfc44268f709771"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/sdk-shared-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/CMakeCache.txt",
+      "size": 25382,
+      "sha256": "e68553cc81cbd6bd347aac2aad4448070e4549fcc65023aaea98968b99ded467"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/aetheri/libaetheri_catalogue.a",
+      "size": 2849470,
+      "sha256": "74fbea1bb38210f920b6ceb05d6b3102282560f933a2d8699dacb9c299a88baf"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/aetheri/libaetheri_core.a",
+      "size": 771160,
+      "sha256": "14ee952bf36181781c8e791fc5fa6ccd8f26961ad38658c070744394be69977f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/compile_commands.json",
+      "size": 39697,
+      "sha256": "656ad36bbce3f4fccf3ceb563cfc916b2bd52b909b5ecfe234b1bb3669c236b9"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_components.a",
+      "size": 89912,
+      "sha256": "2ef57b55311b81e6e7184cec295b92085ad34d1da49c55c209b121d25204a63f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_history.a",
+      "size": 461374,
+      "sha256": "aea252b7c75095475455ae6c2c555018cd4c7d8f806e58e442a0bf1e23f6af3d"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_manifest_document.a",
+      "size": 26774,
+      "sha256": "b0a31c26fae5eab727613b9e1d3b1b7c789b7f23e7bce8c0b23ae017d9736f2b"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_model.a",
+      "size": 219980,
+      "sha256": "ae5e4688da5efda18c8e571b069dd3380bb80e67f3e19af9aa9a13cd2f599a67"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_view.a",
+      "size": 1035956,
+      "sha256": "0aef0b4e9ee83fbfb05146c7802f272f26e908b42991728eac0bb117ee941f7b"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/libsoftware_worker.a",
+      "size": 205446,
+      "sha256": "ac71ee8e3b6d88ef93ad7ae60acc080ba18cbcde2ebe4722a1a4117918e3d78c"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/software_held_native",
+      "size": 10920848,
+      "sha256": "06392578f4064b451e2cf6c48484ff801daf2ff95014bcd73b23d5c8cf32c0c5"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/software_model_test",
+      "size": 2340568,
+      "sha256": "bf79e5d9659626b3a48c251ab6dffa92abec4a3dc569a19d697c2ed1f3caf741"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/software_native",
+      "size": 10877312,
+      "sha256": "965257c62d0d3dfe2962a2898e14bc1400aedff1dea8a650c5d8cff6bbff01f0"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/software_view_test",
+      "size": 10728552,
+      "sha256": "cc0c4fd9288137efc98e74004c6d94ba785906e847eec05b7b10d311d69b98b6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-asan/software_worker_test",
+      "size": 10227024,
+      "sha256": "446516c529e4318b594945b8d3679561400e881a708763ba5aa585243cd27d55"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-atspi_client",
+      "size": 49264,
+      "sha256": "ca55372bc401f64fa539153b133e5cb22b4f314efd75fbaf4c278446fe7a60c4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-lifecycle_atspi",
+      "size": 31928,
+      "sha256": "a864fdbebf2a75854a5e1ab97a27fa79f7da62fb9f278d75d8621748dee6520c"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-native-final-commands.json",
+      "size": 16801,
+      "sha256": "570e14141c43f7f921009bcc93a39d0cc45d000f3f796c0d1eab159cccec8b50"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/CMakeCache.txt",
+      "size": 25322,
+      "sha256": "c9947fc498455e51f06df0b2a9690b52d19271772437da42091476fdf73c8430"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/aetheri/libaetheri_catalogue.a",
+      "size": 595330,
+      "sha256": "a01dabefd04228a9ac719dd51c757d447111898d2bce189410df7af7b753f880"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/aetheri/libaetheri_core.a",
+      "size": 74728,
+      "sha256": "81bbf1f0740b0dfbb5841246295f8b023ea7352e31d57fac2397c9c8f30599e2"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/compile_commands.json",
+      "size": 37913,
+      "sha256": "ad5a171eb9f19312066408a568362484d1c0c3cbd091337cad4c65fd1d268258"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_components.a",
+      "size": 5744,
+      "sha256": "6039d9acb9927428355e35f8eea15b617f57430499899a0188bd8b1e5bab201e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_history.a",
+      "size": 23606,
+      "sha256": "d107c56ffebec598aeccef1407c2b53a7481247de3c5b6049a0095aa979ab4ab"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_manifest_document.a",
+      "size": 4302,
+      "sha256": "11efdd22137c5795ee10fe57b2b6c2956f9d062a93108d22e8697c1f4eab75ca"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_model.a",
+      "size": 14900,
+      "sha256": "899b71c7818f9e47d8c3561148bf016dda53069401f9715580a2e694b6865620"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_view.a",
+      "size": 137572,
+      "sha256": "0eb64bb2fb917aac75029a1bd894d12bd0a2dff2c29457bb86a28a10d58a29b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/libsoftware_worker.a",
+      "size": 12966,
+      "sha256": "70fb9f552b95e9b88d59e0b95b47c6287e29a6d5dfc2d48c6f538cd295804996"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_held_native",
+      "size": 1483784,
+      "sha256": "11167e7af172d516cc6b148e9912b17bc3fd4a633498e52bad4301bd323065c1"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_model_test",
+      "size": 574872,
+      "sha256": "b060f549e77a62ca98a8ee18976fd7699eb350936352bfa8f1d751766f2e61a6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_native",
+      "size": 1474472,
+      "sha256": "1f90933c03ba90779c5a084de82057898457954b24911f97c4222cc8768b2071"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_view_test",
+      "size": 1472640,
+      "sha256": "756b71bdfb1701ddaa22e9ea6cfb7de67ef7a67ab2b405011f6b1c4c239f8278"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-release/software_worker_test",
+      "size": 1395352,
+      "sha256": "7f40446c57231d3d3a9053830d98e4499b81d10becb80d25e4dc1fc41f72f9bf"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/CMakeCache.txt",
+      "size": 25316,
+      "sha256": "8d8776156f103ed5c9acb6f91fc4d4d704d98d355fd6cf032e35aa997bdcbc78"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/aetheri/libaetheri_catalogue.a",
+      "size": 595330,
+      "sha256": "d7533370c864161afa030babb89d2237fc6bdaaac72d6d50621040205d25ae55"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/aetheri/libaetheri_core.a",
+      "size": 74728,
+      "sha256": "726ea2c57cc6466bb9168aaeaea7b97e38e4ccad4c7528176d670762e0b9ba18"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/compile_commands.json",
+      "size": 38111,
+      "sha256": "72707321b2b4f53dff38e0bea4aca90557b7a29b76ca6bd6b20c3534def9942a"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_components.a",
+      "size": 5744,
+      "sha256": "1be06ec66a9026475c2363bd04dac51bbd08433f4fbb9691a3f4f0cd006bbcde"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_history.a",
+      "size": 23606,
+      "sha256": "3914f174aec123b7c37587c3daa0ca86b1718b944da36c27e3de4930f6542055"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_manifest_document.a",
+      "size": 4302,
+      "sha256": "40c252f8fbb2b9803ad78618b54740817c6bbb6955ec22a2cf01a09fae558259"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_model.a",
+      "size": 14900,
+      "sha256": "0480c484ee41aec01f04d938d22ee1f87f34a7d33d2a6e9c38add4db84e995f8"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_view.a",
+      "size": 137572,
+      "sha256": "6b24f1a06d1dd9cef9c71547fe872099247f4fe9cf430123edb94a7f1c5bec6d"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/libsoftware_worker.a",
+      "size": 12966,
+      "sha256": "737d96e7f37e1cbece53a4b2254fc46421614bea42e940c631178083853f37f4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/software_held_native",
+      "size": 694968,
+      "sha256": "f1e4882c36c0ab8e4d63a1627e0ef133a1c70fecceac225c7cefb0d439496076"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/software_model_test",
+      "size": 574872,
+      "sha256": "bbe1a70bf0c6d644d42276f8e2de090d7ad88e74f110002aa14035c56ec6dde8"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/software_native",
+      "size": 685504,
+      "sha256": "8286481bbc3fdface8f3a6222f79ded1ba5c7176a45eb2323bcd34dce2440a35"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/software_view_test",
+      "size": 683504,
+      "sha256": "4c5ed2169e1c0a0dadb8ce7a83efc03d8be1dd07a3e2352f0c4021547efa4679"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-2-shared/software_worker_test",
+      "size": 599480,
+      "sha256": "554d9bd8c4ef14347a33e62dcd84b1090aa7652bcd892197d6c4dbe4ee18908f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-default-off.json",
+      "size": 466,
+      "sha256": "96b413e7e9b8ba73d7d1f2276f2b70bf8c745dcc021c9af169396ab5facf5edf"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-asan-ctest.log",
+      "size": 375,
+      "sha256": "1fe27db3f5c2c33461e61f77d556b77d586d87e19adf9a141964b427905a6d83"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-release-ctest.log",
+      "size": 378,
+      "sha256": "5d1c971607f7ea0b721b06a8160fd51ded7a73f78d94a7b73e326dd40da0c2ac"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-final-shared-ctest.log",
+      "size": 377,
+      "sha256": "59101bd37c61f78c14b9347d8a680938ab9276b50201aef63caba6765966c398"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-negative-commands.json",
+      "size": 6710,
+      "sha256": "eecef44b50096069fa7f55171f092eafbb991e89c0c4279179fd358b5353719e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/software-lifecycle-sdk-probe.json",
+      "size": 6568,
+      "sha256": "9d494795f1a13f161c35e6a0c0614bcb4580ea7d2b5d697c48a01d49ad56a7d2"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/host.log",
+      "size": 17057,
+      "sha256": "88949fed13217db67bf753e48d93d0b306884fdad6515d4eb9fb298863f083f9"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/result.json",
+      "size": 20664,
+      "sha256": "86ba19a9e6ea6ef107f39d292ce9ec4aa5cc0c64049d933a92e9a29daf21bfb4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/host.log",
+      "size": 9487,
+      "sha256": "b34bf5f820d72c24420eb73d9c753f926f5a3c19c4113772d5e18ad03580eb4f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/result.json",
+      "size": 21445,
+      "sha256": "9461cc88ffe8d72fbbe4ee3b2f0efa279637d1499a391bdd79f652ca3b354366"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-german-large-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/client.log",
+      "size": 1097,
+      "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/host.log",
+      "size": 136603,
+      "sha256": "83aa6a8045e00a0018b2fae8cdbc3a37257b1c9811ad5a95bd1dc31d06738926"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/result.json",
+      "size": 22876,
+      "sha256": "edfcd3379d08f7e580a701e50fbb43e027aec63024ec2eaefc2613436b1435a2"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-ordinary-ime/server.log",
+      "size": 797,
+      "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/host.log",
+      "size": 16983,
+      "sha256": "6df0c14c9de79832d61ec097e7c6b04d0f10b1e8c89949106b59dc45a441222a"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/result.json",
+      "size": 20854,
+      "sha256": "d10eea02135dc0707acdb17c67fe7f0ad2e551a74fe4b23342f174497aa496fc"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/host.log",
+      "size": 9561,
+      "sha256": "dd24488263a6b697347caebb44f1de5b84a39626ab25803d27620cb7b8540a24"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/result.json",
+      "size": 21635,
+      "sha256": "db7a9e389086a1c2509ece7a534fbdd82e3150ad5f6bf88bca886e42f813d1e0"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-asan-plain-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/host.log",
+      "size": 17353,
+      "sha256": "2c8997494c955fa12797458f1b4bf781cdafa2da8d9eeb23f1830033409a87c6"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/result.json",
+      "size": 9437,
+      "sha256": "38f0417018a8fd40b41220ff921d9b8b939d98e9767a03a984894f2883700c45"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/host.log",
+      "size": 9487,
+      "sha256": "96b0076b3fe3166be6550ff7bc60a1d49bb757993cd6f93971d34f1319108bbf"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/result.json",
+      "size": 10274,
+      "sha256": "084a71bbd650df4c704ca040faf9808e4c98e26c706cb3c2dac44eb0d0bafcc9"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-german-large-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/client.log",
+      "size": 1097,
+      "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/host.log",
+      "size": 146967,
+      "sha256": "8cea2364335564dd0e5bb389cacc7a1349053eb9c6d98a0d2ac6a1bc92bfb419"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/result.json",
+      "size": 11550,
+      "sha256": "a04f1ea1ee6c60804ed67a2f7bc29722100eaf3d7d9e7f2880eb19531b697658"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-ordinary-ime/server.log",
+      "size": 797,
+      "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/host.log",
+      "size": 17057,
+      "sha256": "86c947572dd42f1fd2876a47a228a5bb96a7de7ac874a4b746b59b7285a11e6e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/result.json",
+      "size": 9427,
+      "sha256": "73c667fe3a714c70528d75960df512e6b1ac6b23a1d20338f1b7c21bf6e744d8"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/host.log",
+      "size": 9635,
+      "sha256": "aeda571c9fc27a17448dfa02ba7c729f8fee43e36106fe7b9f5a112a6cd4bc65"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/result.json",
+      "size": 10108,
+      "sha256": "53ba4a508c1353ea70e9153b677081a77e46b7f9886ba4b67db7e6742be7857b"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-release-plain-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/host.log",
+      "size": 17501,
+      "sha256": "3df2a4a14edfad01bccdbdd3feedb135b5acde3e3adcae1f9a9564abf7e35436"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/result.json",
+      "size": 10075,
+      "sha256": "482de65a6c2b4ed8f725c5699950bfcfa5821fa1ff5ad42016fa3af43d2f375c"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/host.log",
+      "size": 9561,
+      "sha256": "a5094257795b01ac0bd496ec76283849a8867f50b86e8eafc9c2ce0beabeb20b"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/result.json",
+      "size": 10856,
+      "sha256": "5e2e2e6d7b0579babfdea480878673078790e2fa69e0e416f8ea2b5ef37f2253"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-german-large-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/client.log",
+      "size": 1097,
+      "sha256": "465732cbe85a0be90bb7ff4f0135f8cc1280f9812ef69b3350e9601092baccbd"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/host.log",
+      "size": 126538,
+      "sha256": "39ea4e8aff730dadc69a863caa260501989c5d06740d9bb969bcc618d210f7f1"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/result.json",
+      "size": 12232,
+      "sha256": "3b926d50c0b1bd5e7eec602a7b3cde0a36495128291ae18966c66b4e98939201"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-ordinary-ime/server.log",
+      "size": 797,
+      "sha256": "f24be09053e11b19fb3f5b889b0d03984e6b4450412860b730a2102ee701408a"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/client.log",
+      "size": 104,
+      "sha256": "c9e07b8bc6ee30974257108a288c58e0946f146a8af0501ca1a471e3ad0299b4"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/host.log",
+      "size": 16983,
+      "sha256": "9cd25b6ca2d5fd2fc2509c3fec7b1b2f701f450fa93ee2103e992924528a013e"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/result.json",
+      "size": 10115,
+      "sha256": "2acc91d260ac871ead339009705bac50820dad8c61e9f59dc17fd696eff59e18"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-close/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/client.log",
+      "size": 102,
+      "sha256": "7689c1636bfd40e6a93a003f540c88e8ecc31b3b4d342eb561440f470aea1949"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/host.log",
+      "size": 9635,
+      "sha256": "8feeee98ff1d1444053067690b36b2c799b79a69ad3cc2fc785a0042faa0e355"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/result.json",
+      "size": 10846,
+      "sha256": "3273754908c14904487d2af9ec63a0c06a99c8a1cc7a6ed57d9ca8a4c115c84f"
+    },
+    {
+      "path": "/dev/shm/nexaui-recovery-live-tty-20261107/swl2-shared-plain-wake/server.log",
+      "size": 55,
+      "sha256": "58ce04ae7c404ea69c3b67bc191561fd18ae83dbe55ba5ce3a066d6eae739d02"
+    },
+    {
+      "path": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "size": 410712,
+      "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+    },
+    {
+      "path": "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+      "size": 86944,
+      "sha256": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324"
+    },
+    {
+      "path": "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+      "size": 79712,
+      "sha256": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/CMakeLists.txt",
+      "size": 114964,
+      "sha256": "47bc8e64d472e11c45e23fcaefea2c0a60d1cf5f418db86f4c746f9e268774e7"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/runtime.md",
+      "size": 323600,
+      "sha256": "0af2ddb3fabcfa9ad9b93b0b970af94fc650687f6d83b165709e6912eee961fd"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v1.sql",
+      "size": 9114,
+      "sha256": "5a7d370f2ccfffd0aaa5ba8368477be35c088dd9b3a9cf9b8b64e22772c6ee0b"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v2.sql",
+      "size": 11455,
+      "sha256": "7a9fe66bab6237d89d9026c4a14da71e92d90006591bdcd56493d723d5145883"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v3.sql",
+      "size": 2498,
+      "sha256": "100d24e7b7413b4d151b0d4a8bce1297fe89aec5fbcda84781639db51fb45e8e"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v4.sql",
+      "size": 1037,
+      "sha256": "0b094567685d63ebc54452be42c4dad0d98ad4010c2bf1d934de24866cff8b46"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v7.sql",
+      "size": 826,
+      "sha256": "682c6efaa940cbb07d64c8a0330a95da49a9769b431c129d5ae63ed792e2bceb"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v8.sql",
+      "size": 2267,
+      "sha256": "91a8ac10efb176bd752f0fd7f8f2007253fd50eac0004c94e4755c059c9df37f"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v1.sql",
+      "size": 7956,
+      "sha256": "0f32adbe053f75ba29908dee30c45d5720776cf9a95c02ab1d3bc51305f5c7e6"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v10.sql",
+      "size": 5479,
+      "sha256": "21faf871c08437d771ae8313f0ebacf49e2da63532a80da1574dece7d167e799"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v2.sql",
+      "size": 16834,
+      "sha256": "9a606e7469a4a35db357a9ce296f2a57cdf7848b8c7bdc541219951494dcdbc8"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v3.sql",
+      "size": 968,
+      "sha256": "fa9e3ff271a7a1db66934475a1ba0557c64ca9969ff05e8c726799f217a66033"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v4.sql",
+      "size": 1957,
+      "sha256": "bccb7f29f8b4ea034b66f2e3e68cea3818a52627fe8c046bcf639887b9751c3f"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v5.sql",
+      "size": 5880,
+      "sha256": "6aaf5f948c33f7ac00ad1646eaf0030f05e67d89f08f64cc63b8b646097579b0"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v6.sql",
+      "size": 3586,
+      "sha256": "6f065ee2e6d85300743a13ae52781cde8c54f4b9540a8c7e123ceca00da0abd7"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v7.sql",
+      "size": 3522,
+      "sha256": "2953223788621c3bcd954acf91f0d4ab09763bcdfadc6eb951188c8e2f4773a8"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v8.sql",
+      "size": 3167,
+      "sha256": "62219597e849d9bb736018046fd01211927396c10caa5b9857202d68a32322ad"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v9.sql",
+      "size": 4919,
+      "sha256": "87e8e8c50531805adaa7f0cda1b31ff0017577e3449ec5d8ecd4a192ca75de59"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v1.sql",
+      "size": 6455,
+      "sha256": "235b95b978cc2ce8535273cc8407b33daee5f822a6ef942965c95550b1d68526"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v2.sql",
+      "size": 19340,
+      "sha256": "dad2cc892c2432bc4950a446e06fda69774a8d5bc0ec31265c181dca0bbc5cd7"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v3.sql",
+      "size": 873,
+      "sha256": "9c0331df80438a76d4a8630c9ecf849f879a9b9f0f02f61fadc65bf8e9ec15f4"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v4.sql",
+      "size": 1314,
+      "sha256": "9307e329929a9ba9eac4c0e8ca8dc0c93c8b67c702a559e925c05553c5cdbe62"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v7.sql",
+      "size": 2448,
+      "sha256": "747b98a6e8be1e5bd41affa61e9cf81143144be16e94b007cb348887729a4601"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v8.sql",
+      "size": 2708,
+      "sha256": "ebabcae73c7912e5f2a755e5aca1eefb6a97a325f6abfde43fc8853076cc3c70"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/vectors/execution-process-v1.json",
+      "size": 2118,
+      "sha256": "7d90fa39e8811e9c8b0e23f8f2b0fd5466f83ff0dfac8ca3bbad87949e81bc60"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/spec/vectors/runtime-v1.json",
+      "size": 4608,
+      "sha256": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.c",
+      "size": 2026,
+      "sha256": "35cf03e702b7b6ef75dcdf11c7fb97ed6a4b595ba77d153f241683b795ee2b9d"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.h",
+      "size": 1795,
+      "sha256": "e0d13895ddd91c118747153d2ba92fe184e3b5b7b97578a601acd30c05462a9f"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/effect.h",
+      "size": 2720,
+      "sha256": "1c1205c98d9396e3a28ccaa150f5603b76dc1b285e16778f691c52b4979ac6de"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.c",
+      "size": 13325,
+      "sha256": "006738d4399ac99a82629be5855328768a54130d1e0fb13bdb8f6f5a248b14bb"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.h",
+      "size": 13195,
+      "sha256": "16ed456cd60a9403531c7f442bda72cbe76ce6ac1d3a01ede37cfed07a68d8b4"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.c",
+      "size": 5768,
+      "sha256": "ad57e3334400d3b4dde9fbc526ea2b937077d41c496b2e88a28b8bb19d293681"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.h",
+      "size": 3353,
+      "sha256": "881b045b165562e3a682590a345b3cf919fde1c9181bf553fe2825ae417b3904"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.c",
+      "size": 4529,
+      "sha256": "5c72792f4579ebf5cdc76c3a848c1471b82cf8d8e01d0dcd013e0aeea038fc4b"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.h",
+      "size": 3888,
+      "sha256": "511c77202b847f1100cfda832ef707e7690369ffa31521d61b728c943d672b65"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/launch.h",
+      "size": 2614,
+      "sha256": "97c66c0407bd640f59f4c28b053ed10c308c1467982a954ff04f82a770b3380f"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.c",
+      "size": 5562,
+      "sha256": "bcb18a4dd6ab60e490b84384c9f114ec620de715f3e89766c9a38df5fec01cbe"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.h",
+      "size": 9183,
+      "sha256": "c6416de982278fc8b758d82c9023f1639e2e7fdc5b8f6f64bb3082d99dd27f43"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/projection.h",
+      "size": 2775,
+      "sha256": "f011fd5034fe9d373749d9312794db7eb18b64ac0a6500ca8b690223276dce75"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/recovery.h",
+      "size": 2798,
+      "sha256": "cb9760b16a6e660117b0fc963b5aafe3ddc558f0ed164c7e78fcd71df42e886e"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/reservation.h",
+      "size": 4404,
+      "sha256": "5f35fbed070fce45063049662f3043f19bbbbfbedb7d936f94d3912c714a8c77"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/schema.h",
+      "size": 816,
+      "sha256": "51ec3e0e3e184d41297b2164a05945fb1300c8ba0142c371fc9bbdfb20e045fc"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.c",
+      "size": 1254,
+      "sha256": "dc831694c5060bae484ac0ab819b743eedfd804210c41d143d3c801f352e04e1"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.h",
+      "size": 3108,
+      "sha256": "49c8d171462306dc17cb110442b64d54b1a4f46da06b58301266cda0ea774d30"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.c",
+      "size": 303051,
+      "sha256": "e1a5637e364f55252e90f24c6975922e9b9415a96823146952d24efbac2ceaed"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.h",
+      "size": 12561,
+      "sha256": "290a9434b3b0554a136ee6624aed25bc91922bf4897d70a5a4b1a050849615ac"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/catalogue/unit.h",
+      "size": 3760,
+      "sha256": "fd969644704abcd5634992f1f0d2cfbcfbdbcc53d89265c7b2284cff5777d6c5"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.c",
+      "size": 10722,
+      "sha256": "cab4e9d44650813bb00af16f20032a78894a6ccac69713233ca39e173e3bc968"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.h",
+      "size": 2248,
+      "sha256": "402f0c36ed06537f73ded1fb0902d1bdd5da8b4f6e4fa1f7c9fefac044b373ae"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/digest.c",
+      "size": 4353,
+      "sha256": "8e52909e6f61b3c753df6312c05fcb2f93c53d1c96a35aabd8467bf95539b8ee"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/digest.h",
+      "size": 1365,
+      "sha256": "03c846e4f179c42eaf9cde56a6b2c8bb69a93c16e68a1ad0ae1157192f5d5eea"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.c",
+      "size": 9896,
+      "sha256": "15fd6ce5a251a94669bb07dd868ebd991db1d47c9a3684b5c275e9514f0bc21d"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.h",
+      "size": 3061,
+      "sha256": "ea1ac801587ebfc912b3ee2882f400fb43a8b916e4c2bf553af56df5b141b410"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/import.c",
+      "size": 15817,
+      "sha256": "da0b53b68607bbcf9d94d5403d4388ed6ce018a39223a2014ad263e16a81f146"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/import.h",
+      "size": 3767,
+      "sha256": "96ab5c665cba7f15d03f0d1676bb4347a06665ffdaf5fe6ee5a5c4c0378ae039"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/owner.c",
+      "size": 2440,
+      "sha256": "e4990af56e85666c8140e21ce80ab528b37718a072d547cbebbdb3f0dc936a1e"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/owner.h",
+      "size": 745,
+      "sha256": "3ae5b9d8e9f69ce1bd09e26bdcebfa185a7d37e3bd837d6e22db45e207f03c9a"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/publish.c",
+      "size": 9661,
+      "sha256": "145825c8413e8c9df31bb17119636eb097d753e9e71b214257d64d0e62419441"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/publish.h",
+      "size": 1941,
+      "sha256": "bde78ba0072f3951b4d224c3e29f12f9bd9519806eec2d874fb10caa30e206de"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/root.c",
+      "size": 4291,
+      "sha256": "5f77d34c80361a1c2dd36da255c74f3b04163d5789f0d359ed2f16d5b44345c2"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/root.h",
+      "size": 1362,
+      "sha256": "4067cd1152e702d65c12c8152436d261da612c96c2ff2502afe49ddce7c96253"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/storage.c",
+      "size": 7859,
+      "sha256": "f8370ed48bdfd877d27b0f3c26b2f2680c75927e852ca8f1789e307391a553b9"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/storage.h",
+      "size": 2543,
+      "sha256": "95c76b632093fa9160f7723fd824f4a8d57d97ecdb9b0f150983992e9dec45fe"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.c",
+      "size": 1976,
+      "sha256": "c4e3003f58c0c360133ae3155b34d56f167fc0f06cb0bb0e9b9b7a62e74b22c6"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.h",
+      "size": 863,
+      "sha256": "fe2b8d7fc0b5888cfb9de3fb8509269337c9f4e5dfce92cd3810ebfe4136dbc7"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tests/test_launch.c",
+      "size": 171860,
+      "sha256": "696d4bcc5df691ef9920c001dd101cf135e52e6b6c860627b0e45de9232dd60c"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/catalogue_contracts.py",
+      "size": 18738,
+      "sha256": "2b021afd2b2c5eede0ac3b94345169663df315037094f930e8ebee348a80b0a6"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/embed_schema.py",
+      "size": 3668,
+      "sha256": "21f20d2efe88596f093198e1ad22dec7606a1e27c9e7a04f0a3246a1b2cbbdaf"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/runtime_contracts.py",
+      "size": 25528,
+      "sha256": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_contracts.py",
+      "size": 73032,
+      "sha256": "909332c89c8f28f289bf2ba0e751e8af509479602e5338356243bc3e859fcff9"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_launch_native.py",
+      "size": 16586,
+      "sha256": "b7d60b21360925477c08cc5098c98d531d1ed4e88f2d4274e6dcdf62e6e3889f"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/test_recovery_inventory.py",
+      "size": 11871,
+      "sha256": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a"
+    },
+    {
+      "path": "/tmp/nexaui-recovery-20261107/original/tools/validate_contracts.py",
+      "size": 16581,
+      "sha256": "6fca28aae82bde10a1a6cf77b1257c82e826fed87983fb327a17bf96b2143ba8"
+    }
+  ],
+  "external_snapshots": [
+    {
+      "source": "/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-fullscreen-861ac66/aetheri-build/test_compositor_server",
+      "sha256": "631ec1740d9de6daac790d2c29351df7ccb2cabce936ac6ab35ba59b8cb71c75",
+      "size": 79712
+    },
+    {
+      "source": "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+      "sha256": "fba13406b5e8ebe67c6eea1aa99f61d2b67a2620ba01bac74ce2772261dd9324",
+      "size": 86944
+    },
+    {
+      "source": "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "archive_path": "software-lifecycle-external-inputs/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+      "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+      "size": 410712
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/CMakeLists.txt",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/CMakeLists.txt",
+      "sha256": "47bc8e64d472e11c45e23fcaefea2c0a60d1cf5f418db86f4c746f9e268774e7",
+      "size": 114964
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v1.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v1.sql",
+      "sha256": "5a7d370f2ccfffd0aaa5ba8368477be35c088dd9b3a9cf9b8b64e22772c6ee0b",
+      "size": 9114
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v2.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v2.sql",
+      "sha256": "7a9fe66bab6237d89d9026c4a14da71e92d90006591bdcd56493d723d5145883",
+      "size": 11455
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v3.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v3.sql",
+      "sha256": "100d24e7b7413b4d151b0d4a8bce1297fe89aec5fbcda84781639db51fb45e8e",
+      "size": 2498
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v4.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v4.sql",
+      "sha256": "0b094567685d63ebc54452be42c4dad0d98ad4010c2bf1d934de24866cff8b46",
+      "size": 1037
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v7.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v7.sql",
+      "sha256": "682c6efaa940cbb07d64c8a0330a95da49a9769b431c129d5ae63ed792e2bceb",
+      "size": 826
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/common-v8.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/common-v8.sql",
+      "sha256": "91a8ac10efb176bd752f0fd7f8f2007253fd50eac0004c94e4755c059c9df37f",
+      "size": 2267
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v1.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v1.sql",
+      "sha256": "0f32adbe053f75ba29908dee30c45d5720776cf9a95c02ab1d3bc51305f5c7e6",
+      "size": 7956
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v10.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v10.sql",
+      "sha256": "21faf871c08437d771ae8313f0ebacf49e2da63532a80da1574dece7d167e799",
+      "size": 5479
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v2.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v2.sql",
+      "sha256": "9a606e7469a4a35db357a9ce296f2a57cdf7848b8c7bdc541219951494dcdbc8",
+      "size": 16834
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v3.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v3.sql",
+      "sha256": "fa9e3ff271a7a1db66934475a1ba0557c64ca9969ff05e8c726799f217a66033",
+      "size": 968
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v4.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v4.sql",
+      "sha256": "bccb7f29f8b4ea034b66f2e3e68cea3818a52627fe8c046bcf639887b9751c3f",
+      "size": 1957
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v5.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v5.sql",
+      "sha256": "6aaf5f948c33f7ac00ad1646eaf0030f05e67d89f08f64cc63b8b646097579b0",
+      "size": 5880
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v6.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v6.sql",
+      "sha256": "6f065ee2e6d85300743a13ae52781cde8c54f4b9540a8c7e123ceca00da0abd7",
+      "size": 3586
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v7.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v7.sql",
+      "sha256": "2953223788621c3bcd954acf91f0d4ab09763bcdfadc6eb951188c8e2f4773a8",
+      "size": 3522
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v8.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v8.sql",
+      "sha256": "62219597e849d9bb736018046fd01211927396c10caa5b9857202d68a32322ad",
+      "size": 3167
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/system-v9.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/system-v9.sql",
+      "sha256": "87e8e8c50531805adaa7f0cda1b31ff0017577e3449ec5d8ecd4a192ca75de59",
+      "size": 4919
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v1.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v1.sql",
+      "sha256": "235b95b978cc2ce8535273cc8407b33daee5f822a6ef942965c95550b1d68526",
+      "size": 6455
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v2.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v2.sql",
+      "sha256": "dad2cc892c2432bc4950a446e06fda69774a8d5bc0ec31265c181dca0bbc5cd7",
+      "size": 19340
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v3.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v3.sql",
+      "sha256": "9c0331df80438a76d4a8630c9ecf849f879a9b9f0f02f61fadc65bf8e9ec15f4",
+      "size": 873
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v4.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v4.sql",
+      "sha256": "9307e329929a9ba9eac4c0e8ca8dc0c93c8b67c702a559e925c05553c5cdbe62",
+      "size": 1314
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v7.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v7.sql",
+      "sha256": "747b98a6e8be1e5bd41affa61e9cf81143144be16e94b007cb348887729a4601",
+      "size": 2448
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/schema/user-v8.sql",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/schema/user-v8.sql",
+      "sha256": "ebabcae73c7912e5f2a755e5aca1eefb6a97a325f6abfde43fc8853076cc3c70",
+      "size": 2708
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/data.c",
+      "sha256": "35cf03e702b7b6ef75dcdf11c7fb97ed6a4b595ba77d153f241683b795ee2b9d",
+      "size": 2026
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/data.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/data.h",
+      "sha256": "e0d13895ddd91c118747153d2ba92fe184e3b5b7b97578a601acd30c05462a9f",
+      "size": 1795
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/effect.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/effect.h",
+      "sha256": "1c1205c98d9396e3a28ccaa150f5603b76dc1b285e16778f691c52b4979ac6de",
+      "size": 2720
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.c",
+      "sha256": "006738d4399ac99a82629be5855328768a54130d1e0fb13bdb8f6f5a248b14bb",
+      "size": 13325
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/execution.h",
+      "sha256": "16ed456cd60a9403531c7f442bda72cbe76ce6ac1d3a01ede37cfed07a68d8b4",
+      "size": 13195
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.c",
+      "sha256": "ad57e3334400d3b4dde9fbc526ea2b937077d41c496b2e88a28b8bb19d293681",
+      "size": 5768
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/handoff.h",
+      "sha256": "881b045b165562e3a682590a345b3cf919fde1c9181bf553fe2825ae417b3904",
+      "size": 3353
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.c",
+      "sha256": "5c72792f4579ebf5cdc76c3a848c1471b82cf8d8e01d0dcd013e0aeea038fc4b",
+      "size": 4529
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/interruption.h",
+      "sha256": "511c77202b847f1100cfda832ef707e7690369ffa31521d61b728c943d672b65",
+      "size": 3888
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/launch.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/launch.h",
+      "sha256": "97c66c0407bd640f59f4c28b053ed10c308c1467982a954ff04f82a770b3380f",
+      "size": 2614
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.c",
+      "sha256": "bcb18a4dd6ab60e490b84384c9f114ec620de715f3e89766c9a38df5fec01cbe",
+      "size": 5562
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/lifetime.h",
+      "sha256": "c6416de982278fc8b758d82c9023f1639e2e7fdc5b8f6f64bb3082d99dd27f43",
+      "size": 9183
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/projection.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/projection.h",
+      "sha256": "f011fd5034fe9d373749d9312794db7eb18b64ac0a6500ca8b690223276dce75",
+      "size": 2775
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/recovery.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/recovery.h",
+      "sha256": "cb9760b16a6e660117b0fc963b5aafe3ddc558f0ed164c7e78fcd71df42e886e",
+      "size": 2798
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/reservation.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/reservation.h",
+      "sha256": "5f35fbed070fce45063049662f3043f19bbbbfbedb7d936f94d3912c714a8c77",
+      "size": 4404
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/schema.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/schema.h",
+      "sha256": "51ec3e0e3e184d41297b2164a05945fb1300c8ba0142c371fc9bbdfb20e045fc",
+      "size": 816
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.c",
+      "sha256": "dc831694c5060bae484ac0ab819b743eedfd804210c41d143d3c801f352e04e1",
+      "size": 1254
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/setup.h",
+      "sha256": "49c8d171462306dc17cb110442b64d54b1a4f46da06b58301266cda0ea774d30",
+      "size": 3108
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/store.c",
+      "sha256": "e1a5637e364f55252e90f24c6975922e9b9415a96823146952d24efbac2ceaed",
+      "size": 303051
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/store.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/store.h",
+      "sha256": "290a9434b3b0554a136ee6624aed25bc91922bf4897d70a5a4b1a050849615ac",
+      "size": 12561
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/catalogue/unit.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/catalogue/unit.h",
+      "sha256": "fd969644704abcd5634992f1f0d2cfbcfbdbcc53d89265c7b2284cff5777d6c5",
+      "size": 3760
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/allocation.c",
+      "sha256": "cab4e9d44650813bb00af16f20032a78894a6ccac69713233ca39e173e3bc968",
+      "size": 10722
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/allocation.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/allocation.h",
+      "sha256": "402f0c36ed06537f73ded1fb0902d1bdd5da8b4f6e4fa1f7c9fefac044b373ae",
+      "size": 2248
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/digest.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/digest.c",
+      "sha256": "8e52909e6f61b3c753df6312c05fcb2f93c53d1c96a35aabd8467bf95539b8ee",
+      "size": 4353
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/digest.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/digest.h",
+      "sha256": "03c846e4f179c42eaf9cde56a6b2c8bb69a93c16e68a1ad0ae1157192f5d5eea",
+      "size": 1365
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/fixture.c",
+      "sha256": "15fd6ce5a251a94669bb07dd868ebd991db1d47c9a3684b5c275e9514f0bc21d",
+      "size": 9896
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/fixture.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/fixture.h",
+      "sha256": "ea1ac801587ebfc912b3ee2882f400fb43a8b916e4c2bf553af56df5b141b410",
+      "size": 3061
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/import.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/import.c",
+      "sha256": "da0b53b68607bbcf9d94d5403d4388ed6ce018a39223a2014ad263e16a81f146",
+      "size": 15817
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/import.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/import.h",
+      "sha256": "96ab5c665cba7f15d03f0d1676bb4347a06665ffdaf5fe6ee5a5c4c0378ae039",
+      "size": 3767
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/owner.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/owner.c",
+      "sha256": "e4990af56e85666c8140e21ce80ab528b37718a072d547cbebbdb3f0dc936a1e",
+      "size": 2440
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/owner.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/owner.h",
+      "sha256": "3ae5b9d8e9f69ce1bd09e26bdcebfa185a7d37e3bd837d6e22db45e207f03c9a",
+      "size": 745
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/publish.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/publish.c",
+      "sha256": "145825c8413e8c9df31bb17119636eb097d753e9e71b214257d64d0e62419441",
+      "size": 9661
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/publish.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/publish.h",
+      "sha256": "bde78ba0072f3951b4d224c3e29f12f9bd9519806eec2d874fb10caa30e206de",
+      "size": 1941
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/root.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/root.c",
+      "sha256": "5f77d34c80361a1c2dd36da255c74f3b04163d5789f0d359ed2f16d5b44345c2",
+      "size": 4291
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/root.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/root.h",
+      "sha256": "4067cd1152e702d65c12c8152436d261da612c96c2ff2502afe49ddce7c96253",
+      "size": 1362
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/storage.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/storage.c",
+      "sha256": "f8370ed48bdfd877d27b0f3c26b2f2680c75927e852ca8f1789e307391a553b9",
+      "size": 7859
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/storage.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/storage.h",
+      "sha256": "95c76b632093fa9160f7723fd824f4a8d57d97ecdb9b0f150983992e9dec45fe",
+      "size": 2543
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.c",
+      "sha256": "c4e3003f58c0c360133ae3155b34d56f167fc0f06cb0bb0e9b9b7a62e74b22c6",
+      "size": 1976
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.h",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/src/core/unit_custody.h",
+      "sha256": "fe2b8d7fc0b5888cfb9de3fb8509269337c9f4e5dfce92cd3810ebfe4136dbc7",
+      "size": 863
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/catalogue_contracts.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/catalogue_contracts.py",
+      "sha256": "2b021afd2b2c5eede0ac3b94345169663df315037094f930e8ebee348a80b0a6",
+      "size": 18738
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/embed_schema.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/embed_schema.py",
+      "sha256": "21f20d2efe88596f093198e1ad22dec7606a1e27c9e7a04f0a3246a1b2cbbdaf",
+      "size": 3668
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/test_contracts.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_contracts.py",
+      "sha256": "909332c89c8f28f289bf2ba0e751e8af509479602e5338356243bc3e859fcff9",
+      "size": 73032
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/test_recovery_inventory.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_recovery_inventory.py",
+      "sha256": "37279043970361ec2ff7574ba804c3c063d401d8b0294e23d9ec54b51664384a",
+      "size": 11871
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/validate_contracts.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/validate_contracts.py",
+      "sha256": "6fca28aae82bde10a1a6cf77b1257c82e826fed87983fb327a17bf96b2143ba8",
+      "size": 16581
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/runtime_contracts.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/runtime_contracts.py",
+      "sha256": "51693b8f163057cf4630469417ade575fa4dd776f48f441b366b234691a1eb0b",
+      "size": 25528
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/vectors/runtime-v1.json",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/vectors/runtime-v1.json",
+      "sha256": "da3542c4797f51ae8f2c92efa68c80aeef65bf97b86231a3800343b9623873c4",
+      "size": 4608
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/runtime.md",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/runtime.md",
+      "sha256": "0af2ddb3fabcfa9ad9b93b0b970af94fc650687f6d83b165709e6912eee961fd",
+      "size": 323600
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/spec/vectors/execution-process-v1.json",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/spec/vectors/execution-process-v1.json",
+      "sha256": "7d90fa39e8811e9c8b0e23f8f2b0fd5466f83ff0dfac8ca3bbad87949e81bc60",
+      "size": 2118
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tests/test_launch.c",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tests/test_launch.c",
+      "sha256": "696d4bcc5df691ef9920c001dd101cf135e52e6b6c860627b0e45de9232dd60c",
+      "size": 171860
+    },
+    {
+      "source": "/tmp/nexaui-recovery-20261107/original/tools/test_launch_native.py",
+      "archive_path": "software-lifecycle-external-inputs/tmp/nexaui-recovery-20261107/original/tools/test_launch_native.py",
+      "sha256": "b7d60b21360925477c08cc5098c98d531d1ed4e88f2d4274e6dcdf62e6e3889f",
+      "size": 16586
+    }
+  ],
+  "toolchain": {
+    "compiler": "cc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "cmake": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+    "system": "Linux aetheri-p0 6.19.10-300.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Wed Mar 25 18:23:49 UTC 2026 x86_64 GNU/Linux\n"
+  },
+  "source_revision": "7c45be1f166ade719bdc78688eca75840ac8c1e9"
+}

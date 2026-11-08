@@ -1,6 +1,9 @@
 # Files whole-proposal paste admission — 8 November 2026
 
 Consumer implementation: `713c26ee3db9c9fd3da61370bd290d54732b29ef`.
+The published checkpoint `03ff23e1716fc0bc70135e29e149212026fe2e55` has
+[seven successful required CI jobs and two optional skips](files-paste-ci.json).
+These SDK jobs do not execute the separate external Files consumer matrix below.
 Affected IDs: B03/B04, T01/T03, I05, A02/A04, P04/P05 and Q02/Q03/Q06/Q08.
 This continues packet6 without closing those full catalogue requirements.
 
