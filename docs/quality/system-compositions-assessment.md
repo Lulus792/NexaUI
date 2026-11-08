@@ -1,9 +1,21 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor native IME: consumer `52d59e45c67b59c10b05b9c51bb8015b00ad9334`,
+[original model/history with complete native batches, clipped preedit and bounded context](editor-native-ime-report.md).
+Three profiles pass39 tests and171 native captures; default original models
+pass11 tests and the same ON binary preserves ordinary editing without protocol
+in30 captures. Four compiled functional defects are rejected. Six full images,
+79 staged inputs,19 generated C replays and648 selected artifacts are checked.
+Editable accessibility/independent AT-SPI, installed IMEs, delayed clipboard,
+live output/manual offscreen-caret handling and ordinary adoption remain open.
+No active Aetheri source/pin/default or SDK/API/version change; earlier Software
+AT-SPI finding, remaining packet6/packets7–8 and all103-ID final gates persist.
+
 Original Editor model: consumer `33511dade22194f10ec8399460fe93d51f1decf6`,
 [atomic original-model IME prerequisite with rollback/undo and native regressions](editor-ime-model-report.md).
-Native document transaction assembly, preedit/surrounding/candidate publication
-and editable accessibility remain open; this option alone does not enable IME.
+At that prerequisite checkpoint native assembly/presentation was still open.
+The native variant above supplies controlled integration; editable accessibility
+remains open and the model option alone still does not enable IME.
 
 Original Editor lifecycle: consumer `a494ddd453d57b733fbc62bfbe51b3b3b72d4bee`,
 [installed original models/dialogs/save with repeated native close and retained-window management](editor-close-report.md).

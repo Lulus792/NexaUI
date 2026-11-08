@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Original Editor native document IME (2026-11-08)
+
+Consumer `52d59e45c67b59c10b05b9c51bb8015b00ad9334` composes complete native
+transactions, clipped transient preedit, bounded surrounding text and logical
+candidate geometry with the original document/controller/history. Three profiles
+pass39 CTests and171 complete native captures; the OFF original model passes11
+tests, and the ON binary without IME protocol retains the original native task
+with30 captures. Four actual compiled defects are detected. See [exact source,
+79 checked inputs,19 generated C replays,648 artifacts and six reviewed images](editor-native-ime-report.md).
+Independent editable accessibility, installed IMEs, delayed foreign paste,
+output/manual offscreen-caret behavior and ordinary adoption remain open. The
+read-only composition snapshot is not editable AT-SPI acceptance. No active
+Aetheri source/pin/default or SDK/API/version change; the prior Software AT-SPI
+finding and all103 IDs/remaining packet6/packets7–8/final gates stay active.
+
 ## Original Editor atomic IME model prerequisite (2026-11-08)
 
 Consumer `33511dade22194f10ec8399460fe93d51f1decf6` adds a correlated atomic
@@ -7,9 +22,9 @@ replacement into the separately generated original model. It reuses the original
 document engine and history, with36 ON-profile tests,11 default-model tests,
 three complete native Editor regressions and two rejected compiled defects.
 The native regressions preserve existing editing/save/window behavior; they do
-not exercise document IME. Complete native transaction admission, transient
-preedit, surrounding/candidate geometry, editable accessibility and ordinary
-adoption remain open. [Exact sources, tests, archives and next work](editor-ime-model-report.md).
+not exercise document IME. The later native variant above supplies controlled
+transaction admission and preedit/surrounding/candidate geometry; editable
+accessibility and ordinary adoption remain open. [Historical prerequisite sources and tests](editor-ime-model-report.md).
 
 ## Installed original Editor native-close workflow (2026-11-08)
 

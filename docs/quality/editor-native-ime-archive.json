@@ -1,0 +1,246 @@
+{
+  "archives": [
+    {
+      "sha256": "bf160ca5f0d3e7a4255a65bf8dba03778852c56f05ba30efd9e937103365a1c7",
+      "files": 1377,
+      "links": 4,
+      "directories": 587,
+      "verified": true,
+      "name": "nexaui-editor-native-ime-20261108.tar.gz",
+      "size": 11880799,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+      "files": 2145,
+      "links": 10,
+      "directories": 1345,
+      "verified": true,
+      "name": "nexaui-editor-native-ime-progress-20261108.tar.gz",
+      "size": 21833713,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "397e31a62cc2db522af6227b62ec8231c087e7ad252dfa536a1e1f991a4d77de",
+      "files": 64,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-native-ime-evidence-20261108.tar.gz",
+      "size": 265202,
+      "scope": "Host-side source/archive/review/retirement drivers, five complete retirement checks/deletions and seven complete successful SDK CI logs. Windows modes are WSL view, not ACLs. No GitHub release assets."
+    }
+  ],
+  "reused_archives": [
+    {
+      "sha256": "aaa1e2723be7716ebf349962a69ca71ceeeeea1ea88408ac26623ccea380474c",
+      "files": 1585,
+      "links": 4,
+      "directories": 1200,
+      "verified": true,
+      "name": "nexaui-close-sdk-20261108.tar.gz",
+      "size": 36277344,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+      "files": 2402,
+      "links": 10,
+      "directories": 1536,
+      "verified": true,
+      "name": "nexaui-editor-close-full-20261108.tar.gz",
+      "size": 22843970,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+      "files": 1050,
+      "links": 7,
+      "directories": 815,
+      "verified": true,
+      "name": "nexaui-editor-ime-model-20261108.tar.gz",
+      "size": 14398030,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    }
+  ],
+  "artifact_files_bound": 648,
+  "new_archive_artifacts": 645,
+  "reused_sdk_libraries": 3,
+  "resolved_archive_links": [],
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-9-release",
+          "editor-close-9-shared",
+          "editor-close-9-asan"
+        ],
+        "bytes": 82648775,
+        "files": 306,
+        "links": 3,
+        "directories": 327,
+        "fingerprint": "3eac69a7ecef4cf54fe7a9efa4507060b5aafa7c4bd79b54fca573e616cdc583",
+        "archive_sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive model9 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-9-release",
+          "editor-close-9-shared",
+          "editor-close-9-asan"
+        ],
+        "bytes": 82648775,
+        "files": 306,
+        "links": 3,
+        "directories": 327,
+        "fingerprint": "3eac69a7ecef4cf54fe7a9efa4507060b5aafa7c4bd79b54fca573e616cdc583",
+        "archive_sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-10-release",
+          "editor-close-10-shared",
+          "editor-close-10-asan",
+          "editor-ime-default-10-release"
+        ],
+        "bytes": 104173409,
+        "files": 403,
+        "links": 4,
+        "directories": 432,
+        "fingerprint": "f8dc547b2bc227edd7bf2e41b29fe17be10c2fb2e57ea39ca452f5286a5d9ac8",
+        "archive_sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive model10/default builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-10-release",
+          "editor-close-10-shared",
+          "editor-close-10-asan",
+          "editor-ime-default-10-release"
+        ],
+        "bytes": 104173409,
+        "files": 403,
+        "links": 4,
+        "directories": 432,
+        "fingerprint": "f8dc547b2bc227edd7bf2e41b29fe17be10c2fb2e57ea39ca452f5286a5d9ac8",
+        "archive_sha256": "e38b487cb2e07ea7cf4c9f0241270bbf19abc7de4ef9cc095442afaf855478fe",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-7-release",
+          "editor-close-7-shared",
+          "editor-close-7-asan"
+        ],
+        "bytes": 81741657,
+        "files": 291,
+        "links": 3,
+        "directories": 315,
+        "fingerprint": "222a7bee2f829693e88c6b4d28427037bdf36a1cca44f9541969906512fcf656",
+        "archive_sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive close7 consumer builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-7-release",
+          "editor-close-7-shared",
+          "editor-close-7-asan"
+        ],
+        "bytes": 81741657,
+        "files": 291,
+        "links": 3,
+        "directories": 315,
+        "fingerprint": "222a7bee2f829693e88c6b4d28427037bdf36a1cca44f9541969906512fcf656",
+        "archive_sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-13-release",
+          "editor-close-14-release",
+          "editor-close-16-release"
+        ],
+        "bytes": 65570202,
+        "files": 324,
+        "links": 3,
+        "directories": 339,
+        "fingerprint": "8a8b74317c0119671cdb20af31b5f1e9f1d30bd0c42e2216a1b276d35adc480e",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive native13/14/16 Release builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-13-release",
+          "editor-close-14-release",
+          "editor-close-16-release"
+        ],
+        "bytes": 65570202,
+        "files": 324,
+        "links": 3,
+        "directories": 339,
+        "fingerprint": "8a8b74317c0119671cdb20af31b5f1e9f1d30bd0c42e2216a1b276d35adc480e",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-12-release",
+          "editor-close-12-shared",
+          "editor-close-12-asan"
+        ],
+        "bytes": 83667937,
+        "files": 318,
+        "links": 3,
+        "directories": 333,
+        "fingerprint": "7d7a55ac497dfe581eafd9062ca9afe0ca777a0e553a56ae67cfd82be4caa167",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive model12 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-12-release",
+          "editor-close-12-shared",
+          "editor-close-12-asan"
+        ],
+        "bytes": 83667937,
+        "files": 318,
+        "links": 3,
+        "directories": 333,
+        "fingerprint": "7d7a55ac497dfe581eafd9062ca9afe0ca777a0e553a56ae67cfd82be4caa167",
+        "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    }
+  ],
+  "retired_bytes": 417801980,
+  "scope": "Every new archive member/mode/hash/link verified. 648 selected final artifacts individually bound; three SDK libraries bound in the prior SDK archive, fonts matched in prior Editor archive. Earlier failures remain in progress/prior archives. Only verified archived inactive build roots retired after root process reads followed by permanent UID/GID1000 drop and exact tree/namespace/holder checks. No global quota, cache, driver or mount changes. Local evidence archives, not release assets."
+}

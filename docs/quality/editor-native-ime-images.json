@@ -1,0 +1,81 @@
+{
+  "images": [
+    {
+      "profile": "release",
+      "source_member": "ed-native-ime-21-release/ed-jw258xns/captures/capture-6-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "ba0128d41b2ca9d7bb15612f2b7975e8a76ca69b82f4ed5d4401282e099b8464",
+      "png": "editor-native-ime-preedit.png",
+      "png_size": 16024,
+      "png_sha256": "2841beed306f7b0188e791faf9dbca0c168c57efec34899608555c249c69f3b6",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "release",
+      "source_member": "ed-native-ime-21-release/ed-jw258xns/captures/capture-8-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "bbc8c8fb228482546ae2a34866679401145a66446253ae4a1255adc67e949682",
+      "png": "editor-native-ime-compound.png",
+      "png_size": 15705,
+      "png_sha256": "86c5f1f63cf7bbd046978808074ca01b3ac90d3465397ed28591652f3be469ec",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "release",
+      "source_member": "ed-native-ime-21-release/ed-jw258xns/captures/capture-9-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "22d6d7e9703033ff95afef41797f93ab37f63bca7797a4913f356756f92b96fd",
+      "png": "editor-native-ime-hidden.png",
+      "png_size": 15915,
+      "png_sha256": "92fbc1f8cfdf7414a15dea1ec7813ad71a5a0d3849386da33d05c8849be62456",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "release",
+      "source_member": "ed-native-ime-21-release/ed-jw258xns/captures/capture-12-output-0.ppm.gz",
+      "width": 1920,
+      "height": 1080,
+      "source_raw_sha256": "c0f3e1b4334da7bc6ae6c13c5713b5151fafa81cf3a4c4000c8413d06a2952b5",
+      "png": "editor-native-ime-clipped.png",
+      "png_size": 15834,
+      "png_sha256": "4cc9baec98104d5c3008e53f729008cce142d18bcdca6fd60f5229381277aa2e",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "shared",
+      "source_member": "ed-native-ime-21-shared/ed-aqnalg3k/captures/capture-17-output-1.ppm.gz",
+      "width": 2560,
+      "height": 1440,
+      "source_raw_sha256": "b763069996cf386ce5e0542b8f19f3ca54ac63dd1c432da8600341434c4a0064",
+      "png": "editor-native-ime-contrast.png",
+      "png_size": 25306,
+      "png_sha256": "3298384cd193b92d53680889d1df4a8917b8cc0d43f4daa760f78ab724175d88",
+      "all_rgb_bytes_equal": true
+    },
+    {
+      "profile": "asan",
+      "source_member": "ed-native-ime-21-asan/ed-2_85zpey/captures/capture-19-output-2.ppm.gz",
+      "width": 3840,
+      "height": 2160,
+      "source_raw_sha256": "de5a20d5c683d312fad2b37a002bd6be4d22f52dfca109e8612bf529d33f1f56",
+      "png": "editor-native-ime-density.png",
+      "png_size": 48185,
+      "png_sha256": "f8e2ab5e181d2ccd9a84da82b97ff29772f6e95e1a2ac76dc2b505e24596269b",
+      "all_rgb_bytes_equal": true
+    }
+  ],
+  "scope": "Full lossless captures, no cropping or resizing. RGB payloads compared completely after PNG encoding; visual review recorded separately.",
+  "visual_review": {
+    "reviewed": true,
+    "method": "All six full lossless images inspected through view_image; no crop/resize.",
+    "observations": [
+      "Original prefix retained before the long composition; preedit stays inside its own viewport.",
+      "Compound commit/new preedit and hidden caret are visible as expected.",
+      "German 200% high contrast uses black glyphs on yellow selection; 150% light text at2x density remains legible."
+    ],
+    "scope": "Controlled fixture appearance only; not physical/human or final design acceptance."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "result": "passed",
+  "source_revision": "52d59e45c67b59c10b05b9c51bb8015b00ad9334",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "sdk_source_revision": "47ec4e640a8a0f54bc8a09d1fe825b57956df6d7",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "profiles": 3,
+  "ctests": 39,
+  "default_original_ctests": 11,
+  "skips": 0,
+  "consumer_c17_objects": 84,
+  "default_original_c17_objects": 25,
+  "producer_c17_objects": 6,
+  "negative_c17_objects": 4,
+  "functional_mutants_detected": 4,
+  "full_native_ime_tasks": 3,
+  "decoded_native_ime_captures": 171,
+  "full_without_protocol_tasks": 1,
+  "decoded_without_protocol_captures": 30,
+  "artifact_files_bound": 648,
+  "repo_inputs": 26,
+  "original_inputs": 53,
+  "producer_inputs": 17,
+  "generated_replays": 19,
+  "scope": "Controlled native-v3 callbacks and original Editor models/lifecycle, including no-protocol fallback; not an installed IME or independent editable AT-SPI client.",
+  "remaining": [
+    "Document editable accessibility and independent assistive clients",
+    "Installed IMEs and delayed foreign paste/composition interaction",
+    "Live output migration, manual offscreen scroll and candidate restoration",
+    "Normal Aetheri owner/pin adoption; remaining packet6/packets7-8/full103 IDs",
+    "Physical/human/design/performance acceptance; earlier Software AT-SPI finding"
+  ]
+}
