@@ -25,8 +25,10 @@ def main():
     p.add_argument('--clipboard-tools',type=Path,help='Private wl-copy/wl-paste and their explicit loader/runtime')
     p.add_argument('--resize',action='store_true',help='Real pointer resize through compact filter retirement and restore')
     p.add_argument('--outputs',action='store_true',help='Private compositor output migration, fractional scale and workarea transitions')
+    p.add_argument('--hotplug',action='store_true',help='Extend --outputs with real private output removal/recreation and snapshot identity checks')
     p.add_argument('--capture',action='store_true',help='Retain native compositor frames during resize')
     a=p.parse_args()
+    if a.hotplug and not a.outputs:p.error('--hotplug requires --outputs and the output-observer host')
     if a.held and (a.ime or a.components or a.contents):p.error('Run held lifetime, IME and metadata inspection workflows separately')
     if (a.clipboard or a.resize or a.outputs) and (a.held or a.components or a.contents):p.error('Native window tasks use the ordinary selected-app host/peer')
     if sum(map(bool,(a.clipboard,a.resize,a.outputs)))>1:p.error('Run foreign clipboard, resize and output tasks separately')
@@ -72,7 +74,7 @@ def main():
     if a.held:env['SWG_TEST_GATE_FD']=str(gate_read)
     else:env.pop('SWG_TEST_GATE_FD',None)
     left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];background=set();stopped=set()
-    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components','held','clipboard','resize','outputs','capture')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3,'images':images}
+    result={'status':'failed','inputs':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in paths.items() if path.is_file()},'configuration':{name:getattr(a,name) for name in ('german','large','small','contrast','light','ime','components','held','clipboard','resize','outputs','hotplug','capture')},'checks':[],'selected_targets':5,'eligible':2,'unavailable':3,'images':images}
     if a.components:result['component_inputs']=json.loads((component_input/'inputs.json').read_text())
     def start(command,name,fds=(),input_pipe=False,may_exit=False):
         stream=(work/(name+'.log')).open('wb');streams.append(stream)
@@ -95,8 +97,19 @@ def main():
     def view():
         lines=re.findall(r'^VIEW (.+)$',log('host'),re.M)
         return {k:float(v) if '.' in v else int(v) for k,v in re.findall(r'(\w+)=([\d.]+)(?= |$)',lines[-1])} if lines else {}
+    live_output_ids={};seen_output_ids=set()
+    def output_snapshot():
+        found=re.findall(r'^OUTPUTS revision=(\d+) count=(\d+) items=([\d:,]*)$',log('host'),re.M)
+        if not found:return None
+        revision,count,items=found[-1];records=[dict(zip(('id','width','height','scale'),map(int,item.split(':')))) for item in items.split(',') if item]
+        if len(records)!=int(count) or len({x['id'] for x in records})!=len(records):raise RuntimeError('Malformed complete native output snapshot')
+        return dict(revision=int(revision),count=int(count),items=records)
     def output_transition(command,width,height,scale):
-        before=view();offset=len(log('host'));server_offset=len(log('server'));event(command)
+        before=view();snapshot_before=output_snapshot() if a.hotplug else None
+        if a.hotplug and command[0] in 'RN':
+            wait(lambda:sleeping_with_worker_fd('OUTPUT_WAIT_ENTER'),'native sleep before output topology change')
+            result.setdefault('hotplug_waits',[]).append(dict(command=command,witness=result['native_wait_witness']))
+        offset=len(log('host'));server_offset=len(log('server'));event(command)
         wait(lambda:'OUTPUT_POLICY command='+command+' ' in log('server')[server_offset:] if command[0]!='O' else 'xdg_toplevel#' in log('host')[offset:],'compositor output policy '+command)
         pattern=r'^VIEW ([^\n]*)\nSOFTWARE_READY\nSURFACE pixels=(\d+)x(\d+) raster=([\d.]+)$'
         expected_pixels=(int(width*scale+.999999),int(height*scale+.999999))
@@ -109,16 +122,30 @@ def main():
         wait(lambda:f'OUTPUT_BUFFER pixels={expected_pixels[0]}x{expected_pixels[1]} logical={width}x{height}\n' in log('server')[server_offset:],'compositor consumed actual scaled buffer '+command)
         after=view()
         if any(after.get(k)!=before.get(k) for k in ('state','epoch','count','mode','request','focus')):raise RuntimeError('Output transition changed owner/draft focus state')
-        result.setdefault('output_transitions',[]).append(dict(command=command,before=before,after=after,pixels=list(expected_pixels)))
+        row=dict(command=command,before=before,after=after,pixels=list(expected_pixels))
+        if a.hotplug and command[0] in 'RN':
+            changed=-1 if command[0]=='R' else 1
+            wait(lambda:(s:=output_snapshot()) and s['count']==snapshot_before['count']+changed and s['revision']>snapshot_before['revision'],'complete changed output snapshot')
+            snapshot_after=output_snapshot();old={x['id'] for x in snapshot_before['items']};new={x['id'] for x in snapshot_after['items']};index=int(command.split()[1])
+            if changed<0:
+                if old-new!={live_output_ids[index]} or new-old:raise RuntimeError('Wrong output identity removed')
+                del live_output_ids[index]
+            else:
+                added=new-old
+                if old-new or len(added)!=1 or added&seen_output_ids:raise RuntimeError('Recreated output reused a retired identity')
+                live_output_ids[index]=next(iter(added));seen_output_ids.update(added)
+            if after['keys']!=before['keys']:raise RuntimeError('Output topology task injected keyboard input')
+            row.update(snapshot_before=snapshot_before,snapshot_after=snapshot_after,live_output_ids=dict(live_output_ids))
+        result.setdefault('output_transitions',[]).append(row)
     def release_gate():
         nonlocal gate_write
         if gate_write>=0:
             try:os.write(gate_write,b'R')
             finally:os.close(gate_write);gate_write=-1
-    def sleeping_with_worker_fd():
+    def sleeping_with_worker_fd(marker='HELD_WAIT_ENTER'):
         # Same parent-owned syscall/pollfd witness as the Recovery consumer.
         if sys.platform!='linux' or os.uname().machine!='x86_64':raise RuntimeError('Native wait witness requires the selected Linux x86-64 carrier')
-        matches=re.findall(r'^HELD_WAIT_ENTER fd=(\d+) timeout=(\d+)$',log('host'),re.M)
+        matches=re.findall(r'^'+marker+r' fd=(\d+) timeout=(\d+)$',log('host'),re.M)
         if not matches:return False
         try:
             raw=Path(f'/proc/{host.pid}/syscall').read_text().split()
@@ -226,6 +253,7 @@ def main():
         if a.contents:peer_flags+=['--contents',str(component_input/'content-peer.txt')]
         if a.resize:peer_flags+=['--resize']
         if a.outputs:peer_flags+=['--outputs']
+        if a.hotplug:peer_flags+=['--hotplug']
         if a.clipboard:peer_flags+=['--clipboard-'+a.clipboard]
         if a.large:peer_flags+=['--large']
         if a.held:peer_flags=['--held',a.held]
@@ -256,24 +284,33 @@ def main():
                 if not any(int(mask)&1 for mask in returns):raise RuntimeError('No readable worker-FD return after gate release')
                 result['completion_without_further_input']=True
             peer.stdin.write(b'CHECK 2\n');peer.stdin.flush();peer_line('ACK 2');result['checks'].append({'step':2,'view':view()})
-        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 24 if a.outputs else 20 if a.resize else 10)):
+        for step in (() if a.held else range((15 if a.clipboard=='close' else 16) if a.clipboard else 36 if a.hotplug else 24 if a.outputs else 20 if a.resize else 10)):
             peer_line('STEP '+str(step))
             if a.outputs and step>=10:
                 if step==10:
                     key(28);wait(lambda:view().get('mode')==1 and view().get('focus')==45,'filter before output transitions');result['output_origin']=view()
+                    if a.hotplug:
+                        wait(lambda:(s:=output_snapshot()) and s['count']==3,'initial complete output snapshot')
+                        snapshot=output_snapshot();result['output_initial_snapshot']=snapshot
+                        for index,width in enumerate((1920,2560,3840)):
+                            matches=[x['id'] for x in snapshot['items'] if x['width']==width]
+                            if len(matches)!=1:raise RuntimeError('Initial output mode identity missing')
+                            live_output_ids[index]=matches[0];seen_output_ids.add(matches[0])
                 origin=result['output_origin'];width,height=origin['width'],origin['height']
                 if step==12:event('P 1 180')
                 if step==13:event('P 2 240')
                 transitions={11:[('P 0 150',width,height,1.25)],12:[('V 1',width,height,1.5)],13:[('V 2',width,height,2)],14:[('Z 1',1920,1080,2)],15:[('H 2 96',1920,984,2)],16:[('O 2 3200 1800',1600,804,2)],17:[('Z 0',width,height,2)],18:[('V 1',width,height,1.5)],19:[('P 1 120',width,height,1)],20:[('V 0',width,height,1.25)],21:[('P 0 120',width,height,1)]}
+                if a.hotplug:transitions.update({22:[('P 0 150',width,height,1.25)],23:[('Z 1',1536,864,1.25)],24:[('R 0',2560,1440,1)],25:[('N 0 150',2560,1440,1)],26:[('Z 0',width,height,1)],27:[('V 0',width,height,1.25)],28:[('R 1',width,height,1.25)],29:[('N 1 180',width,height,1.25)],30:[('V 1',width,height,1.5)],31:[('R 1',width,height,1.25)],32:[('N 1 120',width,height,1.25)],33:[('P 0 120',width,height,1)]})
                 for command,w,h,scale in transitions.get(step,[]):output_transition(command,w,h,scale)
-                if step==22:
+                if step==(34 if a.hotplug else 22):
                     matches=re.findall(r'^OUTPUT_FIELD (\d+) (\d+) (\d+) (\d+)$',log('client'),re.M)
                     if not matches:raise RuntimeError('Missing independent output field geometry')
                     x,y,w,h=map(int,matches[-1]);event(f'M {40+x+w-8} {40+y+h//2}');event('B 272 1');event('B 272 0');key(45)
                     wait(lambda:view().get('focus')==45,'native field hit after output transitions')
-                if step==23:key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40,'cancel after output transitions')
+                if step==(35 if a.hotplug else 23):key(1);wait(lambda:view().get('mode')==0 and view().get('focus')==40,'cancel after output transitions')
                 peer.stdin.write(f'CHECK {step}\n'.encode());peer.stdin.flush();peer_line('ACK '+str(step));result['checks'].append({'step':step,'view':view()})
                 if step in (11,13,15,21):capture('scale125' if step==11 else 'scale200' if step==13 else 'workarea' if step==15 else 'returned')
+                if a.hotplug and step in (25,33):capture('recreated-output-with-failover-maximized' if step==25 else 'hotplug-returned')
                 continue
             if a.clipboard and step>=10:
                 sample='Grüße 🌍 e\u0301'.encode()
@@ -368,6 +405,7 @@ def main():
         if peer.returncode!=0 or marker not in log('client'):raise RuntimeError('Independent peer failed')
         if a.resize and 'SOFTWARE_NATIVE_POINTER_RESIZE_COMPACT_RETIRED_FIELD_DRAFT_AND_FOCUS_RESTORED_OK' not in log('client'):raise RuntimeError('Missing independent native resize checks')
         if a.outputs and 'SOFTWARE_NATIVE_OUTPUT_SCALE_WORKAREA_DRAFT_CARET_AND_HIT_OK' not in log('client'):raise RuntimeError('Missing independent output transition checks')
+        if a.hotplug and 'SOFTWARE_NATIVE_OUTPUT_REMOVAL_RECREATION_MAXIMIZED_DRAFT_CARET_FOCUS_OK' not in log('client'):raise RuntimeError('Missing independent hotplug checks')
         if a.clipboard:
             marker='SOFTWARE_NATIVE_PENDING_FOREIGN_CLIPBOARD_CLOSE_RETIRED_REFERENCES_OK' if a.clipboard=='close' else 'SOFTWARE_NATIVE_FOREIGN_UNICODE_PASTE_COPY_AND_LATE_FOCUS_REPLY_REFUSED_OK'
             if marker not in log('client'):raise RuntimeError('Missing independent clipboard checks')

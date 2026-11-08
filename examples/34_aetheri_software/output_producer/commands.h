@@ -2,12 +2,26 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_xdg_shell.h>
+bool sw_output_restore(struct server *,unsigned,unsigned);
 static bool sw_output_command(struct server *s,const char *text) {
     struct window *w,*only=NULL;
     wl_list_for_each(w,&s->windows,link) if(w->mapped) { if(only) return false;only=w; }
     if(!only) return false;
     unsigned index=0,value=0;int used=0;
-    if(sscanf(text,"Z %u%n",&value,&used)==1 && text[used]==0 && value<=1) {
+    if(sscanf(text,"R %u%n",&index,&used)==1 && text[used]==0 && index<s->output_count) {
+        struct output *removed=&s->outputs[index];if(!removed->output || s->nested || s->drm) return false;
+        unsigned fallback=s->output_count;
+        for(unsigned i=0;i<s->output_count;++i)if(i!=index&&s->outputs[i].output){fallback=i;break;}
+        if(fallback==s->output_count)return false;
+        if(ae_server_window_output(only)==removed){
+            struct output *next=&s->outputs[fallback];struct wlr_output_layout_output *place=wlr_output_layout_get(s->layout,next->output);
+            if(!place)return false;
+            only->home=fallback;only->x=place->x+40;only->y=place->y+40;ae_server_configure(only);
+        }
+        wlr_output_destroy(removed->output);ae_input_map_outputs(s->input);
+    } else if(sscanf(text,"N %u %u%n",&index,&value,&used)==2 && text[used]==0 && index<s->output_count && value>=120&&value<=240) {
+        if(!sw_output_restore(s,index,value))return false;
+    } else if(sscanf(text,"Z %u%n",&value,&used)==1 && text[used]==0 && value<=1) {
         ae_server_maximize(only,value!=0);
     } else if(sscanf(text,"V %u%n",&index,&used)==1 && text[used]==0 && index<s->output_count) {
         struct output *o=&s->outputs[index];

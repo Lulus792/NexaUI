@@ -28,11 +28,33 @@ transform(original/'src/compositor/main.c','main.c',[
     ('wlr_xdg_toplevel_set_size(top, full || max ? o->output->width : 0,\n        full ? o->output->height : max ? usable_height : 0);',
      'wlr_xdg_toplevel_set_size(top, full || max ? logical_width : 0,\n        full ? logical_height : max ? usable_height : 0);'),
     ('    if (w->mapped) ae_desktop_refresh_visibility(w->server->desktop);',
-     '    if (w->mapped) {\n        ae_desktop_refresh_visibility(w->server->desktop);\n        struct wlr_surface_state *state=&w->toplevel->base->surface->current;\n        printf("OUTPUT_BUFFER pixels=%dx%d logical=%dx%d\\n",state->buffer_width,state->buffer_height,state->width,state->height);\n    }')])
+     '    if (w->mapped) {\n        ae_desktop_refresh_visibility(w->server->desktop);\n        struct wlr_surface_state *state=&w->toplevel->base->surface->current;\n        printf("OUTPUT_BUFFER pixels=%dx%d logical=%dx%d\\n",state->buffer_width,state->buffer_height,state->width,state->height);\n    }'),
+    ('static void backend_destroy(struct wl_listener *listener, void *data) {',
+     '''bool sw_output_restore(struct server *s,unsigned index,unsigned scale120) {
+    if(s->nested||s->drm||index>=s->output_count||s->outputs[index].output||scale120<120||scale120>240)return false;
+    static const int widths[]={1920,2560,3840},heights[]={1080,1440,2160},positions[]={0,1920,4480};
+    struct output *o=&s->outputs[index];o->reserved_bottom=0;o->capture=0;o->commits=0;
+    o->output=wlr_headless_add_output(s->backend,(unsigned)widths[index],(unsigned)heights[index]);
+    if(!o->output)return false;
+    o->destroy.notify=output_destroy;wl_signal_add(&o->output->events.destroy,&o->destroy);
+    o->request_state.notify=output_request_state;wl_signal_add(&o->output->events.request_state,&o->request_state);
+    o->frame.notify=output_frame;wl_signal_add(&o->output->events.frame,&o->frame);
+    if(!wlr_output_init_render(o->output,s->allocator,s->renderer))return false;
+    struct wlr_output_state state;wlr_output_state_init(&state);
+    wlr_output_state_set_enabled(&state,true);
+    wlr_output_state_set_custom_mode(&state,widths[index],heights[index],60000);
+    wlr_output_state_set_scale(&state,(float)scale120/120.0f);
+    bool ok=wlr_output_commit_state(o->output,&state);wlr_output_state_finish(&state);
+    if(!ok||!wlr_output_layout_add(s->layout,o->output,positions[index],0))return false;
+    o->scene=wlr_scene_output_create(s->scene,o->output);if(!o->scene)return false;
+    wlr_scene_output_set_position(o->scene,positions[index],0);ae_input_map_outputs(s->input);
+    return true;
+}
+static void backend_destroy(struct wl_listener *listener, void *data) {''')])
 transform(base/'compositor_input_driver.c','compositor_input_driver.c',[
     ('static int receive_input(int fd, uint32_t mask, void *data) {','#include "commands.h"\nstatic int receive_input(int fd, uint32_t mask, void *data) {'),
     ('    else if (sscanf(text, "O %u %u %u%n", &output_index, &width, &height, &used)',
-     '    else if (text[0]==\'V\' || text[0]==\'P\' || text[0]==\'H\' || text[0]==\'Z\') { if (!sw_output_command(d->server,text)) goto invalid; }\n    else if (sscanf(text, "O %u %u %u%n", &output_index, &width, &height, &used)'),
+     '    else if (text[0]==\'V\' || text[0]==\'P\' || text[0]==\'H\' || text[0]==\'Z\' || text[0]==\'R\' || text[0]==\'N\') { if (!sw_output_command(d->server,text)) goto invalid; }\n    else if (sscanf(text, "O %u %u %u%n", &output_index, &width, &height, &used)'),
     ('        struct wlr_pointer_motion_absolute_event event = {.pointer = &d->pointer, .time_msec = d->time, .x = x / 8320.0, .y = y / 2160.0};',
      '        struct wlr_box bounds;wlr_output_layout_get_box(d->server->layout,NULL,&bounds);\n        if (bounds.width<=0 || bounds.height<=0 || x<bounds.x || y<bounds.y || x>=bounds.x+bounds.width || y>=bounds.y+bounds.height) goto invalid;\n        struct wlr_pointer_motion_absolute_event event = {.pointer = &d->pointer, .time_msec = d->time, .x = (x-bounds.x) / bounds.width, .y = (y-bounds.y) / bounds.height};')])
 (output/'source-delta.json').write_text(json.dumps(dict(files=records,scope='Private source-checked output policy; no SDK or active Aetheri changes'),indent=2)+'\n')

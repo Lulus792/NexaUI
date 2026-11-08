@@ -103,6 +103,26 @@ image sets. These are controlled compositor transitions; physical monitor,
 hotplug/removal, suspend and normal-owner acceptance remain separate gates.
 See the [executed output-transition report](../../docs/quality/software-output-report.md).
 
+For output removal/recreation, configure this consumer with
+`-DSWG_BUILD_OUTPUT_HOST=ON` and build `software_output_native`. This optional
+test executable includes the ordinary host verbatim, observing public output
+snapshots and native poll boundaries through link wrappers. Its16-record
+snapshot bound belongs to this three-output fixture, not to the SDK or ordinary
+host. It adds no window, worker or alternative UI/event loop.
+
+Use `run_native.py --outputs --hotplug` with that host and the same separate
+output producer. The extended task removes the current output while maximized,
+keeps the window usable on a remaining output, restores normal size and repeats
+removal/recreation with fresh registry identities. Complete public snapshots,
+monotonic revisions, unchanged input/model state, retained native text/focus and
+the actual sleeping main-thread poll are checked. A recreated output receives
+a new connection-local ID; it is never a persistent device identity. `--capture`
+adds images only at boundaries where all three outputs exist. Removing every
+output, physical hotplug, GPU/session suspend and normal-owner policy remain
+separate acceptance work.
+See the [executed hotplug record](../../docs/quality/software-hotplug-report.md)
+for exact profiles, source bindings, counterexamples and open gates.
+
 The trusted startup host can append `--history PROFILE_HEX` (repeat up to 64)
 alongside existing `--manifest INSTALL_ID ABSOLUTE_PATH` options, after the
 selected installation IDs. `PROFILE_HEX` is the complete 768-character canonical
