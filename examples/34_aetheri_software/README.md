@@ -466,3 +466,27 @@ These are Linux virtual-compositor/OS transport checks, with actual installed IM
 spoken screenreader and physical display acceptance remaining separate.
 Further operation/diagnostic/reason relationships, actual current observations
 and the remaining catalogue gates remain open.
+
+## Selective recovery relationships
+
+The existing serialized history worker now reads one original selective recovery
+inventory per eligible batch. It reuses example33's owned inventory validator,
+then copies five flat kind/full-ID records: Root operation, code lease, dispatch,
+run closure and execution handoff. Context revision/epoch/boot/runtime, full
+reservation binding and each expected related ID must match. No inventory
+snapshot or catalogue reference crosses to the GUI.
+
+`swh_record.recovery_error` describes the query; `recovery_schema` identifies a
+successful inventory. The five `recovery[j].error` values describe each role;
+missing rows stay `-ENOENT` with zero values. Unsupported schema keeps its
+original error with zero data. Missing selective metadata is unknown, not proof
+of completion, drain or absence. Malformed/context/I/O/allocation failures reject
+the batch while the worker may still deliver an independently valid app reply.
+
+This increment adds data only. A separate Recovery-links page is next, using
+existing read-only Text, focus, scroll and retirement; the Receipts body keeps its
+existing size budget. `software_history_recovery` checks original fixtures,
+complete copied records, negative bindings/errors,64 copied profiles with one
+query, worker disposal and unchanged databases. See the
+[source-bound report](../../docs/quality/software-recovery-report.md) for actual
+results, retries, compiled defects and remaining packet6–8/adoption gates.

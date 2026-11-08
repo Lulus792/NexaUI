@@ -1,5 +1,15 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+D07/L11/P04/P05/P07/Q02/Q04/Q08: source `226a847` adds five original selective
+recovery relationships to the existing copied history worker, reusing the
+example33 validator and exact kind/ID/context/reservation/related bindings.
+Release and sanitized profiles pass10/10; Shared covers all10 via9+1 unchanged-
+binary quota retry.27 original recovery scenarios, five existing native receipt
+regressions and three compiled defects are checked. See [data foundation](software-recovery-report.md).
+No new Recovery page or current authority is claimed. Broader packet6,
+packets7–8 and final physical/human/performance/adoption remain open across103
+IDs; SDK API/ABI/version and independent Aetheri source/pin are unchanged.
+
 W03/D07/D11/L04/L05/L11/I01/I05/T11/A02/A06/P05/P07/Q02/Q04/Q08: source `cc8b5e7`
 admits original Root11 fixtures to existing native clipboard workflows.27 current
 and six legacy User clipboard/resize cases pass671 checkpoints across static,

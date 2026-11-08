@@ -1,5 +1,11 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Selective recovery data foundation: `226a847b6655ec39ebf6427ab95d265ea82f9a0d`,
+[five profile-bound operation/lease/dispatch/closure/handoff records through the existing worker](software-recovery-report.md).
+Presentation is the next step; missing selective metadata is unknown and supplies
+no current-process, drain, permission or effect authority. Broader compositions
+and external owner obligations below remain open.
+
 Assessment for software-model source `64c9ab101bdaea2ff47e650ea911e81f1115935e`.
 Worker continuation: `a7a920ebf298c03851b1c78a4af974e8c91337a7`,
 [copied jobs, bounded channel, original SQL and UI-model retirement](software-worker-report.md).
