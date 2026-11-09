@@ -1,5 +1,18 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Application document clipboard: SDK8862cb5 and independent fixture5203f67 add
+opt-in COPY/CUT/PASTE while retaining application-owned atomic edits. Three
+profiles pass54 CTests,30 Wayland delayed-paste cases,3 packages and9 native
+AT-SPI tasks. The latter use explicit memory clipboard callbacks; real Wayland
+transfers are separately tested. See the [source-bound SDK report](document-clipboard-report.md).
+Both code revisions pass seven exact-source CI jobs. Harness2bac6ea separately
+passes the existing original Editor Shared task on SDK0.1.29:15 tests and72
+captures, without new clipboard opt-in.
+Original Editor clipboard adoption and joined external clipboard peers remain
+the next composition step. Geometry/attributes, broader interfaces, AX/UIA,
+real IMEs/screenreaders, physical/human/performance and ordinary adoption remain
+open, along with the complete103-ID/remaining packet6/packets7–8 gates.
+
 Original Editor cache budget: ded9432 counts serialized metadata rather than
 document values/spare capacity. Three installed profiles pass45 SDK+45 owner
 CTests,3 packages,6 independent fixture tasks,39 original raw cache queries

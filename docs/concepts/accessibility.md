@@ -14,6 +14,36 @@ The context queue has 64 entries. A duplicate ID/action or a full queue returns 
 
 ## Application-owned document text
 
+Since0.1.29 development, `nx_text_document_register_with_clipboard` additionally
+accepts borrowed `nx_text_document_clipboard` options. Reuse
+`nx_text_clipboard_for_window` or application clipboard callbacks and opt into
+COPY, CUT and PASTE independently. COPY/CUT require a write callback; PASTE
+requires read. CUT/PASTE also require REPLACE. Existing registration calls keep
+their replace/select-only contract and all existing public structure layouts.
+
+Copy uses the copied semantic snapshot without calling the model or setting
+`out_result.applied`. Cut writes the selected range before one atomic model
+replacement. If later model validation fails, the document stays unchanged,
+but bytes already transferred to another clipboard owner cannot be revoked.
+Paste validates complete UTF-8 data, applies text-field single-line newline
+normalization when requested, and calls the optional whole-insertion validator
+before the existing atomic replace callback. Native payloads stay bounded at
+64KiB; resulting documents stay bounded at8MiB.
+
+A Wayland native clipboard read can remain pending across completed frames.
+Keep registering the same logical input token and clipboard policy; advance
+the document revision for any text/selection/policy or validator reconfiguration,
+including disable/re-enable roundtrips. Callback/user pointers are never stored
+in the pending request or native snapshot. The supplied native window must
+outlive pending work and the context. Omission, stale policy/revision, native
+lease revocation, focus/offer invalidation, timeout and destruction cancel
+pending reads. Clipboard callbacks must not reenter/destroy this context;
+the model callback must still revalidate the application's complete input token.
+Linux AT-SPI exposes the optional clipboard operations, including COPY on an
+explicitly opted-in read-only document. Other native bridges retain their
+separately documented coverage. This API does not handle ordinary keyboard
+shortcuts, application paste review or drawing.
+
 Since 0.1.28, `nx_text_document_register` binds an existing application document
 to a text-field semantic node without creating an `nx_text_buffer` or replacing
 the application's editing, history or file model. Register it during a frame,

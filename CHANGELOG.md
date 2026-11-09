@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.29 — Development snapshot
+
+- Added opt-in native clipboard operations for application-owned documents through `nx_text_document_register_with_clipboard`, reusing existing clipboard callbacks and bounded asynchronous Wayland reads. Copy preserves the model; cut and paste use its existing atomic replace callback. Document/policy/native lifetime checks remain in force across delayed completion. Existing registration calls and public structure layouts are preserved. Full original-Editor clipboard adoption and native geometry/attributes remain separate acceptance work.
+
 ## 0.1.28 — Development snapshot
 
 - Linux AT-SPI bulk-cache admission now counts serialized metadata instead of document values and spare snapshot capacity. Independent wire tests cover full8-MiB documents, retained empty buffers and genuinely oversized metadata, including the original Editor. The existing reply/queue limits remain unchanged; see the cache-budget report for exact source and remaining acceptance.

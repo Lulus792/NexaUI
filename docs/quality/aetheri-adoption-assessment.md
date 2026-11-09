@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Application document clipboard SDK (2026-11-09)
+
+SDK0.1.29 source8862cb5 reuses existing native clipboard primitives for an
+opt-in document registration. Fixture5203f67 and the separate Wayland protocol
+test pass54 CTests,30 delayed-paste scenarios,3 installed packages and9 AT-SPI
+tasks across three profiles. The AT-SPI clipboard callbacks are memory-backed;
+this does not establish joined system clipboard or original Editor adoption.
+See the [exact-source evidence and next owner work](document-clipboard-report.md).
+Both revisions pass their seven exact-source CI jobs. Existing original Editor
+Shared compatibility also passes15 tests/72 captures under harness2bac6ea,
+without enabling the new clipboard. All94 compatibility inputs are bound.
+Original input/controller/history/save/review/IME composition, native geometry,
+AX/UIA, real IMEs/screenreaders, physical/human/design/performance and ordinary
+adoption remain open. No active Aetheri change; all103 IDs and packets6–8 persist.
+
 ## Original document cache budget (2026-11-09)
 
 Source ded9432 keeps the original Editor's model/controller/rendering and fixes

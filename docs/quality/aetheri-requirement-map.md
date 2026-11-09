@@ -1,5 +1,19 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/T06/A04/P04/P05/Q02/Q03/Q06/Q08: SDK0.1.29 source8862cb5 adds optional
+document COPY/CUT/PASTE through existing clipboard callbacks/native reads and
+the original atomic model callback. Independent fixture5203f67 uses memory
+callbacks; three profiles pass54 CTests,30 delayed Wayland paste scenarios,
+3 packages and9 AT-SPI tasks. All1078 SDK/fixture inputs and264 objects are
+bound; an actual compiled pre-release delayed-completion defect is detected.
+See the [contract, evidence and exact remaining boundary](document-clipboard-report.md).
+Both code revisions pass seven required exact-source CI jobs. Harness2bac6ea
+additionally verifies existing original Editor SDK0.1.29 Shared compatibility:
+15 owner CTests,32 objects,13 cache queries and72 captures; new clipboard is off.
+Original Editor clipboard adoption, joined native/system clipboard peers,
+geometry/attributes, broader interfaces, AX/UIA and physical/human/design/
+performance/ordinary adoption remain open. All103 IDs and packets6–8 persist.
+
 T03/A03/A04/P04/P05/Q02/Q03/Q06/Q08: source ded9432 corrects AT-SPI bulk-cache
 admission to charge serialized metadata, preserving the4-MiB reply budget.
 Three installed profiles pass45 SDK+45 original-owner CTests,3 packages,

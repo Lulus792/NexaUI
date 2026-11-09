@@ -1,0 +1,58 @@
+{
+  "result": "local matrix and both exact-source CI runs passed",
+  "sdk_source_revision": "8862cb5a1b78c63845a2d2a50441cda8e19243e7",
+  "consumer_source_revision": "5203f67298b7e2d53b9c69d93166fc6a1a078589",
+  "sdk_version": "0.1.29 development",
+  "ctests": 54,
+  "wayland_paste_scenarios": 30,
+  "installed_packages": 3,
+  "independent_os_tasks": 9,
+  "sdk_objects": 252,
+  "native_host_reader_objects": 12,
+  "sdk_inputs": 1069,
+  "native_fixture_inputs": 9,
+  "compiled_regressions_detected": 1,
+  "regression": {
+    "result": "detected",
+    "working_tree_candidate": 12,
+    "fixed_candidate": 13,
+    "unchanged_test_sha256": "a0189f8d1dab324c1391b429857125f58892eca45fc93f0a1f254a961d60c0fb",
+    "failure": {
+      "name": "close-sdk-12-release-test.log",
+      "size": 2600,
+      "mode": 420,
+      "sha256": "77005487039e78e20190c0c917f99484fe99ffc0dfa42b2988d7aabddbb2704f"
+    },
+    "scope": "Actual compiled pre-release candidate rejects an otherwise current paste after EOF consumes its native-read token. The identical ten-scenario protocol test passes against the corrected candidate in all three profiles; target/native/ancestry/deadline guards remain."
+  },
+  "limits": {
+    "document_bytes": 8388608,
+    "clipboard_payload_bytes": 65536,
+    "bulk_cache_bytes": 4194304,
+    "outgoing_queue_bytes": 8388608,
+    "native_client_deadline_ms": 1000,
+    "owned_native_request_deadline_ms": 2000,
+    "protocol_test_timeout_seconds": 15
+  },
+  "scope": "SDK clipboard capability and isolated consumers; existing document registration, original model ownership and native deadlines/guards retained.",
+  "remaining": [
+    "Original Editor optional clipboard integration with the full original controller/input token, history/save/review/IME and ordinary rendering",
+    "Joined independent AT-SPI/system-clipboard and delayed-owner-wakeup/close tasks",
+    "Document geometry/attributes and broader native interfaces, new app-document AX/UIA tasks",
+    "Real installed IMEs/screenreaders, physical/human/design/performance and ordinary Aetheri adoption",
+    "Remaining packet6, packets7\u20138 and full103 requirements"
+  ],
+  "original_compatibility_source_revision": "2bac6ea08cfe0c3f43edddcb7966c4adbefc1bf2",
+  "original_compatibility_profile": "shared",
+  "original_compatibility_ctests": 15,
+  "original_compatibility_objects": 32,
+  "original_compatibility_captures": 72,
+  "original_compatibility_cache_queries": 13,
+  "original_compatibility_generated_replays": 7,
+  "original_compatibility_reviewed_pixel_matches": 5,
+  "compatibility_failures": [
+    "Driver33 refuses0.1.29 in its third uncompiled version guard before app startup; driver34 fixes only that Python file and reuses identical compiled inputs.",
+    "First compatibility collector had a duplicate result keyword after successful test/capture validation; corrected collector passes without rerunning the native task.",
+    "First compatibility archive attempt ran before the failed collector produced its receipt and was refused; only the later verified final archive is counted."
+  ]
+}
