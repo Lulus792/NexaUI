@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Original native document adapter (2026-11-09)
+
+Consumer b2490d5 connects original Editor7bbe704 to SDK9ad027a without modifying
+the active Aetheri checkout or pin. Three profiles pass45 owner tests and216
+complete native captures, including original atomic editing/history/save/review,
+full8-MiB document operations, stale references and retained native IME.
+All93 inputs and21 generated C replays are bound; two compiled defects fail.
+The SDK independently passes45 relevant CTests and three package consumers.
+See the [native original-Editor evidence and open acceptance](editor-native-document-report.md).
+All seven required exact-source CI jobs pass for each code step. Native clipboard/geometry, broader cache/text, real assistive/IME,
+physical/human/design/performance and normal owner adoption remain open across
+the unchanged103-ID catalogue and remaining packets6–8.
+
 ## Application-owned document SDK prerequisite (2026-11-09)
 
 SDK 0.1.28/`f5090602def620ce5a822c4301d6e4fdfaadf696` supplies copied native

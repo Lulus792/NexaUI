@@ -2,6 +2,7 @@
 
 ## 0.1.28 — Development snapshot
 
+- Added an optional original Aetheri Editor AT-SPI document adapter with original atomic editing/history/save ownership, guarded native selection and complete bounded document reads. ASCII-run validation and native counting avoid per-scalar work for long ASCII spans while preserving the scalar decoder contract. See the original native-document report for exact source, executed profiles and remaining acceptance.
 - Added `nx_text_document_register` for application-owned document accessibility: copied UTF-8 snapshots up to 8 MiB, explicit replace/selection capabilities and owner-thread atomic model callbacks with identity, revision, ancestry and native lifetime checks. Existing editor models and public structure layouts remain unchanged. Linux AT-SPI retains bounded replies/payloads and deferred operation completion; document clipboard/geometry, broader native interfaces and original Editor adoption remain open.
 
 ## 0.1.27 — Development snapshot

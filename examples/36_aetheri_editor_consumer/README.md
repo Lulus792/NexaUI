@@ -1,7 +1,8 @@
 # Original Aetheri Editor: native close consumer
 
 This separate Linux C17 consumer uses the original Editor from Aetheri
-`7bbe7042ecd48582b11ef7053a4dbeade6b02351` and installed NexaUI **0.1.27**.
+`7bbe7042ecd48582b11ef7053a4dbeade6b02351` and installed NexaUI **0.1.27 or newer**.
+The optional native document accessibility variant requires **0.1.28**.
 Its 53 checked inputs include the original document/workspace/direct editor,
 file/save/dialog code, regression tests and native driver. It never configures,
 builds or modifies the independently developed Aetheri checkout or its SDK pin.
@@ -98,7 +99,7 @@ The owning native adapter must still admit the focused window/document/target
 and epoch, collect a complete non-rejected BEGIN/END transaction, discard stale
 or interrupted batches, and publish surrounding text and composition geometry.
 The optional native variant below supplies the canvas connections and preedit
-presentation; editable accessibility remains separate work. This seam adds no SDK API, dependency, document authority,
+presentation; editable accessibility is selected separately below. This seam adds no SDK API, dependency, document authority,
 file operation or active Aetheri change.
 
 ## Native document IME variant
@@ -176,6 +177,46 @@ clipboard authority is granted by this model API.
 `editor.accessible_original_model` covers scalar/byte distinctions, gap-spanning
 reads, reverse/collapsed selections, rejected interior grapheme/CRLF endpoints,
 all six stale token fields, whole replacement and Undo/Redo, three allocation
-rollbacks, and a600,000-byte allocation-free read. Native provider lifetime,
-deferred completion, geometry/events and independent assistive tasks remain the
-next integration work; model tests do not establish those gates.
+rollbacks, and a600,000-byte allocation-free read. These model tests alone do not
+establish native provider lifetime, deferred completion, geometry/events or
+independent assistive tasks. The optional native variant below adds its own
+provider and task evidence.
+
+## Native document accessibility
+
+The additional `EDITOR_BUILD_NATIVE_ACCESSIBILITY=ON` option requires installed
+SDK0.1.28, `EDITOR_BUILD_ACCESSIBLE_MODEL=ON` and `EDITOR_BUILD_IME_MODEL=ON`.
+`EDITOR_BUILD_NATIVE_IME` remains independently selectable. The default build
+still uses the original model and SDK0.1.27-compatible close adapter.
+
+```sh
+cmake -S examples/36_aetheri_editor_consumer -B /path/to/editor-native-build \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/installed/nexaui \
+  -DAETHERI_SOURCE_DIR=/path/to/immutable-aetheri-export \
+  -DEDITOR_BUILD_IME_MODEL=ON -DEDITOR_BUILD_ACCESSIBLE_MODEL=ON \
+  -DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON -DEDITOR_BUILD_NATIVE_IME=ON
+cmake --build /path/to/editor-native-build --parallel 2
+ctest --test-dir /path/to/editor-native-build --output-on-failure
+```
+
+The generated native-document host publishes the existing original controller
+through `nx_text_document_register`. Its snapshots copy up to the original8-MiB
+bound. Owner callbacks recheck complete original tokens and reserve UI copies
+before mutation. Review/picker policy and tab changes retire stale requests;
+original input/history/save/rendering remain authoritative. Completed semantics
+are published while a software buffer is busy, and pending assistive requests
+are routed before a renderer retry when the native raw-event queue is empty.
+Every generated substitution is recorded in `generated/native-document/`.
+
+Fifteen CTests include the actual generated host's allocation/token/policy
+regression. `atspi_client` builds a separate OS peer without NexaUI/model
+linkage. `run_accessible_native.py` creates an owned private bus/registry around
+the original task; `run_native.py --accessible-client /path/to/editor_document_client`
+adds native Text/EditableText tasks. It needs the same recorded SDK bytes,
+immutable export, fonts and private producer as the existing task; `--ime`
+additionally selects its native document IME work. No shared desktop bus or
+global system configuration is changed.
+
+Native document clipboard/geometry, real screenreaders/installed IMEs, new
+AX/UIA document tasks, physical/human/performance and normal Aetheri adoption
+remain separate. See the [source-specific report](../../docs/quality/editor-native-document-report.md).

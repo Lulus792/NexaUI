@@ -1,5 +1,14 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor native documents: consumer b2490d5 and SDK9ad027a compose the
+existing model with native Text/EditableText, original history/save/close and
+native IME. Three profiles pass45 owner CTests and216 native captures; full8-MiB
+reads/edits, withheld-input review and stale references are checked. See the
+[source-bound report and remaining adoption gates](editor-native-document-report.md).
+All seven required exact-source CI jobs pass for each code step. This does not complete packet6, packets7–8 or
+the103-ID catalogue; native clipboard/geometry, broader cache/text, AX/UIA,
+real IMEs/screenreaders and physical/human/performance/ordinary adoption remain.
+
 Application-owned document SDK: 0.1.28 source
 `f5090602def620ce5a822c4301d6e4fdfaadf696`,
 [copied document snapshots and guarded atomic model callbacks](text-document-report.md).

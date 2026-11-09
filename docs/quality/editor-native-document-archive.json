@@ -1,0 +1,137 @@
+{
+  "archives": [
+    {
+      "sha256": "b8f11f3b94dc36a35f455e26900bbefc379c8991c58a7cbccc35a7acd64ee40e",
+      "files": 1993,
+      "links": 9,
+      "directories": 1900,
+      "verified": true,
+      "name": "nexaui-editor-native-document31-final-20261109.tar.gz",
+      "size": 31299169,
+      "excluded_special_scope": "Inactive test FIFOs and Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "2cfb608baad9d2fe08ca3caf678d0b584dddd900b396024ab3b0d468cf5c6527",
+      "files": 1241,
+      "links": 0,
+      "directories": 485,
+      "verified": true,
+      "name": "nexaui-editor-document-sdk8-asan-20261109.tar.gz",
+      "size": 36143181,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "173b228a9421f980131cfa900b153dfa751354cd0d8ece2269e57abae0794df7",
+      "files": 2849,
+      "links": 9,
+      "directories": 1670,
+      "verified": true,
+      "name": "nexaui-editor-native-document-progress-20261109.tar.gz",
+      "size": 28298753,
+      "excluded_special_scope": "Inactive test FIFOs and Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "6a2971cc79ca2cbb50da8acbe45dbc32d84c3f12c1d91beb3ab0c10fcc289200",
+      "files": 180,
+      "links": 0,
+      "directories": 156,
+      "verified": true,
+      "name": "nexaui-editor-document-old-builds-20261109.tar.gz",
+      "size": 20051914,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "9471c986f6141d63da1414a06e4edbc44dfe1b37113ee0a40190f6f8c7590179",
+      "files": 257,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-native-document31-evidence-20261109.tar.gz",
+      "size": 2170294,
+      "scope": "Host-side source/replay/collection/archive/check and guarded retirement drivers, refused attempts, fourteen complete successful exact-source CI logs and five reviewed raw/PNG captures. Windows modes are the WSL view, not ACLs. No release assets."
+    }
+  ],
+  "retirements": [
+    {
+      "result": "retired verified inactive Editor23-28 builds and two failed capture roots; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-close-23-release",
+        "editor-close-24-release",
+        "editor-close-25-release",
+        "editor-close-26-release",
+        "editor-close-27-release",
+        "editor-close-28-release",
+        "ed-doc-24-release",
+        "ed-doc-29-large-probe-31"
+      ],
+      "bytes": 204855692,
+      "files": 736,
+      "links": 6,
+      "directories": 720,
+      "fingerprint": "64939a0f7e3e696ac13ef2edf8b9987a8651871d6b34ec87785eb7ff98c2e903",
+      "archive_sha256": "173b228a9421f980131cfa900b153dfa751354cd0d8ece2269e57abae0794df7",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    },
+    {
+      "result": "retired verified inactive SDK7 ASan build; sources and all installed SDK prefixes retained",
+      "roots": [
+        "close-sdk-7-release",
+        "close-sdk-7-shared"
+      ],
+      "bytes": 18571850,
+      "files": 248,
+      "links": 2,
+      "directories": 683,
+      "fingerprint": "0692930fa558a43d1b181d963b8d307a0ea2ba9144db78020f6df61e1194ba07",
+      "archive_sha256": "60c43be34e4c3a238d33ac62719b1c93276a8c87b889884afebcd99b0061fddc",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    },
+    {
+      "result": "retired verified inactive archived old-ime-capture artifacts; sources and all installed SDK prefixes retained",
+      "roots": [
+        "ed-native-ime-14-release"
+      ],
+      "bytes": 42118317,
+      "files": 9,
+      "links": 0,
+      "directories": 5,
+      "fingerprint": "ef1f713af046dda2a9ebd47def92ea2bb49843fad5af0900302eae63f8d5713b",
+      "archive_sha256": "a3adb67d0257ab75132a95fbabb4843a92e9b514629353820d6af635f5265e38",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    },
+    {
+      "result": "retired verified inactive archived Software-lifecycle/Resize builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "software-lifecycle-2-asan",
+        "resize-asan"
+      ],
+      "bytes": 114310156,
+      "files": 180,
+      "links": 0,
+      "directories": 156,
+      "fingerprint": "317cd735a500c82df6266435d8cd46cf1bd81d7adf77b8a9d86f7b48a889899a",
+      "archive_sha256": "6a2971cc79ca2cbb50da8acbe45dbc32d84c3f12c1d91beb3ab0c10fcc289200",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    },
+    {
+      "result": "retired verified inactive SDK8 ASan build; sources and all installed SDK prefixes retained",
+      "roots": [
+        "close-sdk-8-asan"
+      ],
+      "bytes": 129182817,
+      "files": 128,
+      "links": 0,
+      "directories": 344,
+      "fingerprint": "8945612417a13e2289166b7476a532854a5d306a1618cbc06a429e0c19bc063e",
+      "archive_sha256": "2cfb608baad9d2fe08ca3caf678d0b584dddd900b396024ab3b0d468cf5c6527",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    }
+  ],
+  "retirement_label_correction": "The SDK7 Release/shared receipt inherited ASan in its prose. Its checked roots, hashes and deletion targets are close-sdk-7-release and close-sdk-7-shared; no SDK7 ASan target was removed by that receipt.",
+  "scope": "Verified local archives and owned inactive test-artifact retirements. No release upload, source export deletion, installed prefix deletion, global quota/mount/driver changes or Aetheri checkout changes."
+}

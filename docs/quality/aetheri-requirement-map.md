@@ -1,5 +1,17 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/A03/A04/P04/P05/Q02/Q03/Q06/Q08: consumer b2490d5 and SDK9ad027a
+now connect the original Editor to native Text/EditableText. Three installed
+profiles pass45 owner CTests and216 native captures, with full8-MiB reads/edits,
+original Undo/Redo/save/review, retained-reference refusal and native IME.
+The SDK separately passes45 relevant CTests and three installed consumers.
+All93 consumer inputs,21 generated C replays and96 owner/reader objects are
+recorded; two compiled defects are detected. See the
+[native original-Editor report and remaining boundaries](editor-native-document-report.md).
+All seven required exact-source CI jobs pass for each code step. Native clipboard/geometry, broader cache/text,
+AX/UIA, real IMEs/screenreaders, normal Aetheri adoption and physical/human/design/
+performance gates remain open. All103 IDs and remaining packets6–8 persist.
+
 T03/A04/P04/P05/Q02/Q03/Q06/Q08: SDK 0.1.28 source
 `f5090602def620ce5a822c4301d6e4fdfaadf696` adds an application-owned document
 accessibility seam with copied snapshots up to 8 MiB and guarded atomic

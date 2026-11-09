@@ -1,0 +1,279 @@
+{
+  "source_revision": "b2490d58d5813d855c003d0f6f34f74da505ab1e",
+  "sdk_source_revision": "9ad027abb9d10b8c1c715ce9953601313603a7da",
+  "result": "local matrix and both exact-source CI runs passed",
+  "owner_ctests": 45,
+  "sdk_ctests": 45,
+  "installed_sdk_consumers": 3,
+  "owner_and_reader_objects": 96,
+  "native_captures": 216,
+  "generated_c_replays": 21,
+  "frozen_inputs": 93,
+  "negative_commands": [
+    {
+      "mutant": "missing-ui-reserve",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/repo/examples/36_aetheri_editor_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DEDITOR_BUILD_IME_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_IME=ON",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-31/original",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-8-release-prefix"
+      ],
+      "exit": 0,
+      "detected": false,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/configure.log",
+      "before": "        nx_result reserved=editor_document_reserve(a,request);if(reserved!=NX_OK)return reserved;",
+      "after": "        (void)editor_document_reserve;"
+    },
+    {
+      "mutant": "missing-ui-reserve",
+      "phase": "compile",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/build",
+        "--target",
+        "editor_native_document_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "detected": false,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/compile.log",
+      "before": "        nx_result reserved=editor_document_reserve(a,request);if(reserved!=NX_OK)return reserved;",
+      "after": "        (void)editor_document_reserve;"
+    },
+    {
+      "mutant": "missing-ui-reserve",
+      "phase": "test",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/build/editor_native_document_test"
+      ],
+      "exit": 1,
+      "detected": true,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-ui-reserve/test.log",
+      "before": "        nx_result reserved=editor_document_reserve(a,request);if(reserved!=NX_OK)return reserved;",
+      "after": "        (void)editor_document_reserve;"
+    },
+    {
+      "mutant": "missing-policy-epoch",
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/repo/examples/36_aetheri_editor_consumer",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DEDITOR_BUILD_IME_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_IME=ON",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-31/original",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-8-release-prefix"
+      ],
+      "exit": 0,
+      "detected": false,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/configure.log",
+      "before": "!editor_document_same(p->token,token) || p->operations!=operations ||",
+      "after": "!editor_document_same(p->token,token) ||"
+    },
+    {
+      "mutant": "missing-policy-epoch",
+      "phase": "compile",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/build",
+        "--target",
+        "editor_native_document_test",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "detected": false,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/compile.log",
+      "before": "!editor_document_same(p->token,token) || p->operations!=operations ||",
+      "after": "!editor_document_same(p->token,token) ||"
+    },
+    {
+      "mutant": "missing-policy-epoch",
+      "phase": "test",
+      "command": [
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/build/editor_native_document_test"
+      ],
+      "exit": 1,
+      "detected": true,
+      "log": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-31-negative/missing-policy-epoch/test.log",
+      "before": "!editor_document_same(p->token,token) || p->operations!=operations ||",
+      "after": "!editor_document_same(p->token,token) ||"
+    }
+  ],
+  "earlier_option_checks": [
+    {
+      "phase": "missing-accessible",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/repo/examples/36_aetheri_editor_consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/original",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-options-missing-accessible",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-7-release-prefix",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON"
+      ],
+      "exit": 1,
+      "log": "editor-document-29-options-missing-accessible.log",
+      "expected_refusal": true
+    },
+    {
+      "phase": "missing-ime-model",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/repo/examples/36_aetheri_editor_consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/original",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-options-missing-ime-model",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-7-release-prefix",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON"
+      ],
+      "exit": 1,
+      "log": "editor-document-29-options-missing-ime-model.log",
+      "expected_refusal": true
+    },
+    {
+      "phase": "old-sdk",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/repo/examples/36_aetheri_editor_consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/original",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-options-old-sdk",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-2-release-prefix",
+        "-DEDITOR_BUILD_IME_MODEL=ON",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON"
+      ],
+      "exit": 1,
+      "log": "editor-document-29-options-old-sdk.log",
+      "expected_refusal": true
+    },
+    {
+      "phase": "default-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/repo/examples/36_aetheri_editor_consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/original",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-default",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-2-release-prefix"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-default-configure.log"
+    },
+    {
+      "phase": "default-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-default",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-default-build.log"
+    },
+    {
+      "phase": "default-test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-default",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-default-test.log"
+    },
+    {
+      "phase": "without-native-ime-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/repo/examples/36_aetheri_editor_consumer",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DAETHERI_SOURCE_DIR=/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-29/original",
+        "-B",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-without-native-ime",
+        "-DCMAKE_PREFIX_PATH=/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-7-release-prefix",
+        "-DEDITOR_BUILD_IME_MODEL=ON",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-without-native-ime-configure.log"
+    },
+    {
+      "phase": "without-native-ime-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-without-native-ime",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-without-native-ime-build.log"
+    },
+    {
+      "phase": "without-native-ime-test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-29-without-native-ime",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "log": "editor-document-29-options-without-native-ime-test.log"
+    }
+  ],
+  "scope": "Default SDK0.1.27 and native-IME-off SDK7 checks retain their original bundle29 attribution. Final three-profile native matrix uses owner31 and SDK8. Full103-ID/eight-packet goal, human/physical and ordinary Aetheri adoption remain open."
+}
