@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.24)
+project(OriginalEditorForeignStreamGate LANGUAGES C)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "This private foreign-stream fixture targets Linux")
+endif()
+find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
+add_library(editor_foreign_stream_gate SHARED gate.c)
+target_link_libraries(editor_foreign_stream_gate PRIVATE ${CMAKE_DL_LIBS})
+add_executable(editor_foreign_stream_writer writer.c)
+foreach(target editor_foreign_stream_gate editor_foreign_stream_writer)
+    set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror)
+endforeach()
+set(preload_first)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_FLAGS MATCHES "sanitize=[^ ]*address")
+    execute_process(COMMAND "${CMAKE_C_COMPILER}" -print-file-name=libasan.so
+        OUTPUT_VARIABLE runtime OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+    if(NOT EXISTS "${runtime}")
+        message(FATAL_ERROR "The instrumented writer needs its actual GCC ASan runtime")
+    endif()
+    set(preload_first --preload-first "${runtime}")
+endif()
+enable_testing()
+add_test(NAME editor.foreign_stream_gate COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/check_gate.py" "$<TARGET_FILE:editor_foreign_stream_gate>"
+    "$<TARGET_FILE:editor_foreign_stream_writer>" ${preload_first})
+set_tests_properties(editor.foreign_stream_gate PROPERTIES TIMEOUT 20
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1;UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1")

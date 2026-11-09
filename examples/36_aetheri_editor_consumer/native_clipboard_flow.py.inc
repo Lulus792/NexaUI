@@ -4,6 +4,11 @@
         import importlib.util
         clipboard_spec=importlib.util.spec_from_file_location('editor_foreign_clipboard',_candidate_clipboard_helper)
         clipboard_module=importlib.util.module_from_spec(clipboard_spec);clipboard_spec.loader.exec_module(clipboard_module)
+        stream_task_type=None
+        if _candidate_clipboard_stream_gate:
+            stream_spec=importlib.util.spec_from_file_location('editor_foreign_stream',_candidate_stream_helper)
+            stream_module=importlib.util.module_from_spec(stream_spec);stream_spec.loader.exec_module(stream_module)
+            stream_task_type=stream_module.task_type(clipboard_module.ClipboardTask)
         clipboard_result=dict(result='running',checks=[])
         foreign=clipboard_module.ClipboardTask(root,_candidate_clipboard_tools,env,
             None,None,None,None,None,wait,None,clipboard_result,None)
@@ -32,9 +37,12 @@
                 wait(rebound,'clipboard serial key IME context actually rebound')
                 ime_expect(value,cursor,after=cut)
                 clipboard_result.setdefault('ime_serial_barriers',[]).append(dict(client_commits=commits,provider_serial=int(re.findall(r'^IME commit enabled=1 serial=(\d+) ',log('server')[cut:],re.M)[-1])))
+        clipboard_pending_sequence=0
         def clipboard_pending(phase,expected):
+            nonlocal clipboard_pending_sequence
             path=root/'clipboard-pending-expected.txt';path.write_bytes(expected.encode())
-            stream=(root/('clipboard-native-'+str(len(clipboard_result['checks']))+'.log')).open('xb');streams.append(stream)
+            clipboard_pending_sequence+=1
+            stream=(root/('clipboard-native-'+str(clipboard_pending_sequence)+'.log')).open('xb');streams.append(stream)
             peer=subprocess.Popen([str(_candidate_accessible_client),str(app.pid),phase,str(path)],env=env,
                 stdout=subprocess.PIPE,stderr=stream,text=True,bufsize=1)
             # A finite request is allowed to settle during an input/IME barrier.
@@ -47,9 +55,10 @@
             out,_=peer.communicate(timeout=14)
             assert peer.returncode==0 and 'Original Editor independent AT-SPI phase passed.' in out
             clipboard_peers.remove(peer)
-        clipboard_close_state=None;clipboard_close_tasks=[]
+        clipboard_close_state=None;clipboard_close_tasks=[];clipboard_stream_tasks=[]
         def clipboard_cleanup():
             for task in clipboard_close_tasks:task.close()
+            for task in clipboard_stream_tasks:task.close()
             foreign.close()
             for peer in clipboard_peers:
                 if peer.poll() is None:
@@ -64,20 +73,31 @@
                 # the original F6 route before requesting a document IME context.
                 key(64);ime_expect('retainedxz',10)
             clipboard_result['close_clipboard']={}
-            task=clipboard_module.ClipboardTask(root,_candidate_clipboard_tools,env,
-                None,None,None,None,None,wait,None,clipboard_result['close_clipboard'],None)
+            task=(stream_task_type or clipboard_module.ClipboardTask)(root,_candidate_clipboard_tools,env,
+                None,None,None,None,None,wait,None,clipboard_result['close_clipboard'],None,
+                **(dict(gate=_candidate_clipboard_stream_gate) if stream_task_type else {}))
             clipboard_close_tasks.append(task)
-            source=task.offer(b'close pending');clipboard_serial_key('retainedxz',10);source.send_signal(signal.SIGSTOP)
-            wait(lambda:re.search(r'^State:\s+T',Path(f'/proc/{source.pid}/status').read_text(),re.M) is not None,'close clipboard provider actually stopped')
+            source=task.offer(b'close pending');clipboard_serial_key('retainedxz',10)
+            if stream_task_type:task.arm(source)
+            else:
+                source.send_signal(signal.SIGSTOP)
+                wait(lambda:re.search(r'^State:\s+T',Path(f'/proc/{source.pid}/status').read_text(),re.M) is not None,'close clipboard provider actually stopped')
             cut=len(log());peer=clipboard_pending('clipboard-paste-cancelled','retainedxz')
             wait(lambda:'.receive(' in log()[cut:],'native clipboard read outstanding before real compositor close')
+            if stream_task_type:
+                first=task.message(source,1);assert first['written']==3
+                wait(lambda:task.drained(source),'original owner consumed partial close clipboard bytes')
+                clipboard_result['close_clipboard']['before_close']=task.held(source)
             return task,source,peer
         def clipboard_close_settled(value):
             clipboard_finish(value[2])
-            assert re.search(r'^State:\s+T',Path(f'/proc/{value[1].pid}/status').read_text(),re.M)
+            if stream_task_type:value[0].held(value[1])
+            else:assert re.search(r'^State:\s+T',Path(f'/proc/{value[1].pid}/status').read_text(),re.M)
         def clipboard_close_end(value):
-            assert app.returncode==0 and re.search(r'^State:\s+T',Path(f'/proc/{value[1].pid}/status').read_text(),re.M)
-            clipboard_result['checks'].append('Actual compositor close rejects the pending native request; original Save and exit0 complete while the foreign provider remains stopped')
+            assert app.returncode==0
+            if stream_task_type:clipboard_result['close_clipboard']['after_exit']=value[0].held(value[1])
+            else:assert re.search(r'^State:\s+T',Path(f'/proc/{value[1].pid}/status').read_text(),re.M)
+            clipboard_result['checks'].append('Actual compositor close rejects the pending native request; original Save and exit0 complete while the foreign provider '+('holds its partial-byte writer pipe open' if stream_task_type else 'remains stopped'))
             value[0].close()
             # The unchanged producer assigns every new toplevel round-robin.
             # Foreign temporary clipboard windows also consume those slots.
@@ -99,6 +119,7 @@
             clipboard_result['result']='passed'
             (root/'clipboard-result.json').write_text(json.dumps(clipboard_result,indent=2)+'\n')
         try:
+            # Joined partial stream task boundary.
             key(49,ctrl=True);wait(lambda:state(docs=1,cursor=0),'fresh original clipboard document')
             clipboard_seed();clipboard_serial_key(seed,0)
             if _candidate_accessible_ime:ime_preedit(0,7)

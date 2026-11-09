@@ -248,3 +248,31 @@ keyboard/native token overlap and original native-close/Save teardown. Original
 workflows, assertions, deadlines and the retained-close CPU/frame guard remain
 in the run. `clipboard-result.json` records the actual outcome; requesting the
 option alone is not evidence of successful native or ordinary Aetheri adoption.
+
+### Joined partial-byte and EOF task
+
+`foreign_stream_gate` is a standalone Linux test utility, with no NexaUI/model
+linkage or install target. Build it with a compiler matching the foreign
+provider's libc ABI, then run its CTest. The recorded `wl-copy` runtime uses
+musl; a system-glibc shared object is not an interchangeable preload.
+
+```sh
+cmake -S examples/36_aetheri_editor_consumer/foreign_stream_gate \
+  -B /path/to/private-stream-build -DCMAKE_BUILD_TYPE=Release
+cmake --build /path/to/private-stream-build
+ctest --test-dir /path/to/private-stream-build --output-on-failure
+```
+
+Add `--clipboard-stream-gate /path/to/libeditor_foreign_stream_gate.so` to the
+existing `--clipboard-tools` native task. The runner injects it only into
+independent foreground `wl-copy` children. Its exact synthetic-payload/FIFO
+match schedules real writes and retains the original stream until explicit
+EOF; it changes neither the app nor the compositor. Pipe fill queries prove
+that the original reader consumed the bytes without creating another reader.
+Forced original pointer-event frames must preserve text/revision and keep the
+native request pending for both an incomplete UTF-8 prefix and all valid bytes
+without EOF. The task also checks truncated EOF, invalidation after consumed
+bytes, one original Undo/Redo, and Save/exit while the writer remains open.
+Earlier ordinary-transfer tasks, captures, style assertions, budgets and
+deadlines remain in the run. This private transfer adapter is not an SDK or
+application runtime dependency and must not be preloaded into other processes.
