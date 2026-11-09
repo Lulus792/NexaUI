@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.28 LANGUAGES C)
+project(NexaUI VERSION 0.1.29 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -768,6 +768,17 @@ if(NEXAUI_BUILD_TESTS)
             set_target_properties(nexaui_wayland_paste_validation_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
             add_test(NAME nexaui_wayland_paste_validation COMMAND nexaui_wayland_paste_validation_tests)
             set_tests_properties(nexaui_wayland_paste_validation PROPERTIES TIMEOUT 15)
+            add_executable(nexaui_wayland_document_clipboard_tests tests/test_wayland_document_clipboard.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_document_clipboard_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_document_clipboard_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            target_link_libraries(nexaui_wayland_document_clipboard_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT)
+            set_target_properties(nexaui_wayland_document_clipboard_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            add_test(NAME nexaui_wayland_document_clipboard COMMAND nexaui_wayland_document_clipboard_tests)
+            set_tests_properties(nexaui_wayland_document_clipboard PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_numeric_clipboard COMMAND nexaui_wayland_async_clipboard_tests --numeric)
             set_tests_properties(nexaui_wayland_numeric_clipboard PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_clipboard_focus_loss COMMAND nexaui_wayland_async_clipboard_tests --focus-loss)

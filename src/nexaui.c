@@ -2507,8 +2507,7 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
     if (node->role != NX_ROLE_TEXT_FIELD || !node->text_value.identity ||
         (ranged!=2 && ranged!=3 && !(node->actions & NX_ACTION_SET_VALUE))) return NX_ERROR_UNSUPPORTED;
     if (node->text_value.document_operations &&
-        (ranged>2 || !(node->text_value.document_operations &
-            (ranged==2?NX_TEXT_DOCUMENT_SELECT:NX_TEXT_DOCUMENT_REPLACE)))) return NX_ERROR_UNSUPPORTED;
+        !(node->text_value.document_operations & nx_text_document_capability(ranged))) return NX_ERROR_UNSUPPORTED;
     if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))
         return NX_ERROR_STATE;
@@ -2850,7 +2849,10 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
 
 static nx_result nx_text_document_state_valid(const nx_text_document_state *state) {
     if (!state || !state->identity || !state->revision ||
-        (state->operations & ~(NX_TEXT_DOCUMENT_REPLACE | NX_TEXT_DOCUMENT_SELECT)) ||
+        (state->operations & ~(NX_TEXT_DOCUMENT_REPLACE | NX_TEXT_DOCUMENT_SELECT |
+            NX_TEXT_DOCUMENT_COPY | NX_TEXT_DOCUMENT_CUT | NX_TEXT_DOCUMENT_PASTE)) ||
+        ((state->operations & (NX_TEXT_DOCUMENT_CUT | NX_TEXT_DOCUMENT_PASTE)) &&
+            !(state->operations & NX_TEXT_DOCUMENT_REPLACE)) ||
         (state->multiline != 0 && state->multiline != 1)) return NX_ERROR_ARGUMENT;
     if (state->value.length > NX_TEXT_DOCUMENT_MAX_BYTES) return NX_ERROR_LIMIT;
     if (!nx_valid_span(state->value) || state->anchor_byte > state->value.length ||
@@ -2869,34 +2871,135 @@ static int nx_text_document_request_valid(nx_context *ctx, nx_semantic_record *n
                                             nx_text_value_request *request) {
     const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
     return request->id == node->id && request->source_frame != UINT64_MAX &&
-        request->source_frame + 1u == ctx->frame_serial &&
+        (request->source_frame + 1u == ctx->frame_serial
+#if defined(__linux__)
+            /* Taking a completed read consumes its token. Its current frame
+               remains eligible; all target/ancestry/native guards below still
+               apply, and end_frame never retains a consumed token. */
+            || (request->ranged == 5 && (request->async_token ||
+                request->async_seen_frame == ctx->frame_serial))
+#endif
+        ) &&
         request->parent_id == node->parent_id &&
         nx_ancestry_live(ctx, node, request->ancestors, request->ancestor_count) &&
         nx_text_request_current(ctx, request, &node->text_value) &&
-        request->ranged <= 2 && !nx_text_value_disabled(ctx, node) &&
+        !nx_text_value_disabled(ctx, node) &&
         !(node->state & NX_SEM_PROTECTED) && region &&
         !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
         (!ctx->current_overlay_id || region->overlay_id == ctx->current_overlay_id) &&
         (node->text_value.document_operations &
-            (request->ranged == 2 ? NX_TEXT_DOCUMENT_SELECT : NX_TEXT_DOCUMENT_REPLACE)) &&
-        (request->ranged == 2 ||
+            nx_text_document_capability(request->ranged)) &&
+        (request->ranged == 2 || request->ranged == 3 ||
             (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE)));
 }
 
-nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widget,
+static int nx_text_document_recheck(nx_context *ctx,size_t index,uint64_t frame,
+                                    nx_text_value_request *request) {
+    return ctx->state==1u && ctx->frame_serial==frame && ctx->semantics.count==index+1u &&
+        nx_text_document_request_valid(ctx,&ctx->semantics.nodes[index],request);
+}
+
+/* No application pointer crosses a frame. Only the existing owned native-read
+   token is retained; every subsequent registration supplies fresh callbacks. */
+static nx_result nx_text_document_transfer(nx_context *ctx,size_t index,
+    nx_text_value_request *request,const nx_text_document_clipboard *options,
+    char **owned,size_t *length,int *ready) {
+    *owned=NULL;*length=0;*ready=0;
+    if(!options)return NX_ERROR_UNSUPPORTED;
+    nx_text_clipboard clipboard=options->clipboard;
+    uint64_t frame=ctx->frame_serial;
+    if(request->ranged==3 || request->ranged==4) {
+        if(!clipboard.write)return NX_ERROR_UNSUPPORTED;
+        size_t count=request->end-request->start;
+        char *copy=malloc(count+1u);if(!copy)return NX_ERROR_MEMORY;
+        nx_semantic_record *node=&ctx->semantics.nodes[index];
+        if(count)memcpy(copy,ctx->semantics.text+node->value_offset+request->start,count);
+        copy[count]=0;nx_result result=clipboard.write(clipboard.user,copy,count);free(copy);
+        if(!nx_text_document_recheck(ctx,index,frame,request))return NX_ERROR_STATE;
+        if(result==NX_OK)*ready=1;
+        return result;
+    }
+    if(request->ranged!=5 || !clipboard.read)return NX_ERROR_UNSUPPORTED;
+    int native_read=clipboard.read==nx_window_clipboard_read_adapter;
+    nx_result result=NX_OK;size_t actual=0;char *copy=NULL;
+#if defined(__linux__)
+    if(request->async_token && (!native_read || !clipboard.user || !request->guard.defer_paste))return NX_ERROR_STATE;
+    if(native_read && clipboard.user && nx_linux_window_clipboard_async_supported((nx_window *)clipboard.user)) {
+        if(!request->guard.defer_paste)return NX_ERROR_UNSUPPORTED;
+        if(!request->async_token) {
+            uint64_t token=0;uint32_t remaining=0;
+            if(!request->guard.defer_paste(request->guard.user,&remaining) || !remaining ||
+               !nx_text_document_recheck(ctx,index,frame,request))return NX_ERROR_STATE;
+            result=nx_linux_window_clipboard_async_start((nx_window *)clipboard.user,
+                NX_TEXT_VALUE_MAX_BYTES,remaining,0,&token);
+            if(result!=NX_OK)return result;
+            if(!nx_text_document_recheck(ctx,index,frame,request)) {
+                (void)nx_linux_window_clipboard_async_cancel((nx_window *)clipboard.user,token);return NX_ERROR_STATE;
+            }
+            request->async_token=token;request->async_seen_frame=frame;
+            return NX_OK;
+        }
+        request->async_seen_frame=frame;
+        if(!nx_linux_window_clipboard_async_current((nx_window *)clipboard.user,request->async_token))return NX_ERROR_STATE;
+        int available=0;
+        result=nx_linux_window_clipboard_async_take((nx_window *)clipboard.user,request->async_token,&copy,&actual,&available);
+        if(result!=NX_OK)return result;
+        if(!available)return NX_OK;
+        request->async_token=0;
+    } else
+#endif
+    {
+        size_t capacity=NX_TEXT_VALUE_MAX_BYTES;
+        if(!native_read) {
+            capacity=0;result=clipboard.read(clipboard.user,NULL,0,&capacity);
+            if(result!=NX_OK)return result;
+            if(capacity>NX_TEXT_VALUE_MAX_BYTES)return NX_ERROR_LIMIT;
+            if(!nx_text_document_recheck(ctx,index,frame,request))return NX_ERROR_STATE;
+        }
+        copy=malloc(capacity+1u);if(!copy)return NX_ERROR_MEMORY;
+        result=clipboard.read(clipboard.user,copy,capacity+1u,&actual);
+        if(result!=NX_OK || actual>capacity || (!native_read && actual!=capacity)) {
+            free(copy);return result!=NX_OK?result:NX_ERROR_ARGUMENT;
+        }
+    }
+    if(!nx_text_document_recheck(ctx,index,frame,request) || actual>NX_TEXT_VALUE_MAX_BYTES ||
+       (!copy && actual) || (actual && memchr(copy,0,actual)) ||
+       nx_utf8_validate(copy?copy:"",actual,NULL)!=NX_OK) {free(copy);return NX_ERROR_STATE;}
+    if(!request->target.multiline) {
+        size_t written=0;
+        for(size_t i=0;i<actual;++i) {
+            if(copy[i]=='\r') {if(i+1u<actual && copy[i+1u]=='\n')++i;copy[written++]=' ';}
+            else if(copy[i]=='\n')copy[written++]=' ';else copy[written++]=copy[i];
+        }
+        actual=written;
+    }
+    nx_semantic_record *node=&ctx->semantics.nodes[index];
+    if(actual>NX_TEXT_DOCUMENT_MAX_BYTES-node->value_length) {free(copy);return NX_ERROR_LIMIT;}
+    if(options->validate) {
+        nx_utf8_span before={node->value_length?ctx->semantics.text+node->value_offset:"",node->value_length};
+        int admitted=options->validate(before,request->start,request->start,(nx_utf8_span){copy,actual},options->validate_user);
+        if(!admitted || !nx_text_document_recheck(ctx,index,frame,request)) {free(copy);return NX_ERROR_STATE;}
+    }
+    *owned=copy;*length=actual;*ready=1;return NX_OK;
+}
+
+static nx_result nx_text_document_register_private(nx_context *ctx, const nx_widget_desc *widget,
     const nx_text_document_state *state, nx_text_document_apply apply, void *user,
-    nx_text_document_result *out_result) {
+    const nx_text_document_clipboard *clipboard,nx_text_document_result *out_result) {
     if (!out_result) return NX_ERROR_ARGUMENT;
     *out_result = (nx_text_document_result){0};
     nx_result checked = nx_text_document_state_valid(state);
     if (checked != NX_OK) return checked;
+    if(((state->operations&(NX_TEXT_DOCUMENT_COPY|NX_TEXT_DOCUMENT_CUT)) && (!clipboard || !clipboard->clipboard.write)) ||
+       ((state->operations&NX_TEXT_DOCUMENT_PASTE) && (!clipboard || !clipboard->clipboard.read)))return NX_ERROR_ARGUMENT;
     if (!ctx || !widget || widget->semantic.role != NX_ROLE_TEXT_FIELD ||
         widget->semantic.value.length || (widget->semantic.state & NX_SEM_PROTECTED) ||
         ((widget->semantic.state & NX_SEM_READONLY) != 0) ==
             ((state->operations & NX_TEXT_DOCUMENT_REPLACE) != 0) ||
         ((widget->semantic.actions & NX_ACTION_SET_VALUE) != 0) !=
             ((state->operations & NX_TEXT_DOCUMENT_REPLACE) != 0) ||
-        (state->operations && (!apply || !(widget->flags & NX_WIDGET_INTERACTIVE))))
+        ((state->operations&~NX_TEXT_DOCUMENT_COPY) && !apply) ||
+        (state->operations && !(widget->flags & NX_WIDGET_INTERACTIVE)))
         return NX_ERROR_ARGUMENT;
     nx_widget_desc copied = *widget;
     copied.semantic.value = state->value;
@@ -2911,7 +3014,7 @@ nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widge
     for (size_t i = 0; i < ctx->text_value_count; ++i) {
         nx_text_value_request *request = &ctx->text_values[i];
         if (request->id != node->id) continue;
-        if (!apply || !nx_text_document_request_valid(ctx, node, request)) {
+        if ((request->ranged!=3 && !apply) || !nx_text_document_request_valid(ctx, node, request)) {
             nx_text_value_dispose(ctx, request, 0); return NX_OK;
         }
         size_t begin = request->ranged ? request->start : 0;
@@ -2919,15 +3022,30 @@ nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widge
         if (begin > end || end > state->value.length) {
             nx_text_value_dispose(ctx, request, 0); return NX_OK;
         }
+        char *owned=NULL;size_t insertion_length=request->length;
+        const char *insertion=request->bytes;
+        if(request->ranged>=3) {
+            int ready=0;
+            result=nx_text_document_transfer(ctx,index,request,clipboard,&owned,&insertion_length,&ready);
+            node=&ctx->semantics.nodes[index];
+            if(result!=NX_OK) {
+                free(owned);out_result->edit_result=result;nx_text_value_dispose(ctx,request,0);return NX_OK;
+            }
+            if(!ready)return NX_OK;
+            if(request->ranged==3 || (request->ranged==4 && begin==end)) {
+                free(owned);nx_text_value_dispose(ctx,request,1);return NX_OK;
+            }
+            insertion=owned?owned:"";
+        }
         int selection = request->ranged == 2;
         size_t new_length = state->value.length;
         if (!selection) {
             new_length -= end - begin;
-            if (request->length > NX_TEXT_DOCUMENT_MAX_BYTES - new_length) {
+            if (insertion_length > NX_TEXT_DOCUMENT_MAX_BYTES - new_length) {
                 out_result->edit_result = NX_ERROR_LIMIT;
-                nx_text_value_dispose(ctx, request, 0); return NX_OK;
+                free(owned);nx_text_value_dispose(ctx, request, 0); return NX_OK;
             }
-            new_length += request->length;
+            new_length += insertion_length;
         }
         /* The value is the last copied span. Reuse its old allocation rather
            than retaining another full-document copy for an accepted edit. */
@@ -2936,24 +3054,26 @@ nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widge
         uint64_t frame = ctx->frame_serial;
         result = extra ? nx_semantic_reserve_text(ctx, extra) : NX_OK;
         if (ctx->state != 1u || ctx->frame_serial != frame || ctx->semantics.count != index + 1u ||
-            ctx->semantics.nodes[index].id != widget->semantic.id) return NX_ERROR_STATE;
+            ctx->semantics.nodes[index].id != widget->semantic.id) {free(owned);return NX_ERROR_STATE;}
         node = &ctx->semantics.nodes[index];
         if (result != NX_OK) {
             if (widget->flags & NX_WIDGET_INTERACTIVE) nx_region_rollback_last(ctx, node->id);
             nx_semantics_rollback_last(ctx, node->id, old_text_count);
+            free(owned);
+            if(request->ranged>=3)nx_text_value_dispose(ctx,request,0);
             return result;
         }
         if (!nx_text_document_request_valid(ctx, node, request)) {
-            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+            free(owned);nx_text_value_dispose(ctx, request, 0); return NX_OK;
         }
         nx_text_document_request operation = {
             selection ? NX_TEXT_DOCUMENT_SET_SELECTION : NX_TEXT_DOCUMENT_REPLACE_RANGE,
             request->target.identity, request->target.revision, begin, end,
-            {request->bytes, request->length}};
+            {insertion, insertion_length}};
         nx_text_document_state next = {0};
         out_result->edit_result = apply(user, &operation, &next);
         if (out_result->edit_result != NX_OK) {
-            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+            free(owned);nx_text_value_dispose(ctx, request, 0); return NX_OK;
         }
         const char *before = node->value_length ? ctx->semantics.text + node->value_offset : "";
         int valid = nx_text_document_state_valid(&next) == NX_OK &&
@@ -2965,12 +3085,12 @@ nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widge
                 (!new_length || memcmp(next.value.data, before, new_length) == 0);
         } else if (valid) {
             valid = (!begin || memcmp(next.value.data, before, begin) == 0) &&
-                (!request->length || memcmp(next.value.data + begin, request->bytes, request->length) == 0) &&
-                (end == state->value.length || memcmp(next.value.data + begin + request->length,
+                (!insertion_length || memcmp(next.value.data + begin, insertion, insertion_length) == 0) &&
+                (end == state->value.length || memcmp(next.value.data + begin + insertion_length,
                     before + end, state->value.length - end) == 0);
         }
         if (!valid) {
-            nx_text_value_dispose(ctx, request, 0); return NX_ERROR_STATE;
+            free(owned);nx_text_value_dispose(ctx, request, 0); return NX_ERROR_STATE;
         }
         size_t offset = node->value_length ? node->value_offset : ctx->semantics.text_count;
         if (new_length) {
@@ -2983,9 +3103,21 @@ nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widge
         node->text_value.revision = next.revision;
         node->text_selection = (nx_text_selection_snapshot){next.anchor_byte, next.cursor_byte, 1};
         out_result->applied = 1;
+        free(owned);
         nx_text_value_dispose(ctx, request, 1); return NX_OK;
     }
     return NX_OK;
+}
+
+nx_result nx_text_document_register(nx_context *ctx,const nx_widget_desc *widget,
+    const nx_text_document_state *state,nx_text_document_apply apply,void *user,
+    nx_text_document_result *out_result) {
+    return nx_text_document_register_private(ctx,widget,state,apply,user,NULL,out_result);
+}
+nx_result nx_text_document_register_with_clipboard(nx_context *ctx,const nx_widget_desc *widget,
+    const nx_text_document_state *state,nx_text_document_apply apply,void *user,
+    const nx_text_document_clipboard *clipboard,nx_text_document_result *out_result) {
+    return nx_text_document_register_private(ctx,widget,state,apply,user,clipboard,out_result);
 }
 
 nx_result nx_semantics_find(const nx_context *ctx, uint64_t id,

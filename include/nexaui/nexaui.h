@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 28
+#define NX_VERSION_PATCH 29
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -892,8 +892,14 @@ typedef struct nx_widget_desc {
 #define NX_TEXT_DOCUMENT_MAX_BYTES (8u * 1024u * 1024u)
 #define NX_TEXT_DOCUMENT_REPLACE 1u
 #define NX_TEXT_DOCUMENT_SELECT  2u
+#define NX_TEXT_DOCUMENT_COPY    4u
+#define NX_TEXT_DOCUMENT_CUT     8u
+#define NX_TEXT_DOCUMENT_PASTE  16u
 typedef struct nx_text_document_state {
     nx_utf8_span value;
+    /* Complete logical input token. Advance revision for text, selection or
+       policy changes, including clipboard/validator reconfiguration and any
+       disable/re-enable roundtrip. Do not reuse a retired revision. */
     uint64_t identity, revision;
     size_t anchor_byte, cursor_byte;
     uint32_t operations;
@@ -1689,6 +1695,16 @@ typedef struct nx_text_clipboard {
     nx_result (*write)(void *user, const char *bytes, size_t length);
 } nx_text_clipboard;
 
+/* Optional native clipboard operations for an application-owned document.
+   Callbacks and user pointers are borrowed only during registration. The paste
+   validator sees the complete current snapshot and insertion before the atomic
+   model callback; NULL accepts any valid bounded insertion. */
+typedef struct nx_text_document_clipboard {
+    nx_text_clipboard clipboard;
+    nx_text_paste_validate_fn validate;
+    void *validate_user;
+} nx_text_document_clipboard;
+
 /* Fill callbacks that forward to a native window clipboard. The window must
    outlive widget calls and stay on its creation thread. */
 NX_API nx_result nx_text_clipboard_for_window(nx_window *window,
@@ -1993,6 +2009,23 @@ NX_API nx_result nx_widget_register(nx_context *context,
 NX_API nx_result nx_text_document_register(nx_context *context,
     const nx_widget_desc *widget, const nx_text_document_state *state,
     nx_text_document_apply apply, void *user, nx_text_document_result *out_result);
+/* Opt-in native COPY/CUT/PASTE capabilities, in addition to replace/select.
+   COPY/CUT require write; PASTE requires read. CUT/PASTE also require REPLACE.
+   Copy does not call apply or set applied. Cut writes the copied range before
+   one atomic deletion; a later rejection preserves the document, but cannot
+   revoke bytes already transferred. Paste uses the same bounded native read,
+   single-line newline normalization and owner-thread validation as text fields.
+   Native Wayland paste can remain pending across frames; resubmit the same
+   document with the same identity/revision/policy until completion. Changes,
+   omission, revoked native leases, timeout or context destruction cancel it.
+   A native clipboard window must outlive pending work and the context.
+   No callback, model pointer or clipboard user pointer is stored in snapshots.
+   Clipboard callbacks must not destroy/reenter this context. A model callback
+   must still revalidate the complete original input token before mutation. */
+NX_API nx_result nx_text_document_register_with_clipboard(nx_context *context,
+    const nx_widget_desc *widget, const nx_text_document_state *state,
+    nx_text_document_apply apply, void *user,
+    const nx_text_document_clipboard *clipboard, nx_text_document_result *out_result);
 /* Set logical keyboard focus to a registered, enabled focusable region in
    the current or previous frame. Tab/Shift+Tab traverse registration order. */
 NX_API nx_result nx_focus_set(nx_context *context, uint64_t id);

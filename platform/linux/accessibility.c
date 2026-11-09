@@ -209,8 +209,9 @@ static int nx_ax_selected(const nx_ax_node *n) {
     return n && (n->state&(n->role==NX_ROLE_RADIO?NX_SEM_CHECKED:NX_SEM_SELECTED));
 }
 static int nx_ax_editable(const nx_ax_node *n) {
-    return n && n->text_ready && !(n->state&(NX_SEM_READONLY|NX_SEM_PROTECTED)) &&
-        (n->actions&NX_ACTION_SET_VALUE);
+    return n && n->text_ready && !(n->state&NX_SEM_PROTECTED) &&
+        ((!(n->state&NX_SEM_READONLY) && (n->actions&NX_ACTION_SET_VALUE)) ||
+         (n->text_target.document_operations&NX_TEXT_DOCUMENT_COPY));
 }
 static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
 static int text_target_equal(nx_text_value_target a,nx_text_value_target b) {
@@ -810,8 +811,8 @@ static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ra
        (n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) ||
        (!selection && ((n->state&NX_SEM_READONLY) || !(n->actions&NX_ACTION_SET_VALUE))))return 0;
     if(n->text_target.document_operations &&
-       (clipboard || !(n->text_target.document_operations &
-            (selection?NX_TEXT_DOCUMENT_SELECT:NX_TEXT_DOCUMENT_REPLACE))))return 0;
+       !(n->text_target.document_operations & nx_text_document_capability(
+            clipboard?clipboard+2:selection?2:ranged)))return 0;
     if(length>NX_TEXT_VALUE_MAX_BYTES || nx_utf8_validate(value,length,NULL)!=NX_OK)return 0;
     size_t bytes=sizeof(nx_ax_text_request)+length+1u;
     if(!queue_space(b,bytes,0))return 0;

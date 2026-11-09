@@ -31,6 +31,16 @@ typedef struct nx_text_value_target {
     uint32_t document_operations; /* Zero for built-ins; domain + app policy. */
 } nx_text_value_target;
 #define NX_TEXT_DOCUMENT_BOUND (UINT32_C(1) << 31)
+static inline uint32_t nx_text_document_capability(int ranged) {
+    switch(ranged) {
+    case 0:case 1:return NX_TEXT_DOCUMENT_REPLACE;
+    case 2:return NX_TEXT_DOCUMENT_SELECT;
+    case 3:return NX_TEXT_DOCUMENT_COPY;
+    case 4:return NX_TEXT_DOCUMENT_CUT;
+    case 5:return NX_TEXT_DOCUMENT_PASTE;
+    default:return 0;
+    }
+}
 
 /* Saturating counter for changes to text or selection. */
 uint64_t nx_text_buffer_change_serial(const nx_text_buffer *buffer);

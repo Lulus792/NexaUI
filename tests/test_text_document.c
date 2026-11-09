@@ -225,10 +225,14 @@ static int builtin_domain(void) {
     nx_text_field_destroy(field);nx_context_destroy(ctx);nx_font_collection_destroy(fonts);nx_font_close(font);return 0;
 }
 #endif
+#if defined(__linux__)
+#include "text_document_clipboard.inc"
+#endif
 int main(void) {
     CHECK(ordinary()==0 && stale_and_policy()==0 && failures()==0 && invalid()==0 && reserve_before_apply()==0 && large_snapshot()==0);
 #if defined(__linux__)
     CHECK(native_completions()==0 && builtin_domain()==0 && lease_during_reserve()==0);
+    CHECK(clipboard_contract()==0);
 #endif
     puts("Application-owned text document: copied snapshots, deferred atomic callbacks, stale/policy/ancestor guards, allocation-before-mutation and large read-only state passed.");return 0;
 }
