@@ -1,0 +1,230 @@
+{
+  "result": "passed",
+  "source_bundle": 44,
+  "build_label": 43,
+  "profiles": [
+    {
+      "profile": "release",
+      "executed_ctests": 1,
+      "actual_pipe_cases": [
+        "ordinary",
+        "held",
+        "truncated",
+        "reader-closed"
+      ],
+      "compiled": [
+        {
+          "object": {
+            "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o",
+            "size": 8456,
+            "sha256": "6a222d5cb04284e68de35e6dee26a90353cbe0c257af0ea9ed2426b0afd209b7"
+          },
+          "source": {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c",
+            "size": 4799,
+            "sha256": "b63016cd0c271e7f0d20defb9ef4a932f3618fe508fc7612602e8f3b788646bf"
+          },
+          "command": "/usr/bin/cc -Deditor_foreign_stream_gate_EXPORTS -O3 -DNDEBUG -std=c17 -fPIC -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o -c /mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c"
+        },
+        {
+          "object": {
+            "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o",
+            "size": 2512,
+            "sha256": "7e56ff42e0cd1d13ec817189ca7dba2029ef4eba829020a6ccba3a1367ce1ea1"
+          },
+          "source": {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c",
+            "size": 717,
+            "sha256": "ae975d6407d8559c8d0c40a269b39a898dea9996ef1f3c3e3c4b4aee00945737"
+          },
+          "command": "/usr/bin/cc -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o -c /mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c"
+        }
+      ],
+      "gate": {
+        "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/libeditor_foreign_stream_gate.so",
+        "size": 17400,
+        "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+      },
+      "writer": {
+        "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/editor_foreign_stream_writer",
+        "size": 18640,
+        "sha256": "df287488af0b40442a0f77b63b8e36b6d1dd7c09c3b9858d95088e3ab5fe4145"
+      },
+      "asan_runtime_preloaded_first": false
+    },
+    {
+      "profile": "asan",
+      "executed_ctests": 1,
+      "actual_pipe_cases": [
+        "ordinary",
+        "held",
+        "truncated",
+        "reader-closed"
+      ],
+      "compiled": [
+        {
+          "object": {
+            "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o",
+            "size": 33632,
+            "sha256": "ad5116a7f2763ed56ac6515a812faa08cd9dcfc444b5911b0be3b4334f196c02"
+          },
+          "source": {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c",
+            "size": 4799,
+            "sha256": "b63016cd0c271e7f0d20defb9ef4a932f3618fe508fc7612602e8f3b788646bf"
+          },
+          "command": "/usr/bin/cc -Deditor_foreign_stream_gate_EXPORTS -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -fPIC -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o -c /mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c"
+        },
+        {
+          "object": {
+            "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o",
+            "size": 12224,
+            "sha256": "3ae598403fb4b5d8d35aeae05dd92e949e857415a2af78a3fc8b50126e3cca50"
+          },
+          "source": {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c",
+            "size": 717,
+            "sha256": "ae975d6407d8559c8d0c40a269b39a898dea9996ef1f3c3e3c4b4aee00945737"
+          },
+          "command": "/usr/bin/cc -fsanitize=address,undefined -fno-omit-frame-pointer -g -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o -c /mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c"
+        }
+      ],
+      "gate": {
+        "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/libeditor_foreign_stream_gate.so",
+        "size": 41008,
+        "sha256": "f2980b0452c6d29a9fd72f86901788f5bf3e2182d48b321d55d691674a21b9cf"
+      },
+      "writer": {
+        "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/editor_foreign_stream_writer",
+        "size": 27360,
+        "sha256": "12ce9d1c0c890a78e2119d70626d6d7eab34743318755a92ebf4aca9094654a3"
+      },
+      "asan_runtime_preloaded_first": true
+    }
+  ],
+  "compiler": "cc (Alpine 15.2.0) 15.2.0",
+  "kernel": "Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 Linux",
+  "artifact_files": [
+    {
+      "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c",
+      "size": 4799,
+      "sha256": "b63016cd0c271e7f0d20defb9ef4a932f3618fe508fc7612602e8f3b788646bf"
+    },
+    {
+      "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c",
+      "size": 717,
+      "sha256": "ae975d6407d8559c8d0c40a269b39a898dea9996ef1f3c3e3c4b4aee00945737"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeCache.txt",
+      "size": 13698,
+      "sha256": "718b0e17d087049437978bb3913ea45645e63f7bec7f740d07a9a6e6c09adb06"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o",
+      "size": 33632,
+      "sha256": "ad5116a7f2763ed56ac6515a812faa08cd9dcfc444b5911b0be3b4334f196c02"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o",
+      "size": 12224,
+      "sha256": "3ae598403fb4b5d8d35aeae05dd92e949e857415a2af78a3fc8b50126e3cca50"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CMakeFiles/rules.ninja",
+      "size": 2829,
+      "sha256": "e258b21913cd6d0025e334e56d49fd190dc38329bbcb4a9d33a1efab9b751275"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/CTestTestfile.cmake",
+      "size": 1310,
+      "sha256": "8e4aaca0a7bdbeb8dd2b0a87c7e138b73dbb600a67202b7dead7b417e95a1fba"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/Testing/Temporary/LastTest.log",
+      "size": 1169,
+      "sha256": "ab4a7a0e924581f6b02b3bb96d22a31634ce8373492eba34004ec9a86b3cfe2c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/build.ninja",
+      "size": 19447,
+      "sha256": "7c59596a1ddafa19afbfd7e248c95a6fb42b851daac712dae5d713540d3b31b3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/compile_commands.json",
+      "size": 1354,
+      "sha256": "c1df69c80583d3c2b89d7e56da8b13209cc6a3ebdc834c9da6d1598a67df905f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/editor_foreign_stream_writer",
+      "size": 27360,
+      "sha256": "12ce9d1c0c890a78e2119d70626d6d7eab34743318755a92ebf4aca9094654a3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43-asan/libeditor_foreign_stream_gate.so",
+      "size": 41008,
+      "sha256": "f2980b0452c6d29a9fd72f86901788f5bf3e2182d48b321d55d691674a21b9cf"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeCache.txt",
+      "size": 13572,
+      "sha256": "e547085395ed5f97d78e393ec7c7a30f3ac09decdb459865b31ae3c209a2df3e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeFiles/editor_foreign_stream_gate.dir/gate.c.o",
+      "size": 8456,
+      "sha256": "6a222d5cb04284e68de35e6dee26a90353cbe0c257af0ea9ed2426b0afd209b7"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeFiles/editor_foreign_stream_writer.dir/writer.c.o",
+      "size": 2512,
+      "sha256": "7e56ff42e0cd1d13ec817189ca7dba2029ef4eba829020a6ccba3a1367ce1ea1"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CMakeFiles/rules.ninja",
+      "size": 2834,
+      "sha256": "c7177785d983d101bf5184061d64cb1b663020c487888f902ac69c3c0a25764e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/CTestTestfile.cmake",
+      "size": 1203,
+      "sha256": "3a168cb44c00ece7d5205b569f4c798f67e0f468c2e67869944999a2776d684e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/Testing/Temporary/LastTest.log",
+      "size": 1062,
+      "sha256": "132e4dc0b3ccada2053e70249fc26c5310feee24632d571228302806f92ab4e9"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/build.ninja",
+      "size": 19182,
+      "sha256": "111a9cdabb1f0afdfdd923990eba647312e02637fcdff7df63079ccf2d578afe"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/compile_commands.json",
+      "size": 1248,
+      "sha256": "b4221197cf7ea07650d4e2f4e4a96c0293ab4fb1cd15d614686346b5c07c4dde"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/editor_foreign_stream_writer",
+      "size": 18640,
+      "sha256": "df287488af0b40442a0f77b63b8e36b6d1dd7c09c3b9858d95088e3ab5fe4145"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate-musl43/libeditor_foreign_stream_gate.so",
+      "size": 17400,
+      "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate43-asan-dynamic.txt",
+      "size": 1508,
+      "sha256": "c03946e67f6d7a81b6b04531133f1850980fa7c6b83957900b312f032d16f3b9"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-stream-gate43-release-dynamic.txt",
+      "size": 1357,
+      "sha256": "4a931169b7fad30d85e8a608692bc006dabf6728656d8c4634c273763cd72607"
+    }
+  ],
+  "scope": "Independent Linux musl test utility only;2 actual CTests/8 real-pipe cases and4 compiled objects. ASan/UBSan instruments gate and writer, leak detection retained; the matching GCC runtime comes first only in that standalone writer process. Native original-owner profiles use the separately hashed Release gate inside foreign wl-copy, never the app/compositor/OS reader."
+}

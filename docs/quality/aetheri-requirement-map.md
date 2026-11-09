@@ -1,5 +1,18 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/T06/A04/P04/P05/Q02/Q03/Q06/Q08: test source9477f62 closes the controlled
+joined partial-byte/held-EOF gap in the optional original Editor clipboard
+composition. Three unchanged owner/installed-SDK profiles pass21 stream cases,
+78 forced pre-EOF frames,252 complete captures and249 raw cache probes; the
+gate-OFF Shared task adds78 captures. Independent Release/sanitizer utility
+builds pass2 CTests/8 real-pipe cases. All102 inputs,21 generated C matches,
+15 complete previous pixel matches and an actual compiled negative are bound
+in the [stream report](editor-stream-report.md). Prior45 owner/41 compatibility
+tests are reused evidence, not new executions. All seven required exact-source
+CI jobs pass. Native geometry/attributes,
+broader interfaces, AX/UIA, real IMEs/screenreaders, font/physical/human/design/
+performance and normal adoption remain open. All103 IDs and packets6–8 persist.
+
 T03/T06/A04/P04/P05/Q02/Q03/Q06/Q08: consumer76a08fc connects the original
 Editor to SDK0.1.29 native clipboard through its existing window, atomic model
 and complete input tokens. Three profiles pass45 owner CTests,234 captures and

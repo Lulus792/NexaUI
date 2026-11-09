@@ -1,5 +1,9 @@
 # Original Editor: native system clipboard composition
 
+Follow-up9477f62 adds [joined partial-byte and actual EOF evidence](editor-stream-report.md)
+with the same compiled owner/SDK. Its new native/utility runs are separately
+attributed; the counts below remain the historical76a08fc checkpoint.
+
 Consumer source `76a08fc8c08173e31f41ef9bb8e5c199d3876657`, 9 November2026.
 Installed SDK0.1.29 remains source `8862cb5a1b78c63845a2d2a50441cda8e19243e7`.
 Original Aetheri inputs remain `7bbe7042ecd48582b11ef7053a4dbeade6b02351`.

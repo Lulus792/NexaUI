@@ -1,5 +1,18 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor partial-byte EOF: test source9477f62 adds a private foreign
+transfer adapter while reusing the unchanged original owner, SDK and compositor.
+Three profiles pass21 stream cases/78 forced pre-EOF frames,252 captures and249
+cache probes; gate-OFF Shared adds78 captures. Two separate utility CTests cover
+8 real-pipe cases. All102 inputs,21 generated C matches,15 previous complete
+pixel matches and actual compiled old-owner rejection are source-bound in the
+[stream report](editor-stream-report.md). Earlier45 owner/41 compatibility
+tests remain reused evidence. No active Aetheri source/pin change. All seven
+required exact-source CI jobs pass. The controlled joined partial-byte/EOF gap
+is closed; native geometry/attributes, broader
+interfaces, AX/UIA, real IMEs/screenreaders, font/physical/human/design/performance
+and ordinary adoption remain open. All103 IDs and remaining packets6–8 persist.
+
 Original Editor clipboard: consumer76a08fc composes SDK0.1.29 with the original
 window/controller/history/save/review/IME. Three native profiles pass45 owner
 tests,234 complete captures and159 cache probes;41 separate compatibility tests

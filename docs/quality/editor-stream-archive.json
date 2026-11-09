@@ -1,0 +1,91 @@
+{
+  "archives": [
+    {
+      "label": "native-original-owner",
+      "path": "D:/NexaUI/out/nexaui-editor-stream44-final-20261109.tar.gz",
+      "sha256": "563672a6e81f0f312444dd085e428e0a18a9ed64d36ab59d18f7a1c55548a6b2",
+      "files": 1931,
+      "links": 5,
+      "directories": 557,
+      "verified": true,
+      "name": "nexaui-editor-stream44-final-20261109.tar.gz",
+      "size": 19142619,
+      "excluded_special_scope": "Inactive test FIFOs and Unix sockets recorded, not serialized"
+    },
+    {
+      "label": "independent-utility",
+      "path": "D:/NexaUI/out/nexaui-editor-stream-gate43-20261109.tar.gz",
+      "sha256": "6ff9409bbd35c96d441033c43f6e09d3e928145a32fab5ff3277ef8eb57a7b4c",
+      "files": 53,
+      "links": 0,
+      "directories": 23,
+      "verified": true,
+      "name": "nexaui-editor-stream-gate43-20261109.tar.gz",
+      "size": 121040
+    },
+    {
+      "label": "previous-pixel-reference",
+      "path": "D:/NexaUI/out/nexaui-editor-clipboard42-final-20261109.tar.gz",
+      "sha256": "e7cb0a71e416a7c5cdc739ce977c550ee6dfcea2166def8e7278603c77b8a893",
+      "files": 2039,
+      "links": 8,
+      "directories": 940,
+      "verified": true,
+      "name": "nexaui-editor-clipboard42-final-20261109.tar.gz",
+      "size": 22523403,
+      "excluded_special_scope": "Inactive test FIFOs and Unix sockets recorded, not serialized"
+    },
+    {
+      "label": "host-bindings-and-ci",
+      "path": "D:/NexaUI/out/nexaui-editor-stream44-evidence-20261109.tar.gz",
+      "sha256": "da4a436592df0d3e4eb56233bc82769ce3ff2e84d90bde17e27c07b4e0139e49",
+      "files": 56,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-stream44-evidence-20261109.tar.gz",
+      "size": 486412
+    }
+  ],
+  "retirement": {
+    "check": {
+      "result": "verified",
+      "roots": [
+        "editor-clipboard-40-default-sdk27",
+        "editor-clipboard-40-native-sdk28",
+        "editor-clipboard-40-clipboard-no-ime",
+        "ed-doc-42-clip13-asan",
+        "ed-doc-42-clip13-r2-release",
+        "ed-doc-42-clip13-shared"
+      ],
+      "bytes": 108197064,
+      "files": 831,
+      "links": 3,
+      "directories": 358,
+      "fingerprint": "bfba3f9469627f165cd0dac6a94d00a71512e8f9fa55aa32dbf4abfd40bc6661",
+      "archive_sha256": "e7cb0a71e416a7c5cdc739ce977c550ee6dfcea2166def8e7278603c77b8a893",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    },
+    "delete": {
+      "result": "retired verified inactive archived clipboard42 captures and optional compatibility builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-clipboard-40-default-sdk27",
+        "editor-clipboard-40-native-sdk28",
+        "editor-clipboard-40-clipboard-no-ime",
+        "ed-doc-42-clip13-asan",
+        "ed-doc-42-clip13-r2-release",
+        "ed-doc-42-clip13-shared"
+      ],
+      "bytes": 108197064,
+      "files": 831,
+      "links": 3,
+      "directories": 358,
+      "fingerprint": "bfba3f9469627f165cd0dac6a94d00a71512e8f9fa55aa32dbf4abfd40bc6661",
+      "archive_sha256": "e7cb0a71e416a7c5cdc739ce977c550ee6dfcea2166def8e7278603c77b8a893",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738"
+    }
+  },
+  "scope": "Complete member type/mode/size/hash verification; previous captures/compatibility builds retired only after archive and exact inactive-tree/process/UID checks. Frozen inputs, SDK prefixes and reused owner40/reader40 retained. No quota, mounts, driver, rendering, sanitizer, deadlines or global settings changed."
+}

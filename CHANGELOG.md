@@ -2,6 +2,8 @@
 
 ## 0.1.29 — Development snapshot
 
+- Added opt-in original Editor partial-byte/held-EOF clipboard acceptance with a standalone foreign-provider test adapter. Existing owner/SDK/compositor stay unchanged; native tasks cover incomplete UTF-8, all bytes before EOF, original IME/caret/review/tab invalidation and Save/exit with an open writer. See the [source-specific tests and remaining gates](docs/quality/editor-stream-report.md).
+
 - Added optional original Editor native clipboard composition with its existing window, atomic model/history and complete input tokens. Copy preserves composition; fresh preedit retires an older native paste. Independent OS/foreign clipboard tasks cover delayed invalidation, original keyboard-token ownership and Save/close with a stopped provider. See the [source-specific evidence and remaining gates](docs/quality/editor-clipboard-report.md).
 
 - Added opt-in native clipboard operations for application-owned documents through `nx_text_document_register_with_clipboard`, reusing existing clipboard callbacks and bounded asynchronous Wayland reads. Copy preserves the model; cut and paste use its existing atomic replace callback. Document/policy/native lifetime checks remain in force across delayed completion. Existing registration calls and public structure layouts are preserved. Full original-Editor clipboard adoption and native geometry/attributes remain separate acceptance work.

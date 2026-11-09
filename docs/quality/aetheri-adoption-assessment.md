@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Original Editor partial-byte clipboard EOF (2026-11-09)
+
+Test source9477f62 reuses owner40/reader40 and installed SDK8862cb5/0.1.29.
+Three native profiles pass21 partial/complete-byte cases with actual EOF,
+78 forced pre-EOF frames,252 captures and249 cache probes. Shared gate-OFF
+adds78 captures; two independent utility CTests cover8 real-pipe cases.
+The foreign wl-copy binary runs under an explicit test-only transfer adapter,
+never injected into the app/compositor/OS reader. All102 inputs,21 regenerated
+C matches,15 complete previous pixel matches and the actual old-owner negative
+are bound in the [stream report](editor-stream-report.md). All53 consumed
+original files remain unchanged at Aetherie01dad1; active development and pins
+remain independent. Previous45 owner/41 compatibility tests are not new runs.
+All seven required exact-source CI jobs pass, including both sanitizer orders.
+Geometry/attributes, broader interfaces, AX/UIA, real IMEs/screenreaders, font,
+physical/human/design/performance and normal adoption remain open across all103
+IDs and remaining packets6–8.
+
 ## Original Editor clipboard composition (2026-11-09)
 
 Consumer76a08fc reuses installed SDK8862cb5/0.1.29, the original window and

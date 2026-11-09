@@ -1,0 +1,654 @@
+{
+  "result": "passed",
+  "source_revision": "9477f62539cc73b6746b776bca19c843cc623ea8",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "sdk_version": "0.1.29",
+  "sdk_source_revision": "8862cb5a1b78c63845a2d2a50441cda8e19243e7",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "compiled_bundle": 40,
+  "driver_bundle": 44,
+  "profiles": [
+    {
+      "profile": "release",
+      "new_stream_cases": 7,
+      "forced_pre_eof_frames": 26,
+      "captures": 84,
+      "cache_queries": 83,
+      "reused_compiled_objects": 32,
+      "reused_owner_ctests": 15,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "release",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-release",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-release/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--clipboard-stream-gate",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-release/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-release",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-release-prefix/lib64/libnexaui.a",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-release-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-44-stream44-release.log"
+      }
+    },
+    {
+      "profile": "shared",
+      "new_stream_cases": 7,
+      "forced_pre_eof_frames": 26,
+      "captures": 84,
+      "cache_queries": 83,
+      "reused_compiled_objects": 32,
+      "reused_owner_ctests": 15,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "shared",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-shared",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-shared/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--clipboard-stream-gate",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-shared/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-shared",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-shared-prefix/lib64/libnexaui.so.0.1.29",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-shared-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-44-stream44-shared.log"
+      }
+    },
+    {
+      "profile": "asan",
+      "new_stream_cases": 7,
+      "forced_pre_eof_frames": 26,
+      "captures": 84,
+      "cache_queries": 83,
+      "reused_compiled_objects": 32,
+      "reused_owner_ctests": 15,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "asan",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-asan",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-asan/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--clipboard-stream-gate",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-asan/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-asan",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-asan-prefix/lib64/libnexaui.a",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-asan-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-44-stream44-asan.log"
+      }
+    }
+  ],
+  "without_stream_gate": {
+    "profile": "shared",
+    "captures": 78,
+    "command": {
+      "profile": "shared",
+      "command": [
+        "/usr/bin/python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+        "--registry",
+        "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+        "--output",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-off-shared",
+        "--",
+        "/usr/bin/python3",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/repo/examples/36_aetheri_editor_consumer/run_native.py",
+        "--ime",
+        "--accessible-client",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-shared/editor_document_client",
+        "--clipboard-tools",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+        "--original",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-44/original",
+        "--server",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+        "--app",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-shared/aetheri_editor_candidate",
+        "--font",
+        "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--output",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-off-shared",
+        "--sdk-library",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-shared-prefix/lib64/libnexaui.so.0.1.29",
+        "--sdk-receipt",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-shared-local.json",
+        "--sdk-source-binding",
+        "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+      ],
+      "exit": 0,
+      "log": "editor-native-document-44-stream44-off-shared.log"
+    }
+  },
+  "new_utility_ctests": 2,
+  "new_real_pipe_cases": 8,
+  "new_utility_objects": 4,
+  "git_bound_inputs": 102,
+  "generated_replays": 21,
+  "previous_complete_pixel_matches": 15,
+  "compiled_regression": {
+    "result": "detected",
+    "exit": 1,
+    "command": [
+      "/usr/bin/python3",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/editor-stream44-negative-driver.py",
+      "44",
+      "shared"
+    ],
+    "folder": "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-44-stream44-old36-shared/ed-ua0ifx_r",
+    "compiled_binary": {
+      "archive": "nexaui-editor-clipboard-progress-20261109.tar.gz",
+      "archive_sha256": "792ac6f23c494b8cace21cd77205111b873d2f9dc445487732e684c4cc409c57",
+      "binary": {
+        "name": "editor-close-36-shared/aetheri_editor_candidate",
+        "size": 178376,
+        "mode": 493,
+        "sha256": "71d93cf48c28fa79560e646df848581cf4ede7e1944f524022a6083b79d4f5c1"
+      },
+      "scope": "Actual compiled pre-fix owner36; restored unchanged from the verified progress archive, never installed over an SDK or production consumer."
+    },
+    "clipboard": {
+      "result": "running",
+      "checks": [],
+      "clipboard_tool_inputs": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "clipboard_checks": [],
+      "stream_task": {
+        "result": "running",
+        "cases": [
+          {
+            "mode": "complete",
+            "accepted": true,
+            "partial_frames": [
+              {
+                "frame": 343,
+                "revision": "2",
+                "pid": 1334011,
+                "writer_pipe": "pipe:[5114755]",
+                "written": 3,
+                "stage": 5
+              },
+              {
+                "frame": 344,
+                "revision": "2",
+                "pid": 1334011,
+                "writer_pipe": "pipe:[5114755]",
+                "written": 3,
+                "stage": 5
+              }
+            ],
+            "complete_without_eof_frames": [
+              {
+                "frame": 345,
+                "revision": "2",
+                "pid": 1334011,
+                "writer_pipe": "pipe:[5114755]",
+                "written": 12,
+                "stage": 5
+              },
+              {
+                "frame": 346,
+                "revision": "2",
+                "pid": 1334011,
+                "writer_pipe": "pipe:[5114755]",
+                "written": 12,
+                "stage": 5
+              }
+            ],
+            "closed": {
+              "pid": 1334011,
+              "stage": 3,
+              "total": 12,
+              "written": 12,
+              "error": 0,
+              "pipe_fd": 5,
+              "queued": 0,
+              "writer_pipe_closed": true
+            },
+            "payload_hex": "c3a9f09f8c8d0d0a6c617465"
+          },
+          {
+            "mode": "truncated",
+            "accepted": false,
+            "partial_frames": [
+              {
+                "frame": 366,
+                "revision": "6",
+                "pid": 1334020,
+                "writer_pipe": "pipe:[5114778]",
+                "written": 3,
+                "stage": 5
+              },
+              {
+                "frame": 367,
+                "revision": "6",
+                "pid": 1334020,
+                "writer_pipe": "pipe:[5114778]",
+                "written": 3,
+                "stage": 5
+              }
+            ],
+            "complete_without_eof_frames": [],
+            "closed": {
+              "pid": 1334020,
+              "stage": 3,
+              "total": 12,
+              "written": 3,
+              "error": 0,
+              "pipe_fd": 5,
+              "queued": 0,
+              "writer_pipe_closed": true
+            },
+            "payload_hex": "c3a9f09f8c8d0d0a6c617465"
+          },
+          {
+            "mode": "caret",
+            "accepted": false,
+            "partial_frames": [
+              {
+                "frame": 380,
+                "revision": "7",
+                "pid": 1334027,
+                "writer_pipe": "pipe:[5114809]",
+                "written": 3,
+                "stage": 5
+              },
+              {
+                "frame": 381,
+                "revision": "7",
+                "pid": 1334027,
+                "writer_pipe": "pipe:[5114809]",
+                "written": 3,
+                "stage": 5
+              }
+            ],
+            "complete_without_eof_frames": [
+              {
+                "frame": 382,
+                "revision": "7",
+                "pid": 1334027,
+                "writer_pipe": "pipe:[5114809]",
+                "written": 12,
+                "stage": 5
+              },
+              {
+                "frame": 383,
+                "revision": "7",
+                "pid": 1334027,
+                "writer_pipe": "pipe:[5114809]",
+                "written": 12,
+                "stage": 5
+              }
+            ],
+            "closed": {
+              "pid": 1334027,
+              "stage": 3,
+              "total": 12,
+              "written": 12,
+              "error": 0,
+              "pipe_fd": 5,
+              "queued": 0,
+              "writer_pipe_closed": true
+            },
+            "payload_hex": "c3a9f09f8c8d0d0a6c617465"
+          }
+        ],
+        "clipboard_tool_inputs": {
+          "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+          "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+          "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+          "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+          "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+        },
+        "clipboard_checks": [
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          },
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          },
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          },
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          }
+        ],
+        "gate_library": {
+          "path": "/dev/shm/nexaui-recovery-live-tty-20261107/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+        },
+        "stream_events": [
+          {
+            "pid": 1334011,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114755]"
+          },
+          {
+            "pid": 1334011,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114755]"
+          },
+          {
+            "pid": 1334011,
+            "stage": 2,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114755]"
+          },
+          {
+            "pid": 1334011,
+            "stage": 5,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114755]"
+          },
+          {
+            "pid": 1334011,
+            "stage": 3,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          },
+          {
+            "pid": 1334020,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114778]"
+          },
+          {
+            "pid": 1334020,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114778]"
+          },
+          {
+            "pid": 1334020,
+            "stage": 3,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          },
+          {
+            "pid": 1334027,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114809]"
+          },
+          {
+            "pid": 1334027,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114809]"
+          },
+          {
+            "pid": 1334027,
+            "stage": 2,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114809]"
+          },
+          {
+            "pid": 1334027,
+            "stage": 5,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114809]"
+          },
+          {
+            "pid": 1334027,
+            "stage": 3,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          },
+          {
+            "pid": 1334034,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114833]"
+          },
+          {
+            "pid": 1334034,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114833]"
+          },
+          {
+            "pid": 1334034,
+            "stage": 2,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114833]"
+          },
+          {
+            "pid": 1334034,
+            "stage": 5,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[5114833]"
+          },
+          {
+            "pid": 1334034,
+            "stage": 3,
+            "total": 12,
+            "written": 12,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          }
+        ]
+      },
+      "ime_serial_barriers": [
+        {
+          "client_commits": 511,
+          "provider_serial": 511
+        },
+        {
+          "client_commits": 534,
+          "provider_serial": 534
+        },
+        {
+          "client_commits": 542,
+          "provider_serial": 542
+        },
+        {
+          "client_commits": 553,
+          "provider_serial": 553
+        }
+      ]
+    },
+    "scope": "Same final driver44/OS reader40/gate43/SDK13, actual archived owner36. Missing preedit serial fence accepts old paste after partial and complete bytes were consumed without EOF; !accepted detects it. Corrected owners pass the identical task."
+  },
+  "visual_review": {
+    "result": "reviewed",
+    "images": [
+      {
+        "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+        "ppm_sha256": "b02d48d582df3ca97e2f426dadabe60d5833cd61db9b931a5fcbaf641b6e5915",
+        "png": "D:/NexaUI/out/editor-stream44-images/actual-eof.png",
+        "png_sha256": "ee727a2711a51e1330ebe4d9a485bd89eaf878685f45ceb88246a740a7065bf4",
+        "width": 1920,
+        "height": 1080,
+        "conversion": "Lossless RGB PPM to PNG; no crop, resize or pixel edits"
+      },
+      {
+        "case": "late actual EOF cannot revive original caret IME review or tab requests",
+        "ppm_sha256": "f1ec4a419965b1f7aba1c79eb9e98a44eedd5e09e293e0a0e858e51eb4851686",
+        "png": "D:/NexaUI/out/editor-stream44-images/late-eof.png",
+        "png_sha256": "0b3c12b60a4f375c9df3f7380eb8019c7282298202a29bdcfa81be634d65c571",
+        "width": 1920,
+        "height": 1080,
+        "conversion": "Lossless RGB PPM to PNG; no crop, resize or pixel edits"
+      }
+    ],
+    "observation": "Original layout, inserted CRLF lines and caret remain visible. The borrowed mono font shows a replacement box for U+1F30D; glyph/fallback acceptance remains open. Actual UTF-8 document bytes and original history are independently asserted."
+  },
+  "current_aetheri_head": "e01dad1184b292aa269d61f48d8baea0ee53ecef",
+  "original_inputs_unchanged": 53,
+  "ci": "editor-stream-ci.json",
+  "scope": "New test-only original-owner EOF coverage; no SDK/API/production app change. Two utility CTests and four complete native tasks are new executions. Prior45 model and41 compatibility CTests are historical/reused, not new runs. Remaining103-ID goal, native geometry/attributes, broader interfaces, normal adoption and physical/human/design/performance remain open."
+}

@@ -63,6 +63,10 @@ joins the installed SDK with the original document/history/save/IME owner and
 independent native/system clipboard peers. Its source-bound evidence and open
 adoption gates are separate from normal Aetheri development.
 
+Its [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
+actual consumed clipboard bytes, held writers and original-model invalidation
+without changing the SDK or the active Aetheri application.
+
 ## Platform status
 
 | Platform | Native window and input | Rendering |
