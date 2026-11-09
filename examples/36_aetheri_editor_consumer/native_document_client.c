@@ -187,7 +187,7 @@ int main(int argc,char **argv) {
         fprintf(stderr,"native paste reply: phase=%s accepted=%d elapsed_us=%lld error=%s\n",
             argv[2],accepted,(long long)(g_get_monotonic_time()-started),e?e->message:"none");
         if(!strcmp(argv[2],"clipboard-paste"))CHECK(accepted && !e);
-        else {CHECK(!accepted);g_clear_error(&e);}
+        else {CHECK(!accepted && !e);}
         if(strcmp(argv[2],"clipboard-paste-cancelled"))CHECK(expected_file(text,argv[3]));
         else {
             reply_text=atspi_text_get_text(text,0,-1,&e);CHECK(e);

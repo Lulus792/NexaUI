@@ -365,3 +365,20 @@ are replaced in this component test; it does not establish native presentation.
 The optional native runner flag `--focus-paint` requires the latest diagnostic
 frame to report completed focus painting before each original screenshot. The
 original capture delay, deadlines, events, assertions and idle guard remain.
+
+The native observer caches complete decoded snapshots of the driver's owned
+regular log streams while file identity, size and timestamps remain unchanged.
+A changed snapshot still uses the original full read and UTF-8 replacement;
+logs are neither tailed nor filtered, and no reader descriptor stays open.
+Real-file differential checks cover append, split/malformed UTF-8, truncation,
+replacement, log switching and a racing append. An unchanged-file work-count
+counterexample distinguishes64 full reads from one without timing thresholds.
+This changes test-controller work, not SDK/application rendering performance.
+
+Refused/cancelled native paste checks now require an actual error-free negative
+reply. `--paste-timeout-guard` deliberately holds the real foreign writer open
+beyond the unchanged one-second libatspi deadline and requires the independent
+peer to fail on that transport timeout. The guard records the open pipe, reply,
+unchanged model and subsequent real close separately from ordinary paste cases;
+it requires `--clipboard-stream-gate`. This expected negative must never hide a
+timeout in an ordinary paste case.

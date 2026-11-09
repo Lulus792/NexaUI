@@ -28,6 +28,30 @@
                 return observed
             try:
                 key(49,ctrl=True);wait(lambda:state(docs=1,cursor=0),'fresh original partial-stream document')
+                if _candidate_paste_timeout_guard:
+                    # Deliberately keep the real incomplete writer open beyond
+                    # the unchanged libatspi request deadline. A transport error
+                    # must fail the peer rather than count as a semantic refusal.
+                    clipboard_seed();source=stream_task.offer(stream_bytes);clipboard_serial_key(seed,0);stream_task.arm(source)
+                    cut=len(log());revision=view()['revision'];peer=clipboard_pending('clipboard-paste-refused',seed)
+                    wait(lambda:'.receive(' in log()[cut:],'deliberate timeout transfer actually requested')
+                    first=stream_task.message(source,1);assert first['written']==3
+                    wait(lambda:stream_task.drained(source),'deliberate timeout prefix actually consumed')
+                    reply,_=peer.communicate(timeout=14)
+                    held=stream_task.held(source);peer_log=root/('clipboard-native-'+str(clipboard_pending_sequence)+'.log')
+                    diagnostic=peer_log.read_text()
+                    guard=dict(peer_exit=peer.returncode,stdout=reply,stderr=diagnostic,log=peer_log.name,
+                        held=held,view=view(),revision=revision,expected_peer_failure=True)
+                    (root/'clipboard-timeout-guard.json').write_text(json.dumps(guard,indent=2)+'\n')
+                    stream_result['timeout_guard']=guard
+                    assert peer.returncode==1 and 'Original Editor independent AT-SPI phase passed.' not in reply
+                    assert 'error=Did not receive a reply.' in diagnostic
+                    assert state(cursor=0,selected=0) and view()['revision']==revision
+                    clipboard_peers.remove(peer)
+                    stream_task.send(source,b'E');closed=stream_task.message(source,3)
+                    assert closed['writer_pipe_closed'] and closed['written']==3 and not closed['error']
+                    guard['closed']=closed;ax_phase('expect',seed)
+                    (root/'clipboard-timeout-guard.json').write_text(json.dumps(guard,indent=2)+'\n')
                 for mode in ('complete','truncated','caret','preedit','preedit-roundtrip','review','tab'):
                     if mode.startswith('preedit') and not _candidate_accessible_ime:continue
                     clipboard_seed();source=stream_task.offer(stream_bytes);clipboard_serial_key(seed,0);stream_task.arm(source)
