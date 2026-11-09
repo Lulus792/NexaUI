@@ -276,3 +276,30 @@ bytes, one original Undo/Redo, and Save/exit while the writer remains open.
 Earlier ordinary-transfer tasks, captures, style assertions, budgets and
 deadlines remain in the run. This private transfer adapter is not an SDK or
 application runtime dependency and must not be preloaded into other processes.
+
+## Optional actual document geometry
+
+`-DEDITOR_BUILD_NATIVE_PRESENTATION=ON` requires native accessibility and the
+installed SDK0.1.30 containing `aa899fb`'s interior-caret fix or a later containing
+revision. The option stays OFF for existing consumers. Pass a borrowed real
+proportional font with `-DEDITOR_PRESENTATION_TEST_FONT=/path/to/font.ttf` to run
+both the layout-oracle and actual original `paint_document` CTests.
+An additional `-DEDITOR_PRESENTATION_LIGATURE_FONT=/path/to/font.ttf` runs both
+tests with required real `ffi` shaping; absence of that ligature is a failure.
+
+After the original owner handles any accepted edit and draws its rows, the
+adapter copies logical selection-cell geometry from those same public glyphs,
+line metrics and carets. It preserves shared ligature/combining intervals,
+the first actual bidi caret, CRLF, row/canvas clipping, horizontal/vertical
+scroll and font scaling. A current IME caret comes from the original paint.
+These are logical character cells, not raster ink bounds. Offscreen geometry
+is absent; a budget/allocation failure omits the whole optional projection
+without disabling the original text/input. Buffers are reused and released
+on original owner teardown; no layout/model/font pointer enters the SDK snapshot.
+
+Add `--presentation` to the existing independent-reader native task to require
+character/range/point/caret round trips on the original rendered owner, including
+an accepted combining/CRLF edit and the existing style/scale cases. Existing
+assertions, captures, CPU guard, deadlines and native close work remain enabled.
+Font/style attributes, offscreen scrolling interfaces, AX/UIA and broader
+physical/human/design/performance/adoption acceptance remain separate work.

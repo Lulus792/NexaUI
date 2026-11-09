@@ -33,6 +33,35 @@ static int expected_file(AtspiText *text,const char *name) {
 done:
     g_clear_error(&e);free(bytes);fclose(file);return okay;
 }
+static int geometry(AtspiAccessible *field,AtspiText *text,int combining) {
+    int okay=0;GError *error=NULL;AtspiComponent *component=atspi_accessible_get_component_iface(field);
+    AtspiRect *parent=NULL,*a=NULL,*b=NULL,*caret=NULL,*ending=NULL,*next=NULL,*cr=NULL,*lf=NULL;
+    if(!component)goto done;
+    parent=atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !parent)goto done;
+    a=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !a)goto done;
+    b=atspi_text_get_character_extents(text,1,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !b)goto done;
+    caret=atspi_text_get_range_extents(text,0,0,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !caret)goto done;
+    if(a->width<=0 || a->height<=0 || a->x<parent->x || a->y<parent->y || a->x+a->width>parent->x+parent->width ||
+       a->y+a->height>parent->y+parent->height || caret->x!=a->x || caret->y!=a->y || caret->width<1 || caret->width>3)goto done;
+    gint hit=atspi_text_get_offset_at_point(text,a->x+a->width/2,a->y+a->height/2,ATSPI_COORD_TYPE_WINDOW,&error);
+    if(error || hit!=0)goto done;
+    if(combining) {
+        if(a->x!=b->x || a->y!=b->y || a->width!=b->width || a->height!=b->height)goto done;
+        cr=atspi_text_get_character_extents(text,3,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !cr)goto done;
+        lf=atspi_text_get_character_extents(text,4,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !lf)goto done;
+        ending=atspi_text_get_range_extents(text,3,5,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !ending)goto done;
+        next=atspi_text_get_character_extents(text,5,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !next)goto done;
+        if(cr->x!=lf->x || cr->y!=lf->y || cr->width!=lf->width || cr->width>1 || cr->height<=0 ||
+           ending->x!=cr->x || ending->y!=cr->y || ending->width!=cr->width || next->y<=a->y)goto done;
+    } else if(b->x<=a->x || b->y!=a->y || b->width<=0)goto done;
+    fprintf(stderr,"Original Editor geometry: combining=%d first=%d,%d,%d,%d caret=%d,%d,%d,%d hit=%d\n",
+        combining,a->x,a->y,a->width,a->height,caret->x,caret->y,caret->width,caret->height,(int)hit);okay=1;
+done:
+    if(!okay)fprintf(stderr,"Original Editor geometry failed: %s\n",error?error->message:"rectangle/point relation");
+    g_clear_error(&error);g_free(parent);g_free(a);g_free(b);g_free(caret);g_free(ending);g_free(next);g_free(cr);g_free(lf);
+    if(component)g_object_unref(component);
+    return okay;
+}
 int main(int argc,char **argv) {
     int initialized=0,status=1;GError *e=NULL;AtspiRange *range=NULL;char *reply_text=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*field=NULL;AtspiText *text=NULL;AtspiEditableText *edit=NULL;
@@ -50,7 +79,14 @@ int main(int argc,char **argv) {
     CHECK(app);field=find(app,"Edit document",0);if(!field)field=find(app,"Dokument bearbeiten",0);CHECK(field);
     text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text);
     CHECK(cache_probe(field,0,64u*1024u));
-    if(!strcmp(argv[2],"clipboard-seed")) {
+    if(!strcmp(argv[2],"geometry")) {
+        CHECK(edit && expected_text(text,"abcde") && geometry(field,text,0));
+        CHECK(atspi_editable_text_set_text_contents(edit,"a\xcc\x81" "b\r\nend",&e) && !e && expected_text(text,"a\xcc\x81" "b\r\nend"));
+        CHECK(geometry(field,text,1));
+        CHECK(atspi_editable_text_set_text_contents(edit,"abcde",&e) && !e && expected_text(text,"abcde"));
+    } else if(!strcmp(argv[2],"geometry-visible")) {
+        CHECK(expected_text(text,"AX\xc3\xa9") && geometry(field,text,0));
+    } else if(!strcmp(argv[2],"clipboard-seed")) {
         CHECK(edit && atspi_editable_text_set_text_contents(edit,"A\xc3\xa9\xf0\x9f\x8c\x8d\r\nline",&e) && !e);
         CHECK(atspi_text_set_caret_offset(text,0,&e) && !e);
     } else if(!strcmp(argv[2],"clipboard-copy")) {

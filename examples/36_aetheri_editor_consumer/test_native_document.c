@@ -24,6 +24,9 @@ static int test_create(struct app *a,const char *bytes,size_t size) {
     return 0;
 }
 static void test_destroy(struct app *a) {
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+    editor_presentation_close(&a->native_document.presentation);
+#endif
     nx_context_destroy(a->context);ae_editor_workspace_destroy(a->workspace);free(a->bytes);free(a->lines);
 }
 static int test_frame(struct app *a) {
@@ -121,7 +124,57 @@ static int test_tabs_and_limits(void) {
     CHECK(editor_document_apply(&b,&r,&out)==NX_ERROR_LIMIT && !test_text(&a,"seed",4));
     test_destroy(&a);return 0;
 }
-int main(void) {
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+static int test_painted_frame(struct app *a) {
+    for(unsigned i=0;i<a->layout_count;++i)nx_text_layout_destroy(a->layouts[i]);
+    a->layout_count=0;
+    nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,300,200},.name={"Editor",6}};
+    CHECK(sync_document(a) && nx_begin_frame(a->context,300,200,0)==NX_OK && nx_semantics_add(a->context,&root,NULL)==NX_OK &&
+        paint_document(a) && nx_end_frame(a->context)==NX_OK && a->native_document.presentation_available);
+    CHECK(a->native_document.presentation.count);
+    for(size_t i=0;i<a->native_document.presentation.count;++i) {
+        nx_text_document_box *b=&a->native_document.presentation.boxes[i];
+        CHECK(b->start_byte<=b->end_byte && b->end_byte<=a->byte_size && b->bounds.x>=a->canvas.x &&
+            b->bounds.y>=a->canvas.y && b->bounds.x+b->bounds.width<=a->canvas.x+a->canvas.width+.002f);
+    }
+    return 0;
+}
+static int test_original_paint(const char *path,bool require_ligature) {
+    FILE *file=fopen(path,"rb");CHECK(file && !fseek(file,0,SEEK_END));long size=ftell(file);CHECK(size>0 && size<20000000 && !fseek(file,0,SEEK_SET));
+    uint8_t *bytes=malloc((size_t)size);CHECK(bytes && fread(bytes,1,(size_t)size,file)==(size_t)size && !fclose(file));
+    const char text[]="Wii office a\xcc\x81 \xd7\x90\xd7\x91\xd7\x92\r\nsecond\nthird";struct app a;
+    CHECK(!test_create(&a,text,sizeof(text)-1) && nx_font_open(bytes,(size_t)size,NULL,&a.font)==NX_OK && nx_font_collection_create(NULL,&a.fonts)==NX_OK && nx_font_collection_add(a.fonts,a.font)==NX_OK);
+    a.mono_fonts=a.fonts;a.em=20;a.scale=1;a.line_height=31;a.focused=true;a.focus_document=true;
+    CHECK(!test_painted_frame(&a) && a.row_count==3);
+    if(require_ligature) {
+        bool found=false;
+        for(size_t i=0;i<a.native_document.presentation.count;++i) {
+            nx_text_document_box *b=&a.native_document.presentation.boxes[i];
+            if(b->start_byte==5 && b->end_byte==8)found=true; /* Actual office ffi. */
+        }
+        CHECK(found);
+    }
+    uint64_t serial=a.native_document.serial;struct ids *ids=tab_ids(&a,a.document);
+    CHECK(nx_semantics_request_text_value(a.context,ids->canvas,(nx_utf8_span){"changed\r\nnew",12})==NX_OK && !test_painted_frame(&a));
+    CHECK(a.native_document.changed && a.native_document.serial>serial && !test_text(&a,"changed\r\nnew",12) && a.row_count==2);
+    a.canvas.height=31;a.top=1;a.ensure_caret=false;CHECK(!test_painted_frame(&a) && a.row_count==1 && a.rows[0].start==9);
+    for(size_t i=0;i<a.native_document.presentation.count;++i)CHECK(a.native_document.presentation.boxes[i].start_byte>=9);
+    a.em=28;a.scale=2;a.line_height=43.4f;a.canvas.height=80;CHECK(!test_painted_frame(&a));
+    for(unsigned i=0;i<a.layout_count;++i)nx_text_layout_destroy(a.layouts[i]);
+    nx_font_collection_destroy(a.fonts);nx_font_close(a.font);test_destroy(&a);free(bytes);
+    puts("Original Editor actual paint: real layout/rows/carets, accepted edit revision, CRLF, viewport omission and font scale passed.");return 0;
+}
+#endif
+int main(int argc,char **argv) {
     CHECK(!test_public_frame() && !test_policy_and_review() && !test_stale_tokens() && !test_allocation_failures() && !test_tabs_and_limits());
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+    if(argc==2 || argc==3) {
+        CHECK(argc==2 || !strcmp(argv[2],"--require-ligature"));
+        CHECK(!test_original_paint(argv[1],argc==3));
+    }
+    else CHECK(argc==1);
+#else
+    (void)argc;(void)argv;
+#endif
     puts("Original Editor native document owner: installed SDK application, original history/selection, policy/review/tab tokens and UI/model allocation-before-mutation passed.");return 0;
 }

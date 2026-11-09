@@ -29,12 +29,14 @@
         def ax_style(name):
             key(30,ctrl=True);wait(lambda:state(selected=1,begin=0,end=7),name+' original selection before assistive style task')
             ax_phase('style');wait(lambda:state(cursor=4,selected=0,dirty=1),name+' assistive edit uses original model')
+            if _candidate_native_presentation:ax_phase('geometry-visible')
             capture(name+' native accessible document edit')
             key(44,ctrl=True);wait(lambda:state(cursor=7,dirty=0),name+' assistive Undo restores original clean document')
             key(30,ctrl=True);wait(lambda:state(selected=1,begin=0,end=7),name+' original selection restored for subsequent native tasks')
         # Native clipboard task boundary.
         key(49,ctrl=True);wait(lambda:state(docs=1,cursor=0),'new original accessible document')
         typing('abcde');wait(lambda:state(cursor=5),'original assistive seed')
+        if _candidate_native_presentation:ax_phase('geometry')
         if _candidate_accessible_ime:
             ime_expect('abcde',5);ime_preedit(0,7);ime_snapshot('abcde',5)
         ax_phase('edits');wait(lambda:state(cursor=1,selected=0,dirty=1),'native ranged edit reflected in original view')

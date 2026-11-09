@@ -14,6 +14,18 @@ replace('static void close_picker(struct app *a) {','#include "native_document.i
 a=text.index('static bool register_document(struct app *a,struct ids *ids) {')
 b=text.index('\nstatic bool paint_document(struct app *a) {',a)
 replace(text[a:b],'static bool register_document(struct app *a,struct ids *ids) {\n    return editor_native_document_register(a,ids);\n}')
+replace('    a->ensure_caret=false;return nx_pop_clip(a->context)==NX_OK;',
+'''    a->ensure_caret=false;if(nx_pop_clip(a->context)!=NX_OK) return false;
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+    return editor_native_document_present(a,ids);
+#else
+    return true;
+#endif''')
+replace('nx_context_destroy(a.context);',
+'''#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+    editor_presentation_close(&a.native_document.presentation);
+#endif
+    nx_context_destroy(a.context);''')
 replace('static bool frame(struct app *a,bool *busy) {','static bool frame(struct app *a,bool *busy) {\n    a->native_document.changed=false;')
 replace('    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy;',
     '    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy || a->native_document.changed;')

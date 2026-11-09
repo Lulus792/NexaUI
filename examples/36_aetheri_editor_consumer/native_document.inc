@@ -133,3 +133,46 @@ static bool editor_native_document_register(struct app *a,struct ids *ids) {
     if(a->focus_document && !blocked) {if(nx_focus_set(a->context,ids->canvas)!=NX_OK)return false;a->focus_document=false;}
     return true;
 }
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+static bool editor_native_document_present(struct app *a,struct ids *ids) {
+    struct editor_presentation *p=&a->native_document.presentation;
+    editor_presentation_reset(p);nx_result result=NX_OK;
+#ifdef EDITOR_DOCUMENT_WITH_IME
+    bool painted_caret=false;
+#endif
+    for(unsigned n=0;n<a->row_count && result==NX_OK;++n) {
+        struct painted_row *row=&a->rows[n];nx_utf8_span text;
+        if(nx_text_layout_text(row->layout,&text)!=NX_OK || text.length!=row->size ||
+           row->start>a->byte_size || row->size>a->byte_size-row->start ||
+           (row->size && memcmp(text.data,a->bytes+row->start,row->size))) {result=NX_ERROR_STATE;break;}
+        float left=fmaxf(a->canvas.x,row->bounds.x),top=fmaxf(a->canvas.y,row->bounds.y);
+        float right=fminf(a->canvas.x+a->canvas.width,row->bounds.x+row->bounds.width);
+        float bottom=fminf(a->canvas.y+a->canvas.height,row->bounds.y+row->bounds.height);
+        nx_rect clip={left,top,fmaxf(0,right-left),fmaxf(0,bottom-top)};
+        size_t logical=a->top+n,break_bytes=0;
+        if(logical+1<a->line_count)break_bytes=a->lines[logical+1].start-row->start-row->size;
+        result=editor_presentation_row(p,row->layout,row->start,break_bytes,
+            (nx_point){row->bounds.x-a->left,row->bounds.y},clip);
+#ifdef EDITOR_DOCUMENT_WITH_IME
+        if(a->focused && nx_focus_id(a->context)==ids->canvas && !a->review.id && a->mode==EDITING &&
+           a->info.cursor>=row->start && a->info.cursor<=row->start+row->size)painted_caret=true;
+#endif
+    }
+#ifdef EDITOR_DOCUMENT_WITH_IME
+    if(result==NX_OK && painted_caret && a->ime.caret_valid)
+        result=editor_presentation_caret(p,a->info.cursor,a->ime.caret,a->canvas);
+#endif
+    nx_text_document_presentation data;
+    if(result==NX_OK)result=editor_presentation_finish(p,&data);
+    if(result==NX_OK)result=nx_text_document_set_presentation(a->context,ids->canvas,
+        a->document,a->native_document.serial,&data);
+    a->native_document.presentation_available=result==NX_OK;
+    a->native_document.presentation_error=result;
+    if(a->diagnostics) {printf("EDITOR_PRESENTATION available=%u boxes=%zu serial=%llu result=%d\n",
+        result==NX_OK?1u:0u,result==NX_OK?data.box_count:0u,
+        (unsigned long long)a->native_document.serial,(int)result);fflush(stdout);}
+    /* Optional geometry failure never invents a partial frame or disables the
+       original model/input. This frame still publishes its actual copied text. */
+    return true;
+}
+#endif
