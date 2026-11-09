@@ -4,6 +4,7 @@
 #include "../../tests/atspi_large_text_client.c"
 #undef main
 #undef CHECK
+#include "../../tests/atspi_cache_probe.h"
 #include <stdint.h>
 #define CHECK(x) do {if(!(x)){fprintf(stderr,"original-editor-atspi:%d: %s\n",__LINE__,#x);goto done;}} while(0)
 static int expected_text(AtspiText *text,const char *expected) {
@@ -48,6 +49,7 @@ int main(int argc,char **argv) {
     }
     CHECK(app);field=find(app,"Edit document",0);if(!field)field=find(app,"Dokument bearbeiten",0);CHECK(field);
     text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text);
+    CHECK(cache_probe(field,0,64u*1024u));
     if(!strcmp(argv[2],"expect")) {CHECK(argc==4 && expected_file(text,argv[3]));}
     else if(!strcmp(argv[2],"readonly")) {
         CHECK(argc==4 && !edit && expected_file(text,argv[3]));

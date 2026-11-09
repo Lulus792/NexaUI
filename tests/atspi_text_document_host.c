@@ -13,6 +13,7 @@ typedef struct fixture {
     uint64_t identity,revision;
     int readonly,disabled,omitted,fail;
     unsigned applied;
+    char *cache_name;
 } fixture;
 static nx_text_document_state state(fixture *f) {
     return (nx_text_document_state){{f->bytes,f->length},f->identity,f->revision,
@@ -44,9 +45,14 @@ static int frame(fixture *f) {
     w.semantic.name=(nx_utf8_span){"External document",17};w.semantic.bounds=(nx_rect){8,8,300,140};
     w.semantic.state=f->readonly?NX_SEM_READONLY:0;w.semantic.actions=NX_ACTION_FOCUS|(f->readonly?0u:NX_ACTION_SET_VALUE);
     w.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;nx_text_document_state s=state(f);nx_text_document_result result;
-    return nx_begin_frame(f->context,320,160,0)==NX_OK && nx_semantics_add(f->context,&root,NULL)==NX_OK &&
-        (f->omitted || nx_text_document_register(f->context,&w,&s,edit,f,&result)==NX_OK) &&
-        nx_end_frame(f->context)==NX_OK && nx_window_publish_semantics(f->window,f->context)==NX_OK;
+    if(nx_begin_frame(f->context,320,160,0)!=NX_OK || nx_semantics_add(f->context,&root,NULL)!=NX_OK ||
+       (!f->omitted && nx_text_document_register(f->context,&w,&s,edit,f,&result)!=NX_OK))return 0;
+    if(f->cache_name)for(unsigned i=0;i<3072;++i) {
+        nx_semantic_desc label={0};label.id=100u+i;label.parent_id=1;label.role=NX_ROLE_TEXT;
+        label.bounds=(nx_rect){0,0,1,1};label.name=(nx_utf8_span){f->cache_name,1536};
+        if(nx_semantics_add(f->context,&label,NULL)!=NX_OK)return 0;
+    }
+    return nx_end_frame(f->context)==NX_OK && nx_window_publish_semantics(f->window,f->context)==NX_OK;
 }
 static int replace_local(fixture *f,const char *bytes,size_t length,int fresh) {
     char *copy=malloc(length+1u);if(!copy)return 0;
@@ -55,8 +61,12 @@ static int replace_local(fixture *f,const char *bytes,size_t length,int fresh) {
     if(fresh){++f->identity;f->revision=1;}else ++f->revision;
     return 1;
 }
-int main(void) {
+int main(int argc,char **argv) {
     fixture f={0};f.identity=41;f.revision=1;int okay=0,paused=0;setvbuf(stdout,NULL,_IOLBF,0);
+    if(argc==2 && !strcmp(argv[1],"--cache-metadata")) {
+        f.cache_name=malloc(1537);if(!f.cache_name)goto done;
+        memset(f.cache_name,'c',1536);f.cache_name[1536]=0;
+    } else if(argc!=1)return 2;
     nx_window_desc d={"External document fixture",320,160,0,{0}};
     if(!replace_local(&f,"A\xc3\xa9\xf0\x9f\x8c\x8dZ",8,0) || nx_window_create(&d,&f.window)!=NX_OK ||
        nx_context_create(NULL,&f.context)!=NX_OK || !frame(&f))goto done;
@@ -96,7 +106,7 @@ int main(void) {
     }
 done:
     if(f.window)nx_window_publish_semantics(f.window,NULL);
-    nx_context_destroy(f.context);nx_window_destroy(f.window);free(f.bytes);
+    nx_context_destroy(f.context);nx_window_destroy(f.window);free(f.bytes);free(f.cache_name);
     if(!okay)fputs("External document host failed\n",stderr);
     return okay?0:1;
 }

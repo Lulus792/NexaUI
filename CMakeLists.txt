@@ -1093,7 +1093,9 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_atspi_text_document_host PRIVATE NexaUI::NexaUI)
             add_executable(nexaui_atspi_text_document_client tests/atspi_text_document_client.c)
             target_link_libraries(nexaui_atspi_text_document_client PRIVATE PkgConfig::NEXAUI_ATSPI)
-            foreach(target nexaui_atspi_text_document_host nexaui_atspi_text_document_client)
+            add_executable(nexaui_atspi_cache_budget_client tests/atspi_cache_budget_client.c)
+            target_link_libraries(nexaui_atspi_cache_budget_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            foreach(target nexaui_atspi_text_document_host nexaui_atspi_text_document_client nexaui_atspi_cache_budget_client)
                 set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
                 target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
             endforeach()
@@ -1102,6 +1104,12 @@ if(NEXAUI_BUILD_TESTS)
                     ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_text_document_client>
                     $<TARGET_FILE:nexaui_atspi_text_document_host>)
             set_tests_properties(nexaui_atspi_text_document_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                RESOURCE_LOCK native_display)
+            add_test(NAME nexaui_atspi_cache_budget_wayland_private
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_cache_budget_client>
+                    $<TARGET_FILE:nexaui_atspi_text_document_host>)
+            set_tests_properties(nexaui_atspi_cache_budget_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                 RESOURCE_LOCK native_display)
             foreach(target nexaui_atspi_large_text_host nexaui_atspi_large_text_client)
                 set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)

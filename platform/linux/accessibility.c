@@ -1330,14 +1330,39 @@ static int nx_ax_introspect(nx_ax_hub *h,nx_ax_ref r,int cache,DBusMessageIter *
     xml[at]=0; int ok=nx_ax_string(it,xml);
     free(xml); return ok;
 }
+static int nx_ax_cache_charge(size_t *remaining,const char *text) {
+    size_t bytes=strlen(text);if(bytes>*remaining)return 0;
+    *remaining-=bytes;return 1;
+}
+static int nx_ax_cache_ref_charge(size_t *remaining,nx_ax_ref r) {
+    char path[128];nx_ax_path(r,path);
+    const char *bus=d.bus_get_unique_name(r.hub->connection);
+    return nx_ax_cache_charge(remaining,bus?bus:"") && nx_ax_cache_charge(remaining,path);
+}
+static int nx_ax_cache_item_charge(size_t *remaining,nx_ax_ref r) {
+    /* Cache items carry three references, name/description, six possible
+       interface names, fixed scalars and two arrays. 1024 covers all fixed
+       strings, length fields, terminators and alignment; variable strings are
+       charged separately. Neither document values nor spare allocation
+       capacity are serialized by nx_ax_cache_item. */
+    if(*remaining<1024u)return 0;
+    *remaining-=1024u;nx_ax_node *n=nx_ax_node_at(r);
+    if(!nx_ax_cache_ref_charge(remaining,r) || !nx_ax_cache_ref_charge(remaining,nx_ax_app(r.hub)))return 0;
+    if(!r.window) {
+        if(!nx_ax_cache_charge(remaining,r.hub->desktop_bus) ||
+           !nx_ax_cache_charge(remaining,r.hub->desktop_path[0]?r.hub->desktop_path:NX_AX_NULL))return 0;
+    } else if(!nx_ax_cache_ref_charge(remaining,nx_ax_parent(r)))return 0;
+    return nx_ax_cache_charge(remaining,nx_ax_name(r)) && nx_ax_cache_charge(remaining,n?n->description:"");
+}
 static int nx_ax_cache_call(nx_ax_hub *h,DBusMessageIter *it) {
     /* Include all live objects, with a bounded reply. Lazy Accessible queries
        remain available when an unusually large tree exceeds the bulk budget. */
-    size_t budget=2048;
+    size_t remaining=4u*1024u*1024u-2048u;
+    if(!nx_ax_cache_item_charge(&remaining,nx_ax_app(h)))return -6;
     for (nx_linux_ax *b=h->windows;b;b=b->next) {
-        size_t cost=b->snapshot->capacity+b->snapshot->count*1024u+2048u;
-        if (cost>4u*1024u*1024u || budget>4u*1024u*1024u-cost) return -6;
-        budget+=cost;
+        if(!nx_ax_cache_item_charge(&remaining,nx_ax_window(b)))return -6;
+        for(size_t i=0;i<b->snapshot->count;++i)
+            if(!nx_ax_cache_item_charge(&remaining,(nx_ax_ref){h,b,(uint32_t)i}))return -6;
     }
     DBusMessageIter a;
     int ok=d.message_iter_open_container(it,DBUS_TYPE_ARRAY,"((so)(so)(so)iiassusau)",&a) &&
