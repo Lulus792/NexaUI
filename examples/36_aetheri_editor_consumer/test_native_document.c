@@ -1,8 +1,34 @@
 /* Compile the actual generated owner and its real document adapter; the renamed
    native main stays available to the linker but no window is created here. */
+#define _GNU_SOURCE
+#include <nexaui/software.h>
+static nx_result test_focus_render(nx_software_view *,const nx_command *,size_t,
+    nx_color,nx_software_view_outcome *);
+static nx_result test_focus_publish(nx_window *,const nx_context *);
+#define nx_software_view_render test_focus_render
+#define nx_window_publish_semantics test_focus_publish
 #define main original_editor_native_main
 #include EDITOR_NATIVE_DOCUMENT_HOST
 #undef main
+#undef nx_software_view_render
+#undef nx_window_publish_semantics
+
+/* Only the OS presenter/publication boundary is replaced. The owner's actual
+   frame, widgets, focus API, semantics, font shaping and rasterizer still run. */
+enum { TEST_FOCUS_WIDTH=1024,TEST_FOCUS_HEIGHT=768 };
+static uint8_t *test_focus_pixels;
+static nx_software_view_outcome test_focus_outcome=NX_SOFTWARE_VIEW_READY;
+static nx_result test_focus_render(nx_software_view *view,const nx_command *commands,
+    size_t count,nx_color clear,nx_software_view_outcome *outcome) {
+    (void)view;*outcome=test_focus_outcome;
+    if(test_focus_outcome!=NX_SOFTWARE_VIEW_READY)return NX_OK;
+    if(!test_focus_pixels)return NX_ERROR_STATE;
+    return nx_headless_render(commands,count,test_focus_pixels,TEST_FOCUS_WIDTH,
+        TEST_FOCUS_HEIGHT,TEST_FOCUS_WIDTH*4,clear);
+}
+static nx_result test_focus_publish(nx_window *window,const nx_context *context) {
+    (void)window;(void)context;return NX_ERROR_UNSUPPORTED;
+}
 
 static size_t test_realloc_calls,test_realloc_fail_at;
 static bool test_malloc_fail;
@@ -125,6 +151,73 @@ static int test_tabs_and_limits(void) {
     test_destroy(&a);return 0;
 }
 #ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+static size_t test_focus_ink(nx_rect bounds,nx_color color) {
+    uint8_t expected[3]={(uint8_t)lroundf(color.r*255),(uint8_t)lroundf(color.g*255),(uint8_t)lroundf(color.b*255)};
+    size_t count=0;
+    for(unsigned y=0;y<TEST_FOCUS_HEIGHT;++y)for(unsigned x=0;x<TEST_FOCUS_WIDTH;++x) {
+        if(!contains(bounds,(float)x+.5f,(float)y+.5f))continue;
+        const uint8_t *pixel=test_focus_pixels+((size_t)y*TEST_FOCUS_WIDTH+x)*4;
+        if(!memcmp(pixel,expected,3) && pixel[3]==255)++count;
+    }
+    return count;
+}
+static int test_focus_case(const char *path,unsigned kind,bool initially_busy) {
+    struct app a={0};a.root=-1;int result=1;bool busy=false;
+    uint8_t *bytes=NULL,*settled=NULL;size_t size=0;
+    char directory[]="/tmp/nexaui-editor-focus-XXXXXX";bool made=false;
+#define FOCUS_SETUP(x) do {if(!(x)){fprintf(stderr,"focus setup %d: %s\n",__LINE__,#x);goto done;}} while(0)
+    bytes=font_bytes(path,&size);FOCUS_SETUP(bytes && !test_create(&a,"unsaved",7));
+    a.root=-1;a.width=TEST_FOCUS_WIDTH;a.height=TEST_FOCUS_HEIGHT;
+    a.text_percent=100;a.density=1;a.focused=true;a.focus_document=true;
+    FOCUS_SETUP(nx_font_open(bytes,size,NULL,&a.font)==NX_OK &&
+        nx_font_collection_create(NULL,&a.fonts)==NX_OK && nx_font_collection_add(a.fonts,a.font)==NX_OK);
+    a.mono_fonts=a.fonts;
+    test_focus_outcome=NX_SOFTWARE_VIEW_READY;
+    FOCUS_SETUP(frame(&a,&busy) && !busy && !a.dirty);
+    if(!kind) {
+        struct ae_editor_close_token review;
+        FOCUS_SETUP(ae_editor_workspace_request_close(a.workspace,a.document,&review)==AE_EDITOR_WORKSPACE_REVIEW);
+    } else {
+        made=mkdtemp(directory)!=NULL;FOCUS_SETUP(made);
+        a.root=open(directory,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
+        FOCUS_SETUP(a.root>=0 && begin_picker(&a,kind==2) && a.mode==(kind==2?PICK_SAVE:PICK_OPEN));
+        if(kind==2)FOCUS_SETUP(nx_text_field_set_text(a.name,"focus.txt",9)==NX_OK);
+    }
+    test_focus_outcome=initially_busy?NX_SOFTWARE_VIEW_BUSY:NX_SOFTWARE_VIEW_READY;
+    FOCUS_SETUP(frame(&a,&busy));
+    bool scheduled=a.dirty,correct_busy=busy==initially_busy;
+    uint64_t target=kind==2?a.field_id:a.modal_id+5;
+    uint32_t index=0;nx_semantic_view view;
+    FOCUS_SETUP(nx_focus_id(a.context)==target && nx_semantics_find(a.context,target,&index)==NX_OK &&
+        nx_semantics_get(a.context,index,&view)==NX_OK && (view.state&NX_SEM_FOCUSED));
+    nx_rect bounds=view.bounds;size_t first=initially_busy?0:test_focus_ink(bounds,focus_color(&a));
+    test_focus_outcome=NX_SOFTWARE_VIEW_READY;
+    FOCUS_SETUP(frame(&a,&busy));
+    size_t second=test_focus_ink(bounds,focus_color(&a));bool idle=!busy && !a.dirty;
+    size_t image_size=(size_t)TEST_FOCUS_WIDTH*TEST_FOCUS_HEIGHT*4;
+    settled=malloc(image_size);FOCUS_SETUP(settled);memcpy(settled,test_focus_pixels,image_size);
+    FOCUS_SETUP(frame(&a,&busy));
+    bool stable=!busy && !a.dirty && !memcmp(settled,test_focus_pixels,image_size);
+    printf("FOCUS_PAINT kind=%u initial_busy=%u scheduled=%u first_ink=%zu settled_ink=%zu idle=%u stable=%u\n",
+        kind,initially_busy?1u:0u,scheduled?1u:0u,first,second,idle?1u:0u,stable?1u:0u);
+    result=scheduled && correct_busy && !first && second>0 && idle && stable?0:1;
+done:
+    for(unsigned i=0;i<a.layout_count;++i)nx_text_layout_destroy(a.layouts[i]);
+    nx_text_field_destroy(a.name);if(a.picker)ae_files_destroy(a.picker);
+    if(a.root>=0)close(a.root);if(made && rmdir(directory))result=1;
+    nx_font_collection_destroy(a.fonts);nx_font_close(a.font);test_destroy(&a);
+    free(settled);free(bytes);return result;
+#undef FOCUS_SETUP
+}
+static int test_focus_paint(const char *path) {
+    test_focus_pixels=malloc((size_t)TEST_FOCUS_WIDTH*TEST_FOCUS_HEIGHT*4);
+    CHECK(test_focus_pixels);int failed=0;
+    for(unsigned kind=0;kind<3;++kind)for(unsigned busy=0;busy<2;++busy)
+        failed|=test_focus_case(path,kind,busy!=0);
+    free(test_focus_pixels);test_focus_pixels=NULL;
+    CHECK(!failed);
+    puts("Original Editor modal focus: one followup paints review/Open/Save focus, preserves BUSY retry and returns to stable idle.");return 0;
+}
 #ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
 static const char *paint_attribute(const struct app *a,bool selected_text,const char *name) {
     const struct editor_attributes *s=&a->native_document.attributes;
@@ -193,6 +286,9 @@ static int test_original_paint(const char *path,bool require_ligature) {
 }
 #endif
 int main(int argc,char **argv) {
+#ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+    if(argc==3 && !strcmp(argv[2],"--focus-only"))return test_focus_paint(argv[1]);
+#endif
     CHECK(!test_public_frame() && !test_policy_and_review() && !test_stale_tokens() && !test_allocation_failures() && !test_tabs_and_limits());
 #ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
     if(argc==2 || argc==3) {

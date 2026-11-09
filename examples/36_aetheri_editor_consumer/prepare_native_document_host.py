@@ -27,8 +27,8 @@ replace('nx_context_destroy(a.context);',
 #endif
     nx_context_destroy(a.context);''')
 replace('static bool frame(struct app *a,bool *busy) {','static bool frame(struct app *a,bool *busy) {\n    a->native_document.changed=false;')
-replace('    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy;',
-    '    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy || a->native_document.changed;')
+replace('    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy || a->focus_paint_pending;',
+    '    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy || a->focus_paint_pending || a->native_document.changed;')
 replace('''    if(outcome==NX_SOFTWARE_VIEW_READY) {
         nx_result result=nx_window_publish_semantics(a->window,a->context);if(result!=NX_OK && result!=NX_ERROR_UNSUPPORTED) return false;''',
 '''    /* Native replies and queries follow the completed model projection even

@@ -36,3 +36,15 @@ def prepare(source):
     if source.count(BEFORE) != 1:
         raise SystemExit('Changed original native frame-observation boundary')
     return source.replace(BEFORE, AFTER), dict(before=BEFORE, after=AFTER)
+
+
+CAPTURE_BEFORE = "        time.sleep(.08); sequence = len(images)//3+1; server.send_signal(signal.SIGUSR1)"
+CAPTURE_AFTER = """        time.sleep(.08)
+        wait(lambda: state(focus_pending=0), label+' completed focus paint')
+        sequence = len(images)//3+1; server.send_signal(signal.SIGUSR1)"""
+
+
+def prepare_focus_capture(source):
+    if source.count(CAPTURE_BEFORE) != 1:
+        raise SystemExit('Changed original native capture boundary')
+    return source.replace(CAPTURE_BEFORE, CAPTURE_AFTER), dict(before=CAPTURE_BEFORE, after=CAPTURE_AFTER)

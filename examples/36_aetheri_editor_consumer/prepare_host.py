@@ -14,9 +14,9 @@ if original==output or original in output.parents or output in original.parents:
 output.mkdir(parents=True,exist_ok=True)
 path=original/'src/editor/graphical_main.c'
 data=path.read_bytes();text=data.decode();changes=[]
-def replace(before,after):
+def replace(before,after,expected=1):
     global text
-    if text.count(before)!=1:raise SystemExit('Changed original Editor boundary: '+repr(before))
+    if text.count(before)!=expected:raise SystemExit('Changed original Editor boundary: '+repr(before))
     text=text.replace(before,after);changes.append(dict(before=before,after=after))
 # Preserve the original zero/nonzero decisions while keeping Clang's strict
 # floating-to-bool diagnostics enabled for the copied host and paint test.
@@ -24,7 +24,28 @@ replace('if(a->review_max_scroll &&', 'if(a->review_max_scroll!=0.0f &&')
 replace('(nh?nh:1)', '(nh!=0.0f?nh:1)')
 replace('if(side) {', 'if(side!=0.0f) {')
 replace('    bool overlay_shown,close_seen;uint64_t clicked_row;double clicked_at;',
-        '    bool overlay_shown;uint64_t clicked_row;double clicked_at;\n    nx_window_close_request native_close;bool chrome_release;uint64_t wait_serial;')
+        '    bool overlay_shown,focus_paint_pending;uint64_t clicked_row;double clicked_at;\n    nx_window_close_request native_close;bool chrome_release;uint64_t wait_serial;')
+# These controls register and paint before their initial modal focus is set.
+# Focus changes do not rewrite commands already recorded in this frame. Keep
+# one followup dirty, without forcing continuous redraw once focus is painted.
+replace('static bool paint_review(struct app *a) {', '''static nx_result editor_focus_after_paint(struct app *a,uint64_t id) {
+    uint64_t previous=nx_focus_id(a->context);
+    nx_result result=nx_focus_set(a->context,id);
+    if(result==NX_OK && previous!=nx_focus_id(a->context)) a->focus_paint_pending=true;
+    return result;
+}
+static bool paint_review(struct app *a) {''')
+replace('nx_focus_set(a->context,a->modal_id+5)',
+        'editor_focus_after_paint(a,a->modal_id+5)',expected=2)
+replace('nx_focus_set(a->context,a->field_id)',
+        'editor_focus_after_paint(a,a->field_id)')
+replace('static bool frame(struct app *a,bool *busy) {',
+        'static bool frame(struct app *a,bool *busy) {\n    a->focus_paint_pending=false;')
+replace('    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy;',
+        '    *busy=outcome==NX_SOFTWARE_VIEW_BUSY;a->dirty=*busy || a->focus_paint_pending;')
+replace('closing=%u pending=%llu', 'closing=%u focus_pending=%u pending=%llu')
+replace('a->close_all?1u:0u,(unsigned long long)a->pending_close',
+        'a->close_all?1u:0u,a->focus_paint_pending?1u:0u,(unsigned long long)a->pending_close')
 replace('static volatile sig_atomic_t stopping,signal_fd=-1;', '#include "window_input.h"\nstatic volatile sig_atomic_t stopping,signal_fd=-1;')
 replace('''        nx_window_info info;if(nx_window_get_info(a.window,&info)!=NX_OK) goto done;''',
 '''        nx_window_close_request native={0};
@@ -65,4 +86,4 @@ done:''','''    if(a.native_close.id) {
     result=0;
 done:''')
 generated=text.encode();(output/'editor.c').write_bytes(generated)
-(output/'source-delta.json').write_text(json.dumps(dict(original=str(path),original_sha256=hashlib.sha256(data).hexdigest(),generated_sha256=hashlib.sha256(generated).hexdigest(),changes=changes,scope='Separate installed consumer: original document/workspace/dialog/save/input/rendering behavior retained. Native close consumption, caption/edge gestures and three equivalent explicit floating zero/nonzero predicates are the adapter delta.'),indent=2)+'\n')
+(output/'source-delta.json').write_text(json.dumps(dict(original=str(path),original_sha256=hashlib.sha256(data).hexdigest(),generated_sha256=hashlib.sha256(generated).hexdigest(),changes=changes,scope='Separate installed consumer: original document/workspace/dialog/save/input/rendering owners retained. Native close consumption, caption/edge gestures, equivalent explicit floating predicates and one followup frame after late modal focus are the adapter delta.'),indent=2)+'\n')

@@ -354,3 +354,14 @@ available. This test-driver change is no application performance measurement.
 The [native follow-up](../../docs/quality/editor-native-followup-report.md)
 records complete current-SDK workflows, the detected OFF-owner omission and
 the remaining focus/caret pixel differences separately from functional passes.
+
+The generated owner now retains one dirty followup when initial modal focus is
+set after the review/Open/Save controls have already painted. It uses the existing
+focus API, preserves presenter-BUSY retries and stops refreshing once that focus
+has been painted. `editor.focus_paint` compiles the actual owner, uses real fonts,
+widgets, semantics and headless rasterization, and checks all three dialogs with
+READY and BUSY presentation boundaries. Only the OS presenter/publication calls
+are replaced in this component test; it does not establish native presentation.
+The optional native runner flag `--focus-paint` requires the latest diagnostic
+frame to report completed focus painting before each original screenshot. The
+original capture delay, deadlines, events, assertions and idle guard remain.

@@ -1,7 +1,7 @@
 """Differential full-history parsing and coherent state observation."""
 import re
 import textwrap
-from native_observation import BEFORE, AFTER, prepare
+from native_observation import BEFORE, AFTER, prepare, CAPTURE_BEFORE, CAPTURE_AFTER, prepare_focus_capture
 
 
 def functions(block, read):
@@ -43,7 +43,21 @@ def main():
         try: prepare(changed)
         except SystemExit: pass
         else: raise AssertionError('changed original boundary accepted')
-    print('Original/latest frame parity:12 complete histories,60 state cases, old mixed-frame false positive rejected and three refused source drifts')
+    adapted, change = prepare_focus_capture('head\n'+CAPTURE_BEFORE+'\ntail\n')
+    assert adapted == 'head\n'+CAPTURE_AFTER+'\ntail\n' and change == dict(before=CAPTURE_BEFORE, after=CAPTURE_AFTER)
+    for changed in ('', CAPTURE_BEFORE+CAPTURE_BEFORE, CAPTURE_BEFORE.replace('.08', '.8')):
+        try: prepare_focus_capture(changed)
+        except SystemExit: pass
+        else: raise AssertionError('changed original capture boundary accepted')
+    # The predicate must refuse old diagnostics, a pending focus paint and an
+    # older settled frame followed by a pending frame. Only the latest frame
+    # can establish that the additional work completed.
+    for pending, expected in ((None, False), (1, False), (0, True)):
+        current[0] = frame if pending is None else frame.rstrip('\n')+' focus_pending='+str(pending)+'\n'
+        assert after['state'](focus_pending=0) == expected
+    current[0] = frame.rstrip('\n')+' focus_pending=0\n'+frame.rstrip('\n')+' focus_pending=1\n'
+    assert not after['state'](focus_pending=0)
+    print('Original/latest frame parity:12 complete histories,60 state cases, mixed-frame false positive rejected; focus capture accepts only completed latest paint, six source drifts refused')
 
 
 if __name__ == '__main__': main()
