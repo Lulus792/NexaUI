@@ -1,0 +1,1948 @@
+{
+  "result": "compared",
+  "complete_captures": 336,
+  "whole_image_pairs": 252,
+  "equal_pairs": 245,
+  "different_pairs": [
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1109,
+      "bounds": [
+        484,
+        177,
+        656,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1109,
+      "bounds": [
+        554,
+        227,
+        726,
+        238
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1030,
+      "bounds": [
+        484,
+        177,
+        653,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "document-first unsaved close review",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 888,
+      "bounds": [
+        495,
+        421,
+        684,
+        456
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 2560,
+      "bounds": [
+        296,
+        227,
+        1023,
+        693
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1019,
+      "bounds": [
+        484,
+        177,
+        660,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1019,
+      "bounds": [
+        554,
+        227,
+        730,
+        238
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "direct text and line numbers",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "direct text and line numbers",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "direct text and line numbers",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1109,
+      "bounds": [
+        484,
+        177,
+        656,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "first save with labelled filename",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "first save with labelled filename",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "document-first unsaved close review",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "document-first unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "document-first unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "empty editor window",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "empty editor window",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "empty editor window",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "external change retains document and file",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "external change retains document and file",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "external change retains document and file",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit respects the hidden caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit respects the hidden caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native preedit respects the hidden caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original document prefix before long native preedit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original document prefix before long native preedit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original document prefix before long native preedit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent native Unicode edits use the original document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent native Unicode edits use the original document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "independent native Unicode edits use the original document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original close review retains read-only accessible text",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original close review retains read-only accessible text",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "original close review retains read-only accessible text",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native unsaved close review",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1109,
+      "bounds": [
+        554,
+        227,
+        726,
+        238
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native close original Save destination",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "native close original Save destination",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "contrast-200 native accessible document edit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "release",
+      "case": "light-150 native accessible document edit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "direct text and line numbers",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "direct text and line numbers",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "direct text and line numbers",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1030,
+      "bounds": [
+        484,
+        177,
+        653,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "first save with labelled filename",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "first save with labelled filename",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "document-first unsaved close review",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 888,
+      "bounds": [
+        495,
+        421,
+        684,
+        456
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "document-first unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "document-first unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "empty editor window",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "empty editor window",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "empty editor window",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "external change retains document and file",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "external change retains document and file",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "external change retains document and file",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit respects the hidden caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit respects the hidden caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native preedit respects the hidden caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original document prefix before long native preedit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original document prefix before long native preedit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original document prefix before long native preedit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent native Unicode edits use the original document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent native Unicode edits use the original document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "independent native Unicode edits use the original document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original close review retains read-only accessible text",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original close review retains read-only accessible text",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "original close review retains read-only accessible text",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native unsaved close review",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 2560,
+      "bounds": [
+        296,
+        227,
+        1023,
+        693
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native close original Save destination",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "native close original Save destination",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "contrast-200 native accessible document edit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "asan",
+      "case": "light-150 native accessible document edit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "direct text and line numbers",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "direct text and line numbers",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "direct text and line numbers",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "first save with labelled filename",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1019,
+      "bounds": [
+        484,
+        177,
+        660,
+        188
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "first save with labelled filename",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "first save with labelled filename",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "document-first unsaved close review",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "document-first unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "document-first unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "empty editor window",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "empty editor window",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "empty editor window",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "external change retains document and file",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "external change retains document and file",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "external change retains document and file",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit keeps original document and history uncommitted",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native Unicode commit through original document and Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native commit and continuing preedit share one done callback",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit respects the hidden caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit respects the hidden caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native preedit respects the hidden caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native atomic byte replacement avoids intermediate grapheme caret",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original document prefix before long native preedit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original document prefix before long native preedit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original document prefix before long native preedit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "long native preedit scrolls within the original text viewport",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "foreign partial UTF-8 and complete bytes apply once only after actual EOF",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "late actual EOF cannot revive original caret IME review or tab requests",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent native Unicode edits use the original document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent native Unicode edits use the original document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "independent native Unicode edits use the original document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original close review retains read-only accessible text",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original close review retains read-only accessible text",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "original close review retains read-only accessible text",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "full original eight-MiB accessible document after original Undo",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native unsaved close review",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native unsaved close review",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native unsaved close review",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "retained editor after Cancel move resize and zoom",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native close original Save destination",
+      "output": 0,
+      "equal": false,
+      "changed_pixels": 1019,
+      "bounds": [
+        554,
+        227,
+        730,
+        238
+      ]
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native close original Save destination",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "native close original Save destination",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "contrast-200 native accessible document edit",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 selected document",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 selected document",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 selected document",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native composition at original scale/density",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native composition at original scale/density",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native composition at original scale/density",
+      "output": 2,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native accessible document edit",
+      "output": 0,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native accessible document edit",
+      "output": 1,
+      "equal": true
+    },
+    {
+      "reference": "shared",
+      "profile": "off-shared",
+      "case": "light-150 native accessible document edit",
+      "output": 2,
+      "equal": true
+    }
+  ],
+  "previews": [
+    {
+      "case": "direct text and line numbers",
+      "output": 0,
+      "path": "/mnt/d/NexaUI/out/editor-native59-preview-0.png",
+      "sha256": "92d253cb66b14d7897cb77ed6417c7e0466bcf6c55e17e4c4f65e78ec591152f"
+    },
+    {
+      "case": "document-first unsaved close review",
+      "output": 0,
+      "path": "/mnt/d/NexaUI/out/editor-native59-preview-1.png",
+      "sha256": "bd44416cb2a85743cb32aad48d5133d33ea40567b1f7fe681ba3f12813265afe"
+    },
+    {
+      "case": "contrast-200 selected document",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/editor-native59-preview-2.png",
+      "sha256": "72ab342df8f61937f3f346b3c353c032cfe0072ebde5b063fa5b480a209e3754"
+    },
+    {
+      "case": "contrast-200 native accessible document edit",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/editor-native59-preview-3.png",
+      "sha256": "3953cbabc7c26d6c7e0023f3fe95270aa0abe2a1c0dc8b408ee2cab8a204b8ff"
+    }
+  ],
+  "scope": "Complete decompressed compositor PPM bytes; no regions ignored and no tolerance. Differences retained for actual inspection; this receipt alone does not approve them or physical/human visuals."
+}

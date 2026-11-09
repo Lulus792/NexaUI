@@ -1,0 +1,245 @@
+{
+  "source_revision": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+  "run_id": 42708514559,
+  "run_attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559",
+  "result": "passed",
+  "jobs": [
+    {
+      "id": 129471594806,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471594806",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        272,
+        272
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:12:49.8017812Z   1/272 Test   #1: nexaui_editor_native_frame_observation ................................   Passed    0.06 sec",
+        "2026-11-09T22:14:34.7003162Z 101/272 Test #101: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.34 sec",
+        "2026-11-09T22:15:57.1046306Z 158/272 Test #158: nexaui_numeric_value ..................................................   Passed    0.02 sec",
+        "2026-11-09T22:15:57.1273556Z 159/272 Test #159: nexaui_numeric_value_guard ............................................   Passed    0.02 sec",
+        "2026-11-09T22:18:12.4236672Z   1/272 Test   #1: nexaui_editor_native_frame_observation ................................   Passed    0.08 sec",
+        "2026-11-09T22:19:57.0894738Z 101/272 Test #101: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.34 sec",
+        "2026-11-09T22:21:21.0787634Z 158/272 Test #158: nexaui_numeric_value ..................................................   Passed    0.02 sec",
+        "2026-11-09T22:21:21.0972154Z 159/272 Test #159: nexaui_numeric_value_guard ............................................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471594806.log",
+        "size": 340458,
+        "sha256": "44aa23d7eff585aa4eadade9a6e87181698bc720f495a779245b1f90ebf4ff06"
+      }
+    },
+    {
+      "id": 129471595353,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471595353",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        270
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:05:52.9559399Z   1/270 Test   #1: nexaui_editor_native_frame_observation ................................   Passed    0.06 sec",
+        "2026-11-09T22:07:19.6883293Z 101/270 Test #101: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T22:08:30.7031036Z 157/270 Test #157: nexaui_numeric_value ..................................................   Passed    0.00 sec",
+        "2026-11-09T22:08:30.7048491Z 158/270 Test #158: nexaui_numeric_value_guard ............................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471595353.log",
+        "size": 308081,
+        "sha256": "462a2cb23b2b5e3b568779457f9847ae50fd054b577d50209edc4b9a5fced4ef"
+      }
+    },
+    {
+      "id": 129471595547,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471595547",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        124
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:05:43.6202440Z   1/124 Test   #1: nexaui_editor_native_frame_observation .....   Passed    0.13 sec",
+        "2026-11-09T22:05:47.8483600Z  53/124 Test  #53: nexaui_numeric_value .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471595547.log",
+        "size": 111900,
+        "sha256": "dbbf8832c7b04bd88ea5c3c3bd8ad3641664b23fec9a0ce365151de33b53bb08"
+      }
+    },
+    {
+      "id": 129471595558,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471595558",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        123
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:05:32.8597230Z   1/123 Test   #1: nexaui_editor_native_frame_observation .....   Passed    0.12 sec",
+        "2026-11-09T22:05:36.8394760Z  53/123 Test  #53: nexaui_numeric_value .......................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471595558.log",
+        "size": 111591,
+        "sha256": "587085fa67b860745eea8439eb2dbc9d612331086019560f721f0ce6b8cce39a"
+      }
+    },
+    {
+      "id": 129471595801,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471595801",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        147
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:06:21.6666545Z   1/147 Test   #1: nexaui_editor_native_frame_observation .....   Passed    0.12 sec",
+        "2026-11-09T22:06:36.7003615Z  59/147 Test  #59: nexaui_numeric_value .......................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471595801.log",
+        "size": 102173,
+        "sha256": "99ef82eaa1ab33977169b13e23be5523b0d51e9f11f02a253c20a1e5b9054f0f"
+      }
+    },
+    {
+      "id": 129471595818,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471595818",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        148
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:06:09.4332840Z   1/148 Test   #1: nexaui_editor_native_frame_observation .....   Passed    0.13 sec",
+        "2026-11-09T22:06:24.4538524Z  59/148 Test  #59: nexaui_numeric_value .......................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471595818.log",
+        "size": 102303,
+        "sha256": "75baeceddef9a3a4e7bec76ed12de3c8ea3b403b9cf37f1a1ad454aed0101f06"
+      }
+    },
+    {
+      "id": 129471596872,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471596872",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+      "test_summaries": [
+        272,
+        1
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T22:05:50.4222921Z   1/272 Test   #1: nexaui_editor_native_frame_observation ................................   Passed    0.06 sec",
+        "2026-11-09T22:07:16.5256578Z 101/272 Test #101: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T22:08:27.0393817Z 158/272 Test #158: nexaui_numeric_value ..................................................   Passed    0.00 sec",
+        "2026-11-09T22:08:27.0413732Z 159/272 Test #159: nexaui_numeric_value_guard ............................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/editor-native59-ci-129471596872.log",
+        "size": 314421,
+        "sha256": "f39ce725b16839323f79fc637b73d59e164c486112156ad6b6a63de273875cdf"
+      }
+    },
+    {
+      "id": 129471597355,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471597355",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8"
+    },
+    {
+      "id": 129471598150,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42708514559/job/129471598150",
+      "head_sha": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8"
+    }
+  ],
+  "scope": "All seven required exact-source SDK/package jobs pass on first attempt. Two optional jobs skipped; no CTest skips. The new coherent-frame observer and existing numeric public API execute on all three platforms; native numeric guards continue on Linux, twice under sanitizer driver orders. Original full Editor native tasks have separate local evidence. Full visual/focus parity, actual Aetheri compositor, installed IME/screenreaders, hardware/human/performance and broad adoption remain open."
+}

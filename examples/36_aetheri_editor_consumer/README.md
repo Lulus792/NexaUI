@@ -351,3 +351,6 @@ libatspi deadline, EOF assertions and CPU/frame guards. The standalone
 `check_native_observation.py` regression compares complete historical logs and
 rejects a mixed-frame false positive; the SDK test suite runs it when Python is
 available. This test-driver change is no application performance measurement.
+The [native follow-up](../../docs/quality/editor-native-followup-report.md)
+records complete current-SDK workflows, the detected OFF-owner omission and
+the remaining focus/caret pixel differences separately from functional passes.

@@ -1,5 +1,22 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor native follow-up: source `02ba99e` composes installed
+SDK0.1.33/source `1e00a6f` with the unchanged original7bbe704 owner. A restored
+private source-checked compositor environment executes four complete native
+profiles,336 captures and104 forced pre-EOF frames. An exact OFF binary fails
+when the independent reader demands omitted attributes. The coherent-frame
+observer fixes an old mixed-frame false positive and removes repeated historical
+frame scans without relaxing input/EOF/CPU/deadline/sanitizer guards. Formal
+owner builds pass86 CTests; one root observer CTest adds87 local executions.
+All110 inputs,133 owner/peer objects and28 generated C replays bind exactly.
+All seven exact-source CI jobs pass. Of252 whole-image pairs,245 match; temporary
+path labels and additional ASan focus/caret differences remain recorded and full
+visual parity stays open. See the [native follow-up](editor-native-followup-report.md).
+The earlier inaccessible VM reply is not retrospectively diagnosed. Actual
+Aetheri compositor, broader IME/font/interfaces, hardware/human/performance,
+normal adoption and remaining packets6–8 remain open. All103 IDs/statuses persist;
+Aetheri source/pin/default/build/processes stay untouched.
+
 Numeric Value follow-up: SDK0.1.33/source `1e00a6f` adds copied slider/drag
 numeric snapshots and bounded absolute writes, plus guarded Linux AT-SPI Value.
 The optional original Settings consumer frozen at `d889494`/Aetheri `7934590`

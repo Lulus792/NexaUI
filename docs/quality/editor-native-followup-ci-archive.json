@@ -1,0 +1,305 @@
+{
+  "archive": "/mnt/d/NexaUI/out/nexaui-editor-native59-ci-20261109.tar.gz",
+  "size": 9001638,
+  "sha256": "4fec84c76068c4a1fcb6b849dcc0646e6fc46018ba74cc04449f4a7baa7fc677",
+  "files": 58,
+  "verified_each_member": true,
+  "font_bytes_bundled": false,
+  "source_revision": "02ba99ebd5c284b27af5b615b1f99751f31eb3b8",
+  "run_id": 42708514559,
+  "run_attempt": 1,
+  "complete_decoded_logs": 7,
+  "scope": "Immutable final CI/source/doc supplement with seven complete logs, final metadata/reports, verification helpers, final-source receipt guards and actual old0.1.31 failed-run binaries/libraries. Own receipt and subsequent publication/check are sidecars. No font bytes bundled.",
+  "members": [
+    {
+      "path": "ci/editor-native59-ci-129471594806.log",
+      "size": 340458,
+      "sha256": "44aa23d7eff585aa4eadade9a6e87181698bc720f495a779245b1f90ebf4ff06"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471595353.log",
+      "size": 308081,
+      "sha256": "462a2cb23b2b5e3b568779457f9847ae50fd054b577d50209edc4b9a5fced4ef"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471595547.log",
+      "size": 111900,
+      "sha256": "dbbf8832c7b04bd88ea5c3c3bd8ad3641664b23fec9a0ce365151de33b53bb08"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471595558.log",
+      "size": 111591,
+      "sha256": "587085fa67b860745eea8439eb2dbc9d612331086019560f721f0ce6b8cce39a"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471595801.log",
+      "size": 102173,
+      "sha256": "99ef82eaa1ab33977169b13e23be5523b0d51e9f11f02a253c20a1e5b9054f0f"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471595818.log",
+      "size": 102303,
+      "sha256": "75baeceddef9a3a4e7bec76ed12de3c8ea3b403b9cf37f1a1ad454aed0101f06"
+    },
+    {
+      "path": "ci/editor-native59-ci-129471596872.log",
+      "size": 314421,
+      "sha256": "f39ce725b16839323f79fc637b73d59e164c486112156ad6b6a63de273875cdf"
+    },
+    {
+      "path": "ci/editor-native59-ci-final-jobs.json",
+      "size": 70823,
+      "sha256": "d8dfd63a86f0b4c23c2483e5823e51ac81c50dd0cb722663d4ca03e352c8e299"
+    },
+    {
+      "path": "ci/editor-native59-ci-final-run.json",
+      "size": 13451,
+      "sha256": "e9faba9076fbf7e5d7000698e5cb9add7dde2322495d5c410be1a47c04622990"
+    },
+    {
+      "path": "ci/editor-native59-ci-jobs.json",
+      "size": 66085,
+      "sha256": "34477539041640f23df831dcf59ecbe50134005c4bd6c4f0878c4dc777830a2a"
+    },
+    {
+      "path": "ci/editor-native59-ci-run.json",
+      "size": 13448,
+      "sha256": "a1581a09be393be1d6d9dce370f54344e138892267b1b72d68884f75e3089e00"
+    },
+    {
+      "path": "ci/editor-native59-ci-runs.json",
+      "size": 14398,
+      "sha256": "85a0b8b862454118dcce08132dc482aa7245b00292fdaa45f63baa0b7ab7c23a"
+    },
+    {
+      "path": "ci/editor-native59-ci.json",
+      "size": 11361,
+      "sha256": "df891539d9a92ac9fd6ed326669c5ddca08ee201c7e57318cf543f9830f13518"
+    },
+    {
+      "path": "documentation/CHANGELOG.md",
+      "size": 38262,
+      "sha256": "7bb59c2835977e50f479e35a12a8a023f1cbb061b68c8dbe79cd5e471961b09f"
+    },
+    {
+      "path": "documentation/CMakeLists.txt",
+      "size": 152697,
+      "sha256": "873cb501c3a9d6482691b248ce15423bc32d434ac5876696e97d8b71c8604be6"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-adoption-assessment.md",
+      "size": 467820,
+      "sha256": "256efd4d2f2e09bf657e5750909f10b01f6b83bb9a1a7d3c045012728cb0a01b"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-requirement-map.md",
+      "size": 277663,
+      "sha256": "717143fb21732e408aba0add4619321c0435879f9fd3e16c288165d64c267c36"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-archive.json",
+      "size": 1426004,
+      "sha256": "0af1afeb14f809c2a3cb1d6c947fe19d7b4f805532b2e6693be7fdba33f4e7f9"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-ci.json",
+      "size": 11361,
+      "sha256": "df891539d9a92ac9fd6ed326669c5ddca08ee201c7e57318cf543f9830f13518"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-images.json",
+      "size": 48737,
+      "sha256": "aa04f07bbefe420844d96d8b34ca8d3bdfdd438bf71c70a5f51c9d74c08eb5cc"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-local.json",
+      "size": 844994,
+      "sha256": "25266b7203dbf3ad7483f0a46a7e9adb677ea9146df180a950beda76095a9ad6"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-report.md",
+      "size": 9869,
+      "sha256": "0349eb132f907655d6f0b365b0594177d44796d198771d59dbfed25d40ad3aff"
+    },
+    {
+      "path": "documentation/docs/quality/editor-native-followup-source-binding.json",
+      "size": 251087,
+      "sha256": "b135f63ecb1d0085965fa293144eda8e2cf2382f085775ff5b48d2d4044ae771"
+    },
+    {
+      "path": "documentation/docs/quality/system-compositions-assessment.md",
+      "size": 32147,
+      "sha256": "8b837888b4c13ab6c75cd5a4782eb039b352e616bda3d93ce761351da1936490"
+    },
+    {
+      "path": "documentation/examples/36_aetheri_editor_consumer/CMakeLists.txt",
+      "size": 13685,
+      "sha256": "3e71514efa3443c19d118456558e2f0adc946f331fd06c41c081e9cb2e90e0c7"
+    },
+    {
+      "path": "documentation/examples/36_aetheri_editor_consumer/README.md",
+      "size": 22038,
+      "sha256": "36cbade343f373e58f98149d83405f4d666a50d3708b3f54222542e8cf7c6c42"
+    },
+    {
+      "path": "documentation/examples/36_aetheri_editor_consumer/check_native_observation.py",
+      "size": 2398,
+      "sha256": "59b306385532550d454e1647a7bec903cf74b2eb189c8c1181c2ccafdb7c5e89"
+    },
+    {
+      "path": "documentation/examples/36_aetheri_editor_consumer/native_observation.py",
+      "size": 1534,
+      "sha256": "a28a57f6fde69ce238a2cdca34be86fa259b1c014159db6a1b96489d0710cbe3"
+    },
+    {
+      "path": "documentation/examples/36_aetheri_editor_consumer/run_native.py",
+      "size": 11181,
+      "sha256": "9a817d98f63d7eadd66f3d5570a04d7a230559943ce7d658973cc42a4d7ca54d"
+    },
+    {
+      "path": "late-guards/editor-native61-guard-attributes-floor.log",
+      "size": 148,
+      "sha256": "520a198c7cc02755fc85141190568a903999879ee51110b56b607205e89a78b5"
+    },
+    {
+      "path": "late-guards/editor-native61-guard-changed-hash.log",
+      "size": 127,
+      "sha256": "7de29abddeb01b07f52d3bd4c4a9ed93adc91e8ada43a24cefe0daa3fe3f5d71"
+    },
+    {
+      "path": "late-guards/editor-native61-guard-mixed-version.log",
+      "size": 116,
+      "sha256": "49875c212b3cf7b2dc57b9de4ecfd9398761709cba2374b0339da0435383822a"
+    },
+    {
+      "path": "late-guards/editor-native61-guard-unknown-version.log",
+      "size": 116,
+      "sha256": "ac09713bc60b640dbed3eef2e7b9b908ad162eaad822b971ad642d48715da192"
+    },
+    {
+      "path": "late-guards/editor-native61-process-audit.json",
+      "size": 383,
+      "sha256": "566ef50882449798b68aa0453aff5dcb519d34f9a8db9ce896f3107833e5135e"
+    },
+    {
+      "path": "late-guards/editor-native61-receipt-guards.json",
+      "size": 6498,
+      "sha256": "fb9cfd952a2187e4e18df83f1a00e34bc45c4b966ab9a329eb00b765338ead78"
+    },
+    {
+      "path": "late-guards/negative61-receipt-attributes-floor.json",
+      "size": 201,
+      "sha256": "e6a6b24fec382be509ec521886015bdf0411e80194da8da3577faea67f024d00"
+    },
+    {
+      "path": "late-guards/negative61-receipt-changed-hash.json",
+      "size": 201,
+      "sha256": "8b59e0f2e18a9534ba61c3fbabdac48d14ffa5c1c7d6068a4ba4637130009696"
+    },
+    {
+      "path": "late-guards/negative61-receipt-mixed-version.json",
+      "size": 207,
+      "sha256": "90b3c5cb805058e8b4c1a0d7d0b58e1295d2331f53d964f5857298cc654c8227"
+    },
+    {
+      "path": "late-guards/negative61-receipt-unknown-version.json",
+      "size": 201,
+      "sha256": "8775b0aa420132090612e242c46df552efa7f5d62967169c69e06c21137e3e4d"
+    },
+    {
+      "path": "prior-native31/asan/app-aetheri_editor_candidate",
+      "size": 12864640,
+      "sha256": "dd25a2f9d4c32e05f02960a61dae490549b0ca3c84d2d99a1a5aef322f102af1"
+    },
+    {
+      "path": "prior-native31/asan/library-libnexaui.a",
+      "size": 12372810,
+      "sha256": "ad62ec01d08a528282526f1a16428bf6b9bf3570e0eaffdd57f83bc1bc3b67c6"
+    },
+    {
+      "path": "prior-native31/asan/peer-editor_document_client",
+      "size": 3166152,
+      "sha256": "09eec9d9eef58ad34cd6a6bd15fc82a7a1818ddf89a4b3b9a10cbcf429b43651"
+    },
+    {
+      "path": "prior-native31/shared/app-aetheri_editor_candidate",
+      "size": 323880,
+      "sha256": "aa8aa68282a7509f9ca2e798f133a1ace9091528abbac2fd88256877284b0b0f"
+    },
+    {
+      "path": "prior-native31/shared/library-libnexaui.so.0.1.31",
+      "size": 970048,
+      "sha256": "83cee14f0483d096933806b616ceef4deaa4844f3e69def92ff3164a48efef60"
+    },
+    {
+      "path": "prior-native31/shared/peer-editor_document_client",
+      "size": 82824,
+      "sha256": "61905f3123001259a55c1b8b15c6672e7cb0f250b6143af1bf69a31f07f94faa"
+    },
+    {
+      "path": "verification/archive_editor_native59.py",
+      "size": 3404,
+      "sha256": "3565e99614299f4aab4191c50a4b0932393b4852e64a8c023ed436da2620e52c"
+    },
+    {
+      "path": "verification/archive_editor_native59_ci.py",
+      "size": 3761,
+      "sha256": "51bae1a999a6a4cc60e22db72cc0ff8999ab06aa9beb5127bc7020045956b3f4"
+    },
+    {
+      "path": "verification/audit_editor_native61_processes.py",
+      "size": 1318,
+      "sha256": "5c0775349ba85447174286ae64323ecf59ec8d7462183cba1a1280375a649090"
+    },
+    {
+      "path": "verification/bind_editor_native59.py",
+      "size": 11833,
+      "sha256": "61219a74f4832052c84e9530e6b28f648e6d76bf96983de0730c6ba0eb559fdd"
+    },
+    {
+      "path": "verification/bind_editor_native59_ci.py",
+      "size": 3725,
+      "sha256": "76f938f627166411cf5aafa0baae7412e96e48392950c8834efc106fce489f60"
+    },
+    {
+      "path": "verification/check_editor_native56_receipt_guards.py",
+      "size": 2630,
+      "sha256": "1d335152ece8bd305270b962df4d002346a3596bd74946d69bd8bba5bd1fc75e"
+    },
+    {
+      "path": "verification/check_editor_native59_docs.py",
+      "size": 7940,
+      "sha256": "92c63cc753e43617e121f44b9e1aa8a06bbeba696bf36257c1a04ccff16e8eb5"
+    },
+    {
+      "path": "verification/check_editor_native61_receipt_guards.py",
+      "size": 623,
+      "sha256": "983851d6fb5d27f855e9cebde61ffb71be1bc6c432ae8beca821e03c151915a4"
+    },
+    {
+      "path": "verification/editor-native59-docs-precheck.json",
+      "size": 864,
+      "sha256": "7b336d11d18196f160e5d0f269a528b95580446cbfea9a79872d0b3dd03c6f9b"
+    },
+    {
+      "path": "verification/editor-native59-visual-inspection.json",
+      "size": 1155,
+      "sha256": "84d240298a5192dfa65785d8110b14e43725b1c9c0dc93ae26f22899e50c2272"
+    },
+    {
+      "path": "verification/materialize_editor_native59_binder.py",
+      "size": 8411,
+      "sha256": "5240dc0eabaf7a76307f03f8d94e18bf9694e613f96a5e08e51a6811b2aaa5b6"
+    },
+    {
+      "path": "verification/materialize_editor_native59_ci_binder.py",
+      "size": 1513,
+      "sha256": "b9a974708271d9ade5062dce55a671c33231ba7c3285376ab83bd3e07e2354a6"
+    },
+    {
+      "path": "verification/prepare_editor_native59_docs.py",
+      "size": 5508,
+      "sha256": "94adcaca7fcc6a8def3491c09c1fea27baa3a98c4fcb59c7f6b9e29abc2312da"
+    }
+  ]
+}
