@@ -66,7 +66,7 @@ def main():
             accessible_source=accessible_source.replace(stream_marker,(here/'native_clipboard_stream_flow.py.inc').read_text() if args.clipboard_stream_gate else '')
         native_flow=accessible_source+native_flow
         if args.clipboard_tools:
-            if receipt['sdk_version']!='0.1.29':raise SystemExit('Native document clipboard requires a checked0.1.29 SDK')
+            if receipt['sdk_version'] not in ('0.1.29','0.1.30'):raise SystemExit('Native document clipboard requires a checked0.1.29/0.1.30 SDK')
             args.clipboard_tools=args.clipboard_tools.resolve(strict=True)
             replace("'NEXAUI_PLATFORM': 'wayland'", "'NEXAUI_PLATFORM': 'wayland', 'WAYLAND_DEBUG': '1'")
             replace('        for child in reversed(children):',
