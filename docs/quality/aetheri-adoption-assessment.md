@@ -1,5 +1,23 @@
 # Aetheri adoption: initial source assessment
 
+## Original rendered Editor document geometry (2026-11-09)
+
+Consumer364b122 reuses compiled042bf58 and installed SDKaa899fb/0.1.30.
+Its optional adapter publishes actual original row-layout cells and carets,
+with clipping, shared/combining clusters and CRLF through the existing copied
+presentation API. Three enabled profiles pass57 owner CTests; default-OFF
+shared adds15. Four complete original-compositor workflows pass336 captures
+and12 independent native geometry observations. Shared ON/OFF gives82 complete
+pixel matches and two explicit temporary-path label differences. All105 inputs
+per export,133 compiled objects and28 generated C replays are bound; the actual
+old presentation module fails the new original paint/ffi test. SDK prerequisite
+builds independently pass57 tests and3 package consumers. See the
+[original geometry report](editor-presentation-report.md). All seven required
+exact-source CI jobs pass. Aetheri2188c3a retains all53 consumed original files;
+no active source/pin/build/default changes. Font/style metadata is next. Broader
+interfaces, AX/UIA, real IMEs/screenreaders, physical/human/design/performance and
+normal adoption remain open. All103 IDs and remaining packets6–8 persist.
+
 ## Shared-cluster interior-caret correction (2026-11-09)
 
 SDK0.1.30/source `aa899fb` fixes rejected valid inner carets and missing shared

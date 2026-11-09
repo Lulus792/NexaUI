@@ -1,5 +1,19 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor geometry: consumer364b122 reuses compiled042bf58 and installed
+SDKaa899fb/0.1.30. The existing original paint/layout supplies copied clipped
+cluster/caret cells, including combining/CRLF and real-font ffi coverage. Three
+enabled profiles plus default-OFF shared pass72 owner tests and four native
+workflows/336 captures. Twelve independent OS geometry observations,82 full
+pixel matches/two path-label differences and an actual old-module control are
+bound in the [original geometry report](editor-presentation-report.md). All105
+inputs per export,133 objects and28 generated C replays match exact sources;
+the SDK separately passes57 prerequisite tests/3 installed consumers. All seven
+required exact-source CI jobs pass. Aetheri2188c3a retains all53 original inputs;
+no source/pin/default/build changes. Font/style metadata is next; broader native,
+AX/UIA, physical/human/design/performance and normal adoption remain open across
+all103 IDs and remaining packets6–8.
+
 Presentation follow-up source `aa899fb` fixes valid shared-cluster interior carets
 and their surrounding character lookup. Three installed profiles pass69 tests,
 12 private native tasks and3 consumers with276 explicit-C17 objects. Three

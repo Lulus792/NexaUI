@@ -303,3 +303,7 @@ an accepted combining/CRLF edit and the existing style/scale cases. Existing
 assertions, captures, CPU guard, deadlines and native close work remain enabled.
 Font/style attributes, offscreen scrolling interfaces, AX/UIA and broader
 physical/human/design/performance/adoption acceptance remain separate work.
+
+The [original geometry report](../../docs/quality/editor-presentation-report.md)
+records the exact compiled/driver/SDK revisions, actual font and native tasks,
+default-OFF comparison, retained failures and remaining acceptance.

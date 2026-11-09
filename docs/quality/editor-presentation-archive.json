@@ -1,0 +1,349 @@
+{
+  "archives": [
+    {
+      "path": "D:/NexaUI/out/nexaui-editor-presentation49-final-20261109.tar.gz",
+      "sha256": "51bc5c15ee417fb3ac7125f277fd30398f72cca9d46a3c4d6e8cee417448e814",
+      "files": 3424,
+      "links": 8,
+      "directories": 1968,
+      "verified": true,
+      "name": "nexaui-editor-presentation49-final-20261109.tar.gz",
+      "size": 71925132,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "path": "D:/NexaUI/out/nexaui-editor-presentation-preflight-20261109.tar.gz",
+      "sha256": "531b98e5da5e054427261155e6b378656789478adaf6286af52bc0f39db743b1",
+      "files": 757,
+      "links": 2,
+      "directories": 540,
+      "verified": true,
+      "name": "nexaui-editor-presentation-preflight-20261109.tar.gz",
+      "size": 8149998,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "path": "D:/NexaUI/out/nexaui-editor-presentation49-capture-failure-20261109.tar.gz",
+      "sha256": "331ad8bc5c1633f2b75c6678ab104cc0511775e1cd4b5593d60c9b890740edcd",
+      "files": 15,
+      "links": 0,
+      "directories": 6,
+      "verified": true,
+      "name": "nexaui-editor-presentation49-capture-failure-20261109.tar.gz",
+      "size": 90671,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "path": "D:/NexaUI/out/nexaui-editor-presentation49-capture-retry-failure-20261109.tar.gz",
+      "sha256": "2c94aeefd4b52b3141f045735ecd216856ec1c4e86e5b5e7bd56988d07a2efe1",
+      "files": 15,
+      "links": 0,
+      "directories": 6,
+      "verified": true,
+      "name": "nexaui-editor-presentation49-capture-retry-failure-20261109.tar.gz",
+      "size": 91048,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "path": "D:/NexaUI/out/nexaui-editor-presentation49-evidence-20261109.tar.gz",
+      "sha256": "87666fcd5cc303a292fc11747618dd91cadafaf24bd025663f1b0b838a617ae9",
+      "files": 62,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-presentation49-evidence-20261109.tar.gz",
+      "size": 926035
+    }
+  ],
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "files": [
+          {
+            "name": "nexaui-files-ime-20261108.tar.gz",
+            "size": 79553744,
+            "sha256": "120b11b9d0306ca0dfc04196719485e055584734b0cbe13a0b4fbd42d3a5d045"
+          },
+          {
+            "name": "nexaui-software-recovery-20261108.tar.gz",
+            "size": 59750992,
+            "sha256": "a742a3419ec6ab3290933492eeb5cfa38e98084ed193d59e1f75f1ee469dd67f"
+          }
+        ],
+        "bytes": 139304736,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired only verified inactive redundant VM archive copies; fully verified host archives and all source/build/prefix/failure files retained",
+        "files": [
+          {
+            "name": "nexaui-files-ime-20261108.tar.gz",
+            "size": 79553744,
+            "sha256": "120b11b9d0306ca0dfc04196719485e055584734b0cbe13a0b4fbd42d3a5d045"
+          },
+          {
+            "name": "nexaui-software-recovery-20261108.tar.gz",
+            "size": 59750992,
+            "sha256": "a742a3419ec6ab3290933492eeb5cfa38e98084ed193d59e1f75f1ee469dd67f"
+          }
+        ],
+        "bytes": 139304736,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "files": [
+          {
+            "name": "nexaui-software-view-20261107.tar.gz",
+            "size": 47175034,
+            "sha256": "851a15b59b2ee0c57cca19ef8cb20a32266467b48ffe245697f7059b29a476e9"
+          },
+          {
+            "name": "nexaui-software-recovery-view-20261108.tar.gz",
+            "size": 50878786,
+            "sha256": "b3e32d76d439e446cd4d784bf82792d133d660bf87174a6deed89d0214f99059"
+          }
+        ],
+        "bytes": 98053820,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired only verified inactive redundant VM archive copies; fully verified host archives and all source/build/prefix/failure files retained",
+        "files": [
+          {
+            "name": "nexaui-software-view-20261107.tar.gz",
+            "size": 47175034,
+            "sha256": "851a15b59b2ee0c57cca19ef8cb20a32266467b48ffe245697f7059b29a476e9"
+          },
+          {
+            "name": "nexaui-software-recovery-view-20261108.tar.gz",
+            "size": 50878786,
+            "sha256": "b3e32d76d439e446cd4d784bf82792d133d660bf87174a6deed89d0214f99059"
+          }
+        ],
+        "bytes": 98053820,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "files": [
+          {
+            "name": "nexaui-files-native-20261108.tar.gz",
+            "size": 30374759,
+            "sha256": "eb3f9da26d16ca4c1dca23404b141f98340c2ce731afb33b151c8771e80e59ec"
+          },
+          {
+            "name": "nexaui-recovery-native-20261107.tar.gz",
+            "size": 73866740,
+            "sha256": "01d5e712d1811417f2fd7e9c58201505d5f1fa4eaf1015e2891ed932199d02d7"
+          }
+        ],
+        "bytes": 104241499,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired only verified inactive redundant VM archive copies; fully verified host archives and all source/build/prefix/failure files retained",
+        "files": [
+          {
+            "name": "nexaui-files-native-20261108.tar.gz",
+            "size": 30374759,
+            "sha256": "eb3f9da26d16ca4c1dca23404b141f98340c2ce731afb33b151c8771e80e59ec"
+          },
+          {
+            "name": "nexaui-recovery-native-20261107.tar.gz",
+            "size": 73866740,
+            "sha256": "01d5e712d1811417f2fd7e9c58201505d5f1fa4eaf1015e2891ed932199d02d7"
+          }
+        ],
+        "bytes": 104241499,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "files": [
+          {
+            "name": "nexaui-recovery-resize-20261107.tar.gz",
+            "size": 23004742,
+            "sha256": "00b04779fc3fa5178f5f7c0c14bc58d9cce27b8d64fef8429be920b139a0257d"
+          },
+          {
+            "name": "nexaui-recovery-lifecycle-20261107.tar.gz",
+            "size": 28002757,
+            "sha256": "e898f8be20dea6f239e0e5cdf7ac14c4030ea8457c0159386c8351c8f6003c55"
+          },
+          {
+            "name": "nexaui-recovery-clipboard-20261107.tar.gz",
+            "size": 21745599,
+            "sha256": "9fbec408e074b0904847a4ffdf1d3cdf3801772ee5185eebda4959a2c2aca10e"
+          },
+          {
+            "name": "nexaui-recovery-navigation-20261107.tar.gz",
+            "size": 13052489,
+            "sha256": "85515fb621fdb765de0c78b6aae31b513e9bedcfa2d828942e4081d1ef6f5ee8"
+          },
+          {
+            "name": "nexaui-software-model-20261107.tar.gz",
+            "size": 13960559,
+            "sha256": "a740281c8e4fd20a0016fc875514f861bca6c0b9443b9fc4db52e38941444d51"
+          },
+          {
+            "name": "nexaui-software-worker-20261107.tar.gz",
+            "size": 13725579,
+            "sha256": "7e1f2a0b1df89d49c71960fb96656b2c8ec74b9e72654ee8ea7de2469205a56e"
+          }
+        ],
+        "bytes": 113491725,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired only verified inactive redundant VM archive copies; fully verified host archives and all source/build/prefix/failure files retained",
+        "files": [
+          {
+            "name": "nexaui-recovery-resize-20261107.tar.gz",
+            "size": 23004742,
+            "sha256": "00b04779fc3fa5178f5f7c0c14bc58d9cce27b8d64fef8429be920b139a0257d"
+          },
+          {
+            "name": "nexaui-recovery-lifecycle-20261107.tar.gz",
+            "size": 28002757,
+            "sha256": "e898f8be20dea6f239e0e5cdf7ac14c4030ea8457c0159386c8351c8f6003c55"
+          },
+          {
+            "name": "nexaui-recovery-clipboard-20261107.tar.gz",
+            "size": 21745599,
+            "sha256": "9fbec408e074b0904847a4ffdf1d3cdf3801772ee5185eebda4959a2c2aca10e"
+          },
+          {
+            "name": "nexaui-recovery-navigation-20261107.tar.gz",
+            "size": 13052489,
+            "sha256": "85515fb621fdb765de0c78b6aae31b513e9bedcfa2d828942e4081d1ef6f5ee8"
+          },
+          {
+            "name": "nexaui-software-model-20261107.tar.gz",
+            "size": 13960559,
+            "sha256": "a740281c8e4fd20a0016fc875514f861bca6c0b9443b9fc4db52e38941444d51"
+          },
+          {
+            "name": "nexaui-software-worker-20261107.tar.gz",
+            "size": 13725579,
+            "sha256": "7e1f2a0b1df89d49c71960fb96656b2c8ec74b9e72654ee8ea7de2469205a56e"
+          }
+        ],
+        "bytes": 113491725,
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "ed-doc-49-presentation49-release"
+        ],
+        "bytes": 41999511,
+        "files": 12,
+        "links": 0,
+        "directories": 6,
+        "fingerprint": "db5d95dc265fa1026b88cf65241d1376fe3b7a03172e1344d9b10a5d96e7ae46",
+        "archive_sha256": "331ad8bc5c1633f2b75c6678ab104cc0511775e1cd4b5593d60c9b890740edcd",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive archived document clipboard presentation49 failed capture directory; all source/build/prefix and verified host failure archive retained",
+        "roots": [
+          "ed-doc-49-presentation49-release"
+        ],
+        "bytes": 41999511,
+        "files": 12,
+        "links": 0,
+        "directories": 6,
+        "fingerprint": "db5d95dc265fa1026b88cf65241d1376fe3b7a03172e1344d9b10a5d96e7ae46",
+        "archive_sha256": "331ad8bc5c1633f2b75c6678ab104cc0511775e1cd4b5593d60c9b890740edcd",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "ed-doc-49-presentation49-retry-release"
+        ],
+        "bytes": 41974479,
+        "files": 12,
+        "links": 0,
+        "directories": 6,
+        "fingerprint": "5c443292071f69e85a3c469d876fc35c4309664cb2a76a93e0d280bbba576cb8",
+        "archive_sha256": "2c94aeefd4b52b3141f045735ecd216856ec1c4e86e5b5e7bd56988d07a2efe1",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive archived document clipboard presentation49 failed capture directory; all source/build/prefix and verified host failure archive retained",
+        "roots": [
+          "ed-doc-49-presentation49-retry-release"
+        ],
+        "bytes": 41974479,
+        "files": 12,
+        "links": 0,
+        "directories": 6,
+        "fingerprint": "5c443292071f69e85a3c469d876fc35c4309664cb2a76a93e0d280bbba576cb8",
+        "archive_sha256": "2c94aeefd4b52b3141f045735ecd216856ec1c4e86e5b5e7bd56988d07a2efe1",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-45-release",
+          "editor-close-46-release",
+          "editor-close-47-release",
+          "editor-close-47-shared"
+        ],
+        "bytes": 65121455,
+        "files": 417,
+        "links": 2,
+        "directories": 474,
+        "fingerprint": "be43a917af1c11eddfcf143bf198d4bd0e3aead296ca2e931f3f3705f9188fe7",
+        "archive_sha256": "531b98e5da5e054427261155e6b378656789478adaf6286af52bc0f39db743b1",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive archived document clipboard superseded editor presentation preflight builds; all sources/current48 builds/installed SDK prefixes and verified host archive retained",
+        "roots": [
+          "editor-close-45-release",
+          "editor-close-46-release",
+          "editor-close-47-release",
+          "editor-close-47-shared"
+        ],
+        "bytes": 65121455,
+        "files": 417,
+        "links": 2,
+        "directories": 474,
+        "fingerprint": "be43a917af1c11eddfcf143bf198d4bd0e3aead296ca2e931f3f3705f9188fe7",
+        "archive_sha256": "531b98e5da5e054427261155e6b378656789478adaf6286af52bc0f39db743b1",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    }
+  ],
+  "scope": "Every archived member was verified by type/mode/size/hash. Original failures and failed partial captures retained. Only proven redundant VM archive copies and archived inactive output/build roots were retired. Current builds, source exports and installed prefixes remain; no quota, mount, global/tmp, driver, capture, deadline or sanitizer policy changes. Borrowed Candara font bytes are not redistributed."
+}
