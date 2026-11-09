@@ -1,5 +1,18 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor attributes, partial checkpoint: consumer6d1f273 with installed
+SDK0.1.31 publishes the actual base font/point size, original colors, selected
+high-contrast overrides and editable policy through the existing presentation
+API. Three enabled profiles pass63 owner CTests; attributes-OFF shared adds19.
+All108 inputs,133 owner/independent-peer objects and28 generated C replays bind
+exactly; two compiled metadata defects are detected under active sanitizers.
+See the [attribute report](editor-attributes-report.md). The earlier native
+ASan held-EOF failure remains unresolved and the VM is currently unavailable;
+no new complete native matrix or pixel comparison is inferred. Aetheri159c4be
+retains all53 consumed inputs. Broader interfaces, font/fallback, AX/UIA,
+physical/human/design/performance/normal adoption and all103 IDs/packets6–8
+remain open. Earlier metadata/geometry results below retain their own sources.
+
 Font metadata prerequisite: SDK0.1.31/source9f0b229 exposes optional bounded
 UTF-8 names and OS/2 weight/width/slant through the existing font reader. Three
 installed profiles pass111 selected tests/twelve private native tasks, three

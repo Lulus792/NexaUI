@@ -1,0 +1,4140 @@
+{
+  "result": "passed",
+  "source_revision": "6d1f2739276bd4c88a3157187f86df5b5bcd960e",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "sdk_source_revision": "9f0b2294d04d7f5fdd63d3fe5c118b2bd222eade",
+  "sdk_version": "0.1.31",
+  "uid": 65534,
+  "environment": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-musl1",
+  "profiles": [
+    {
+      "profile": "release",
+      "executed_ctests": 21,
+      "compiled_owner": 33,
+      "compiled_os_peer": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/owner-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/editor-source-53/original",
+            "-DCMAKE_C_FLAGS=",
+            "-DCMAKE_EXE_LINKER_FLAGS=",
+            "-DEDITOR_BUILD_IME_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_IME=ON",
+            "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+            "-DEDITOR_BUILD_NATIVE_CLIPBOARD=ON",
+            "-DEDITOR_BUILD_NATIVE_PRESENTATION=ON",
+            "-DEDITOR_BUILD_NATIVE_ATTRIBUTES=ON",
+            "-DEDITOR_PRESENTATION_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+            "-DEDITOR_PRESENTATION_LIGATURE_FONT=/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 10.134348445,
+          "log": "editor-attributes53-local-release-configure.log",
+          "sha256": "a9df9a00ee9f3f2cad57fed807bf11d084be6c23d563cab8e2e25ed9d6156577"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/owner-release",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 10.13911827000004,
+          "log": "editor-attributes53-local-release-build.log",
+          "sha256": "87d1175fe3102e3832a01989c42d194c6ef75813174f13243a27568af5d22e99"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-editor-attributes53/owner-release",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 4.456781185000068,
+          "log": "editor-attributes53-local-release-test.log",
+          "sha256": "866637c780ef5ea5fb0c8f461c859b25b9438764fc9a831351ab94f35ca1275e"
+        },
+        {
+          "phase": "peer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/atspi_client",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/peer-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "elapsed_seconds": 5.199973904999979,
+          "log": "editor-attributes53-local-release-peer-configure.log",
+          "sha256": "c4d96dde0a4d487c4e653183bb2904dceeb4cd1ac9d1f8de56d446b03a557493"
+        },
+        {
+          "phase": "peer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/peer-release",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 1.2214023720000569,
+          "log": "editor-attributes53-local-release-peer-build.log",
+          "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+        }
+      ],
+      "fonts": [
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf",
+          "sha256": "002c1e3378d02ed7dbdb3df1c94d433413a56f3f2f3aa8315a57720ee851dc45"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "executed_ctests": 21,
+      "compiled_owner": 33,
+      "compiled_os_peer": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/owner-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/editor-source-53/original",
+            "-DCMAKE_C_FLAGS=",
+            "-DCMAKE_EXE_LINKER_FLAGS=",
+            "-DEDITOR_BUILD_IME_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_IME=ON",
+            "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+            "-DEDITOR_BUILD_NATIVE_CLIPBOARD=ON",
+            "-DEDITOR_BUILD_NATIVE_PRESENTATION=ON",
+            "-DEDITOR_BUILD_NATIVE_ATTRIBUTES=ON",
+            "-DEDITOR_PRESENTATION_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+            "-DEDITOR_PRESENTATION_LIGATURE_FONT=/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 10.086218319999944,
+          "log": "editor-attributes53-local-shared-configure.log",
+          "sha256": "a5413548a3411d2237045b947d4cf3fab3ce2c4ea8b42ff8490b1687bfd27c99"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/owner-shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 8.02644236599997,
+          "log": "editor-attributes53-local-shared-build.log",
+          "sha256": "87d1175fe3102e3832a01989c42d194c6ef75813174f13243a27568af5d22e99"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-editor-attributes53/owner-shared",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 3.7712222259999635,
+          "log": "editor-attributes53-local-shared-test.log",
+          "sha256": "9e10fa7d7733f91b22a295c27ecb33b3cf0d72b5a71d1c63394ef64b65c6d4dd"
+        },
+        {
+          "phase": "peer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/atspi_client",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/peer-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "elapsed_seconds": 4.490955301999975,
+          "log": "editor-attributes53-local-shared-peer-configure.log",
+          "sha256": "31ddecb596829f56c089dce6ddafa5bc51a5d95f23cc7186b7d00f5b126e5087"
+        },
+        {
+          "phase": "peer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/peer-shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 1.553309845000058,
+          "log": "editor-attributes53-local-shared-peer-build.log",
+          "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+        }
+      ],
+      "fonts": [
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf",
+          "sha256": "002c1e3378d02ed7dbdb3df1c94d433413a56f3f2f3aa8315a57720ee851dc45"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "executed_ctests": 21,
+      "compiled_owner": 33,
+      "compiled_os_peer": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/owner-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/editor-source-53/original",
+            "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+            "-DEDITOR_BUILD_IME_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_IME=ON",
+            "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+            "-DEDITOR_BUILD_NATIVE_CLIPBOARD=ON",
+            "-DEDITOR_BUILD_NATIVE_PRESENTATION=ON",
+            "-DEDITOR_BUILD_NATIVE_ATTRIBUTES=ON",
+            "-DEDITOR_PRESENTATION_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+            "-DEDITOR_PRESENTATION_LIGATURE_FONT=/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 9.268538365999916,
+          "log": "editor-attributes53-local-asan-configure.log",
+          "sha256": "3f8a0589be75116dcb53eb4c49ed1bf62b52c27e307f20d3a2dff2d7633db431"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/owner-asan",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 12.570466876999944,
+          "log": "editor-attributes53-local-asan-build.log",
+          "sha256": "799f6f1fe6f4d34d76c453ecd7dfc37f96dd6308f2bedb6c9dc9568a23a26187"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-editor-attributes53/owner-asan",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 30.672957488000065,
+          "log": "editor-attributes53-local-asan-test.log",
+          "sha256": "116f3205e12de9b412b98b6689e72bcac06beaebaa55dcf1acbbe6a7535bca3b"
+        },
+        {
+          "phase": "peer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/atspi_client",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/peer-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 5.174191794999956,
+          "log": "editor-attributes53-local-asan-peer-configure.log",
+          "sha256": "073a6fb0d93739be3889491456507b2c7d7d6c53703b567f7ceab88d9c3a46a4"
+        },
+        {
+          "phase": "peer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/peer-asan",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 1.1306712350000225,
+          "log": "editor-attributes53-local-asan-peer-build.log",
+          "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+        }
+      ],
+      "fonts": [
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf",
+          "sha256": "002c1e3378d02ed7dbdb3df1c94d433413a56f3f2f3aa8315a57720ee851dc45"
+        }
+      ]
+    },
+    {
+      "profile": "off-shared",
+      "executed_ctests": 19,
+      "compiled_owner": 31,
+      "compiled_os_peer": 0,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+            "-B",
+            "/tmp/nexaui-editor-attributes53/owner-off-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/editor-source-53/original",
+            "-DCMAKE_C_FLAGS=",
+            "-DCMAKE_EXE_LINKER_FLAGS=",
+            "-DEDITOR_BUILD_IME_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_IME=ON",
+            "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+            "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+            "-DEDITOR_BUILD_NATIVE_CLIPBOARD=ON",
+            "-DEDITOR_BUILD_NATIVE_PRESENTATION=ON",
+            "-DEDITOR_BUILD_NATIVE_ATTRIBUTES=OFF",
+            "-DEDITOR_PRESENTATION_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+            "-DEDITOR_PRESENTATION_LIGATURE_FONT=/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 15.078034337000076,
+          "log": "editor-attributes53-local-off-shared-configure.log",
+          "sha256": "a8dc5b5e73b7530ae8aeb180621b67697b18fad0df27c124ea6bf840d91be22d"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-editor-attributes53/owner-off-shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 12.491646446000004,
+          "log": "editor-attributes53-local-off-shared-build.log",
+          "sha256": "421defa5c1a4254778105c2cce7ed229c0eab4cedd81f8c3c17f75fdf40d395c"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-editor-attributes53/owner-off-shared",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 4.20227218399998,
+          "log": "editor-attributes53-local-off-shared-test.log",
+          "sha256": "940135e7df8a0f0999bf2718d8014aa4326d340f67fc3318e53b80e0e4e9b0bb"
+        }
+      ],
+      "fonts": [
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf",
+          "sha256": "002c1e3378d02ed7dbdb3df1c94d433413a56f3f2f3aa8315a57720ee851dc45"
+        }
+      ]
+    }
+  ],
+  "total_ctests": 82,
+  "compiled_owner_and_peer_objects": 133,
+  "compiled_negative_objects": 6,
+  "compiled_controls": {
+    "source_revision": "6d1f2739276bd4c88a3157187f86df5b5bcd960e",
+    "uid": 65534,
+    "environment": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-musl1",
+    "commands": [
+      {
+        "case": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-editor-attributes53/negative",
+          "-B",
+          "/tmp/nexaui-editor-attributes53/negative/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Debug",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix",
+          "-DCMAKE_C_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer",
+          "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "log": "editor-attributes53-negative-configure.log",
+        "sha256": "905bb0fe3f65e24434fb0a703717bbb601224e7f555104f152a9391b68e762dc"
+      },
+      {
+        "case": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-editor-attributes53/negative/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "log": "editor-attributes53-negative-build.log",
+        "sha256": "f0ff781309e5d88f3d57470599c5d15f3e49411923bdef79fc1e6dd627276a83"
+      },
+      {
+        "case": "control",
+        "command": [
+          "/tmp/nexaui-editor-attributes53/negative/build/control"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "log": "editor-attributes53-negative-control.log",
+        "sha256": "fe6a17a55c4fedba074807e01bb3d1ecbec53459cf28a0d06a5451d7e40d45f4"
+      },
+      {
+        "case": "wrong_points",
+        "command": [
+          "/tmp/nexaui-editor-attributes53/negative/build/wrong_points"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "log": "editor-attributes53-negative-wrong_points.log",
+        "sha256": "6d7ee2994e95bb21513770f85ea615742105ae521eea143dffd8da21aba73b9e"
+      },
+      {
+        "case": "wrong_contrast",
+        "command": [
+          "/tmp/nexaui-editor-attributes53/negative/build/wrong_contrast"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "log": "editor-attributes53-negative-wrong_contrast.log",
+        "sha256": "5fbf4aeb57efecd1ed9b7533c151a26fdb21a2d5f7ff767f2d7ea42f803ca3cc"
+      }
+    ],
+    "variants": {
+      "control": "32836a0fd3c093979a943dea42a78ab305acf5f5546af0eb0e88789ad6bac361",
+      "wrong_points": "ec81c2fd8f21bc44c83f1f94f42c65a311bfba788275b71aaa84d46d5b59aa81",
+      "wrong_contrast": "658077d1e946cd8fde731bd5985281e871fc23ca027d192250b8061dac4f93f2"
+    },
+    "test_sha256": "4679d471fc1ae690937ce1a29b4c29805e897c3c9bbdd43c851b5f33b631916e"
+  },
+  "libraries": [
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/lib/libnexaui.a",
+      "size": 1226426,
+      "sha256": "ae7e623a4a6290416d2ac4453bed5c8f13dc7cf82b37d08eedb17ba471f69827"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/lib/libnexaui.so.0.1.31",
+      "size": 970048,
+      "sha256": "83cee14f0483d096933806b616ceef4deaa4844f3e69def92ff3164a48efef60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/lib/libnexaui.a",
+      "size": 12372810,
+      "sha256": "ad62ec01d08a528282526f1a16428bf6b9bf3570e0eaffdd57f83bc1bc3b67c6"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    }
+  ],
+  "artifact_files": [
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes52-original-check.json",
+      "size": 13374,
+      "sha256": "83fc83b535d4c4d5103d52f9cc6ab7ae768381b9f4f67b14aa465a9ab25a8aff"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-build.log",
+      "size": 4841,
+      "sha256": "799f6f1fe6f4d34d76c453ecd7dfc37f96dd6308f2bedb6c9dc9568a23a26187"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-commands.json",
+      "size": 4181,
+      "sha256": "36bcde9ad683047931a5a04873e0035e71c372c9601016a017803bb7ea953d97"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-configure.log",
+      "size": 1017,
+      "sha256": "3f8a0589be75116dcb53eb4c49ed1bf62b52c27e307f20d3a2dff2d7633db431"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-peer-build.log",
+      "size": 214,
+      "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-peer-configure.log",
+      "size": 608,
+      "sha256": "073a6fb0d93739be3889491456507b2c7d7d6c53703b567f7ceab88d9c3a46a4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-asan-test.log",
+      "size": 2735,
+      "sha256": "116f3205e12de9b412b98b6689e72bcac06beaebaa55dcf1acbbe6a7535bca3b"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-off-shared-build.log",
+      "size": 4575,
+      "sha256": "421defa5c1a4254778105c2cce7ed229c0eab4cedd81f8c3c17f75fdf40d395c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-off-shared-commands.json",
+      "size": 2972,
+      "sha256": "1788ee59469ed561c71b31663db5586a4cd6d4abe703e0a70e8f8d6fcde2161d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-off-shared-configure.log",
+      "size": 1024,
+      "sha256": "a8dc5b5e73b7530ae8aeb180621b67697b18fad0df27c124ea6bf840d91be22d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-off-shared-test.log",
+      "size": 2496,
+      "sha256": "940135e7df8a0f0999bf2718d8014aa4326d340f67fc3318e53b80e0e4e9b0bb"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-build.log",
+      "size": 4841,
+      "sha256": "87d1175fe3102e3832a01989c42d194c6ef75813174f13243a27568af5d22e99"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-commands.json",
+      "size": 4054,
+      "sha256": "ea90f2a63bece6f1905af60c2c74566829aab22c0c673b379784c94b3277e75a"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-configure.log",
+      "size": 1020,
+      "sha256": "a9df9a00ee9f3f2cad57fed807bf11d084be6c23d563cab8e2e25ed9d6156577"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-peer-build.log",
+      "size": 214,
+      "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-peer-configure.log",
+      "size": 611,
+      "sha256": "c4d96dde0a4d487c4e653183bb2904dceeb4cd1ac9d1f8de56d446b03a557493"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-release-test.log",
+      "size": 2738,
+      "sha256": "866637c780ef5ea5fb0c8f461c859b25b9438764fc9a831351ab94f35ca1275e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-build.log",
+      "size": 4841,
+      "sha256": "87d1175fe3102e3832a01989c42d194c6ef75813174f13243a27568af5d22e99"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-commands.json",
+      "size": 4047,
+      "sha256": "507d3508e85a7fedb5784330662dc316c6fe296c48b857c94d491018c1512e69"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-configure.log",
+      "size": 1019,
+      "sha256": "a5413548a3411d2237045b947d4cf3fab3ce2c4ea8b42ff8490b1687bfd27c99"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-peer-build.log",
+      "size": 214,
+      "sha256": "faee6214666c6e66e80da0ce9c822fc8d9ac00b3644abe7ab9b0b86affe8fe60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-peer-configure.log",
+      "size": 610,
+      "sha256": "31ddecb596829f56c089dce6ddafa5bc51a5d95f23cc7186b7d00f5b126e5087"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-local-shared-test.log",
+      "size": 2737,
+      "sha256": "9e10fa7d7733f91b22a295c27ecb33b3cf0d72b5a71d1c63394ef64b65c6d4dd"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-build.log",
+      "size": 756,
+      "sha256": "f0ff781309e5d88f3d57470599c5d15f3e49411923bdef79fc1e6dd627276a83"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-checks.json",
+      "size": 2680,
+      "sha256": "0096f39866422db4667278f72091fae43ff270d1b1e6e0f03c6c8a624c9a242b"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-configure.log",
+      "size": 725,
+      "sha256": "905bb0fe3f65e24434fb0a703717bbb601224e7f555104f152a9391b68e762dc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-control.log",
+      "size": 157,
+      "sha256": "fe6a17a55c4fedba074807e01bb3d1ecbec53459cf28a0d06a5451d7e40d45f4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-wrong_contrast.log",
+      "size": 276,
+      "sha256": "5fbf4aeb57efecd1ed9b7533c151a26fdb21a2d5f7ff767f2d7ea42f803ca3cc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-negative-wrong_points.log",
+      "size": 342,
+      "sha256": "6d7ee2994e95bb21513770f85ea615742105ae521eea143dffd8da21aba73b9e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-clipboard-diagnostics51-check.json",
+      "size": 760,
+      "sha256": "19b86108c9695fc3782e3caba00089901050c3840709e87a04c55b4990b51615"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-input-53.json",
+      "size": 23037,
+      "sha256": "bb160bd61b08e555afb9fdd3b97419d83680cb5a32751ea0235f8079223fc7ff"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-input-53.tar.gz",
+      "size": 249929,
+      "sha256": "9d1883fba294355a2648f5fd369c4733b6eac69d7cab625d2a6bbb80f9fa2474"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/spec/nexaui-inputs.json",
+      "size": 2060,
+      "sha256": "1a959c46974d3b351df0f75afc3b0ff59f172f7367cead46deea06efda43790e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/spec/ui-inputs.json",
+      "size": 19855,
+      "sha256": "7567ec936c8ed3c8a8562ba2ed7074a81eb6df72ca67c6b8ae6e57e220eff014"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/direct.c",
+      "size": 9623,
+      "sha256": "d959f86a2220c750bab2d5fb1a170268ad4ff4f5c9f9294c48b047491c270b1d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/direct.h",
+      "size": 3602,
+      "sha256": "eac32523bbf174b4bb5f0cb2e71b59aabf103b0d7a901ce675ee5e9c5a2547cc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/document.c",
+      "size": 19757,
+      "sha256": "6dc6ae372641cc2621b71c26a5f11c56e35aa8457c15305440c4458d9943090f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/document.h",
+      "size": 5894,
+      "sha256": "83ce31d0b09762eb66f49066566400812036d64676bc31cea4561200fe4ba010"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c",
+      "size": 16421,
+      "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.h",
+      "size": 3344,
+      "sha256": "3684c8b72d2bdc409b837bc760f278024eac4b6631296cce81cc539014218264"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/graphical_main.c",
+      "size": 66454,
+      "sha256": "706707eed7e7d7df4e33eb1c3afd84efcbaa855749ee6cb5943d18db67a11517"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/main.c",
+      "size": 26802,
+      "sha256": "957b3e0590d66b22724e9d895b12a454248d1020b04ed24777d6cc5d9dae9556"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c",
+      "size": 15063,
+      "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.h",
+      "size": 3224,
+      "sha256": "e06c05cec85d8584f37771f0b8a200a2015e0e90e2b658f2202bc9e62a7bf642"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c",
+      "size": 12627,
+      "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.h",
+      "size": 1125,
+      "sha256": "c44986a8d5058493c41849ba264af685708ddafc5ec2fbd9a509680bb8cbe7b5"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c",
+      "size": 18595,
+      "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.h",
+      "size": 7378,
+      "sha256": "900182c71a7841dde1c9cff9018394426a16569e488f584824ab890dc059577a"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c",
+      "size": 4508,
+      "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.h",
+      "size": 2039,
+      "sha256": "57e7e90e2ad915d0988e09dc5132eb7dcbdcaf5566967ec84c5df0d648fd6c60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/launch.c",
+      "size": 3501,
+      "sha256": "229dc31a1aa04b065cc1cd30b1089332a5c4ebb31429b56511d38dfb0e609b28"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/launch.h",
+      "size": 1046,
+      "sha256": "807ca2753abc43beb5388479ab5db832b1bf7e2e1ceec3a197089d6bdf44ae83"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/layout.c",
+      "size": 3879,
+      "sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/layout.h",
+      "size": 1432,
+      "sha256": "24cc5a4d51727f4c16ed4595b315386bedba6dc00421f92caae27de78cfcaa8f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/main.c",
+      "size": 50858,
+      "sha256": "598b272aa4c20ade5eb53d91b45f389817dc686a12fb203cee6d654d81469ad5"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c",
+      "size": 11773,
+      "sha256": "893afec78a77ad294e38527a512231b5f3a31f88cbeb3b81483f91dff1871f84"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.h",
+      "size": 4367,
+      "sha256": "42cf658a7356446b789e90f2c33fad2c42cadcca46ded63ee09f8c5d34a31cf6"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/nexaui_main.c",
+      "size": 17797,
+      "sha256": "762ce9171ac858df4315b178cebba01b7b7d92d72d8a602d969dde7da54a5fb3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/nexaui_view.c",
+      "size": 50973,
+      "sha256": "a2d4fc7313ac6eeff3649921cb8b5ae21a8c45aba25543c897d72f339bc2bbfc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/nexaui_view.h",
+      "size": 1755,
+      "sha256": "48044fa80b3c685d5b54827053b129337cbfcf03f7333dffc1af9581878d1649"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c",
+      "size": 6818,
+      "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.h",
+      "size": 2637,
+      "sha256": "658e274da4a617222409d0d8062f960177ddfaec6790f065d6a44e99e65b6c99"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/session.c",
+      "size": 26418,
+      "sha256": "553e69701815eb172351b694180b3be40c6e0ff0b50a2824c4d9875ece9c48f8"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/session.h",
+      "size": 5087,
+      "sha256": "efbd494708e748d2db15eb467cfb7d64f7d487983d78d7d4c2df53019b64de75"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c",
+      "size": 21909,
+      "sha256": "07f960f267ac4937e5ba92fef4e5876a45b3aa0d97549fe686d72ae15c9dbd04"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.h",
+      "size": 3981,
+      "sha256": "fea264b8ef55cd18c3c5e3c2083c4ccf774837d023e09f93e1032bfa21fed0d4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/compositor_input_driver.c",
+      "size": 9655,
+      "sha256": "6652438b9251b071e7191b6d27cc751bab3fb9bc53c1d5f8ed262391b11eb1f8"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/grapheme_vectors.h",
+      "size": 39942,
+      "sha256": "3417d821429581d8bb7a5626f01857399899ca2ea020c9d18ec3d29960fc8aa5"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c",
+      "size": 10451,
+      "sha256": "75555885cffbb3cd00a392856c5ae6d209c4b5e6d8e1243a8a32f40bc63acd22"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c",
+      "size": 6958,
+      "sha256": "5cfbfd30fa824199563ed1662222bbd1a95744101e0ed0564fafd3ac8f744746"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c",
+      "size": 12705,
+      "sha256": "c06972027a7d5bbf3923c4bbb24ba282cdb9ce3a4c3a5e213869964cb5dabc6f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c",
+      "size": 11900,
+      "sha256": "242c225d363894d1b72bda39e195bbba9e5d9ff4da720b66c90c1672ea1451bc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c",
+      "size": 4222,
+      "sha256": "2827e964bf96441e9bbbe5a5f8f426bfefe59f1600d29c9663c6f82d7631dddf"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c",
+      "size": 14730,
+      "sha256": "c423d52080419cb8028ef6df60acf1499e47a990a66800ce9dc103243f5d6256"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c",
+      "size": 2148,
+      "sha256": "59d2a13a47a0446af6157fe2ac2310ed7dd50e6679304dc0ac921ad6bcfe578d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c",
+      "size": 8947,
+      "sha256": "65a1f4a25ef6aa2d20232e4ce0b6e6ea2968fdf8de6f0ac95b2b0cf26108bdb9"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c",
+      "size": 4255,
+      "sha256": "2f036df1af70d6b285d23e7d7184ea2156c922bf817a6e2f4f9619000f42ad41"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c",
+      "size": 4636,
+      "sha256": "7d2dac2ebf838a5eaaf4435834cf606e0a5cbf1ffddd12736983d83e183f1be6"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c",
+      "size": 8275,
+      "sha256": "1febdff9638e20a9cfe6a57ad1fc80ab2071c0a0b1c3e8a617117ff360efb06d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tools/test_editor_graphical.py",
+      "size": 13784,
+      "sha256": "54bedf5faf71a24293fc3c752aba15cc66105fdd80a4fd78a04c804aa68ec3f6"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/original/tools/test_editor_save_native.py",
+      "size": 10983,
+      "sha256": "f66a496fe8d2a5c9be9259651f2d74da5b46fadd7cad0896be7889bf85efe002"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/34_aetheri_software/output_producer/CMakeLists.txt",
+      "size": 1476,
+      "sha256": "0895b0990ebb84af1ca4761f01a83f1dc4c1b5a658fa471554a9ae5b0bc89fbe"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/34_aetheri_software/output_producer/commands.h",
+      "size": 3515,
+      "sha256": "30c816fbe36dcfcde2c2f9b2c63583e1fc9a1481b06129c561b05930d719d79f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/34_aetheri_software/output_producer/prepare.py",
+      "size": 5896,
+      "sha256": "5c1fc31bdcb14c9775e6219f92ddc9761bf5bb273ee2bebcfd21d7ca23958953"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/35_aetheri_files_consumer/check_source.py",
+      "size": 1194,
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/35_aetheri_files_consumer/clipboard_task.py",
+      "size": 12153,
+      "sha256": "e87fb2cc8279c3f4e53b1c52fe9c5e19f67cc3ce504448d8fcb638d1a911e3da"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+      "size": 3139,
+      "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+      "size": 3692,
+      "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+      "size": 4292,
+      "sha256": "53fe28604715b0e806ae475855a1d31be1efc86d9b13182850f93258c259956d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/CMakeLists.txt",
+      "size": 13544,
+      "sha256": "35779e96832ce674428abe96f24644f7939a93e023d08379a392b71124678509"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/README.md",
+      "size": 20431,
+      "sha256": "e2c731e11f42507d8c8410e684ef94f81609a681a9fab9463a28233295433ad0"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/accessible_model.c",
+      "size": 4222,
+      "sha256": "6902af443c7635c38c73fc70c2ba9e6e7fc010015795651c7eafcdd65a4324b7"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/accessible_model.h",
+      "size": 2080,
+      "sha256": "00bd298fa41b6637d834f89a942ce065d810a5dd9ba2bbd62fc23406e9c87b2c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/atspi_client/CMakeLists.txt",
+      "size": 1534,
+      "sha256": "df964a21c364fb6354773ca6d9a9db7e767a04e9f574961017609267e6fcdca4"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/attributes.c",
+      "size": 4088,
+      "sha256": "32836a0fd3c093979a943dea42a78ab305acf5f5546af0eb0e88789ad6bac361"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/attributes.h",
+      "size": 1208,
+      "sha256": "2eca4cd39737bc3aa0f3fa7f24cca41e36c2721bf67c7426dff3129a5aa35ba7"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/close_producer/CMakeLists.txt",
+      "size": 1714,
+      "sha256": "467726d1ccb10f849b3fd2ad9d488201caa75b8d71f860d42952ca6266761cae"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/close_producer/prepare.py",
+      "size": 3755,
+      "sha256": "712a2c4f614cb231c04845cbd3910ba6055337c483ac4bb43964e709c02c0915"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/foreign_stream_gate/CMakeLists.txt",
+      "size": 1652,
+      "sha256": "5f625e180a2acc25f659a3c7b68d73e1020d7c6e0b769151573e369c45f1a926"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/foreign_stream_gate/check_gate.py",
+      "size": 3305,
+      "sha256": "eb0bd24bf0e0c6f1682ee2b0d890f1e8e85b0943a483352426815acd0a2f861c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/foreign_stream_gate/gate.c",
+      "size": 4799,
+      "sha256": "b63016cd0c271e7f0d20defb9ef4a932f3618fe508fc7612602e8f3b788646bf"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/foreign_stream_gate/writer.c",
+      "size": 717,
+      "sha256": "ae975d6407d8559c8d0c40a269b39a898dea9996ef1f3c3e3c4b4aee00945737"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/foreign_stream_task.py",
+      "size": 4390,
+      "sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_batch.c",
+      "size": 6688,
+      "sha256": "a79a4e19beb23608d17cabea0f128f0ec629aa79e5935b7b6f87d64931835bcb"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_batch.h",
+      "size": 1548,
+      "sha256": "46c0a1cbac45677c81c3e413a45e0487872a9f49d429782b5eacf51264b1d7b3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_host.h",
+      "size": 837,
+      "sha256": "7fb900ecd91a3a078fea3850c89c112f65765ed1084e2fd241ff80278f95d85f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_host.inc",
+      "size": 14852,
+      "sha256": "83e993e3c7782be1cc5e5acf18fe3e4d38c9c6f10495eff1ef793233669fdc1c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_model.h",
+      "size": 1132,
+      "sha256": "3ec0af22e1e09f674e7ea8ce1fa2493a6781521dcb67d4c3f174f0eda8566164"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_accessible_flow.py.inc",
+      "size": 7405,
+      "sha256": "fe104c294b0df44d884a1116914d9ed1658e7467e93921b4e2f66a2d6d7ef84d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_clipboard_flow.py.inc",
+      "size": 14162,
+      "sha256": "ddc9816aab7ceea2fe2533ebc432ea6536e4245e5c2c3c2d80cca2081325ece8"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_clipboard_stream_flow.py.inc",
+      "size": 6120,
+      "sha256": "6a8e1bd7522d3a4ce550eae0395761639e74deaa0b1dbe6cd845b2a9a617b5de"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document.h",
+      "size": 911,
+      "sha256": "b86f4f8032a968bdafa85ec8467e8632e9391ab8da07aba15c9644120b300741"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document.inc",
+      "size": 12122,
+      "sha256": "4cd5d39ed134f360fb3f1f5852514127d916576d914720ec223514aa9dd9d6fe"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document_client.c",
+      "size": 19097,
+      "sha256": "cefde70e7a9d167c54817db842ce4ac246454593fba034bd6285d17bdfebb2f5"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_flow.py.inc",
+      "size": 7351,
+      "sha256": "78701e24e497e06bd26bf1b9e5f0fbb985e3801fb9ba22505b2bba0b040a2f63"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_ime_flow.py.inc",
+      "size": 11545,
+      "sha256": "00d0aa793c21fc5632c36da10bbe3e8608e1bf2d1ea9ff090d20825af319f65f"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/prepare_accessible_model.py",
+      "size": 2419,
+      "sha256": "3fb1cf472b8d16aec925430f1201fa3aa995d5553eab48699d3493e9e11d1b38"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/prepare_host.py",
+      "size": 4779,
+      "sha256": "56f48c2971f74daa1303f8690cc08b179c22489b8f2416f030b816318ac89dfc"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/prepare_ime_host.py",
+      "size": 3235,
+      "sha256": "cb44b1671fc0e3ac37166d588565be8eeffa8faaffbb82ccce209039f1d9616d"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/prepare_ime_model.py",
+      "size": 4606,
+      "sha256": "dd4edb737bceddb6255f5c1d9ec5dc5e531e0c2f559d4d8f5631ab253820358c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/prepare_native_document_host.py",
+      "size": 4697,
+      "sha256": "e47d2889162cb4ff84fcdbefaac2b20b4e2617ccf65a774008ae2e00dd847624"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/presentation.c",
+      "size": 7917,
+      "sha256": "0c5ca5b51fab9e4a501e9488ddf8d12a8ccc1ba491cc953eac08965127a75578"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/presentation.h",
+      "size": 1097,
+      "sha256": "64cc04b54b86f81b2d3ebc981adf7e301a02d8596b3deabfb5bb65fa304ccce0"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+      "size": 2521,
+      "sha256": "3185222edadc448e8db40c8b275c91f566fbbd601fe7a6add9d4d4a855e63812"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/run_native.py",
+      "size": 10968,
+      "sha256": "43f767106b4af6dc49cad65f08692dfd4b189e079ee0f3edcc4394226e04c10c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/source-inputs.json",
+      "size": 8453,
+      "sha256": "0a7ac6b11983bdf86f4a8fcbe292192a8d01c389e109f89b1b6449af94e75eac"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_accessible_model.c",
+      "size": 12549,
+      "sha256": "03250f64e0290b0721deb45c1bce819f3181091a4900458bf95634d8b7443471"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_attributes.c",
+      "size": 4734,
+      "sha256": "4679d471fc1ae690937ce1a29b4c29805e897c3c9bbdd43c851b5f33b631916e"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_batch.c",
+      "size": 10200,
+      "sha256": "8703ff6ad7ef8bbf18b00d8ff0f0265c0f75b0a244755db0c64f585c2c31ca10"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_model.c",
+      "size": 10547,
+      "sha256": "72bd2456fbc6437e2189659d2abfd3e21f42dca9b59b2e875eb5ec9e3e5f608c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_native_document.c",
+      "size": 15075,
+      "sha256": "aa1e834fdeef9ba1726adb8118e9b026810672426fe1983855bbc21709224c1b"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_presentation.c",
+      "size": 8355,
+      "sha256": "3ee1d5a8407c3f26de787008fbfe412e63903b09b2a6e0f0273b5c781e594b96"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/window_input.h",
+      "size": 1899,
+      "sha256": "2516de08affe1ab4a1af60b3ad9a0d1bd36cd64bceb693fa576b69b1e18186e3"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/tests/atspi_cache_probe.h",
+      "size": 4246,
+      "sha256": "3b570c138d96743d6cc2221d3e12260d8b3bde1097750e5621916af44bab8cb0"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/tests/atspi_large_text_client.c",
+      "size": 27581,
+      "sha256": "5b3300ba536726cb2d521e470f6267bb9c579bf7f5b1537060425f152684d131"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-source-53/repo/tests/run_atspi_native.py",
+      "size": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/CMakeLists.txt",
+      "size": 690,
+      "sha256": "3fbd94a7998f8f9d01d11cdbfd59a5985bcfd2482396c69592ecad8767841556"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/.ninja_deps",
+      "size": 2012,
+      "sha256": "595a39b7fe590804dc9da8178920304faea37f0f866fc4d8c1c94a9c956fa8ef"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/.ninja_log",
+      "size": 914,
+      "sha256": "528fb8b63a1c7c62670ba85d6facce4c07c7a71dc26ac34b5a30437700bb2a09"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeCache.txt",
+      "size": 17673,
+      "sha256": "df501a54ca600f3ae3fc22e54b125de45935a367bbb5dbf28d9f6c1bafef6854"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 225602,
+      "sha256": "0f10de46dbbf9712428de44aac9138d1481b56cfd4061d9bef18a25317e45d00"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/InstallScripts.json",
+      "size": 123,
+      "sha256": "3b415c82c7a33ea6dfcabbbfc024e0f5ba724a1211474cfeae28fdf244a091be"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/TargetDirectories.txt",
+      "size": 371,
+      "sha256": "3612e1c785c73653bcb00044c6f5298c14978fcf2cfe318f390b0d8e9dcf4b02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/control.dir/control.c.o",
+      "size": 85896,
+      "sha256": "1193d780bb380f7d896f0c05bc6d5211e18f7c8fc0cdf3985cb6d271003f71d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/control.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_attributes.c.o",
+      "size": 84176,
+      "sha256": "c908ec41ddfc0dbdad8a7b648707f3cf3331973338dad17fae3fc2ac950f9c8b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/rules.ninja",
+      "size": 3266,
+      "sha256": "b0757cfeb24234cfac4d7e5f5f2033d2bab336f0d05b2777f12d528ce160501f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/wrong_contrast.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_attributes.c.o",
+      "size": 84176,
+      "sha256": "c908ec41ddfc0dbdad8a7b648707f3cf3331973338dad17fae3fc2ac950f9c8b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/wrong_contrast.dir/wrong_contrast.c.o",
+      "size": 84512,
+      "sha256": "e3225e9524d5ce58fba9a376257a77938f38a4ae5c9b9f048ad0a7f05b0a82ab"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/wrong_points.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_attributes.c.o",
+      "size": 84176,
+      "sha256": "c908ec41ddfc0dbdad8a7b648707f3cf3331973338dad17fae3fc2ac950f9c8b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/CMakeFiles/wrong_points.dir/wrong_points.c.o",
+      "size": 85920,
+      "sha256": "2aa4d75a8485e8b677e8b8a12e98715a1655ec9fd0994125e1f982874405dd31"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/build.ninja",
+      "size": 25690,
+      "sha256": "7163241e549ef96516c31a98e576b21f3a22cf4b821d00b06121aa834c8e0541"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/cmake_install.cmake",
+      "size": 2139,
+      "sha256": "0c12348eec4854e07ec5d8bf4f28f6ea7cef0ad8ef3358c17d87e70ffc4af05c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/compile_commands.json",
+      "size": 4557,
+      "sha256": "0f2bb51a65ba36d749c4b7252f535e39d6b4bf345b8f739df9936a25855d0bc9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/control",
+      "size": 3045584,
+      "sha256": "2ae57c7416662369ff63e870f0163004855b99b6935593c82f4a620c3f5dc748"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/wrong_contrast",
+      "size": 3045328,
+      "sha256": "b1bc6ce1e5b74a4b2657102d9265ca260446299e199b2c6d44946d608bc96185"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/build/wrong_points",
+      "size": 3045600,
+      "sha256": "3eb6554191c607f343417c4c0cc1ef9036b9be7e1d9082b730e70acd43acac12"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/control.c",
+      "size": 4088,
+      "sha256": "32836a0fd3c093979a943dea42a78ab305acf5f5546af0eb0e88789ad6bac361"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/wrong_contrast.c",
+      "size": 4068,
+      "sha256": "658077d1e946cd8fde731bd5985281e871fc23ca027d192250b8061dac4f93f2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/negative/wrong_points.c",
+      "size": 4088,
+      "sha256": "ec81c2fd8f21bc44c83f1f94f42c65a311bfba788275b71aaa84d46d5b59aa81"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/.ninja_deps",
+      "size": 12952,
+      "sha256": "9857a4e8e121208780ca3876f5c5299dbde9b27e71fdbe7c9c27f1c8048a5c4f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/.ninja_log",
+      "size": 5611,
+      "sha256": "9672f7606647cfd45ac8aa833f6f112d1606eba05347d9116c4fdfb5e37561aa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeCache.txt",
+      "size": 19702,
+      "sha256": "5be5f261e280a25fc17abb0839a4875c3c295321c362ee2e102a7c1ed13130cf"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 322946,
+      "sha256": "c1a0aa0504b87bda9d0feaa71dcb866d07c4cfb6a7be353749ee3d825e4896d0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/InstallScripts.json",
+      "size": 119,
+      "sha256": "8687a77bbb7d28d78c5e8b928ca95ea866a01e97d2bddcf0e31636de3518efec"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/TargetDirectories.txt",
+      "size": 2021,
+      "sha256": "65ec3e79df8d7b9c79c25dff25f7752abdfe1a0a0ff1f6cf5b02bd826bc80fa4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+      "size": 1397608,
+      "sha256": "ec916bac654bb4ac7b874f9d289683c74e05fcf22b18041b010624593573abaf"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+      "size": 30568,
+      "sha256": "4fb39a4aac50efb4be9f096a99e24c2aa2ef95df54382646ab7bf3ecfab691b8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+      "size": 195240,
+      "sha256": "09781a1abc4f751c149ccee3ac047ab64c0d4b3869e047da2879a11d1c52df3f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_attributes.dir/attributes.c.o",
+      "size": 85912,
+      "sha256": "d0bf611038482aa1e00f0da908c96ecd43b8b1dec272aea68764f5a920bc9ffd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_attributes_test.dir/test_attributes.c.o",
+      "size": 84168,
+      "sha256": "40c109f2a11389ceef8560bf7bd662518b054d2de12cb81c19f507e4faac7396"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+      "size": 87064,
+      "sha256": "0fa2423edef367fb40db77f92f200821594d1606dd646319532ab0bb39cf98d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+      "size": 111776,
+      "sha256": "34aaa07976f27de019fed996fa971c4a62fff8868b63b7b93d3353a0c2481cbd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+      "size": 107408,
+      "sha256": "51c93c33b859bd13fad0489e7404baa3f14edb06e216a8401ee446445d27c9db"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+      "size": 235888,
+      "sha256": "ebe60ccaa11a5519d45573f6d5623434700cde454485b7f90c7f5a81b6f5e688"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+      "size": 172584,
+      "sha256": "e853141a247fc5d84a1051eb2bd111f53360ce1f1fcfe16b810e54a64b6f2eda"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+      "size": 135384,
+      "sha256": "a1f57fab07e876c7fd99262d60f7b90ed80989e4fb411dfed4736339001f8f47"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+      "size": 122344,
+      "sha256": "6059e00cd099c83c55b067e5450d323572874702bcc01f2241d0a5a34b7e0a72"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+      "size": 166384,
+      "sha256": "8ef69f9208a770e00f524615ab49317bf1990f8d3ff2c7c85ca9987806594715"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+      "size": 39088,
+      "sha256": "de7960afede90b5abe72b98e8991e64d0090f55c944d3e7dc84bc58f5b9e4e1c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+      "size": 136040,
+      "sha256": "8e79017cd2bcc95fd78f9d6a21b6ec4d23cca5216f6b18e9de5c1af3fcbdc83e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+      "size": 70312,
+      "sha256": "234812affa8e3936c4d19efb98e67a430b8694f16da712f37490cf25a5b488a4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+      "size": 58848,
+      "sha256": "922d2e1fc40874da90931b83d4a24b8c123d32ae9f33705eb8123b24dd043194"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+      "size": 148112,
+      "sha256": "ea2c892dc5d37fb2a93193875a7a9988f1fdc75b34d93d92ce3e4497f0650c52"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+      "size": 1589832,
+      "sha256": "729a9fee617a0085f84a08b3fa15b82caf8645424005e9ce875671287b405579"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_presentation.dir/presentation.c.o",
+      "size": 90616,
+      "sha256": "7e108afbfa54b59b71f677ba1169223c17db237854350cbb58d282d0cfa59eca"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+      "size": 134232,
+      "sha256": "5f5a13a4e757a7106ef0468a866f3c676f85b17a97a1bce3d6d78daba16758b7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+      "size": 149248,
+      "sha256": "3152439877a0acf9b48ebdf6a52124677b5b0bc512769f29104769ec1b62a3fe"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+      "size": 109344,
+      "sha256": "3019fb212c222355118fa79b4c18842e1025075e4de3d4d15ca41b08f987ac7b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+      "size": 199928,
+      "sha256": "5aaf364db042bde6c8b5517cfebaad6f4d494f979fafd29cb106d8e0bb0d50e2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+      "size": 199152,
+      "sha256": "a6e63fc325ce1e11a7569a73357067dbf07e1071e5703ca0ce2b502eb4c33a68"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+      "size": 375752,
+      "sha256": "b0f6648fe38c70651a4cebf3539a7dff5dbbff0459670aa28d39f466e3636bd3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+      "size": 102832,
+      "sha256": "a655e2823ae9d95f89d0aeb2fea7fced1bd9ea9726de0151a0e27840c94d39df"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+      "size": 244440,
+      "sha256": "f697c5cf379a318879ef74a2281728be71d0dd71f1656d6f5e319780f65f84e6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+      "size": 1729960,
+      "sha256": "e1f16b777d0be419ffd5c969fcace55ff0de63063c0c4b2d0ce6b4ad98d7fa1c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+      "size": 136536,
+      "sha256": "80531f0b6d3817e1553747e0dc1b64cb5f6da5579ab7f0371f087bca204a734c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+      "size": 56264,
+      "sha256": "c7f1b990ef97becab6d90aa85d5ea6ba5178eda8e5658185cc72543026a25c84"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+      "size": 64904,
+      "sha256": "e215a3d6558f554ee4d0160791756ef70a7ec65c712be30b99fd58a558c9a300"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+      "size": 112448,
+      "sha256": "f8d42847a19ab0c7ef059180a36201fcb451bf34ce80c76264a065764b3610ad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CMakeFiles/rules.ninja",
+      "size": 16604,
+      "sha256": "cd652d84db8be561d243757f26d6b437ee1c374b3949a497e801fa6cbf171d4f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/CTestTestfile.cmake",
+      "size": 9074,
+      "sha256": "1dacf699103cc3f8b80b4680661ae58f874705ea837049df25175b4125ac3b94"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/Testing/Temporary/CTestCostData.txt",
+      "size": 840,
+      "sha256": "1a20ac6f8c9ed464ca45326bec902cc42152cb37fa465380465149a48c32dc94"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/Testing/Temporary/LastTest.log",
+      "size": 16546,
+      "sha256": "008b6927f557ebcc9dda0b22b0af729a25b02f358c473a4797bd3d72d4f82146"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/aetheri_editor_candidate",
+      "size": 12864640,
+      "sha256": "dd25a2f9d4c32e05f02960a61dae490549b0ca3c84d2d99a1a5aef322f102af1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/build.ninja",
+      "size": 83931,
+      "sha256": "02aac8ebad7d6e91c61bbe011d09f5c22d1b110b0cdfd69dcb7b2b2bfb386241"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/cmake_install.cmake",
+      "size": 2166,
+      "sha256": "c1e489eb99dd6838d93a8d0ae4c31743c0f9654ad1aa166d40f85db527ae9221"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/compile_commands.json",
+      "size": 24280,
+      "sha256": "9dbba174307c1d2839b2d558b94bc25759f5cef4c402474e6b91c392ed4da3a8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/.aetheri-save-8f7fc6944f946a46af30d8c84a7894f6",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/attrs",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-1",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-10",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-11",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-12",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-13",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-14",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-15",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-16",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-17",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-18",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-2",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-3",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-4",
+      "size": 7,
+      "sha256": "656771905e1ef731f65cd0a0d9fb061238380a1a012e6abdf846ecc7d2ea36fd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-5",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-6",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-7",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-8",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/file-9",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/huge-attr",
+      "size": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/invalid",
+      "size": 3,
+      "sha256": "1b036bb7c56caec6e11a3891cea30f910b89b34d6d27be39202efd3b38a29bad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/large",
+      "size": 8388609,
+      "sha256": "4459f957d031a8b782dfee09d2c7070a4b5e6c33130a8f20ac35393fd97fc57a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/maximum",
+      "size": 8388608,
+      "sha256": "d9187567ec3d7ed20d2691e21eab0cece147c99c17226fe80ca780f96272a8ef"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/new",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/raced",
+      "size": 5,
+      "sha256": "bba53a5b33d33921e5d0e341009629fabd54f283b4d819ee852c1b80096dcb81"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_accessible_model_test",
+      "size": 3264480,
+      "sha256": "e3f6625976081b84f976df351a70a2af3f8d4bfa031605b5a85bd740a9a52573"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_attributes_test",
+      "size": 3045576,
+      "sha256": "5e1fdbc0fe399dcdf64e910c29bc19080c84609da1177829fa3df53f874213cf"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_ime_batch_test",
+      "size": 3252928,
+      "sha256": "05ad5202702c6b21a8e33450bdebfc5f0e4f6c634d63b8dba28e6ea90ae34990"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_ime_model_test",
+      "size": 3217816,
+      "sha256": "48ee93d205f74686f96169297efdf027d3b9e650b3667c27259a4e7fca71f18a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_native_document_test",
+      "size": 12981968,
+      "sha256": "cdfce12bb172e0727e2eea7fd277b2280986ddb04e8e226436c7c3babfa71408"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor_presentation_test",
+      "size": 4283240,
+      "sha256": "c84adc4d1ed953eb0a907080c6326cd22eb01f126773650a2711202a940c6977"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/accessible-model/accessible-model-delta.json",
+      "size": 2016,
+      "sha256": "b7e6681ef874cd08909eecca88bfd50f55cd949a556905818abacf831a354953"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/accessible-model/direct.c",
+      "size": 11423,
+      "sha256": "ad2bddb05510a43fd19ef0617e4334d2d0e980bb4056fae165abedde7f041f64"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/accessible-model/document.c",
+      "size": 20544,
+      "sha256": "8596461a1039f9b1da42a9e374ab15e9dfe666fa45c69fd6be3e91e6e284fd37"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/editor.c",
+      "size": 67893,
+      "sha256": "185dcb74437ccbc4642d12c1788af2ef48e2596aa9ce68723ec91d0a4179e76a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/ime-host/editor.c",
+      "size": 68302,
+      "sha256": "72a3bf9895c981f9a6d673b9d7c213015773bed190955b96dc57bd2ce695a969"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/ime-host/ime-host-delta.json",
+      "size": 2811,
+      "sha256": "8a83aac3032e557cd0c4472a92ef00f0e677cf3f052060078083503171907413"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/ime-model/direct.c",
+      "size": 10535,
+      "sha256": "7c9710c6d4850fb1abcc4d3d55d0d2596630e238a0222f9c0a769664275600d4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/ime-model/document.c",
+      "size": 20300,
+      "sha256": "b9a84076944cfa4d4cd469c69f58b783be43d8215ac1fe49521b214bb500d100"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/ime-model/ime-model-delta.json",
+      "size": 4152,
+      "sha256": "0578a366cdd7c36897b616c3217649a77f9bd888e9de37bf53e08e21a42ca96d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/native-document/editor.c",
+      "size": 68670,
+      "sha256": "4d0cc89d56ac041db646c7c0e26ca25ec1deffe85e7a9d2cbcc00df01640a92c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/native-document/native-document-delta.json",
+      "size": 5575,
+      "sha256": "27b6502773d0af6dcd6ddf33f2ab484e62e84e47e08a957d0440c1884e5eca6e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/generated/source-delta.json",
+      "size": 4086,
+      "sha256": "0dbab94452eb36120b9496f98ba59d1d842e0f568229d2c37bb2edf5db5d6fce"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/libeditor_accessible_model.a",
+      "size": 30930,
+      "sha256": "b3ea5a5721e0176018cb23f183f05ea8456ea767ddd1983233cdd17ee2f12cd5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/libeditor_attributes.a",
+      "size": 86106,
+      "sha256": "4916c66800fcce64c9edb8772ffb2d7770bf18e16c492fe510de26eae033f807"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/libeditor_ime_batch.a",
+      "size": 87312,
+      "sha256": "ff915e447c59442bd9872b41db5f57a13f213ec655d9eb847d8491d6fb61ae3a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/libeditor_ime_model.a",
+      "size": 1248636,
+      "sha256": "df61a28167661f8aee2c3122482973e7da119261a46fa44d0f663456c7fb947b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/libeditor_presentation.a",
+      "size": 91006,
+      "sha256": "3ce096e0d619468ba3ddb524db71d6946e194e70e8c636a94b17ed96cc1e68ae"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_direct",
+      "size": 3211728,
+      "sha256": "27a60b1f9cdd9fe7e3f123beac4e09c106edb296a94bd8500c3b198df54db49d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_document",
+      "size": 3116104,
+      "sha256": "1485d275ac4aa953ca73a7f7eb8cda9a4a22c910081c8d1b55e879ccd8b4c772"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_editor_file",
+      "size": 3294960,
+      "sha256": "04bd8e604574f3e1fc8f7d9243c1c2b312e2bc00983e561f858fe0e89018feb7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_editor_save_work",
+      "size": 3486976,
+      "sha256": "cab0cc42802de30a1f14d540e81e53e964615efabcf0351e3ab889966e7389a7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_editor_view",
+      "size": 3575960,
+      "sha256": "d3d8d8488305e89e682df7c8cd81c5191ce236ebf8e57d0aa8567d7a6767668b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_editor_workspace",
+      "size": 3510336,
+      "sha256": "26e2952289efd13e92d0b76ffb43599ee0c23ca54eb6b6c0747e579f7c1e2f4b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_grapheme",
+      "size": 4242664,
+      "sha256": "048ec1aafb3e444d19bf4ba669edccf8323f894999226475c2b3c1d7b92b4e9a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_history",
+      "size": 3231472,
+      "sha256": "30d30655eb8e526604b8b1ad183e5949b8c8c59943b7f83cf5c9d3da77f87384"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_modal",
+      "size": 3184704,
+      "sha256": "c9818dd78ddc178faece4d058cb575ab6d2247bef434600be159cdf1f4f5a8f3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_search",
+      "size": 3190928,
+      "sha256": "445f9073f14e0869b9c1edf2316ea5fa9c274f8a266c01ebcc80169be24eb14f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/original_selection",
+      "size": 3218240,
+      "sha256": "1933a23c410b7fb0b7db4ccab478a56f255c9487840e4781ce3c129e4791cebe"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/save-work-BKFIaI/first",
+      "size": 3,
+      "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/save-work-BKFIaI/named",
+      "size": 9,
+      "sha256": "bac4adf63cd9c4f79a17e359a7bc482d69f901491f04b23603bfc6b40d4ab084"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/save-work-BKFIaI/review",
+      "size": 10,
+      "sha256": "c5c4f663c0d1c9999d8b64c347dc769279816942beaf3af263e2519b7b5c00da"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/created",
+      "size": 12,
+      "sha256": "4739e65e5ea45fcd394e1ca6dc39e603f59fb6cf3f4f31fc7b6a1f6c4715be8e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/discard",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/notes",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/occupied",
+      "size": 4,
+      "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/oom",
+      "size": 8,
+      "sha256": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/picker-save",
+      "size": 7,
+      "sha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/review-save",
+      "size": 5,
+      "sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-a-KpCbJE/unknown",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/workspace-b-CHENKE/notes",
+      "size": 5,
+      "sha256": "d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/.ninja_deps",
+      "size": 12520,
+      "sha256": "9ed9405af339383b28fa38e6b1d25b3220269d105e1506eec4cf3e35ec36d0dd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/.ninja_log",
+      "size": 5298,
+      "sha256": "b295e2b58a49eccc8a6c45bb09048797df457e29c8736a3072df2df361d7a51e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeCache.txt",
+      "size": 19653,
+      "sha256": "58b2da68f2e7dc41e39fe33515f060f12ef759fcd32918846513f0daf0c1f1d8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 320489,
+      "sha256": "8464c4fc30175770a57b2e8ebf96be38bd2ff9238240670351bbb7a752de2c49"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/InstallScripts.json",
+      "size": 125,
+      "sha256": "88dd5c416e7e4b4cb9f802ae6055ad271d5430731419a1065008b563ecfe928e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/TargetDirectories.txt",
+      "size": 2008,
+      "sha256": "70f5ee430e7714965f61b31a8be17e649d707311e93da921db426d178ad8b0c6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+      "size": 254128,
+      "sha256": "0d7c5257ede71d48902c7a46fabe38000efdf9af66a46631bb7b2a0e4b394430"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+      "size": 4312,
+      "sha256": "3b9b3ee3561ffba08f5cf2e9ab048e8c895bf60a8d0a0e2c460e2ab51ee7c356"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+      "size": 38648,
+      "sha256": "46b3151416813d6266f45354e864d034df310a4f255f049a78351b4425e06388"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+      "size": 4120,
+      "sha256": "03d6cc71458123f7c85363aa7c6e104bbc09cf70326de4bb9ca0910d9f9c2dc5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+      "size": 33080,
+      "sha256": "9e8fec1f47bca4e02ee019b55790c4b94e2b08cd25e9b0984cd826c8753b282d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+      "size": 10912,
+      "sha256": "9875f37a75b05f27cdea979ec27a70c4a7431dfb99d193d5cc9a7e3250fedf8c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+      "size": 17104,
+      "sha256": "37723567645b88d2b529fab0e55ef7678ccb91d5c3389f778435652bf7608431"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+      "size": 16576,
+      "sha256": "d386259ccda206fedd4d471ae6797093a9f6e086c837fbeb276e55cabc937768"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+      "size": 12552,
+      "sha256": "5d3f085bd35d4ac74ce9ffc3ba2fda615e342d4d47aa148cba5c8e4e4e4766e9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+      "size": 14856,
+      "sha256": "d3257a1ae7e05d69d0d6bab2bfdef29495eb407e7124a64863989e2e619e08b6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+      "size": 18472,
+      "sha256": "7c47d75c72be19aaa008eea13654ed2e536502b6b477bfa7d8f4288af357fe0c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+      "size": 5352,
+      "sha256": "deef350552917362da42ea946b326b35b0bd9b3bb3d8a09bae166412cb2edf3f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+      "size": 13912,
+      "sha256": "b09cb0f8a11ef1abb6885df2ba622ccde2a2a0b40364b9fa47759b8578df10a6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+      "size": 7080,
+      "sha256": "0dd4be13c8e61e185e59c35d20b212dd77a314619e013a801de6877db3d3088c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+      "size": 28064,
+      "sha256": "a4f929b4ac301b094c5d0db114134990e9230751371263a00810f487e6bada5c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+      "size": 285504,
+      "sha256": "6d327e2b4aaae31f8b1ca45bd39600434e158c00825adfe4faa6f31a124e4d1b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_presentation.dir/presentation.c.o",
+      "size": 8152,
+      "sha256": "dbf547dd84f28e07fd3d8e1e5e8c1ad93e54720e0101916a94b5c2a526ae2524"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+      "size": 21560,
+      "sha256": "67176b84388743f4ace1f19fcea9e837fccd35b8a968459545dbda0e22e8a7f6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+      "size": 36192,
+      "sha256": "293535707b3205520624717a406e85603678cc007141a4ef1ade2a4d257107ff"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+      "size": 24088,
+      "sha256": "9d588cea8213c8d9f6d3ebf1893ce4e3b0c3754fbbc64dfa37871fd7d00a7da2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+      "size": 41368,
+      "sha256": "d6495e5be0bda18900d65bebf84594ecea7427bde0cd071b3c256e6fd3876cf8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+      "size": 42152,
+      "sha256": "5f666b21c1a0f29bce8291abcf3d83c584fd2424f6b279321cc0df0b28b4c9ad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+      "size": 26160,
+      "sha256": "6e1dfdcb35fbc21b0c7e68d55f52441f176f419c70c05b69c328b6cf31e012c9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+      "size": 21640,
+      "sha256": "a1e3a7ba50fab6822904315fc2d3f93222d4503dd5471e7f5d0be84ba95b92b8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+      "size": 50312,
+      "sha256": "48176059b2c08ea8e8ce8e5132b814779942aa94ae7f94f51a28046db77c9e74"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+      "size": 927144,
+      "sha256": "8a0ccc97a8c18d898cdde87f5e4e3d27004e4972d4b82fe9ecbbcfff7433e3a4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+      "size": 29840,
+      "sha256": "f4dc90c72110734ff99a4d0603d9f53064bfb1b480fbce9da65a2de21bbcf4af"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+      "size": 12032,
+      "sha256": "d8546bd92b74e51bb9490606f9ad169705264a369f55b82b92dfa04124c5f77d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+      "size": 13072,
+      "sha256": "6143086c32d3a8f59a929dc1dd7de8fe30cb73ddf24b9425e359721cca72d417"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+      "size": 35200,
+      "sha256": "9d01f6f0dae659eee9f5b2db78dac8b021ea326082f58b28d702db6d1d6f4889"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CMakeFiles/rules.ninja",
+      "size": 15349,
+      "sha256": "64f518dfc84c21a7a796f307cd98853000294d48eead332aea2a6fccd460d674"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/CTestTestfile.cmake",
+      "size": 8339,
+      "sha256": "756ab3cca9b307527d62b6f3e7d2d86ed104b9f479f2744f20e793056d4ba8f2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/Testing/Temporary/CTestCostData.txt",
+      "size": 775,
+      "sha256": "bd58c7e27103dc5fb781b9fef124ba7c1f1e70cdd30d98be72ea284303df6f3e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/Testing/Temporary/LastTest.log",
+      "size": 15164,
+      "sha256": "5018638e5686831819d980fd82c111a80da11f6bd3e260969e263750d02f31ca"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/aetheri_editor_candidate",
+      "size": 315328,
+      "sha256": "fdd1d4006c5bfcfd1ceb677397b76f93e6b0ade2f258f824cd4a607851a43512"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/build.ninja",
+      "size": 76382,
+      "sha256": "63414fa6a4c885372ac6201387869eaea7363f5d4b429b596730461e7658b69a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/cmake_install.cmake",
+      "size": 2180,
+      "sha256": "037d9b5d748a931b9dd49d0e56dc438cd616d7b039d60db0faa1f72529a1d114"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/compile_commands.json",
+      "size": 22101,
+      "sha256": "d11f11c6bead2f1a4f3a1bcf918560aa27a36ce4494d352138514f9d1f8fca0c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/.aetheri-save-7c73662c4fed55ac9cf5776cd7125c6d",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/attrs",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-1",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-10",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-11",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-12",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-13",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-14",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-15",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-16",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-17",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-18",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-2",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-3",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-4",
+      "size": 7,
+      "sha256": "656771905e1ef731f65cd0a0d9fb061238380a1a012e6abdf846ecc7d2ea36fd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-5",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-6",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-7",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-8",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/file-9",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/huge-attr",
+      "size": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/invalid",
+      "size": 3,
+      "sha256": "1b036bb7c56caec6e11a3891cea30f910b89b34d6d27be39202efd3b38a29bad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/large",
+      "size": 8388609,
+      "sha256": "4459f957d031a8b782dfee09d2c7070a4b5e6c33130a8f20ac35393fd97fc57a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/maximum",
+      "size": 8388608,
+      "sha256": "d9187567ec3d7ed20d2691e21eab0cece147c99c17226fe80ca780f96272a8ef"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/new",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/raced",
+      "size": 5,
+      "sha256": "bba53a5b33d33921e5d0e341009629fabd54f283b4d819ee852c1b80096dcb81"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor_accessible_model_test",
+      "size": 78904,
+      "sha256": "9901b8ff6adff0909c704634b81e6d775a77be860c6a79870aeebe411816f5d1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor_ime_batch_test",
+      "size": 74856,
+      "sha256": "53488b8884e8f8be5796ba397c32397fd0a7785307e0040a06d7c8771ddcca2d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor_ime_model_test",
+      "size": 70608,
+      "sha256": "5d37f2267138015f51e92587e878de0db8e950417963492fef9c3e4cf0af3fd8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor_native_document_test",
+      "size": 336392,
+      "sha256": "da1f9e97537124c4c5a10882e42bc51af9fe54560833d6f9ccc1e1d304d2df47"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor_presentation_test",
+      "size": 32400,
+      "sha256": "728e2f256dcee6f943171e6921694ed3d3f6203e69f2e14a3dac757759c2972d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/accessible-model/accessible-model-delta.json",
+      "size": 2028,
+      "sha256": "0c2e6dcbf069bcbab2bc2c63e1ad5ac46fd7ec58a1fccda33fcd840c816f7725"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/accessible-model/direct.c",
+      "size": 11423,
+      "sha256": "ad2bddb05510a43fd19ef0617e4334d2d0e980bb4056fae165abedde7f041f64"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/accessible-model/document.c",
+      "size": 20544,
+      "sha256": "8596461a1039f9b1da42a9e374ab15e9dfe666fa45c69fd6be3e91e6e284fd37"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/editor.c",
+      "size": 67893,
+      "sha256": "185dcb74437ccbc4642d12c1788af2ef48e2596aa9ce68723ec91d0a4179e76a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/ime-host/editor.c",
+      "size": 68302,
+      "sha256": "72a3bf9895c981f9a6d673b9d7c213015773bed190955b96dc57bd2ce695a969"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/ime-host/ime-host-delta.json",
+      "size": 2817,
+      "sha256": "47944b8218f3f054acaa824dcafcfbc53c191366ed5a38c3233b665851919f55"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/ime-model/direct.c",
+      "size": 10535,
+      "sha256": "7c9710c6d4850fb1abcc4d3d55d0d2596630e238a0222f9c0a769664275600d4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/ime-model/document.c",
+      "size": 20300,
+      "sha256": "b9a84076944cfa4d4cd469c69f58b783be43d8215ac1fe49521b214bb500d100"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/ime-model/ime-model-delta.json",
+      "size": 4152,
+      "sha256": "0578a366cdd7c36897b616c3217649a77f9bd888e9de37bf53e08e21a42ca96d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/native-document/editor.c",
+      "size": 68670,
+      "sha256": "4d0cc89d56ac041db646c7c0e26ca25ec1deffe85e7a9d2cbcc00df01640a92c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/native-document/native-document-delta.json",
+      "size": 5581,
+      "sha256": "898e691e4d36f09a8f1fcfbaeebb9978ec7b4812babc6820e18e8542a6157fed"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/generated/source-delta.json",
+      "size": 4086,
+      "sha256": "0dbab94452eb36120b9496f98ba59d1d842e0f568229d2c37bb2edf5db5d6fce"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/libeditor_accessible_model.a",
+      "size": 4644,
+      "sha256": "354f16bf4aee1e63d46894ab465373286203d5f15c5dc0682f2d38a3734ad6db"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/libeditor_ime_batch.a",
+      "size": 4338,
+      "sha256": "ac44ca1f316d895c5a1cb47aab31c5664e07f8a50be49bb27a28313c2a1316e3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/libeditor_ime_model.a",
+      "size": 143790,
+      "sha256": "4d08ee232f4548a092e0d5249d2a2775fb301c6c916a77b50404899a0b171caa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/libeditor_presentation.a",
+      "size": 8512,
+      "sha256": "c0be3c3fb9cd7f021cfaf090d3b3e857e40399ac961477024acd878998565b4b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_direct",
+      "size": 70360,
+      "sha256": "b606b9bc8a6d266cdf69886370efdb71d0838a1dabaa071bde369430f579d24b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_document",
+      "size": 61264,
+      "sha256": "893e3171574bba9638282de4f23103bbd2dfc8fb248d1db081503230ec362c41"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_editor_file",
+      "size": 80216,
+      "sha256": "0ccb4e217ee7c8ec1948137c6e91dd8c9009c4c7046ed0693b514faf73179fa4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_editor_save_work",
+      "size": 98776,
+      "sha256": "b991339bd9d64a6273f670d2b3b17dbf8331234b937087e8dbc8c9ada324221d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_editor_view",
+      "size": 100384,
+      "sha256": "1dbd0502c1ddf9036fae06dae935718c3c15a3af993644b0f8a47897c3ff59e0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_editor_workspace",
+      "size": 102680,
+      "sha256": "923d376773cb0e089cec375ba56dbda6ec14c79225f901be9114acd9b08c902f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_grapheme",
+      "size": 960952,
+      "sha256": "90b1785765ec5f4ac29b47e3c237c848e567598efe27c258f73f7f23d0986097"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_history",
+      "size": 74184,
+      "sha256": "eac62ae028bbc7f2a47bbad485a75fc540643793b448a7ffeeaddd11b8238ed2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_modal",
+      "size": 61864,
+      "sha256": "1a65de7584626a591fec67fc2c97981054d248d171efb0327da6e64bdc47e2d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_search",
+      "size": 66016,
+      "sha256": "38beaa402c675fbafa57be75c411603bfa8c317b5c7d32ab51778418a609d2de"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/original_selection",
+      "size": 74232,
+      "sha256": "70c88e034ddddb35b1756f8e9531d4c5309aa73b8cbcfd87564487943318cfab"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/save-work-gkpCdI/first",
+      "size": 3,
+      "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/save-work-gkpCdI/named",
+      "size": 9,
+      "sha256": "bac4adf63cd9c4f79a17e359a7bc482d69f901491f04b23603bfc6b40d4ab084"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/save-work-gkpCdI/review",
+      "size": 10,
+      "sha256": "c5c4f663c0d1c9999d8b64c347dc769279816942beaf3af263e2519b7b5c00da"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/created",
+      "size": 12,
+      "sha256": "4739e65e5ea45fcd394e1ca6dc39e603f59fb6cf3f4f31fc7b6a1f6c4715be8e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/discard",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/notes",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/occupied",
+      "size": 4,
+      "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/oom",
+      "size": 8,
+      "sha256": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/picker-save",
+      "size": 7,
+      "sha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/review-save",
+      "size": 5,
+      "sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-a-OoLOgG/unknown",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/workspace-b-nPiHhG/notes",
+      "size": 5,
+      "sha256": "d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/.ninja_deps",
+      "size": 13104,
+      "sha256": "6c857a10bf42e4f8f2c6aa502433227563e2d288d64b88c903e17829a539dee3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/.ninja_log",
+      "size": 5612,
+      "sha256": "3b3e420c93f9242e3ff10b0ae452541155d927451b9dd8fccea42431f96579fa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeCache.txt",
+      "size": 19642,
+      "sha256": "0aa157b7c3eb4f7e145f2ccd93545a6225cd1d49684479e30fcf5fea0738a60b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 321284,
+      "sha256": "82b59e286691b83232dfe219f60488775bc5f15118748c7408a43517c4d90b20"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/InstallScripts.json",
+      "size": 122,
+      "sha256": "d91e6151024bba5bcc1165523b8df177a40bc37bb16fc919ea185c3b2e81e8e4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/TargetDirectories.txt",
+      "size": 2099,
+      "sha256": "a055019dd18fe454d6628b24d8b7b06a92deac391a680de376bb181b15bbbd87"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+      "size": 259944,
+      "sha256": "5c1c1c72a954dc815fe3752a1e06fc37f5aff85eb61b192e15280cd942c937a6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+      "size": 4312,
+      "sha256": "3b9b3ee3561ffba08f5cf2e9ab048e8c895bf60a8d0a0e2c460e2ab51ee7c356"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+      "size": 38648,
+      "sha256": "46b3151416813d6266f45354e864d034df310a4f255f049a78351b4425e06388"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_attributes.dir/attributes.c.o",
+      "size": 7096,
+      "sha256": "2dab371a5b9c95b97f5457eda9462860061d04136d2c279be1216e012f161635"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_attributes_test.dir/test_attributes.c.o",
+      "size": 13256,
+      "sha256": "da7a3b8ccbb4af442f6007a1205ee714a15b5ee27cb66002a286c0d6f1a299f3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+      "size": 4120,
+      "sha256": "03d6cc71458123f7c85363aa7c6e104bbc09cf70326de4bb9ca0910d9f9c2dc5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+      "size": 33080,
+      "sha256": "9e8fec1f47bca4e02ee019b55790c4b94e2b08cd25e9b0984cd826c8753b282d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+      "size": 10912,
+      "sha256": "9875f37a75b05f27cdea979ec27a70c4a7431dfb99d193d5cc9a7e3250fedf8c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+      "size": 17104,
+      "sha256": "37723567645b88d2b529fab0e55ef7678ccb91d5c3389f778435652bf7608431"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+      "size": 16576,
+      "sha256": "d386259ccda206fedd4d471ae6797093a9f6e086c837fbeb276e55cabc937768"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+      "size": 12552,
+      "sha256": "5d3f085bd35d4ac74ce9ffc3ba2fda615e342d4d47aa148cba5c8e4e4e4766e9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+      "size": 14856,
+      "sha256": "d3257a1ae7e05d69d0d6bab2bfdef29495eb407e7124a64863989e2e619e08b6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+      "size": 18472,
+      "sha256": "7c47d75c72be19aaa008eea13654ed2e536502b6b477bfa7d8f4288af357fe0c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+      "size": 5352,
+      "sha256": "deef350552917362da42ea946b326b35b0bd9b3bb3d8a09bae166412cb2edf3f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+      "size": 13912,
+      "sha256": "b09cb0f8a11ef1abb6885df2ba622ccde2a2a0b40364b9fa47759b8578df10a6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+      "size": 7080,
+      "sha256": "0dd4be13c8e61e185e59c35d20b212dd77a314619e013a801de6877db3d3088c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+      "size": 28064,
+      "sha256": "a4f929b4ac301b094c5d0db114134990e9230751371263a00810f487e6bada5c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+      "size": 295544,
+      "sha256": "9504bd37871172d5f948d2b236f1fcb62cecd25108e1de8a1613278191dfec6b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_presentation.dir/presentation.c.o",
+      "size": 8152,
+      "sha256": "dbf547dd84f28e07fd3d8e1e5e8c1ad93e54720e0101916a94b5c2a526ae2524"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+      "size": 21560,
+      "sha256": "67176b84388743f4ace1f19fcea9e837fccd35b8a968459545dbda0e22e8a7f6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+      "size": 36192,
+      "sha256": "293535707b3205520624717a406e85603678cc007141a4ef1ade2a4d257107ff"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+      "size": 24088,
+      "sha256": "9d588cea8213c8d9f6d3ebf1893ce4e3b0c3754fbbc64dfa37871fd7d00a7da2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+      "size": 41368,
+      "sha256": "d6495e5be0bda18900d65bebf84594ecea7427bde0cd071b3c256e6fd3876cf8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+      "size": 42152,
+      "sha256": "5f666b21c1a0f29bce8291abcf3d83c584fd2424f6b279321cc0df0b28b4c9ad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+      "size": 26160,
+      "sha256": "6e1dfdcb35fbc21b0c7e68d55f52441f176f419c70c05b69c328b6cf31e012c9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+      "size": 21640,
+      "sha256": "a1e3a7ba50fab6822904315fc2d3f93222d4503dd5471e7f5d0be84ba95b92b8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+      "size": 50312,
+      "sha256": "48176059b2c08ea8e8ce8e5132b814779942aa94ae7f94f51a28046db77c9e74"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+      "size": 927144,
+      "sha256": "8a0ccc97a8c18d898cdde87f5e4e3d27004e4972d4b82fe9ecbbcfff7433e3a4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+      "size": 29840,
+      "sha256": "f4dc90c72110734ff99a4d0603d9f53064bfb1b480fbce9da65a2de21bbcf4af"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+      "size": 12032,
+      "sha256": "d8546bd92b74e51bb9490606f9ad169705264a369f55b82b92dfa04124c5f77d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+      "size": 13072,
+      "sha256": "6143086c32d3a8f59a929dc1dd7de8fe30cb73ddf24b9425e359721cca72d417"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+      "size": 35200,
+      "sha256": "9d01f6f0dae659eee9f5b2db78dac8b021ea326082f58b28d702db6d1d6f4889"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CMakeFiles/rules.ninja",
+      "size": 16701,
+      "sha256": "f5d30019f086a074b47e1912f3373ae70251d6855f68d0c1f53965e8e9490a6f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/CTestTestfile.cmake",
+      "size": 9140,
+      "sha256": "870846365babd3516a462233907647c37607163488ab0cce112c24d1d90793f3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/Testing/Temporary/CTestCostData.txt",
+      "size": 857,
+      "sha256": "a466fd4a05282bbb55d6abf7bb143ed29eda06200a289ec0c94bcd59f493ac98"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/Testing/Temporary/LastTest.log",
+      "size": 16672,
+      "sha256": "f321b0a1053c629000a75275512cacd01a619fcd447ab77419a364a39c8923ea"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/aetheri_editor_candidate",
+      "size": 1152864,
+      "sha256": "a21ba5dd16cdadbd6fab1fac635996883a5487b2cd2b2e7740ab942dc77f37bd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/build.ninja",
+      "size": 81299,
+      "sha256": "10fa089421250ba29d3a84ba7d724be645d44cd26c8926067b08d9e16640f44c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/cmake_install.cmake",
+      "size": 2174,
+      "sha256": "ef381dd208e756d8a14c7004d0d61e27fa7d12952df341a9229a561f22eaf998"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/compile_commands.json",
+      "size": 23104,
+      "sha256": "32d17237cb8596a8bf77b63e485deac8b38fd8eb825ddc7091dfd2f48d4f2a31"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/.aetheri-save-daaa6444c499a22100be668789175eba",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/attrs",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-1",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-10",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-11",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-12",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-13",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-14",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-15",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-16",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-17",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-18",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-2",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-3",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-4",
+      "size": 7,
+      "sha256": "656771905e1ef731f65cd0a0d9fb061238380a1a012e6abdf846ecc7d2ea36fd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-5",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-6",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-7",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-8",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/file-9",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/huge-attr",
+      "size": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/invalid",
+      "size": 3,
+      "sha256": "1b036bb7c56caec6e11a3891cea30f910b89b34d6d27be39202efd3b38a29bad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/large",
+      "size": 8388609,
+      "sha256": "4459f957d031a8b782dfee09d2c7070a4b5e6c33130a8f20ac35393fd97fc57a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/maximum",
+      "size": 8388608,
+      "sha256": "d9187567ec3d7ed20d2691e21eab0cece147c99c17226fe80ca780f96272a8ef"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/new",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/raced",
+      "size": 5,
+      "sha256": "bba53a5b33d33921e5d0e341009629fabd54f283b4d819ee852c1b80096dcb81"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_accessible_model_test",
+      "size": 78904,
+      "sha256": "9901b8ff6adff0909c704634b81e6d775a77be860c6a79870aeebe411816f5d1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_attributes_test",
+      "size": 36264,
+      "sha256": "18facecc41f2126b7ac25d610ac368be28693f0ce730a5897ac6f4c169338502"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_ime_batch_test",
+      "size": 74856,
+      "sha256": "754585a6a1744ec475f6d076db1e926d0960dfee44d9884ad93edd5ea8ede89a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_ime_model_test",
+      "size": 70608,
+      "sha256": "5d37f2267138015f51e92587e878de0db8e950417963492fef9c3e4cf0af3fd8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_native_document_test",
+      "size": 1177888,
+      "sha256": "e3d56a1d3473c638f75ae6a9e137d1abd1514b3ee6e9151d1efee723599f017e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor_presentation_test",
+      "size": 258928,
+      "sha256": "780c20ae57e752f607db481942448172cbd083ac9303eb593db72872112304d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/accessible-model/accessible-model-delta.json",
+      "size": 2022,
+      "sha256": "2f33b3e891367d33b5ee571f96ca628cc979ad147490e8e2b8e2a97f62d0529f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/accessible-model/direct.c",
+      "size": 11423,
+      "sha256": "ad2bddb05510a43fd19ef0617e4334d2d0e980bb4056fae165abedde7f041f64"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/accessible-model/document.c",
+      "size": 20544,
+      "sha256": "8596461a1039f9b1da42a9e374ab15e9dfe666fa45c69fd6be3e91e6e284fd37"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/editor.c",
+      "size": 67893,
+      "sha256": "185dcb74437ccbc4642d12c1788af2ef48e2596aa9ce68723ec91d0a4179e76a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/ime-host/editor.c",
+      "size": 68302,
+      "sha256": "72a3bf9895c981f9a6d673b9d7c213015773bed190955b96dc57bd2ce695a969"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/ime-host/ime-host-delta.json",
+      "size": 2814,
+      "sha256": "8307343734d14efb0d22f80a35f8ed4153cf888ccc458e17e6b62ba1c2973011"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/ime-model/direct.c",
+      "size": 10535,
+      "sha256": "7c9710c6d4850fb1abcc4d3d55d0d2596630e238a0222f9c0a769664275600d4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/ime-model/document.c",
+      "size": 20300,
+      "sha256": "b9a84076944cfa4d4cd469c69f58b783be43d8215ac1fe49521b214bb500d100"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/ime-model/ime-model-delta.json",
+      "size": 4152,
+      "sha256": "0578a366cdd7c36897b616c3217649a77f9bd888e9de37bf53e08e21a42ca96d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/native-document/editor.c",
+      "size": 68670,
+      "sha256": "4d0cc89d56ac041db646c7c0e26ca25ec1deffe85e7a9d2cbcc00df01640a92c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/native-document/native-document-delta.json",
+      "size": 5578,
+      "sha256": "49931e140dbc2efc2d0715723febdcf7c02028bd73735a014827ae94411acc57"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/generated/source-delta.json",
+      "size": 4086,
+      "sha256": "0dbab94452eb36120b9496f98ba59d1d842e0f568229d2c37bb2edf5db5d6fce"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/libeditor_accessible_model.a",
+      "size": 4644,
+      "sha256": "354f16bf4aee1e63d46894ab465373286203d5f15c5dc0682f2d38a3734ad6db"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/libeditor_attributes.a",
+      "size": 7258,
+      "sha256": "91adbd2d89add5cfe23ccb76e2093b6135c6edf1b831fcdb7e633c41adcf9841"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/libeditor_ime_batch.a",
+      "size": 4338,
+      "sha256": "ac44ca1f316d895c5a1cb47aab31c5664e07f8a50be49bb27a28313c2a1316e3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/libeditor_ime_model.a",
+      "size": 143790,
+      "sha256": "4d08ee232f4548a092e0d5249d2a2775fb301c6c916a77b50404899a0b171caa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/libeditor_presentation.a",
+      "size": 8512,
+      "sha256": "c0be3c3fb9cd7f021cfaf090d3b3e857e40399ac961477024acd878998565b4b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_direct",
+      "size": 70360,
+      "sha256": "b606b9bc8a6d266cdf69886370efdb71d0838a1dabaa071bde369430f579d24b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_document",
+      "size": 61264,
+      "sha256": "893e3171574bba9638282de4f23103bbd2dfc8fb248d1db081503230ec362c41"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_editor_file",
+      "size": 80216,
+      "sha256": "0ccb4e217ee7c8ec1948137c6e91dd8c9009c4c7046ed0693b514faf73179fa4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_editor_save_work",
+      "size": 98776,
+      "sha256": "b991339bd9d64a6273f670d2b3b17dbf8331234b937087e8dbc8c9ada324221d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_editor_view",
+      "size": 100384,
+      "sha256": "1dbd0502c1ddf9036fae06dae935718c3c15a3af993644b0f8a47897c3ff59e0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_editor_workspace",
+      "size": 102680,
+      "sha256": "923d376773cb0e089cec375ba56dbda6ec14c79225f901be9114acd9b08c902f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_grapheme",
+      "size": 960952,
+      "sha256": "90b1785765ec5f4ac29b47e3c237c848e567598efe27c258f73f7f23d0986097"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_history",
+      "size": 74184,
+      "sha256": "eac62ae028bbc7f2a47bbad485a75fc540643793b448a7ffeeaddd11b8238ed2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_modal",
+      "size": 61864,
+      "sha256": "1a65de7584626a591fec67fc2c97981054d248d171efb0327da6e64bdc47e2d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_search",
+      "size": 66016,
+      "sha256": "38beaa402c675fbafa57be75c411603bfa8c317b5c7d32ab51778418a609d2de"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/original_selection",
+      "size": 74232,
+      "sha256": "70c88e034ddddb35b1756f8e9531d4c5309aa73b8cbcfd87564487943318cfab"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/save-work-MaohAd/first",
+      "size": 3,
+      "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/save-work-MaohAd/named",
+      "size": 9,
+      "sha256": "bac4adf63cd9c4f79a17e359a7bc482d69f901491f04b23603bfc6b40d4ab084"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/save-work-MaohAd/review",
+      "size": 10,
+      "sha256": "c5c4f663c0d1c9999d8b64c347dc769279816942beaf3af263e2519b7b5c00da"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/created",
+      "size": 12,
+      "sha256": "4739e65e5ea45fcd394e1ca6dc39e603f59fb6cf3f4f31fc7b6a1f6c4715be8e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/discard",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/notes",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/occupied",
+      "size": 4,
+      "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/oom",
+      "size": 8,
+      "sha256": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/picker-save",
+      "size": 7,
+      "sha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/review-save",
+      "size": 5,
+      "sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-a-jGJeDc/unknown",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/workspace-b-BPaBEc/notes",
+      "size": 5,
+      "sha256": "d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/.ninja_deps",
+      "size": 13096,
+      "sha256": "5e041f3a6226febad918861e5a00991f51cc6c292ce8a6f592167d1fcf204661"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/.ninja_log",
+      "size": 5615,
+      "sha256": "0ea9df1236f09d53db7be1ea01369d76fee929e7ae75576eb7a4a7fa2621ece4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeCache.txt",
+      "size": 19636,
+      "sha256": "e4cece85a4aa3d2149b1419a3b0b54e12f7b958f382743994e5ab5d36aea7743"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 320429,
+      "sha256": "661e600accfd27ea188fb515a807052c215d08a01ff984d07c243146572e05f6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/InstallScripts.json",
+      "size": 121,
+      "sha256": "c67b17440617bae74fd45a3af33e4c7c3e270992d0def07632f84556c43f69fd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/TargetDirectories.txt",
+      "size": 2073,
+      "sha256": "dbbf2f613220cb7093224c814e88a11340dfa6ab69d781b10fd83325a949ae79"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+      "size": 259944,
+      "sha256": "5c1c1c72a954dc815fe3752a1e06fc37f5aff85eb61b192e15280cd942c937a6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+      "size": 4312,
+      "sha256": "3b9b3ee3561ffba08f5cf2e9ab048e8c895bf60a8d0a0e2c460e2ab51ee7c356"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+      "size": 38648,
+      "sha256": "46b3151416813d6266f45354e864d034df310a4f255f049a78351b4425e06388"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_attributes.dir/attributes.c.o",
+      "size": 7096,
+      "sha256": "2dab371a5b9c95b97f5457eda9462860061d04136d2c279be1216e012f161635"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_attributes_test.dir/test_attributes.c.o",
+      "size": 13256,
+      "sha256": "da7a3b8ccbb4af442f6007a1205ee714a15b5ee27cb66002a286c0d6f1a299f3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+      "size": 4120,
+      "sha256": "03d6cc71458123f7c85363aa7c6e104bbc09cf70326de4bb9ca0910d9f9c2dc5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+      "size": 33080,
+      "sha256": "9e8fec1f47bca4e02ee019b55790c4b94e2b08cd25e9b0984cd826c8753b282d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+      "size": 10912,
+      "sha256": "9875f37a75b05f27cdea979ec27a70c4a7431dfb99d193d5cc9a7e3250fedf8c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+      "size": 17104,
+      "sha256": "37723567645b88d2b529fab0e55ef7678ccb91d5c3389f778435652bf7608431"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+      "size": 16576,
+      "sha256": "d386259ccda206fedd4d471ae6797093a9f6e086c837fbeb276e55cabc937768"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+      "size": 12552,
+      "sha256": "5d3f085bd35d4ac74ce9ffc3ba2fda615e342d4d47aa148cba5c8e4e4e4766e9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+      "size": 14856,
+      "sha256": "d3257a1ae7e05d69d0d6bab2bfdef29495eb407e7124a64863989e2e619e08b6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+      "size": 18472,
+      "sha256": "7c47d75c72be19aaa008eea13654ed2e536502b6b477bfa7d8f4288af357fe0c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+      "size": 5352,
+      "sha256": "deef350552917362da42ea946b326b35b0bd9b3bb3d8a09bae166412cb2edf3f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+      "size": 13912,
+      "sha256": "b09cb0f8a11ef1abb6885df2ba622ccde2a2a0b40364b9fa47759b8578df10a6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+      "size": 7080,
+      "sha256": "0dd4be13c8e61e185e59c35d20b212dd77a314619e013a801de6877db3d3088c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+      "size": 28064,
+      "sha256": "a4f929b4ac301b094c5d0db114134990e9230751371263a00810f487e6bada5c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+      "size": 295544,
+      "sha256": "9504bd37871172d5f948d2b236f1fcb62cecd25108e1de8a1613278191dfec6b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_presentation.dir/presentation.c.o",
+      "size": 8152,
+      "sha256": "dbf547dd84f28e07fd3d8e1e5e8c1ad93e54720e0101916a94b5c2a526ae2524"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+      "size": 21560,
+      "sha256": "67176b84388743f4ace1f19fcea9e837fccd35b8a968459545dbda0e22e8a7f6"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+      "size": 36192,
+      "sha256": "293535707b3205520624717a406e85603678cc007141a4ef1ade2a4d257107ff"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+      "size": 24088,
+      "sha256": "9d588cea8213c8d9f6d3ebf1893ce4e3b0c3754fbbc64dfa37871fd7d00a7da2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+      "size": 41368,
+      "sha256": "d6495e5be0bda18900d65bebf84594ecea7427bde0cd071b3c256e6fd3876cf8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+      "size": 42152,
+      "sha256": "5f666b21c1a0f29bce8291abcf3d83c584fd2424f6b279321cc0df0b28b4c9ad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+      "size": 26160,
+      "sha256": "6e1dfdcb35fbc21b0c7e68d55f52441f176f419c70c05b69c328b6cf31e012c9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+      "size": 21640,
+      "sha256": "a1e3a7ba50fab6822904315fc2d3f93222d4503dd5471e7f5d0be84ba95b92b8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+      "size": 50312,
+      "sha256": "48176059b2c08ea8e8ce8e5132b814779942aa94ae7f94f51a28046db77c9e74"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+      "size": 927144,
+      "sha256": "8a0ccc97a8c18d898cdde87f5e4e3d27004e4972d4b82fe9ecbbcfff7433e3a4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+      "size": 29840,
+      "sha256": "f4dc90c72110734ff99a4d0603d9f53064bfb1b480fbce9da65a2de21bbcf4af"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+      "size": 12032,
+      "sha256": "d8546bd92b74e51bb9490606f9ad169705264a369f55b82b92dfa04124c5f77d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+      "size": 13072,
+      "sha256": "6143086c32d3a8f59a929dc1dd7de8fe30cb73ddf24b9425e359721cca72d417"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+      "size": 35200,
+      "sha256": "9d01f6f0dae659eee9f5b2db78dac8b021ea326082f58b28d702db6d1d6f4889"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CMakeFiles/rules.ninja",
+      "size": 16700,
+      "sha256": "4a78400c148b1845fc555a0f2be4d843446307a5973476f0c52e3152c06e5305"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/CTestTestfile.cmake",
+      "size": 9118,
+      "sha256": "cb6994c32b9e3c8785c87d1bb77d865e320300443222e6928f75184ea45a8b89"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/Testing/Temporary/CTestCostData.txt",
+      "size": 857,
+      "sha256": "d1308a6f1b03f30f29bac92dbf791b65553ca3455566e3b965d069fcab2f2ca9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/Testing/Temporary/LastTest.log",
+      "size": 16630,
+      "sha256": "7a4a26228677c52ce972d5e657c8d230174103e7b63ea7136585e34bc1e0274b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/aetheri_editor_candidate",
+      "size": 323880,
+      "sha256": "aa8aa68282a7509f9ca2e798f133a1ace9091528abbac2fd88256877284b0b0f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/build.ninja",
+      "size": 80847,
+      "sha256": "595a40a1c70cb8a9931430663c8dec33cbd5fc339c2f5ca56739d403e7b5b39f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/cmake_install.cmake",
+      "size": 2172,
+      "sha256": "ac5e4f9e7e35735f63ffb4d171390d0e4b245ad4ffe85a546af57c19abee1e8f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/compile_commands.json",
+      "size": 23151,
+      "sha256": "ffff5c18b7466f58b4c35c6f47e09913fefd0989abdd0688e29d2272675766c7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/.aetheri-save-9d6f129e9e68fd48250cfe2f3ef72d33",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/attrs",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-1",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-10",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-11",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-12",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-13",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-14",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-15",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-16",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-17",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-18",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-2",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-3",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-4",
+      "size": 7,
+      "sha256": "656771905e1ef731f65cd0a0d9fb061238380a1a012e6abdf846ecc7d2ea36fd"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-5",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-6",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-7",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-8",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/file-9",
+      "size": 9,
+      "sha256": "e9ad981cc66b01626cfd740031f42fcfdef907dc62242c5d1d7f6ec10f374950"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/huge-attr",
+      "size": 1,
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/invalid",
+      "size": 3,
+      "sha256": "1b036bb7c56caec6e11a3891cea30f910b89b34d6d27be39202efd3b38a29bad"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/large",
+      "size": 8388609,
+      "sha256": "4459f957d031a8b782dfee09d2c7070a4b5e6c33130a8f20ac35393fd97fc57a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/maximum",
+      "size": 8388608,
+      "sha256": "d9187567ec3d7ed20d2691e21eab0cece147c99c17226fe80ca780f96272a8ef"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/new",
+      "size": 13,
+      "sha256": "3b017c668b333bb60b4d775d07eb16a56db1d1bca0bfeb5ba889951fb6437172"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/raced",
+      "size": 5,
+      "sha256": "bba53a5b33d33921e5d0e341009629fabd54f283b4d819ee852c1b80096dcb81"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_accessible_model_test",
+      "size": 78904,
+      "sha256": "9901b8ff6adff0909c704634b81e6d775a77be860c6a79870aeebe411816f5d1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_attributes_test",
+      "size": 23336,
+      "sha256": "74ab8e1c19728f5d68de5af5a5c643f65c2ae6d625bff8b92a532f25c348748f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_ime_batch_test",
+      "size": 74856,
+      "sha256": "53488b8884e8f8be5796ba397c32397fd0a7785307e0040a06d7c8771ddcca2d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_ime_model_test",
+      "size": 70608,
+      "sha256": "5d37f2267138015f51e92587e878de0db8e950417963492fef9c3e4cf0af3fd8"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_native_document_test",
+      "size": 344952,
+      "sha256": "a158179dedcaf5f3aa89eab5ebc954778971d60e39836fbb3c079c2e99c79569"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor_presentation_test",
+      "size": 32400,
+      "sha256": "728e2f256dcee6f943171e6921694ed3d3f6203e69f2e14a3dac757759c2972d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/accessible-model/accessible-model-delta.json",
+      "size": 2020,
+      "sha256": "17b749c679f56b45891998cc78c9151d1d87d2e4b2fdbc44a0f9637f4c827461"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/accessible-model/direct.c",
+      "size": 11423,
+      "sha256": "ad2bddb05510a43fd19ef0617e4334d2d0e980bb4056fae165abedde7f041f64"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/accessible-model/document.c",
+      "size": 20544,
+      "sha256": "8596461a1039f9b1da42a9e374ab15e9dfe666fa45c69fd6be3e91e6e284fd37"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/editor.c",
+      "size": 67893,
+      "sha256": "185dcb74437ccbc4642d12c1788af2ef48e2596aa9ce68723ec91d0a4179e76a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/ime-host/editor.c",
+      "size": 68302,
+      "sha256": "72a3bf9895c981f9a6d673b9d7c213015773bed190955b96dc57bd2ce695a969"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/ime-host/ime-host-delta.json",
+      "size": 2813,
+      "sha256": "cb0932d40f73cf17a828ae562561d884527f5ea4adfbb74e22c4a0193d646139"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/ime-model/direct.c",
+      "size": 10535,
+      "sha256": "7c9710c6d4850fb1abcc4d3d55d0d2596630e238a0222f9c0a769664275600d4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/ime-model/document.c",
+      "size": 20300,
+      "sha256": "b9a84076944cfa4d4cd469c69f58b783be43d8215ac1fe49521b214bb500d100"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/ime-model/ime-model-delta.json",
+      "size": 4152,
+      "sha256": "0578a366cdd7c36897b616c3217649a77f9bd888e9de37bf53e08e21a42ca96d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/native-document/editor.c",
+      "size": 68670,
+      "sha256": "4d0cc89d56ac041db646c7c0e26ca25ec1deffe85e7a9d2cbcc00df01640a92c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/native-document/native-document-delta.json",
+      "size": 5577,
+      "sha256": "b990affb66eee7313c70e642ffc779e2a01ebb4c7051c531ca9781ec26434c19"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/generated/source-delta.json",
+      "size": 4086,
+      "sha256": "0dbab94452eb36120b9496f98ba59d1d842e0f568229d2c37bb2edf5db5d6fce"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/libeditor_accessible_model.a",
+      "size": 4644,
+      "sha256": "354f16bf4aee1e63d46894ab465373286203d5f15c5dc0682f2d38a3734ad6db"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/libeditor_attributes.a",
+      "size": 7258,
+      "sha256": "91adbd2d89add5cfe23ccb76e2093b6135c6edf1b831fcdb7e633c41adcf9841"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/libeditor_ime_batch.a",
+      "size": 4338,
+      "sha256": "ac44ca1f316d895c5a1cb47aab31c5664e07f8a50be49bb27a28313c2a1316e3"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/libeditor_ime_model.a",
+      "size": 143790,
+      "sha256": "4d08ee232f4548a092e0d5249d2a2775fb301c6c916a77b50404899a0b171caa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/libeditor_presentation.a",
+      "size": 8512,
+      "sha256": "c0be3c3fb9cd7f021cfaf090d3b3e857e40399ac961477024acd878998565b4b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_direct",
+      "size": 70360,
+      "sha256": "b606b9bc8a6d266cdf69886370efdb71d0838a1dabaa071bde369430f579d24b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_document",
+      "size": 61264,
+      "sha256": "893e3171574bba9638282de4f23103bbd2dfc8fb248d1db081503230ec362c41"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_editor_file",
+      "size": 80216,
+      "sha256": "0ccb4e217ee7c8ec1948137c6e91dd8c9009c4c7046ed0693b514faf73179fa4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_editor_save_work",
+      "size": 98776,
+      "sha256": "b991339bd9d64a6273f670d2b3b17dbf8331234b937087e8dbc8c9ada324221d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_editor_view",
+      "size": 100384,
+      "sha256": "1dbd0502c1ddf9036fae06dae935718c3c15a3af993644b0f8a47897c3ff59e0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_editor_workspace",
+      "size": 102680,
+      "sha256": "923d376773cb0e089cec375ba56dbda6ec14c79225f901be9114acd9b08c902f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_grapheme",
+      "size": 960952,
+      "sha256": "90b1785765ec5f4ac29b47e3c237c848e567598efe27c258f73f7f23d0986097"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_history",
+      "size": 74184,
+      "sha256": "eac62ae028bbc7f2a47bbad485a75fc540643793b448a7ffeeaddd11b8238ed2"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_modal",
+      "size": 61864,
+      "sha256": "1a65de7584626a591fec67fc2c97981054d248d171efb0327da6e64bdc47e2d5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_search",
+      "size": 66016,
+      "sha256": "38beaa402c675fbafa57be75c411603bfa8c317b5c7d32ab51778418a609d2de"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/original_selection",
+      "size": 74232,
+      "sha256": "70c88e034ddddb35b1756f8e9531d4c5309aa73b8cbcfd87564487943318cfab"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/save-work-DAfhDg/first",
+      "size": 3,
+      "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/save-work-DAfhDg/named",
+      "size": 9,
+      "sha256": "bac4adf63cd9c4f79a17e359a7bc482d69f901491f04b23603bfc6b40d4ab084"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/save-work-DAfhDg/review",
+      "size": 10,
+      "sha256": "c5c4f663c0d1c9999d8b64c347dc769279816942beaf3af263e2519b7b5c00da"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/created",
+      "size": 12,
+      "sha256": "4739e65e5ea45fcd394e1ca6dc39e603f59fb6cf3f4f31fc7b6a1f6c4715be8e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/discard",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/notes",
+      "size": 8,
+      "sha256": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/occupied",
+      "size": 4,
+      "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/oom",
+      "size": 8,
+      "sha256": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/picker-save",
+      "size": 7,
+      "sha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/review-save",
+      "size": 5,
+      "sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-a-Heiohc/unknown",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/workspace-b-aDFMic/notes",
+      "size": 5,
+      "sha256": "d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/.ninja_deps",
+      "size": 10108,
+      "sha256": "fe2de0ea4ad56b7b01a035b406c0dc45e00ae695c62e64bbd824e4bec1d69030"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/.ninja_log",
+      "size": 260,
+      "sha256": "97a02de51cea35ea4f7d9e1fb80827ff5fba3d25f4bdc1eba56c14ce99e070fc"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeCache.txt",
+      "size": 17466,
+      "sha256": "48508e41cb4595aeca077ac2a2c12f8e24ff2c90c6029f65856977be28dce7e7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 221770,
+      "sha256": "dfafffaa82936c6e2ecd62f91984abe95e614de9adf265c18470e8b31b3aad35"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/InstallScripts.json",
+      "size": 118,
+      "sha256": "6b60f5a87d6d8b6e126b122db86b41c6a66c2b2916a346c7eff46a586abe3a82"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/TargetDirectories.txt",
+      "size": 219,
+      "sha256": "a90d72656c9cbb33e5deccf31799e7fb020af82fd92fb397ef37fc7c804db037"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/editor_document_client.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document_client.c.o",
+      "size": 591296,
+      "sha256": "f22c2663a35dec465c8f7827a52103d9cbf9b895f2cbafdc0ec60eb237a51069"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/CMakeFiles/rules.ninja",
+      "size": 2066,
+      "sha256": "1de47c6c3d4ab855cb826e2cdd2e785c15e8ea5ab260358fa779a1c172a7c033"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/build.ninja",
+      "size": 17435,
+      "sha256": "36876fb4e87978b2a958b598eba3669e82ed33696b780d0fb280dccb6bc048ec"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/cmake_install.cmake",
+      "size": 2177,
+      "sha256": "10d02594c3d16fa3ef4fdd4cd1d42483bca5db4b404f45764ed7de07f0443f14"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/compile_commands.json",
+      "size": 987,
+      "sha256": "7ae7259c1a9d0b7e1306dd2d8b7e134c8ddf3a8c07a5b6e4d4961d4562f96ab4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-asan/editor_document_client",
+      "size": 3166152,
+      "sha256": "09eec9d9eef58ad34cd6a6bd15fc82a7a1818ddf89a4b3b9a10cbcf429b43651"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/.ninja_deps",
+      "size": 10152,
+      "sha256": "c45b76e88abe316e748483df6ca27e2b0a6cccba961a44517e8d9b1a047a7633"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/.ninja_log",
+      "size": 260,
+      "sha256": "f36b84a101f623d4d6cff4e807d1dae67ba705ab8d36892e11b1706b41ea6252"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeCache.txt",
+      "size": 17400,
+      "sha256": "e73b9cb81710c266678c09f7b4fa5765e9a07d39ee20041de14ddf0fbe8876f9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 217782,
+      "sha256": "5adde99151cd391cc356e0b2bac1b067a42bc284a8adbdfa80ddc526ff131ad9"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/InstallScripts.json",
+      "size": 121,
+      "sha256": "a76a5fc151a88a24be99c160f8c0225106ee74130e96093dfbf7c2562e5572bc"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/TargetDirectories.txt",
+      "size": 228,
+      "sha256": "3e0725e4dfa92921d7773cd2e614f0146809431484160ea6bba9867c7ad87241"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/editor_document_client.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document_client.c.o",
+      "size": 118552,
+      "sha256": "e481269588f5c8dad0d9cf76a363fe3fe7d3dc9ffee11d6cf142460110abfe87"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/CMakeFiles/rules.ninja",
+      "size": 2075,
+      "sha256": "48e038c6278aef90378ad0cf65819b3b77cc3d8ba9515a04eb1372f8cbbde3e1"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/build.ninja",
+      "size": 17335,
+      "sha256": "5056463a464f7cc073a155829cb626674bf2c2d8796bd8e422b919c74e4a2ab4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/cmake_install.cmake",
+      "size": 2185,
+      "sha256": "021a4f952126bc2c0293bfa0206dcaebb4cd226f9731aaaef7add315daa08a38"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/compile_commands.json",
+      "size": 950,
+      "sha256": "a2c9fbe1fe71e3f5befafcdc3a5183d7b400258d86e1e67ebc252da1bedd9f4b"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-release/editor_document_client",
+      "size": 82824,
+      "sha256": "61905f3123001259a55c1b8b15c6672e7cb0f250b6143af1bf69a31f07f94faa"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/.ninja_deps",
+      "size": 10152,
+      "sha256": "d0acd71cd4fdfba30456fcfd29160e158809c807db7333fc6d67f547dc97ab16"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/.ninja_log",
+      "size": 260,
+      "sha256": "b8184355c236d24cb624a2f29a60e2af03823698b7e060ff6d29a0941c3ca943"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeCache.txt",
+      "size": 17396,
+      "sha256": "eda249ecc82b2b820915aec484a9577ca33cfdd7b4df40d18258761f49cc3782"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 217773,
+      "sha256": "ef5aad4906e52662c892242cc61e88ebb9397a9b2db73bf62e93eb5f53fd2588"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/InstallScripts.json",
+      "size": 120,
+      "sha256": "8bf3e7e85feb0711a0e93f50c0edf982b45e8d896bf4ed7ceee3e79d517f9a22"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/TargetDirectories.txt",
+      "size": 225,
+      "sha256": "13000017c126e0f5d9b48ebd15f84f0e49206d3568f0ecf2dd98851678662366"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/editor_document_client.dir/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/native_document_client.c.o",
+      "size": 118552,
+      "sha256": "e481269588f5c8dad0d9cf76a363fe3fe7d3dc9ffee11d6cf142460110abfe87"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/CMakeFiles/rules.ninja",
+      "size": 2074,
+      "sha256": "9a4d7358b1fbd04bf86dd6d422046373ae5546c3de03f02486a6f4f84f595f55"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/build.ninja",
+      "size": 17329,
+      "sha256": "c4147c2f2542509925ab5a654954a31858c3b4fc33e9c2268f09451551fa614c"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/cmake_install.cmake",
+      "size": 2183,
+      "sha256": "d36d9988cb43d3a2658e4f1fdd0a46f5f13b75c5a8e8072853574f17d7827a3a"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/compile_commands.json",
+      "size": 948,
+      "sha256": "f0044d1e3276d6fe319315f428e876960b75cd50f8528cb87b9b52a9bd191df4"
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/peer-shared/editor_document_client",
+      "size": 82824,
+      "sha256": "61905f3123001259a55c1b8b15c6672e7cb0f250b6143af1bf69a31f07f94faa"
+    }
+  ],
+  "scope": "Headless original owner/model/paint tests and OS-peer compilation only. No new complete native workflow or pixel comparison. Earlier native ASan held-EOF failure remains unresolved; the old VM is currently unreachable. Full native enabled/OFF/omitted-data comparison and physical/human/design/performance/normal adoption remain open."
+}

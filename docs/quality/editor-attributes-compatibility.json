@@ -1,0 +1,1029 @@
+{
+  "result": "passed",
+  "source_revision": "6d1f2739276bd4c88a3157187f86df5b5bcd960e",
+  "sdk_version": "0.1.30",
+  "sdk_source_revision": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+  "library": {
+    "path": "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/lib/libnexaui.so.0.1.30",
+    "size": 969920,
+    "sha256": "3e6ad7cbad6e3c3d0adf653a20b16f3baa2e9d134aca65790e18ff7b241bc57b"
+  },
+  "executed_ctests": 19,
+  "compiled_objects": [
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c",
+        "size": 3857,
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+        "size": 22928,
+        "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/text/grapheme.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/accessible-model/document.c",
+        "size": 20544,
+        "sha256": "8596461a1039f9b1da42a9e374ab15e9dfe666fa45c69fd6be3e91e6e284fd37"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+        "size": 17104,
+        "sha256": "37723567645b88d2b529fab0e55ef7678ccb91d5c3389f778435652bf7608431"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/generated/accessible-model/document.c.o",
+        "-c",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/accessible-model/document.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/accessible-model/direct.c",
+        "size": 11423,
+        "sha256": "ad2bddb05510a43fd19ef0617e4334d2d0e980bb4056fae165abedde7f041f64"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+        "size": 10912,
+        "sha256": "9875f37a75b05f27cdea979ec27a70c4a7431dfb99d193d5cc9a7e3250fedf8c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/generated/accessible-model/direct.c.o",
+        "-c",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/accessible-model/direct.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c",
+        "size": 15063,
+        "sha256": "57929b0e529336a2607aa66964e451d204719d57562f786df55c9505a3af3721"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+        "size": 12552,
+        "sha256": "5d3f085bd35d4ac74ce9ffc3ba2fda615e342d4d47aa148cba5c8e4e4e4766e9"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/modal.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c",
+        "size": 16421,
+        "sha256": "df033ed9d5aaaf40db4b24c6c67a4d4a234a49400e7a29dbe04bb866181e4b9e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+        "size": 16576,
+        "sha256": "d386259ccda206fedd4d471ae6797093a9f6e086c837fbeb276e55cabc937768"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/file.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c",
+        "size": 18595,
+        "sha256": "3ed966a5ca153365a972a78e124d6601e96c902cc949089cadc4a9568bf7bcc3"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+        "size": 18472,
+        "sha256": "7c47d75c72be19aaa008eea13654ed2e536502b6b477bfa7d8f4288af357fe0c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/workspace.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c",
+        "size": 12627,
+        "sha256": "1fae6fbb6a7c87eedd7c711367080fb2ca2c502edc4edd909cbc7ded617625c4"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+        "size": 14856,
+        "sha256": "d3257a1ae7e05d69d0d6bab2bfdef29495eb407e7124a64863989e2e619e08b6"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/editor/view.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c",
+        "size": 11773,
+        "sha256": "893afec78a77ad294e38527a512231b5f3a31f88cbeb3b81483f91dff1871f84"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+        "size": 13912,
+        "sha256": "b09cb0f8a11ef1abb6885df2ba622ccde2a2a0b40364b9fa47759b8578df10a6"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/files/model.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c",
+        "size": 4508,
+        "sha256": "894de242d9319b7279afba9175d012cafb8469a9215e2443933be7c4220eed42"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+        "size": 5352,
+        "sha256": "deef350552917362da42ea946b326b35b0bd9b3bb3d8a09bae166412cb2edf3f"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/files/create.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c",
+        "size": 6818,
+        "sha256": "69cb2982119350f22ee76b33c23db37d0ccccdb81c0300459be3d0849f78cc72"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+        "size": 7080,
+        "sha256": "0dd4be13c8e61e185e59c35d20b212dd77a314619e013a801de6877db3d3088c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src/editor",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model.dir/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/files/rename.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/native-document/editor.c",
+        "size": 68670,
+        "sha256": "4d0cc89d56ac041db646c7c0e26ca25ec1deffe85e7a9d2cbcc00df01640a92c"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+        "size": 254128,
+        "sha256": "0d7c5257ede71d48902c7a46fabe38000efdf9af66a46631bb7b2a0e4b394430"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DEDITOR_DOCUMENT_WITH_CLIPBOARD=1",
+        "-DEDITOR_DOCUMENT_WITH_IME=1",
+        "-DEDITOR_DOCUMENT_WITH_PRESENTATION=1",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/aetheri_editor_candidate.dir/generated/native-document/editor.c.o",
+        "-c",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/native-document/editor.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_native_document.c",
+        "size": 15075,
+        "sha256": "aa1e834fdeef9ba1726adb8118e9b026810672426fe1983855bbc21709224c1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+        "size": 285504,
+        "sha256": "6d327e2b4aaae31f8b1ca45bd39600434e158c00825adfe4faa6f31a124e4d1b"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DEDITOR_DOCUMENT_WITH_CLIPBOARD=1",
+        "-DEDITOR_DOCUMENT_WITH_IME=1",
+        "-DEDITOR_DOCUMENT_WITH_PRESENTATION=1",
+        "-DEDITOR_NATIVE_DOCUMENT_HOST=\"/tmp/nexaui-editor-attributes53/owner-compat-sdk30/generated/native-document/editor.c\"",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_native_document_test.dir/test_native_document.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_native_document.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/presentation.c",
+        "size": 7917,
+        "sha256": "0c5ca5b51fab9e4a501e9488ddf8d12a8ccc1ba491cc953eac08965127a75578"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_presentation.dir/presentation.c.o",
+        "size": 8152,
+        "sha256": "dbf547dd84f28e07fd3d8e1e5e8c1ad93e54720e0101916a94b5c2a526ae2524"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_presentation.dir/presentation.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/presentation.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_presentation.c",
+        "size": 8355,
+        "sha256": "3ee1d5a8407c3f26de787008fbfe412e63903b09b2a6e0f0273b5c781e594b96"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+        "size": 21560,
+        "sha256": "67176b84388743f4ace1f19fcea9e837fccd35b8a968459545dbda0e22e8a7f6"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_presentation_test.dir/test_presentation.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_presentation.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/accessible_model.c",
+        "size": 4222,
+        "sha256": "6902af443c7635c38c73fc70c2ba9e6e7fc010015795651c7eafcdd65a4324b7"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+        "size": 4312,
+        "sha256": "3b9b3ee3561ffba08f5cf2e9ab048e8c895bf60a8d0a0e2c460e2ab51ee7c356"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_accessible_model.dir/accessible_model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/accessible_model.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_accessible_model.c",
+        "size": 12549,
+        "sha256": "03250f64e0290b0721deb45c1bce819f3181091a4900458bf95634d8b7443471"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+        "size": 38648,
+        "sha256": "46b3151416813d6266f45354e864d034df310a4f255f049a78351b4425e06388"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_accessible_model_test.dir/test_accessible_model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_accessible_model.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_batch.c",
+        "size": 6688,
+        "sha256": "a79a4e19beb23608d17cabea0f128f0ec629aa79e5935b7b6f87d64931835bcb"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+        "size": 4120,
+        "sha256": "03d6cc71458123f7c85363aa7c6e104bbc09cf70326de4bb9ca0910d9f9c2dc5"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_batch.dir/ime_batch.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/ime_batch.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_batch.c",
+        "size": 10200,
+        "sha256": "8703ff6ad7ef8bbf18b00d8ff0f0265c0f75b0a244755db0c64f585c2c31ca10"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+        "size": 33080,
+        "sha256": "9e8fec1f47bca4e02ee019b55790c4b94e2b08cd25e9b0984cd826c8753b282d"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_batch_test.dir/test_ime_batch.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_batch.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_model.c",
+        "size": 10547,
+        "sha256": "72bd2456fbc6437e2189659d2abfd3e21f42dca9b59b2e875eb5ec9e3e5f608c"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+        "size": 28064,
+        "sha256": "a4f929b4ac301b094c5d0db114134990e9230751371263a00810f487e6bada5c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/editor_ime_model_test.dir/test_ime_model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer/test_ime_model.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c",
+        "size": 2148,
+        "sha256": "59d2a13a47a0446af6157fe2ac2310ed7dd50e6679304dc0ac921ad6bcfe578d"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+        "size": 927144,
+        "sha256": "8a0ccc97a8c18d898cdde87f5e4e3d27004e4972d4b82fe9ecbbcfff7433e3a4"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_grapheme.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_grapheme.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c",
+        "size": 6958,
+        "sha256": "5cfbfd30fa824199563ed1662222bbd1a95744101e0ed0564fafd3ac8f744746"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+        "size": 24088,
+        "sha256": "9d588cea8213c8d9f6d3ebf1893ce4e3b0c3754fbbc64dfa37871fd7d00a7da2"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_document.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_document.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c",
+        "size": 10451,
+        "sha256": "75555885cffbb3cd00a392856c5ae6d209c4b5e6d8e1243a8a32f40bc63acd22"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+        "size": 36192,
+        "sha256": "293535707b3205520624717a406e85603678cc007141a4ef1ade2a4d257107ff"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_direct.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_direct.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c",
+        "size": 14730,
+        "sha256": "c423d52080419cb8028ef6df60acf1499e47a990a66800ce9dc103243f5d6256"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+        "size": 50312,
+        "sha256": "48176059b2c08ea8e8ce8e5132b814779942aa94ae7f94f51a28046db77c9e74"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_editor_workspace.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_workspace.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c",
+        "size": 11900,
+        "sha256": "242c225d363894d1b72bda39e195bbba9e5d9ff4da720b66c90c1672ea1451bc"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+        "size": 42152,
+        "sha256": "5f666b21c1a0f29bce8291abcf3d83c584fd2424f6b279321cc0df0b28b4c9ad"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_editor_save_work.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_save_work.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c",
+        "size": 4255,
+        "sha256": "2f036df1af70d6b285d23e7d7184ea2156c922bf817a6e2f4f9619000f42ad41"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+        "size": 12032,
+        "sha256": "d8546bd92b74e51bb9490606f9ad169705264a369f55b82b92dfa04124c5f77d"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_modal.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_modal.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c",
+        "size": 8947,
+        "sha256": "65a1f4a25ef6aa2d20232e4ce0b6e6ea2968fdf8de6f0ac95b2b0cf26108bdb9"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+        "size": 29840,
+        "sha256": "f4dc90c72110734ff99a4d0603d9f53064bfb1b480fbce9da65a2de21bbcf4af"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_history.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_history.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c",
+        "size": 4636,
+        "sha256": "7d2dac2ebf838a5eaaf4435834cf606e0a5cbf1ffddd12736983d83e183f1be6"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+        "size": 13072,
+        "sha256": "6143086c32d3a8f59a929dc1dd7de8fe30cb73ddf24b9425e359721cca72d417"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_search.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_search.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c",
+        "size": 8275,
+        "sha256": "1febdff9638e20a9cfe6a57ad1fc80ab2071c0a0b1c3e8a617117ff360efb06d"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+        "size": 35200,
+        "sha256": "9d01f6f0dae659eee9f5b2db78dac8b021ea326082f58b28d702db6d1d6f4889"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_selection.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_selection.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c",
+        "size": 12705,
+        "sha256": "c06972027a7d5bbf3923c4bbb24ba282cdb9ce3a4c3a5e213869964cb5dabc6f"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+        "size": 41368,
+        "sha256": "d6495e5be0bda18900d65bebf84594ecea7427bde0cd071b3c256e6fd3876cf8"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-D_GNU_SOURCE",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_editor_file.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_file.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c",
+        "size": 4222,
+        "sha256": "2827e964bf96441e9bbbe5a5f8f426bfefe59f1600d29c9663c6f82d7631dddf"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+        "size": 21640,
+        "sha256": "a1e3a7ba50fab6822904315fc2d3f93222d4503dd5471e7f5d0be84ba95b92b8"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/tests/test_editor_view.c"
+      ]
+    },
+    {
+      "source": {
+        "path": "/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c",
+        "size": 21909,
+        "sha256": "07f960f267ac4937e5ba92fef4e5876a45b3aa0d97549fe686d72ae15c9dbd04"
+      },
+      "object": {
+        "path": "/tmp/nexaui-editor-attributes53/owner-compat-sdk30/CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+        "size": 26160,
+        "sha256": "6e1dfdcb35fbc21b0c7e68d55f52441f176f419c70c05b69c328b6cf31e012c9"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/editor-source-53/original/src",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wconversion",
+        "-Wshadow",
+        "-Werror",
+        "-o",
+        "CMakeFiles/original_editor_view.dir/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/editor-source-53/original/src/terminal/model.c"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/d/NexaUI/out/editor-source-53/repo/examples/36_aetheri_editor_consumer",
+        "-B",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/editor-source-53/original",
+        "-DCMAKE_C_FLAGS=",
+        "-DCMAKE_EXE_LINKER_FLAGS=",
+        "-DEDITOR_BUILD_IME_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_IME=ON",
+        "-DEDITOR_BUILD_ACCESSIBLE_MODEL=ON",
+        "-DEDITOR_BUILD_NATIVE_ACCESSIBILITY=ON",
+        "-DEDITOR_BUILD_NATIVE_CLIPBOARD=ON",
+        "-DEDITOR_BUILD_NATIVE_PRESENTATION=ON",
+        "-DEDITOR_BUILD_NATIVE_ATTRIBUTES=OFF",
+        "-DEDITOR_PRESENTATION_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "-DEDITOR_PRESENTATION_LIGATURE_FONT=/mnt/d/NexaUI/out/editor-attributes51-borrowed-candara.ttf"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 8.975107230000049,
+      "log": "editor-attributes53-compat30-off-shared-configure.log",
+      "sha256": "6a6a44d096386a5ad84e588c500ceebe8480b272fe5b1837e46ca4221da6264f"
+    },
+    {
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 7.213232967000067,
+      "log": "editor-attributes53-compat30-off-shared-build.log",
+      "sha256": "421defa5c1a4254778105c2cce7ed229c0eab4cedd81f8c3c17f75fdf40d395c"
+    },
+    {
+      "phase": "test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-editor-attributes53/owner-compat-sdk30",
+        "--output-on-failure",
+        "--no-tests=error"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 3.350499425999942,
+      "log": "editor-attributes53-compat30-off-shared-test.log",
+      "sha256": "a07375c8adc993988b49d5d9668c89780ffbab5a4dec032f627e083df41ec0b7"
+    }
+  ],
+  "uid": 65534,
+  "scope": "Separate attributes-OFF compatibility run through the existing corrected SDK0.1.30 package.31 actual objects are source-bound; no0.1.31 metadata symbol imported. No native or pixel acceptance."
+}

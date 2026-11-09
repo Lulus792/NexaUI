@@ -330,3 +330,11 @@ while retaining valid geometry. Fixed owner buffers are overwritten each frame;
 no font/layout/model pointer or extra allocation is retained by this helper.
 Broader font/fallback, native interfaces, AX/UIA, physical/human/design/performance
 and normal Aetheri owner adoption remain separate acceptance work.
+
+The [partial attribute report](../../docs/quality/editor-attributes-report.md)
+binds the local owner/model/paint matrix and explicitly retains the pending native
+matrix. Native paste logs now record call/reply timing; a failed pre-EOF pending
+check saves `clipboard-early-reply.json` with the exact exit/stdout, model/frame
+and actual writer-pipe observation before cleanup. EOF assertions and deadlines
+remain unchanged. The Editor target compiles its used Files model/create/rename
+modules; the Files process launcher and Files layout remain outside this target.

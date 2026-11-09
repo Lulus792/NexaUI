@@ -1,0 +1,36 @@
+{
+  "name": "nexaui-editor-attributes53-local-20261109.tar.gz",
+  "size": 46501566,
+  "sha256": "772b5e0b9ec20431561a9425259e197efcb70d847d0c29e4d026cebd11da6dd1",
+  "files": 1404,
+  "links": 6,
+  "directories": 1144,
+  "verified": true,
+  "scope": "Complete local original-owner CTest/build/control/diagnostic evidence. Old VM native raw directories remain unavailable; no new native acceptance.",
+  "excluded_special_files": [
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-asan/editor-files-ICIMIb/fifo",
+      "mode": 4480
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-off-shared/editor-files-nIGDnf/fifo",
+      "mode": 4480
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-release/editor-files-DJLFFO/fifo",
+      "mode": 4480
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53/owner-shared/editor-files-GNgpHk/fifo",
+      "mode": 4480
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53-probe/owner/editor-files-PLGNNl/fifo",
+      "mode": 4480
+    },
+    {
+      "path": "/tmp/nexaui-editor-attributes53-probe/owner/editor-files-ccNJEn/fifo",
+      "mode": 4480
+    }
+  ]
+}
