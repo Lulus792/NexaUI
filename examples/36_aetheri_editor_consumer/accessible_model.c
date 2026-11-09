@@ -66,7 +66,6 @@ enum ae_document_result editor_accessible_replace(struct ae_direct *input,
     if((!text && length) || !positions(input,token,start,end,true,&begin,&finish) || begin>finish)return AE_DOCUMENT_INVALID;
     return editor_direct_ime_replace(input,token,begin,finish,text,length);
 }
-bool editor_direct_accessible_select_bytes(struct ae_direct *,const struct ae_direct_token *,size_t,size_t);
 bool editor_accessible_select(struct ae_direct *input,const struct ae_direct_token *token,
     int64_t anchor,int64_t cursor) {
     size_t begin=0,end=0;

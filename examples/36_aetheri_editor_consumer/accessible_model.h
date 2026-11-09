@@ -28,4 +28,8 @@ enum ae_document_result editor_accessible_replace(struct ae_direct *,
     const char *text,size_t length);
 bool editor_accessible_select(struct ae_direct *,const struct ae_direct_token *,
     int64_t anchor,int64_t cursor);
+/* Host seam for already scalar-checked SDK byte offsets; the original model
+   still preflights both grapheme/CRLF endpoints atomically. */
+bool editor_direct_accessible_select_bytes(struct ae_direct *,
+    const struct ae_direct_token *,size_t anchor,size_t cursor);
 #endif
