@@ -1,0 +1,295 @@
+{
+  "result": "passed",
+  "source_revision": "76a08fc8c08173e31f41ef9bb8e5c199d3876657",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "sdk_version": "0.1.29",
+  "sdk_source_revision": "8862cb5a1b78c63845a2d2a50441cda8e19243e7",
+  "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "compiled_bundle": 40,
+  "driver_bundle": 42,
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": 15,
+      "captures": 78,
+      "cache_queries": 53,
+      "explicit_phase_cache_queries": 42,
+      "compiled_objects": 32,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "release",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-r2-release",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-release/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-release/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-r2-release",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-release-prefix/lib64/libnexaui.a",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-release-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-42-clip13-r2-release.log"
+      }
+    },
+    {
+      "profile": "shared",
+      "ctests": 15,
+      "captures": 78,
+      "cache_queries": 53,
+      "explicit_phase_cache_queries": 42,
+      "compiled_objects": 32,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "shared",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-shared",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-shared/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-shared/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-shared",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-shared-prefix/lib64/libnexaui.so.0.1.29",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-shared-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-42-clip13-shared.log"
+      }
+    },
+    {
+      "profile": "asan",
+      "ctests": 15,
+      "captures": 78,
+      "cache_queries": 53,
+      "explicit_phase_cache_queries": 42,
+      "compiled_objects": 32,
+      "idle_cpu_ticks": 0,
+      "idle_frames": 0,
+      "native_command": {
+        "profile": "asan",
+        "command": [
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_accessible_native.py",
+          "--registry",
+          "/tmp/nexaui-aetheri-integration-SR9SFo/atspi-prefix/usr/libexec/at-spi2-registryd",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-asan",
+          "--",
+          "/usr/bin/python3",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/repo/examples/36_aetheri_editor_consumer/run_native.py",
+          "--ime",
+          "--accessible-client",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-document-client-40-asan/editor_document_client",
+          "--clipboard-tools",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/clipboard-tools",
+          "--original",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-source-42/original",
+          "--server",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-16-producer/base/base/editor_close_producer",
+          "--app",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-close-40-asan/aetheri_editor_candidate",
+          "--font",
+          "/home/aetheri/deps/ui-gles-release-02/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--output",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-asan",
+          "--sdk-library",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/close-sdk-13-asan-prefix/lib64/libnexaui.a",
+          "--sdk-receipt",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard-sdk13-asan-local.json",
+          "--sdk-source-binding",
+          "/dev/shm/nexaui-recovery-live-tty-20261107/document-clipboard-sdk13-source-binding.json"
+        ],
+        "exit": 0,
+        "log": "editor-native-document-42-clip13-asan.log"
+      }
+    }
+  ],
+  "compatibility_ctests": 41,
+  "expected_configure_refusals": 2,
+  "git_bound_inputs": 96,
+  "generated_replays": 35,
+  "previous_complete_pixel_matches": 15,
+  "compiled_regression": {
+    "result": "detected",
+    "exit": 1,
+    "command": [
+      "/usr/bin/python3",
+      "/dev/shm/nexaui-recovery-live-tty-20261107/editor-clipboard42-negative-driver.py",
+      "42",
+      "shared"
+    ],
+    "folder": "/dev/shm/nexaui-recovery-live-tty-20261107/ed-doc-42-clip13-old36-shared/ed-o5zk05qi",
+    "compiled_binary": {
+      "archive": "nexaui-editor-clipboard-progress-20261109.tar.gz",
+      "archive_sha256": "792ac6f23c494b8cace21cd77205111b873d2f9dc445487732e684c4cc409c57",
+      "binary": {
+        "name": "editor-close-36-shared/aetheri_editor_candidate",
+        "size": 178376,
+        "mode": 493,
+        "sha256": "71d93cf48c28fa79560e646df848581cf4ede7e1944f524022a6083b79d4f5c1"
+      },
+      "scope": "Actual compiled pre-fix owner36; restored unchanged from the verified progress archive, never installed over an SDK or production consumer."
+    },
+    "clipboard": {
+      "result": "running",
+      "checks": [
+        "Native Copy preserves model revision, caret and active composition; native Cut exports exact Unicode and uses original Undo/Redo",
+        "Native Paste receives independent wl-copy UTF-8/CRLF bytes and creates one original Undo entry",
+        {
+          "delayed_native_paste": "none",
+          "accepted": true
+        },
+        {
+          "delayed_native_paste": "caret",
+          "accepted": false
+        }
+      ],
+      "clipboard_tool_inputs": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "35a015de73bdc287a378b36533aa9fd69abf5324f81b6c305b9f0547f0c7167d"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 6,
+          "sha256": "35a015de73bdc287a378b36533aa9fd69abf5324f81b6c305b9f0547f0c7167d"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 12,
+          "sha256": "c981c5a992b8d4c4d4c5f8e9b5b831e0df41c21c3f42367494833007ab44d9f1"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        },
+        {
+          "foreign_read_exit": 0,
+          "length": 4,
+          "sha256": "089001a35679a33ef3db0ca350db9b9a2f0136e0e327577b04b3b98127470961"
+        }
+      ],
+      "ime_serial_barriers": [
+        {
+          "client_commits": 491,
+          "provider_serial": 491
+        },
+        {
+          "client_commits": 498,
+          "provider_serial": 498
+        },
+        {
+          "client_commits": 517,
+          "provider_serial": 517
+        },
+        {
+          "client_commits": 540,
+          "provider_serial": 540
+        },
+        {
+          "client_commits": 551,
+          "provider_serial": 551
+        },
+        {
+          "client_commits": 562,
+          "provider_serial": 562
+        }
+      ]
+    },
+    "scope": "Identical final driver42/OS reader40/SDK13 with actual archived owner36; fails !accepted when old paste is accepted after fresh preedit. Current owners pass this same independent task."
+  },
+  "visual_review": {
+    "result": "reviewed",
+    "images": [
+      {
+        "case": "independent system clipboard native Unicode Copy Cut Paste and original Undo Redo",
+        "ppm_sha256": "9883ebe495484578d450611cb717dd08b79da28220003efacf629b8e31718b26",
+        "png": "D:/NexaUI/out/editor-clipboard42-images/clipboard-transfer.png",
+        "png_sha256": "5f7984af706058b2d543235b50b0576cb60ef4860fbff3324c92df898c1fa6f6",
+        "width": 1920,
+        "height": 1080,
+        "conversion": "Lossless RGB PPM to PNG; no crop, resize or pixel edits"
+      },
+      {
+        "case": "delayed independent native clipboard requests respect original input IME review and tab tokens",
+        "ppm_sha256": "6dbfe19630740d3f99742cac76cd276f2bb3add88472d5b08b72b6fd51cd3e8a",
+        "png": "D:/NexaUI/out/editor-clipboard42-images/delayed-clipboard.png",
+        "png_sha256": "9d02fc7a8fc95dfa8554d12f8a6ea0493747745480abbbf60cf34af49c10b9e6",
+        "width": 1920,
+        "height": 1080,
+        "conversion": "Lossless RGB PPM to PNG; no crop, resize or pixel edits"
+      }
+    ],
+    "observation": "Original layout, text/CRLF line placement and caret remain visible in both new Shared captures. The borrowed monospace font renders U+1F30D as a replacement box; emoji glyph/fallback acceptance remains open. Clipboard/model UTF-8 bytes are independently checked."
+  },
+  "current_aetheri_head": "320231f11740e65fc5a0ed3e702ef321862f043d",
+  "original_inputs_unchanged": 53,
+  "ci": "editor-clipboard-ci.json",
+  "scope": "Controlled three-profile original Editor clipboard experiment, not normal Aetheri adoption, physical/human/design/performance or installed IME/screenreader acceptance. Full103-ID scope and remaining packet6/packets7-8 stay active."
+}

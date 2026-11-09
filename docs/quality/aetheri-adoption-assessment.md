@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Original Editor clipboard composition (2026-11-09)
+
+Consumer76a08fc reuses installed SDK8862cb5/0.1.29, the original window and
+controller/history/save/review. Three actual native profiles pass45 owner tests,
+234 captures and159 raw cache probes with independent OS and foreign clipboard
+peers;41 compatibility tests preserve old SDK/default and no-native-IME builds.
+Fresh preedit now invalidates an older native paste without a document edit;
+the same final test detects that defect in the actual old compiled owner.
+See the [source binding and exact remaining scope](editor-clipboard-report.md).
+All seven required exact-source CI jobs pass, including both sanitizer orders.
+All53 consumed original inputs are unchanged at Aetheri320231f; no active source
+or pin changes. Partial-byte EOF in the original composition, geometry/attributes,
+AX/UIA, real IMEs/screenreaders, font/physical/human/design/performance and normal
+adoption remain open. All103 IDs and remaining packets6–8 persist.
+
 ## Application document clipboard SDK (2026-11-09)
 
 SDK0.1.29 source8862cb5 reuses existing native clipboard primitives for an

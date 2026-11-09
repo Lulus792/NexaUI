@@ -1,5 +1,20 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/T06/A04/P04/P05/Q02/Q03/Q06/Q08: consumer76a08fc connects the original
+Editor to SDK0.1.29 native clipboard through its existing window, atomic model
+and complete input tokens. Three profiles pass45 owner CTests,234 captures and
+159 raw cache probes;41 additional compatibility tests preserve SDK0.1.27/0.1.28
+and the no-native-IME build. Independent libatspi and foreign wl-clipboard peers
+cover exact Unicode/CRLF transfer, original Undo/Redo, delayed input/IME/policy
+invalidation, keyboard-token overlap and original Save/close with a stopped
+provider. An actual compiled stale-preedit defect is detected. All96 inputs,
+183 objects,35 generated replays and15 prior full pixel matches are recorded in
+the [original clipboard report](editor-clipboard-report.md). All seven required
+exact-source CI jobs pass. This remains an
+opt-in experiment: joined partial-byte EOF, geometry/attributes, AX/UIA, real
+IMEs/screenreaders, font/physical/human/design/performance and normal adoption
+gates remain open. All103 IDs and remaining packets6–8 persist.
+
 T03/T06/A04/P04/P05/Q02/Q03/Q06/Q08: SDK0.1.29 source8862cb5 adds optional
 document COPY/CUT/PASTE through existing clipboard callbacks/native reads and
 the original atomic model callback. Independent fixture5203f67 uses memory

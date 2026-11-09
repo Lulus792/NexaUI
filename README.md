@@ -58,6 +58,11 @@ Link with `NexaUI::NexaUI` as shown in [Integration](#integration). The [headles
 - **Simulation integration.** Immutable snapshot exchange and a bounded command/completion channel with explicit ownership and backpressure. [Snapshots](docs/concepts/simulation.md) · [Command channel](docs/concepts/sim-channel.md)
 - **Accessibility foundations.** Widget semantics, keyboard traversal, focus handling, validation state and Windows UI Automation, macOS AppKit AX and Linux AT-SPI bridges for native queries, focus, activation and explicit single/multiple-selection groups. Complete role/pattern/event coverage and screenreader acceptance remain open. [Accessibility](docs/concepts/accessibility.md)
 
+The optional [original Editor clipboard experiment](docs/quality/editor-clipboard-report.md)
+joins the installed SDK with the original document/history/save/IME owner and
+independent native/system clipboard peers. Its source-bound evidence and open
+adoption gates are separate from normal Aetheri development.
+
 ## Platform status
 
 | Platform | Native window and input | Rendering |

@@ -1,0 +1,165 @@
+{
+  "archives": [
+    {
+      "label": "early-builds-and-defect",
+      "path": "D:/NexaUI/out/nexaui-editor-clipboard-progress-20261109.tar.gz",
+      "sha256": "792ac6f23c494b8cace21cd77205111b873d2f9dc445487732e684c4cc409c57",
+      "files": 1367,
+      "links": 8,
+      "directories": 1241,
+      "verified": true,
+      "name": "nexaui-editor-clipboard-progress-20261109.tar.gz",
+      "size": 32169566,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "label": "intermediate-runs-and-compiled40",
+      "path": "D:/NexaUI/out/nexaui-editor-clipboard-progress2-20261109.tar.gz",
+      "sha256": "1147f105fdb73232bbfa40d46c02f112098540c7c2e953e0dcb85adc04df7e26",
+      "files": 2314,
+      "links": 5,
+      "directories": 820,
+      "verified": true,
+      "name": "nexaui-editor-clipboard-progress2-20261109.tar.gz",
+      "size": 18307920,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "label": "final-matrix-and-negative",
+      "path": "D:/NexaUI/out/nexaui-editor-clipboard42-final-20261109.tar.gz",
+      "sha256": "e7cb0a71e416a7c5cdc739ce977c550ee6dfcea2166def8e7278603c77b8a893",
+      "files": 2039,
+      "links": 8,
+      "directories": 940,
+      "verified": true,
+      "name": "nexaui-editor-clipboard42-final-20261109.tar.gz",
+      "size": 22523403,
+      "excluded_special_scope": "Inactive test FIFOs and Unix sockets recorded, not serialized"
+    },
+    {
+      "label": "host-bindings-and-ci",
+      "path": "D:/NexaUI/out/nexaui-editor-clipboard42-evidence-20261109.tar.gz",
+      "sha256": "598c6148d56b3bf22ff54cb318aea069fc5bc8c1f111e8d2b29b7a5a1db7a1e0",
+      "files": 66,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-editor-clipboard42-evidence-20261109.tar.gz",
+      "size": 388426
+    }
+  ],
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-35-shared",
+          "editor-close-36-shared",
+          "editor-close-37-shared",
+          "editor-document-client-36-shared",
+          "editor-document-client-37-shared",
+          "ed-doc-36-clip13-shared",
+          "ed-doc-37-clip13-shared",
+          "ed-doc-38-clip13-shared",
+          "files-native-1-asan",
+          "files-native-3-asan",
+          "lifecycle-asan"
+        ],
+        "bytes": 247467347,
+        "files": 804,
+        "links": 7,
+        "directories": 1024,
+        "fingerprint": "dada839d0f34582d5af7da4b85253275a758c24d7457e6fb21474642d65d87dc",
+        "archive_sha256": "792ac6f23c494b8cace21cd77205111b873d2f9dc445487732e684c4cc409c57",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "delete": {
+        "result": "retired verified inactive archived clipboard trials and old consumer builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-35-shared",
+          "editor-close-36-shared",
+          "editor-close-37-shared",
+          "editor-document-client-36-shared",
+          "editor-document-client-37-shared",
+          "ed-doc-36-clip13-shared",
+          "ed-doc-37-clip13-shared",
+          "ed-doc-38-clip13-shared",
+          "files-native-1-asan",
+          "files-native-3-asan",
+          "lifecycle-asan"
+        ],
+        "bytes": 247467347,
+        "files": 804,
+        "links": 7,
+        "directories": 1024,
+        "fingerprint": "dada839d0f34582d5af7da4b85253275a758c24d7457e6fb21474642d65d87dc",
+        "archive_sha256": "792ac6f23c494b8cace21cd77205111b873d2f9dc445487732e684c4cc409c57",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-38-shared",
+          "editor-close-39-shared",
+          "editor-document-client-38-shared",
+          "editor-document-client-39-shared",
+          "ed-doc-38-clip13-r2-shared",
+          "ed-doc-39-clip13-shared",
+          "ed-doc-40-clip13-shared",
+          "ed-doc-40-clip13-r2-release",
+          "ed-doc-40-clip13-asan",
+          "ed-doc-41-clip13-asan",
+          "ed-doc-42-clip13-release"
+        ],
+        "bytes": 155877964,
+        "files": 1163,
+        "links": 2,
+        "directories": 308,
+        "fingerprint": "153e8eb2d2f9767562b2ccebde95e680b2583ae322612fa77752b73a84fd0cdc",
+        "archive_sha256": "1147f105fdb73232bbfa40d46c02f112098540c7c2e953e0dcb85adc04df7e26",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "delete": {
+        "result": "retired verified inactive archived clipboard trials, superseded native captures and old consumer builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-38-shared",
+          "editor-close-39-shared",
+          "editor-document-client-38-shared",
+          "editor-document-client-39-shared",
+          "ed-doc-38-clip13-r2-shared",
+          "ed-doc-39-clip13-shared",
+          "ed-doc-40-clip13-shared",
+          "ed-doc-40-clip13-r2-release",
+          "ed-doc-40-clip13-asan",
+          "ed-doc-41-clip13-asan",
+          "ed-doc-42-clip13-release"
+        ],
+        "bytes": 155877964,
+        "files": 1163,
+        "links": 2,
+        "directories": 308,
+        "fingerprint": "153e8eb2d2f9767562b2ccebde95e680b2583ae322612fa77752b73a84fd0cdc",
+        "archive_sha256": "1147f105fdb73232bbfa40d46c02f112098540c7c2e953e0dcb85adc04df7e26",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    }
+  ],
+  "capacity_probe": {
+    "uid": 1000,
+    "bytes_written": 56250368,
+    "failure": {
+      "errno": 122,
+      "name": "EDQUOT",
+      "message": "[Errno 122] Disk quota exceeded"
+    },
+    "probe_removed": true,
+    "scope": "Bounded exclusive private test scratch write; no quota/mount/driver/system changes. Its own inode alone is removed."
+  },
+  "scope": "Every archive member type/mode/size/hash checked. Retirement compares complete live trees and process cwd/fds, then permanently drops to test UID/GID1000 before deleting only named inactive roots. Frozen sources and installed prefixes retained; no quota/mount/driver/sanitizer/deadline/rendering changes."
+}

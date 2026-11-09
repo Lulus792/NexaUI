@@ -1,5 +1,18 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor clipboard: consumer76a08fc composes SDK0.1.29 with the original
+window/controller/history/save/review/IME. Three native profiles pass45 owner
+tests,234 complete captures and159 cache probes;41 separate compatibility tests
+retain older defaults and no-native-IME builds. Independent OS/foreign clipboard
+peers check exact Unicode/CRLF, delayed invalidation, original keyboard-token
+ownership and Save/close while the foreign provider remains stopped. The actual
+compiled old preedit defect is detected by the final test. See the
+[source-bound report and limits](editor-clipboard-report.md). No active Aetheri
+changes. All seven required exact-source CI jobs pass. The joined partial-byte
+EOF case, geometry/attributes, AX/UIA, broader
+interfaces, real IMEs/screenreaders, font/physical/human/performance and ordinary
+adoption remain open; all103 IDs and remaining packets6–8 persist.
+
 Application document clipboard: SDK8862cb5 and independent fixture5203f67 add
 opt-in COPY/CUT/PASTE while retaining application-owned atomic edits. Three
 profiles pass54 CTests,30 Wayland delayed-paste cases,3 packages and9 native
