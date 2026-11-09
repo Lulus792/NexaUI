@@ -17,6 +17,10 @@ original `src` include root and compiles that helper when present. Older
 model-only exports remain supported. This example still presents display,
 appearance and language; compiling the current sound model does not add a Sound
 page, connect an audio service or submit device changes.
+With a current Sound-capable model, `-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON` adds
+`aetheri_model_sound_state_test FONT`. It checks that view replacement and
+appearance/language changes retain the original observation, output identity,
+once-only queued intent and permanent owner-loss fence, without device effects.
 
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:
