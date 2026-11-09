@@ -1,5 +1,14 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/A03/A04/P04/Q02/Q03/Q06/Q08 follow-up: source `aa899fb` corrects interior
+carets in shared document clusters and character lookup after such carets.
+Three installed explicit-C17 profiles pass69 selected tests/12 private native
+tasks/3 package consumers; three actual compiled negative states are retained.
+The [caret report](document-interior-caret-report.md) binds1082 Git inputs,
+276 objects and unchanged public declarations/539 Linux definitions. All seven
+required exact-source CI jobs pass after a retained prerequisite download failure.
+Actual original Editor layout/font adoption and the broader103-ID gates remain open.
+
 T03/A03/A04/P04/Q02/Q03/Q06/Q08: SDK0.1.30 source1ee9d99 adds optional copied
 document geometry/caret and default/run attributes, preserving existing public
 structures and registrations. Three installed profiles pass69 selected tests,

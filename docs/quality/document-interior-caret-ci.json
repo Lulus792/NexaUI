@@ -1,0 +1,321 @@
+{
+  "source_revision": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+  "run_id": 42591253299,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299",
+  "jobs": [
+    {
+      "id": 129079968949,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079968949",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        267,
+        267
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:35:12.2366393Z  60/267 Test  #60: nexaui_wayland_document_clipboard .....................................   Passed    0.67 sec",
+        "2026-11-09T09:35:59.2078085Z 100/267 Test #100: nexaui_atspi_text_document_wayland_private ............................   Passed    3.75 sec",
+        "2026-11-09T09:36:00.0544043Z 101/267 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.85 sec",
+        "2026-11-09T09:36:00.3987478Z 102/267 Test #102: nexaui_atspi_cache_budget_wayland_private .............................   Passed    0.34 sec",
+        "2026-11-09T09:36:01.7957963Z 103/267 Test #103: nexaui_atspi_document_clipboard_wayland_private .......................   Passed    1.40 sec",
+        "2026-11-09T09:37:20.8508750Z 162/267 Test #162: nexaui_text_document ..................................................   Passed    0.06 sec",
+        "2026-11-09T09:37:20.9056982Z 163/267 Test #163: nexaui_document_presentation ..........................................   Passed    0.05 sec",
+        "2026-11-09T09:37:21.7775781Z 164/267 Test #164: nexaui_utf8_validation ................................................   Passed    0.87 sec",
+        "2026-11-09T09:40:40.8532868Z  60/267 Test  #60: nexaui_wayland_document_clipboard .....................................   Passed    0.67 sec",
+        "2026-11-09T09:41:27.8456904Z 100/267 Test #100: nexaui_atspi_text_document_wayland_private ............................   Passed    3.75 sec",
+        "2026-11-09T09:41:28.6929778Z 101/267 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.85 sec",
+        "2026-11-09T09:41:29.0378107Z 102/267 Test #102: nexaui_atspi_cache_budget_wayland_private .............................   Passed    0.34 sec",
+        "2026-11-09T09:41:30.4340844Z 103/267 Test #103: nexaui_atspi_document_clipboard_wayland_private .......................   Passed    1.40 sec",
+        "2026-11-09T09:42:48.8580729Z 162/267 Test #162: nexaui_text_document ..................................................   Passed    0.06 sec",
+        "2026-11-09T09:42:48.9226343Z 163/267 Test #163: nexaui_document_presentation ..........................................   Passed    0.06 sec",
+        "2026-11-09T09:42:49.7968343Z 164/267 Test #164: nexaui_utf8_validation ................................................   Passed    0.87 sec"
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129079968949.log",
+        "size": 337825,
+        "sha256": "3eee2a795b8b939810a4a209b0fda7e54f3a3cb89c7e2792d308f68e7bc84b0c"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129079971026,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079971026",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05"
+    },
+    {
+      "id": 129079971516,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079971516",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        121
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:10:29.6105730Z  58/121 Test  #58: nexaui_text_document .......................   Passed    0.02 sec",
+        "2026-11-09T09:10:29.6223930Z  59/121 Test  #59: nexaui_document_presentation ...............   Passed    0.01 sec",
+        "2026-11-09T09:10:29.9798830Z  60/121 Test  #60: nexaui_utf8_validation .....................   Passed    0.36 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129079971516.log",
+        "size": 111815,
+        "sha256": "f21fd3362e3926b870142dcd26ae0c79e3a2872a9631fedd71f77d9b604e2456"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129079971641,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079971641",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05"
+    },
+    {
+      "id": 129079971687,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079971687",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        145
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:11:23.2399083Z  64/145 Test  #64: nexaui_text_document .......................   Passed    0.04 sec",
+        "2026-11-09T09:11:23.2796568Z  65/145 Test  #65: nexaui_document_presentation ...............   Passed    0.04 sec",
+        "2026-11-09T09:11:23.7159131Z  66/145 Test  #66: nexaui_utf8_validation .....................   Passed    0.44 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129079971687.log",
+        "size": 101206,
+        "sha256": "13141b24bd7e2f26b81efba59c32313766c7f955967ba501aa85aedd92bb5102"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129079972184,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129079972184",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        267,
+        1
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:11:34.6519247Z  60/267 Test  #60: nexaui_wayland_document_clipboard .....................................   Passed    0.65 sec",
+        "2026-11-09T09:12:16.0223301Z 100/267 Test #100: nexaui_atspi_text_document_wayland_private ............................   Passed    2.05 sec",
+        "2026-11-09T09:12:16.6175424Z 101/267 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.59 sec",
+        "2026-11-09T09:12:16.8625339Z 102/267 Test #102: nexaui_atspi_cache_budget_wayland_private .............................   Passed    0.24 sec",
+        "2026-11-09T09:12:17.6576764Z 103/267 Test #103: nexaui_atspi_document_clipboard_wayland_private .......................   Passed    0.79 sec",
+        "2026-11-09T09:13:25.1810372Z 162/267 Test #162: nexaui_text_document ..................................................   Passed    0.02 sec",
+        "2026-11-09T09:13:25.1996816Z 163/267 Test #163: nexaui_document_presentation ..........................................   Passed    0.02 sec",
+        "2026-11-09T09:13:25.5046514Z 164/267 Test #164: nexaui_utf8_validation ................................................   Passed    0.30 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129079972184.log",
+        "size": 303963,
+        "sha256": "4fb5a6875277765c8db747951521a60169dcd0f680c0e46db2c0d8dadf6e26d7"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129080015397,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129080015397",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        265
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:11:25.4304658Z  60/265 Test  #60: nexaui_wayland_document_clipboard .....................................   Passed    0.65 sec",
+        "2026-11-09T09:12:03.8517122Z 100/265 Test #100: nexaui_atspi_text_document_wayland_private ............................   Passed    1.49 sec",
+        "2026-11-09T09:12:04.3909907Z 101/265 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.54 sec",
+        "2026-11-09T09:12:04.5801595Z 102/265 Test #102: nexaui_atspi_cache_budget_wayland_private .............................   Passed    0.19 sec",
+        "2026-11-09T09:12:05.2696203Z 103/265 Test #103: nexaui_atspi_document_clipboard_wayland_private .......................   Passed    0.69 sec",
+        "2026-11-09T09:13:08.0715122Z 161/265 Test #161: nexaui_text_document ..................................................   Passed    0.01 sec",
+        "2026-11-09T09:13:08.0896265Z 162/265 Test #162: nexaui_document_presentation ..........................................   Passed    0.02 sec",
+        "2026-11-09T09:13:08.3264447Z 163/265 Test #163: nexaui_utf8_validation ................................................   Passed    0.24 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129080015397.log",
+        "size": 297662,
+        "sha256": "2059b84d958af8b1c68e9b92dbe9ec855e8c8164d37cd24a1ccbc9dd3f93b410"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129080016454,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129080016454",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        120
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:10:25.2430520Z  58/120 Test  #58: nexaui_text_document .......................   Passed    0.01 sec",
+        "2026-11-09T09:10:25.2788590Z  59/120 Test  #59: nexaui_document_presentation ...............   Passed    0.03 sec",
+        "2026-11-09T09:10:25.7170610Z  60/120 Test  #60: nexaui_utf8_validation .....................   Passed    0.44 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129080016454.log",
+        "size": 111506,
+        "sha256": "6dcf804ef1be97634c304e32c132152d6f096f081927111e5bbc0fa1e6d338f9"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    },
+    {
+      "id": 129080034547,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42591253299/job/129080034547",
+      "head_sha": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+      "test_summaries": [
+        144
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T09:10:54.9140378Z  64/144 Test  #64: nexaui_text_document .......................   Passed    0.03 sec",
+        "2026-11-09T09:10:54.9450439Z  65/144 Test  #65: nexaui_document_presentation ...............   Passed    0.03 sec",
+        "2026-11-09T09:10:55.1579084Z  66/144 Test  #66: nexaui_utf8_validation .....................   Passed    0.21 sec"
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/document-interior-ci-129080034547.log",
+        "size": 101152,
+        "sha256": "3480d2f9eaceb3c3e7cf4e243a0a2353817564a61806b5ed5d374d61f88211c2"
+      },
+      "scope": "Complete decoded connector log, UTF-8 and normalized LF. No CTest skips; summary arrays include separate repeated driver-order/lifecycle runs."
+    }
+  ],
+  "scope": "All seven required exact-source jobs pass; two optional jobs skip. Document/UTF8 tests run on all six platform builds; delayed Wayland document paste, native document/cache and explicit memory-callback document clipboard fixtures run on both Linux builds and both sanitizer orders. Package/close/add_subdirectory consumers pass on six platform builds. Copied document presentation core/native fixture tests run in this matrix. Original rendered Editor layout/attribute adoption, new AX/UIA and physical/human/design/performance adoption remain separate. The accepted attempt reruns only the failed sanitizer job after the documented acquisition failure; six successful regular-job logs are byte-identical reused evidence, not additional executions. All test/deadline/sanitizer/driver policies remain unchanged.",
+  "initial_attempt": {
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "failed_job_id": 129073131377,
+    "stage": "Require paired Mesa unload cleanup evidence",
+    "reason": "Pinned Mesa prerequisite acquisition raises ConnectionResetError104 before the CTest suites; six regular jobs already succeed.",
+    "log": {
+      "path": "D:/NexaUI/out/document-interior-ci-129073131377.log",
+      "size": 213307,
+      "sha256": "d91ba584ce04a61984272f42717dce67329107156e513ff7cf60b45ed1a168eb"
+    }
+  },
+  "accepted_attempt": 2,
+  "reused_regular_jobs": [
+    {
+      "name": "core (macos-latest, OFF)",
+      "original_job": 129073131506,
+      "visible_job": 129079971516,
+      "same_log_sha256": "f21fd3362e3926b870142dcd26ae0c79e3a2872a9631fedd71f77d9b604e2456"
+    },
+    {
+      "name": "core (windows-latest, OFF)",
+      "original_job": 129073131414,
+      "visible_job": 129079971687,
+      "same_log_sha256": "13141b24bd7e2f26b81efba59c32313766c7f955967ba501aa85aedd92bb5102"
+    },
+    {
+      "name": "core (ubuntu-latest, OFF)",
+      "original_job": 129073131109,
+      "visible_job": 129079972184,
+      "same_log_sha256": "4fb5a6875277765c8db747951521a60169dcd0f680c0e46db2c0d8dadf6e26d7"
+    },
+    {
+      "name": "core (ubuntu-latest, ON)",
+      "original_job": 129073131504,
+      "visible_job": 129080015397,
+      "same_log_sha256": "2059b84d958af8b1c68e9b92dbe9ec855e8c8164d37cd24a1ccbc9dd3f93b410"
+    },
+    {
+      "name": "core (macos-latest, ON)",
+      "original_job": 129073131450,
+      "visible_job": 129080016454,
+      "same_log_sha256": "6dcf804ef1be97634c304e32c132152d6f096f081927111e5bbc0fa1e6d338f9"
+    },
+    {
+      "name": "core (windows-latest, ON)",
+      "original_job": 129073131463,
+      "visible_job": 129080034547,
+      "same_log_sha256": "3480d2f9eaceb3c3e7cf4e243a0a2353817564a61806b5ed5d374d61f88211c2"
+    }
+  ]
+}

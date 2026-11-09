@@ -1,0 +1,27 @@
+{
+  "archives": [
+    {
+      "label": "sdk-native-package-and-compiled-baselines",
+      "path": "D:/NexaUI/out/nexaui-document-interior-sdk1-20261109.tar.gz",
+      "sha256": "7c244a6e549aa556c348d8f1e2c0b9d260b338feddf5d783e9c6d0615c3eeb3d",
+      "files": 1748,
+      "links": 6,
+      "directories": 1376,
+      "verified": true,
+      "name": "nexaui-document-interior-sdk1-20261109.tar.gz",
+      "size": 103270865
+    },
+    {
+      "label": "host-binding-and-ci",
+      "path": "D:/NexaUI/out/nexaui-document-interior-evidence-20261109.tar.gz",
+      "sha256": "4106ac7300d7b5737f0cd8852639dfc5f517de16eb0e22865a15dd610f5d5f94",
+      "files": 66,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-document-interior-evidence-20261109.tar.gz",
+      "size": 589611
+    }
+  ],
+  "scope": "All archive member hashes, types, modes and sizes verified. Borrowed runtime provenance is not redistribution. No active Aetheri source/pin/build, quota, mount, deadline, sanitizer or driver policy changes."
+}

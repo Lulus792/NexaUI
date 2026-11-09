@@ -1,5 +1,14 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Presentation follow-up source `aa899fb` fixes valid shared-cluster interior carets
+and their surrounding character lookup. Three installed profiles pass69 tests,
+12 private native tasks and3 consumers with276 explicit-C17 objects. Three
+compiled negative states and unchanged public declarations/539 Linux definitions
+are bound in the [caret report](document-interior-caret-report.md). All seven
+required exact-source CI jobs pass; the initial download failure remains recorded.
+Original rendered Editor layout/font adoption remains next. All103 IDs and broader
+packet6/packets7–8 acceptance remain open; active Aetheri is unchanged.
+
 Document presentation prerequisite: SDK0.1.30/source1ee9d99 adds copied
 owner geometry/caret and attributes to the existing document registration.
 Three installed profiles pass69 selected tests,12 private native tasks and3

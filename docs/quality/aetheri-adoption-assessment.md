@@ -1,5 +1,18 @@
 # Aetheri adoption: initial source assessment
 
+## Shared-cluster interior-caret correction (2026-11-09)
+
+SDK0.1.30/source `aa899fb` fixes rejected valid inner carets and missing shared
+character geometry. Three installed profiles pass69 selected tests,12 private
+native tasks and3 consumers with all276 C objects explicitly C17. Actual old,
+validation-only and installed-old negative states are preserved in the
+[caret report](document-interior-caret-report.md). Public declarations and539
+Linux definitions remain unchanged. All seven required exact-source CI jobs pass
+after a retained Mesa prerequisite acquisition failure. Aetheri54afa68 independently
+retains all53 consumed original files. Original rendered Editor geometry/font integration,
+AX/UIA and final adoption/physical/human/design/performance gates remain open;
+all103 IDs and remaining packets6–8 persist.
+
 ## Copied document presentation SDK prerequisite (2026-11-09)
 
 SDK0.1.30/source1ee9d99 accepts owner-supplied geometry/caret and text attributes

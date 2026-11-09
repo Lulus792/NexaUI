@@ -1,5 +1,9 @@
 # Copied application document geometry and text attributes
 
+Follow-up: [interior-caret correction](document-interior-caret-report.md), source
+aa899fb, permits a real caret inside shared cluster geometry and fixes character
+lookup through that caret. The original results below remain attributed to1ee9d99.
+
 SDK0.1.30 development, source `1ee9d99540587494a0667e2c41caf63e6fd27e14`,
 9 November2026. Initial implementation `c1221f05d11feb7511163876d3ab7fc41d1349ee`;
 the fixed source is the acceptance candidate. This is a packet6 SDK prerequisite,

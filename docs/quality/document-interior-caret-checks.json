@@ -1,0 +1,241 @@
+{
+  "result": "passed",
+  "source_revision": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+  "sdk_version": "0.1.30",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "git_bound_inputs": 1082,
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-release-consumer/consumer",
+        "size": 904152,
+        "sha256": "6522fb94a55c131bcc2ac8886dabd74756272470fc509713b47e9f223e789fc5"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-release-prefix/lib/libnexaui.a",
+        "size": 1223470,
+        "sha256": "9af517273a39a75b9a6a1d359680d3f6290ae6e3eadbc0e1147d933c80fb08f2"
+      },
+      "language_scope": "Every built SDK/fixture/consumer C object uses explicit C17 with extensions disabled; Werror; ASan/UBSan for the entire sanitized graph with leak detection retained."
+    },
+    {
+      "profile": "shared",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-shared-consumer/consumer",
+        "size": 29296,
+        "sha256": "fc52fe8ba2eec3868ac8f8f2c299818960e39f5d18aeae34867bd4bb46da8d1b"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-shared-prefix/lib/libnexaui.so.0.1.30",
+        "size": 969920,
+        "sha256": "3e6ad7cbad6e3c3d0adf653a20b16f3baa2e9d134aca65790e18ff7b241bc57b"
+      },
+      "language_scope": "Every built SDK/fixture/consumer C object uses explicit C17 with extensions disabled; Werror; ASan/UBSan for the entire sanitized graph with leak detection retained."
+    },
+    {
+      "profile": "asan",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-asan-consumer/consumer",
+        "size": 11547584,
+        "sha256": "92f767bb9985b1dcdf5ec2c46d7e6f969d84fbfddcb0e28ef6ee0d3de8c8c8df"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-interior-sdk1-asan-prefix/lib/libnexaui.a",
+        "size": 12351470,
+        "sha256": "080e6a1261dc3e6bec58838d6621bd9b468623cc32214166c8eb67a7d01c1d81"
+      },
+      "language_scope": "Every built SDK/fixture/consumer C object uses explicit C17 with extensions disabled; Werror; ASan/UBSan for the entire sanitized graph with leak detection retained."
+    }
+  ],
+  "compiled_controls": [
+    {
+      "kind": "compiled WIP rejected",
+      "receipt": {
+        "label": "rejected",
+        "base_revision": "1ee9d99540587494a0667e2c41caf63e6fd27e14",
+        "files": [
+          {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/src/document_presentation.c",
+            "copy": "document_presentation.c",
+            "size": 8759,
+            "sha256": "c2b0ee466edd0d2aff86a96456557025bf762d05c5d5c1ee47749f396a55534b"
+          },
+          {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/tests/test_document_presentation.c",
+            "copy": "test_document_presentation.c",
+            "size": 10206,
+            "sha256": "967df132a9be86a62d701cd053012fa8e05b63433d98bcb87eeb88d7520b7287"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/libnexaui.a",
+            "copy": "libnexaui.a",
+            "size": 1223270,
+            "sha256": "6d1d72b39430f7b38006a3461ff140bddb06328446ded9f6a3ef43bb6241e587"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/nexaui_document_presentation_tests",
+            "copy": "nexaui_document_presentation_tests",
+            "size": 872792,
+            "sha256": "b3f51af1452360cc5dabd1efbf67b7770686a9e1ab9c5fa979fc2fd38749cc06"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/compile_commands.json",
+            "copy": "compile_commands.json",
+            "size": 201028,
+            "sha256": "0c50f31ea5522d0a9ad84881d770883635745cc12660f4057ea8ac0611e69b20"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/Testing/Temporary/LastTest.log",
+            "copy": "LastTest.log",
+            "size": 887,
+            "sha256": "7a06f6c909e20d958f2a4ae2db5780bc679079f4995275cd5d2fdffa2c6e9895"
+          }
+        ],
+        "scope": "Actual old SDK code and separately rebuilt regression executable, no native model or active Aetheri change. Builder source-revision string was unset; source/command/object bytes, not that string, identify this WIP control."
+      }
+    },
+    {
+      "kind": "compiled WIP missing-character",
+      "receipt": {
+        "label": "missing-character",
+        "base_revision": "1ee9d99540587494a0667e2c41caf63e6fd27e14",
+        "files": [
+          {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/src/document_presentation.c",
+            "copy": "document_presentation.c",
+            "size": 8878,
+            "sha256": "2e2b72c1e0977126459b3a5502a8b5e0e0403d1770d612bacaf26619ee7ece4b"
+          },
+          {
+            "path": "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/tests/test_document_presentation.c",
+            "copy": "test_document_presentation.c",
+            "size": 10206,
+            "sha256": "967df132a9be86a62d701cd053012fa8e05b63433d98bcb87eeb88d7520b7287"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/libnexaui.a",
+            "copy": "libnexaui.a",
+            "size": 1223334,
+            "sha256": "edbea3e2b2e806bb356dc36a2c7acae3393a32baf580dd3881c6f456d20ef7cc"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/nexaui_document_presentation_tests",
+            "copy": "nexaui_document_presentation_tests",
+            "size": 872792,
+            "sha256": "b8b52629ee88d979f789c3651f9c48856a520a86da8fc4b96a270451881d14b5"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/compile_commands.json",
+            "copy": "compile_commands.json",
+            "size": 201028,
+            "sha256": "0c50f31ea5522d0a9ad84881d770883635745cc12660f4057ea8ac0611e69b20"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation1-release/Testing/Temporary/LastTest.log",
+            "copy": "LastTest.log",
+            "size": 909,
+            "sha256": "f1774b965f652957a170626ec461c6c5e8980b67f77cb4f2a826ed874e64df49"
+          }
+        ],
+        "scope": "Actual old SDK code and separately rebuilt regression executable, no native model or active Aetheri change. Builder source-revision string was unset; source/command/object bytes, not that string, identify this WIP control."
+      }
+    },
+    {
+      "kind": "new regression against installed old SDK",
+      "receipt": {
+        "result": "detected",
+        "old_sdk_revision": "1ee9d99540587494a0667e2c41caf63e6fd27e14",
+        "regression_revision": "aa899fbd7b95a975391a29dfd01b05b39e6b4c05",
+        "commands": [
+          {
+            "command": [
+              "cc",
+              "-std=c17",
+              "-Wall",
+              "-Wextra",
+              "-Wpedantic",
+              "-Werror",
+              "-I/mnt/d/NexaUI/out/document-presentation-sdk3-release-prefix/include",
+              "-I/mnt/d/NexaUI/out/document-presentation-sdk3-source/src",
+              "-c",
+              "/mnt/d/NexaUI/out/document-interior-installed-old/test_document_presentation.c",
+              "-o",
+              "/mnt/d/NexaUI/out/document-interior-installed-old/test.o"
+            ],
+            "exit": 0,
+            "log": "/mnt/d/NexaUI/out/document-interior-installed-old/0.log"
+          },
+          {
+            "command": [
+              "cc",
+              "/mnt/d/NexaUI/out/document-interior-installed-old/test.o",
+              "/mnt/d/NexaUI/out/document-presentation-sdk3-release-prefix/lib/libnexaui.a",
+              "-lwayland-client",
+              "-lm",
+              "-lxkbcommon",
+              "-lm",
+              "-ldl",
+              "-pthread",
+              "-o",
+              "/mnt/d/NexaUI/out/document-interior-installed-old/regression"
+            ],
+            "exit": 0,
+            "log": "/mnt/d/NexaUI/out/document-interior-installed-old/1.log"
+          },
+          {
+            "command": [
+              "/mnt/d/NexaUI/out/document-interior-installed-old/regression"
+            ],
+            "exit": 1,
+            "log": "/mnt/d/NexaUI/out/document-interior-installed-old/2.log"
+          }
+        ],
+        "files": [
+          {
+            "path": "/mnt/d/NexaUI/out/document-interior-installed-old/test_document_presentation.c",
+            "size": 11224,
+            "sha256": "3f70f78eb3124395ac8b0df33d270bba54cb8d73832444c9100306ae01e9df64"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-interior-installed-old/test.o",
+            "size": 30248,
+            "sha256": "a88e9c4142d15b6a1f030edd23a7b2a0a1c775b48f1388de937d1433c7819e9b"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-interior-installed-old/regression",
+            "size": 876968,
+            "sha256": "780c99d372c54139d088888d677377a0fdbbb83b2d17d6d1120ee7d6266b7e84"
+          },
+          {
+            "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-release-prefix/lib/libnexaui.a",
+            "size": 1223374,
+            "sha256": "7e795f1a7e9ecea2069e5f4b54f1513f8e10d3a9baa71c66f831893c0340be55"
+          }
+        ]
+      }
+    }
+  ],
+  "public_header_compatibility": {
+    "declarations_identical_after_comment_and_whitespace_removal": true,
+    "existing_version": "0.1.30",
+    "scope": "Only the interior-caret contract comment changes; all public declarations and version macros retained."
+  },
+  "linux_unchanged_definitions": 539,
+  "current_aetheri_head": "54afa682edc368ec54db19c7dc88a948617cbbe1",
+  "original_inputs_unchanged": 53,
+  "ci": "document-interior-caret-ci.json",
+  "scope": "69 selected tests/12 private native tasks/3 installed consumers/276 explicit-C17 objects;actual compiled old and partially fixed failures. Full CI separately attributed with first acquisition failure retained. Synthetic shared-cluster/edit geometry;no actual original Editor layout/font adoption, AX/UIA, physical/human/design/performance or normal Aetheri adoption. All103 IDs and packets6-8 remain active;no1.0."
+}
