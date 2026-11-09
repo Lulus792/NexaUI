@@ -14,10 +14,27 @@ typedef struct fixture {
     int readonly,disabled,omitted,fail;
     unsigned applied;
     char *cache_name;
+    int clipboard_enabled,clipboard_fail;
+    char *clipboard;size_t clipboard_length;
 } fixture;
 static nx_text_document_state state(fixture *f) {
+    uint32_t operations=NX_TEXT_DOCUMENT_SELECT|(f->readonly?0u:NX_TEXT_DOCUMENT_REPLACE);
+    if(f->clipboard_enabled)operations|=NX_TEXT_DOCUMENT_COPY|(f->readonly?0u:NX_TEXT_DOCUMENT_CUT|NX_TEXT_DOCUMENT_PASTE);
     return (nx_text_document_state){{f->bytes,f->length},f->identity,f->revision,
-        f->anchor,f->cursor,NX_TEXT_DOCUMENT_SELECT|(f->readonly?0u:NX_TEXT_DOCUMENT_REPLACE),1};
+        f->anchor,f->cursor,operations,1};
+}
+static nx_result clipboard_write(void *user,const char *bytes,size_t length) {
+    fixture *f=user;if(f->clipboard_fail)return NX_ERROR_UNSUPPORTED;
+    char *copy=malloc(length+1u);if(!copy)return NX_ERROR_MEMORY;
+    if(length)memcpy(copy,bytes,length);
+    copy[length]=0;free(f->clipboard);f->clipboard=copy;f->clipboard_length=length;return NX_OK;
+}
+static nx_result clipboard_read(void *user,char *bytes,size_t capacity,size_t *length) {
+    fixture *f=user;if(f->clipboard_fail)return NX_ERROR_UNSUPPORTED;
+    *length=f->clipboard_length;if(!bytes)return NX_OK;
+    if(capacity<=*length)return NX_ERROR_LIMIT;
+    if(*length)memcpy(bytes,f->clipboard,*length);
+    bytes[*length]=0;return NX_OK;
 }
 static nx_result edit(void *user,const nx_text_document_request *r,nx_text_document_state *out) {
     fixture *f=user;
@@ -45,8 +62,14 @@ static int frame(fixture *f) {
     w.semantic.name=(nx_utf8_span){"External document",17};w.semantic.bounds=(nx_rect){8,8,300,140};
     w.semantic.state=f->readonly?NX_SEM_READONLY:0;w.semantic.actions=NX_ACTION_FOCUS|(f->readonly?0u:NX_ACTION_SET_VALUE);
     w.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;nx_text_document_state s=state(f);nx_text_document_result result;
-    if(nx_begin_frame(f->context,320,160,0)!=NX_OK || nx_semantics_add(f->context,&root,NULL)!=NX_OK ||
-       (!f->omitted && nx_text_document_register(f->context,&w,&s,edit,f,&result)!=NX_OK))return 0;
+    if(nx_begin_frame(f->context,320,160,0)!=NX_OK || nx_semantics_add(f->context,&root,NULL)!=NX_OK)return 0;
+    if(!f->omitted) {
+        nx_text_document_clipboard clipboard={{f,clipboard_read,clipboard_write},NULL,NULL};
+        nx_result registered=f->clipboard_enabled?
+            nx_text_document_register_with_clipboard(f->context,&w,&s,edit,f,&clipboard,&result):
+            nx_text_document_register(f->context,&w,&s,edit,f,&result);
+        if(registered!=NX_OK)return 0;
+    }
     if(f->cache_name)for(unsigned i=0;i<3072;++i) {
         nx_semantic_desc label={0};label.id=100u+i;label.parent_id=1;label.role=NX_ROLE_TEXT;
         label.bounds=(nx_rect){0,0,1,1};label.name=(nx_utf8_span){f->cache_name,1536};
@@ -66,7 +89,8 @@ int main(int argc,char **argv) {
     if(argc==2 && !strcmp(argv[1],"--cache-metadata")) {
         f.cache_name=malloc(1537);if(!f.cache_name)goto done;
         memset(f.cache_name,'c',1536);f.cache_name[1536]=0;
-    } else if(argc!=1)return 2;
+    } else if(argc==2 && !strcmp(argv[1],"--clipboard"))f.clipboard_enabled=1;
+    else if(argc!=1)return 2;
     nx_window_desc d={"External document fixture",320,160,0,{0}};
     if(!replace_local(&f,"A\xc3\xa9\xf0\x9f\x8c\x8dZ",8,0) || nx_window_create(&d,&f.window)!=NX_OK ||
        nx_context_create(NULL,&f.context)!=NX_OK || !frame(&f))goto done;
@@ -92,6 +116,11 @@ int main(int argc,char **argv) {
         else if(!strcmp(input,"omit")){f.omitted=1;++f.revision;}
         else if(!strcmp(input,"restore")){f.omitted=0;++f.revision;}
         else if(!strcmp(input,"fail")){f.fail=1;publish=0;}
+        else if(!strcmp(input,"clip-check")) {
+            if(f.clipboard_length!=6 || memcmp(f.clipboard,"\xc3\xa9\xf0\x9f\x8c\x8d",6))goto done;
+            publish=0;
+        } else if(!strcmp(input,"clipfail")){f.clipboard_fail=1;++f.revision;}
+        else if(!strcmp(input,"clipok")){f.clipboard_fail=0;++f.revision;}
         else if(!strcmp(input,"large")) {
             char *large=malloc(NX_TEXT_DOCUMENT_MAX_BYTES);if(!large)goto done;
             memset(large,'x',NX_TEXT_DOCUMENT_MAX_BYTES);large[0]='A';large[NX_TEXT_DOCUMENT_MAX_BYTES-1u]='Z';
@@ -106,7 +135,7 @@ int main(int argc,char **argv) {
     }
 done:
     if(f.window)nx_window_publish_semantics(f.window,NULL);
-    nx_context_destroy(f.context);nx_window_destroy(f.window);free(f.bytes);free(f.cache_name);
+    nx_context_destroy(f.context);nx_window_destroy(f.window);free(f.bytes);free(f.cache_name);free(f.clipboard);
     if(!okay)fputs("External document host failed\n",stderr);
     return okay?0:1;
 }
