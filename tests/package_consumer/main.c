@@ -35,7 +35,21 @@ static nx_result consumer_acquire(void *user, nx_bitmap_view *out) {
 
 static void consumer_release(void *user) { (void)user; }
 
+static int font_metadata(void) {
+    uint8_t bytes[140]={0};bytes[1]=1;bytes[5]=2;
+    memcpy(bytes+12,"name",4);bytes[23]=44;bytes[27]=26;
+    memcpy(bytes+28,"OS/2",4);bytes[39]=72;bytes[43]=68;
+    bytes[47]=1;bytes[49]=18;bytes[51]=3;bytes[53]=1;bytes[54]=4;bytes[55]=9;
+    bytes[57]=1;bytes[59]=8;bytes[63]='T';bytes[65]='e';bytes[67]='s';bytes[69]='t';
+    bytes[76]=1;bytes[77]=144;bytes[79]=5;bytes[135]=1;
+    nx_font *font=NULL;if(nx_font_open(bytes,sizeof(bytes),NULL,&font)!=NX_OK)return 0;
+    char name[5];size_t length=0;nx_font_style style;
+    int okay=nx_font_name_utf8(font,1,name,sizeof(name),&length)==NX_OK && length==4 && !strcmp(name,"Test") &&
+        nx_font_get_style(font,&style)==NX_OK && style.weight_class==400 && style.width_class==5 && style.slant==NX_FONT_SLANT_ITALIC;
+    nx_font_close(font);return okay;
+}
 int main(int argc, char **argv) {
+    if(!font_metadata())return 34;
     if (nx_window_fullscreen(NULL) != NX_ERROR_ARGUMENT) return 31;
     if (nx_numeric_field_set_ime_window(NULL, NULL) != NX_ERROR_ARGUMENT) return 28;
     if (nx_numeric_field_set_clipboard(NULL, NULL) != NX_ERROR_ARGUMENT) return 29;

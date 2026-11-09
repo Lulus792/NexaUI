@@ -191,6 +191,117 @@ nx_result nx_font_find_table(const nx_font *font, uint32_t tag,
     return NX_OK;
 }
 
+/* Decode twice: first validate/count, then write. No error can expose a partial
+   caller buffer. This parser does not add state or ownership to nx_font. */
+static nx_result nx_font_name_decode(const uint8_t *bytes, size_t length,
+                                     char *out, size_t *out_length) {
+    size_t used = 0;
+    if (length & 1u) return NX_ERROR_ARGUMENT;
+    for (size_t at = 0; at < length; at += 2u) {
+        uint32_t scalar = nx_font_u16(bytes + at);
+        if (scalar >= 0xd800u && scalar <= 0xdbffu) {
+            if (length - at < 4u) return NX_ERROR_ARGUMENT;
+            uint32_t tail = nx_font_u16(bytes + at + 2u);
+            if (tail < 0xdc00u || tail > 0xdfffu) return NX_ERROR_ARGUMENT;
+            scalar = 0x10000u + ((scalar - 0xd800u) << 10u) + tail - 0xdc00u;
+            at += 2u;
+        } else if (scalar >= 0xdc00u && scalar <= 0xdfffu) return NX_ERROR_ARGUMENT;
+        if (!scalar) return NX_ERROR_ARGUMENT;
+        size_t count = scalar < 0x80u ? 1u : scalar < 0x800u ? 2u : scalar < 0x10000u ? 3u : 4u;
+        if (count > 4096u - used) return NX_ERROR_LIMIT;
+        if (out) {
+            if (count == 1u) out[used] = (char)scalar;
+            else {
+                out[used] = (char)((count == 2u ? 0xc0u : count == 3u ? 0xe0u : 0xf0u) |
+                                   (scalar >> (6u * (unsigned)(count - 1u))));
+                for (size_t i = 1; i < count; ++i)
+                    out[used + i] = (char)(0x80u | ((scalar >> (6u * (unsigned)(count - i - 1u))) & 0x3fu));
+            }
+        }
+        used += count;
+    }
+    if (out) out[used] = 0;
+    *out_length = used;
+    return NX_OK;
+}
+
+nx_result nx_font_name_utf8(const nx_font *font, uint16_t name_id,
+                            char *buffer, size_t capacity, size_t *out_length) {
+    if (!out_length) return NX_ERROR_ARGUMENT;
+    *out_length = 0;
+    if (!font || (!buffer && capacity)) return NX_ERROR_ARGUMENT;
+    nx_bytes_view table;
+    if (nx_font_find_table(font, NX_SFNT_TAG('n','a','m','e'), &table) != NX_OK)
+        return NX_ERROR_UNSUPPORTED;
+    if (table.length < 6u) return NX_ERROR_ARGUMENT;
+    uint16_t version = nx_font_u16(table.data), count = nx_font_u16(table.data + 2u);
+    if (version > 1u) return NX_ERROR_UNSUPPORTED;
+    if (count > 4096u) return NX_ERROR_LIMIT;
+    size_t end = 6u + (size_t)count * 12u, storage = nx_font_u16(table.data + 4u), tags = 0;
+    if (end > table.length) return NX_ERROR_ARGUMENT;
+    if (version == 1u) {
+        if (table.length - end < 2u) return NX_ERROR_ARGUMENT;
+        tags = nx_font_u16(table.data + end);
+        if (tags > 4096u) return NX_ERROR_LIMIT;
+        size_t start = end + 2u; end = start + tags * 4u;
+        if (end > table.length || storage < end || storage > table.length) return NX_ERROR_ARGUMENT;
+        for (size_t i = 0; i < tags; ++i) {
+            size_t length = nx_font_u16(table.data + start + i * 4u);
+            size_t offset = nx_font_u16(table.data + start + i * 4u + 2u);
+            if (offset > table.length - storage || length > table.length - storage - offset)
+                return NX_ERROR_ARGUMENT;
+        }
+    }
+    if (storage < end || storage > table.length) return NX_ERROR_ARGUMENT;
+    const uint8_t *selected = NULL; size_t selected_length = 0;
+    uint64_t best = UINT64_MAX;
+    for (size_t i = 0; i < count; ++i) {
+        const uint8_t *entry = table.data + 6u + i * 12u;
+        uint16_t platform = nx_font_u16(entry), encoding = nx_font_u16(entry + 2u);
+        uint16_t language = nx_font_u16(entry + 4u), id = nx_font_u16(entry + 6u);
+        size_t length = nx_font_u16(entry + 8u), offset = nx_font_u16(entry + 10u);
+        if (offset > table.length - storage || length > table.length - storage - offset)
+            return NX_ERROR_ARGUMENT;
+        if (id != name_id || (language >= 0x8000u && (size_t)(language - 0x8000u) >= tags)) continue;
+        if (!((platform == 0u && encoding <= 4u) ||
+              (platform == 3u && (encoding == 0u || encoding == 1u || encoding == 10u)))) continue;
+        uint64_t priority = platform == 3u && language == 0x0409u ? 0u :
+                            platform == 0u && !language ? 1u : 2u;
+        uint64_t rank = (priority << 48u) | ((uint64_t)language << 32u) |
+                        ((uint64_t)platform << 16u) | encoding;
+        if (rank < best) {best = rank; selected = table.data + storage + offset; selected_length = length;}
+    }
+    if (!selected) return NX_ERROR_UNSUPPORTED;
+    size_t needed = 0;
+    nx_result result = nx_font_name_decode(selected, selected_length, NULL, &needed);
+    if (result != NX_OK) return result;
+    *out_length = needed;
+    if (!buffer && !capacity) return NX_OK;
+    if (capacity <= needed) return NX_ERROR_LIMIT;
+    return nx_font_name_decode(selected, selected_length, buffer, out_length);
+}
+
+nx_result nx_font_get_style(const nx_font *font, nx_font_style *out_style) {
+    if (!out_style) return NX_ERROR_ARGUMENT;
+    *out_style = (nx_font_style){0};
+    if (!font) return NX_ERROR_ARGUMENT;
+    nx_bytes_view table;
+    if (nx_font_find_table(font, NX_SFNT_TAG('O','S','/','2'), &table) != NX_OK)
+        return NX_ERROR_UNSUPPORTED;
+    if (table.length < 2u) return NX_ERROR_ARGUMENT;
+    uint16_t version = nx_font_u16(table.data);
+    if (version > 5u) return NX_ERROR_UNSUPPORTED;
+    const size_t minimum[] = {68u,86u,96u,96u,96u,100u};
+    if (table.length < minimum[version]) return NX_ERROR_ARGUMENT;
+    uint16_t weight = nx_font_u16(table.data + 4u), width = nx_font_u16(table.data + 6u);
+    if (!weight || weight > 1000u || !width || width > 9u) return NX_ERROR_ARGUMENT;
+    uint16_t selection = nx_font_u16(table.data + 62u);
+    nx_font_slant slant = version >= 4u && (selection & 512u) ? NX_FONT_SLANT_OBLIQUE :
+                         (selection & 1u) ? NX_FONT_SLANT_ITALIC : NX_FONT_SLANT_UPRIGHT;
+    *out_style = (nx_font_style){weight,width,slant};
+    return NX_OK;
+}
+
 nx_result nx_font_get_metrics(const nx_font *font, nx_font_metrics *out_metrics) {
     if (!out_metrics) return NX_ERROR_ARGUMENT;
     *out_metrics = (nx_font_metrics){0};

@@ -19,6 +19,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
     }
     nx_font_metrics metrics;
+    nx_font_style style;
+    char name[128];size_t name_length;
+    (void)nx_font_get_style(font,&style);
+    (void)nx_font_name_utf8(font,1,name,sizeof(name),&name_length);
+    (void)nx_font_name_utf8(font,16,NULL,0,&name_length);
     if (nx_font_get_metrics(font, &metrics) == NX_OK) {
         uint16_t advance;
         int16_t lsb;

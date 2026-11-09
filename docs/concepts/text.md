@@ -9,6 +9,28 @@ NexaUI has begun its own font stack with a bounded SFNT directory parser. `nx_fo
 
 `nx_font_get_metrics` validates `head`, `maxp`, `hhea` and `hmtx` before returning units per em, glyph count, ascender, descender, line gap and horizontal metric count. `nx_font_glyph_hmetrics` reads a glyph's advance width and left side bearing. Glyphs beyond `number_of_hmetrics` reuse the final advance width and take their own bearing from the trailing `hmtx` entries.
 
+`nx_font_name_utf8` reads optional [OpenType names](https://learn.microsoft.com/en-us/typography/opentype/spec/name)
+from the same face. It decodes supported Unicode/Windows UTF-16BE records into a
+caller-owned NUL-terminated UTF-8 buffer, or queries the required length with
+NULL/0. Length excludes the terminator. At most4096 records/language tags and
+4096 output bytes are supported. Names prefer Windows English-US, then Unicode
+language0, then the lowest language/platform/encoding key; this deterministic
+choice is not application locale negotiation. Request typographic family ID16,
+falling back to ID1 only on unsupported, and subfamily17/2 similarly. Unsupported
+versions/encodings or absent IDs are explicit; malformed table bounds or selected
+UTF-16 are errors. Insufficient capacity reports the required length and never
+writes a partial string. Version1 language-tag offsets are bounded; language-tag
+text is not interpreted or advertised as a negotiated locale.
+
+`nx_font_get_style` reads static-face weight1–1000, width1–9 and upright/italic/
+oblique from [OS/2 versions0–5](https://learn.microsoft.com/en-us/typography/opentype/spec/os2).
+The68-byte shortened legacy version0 is supported. Bit9 distinguishes oblique
+only in versions4/5; older versions use italic bit0. Missing/unknown metadata
+returns unsupported, while invalid weight/width or truncated known tables return
+an error. These optional allocation-free queries do not change font opening,
+glyph selection, rendering or existing structure layouts. They do not infer
+synthetic styling, apply variation instances or prove font identity/coverage.
+
 `nx_font_glyph_index` selects one valid Unicode `cmap` subtable when the font opens. It supports format 4 for BMP mappings and format 12 for the full Unicode range, preferring format 12 when present. Platform 3 encoding 10 and platform 0 Unicode records are considered for format 12; platform 3 encoding 1 and platform 0 Unicode records are considered for format 4. Segment and group ranges, relative glyph-array offsets and subtable lengths are checked before the lookup is cached. Glyph zero denotes a missing mapping. A malformed preferred subtable can fall back to a valid lower-priority Unicode subtable. The implementation follows the [OpenType `cmap` specification](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap).
 
 `nx_font_get_glyph_outline` decodes simple and composite TrueType outlines from `loca` and `glyf` into caller-owned point and contour arrays. It handles short and long `loca` offsets, packed coordinate deltas, repeated flags, zero-contour glyphs, component translations, outline-point alignment, F2DOT14 transforms and nested components. Composite traversal detects cycles and limits recursion to 32 glyphs and total decoded points to 65,536. A count-only call requires no caller point allocation; the parser uses temporary buffers from the font's allocator to validate transformed coordinates. A fill call copies to caller arrays only after successful validation. The parser follows the [OpenType `loca`](https://learn.microsoft.com/en-us/typography/opentype/spec/loca), [`glyf`](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf) and [`maxp`](https://learn.microsoft.com/en-us/typography/opentype/spec/maxp) tables. It returns unscaled design-unit points; fractional transformed coordinates round to the nearest design unit. It does not apply hinting, variation deltas or phantom-point alignment.

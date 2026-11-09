@@ -2723,6 +2723,38 @@ NX_API nx_result nx_font_table_at(const nx_font *font, uint32_t index,
                                   uint32_t *out_tag, nx_bytes_view *out_view);
 NX_API nx_result nx_font_find_table(const nx_font *font, uint32_t tag,
                                     nx_bytes_view *out_view);
+/* Decode one SFNT name ID to caller-owned UTF-8, with a terminating NUL.
+   Uses name table versions0/1 and Unicode-platform encodings0..4 or Windows
+   encodings0/1/10 (UTF-16BE). Deterministic preference: Windows English-US,
+   Unicode language0, then lowest language/platform/encoding; first equal key.
+   This is not locale negotiation. Missing names/unsupported tables/encodings
+   return NX_ERROR_UNSUPPORTED. Malformed selected UTF-16 (including NUL) or
+   table structure returns NX_ERROR_ARGUMENT. At most4096 records/language tags
+   and4096 UTF-8 bytes are supported; larger inputs return NX_ERROR_LIMIT.
+   out_length excludes NUL; NULL/0 queries required length successfully.
+   Insufficient capacity returns NX_ERROR_LIMIT with required length. Other
+   errors clear out_length; the buffer is unchanged on every error. The output
+   must not overlap the borrowed immutable font bytes. For a typographic family,
+   request ID16, then ID1 only if16 is unsupported; subfamily IDs are17/2. */
+NX_API nx_result nx_font_name_utf8(const nx_font *font, uint16_t name_id,
+                                  char *buffer, size_t capacity, size_t *out_length);
+typedef enum nx_font_slant {
+    NX_FONT_SLANT_UPRIGHT = 0,
+    NX_FONT_SLANT_ITALIC = 1,
+    NX_FONT_SLANT_OBLIQUE = 2
+} nx_font_slant;
+typedef struct nx_font_style {
+    uint16_t weight_class; /* OS/2.usWeightClass:1..1000. */
+    uint16_t width_class;  /* OS/2.usWidthClass:1..9. */
+    nx_font_slant slant;
+} nx_font_style;
+/* Read static-face OS/2 metadata, not synthetic styling or variable instances.
+   Versions0..5 are supported, including shortened68-byte legacy version0.
+   Oblique bit9 is used only for version4/5, otherwise italic bit0.
+   Missing/unknown OS/2 returns NX_ERROR_UNSUPPORTED. Truncated tables or invalid
+   weight/width return NX_ERROR_ARGUMENT. No allocation; out_style is cleared
+   on every error. Font opening/rendering does not depend on this optional data. */
+NX_API nx_result nx_font_get_style(const nx_font *font, nx_font_style *out_style);
 /* Parse TrueType/OpenType horizontal metrics from head/maxp/hhea/hmtx.
    A valid container may still lack these tables and then returns
    NX_ERROR_ARGUMENT. Glyph indices must be below glyph_count. */
