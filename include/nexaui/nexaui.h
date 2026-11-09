@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 31
+#define NX_VERSION_PATCH 32
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2115,7 +2115,12 @@ NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
    ADD_SELECTION and DESELECT are derived for group members; required groups
    cannot be cleared. Disabled, modal-blocked and unsupported targets are rejected.
    Scrollbar steps use the area's wheel step and retain axis and owner identity;
-   other controls' increment/decrement requests remain unsupported.
+   Built-in sliders and drag values apply ordered increment/decrement requests
+   after routed input, using the next frame's valid range/step. The same ID,
+   control kind, role, parent and overlay must remain enabled (including ancestors).
+   Removed/rebound targets expire; successful drawing commits each request once,
+   and a failed draw can be retried in the same frame without losing it. These
+   actions do not focus or click the control. Other controls remain unsupported.
    EXPAND/COLLAPSE set the requested state of a tree branch/expander or collapsible
    header without clicking, selecting or focusing it. Only the currently offered
    action is accepted. The next frame must submit the same ID, role, parent and

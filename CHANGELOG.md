@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.32 — Development snapshot
+
+- Added ordered semantic increment/decrement handling for built-in sliders and drag values. Requests retain control kind, role, parent and overlay identity, respect disabled ancestors and current range/step, expire on omission/rebinding, and commit once after successful painting. Same-frame drawing retries retain pending actions. This connects existing native assistive action routing to the original Settings volume intent without changing public structures, exports or application ownership. Numeric native Value interfaces and other control kinds remain separate work.
+
 ## 0.1.31 — Development snapshot
 
 - Added optional `nx_font_name_utf8` and `nx_font_get_style` metadata queries over the existing SFNT table reader. Bounded caller-owned UTF-8 names and versioned OS/2 weight/width/slant have explicit missing/unsupported/malformed outcomes; font opening and rendering do not depend on metadata. See the [verified source and remaining owner work](docs/quality/font-metadata-report.md). Original Editor attribute integration and native adoption remain separate work.

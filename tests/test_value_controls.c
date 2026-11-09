@@ -162,7 +162,7 @@ static void probe_deallocate(void *user, void *pointer, size_t size) {
     free(pointer);
 }
 
-static int test_semantic_value_growth_failure(void) {
+static int test_semantic_value_growth_failure(int accessible) {
     allocation_probe probe = {0};
     nx_context_desc context_desc = {0};
     context_desc.allocator = (nx_allocator){&probe, probe_allocate,
@@ -182,8 +182,13 @@ static int test_semantic_value_growth_failure(void) {
     CHECK(nx_begin_frame(ctx, 20, 20, 0) == NX_OK);
     CHECK(nx_slider(ctx, &slider, &value, &state) == NX_OK);
     CHECK(nx_end_frame(ctx) == NX_OK);
-    CHECK(queue_pointer(ctx, NX_EVENT_POINTER_DOWN, 9, 5));
-    CHECK(queue_pointer(ctx, NX_EVENT_POINTER_UP, 9, 5));
+    if(accessible) {
+        CHECK(nx_semantics_request_action(ctx,1,NX_ACTION_INCREMENT)==NX_OK);
+        slider.step=9;
+    } else {
+        CHECK(queue_pointer(ctx, NX_EVENT_POINTER_DOWN, 9, 5));
+        CHECK(queue_pointer(ctx, NX_EVENT_POINTER_UP, 9, 5));
+    }
     CHECK(nx_begin_frame(ctx, 20, 20, 0) == NX_OK);
     probe.fail_size = 8;
     CHECK(nx_slider(ctx, &slider, &value, &state) == NX_ERROR_MEMORY);
@@ -194,6 +199,12 @@ static int test_semantic_value_growth_failure(void) {
     size_t count = 0;
     CHECK(nx_semantics_count(ctx, &count) == NX_OK && count == 1);
     CHECK(semantic_value(ctx, 1, "9", 0));
+    if(accessible) {
+        slider.step=1;
+        CHECK(nx_begin_frame(ctx,20,20,0)==NX_OK);
+        CHECK(nx_slider(ctx,&slider,&value,&state)==NX_OK && value==9);
+        CHECK(nx_end_frame(ctx)==NX_OK);
+    }
     nx_context_destroy(ctx);
     CHECK(probe.allocations == probe.deallocations);
     return 0;
@@ -224,10 +235,136 @@ static int test_nondivisible_endpoint(void) {
     return 0;
 }
 
+static int value_frame(nx_context *ctx,nx_value_control_desc *desc,double *value,
+                       int drag,int parent_disabled) {
+    CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK);
+    if(desc->control.parent_id) {
+        nx_semantic_desc parent={0};parent.id=desc->control.parent_id;
+        parent.role=NX_ROLE_GROUP;parent.bounds=(nx_rect){0,0,100,40};
+        parent.state=parent_disabled?NX_SEM_DISABLED:0u;
+        CHECK(nx_semantics_add(ctx,&parent,NULL)==NX_OK);
+    }
+    nx_interaction_state state;
+    CHECK((drag?nx_drag_value(ctx,desc,value,&state):nx_slider(ctx,desc,value,&state))==NX_OK);
+    CHECK(!state.clicked && nx_end_frame(ctx)==NX_OK);return 0;
+}
+
+static int test_accessible_value_steps(void) {
+    for(int drag=0;drag<2;++drag) {
+        nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+        nx_value_control_desc desc={0};desc.control.id=3;
+        desc.control.bounds=(nx_rect){0,0,80,20};desc.control.name=(nx_utf8_span){"Value",5};
+        desc.minimum=0;desc.maximum=10;desc.step=3;desc.units_per_pixel=1;
+        double value=6;
+        CHECK(!value_frame(ctx,&desc,&value,drag,0));
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_ERROR_LIMIT);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==9 && !nx_focus_id(ctx));
+        CHECK(semantic_value(ctx,3,"9",0));
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==9);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==10);
+        /* Ordered opposite requests must not be reduced to a cancelling sum
+         * at a saturated/non-grid endpoint. */
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_DECREMENT)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        desc.control.disabled=1;
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_ERROR_STATE);
+        desc.control.disabled=0;
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        desc.control.parent_id=5;
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,!drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,!drag,1) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_ERROR_STATE);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+        CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK && nx_end_frame(ctx)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6);
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_DECREMENT)==NX_OK);
+        desc.step=2;desc.maximum=8;
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==4);
+        CHECK(nx_focus_set(ctx,3)==NX_OK && queue_key(ctx,NX_KEY_END));
+        CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_DECREMENT)==NX_OK);
+        CHECK(!value_frame(ctx,&desc,&value,drag,0) && value==6 && nx_focus_id(ctx)==3);
+        nx_context_destroy(ctx);
+    }
+    return 0;
+}
+
+static int test_value_step_capacity_and_custom(void) {
+    nx_context *ctx=NULL;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    double values[65]={0};nx_interaction_state state;
+    nx_value_control_desc desc={0};desc.control.bounds=(nx_rect){0,0,80,20};
+    desc.control.name=(nx_utf8_span){"Value",5};desc.maximum=10;desc.step=1;
+    CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK);
+    for(size_t i=0;i<65;++i){desc.control.id=i+1;CHECK(nx_slider(ctx,&desc,&values[i],&state)==NX_OK);}
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    for(uint64_t i=1;i<=64;++i)CHECK(nx_semantics_request_action(ctx,i,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,65,NX_ACTION_INCREMENT)==NX_ERROR_LIMIT);
+    CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK);
+    for(size_t i=0;i<65;++i) {
+        desc.control.id=i+1;CHECK(nx_slider(ctx,&desc,&values[i],&state)==NX_OK);
+        CHECK(values[i]==(i<64?1:0));
+    }
+    CHECK(nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,1,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK);
+    nx_widget_desc custom={0};custom.semantic.id=1;custom.semantic.role=NX_ROLE_SLIDER;
+    custom.semantic.bounds=desc.control.bounds;custom.semantic.name=desc.control.name;
+    custom.semantic.actions=NX_ACTION_INCREMENT|NX_ACTION_FOCUS;
+    custom.flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE;
+    CHECK(nx_widget_register(ctx,&custom,&state)==NX_OK && !state.clicked && nx_end_frame(ctx)==NX_OK);
+    CHECK(nx_semantics_request_action(ctx,1,NX_ACTION_INCREMENT)==NX_ERROR_UNSUPPORTED);
+    CHECK(nx_begin_frame(ctx,100,40,0)==NX_OK);desc.control.id=1;
+    CHECK(nx_slider(ctx,&desc,&values[0],&state)==NX_OK && values[0]==1 && nx_end_frame(ctx)==NX_OK);
+    nx_context_destroy(ctx);return 0;
+}
+
+static int value_modal_frame(nx_context *ctx,double *value,int modal) {
+    CHECK(nx_begin_frame(ctx,100,60,0)==NX_OK);
+    if(modal) {
+        nx_overlay_desc overlay={0};overlay.panel.id=70;overlay.backdrop_id=71;
+        overlay.panel.bounds=(nx_rect){0,0,100,60};overlay.panel.name=(nx_utf8_span){"Dialog",6};
+        int dismissed=0;CHECK(nx_modal_begin(ctx,&overlay,&dismissed)==NX_OK && !dismissed);
+    } else {
+        nx_semantic_desc parent={0};parent.id=70;parent.role=NX_ROLE_GROUP;
+        parent.bounds=(nx_rect){0,0,100,60};CHECK(nx_semantics_add(ctx,&parent,NULL)==NX_OK);
+    }
+    nx_value_control_desc desc={0};desc.control.id=3;desc.control.parent_id=70;
+    desc.control.bounds=(nx_rect){0,0,80,20};desc.control.name=(nx_utf8_span){"Value",5};
+    desc.maximum=10;desc.step=1;nx_interaction_state state;
+    CHECK(nx_slider(ctx,&desc,value,&state)==NX_OK);
+    if(modal)CHECK(nx_overlay_end(ctx)==NX_OK);
+    CHECK(nx_end_frame(ctx)==NX_OK);return 0;
+}
+
+static int test_value_step_overlay(void) {
+    nx_context *ctx=NULL;double value=5;CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    CHECK(!value_modal_frame(ctx,&value,1));
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(!value_modal_frame(ctx,&value,0) && value==5);
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(!value_modal_frame(ctx,&value,1) && value==5);
+    CHECK(nx_semantics_request_action(ctx,3,NX_ACTION_INCREMENT)==NX_OK);
+    CHECK(!value_modal_frame(ctx,&value,1) && value==6);
+    nx_context_destroy(ctx);return 0;
+}
+
 int main(void) {
     if (test_slider_and_drag()) return 1;
-    if (test_semantic_value_growth_failure()) return 1;
+    if (test_semantic_value_growth_failure(0)) return 1;
+    if (test_semantic_value_growth_failure(1)) return 1;
     if (test_nondivisible_endpoint()) return 1;
+    if (test_accessible_value_steps()) return 1;
+    if (test_value_step_capacity_and_custom()) return 1;
+    if (test_value_step_overlay()) return 1;
     puts("value control tests passed");
     return 0;
 }

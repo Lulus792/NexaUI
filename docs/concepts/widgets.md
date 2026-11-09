@@ -34,6 +34,17 @@ Put radios from one choice set under one dedicated semantic parent, usually an `
 
 `nx_slider` maps a captured pointer position across its horizontal bounds to a finite `[minimum, maximum]` range. `nx_drag_value` changes the value by captured horizontal movement times `units_per_pixel`, including movement while the pointer is outside the bounds. Both clamp and snap to a positive `step`. When focused, Left/Down and Right/Up move by one step, Page Down/Up by ten steps, and Home/End select the endpoints. Key repeat events apply another step. The application owns the `double` value; the call updates it only after drawing and semantic registration succeed.
 
+Since 0.1.32, `nx_semantics_request_action` also accepts `NX_ACTION_INCREMENT` and
+`NX_ACTION_DECREMENT` for these two built-in controls. Requests apply in queue
+order after pointer/key input using the current finite range and step, without
+moving focus or producing a click. The next submission must retain the same ID,
+slider/drag kind, parent and overlay; disabled ancestors also prevent application.
+Omitted or rebound controls drop the old request. A drawing failure leaves the
+caller value unchanged and retains actions for a same-frame retry; successful
+drawing consumes them once. Generic custom widgets do not acquire a numeric
+model by advertising these action bits. This does not add a native numeric Value
+interface or an arbitrary numeric SetValue operation.
+
 `nx_value_control_desc.control` supplies the stable ID, accessible name, bounds, disabled state and optional visible text layout. Both calls register a slider semantic node with increment, decrement and set-value capabilities. Its copied numeric value string reflects the updated model in the same frame. The current drag-value visualization is a marker on a track; applications can provide a text layout for a visible numeric label. Vertical sliders and native accessibility action dispatch remain pending.
 
 `nx_numeric_parse` validates an ASCII decimal against finite bounds without depending on the process locale. `nx_numeric_input_apply_event` filters text events to digits, sign, decimal point and exponent characters, while reusing `nx_text_buffer` for selection, deletion and undo. Incomplete or out-of-range drafts remain editable; Enter commits only a valid draft to the caller-owned number. The application can call this helper for a custom focused editor.

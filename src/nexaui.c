@@ -74,6 +74,7 @@ typedef struct nx_region {
     uint64_t overlay_id;
     uint64_t nav_parent_id;
     unsigned nav_axis; /* 1 vertical menu, 2 horizontal menu bar, 3 tree. */
+    unsigned value_kind; /* Built-in slider (1) or drag value (2), never custom. */
     uint64_t tree_row_id, tree_parent_id;
     unsigned tree_state; /* 1 branch, 2 expanded; retained only with the region. */
     int expansion_control; /* Built-in tree branch or collapsible header. */
@@ -97,6 +98,11 @@ typedef struct nx_accessible_request {
     nx_semantic_role role;
     uint32_t action;
 } nx_accessible_request;
+
+typedef struct nx_value_step_request {
+    nx_accessible_request request;
+    unsigned kind;
+} nx_value_step_request;
 
 #define NX_REGION_INACTIVE 8u
 
@@ -269,6 +275,8 @@ struct nx_context {
     int pointer_valid;
     nx_semantic_buffer semantics;
     nx_accessible_request accessible_requests[64], expansion_requests[64];
+    nx_value_step_request value_step_requests[64];
+    size_t value_step_request_count;
     size_t expansion_request_count;
     struct { uint64_t id, owner_id; uint32_t action; } selection_requests[64];
     size_t selection_request_count;
@@ -941,6 +949,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     if (ime_routes!=NX_OK) return ime_routes;
     ctx->selection_request_count = 0;
     ctx->expansion_request_count = 0;
+    ctx->value_step_request_count = 0;
     for (size_t i = 0; i < ctx->accessible_request_count; ++i) {
         uint64_t id = ctx->accessible_requests[i].id;
         uint32_t action = ctx->accessible_requests[i].action;
@@ -956,7 +965,10 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         } else if (action == NX_ACTION_EXPAND || action == NX_ACTION_COLLAPSE) {
             ctx->expansion_requests[ctx->expansion_request_count++] = ctx->accessible_requests[i];
         } else if (action == NX_ACTION_INCREMENT || action == NX_ACTION_DECREMENT) {
-            if (region->scroll_axis && region->scroll_owner_id)
+            if (region->value_kind) {
+                nx_value_step_request *request=&ctx->value_step_requests[ctx->value_step_request_count++];
+                request->request=ctx->accessible_requests[i];request->kind=region->value_kind;
+            } else if (region->scroll_axis && region->scroll_owner_id)
                 region->scroll_steps += action == NX_ACTION_INCREMENT ? 1 : -1;
         } else if (action == NX_ACTION_FOCUS) {
             if (region->flags & NX_REGION_FOCUSABLE) { nx_context_change_focus(ctx, id); ctx->key_active_id = 0; }
@@ -2425,8 +2437,9 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
     if (!region || (node->state & NX_SEM_DISABLED) ||
         (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id)) return NX_ERROR_STATE;
-    if (scroll_step && (!region->scroll_axis || !region->scroll_owner_id ||
+    if (scroll_step && !region->value_kind && (!region->scroll_axis || !region->scroll_owner_id ||
         region->scroll_owner_id!=node->parent_id)) return NX_ERROR_UNSUPPORTED;
+    if (scroll_step && region->value_kind && nx_text_value_disabled(ctx,node)) return NX_ERROR_STATE;
     if (expansion && !region->expansion_control) return NX_ERROR_UNSUPPORTED;
     if (expansion && nx_text_value_disabled(ctx, node)) return NX_ERROR_STATE;
     const nx_semantic_record *owner = node->selection_owner == UINT32_MAX ? NULL : &ctx->semantics.nodes[node->selection_owner];
@@ -5884,6 +5897,30 @@ static double nx_value_snap(double value, double minimum, double maximum,
     return nx_value_clamp(minimum + round(steps) * step, minimum, maximum);
 }
 
+static double nx_value_step_actions(nx_context *ctx,const nx_value_control_desc *desc,
+                                    int drag,double value) {
+    nx_region *region=nx_region_find(&ctx->current_regions,desc->control.id);
+    region->value_kind=drag?2u:1u;
+    const nx_semantic_record *node=&ctx->semantics.nodes[ctx->semantics.count-1u];
+    if(nx_text_value_disabled(ctx,node))return value;
+    for(size_t i=0;i<ctx->value_step_request_count;++i) {
+        const nx_value_step_request *step=&ctx->value_step_requests[i];
+        const nx_accessible_request *request=&step->request;
+        if(request->id!=desc->control.id || step->kind!=region->value_kind ||
+           request->role!=NX_ROLE_SLIDER || request->parent_id!=desc->control.parent_id ||
+           request->overlay_id!=region->overlay_id)continue;
+        double delta=request->action==NX_ACTION_INCREMENT?desc->step:-desc->step;
+        value=nx_value_snap(value+delta,desc->minimum,desc->maximum,desc->step);
+    }
+    return value;
+}
+
+static void nx_value_step_commit(nx_context *ctx,uint64_t id) {
+    /* Keep actions available for a same-frame retry after failed painting. */
+    for(size_t i=0;i<ctx->value_step_request_count;++i)
+        if(ctx->value_step_requests[i].request.id==id)ctx->value_step_requests[i].request.id=0;
+}
+
 static nx_result nx_value_format(double value, char text[64], size_t *length) {
     int count = snprintf(text, 64, "%.17g", value);
     if (count < 0 || count >= 64) return NX_ERROR_LIMIT;
@@ -6017,6 +6054,7 @@ static nx_result nx_value_control_run(nx_context *ctx,
             }
         }
     }
+    next = nx_value_step_actions(ctx,desc,drag,next);
     next = nx_value_snap(next, desc->minimum, desc->maximum, desc->step);
     if (next != nx_value_clamp(*value, desc->minimum, desc->maximum)) {
         char updated_text[64];
@@ -6034,6 +6072,7 @@ static nx_result nx_value_control_run(nx_context *ctx,
     if (result != NX_OK) goto rollback;
     *value = next;
     *out_state = state;
+    nx_value_step_commit(ctx,desc->control.id);
     return NX_OK;
 rollback:
     ctx->command_count = old_command_count;
