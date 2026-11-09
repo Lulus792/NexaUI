@@ -72,6 +72,43 @@ The [original-view report](../../docs/quality/settings-original-view-report.md)
 binds exact sources, installed profiles, native tasks, captures and retained
 failures without closing those wider gates.
 
+With NexaUI 0.1.32 or newer, `NEXAUI_MODEL_BUILD_ORIGINAL_AUDIO_ENTRY=ON` adds
+`aetheri_original_audio_entry`, compiling the same original `nexaui_main.c` with
+`AETHERI_SETTINGS_AUDIO_HOST` and `AETHERI_SETTINGS_NO_MAIN`. Enable the original
+view too, on Linux, and set `AETHERI_SETTINGS_AUDIO_HOST_TARGET` to an existing
+caller-defined target providing Aetheri's original `settings/audio_host.c`
+implementation and its transitive application dependencies, including GLib.
+Supply `src/settings/audio_host.h` from the same immutable Aetheri snapshot.
+The example does not construct or admit an audio session. The normal executable
+still uses its original ordinary, audio-unavailable entry point.
+
+The embedding application calls the original `ae_settings_nexaui_run(argc, argv,
+audio_host)` with an already independently admitted original host on its owning
+thread/process and pushed thread-default `GMainContext`. The original entry
+borrows that host for the run, binds its temporary model and unbinds before
+returning. The caller retains the host/session/context, closes them through their
+original contracts and keeps iterating until deferred owner retirement finishes.
+The existing original prepare/finish/abort path surrounds the SDK window wait;
+no second poll loop, worker thread, service admission or reconnect is introduced.
+Use the same original model/source generation for the supplied host target.
+
+For example, in a parent project that already defines `aetheri_settings_audio_host`:
+
+```cmake
+set(NEXAUI_MODEL_BUILD_ORIGINAL_VIEW ON CACHE BOOL "Original view")
+set(NEXAUI_MODEL_BUILD_ORIGINAL_AUDIO_ENTRY ON CACHE BOOL "Original audio entry")
+set(AETHERI_SETTINGS_AUDIO_HOST_TARGET aetheri_settings_audio_host CACHE STRING "Original host")
+add_subdirectory(/path/to/NexaUI/examples/21_aetheri_model settings-consumer)
+target_link_libraries(my_original_owner PRIVATE aetheri_original_audio_entry)
+```
+
+The [isolated audio fixture](../../tests/aetheri_settings_audio/README.md) combines
+the unchanged original entry/pump/GLib adapter with explicitly controlled test
+observations and an independent AT-SPI peer. It supplies no real service or
+device effect. The 0.1.32 minimum includes the slider/drag-value semantic-step
+path required by native assistive volume actions; numeric Value interfaces and
+other accessibility acceptance remain separate work.
+
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:
 
