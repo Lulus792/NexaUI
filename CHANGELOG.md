@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.28 — Development snapshot
+
+- Added `nx_text_document_register` for application-owned document accessibility: copied UTF-8 snapshots up to 8 MiB, explicit replace/selection capabilities and owner-thread atomic model callbacks with identity, revision, ancestry and native lifetime checks. Existing editor models and public structure layouts remain unchanged. Linux AT-SPI retains bounded replies/payloads and deferred operation completion; document clipboard/geometry, broader native interfaces and original Editor adoption remain open.
+
 ## 0.1.27 — Development snapshot
 
 - Added optional owner-thread native close request delivery and cancellation/acceptance. Taken requests acknowledge the legacy close flag so review dialogs can wait and keep using the original window; stale, foreign and superseded responses cannot clear a newer request. Native terminal conditions and accepted closes cannot be revived. Existing window/event structure layouts and legacy close handling remain unchanged.

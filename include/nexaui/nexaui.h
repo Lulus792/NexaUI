@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 27
+#define NX_VERSION_PATCH 28
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -886,6 +886,43 @@ typedef struct nx_widget_desc {
     nx_semantic_desc semantic; /* ID and bounds are shared with hit testing. */
     uint32_t flags; /* NX_WIDGET_INTERACTIVE and optionally NX_WIDGET_FOCUSABLE. */
 } nx_widget_desc;
+
+/* Application-owned document text, copied for native accessibility queries.
+   No nx_text_buffer or application/model pointer is retained by the context. */
+#define NX_TEXT_DOCUMENT_MAX_BYTES (8u * 1024u * 1024u)
+#define NX_TEXT_DOCUMENT_REPLACE 1u
+#define NX_TEXT_DOCUMENT_SELECT  2u
+typedef struct nx_text_document_state {
+    nx_utf8_span value;
+    uint64_t identity, revision;
+    size_t anchor_byte, cursor_byte;
+    uint32_t operations;
+    int multiline;
+} nx_text_document_state;
+typedef enum nx_text_document_operation {
+    NX_TEXT_DOCUMENT_REPLACE_RANGE = 1,
+    NX_TEXT_DOCUMENT_SET_SELECTION
+} nx_text_document_operation;
+typedef struct nx_text_document_request {
+    nx_text_document_operation operation;
+    uint64_t identity, revision;
+    size_t start_byte, end_byte;
+    nx_utf8_span value;
+} nx_text_document_request;
+/* Called only during registration on the context's owner thread. Revalidate
+   the original application's complete input token before one atomic operation.
+   On failure preserve the model and return a non-OK result. On success return
+   its truthful new state, with the same identity/policy and a strictly newer
+   nonzero revision, even for an accepted no-op. Returned value must stay valid
+   until registration returns. Do not reenter NexaUI from the
+   callback or retain the request. No callback/user is stored in native snapshots. */
+typedef nx_result (*nx_text_document_apply)(void *user,
+    const nx_text_document_request *request, nx_text_document_state *out_state);
+typedef struct nx_text_document_result {
+    nx_interaction_state interaction;
+    nx_result edit_result; /* NX_OK with applied=0 also means no admitted edit. */
+    int applied;
+} nx_text_document_result;
 
 /* S04: a real-time line plot over one borrowed S03 series. The application
    owns state and a reusable envelope buffer of at least one element per
@@ -1929,6 +1966,33 @@ NX_API nx_result nx_interact_region(nx_context *context, uint64_t id,
 NX_API nx_result nx_widget_register(nx_context *context,
                                     const nx_widget_desc *desc,
                                     nx_interaction_state *out_state);
+/* Register a text-field semantic/interaction snapshot for an application-owned
+   model, then apply at most one admitted request from the preceding frame.
+   widget.semantic.value must be empty; state supplies copied UTF-8 text and
+   scalar-boundary byte caret/selection offsets. The input state structure must
+   remain valid for this call; its value bytes are copied before the callback,
+   which may replace the application's original text allocation.
+   Identity must never be reused
+   for another model in this context; revision must advance on every edit,
+   selection, input cancellation or edit-policy change and must never wrap.
+   READONLY and SET_VALUE must agree with REPLACE. Nonzero operations require
+   an interactive widget and a callback. Protected snapshots are unsupported.
+   Pending requests retain identity/revision/policy, ancestry and native leases;
+   stale/disabled/modal-blocked/omitted targets expire without a callback.
+   Context storage for the expected result is reserved and leases rechecked
+   before calling the application. Callback errors are reported in out_result;
+   native bridges using deferred completion receive failure. Successful edits
+   update this frame's copied text/caret and finish those completions only after
+   actual application. Other native admission/reply rules remain platform-specific.
+   A callback violating its returned-state contract returns STATE; the SDK
+   cannot undo an application's mutation.
+   Native replacement payloads retain NX_TEXT_VALUE_MAX_BYTES; reads use the
+   document bound and native reply limits. This entry supports replace/select,
+   not native copy/cut/paste, text geometry or attributes. No text is drawn and
+   no ordinary keyboard/IME/file operation is handled here. */
+NX_API nx_result nx_text_document_register(nx_context *context,
+    const nx_widget_desc *widget, const nx_text_document_state *state,
+    nx_text_document_apply apply, void *user, nx_text_document_result *out_result);
 /* Set logical keyboard focus to a registered, enabled focusable region in
    the current or previous frame. Tab/Shift+Tab traverse registration order. */
 NX_API nx_result nx_focus_set(nx_context *context, uint64_t id);

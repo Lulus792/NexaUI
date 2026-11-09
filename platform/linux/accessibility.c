@@ -213,7 +213,8 @@ static int nx_ax_editable(const nx_ax_node *n) {
 }
 static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
 static int text_target_equal(nx_text_value_target a,nx_text_value_target b) {
-    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline;
+    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline &&
+        a.document_operations==b.document_operations;
 }
 static void lease_retain(nx_ax_multi_lease *l) { atomic_fetch_add_explicit(&l->references,1,memory_order_relaxed); }
 static void lease_release(nx_ax_multi_lease *l) {
@@ -464,6 +465,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         if (same && n->text_ready) {
             nx_ax_node *prior=&b->snapshot->nodes[old];
             same=n->text_target.identity && n->text_target.identity==prior->text_target.identity &&
+                n->text_target.document_operations==prior->text_target.document_operations &&
                 same_ancestry(s,n->raw_parent,b->snapshot,prior->raw_parent);
         }
         if(same && ((n->state&NX_SEM_SELECTION_MULTIPLE) || n->owner_multiple ||
@@ -800,6 +802,9 @@ static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ra
     if(!b || !n || b->retired || !b->lease->live || !n->text_ready || n->text_snapshot_only ||
        (n->state&(NX_SEM_DISABLED|NX_SEM_PROTECTED)) ||
        (!selection && ((n->state&NX_SEM_READONLY) || !(n->actions&NX_ACTION_SET_VALUE))))return 0;
+    if(n->text_target.document_operations &&
+       (clipboard || !(n->text_target.document_operations &
+            (selection?NX_TEXT_DOCUMENT_SELECT:NX_TEXT_DOCUMENT_REPLACE))))return 0;
     if(length>NX_TEXT_VALUE_MAX_BYTES || nx_utf8_validate(value,length,NULL)!=NX_OK)return 0;
     size_t bytes=sizeof(nx_ax_text_request)+length+1u;
     if(!queue_space(b,bytes,0))return 0;
@@ -1065,7 +1070,7 @@ static int nx_ax_accessible_call(nx_ax_ref r,DBusMessage *call,const char *membe
     if (!strcmp(member,"GetAttributes")) {
         DBusMessageIter a,entry; nx_ax_node *n=nx_ax_node_at(r);
         int ok=d.message_iter_open_container(it,DBUS_TYPE_ARRAY,"{ss}",&a);
-        if (n && n->value[0] && !(n->state&NX_SEM_PROTECTED))
+        if (n && n->value[0] && !(n->state&NX_SEM_PROTECTED) && !n->text_target.document_operations)
             ok=ok && d.message_iter_open_container(&a,DBUS_TYPE_DICT_ENTRY,NULL,&entry) &&
                 nx_ax_string(&entry,"nexaui-value") && nx_ax_string(&entry,n->value) &&
                 d.message_iter_close_container(&a,&entry);
@@ -1765,7 +1770,8 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         if (strcmp(a->name,n->name)) nx_ax_event(r,"PropertyChange","accessible-name",0,0,n->name,NULL);
         if (strcmp(a->description,n->description)) nx_ax_event(r,"PropertyChange","accessible-description",0,0,n->description,NULL);
         nx_ax_text_delta(r,a,n);
-        if (strcmp(a->value,n->value)) nx_ax_event(r,"AttributesChanged","nexaui-value",0,0,n->value,NULL);
+        if (!n->text_target.document_operations && strcmp(a->value,n->value))
+            nx_ax_event(r,"AttributesChanged","nexaui-value",0,0,n->value,NULL);
         if (a->bounds.x!=n->bounds.x || a->bounds.y!=n->bounds.y ||
             a->bounds.width!=n->bounds.width || a->bounds.height!=n->bounds.height) nx_ax_bounds_event(r);
         uint64_t after=nx_ax_states(r);

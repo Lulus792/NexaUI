@@ -28,7 +28,9 @@ int nx_linux_window_clipboard_async_supported(nx_window *window);
 typedef struct nx_text_value_target {
     uint64_t identity, revision;
     int multiline;
+    uint32_t document_operations; /* Zero for built-ins; domain + app policy. */
 } nx_text_value_target;
+#define NX_TEXT_DOCUMENT_BOUND (UINT32_C(1) << 31)
 
 /* Saturating counter for changes to text or selection. */
 uint64_t nx_text_buffer_change_serial(const nx_text_buffer *buffer);

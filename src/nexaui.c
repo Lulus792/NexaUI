@@ -477,6 +477,7 @@ static nx_result nx_text_model_create(nx_text_value_target *target) {
     target->identity = 0; /* No native identity on unsupported window backends. */
 #endif
     target->revision = 1;
+    target->document_operations = 0;
     return NX_OK;
 }
 
@@ -1827,7 +1828,7 @@ static nx_result nx_semantics_add_readonly_text_snapshot_impl(nx_context *ctx,
     nx_result result = nx_semantics_add_impl(ctx, desc, &index, 0);
     if (result != NX_OK) return result;
     nx_semantic_record *node = &ctx->semantics.nodes[index];
-    node->text_value = (nx_text_value_target){identity, 0, 1};
+    node->text_value = (nx_text_value_target){identity, 0, 1, 0};
     node->text_selection = (nx_text_selection_snapshot){anchor, cursor, has_caret};
     node->text_snapshot_only = 1;
     if (out_index) *out_index = index;
@@ -2505,6 +2506,9 @@ static nx_result nx_text_value_admit(nx_context *ctx, uint64_t id,
         return NX_ERROR_STATE;
     if (node->role != NX_ROLE_TEXT_FIELD || !node->text_value.identity ||
         (ranged!=2 && ranged!=3 && !(node->actions & NX_ACTION_SET_VALUE))) return NX_ERROR_UNSUPPORTED;
+    if (node->text_value.document_operations &&
+        (ranged>2 || !(node->text_value.document_operations &
+            (ranged==2?NX_TEXT_DOCUMENT_SELECT:NX_TEXT_DOCUMENT_REPLACE)))) return NX_ERROR_UNSUPPORTED;
     if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
         (ctx->current_overlay_id && region->overlay_id != ctx->current_overlay_id))
         return NX_ERROR_STATE;
@@ -2589,6 +2593,7 @@ static int nx_text_request_current(nx_context *ctx,nx_text_value_request *r,nx_t
 #endif
     return target && target->identity==r->target.identity && target->revision==r->target.revision &&
         target->multiline==r->target.multiline &&
+        target->document_operations==r->target.document_operations &&
         (!r->guard.current || r->guard.current(r->guard.user,r->guard.token,identity,r->id,*target));
 }
 
@@ -2634,6 +2639,7 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
             r->target.identity == node->text_value.identity &&
             r->target.revision == node->text_value.revision &&
             r->target.multiline == node->text_value.multiline &&
+            r->target.document_operations == node->text_value.document_operations &&
             !nx_text_value_disabled(ctx, node) && !(node->state & NX_SEM_PROTECTED) &&
             (r->ranged==2 || r->ranged==3 || (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE))) && region &&
             !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
@@ -2838,6 +2844,146 @@ static nx_result nx_text_value_apply(nx_context *ctx, nx_semantic_record *node,
         nx_text_value_dispose(ctx, r, 1);
         *changed = different;
         return NX_OK;
+    }
+    return NX_OK;
+}
+
+static nx_result nx_text_document_state_valid(const nx_text_document_state *state) {
+    if (!state || !state->identity || !state->revision ||
+        (state->operations & ~(NX_TEXT_DOCUMENT_REPLACE | NX_TEXT_DOCUMENT_SELECT)) ||
+        (state->multiline != 0 && state->multiline != 1)) return NX_ERROR_ARGUMENT;
+    if (state->value.length > NX_TEXT_DOCUMENT_MAX_BYTES) return NX_ERROR_LIMIT;
+    if (!nx_valid_span(state->value) || state->anchor_byte > state->value.length ||
+        state->cursor_byte > state->value.length ||
+        (state->anchor_byte < state->value.length &&
+            ((unsigned char)state->value.data[state->anchor_byte] & 0xc0u) == 0x80u) ||
+        (state->cursor_byte < state->value.length &&
+            ((unsigned char)state->value.data[state->cursor_byte] & 0xc0u) == 0x80u) ||
+        (!state->multiline && state->value.length &&
+            (memchr(state->value.data, '\r', state->value.length) ||
+             memchr(state->value.data, '\n', state->value.length)))) return NX_ERROR_ARGUMENT;
+    return NX_OK;
+}
+
+static int nx_text_document_request_valid(nx_context *ctx, nx_semantic_record *node,
+                                            nx_text_value_request *request) {
+    const nx_region *region = nx_region_find(&ctx->current_regions, node->id);
+    return request->id == node->id && request->source_frame != UINT64_MAX &&
+        request->source_frame + 1u == ctx->frame_serial &&
+        request->parent_id == node->parent_id &&
+        nx_ancestry_live(ctx, node, request->ancestors, request->ancestor_count) &&
+        nx_text_request_current(ctx, request, &node->text_value) &&
+        request->ranged <= 2 && !nx_text_value_disabled(ctx, node) &&
+        !(node->state & NX_SEM_PROTECTED) && region &&
+        !(region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) &&
+        (!ctx->current_overlay_id || region->overlay_id == ctx->current_overlay_id) &&
+        (node->text_value.document_operations &
+            (request->ranged == 2 ? NX_TEXT_DOCUMENT_SELECT : NX_TEXT_DOCUMENT_REPLACE)) &&
+        (request->ranged == 2 ||
+            (!(node->state & NX_SEM_READONLY) && (node->actions & NX_ACTION_SET_VALUE)));
+}
+
+nx_result nx_text_document_register(nx_context *ctx, const nx_widget_desc *widget,
+    const nx_text_document_state *state, nx_text_document_apply apply, void *user,
+    nx_text_document_result *out_result) {
+    if (!out_result) return NX_ERROR_ARGUMENT;
+    *out_result = (nx_text_document_result){0};
+    nx_result checked = nx_text_document_state_valid(state);
+    if (checked != NX_OK) return checked;
+    if (!ctx || !widget || widget->semantic.role != NX_ROLE_TEXT_FIELD ||
+        widget->semantic.value.length || (widget->semantic.state & NX_SEM_PROTECTED) ||
+        ((widget->semantic.state & NX_SEM_READONLY) != 0) ==
+            ((state->operations & NX_TEXT_DOCUMENT_REPLACE) != 0) ||
+        ((widget->semantic.actions & NX_ACTION_SET_VALUE) != 0) !=
+            ((state->operations & NX_TEXT_DOCUMENT_REPLACE) != 0) ||
+        (state->operations && (!apply || !(widget->flags & NX_WIDGET_INTERACTIVE))))
+        return NX_ERROR_ARGUMENT;
+    nx_widget_desc copied = *widget;
+    copied.semantic.value = state->value;
+    size_t old_text_count = ctx->semantics.text_count;
+    nx_result result = nx_widget_register(ctx, &copied, &out_result->interaction);
+    if (result != NX_OK) return result;
+    size_t index = ctx->semantics.count - 1u;
+    nx_semantic_record *node = &ctx->semantics.nodes[index];
+    node->text_value = (nx_text_value_target){state->identity, state->revision,
+        state->multiline, NX_TEXT_DOCUMENT_BOUND | state->operations};
+    node->text_selection = (nx_text_selection_snapshot){state->anchor_byte, state->cursor_byte, 1};
+    for (size_t i = 0; i < ctx->text_value_count; ++i) {
+        nx_text_value_request *request = &ctx->text_values[i];
+        if (request->id != node->id) continue;
+        if (!apply || !nx_text_document_request_valid(ctx, node, request)) {
+            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+        }
+        size_t begin = request->ranged ? request->start : 0;
+        size_t end = request->ranged ? request->end : state->value.length;
+        if (begin > end || end > state->value.length) {
+            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+        }
+        int selection = request->ranged == 2;
+        size_t new_length = state->value.length;
+        if (!selection) {
+            new_length -= end - begin;
+            if (request->length > NX_TEXT_DOCUMENT_MAX_BYTES - new_length) {
+                out_result->edit_result = NX_ERROR_LIMIT;
+                nx_text_value_dispose(ctx, request, 0); return NX_OK;
+            }
+            new_length += request->length;
+        }
+        /* The value is the last copied span. Reuse its old allocation rather
+           than retaining another full-document copy for an accepted edit. */
+        size_t extra = new_length > state->value.length ? new_length - state->value.length : 0;
+        if (new_length && !state->value.length) ++extra;
+        uint64_t frame = ctx->frame_serial;
+        result = extra ? nx_semantic_reserve_text(ctx, extra) : NX_OK;
+        if (ctx->state != 1u || ctx->frame_serial != frame || ctx->semantics.count != index + 1u ||
+            ctx->semantics.nodes[index].id != widget->semantic.id) return NX_ERROR_STATE;
+        node = &ctx->semantics.nodes[index];
+        if (result != NX_OK) {
+            if (widget->flags & NX_WIDGET_INTERACTIVE) nx_region_rollback_last(ctx, node->id);
+            nx_semantics_rollback_last(ctx, node->id, old_text_count);
+            return result;
+        }
+        if (!nx_text_document_request_valid(ctx, node, request)) {
+            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+        }
+        nx_text_document_request operation = {
+            selection ? NX_TEXT_DOCUMENT_SET_SELECTION : NX_TEXT_DOCUMENT_REPLACE_RANGE,
+            request->target.identity, request->target.revision, begin, end,
+            {request->bytes, request->length}};
+        nx_text_document_state next = {0};
+        out_result->edit_result = apply(user, &operation, &next);
+        if (out_result->edit_result != NX_OK) {
+            nx_text_value_dispose(ctx, request, 0); return NX_OK;
+        }
+        const char *before = node->value_length ? ctx->semantics.text + node->value_offset : "";
+        int valid = nx_text_document_state_valid(&next) == NX_OK &&
+            next.identity == state->identity && next.revision > state->revision &&
+            next.operations == state->operations && next.multiline == state->multiline &&
+            next.value.length == new_length;
+        if (valid && selection) {
+            valid = next.anchor_byte == begin && next.cursor_byte == end &&
+                (!new_length || memcmp(next.value.data, before, new_length) == 0);
+        } else if (valid) {
+            valid = (!begin || memcmp(next.value.data, before, begin) == 0) &&
+                (!request->length || memcmp(next.value.data + begin, request->bytes, request->length) == 0) &&
+                (end == state->value.length || memcmp(next.value.data + begin + request->length,
+                    before + end, state->value.length - end) == 0);
+        }
+        if (!valid) {
+            nx_text_value_dispose(ctx, request, 0); return NX_ERROR_STATE;
+        }
+        size_t offset = node->value_length ? node->value_offset : ctx->semantics.text_count;
+        if (new_length) {
+            memmove(ctx->semantics.text + offset, next.value.data, new_length);
+            ctx->semantics.text[offset + new_length] = 0;
+        }
+        ctx->semantics.text_count = new_length ? offset + new_length + 1u : offset;
+        node->value_offset = new_length ? offset : 0;
+        node->value_length = new_length;
+        node->text_value.revision = next.revision;
+        node->text_selection = (nx_text_selection_snapshot){next.anchor_byte, next.cursor_byte, 1};
+        out_result->applied = 1;
+        nx_text_value_dispose(ctx, request, 1); return NX_OK;
     }
     return NX_OK;
 }

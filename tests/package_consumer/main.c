@@ -113,6 +113,16 @@ int main(int argc, char **argv) {
     nx_context *context = 0;
     nx_layout *layout = 0;
     if (nx_context_create(0, &context) != NX_OK) return 1;
+    nx_text_document_result document_result={0};
+    if(nx_text_document_register(NULL,NULL,NULL,NULL,NULL,&document_result)!=NX_ERROR_ARGUMENT || document_result.applied)
+        return 32;
+    nx_widget_desc document_widget={0};document_widget.semantic.id=9001;
+    document_widget.semantic.role=NX_ROLE_TEXT_FIELD;document_widget.semantic.bounds=(nx_rect){0,0,8,8};
+    document_widget.semantic.name=(nx_utf8_span){"External document",17};document_widget.semantic.state=NX_SEM_READONLY;
+    nx_text_document_state document_state={{"external",8},11,1,0,8,0,1};
+    if(nx_begin_frame(context,8,8,0)!=NX_OK ||
+       nx_text_document_register(context,&document_widget,&document_state,NULL,NULL,&document_result)!=NX_OK ||
+       nx_end_frame(context)!=NX_OK)return 32;
     nx_cell_view sample_cell={.foreground={1,1,1,1},.background={0,0,0,1},.span=1};
     nx_cell_grid_desc grid={.bounds={0,0,8,8},.cell_width=8,.cell_height=8,.baseline=6,
         .pixels_per_em=8,.cells=&sample_cell,.rows=1,.columns=1,.row_stride=1,.cell_capacity=1,

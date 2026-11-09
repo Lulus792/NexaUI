@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.24)
+project(NexaUIInstalledTextDocument LANGUAGES C)
+find_package(NexaUI 0.1.28 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+set(NEXAUI_TEST_ATSPI_PREFIX "" CACHE PATH "Reviewed extracted OS AT-SPI development/runtime prefix; optional test-only relocation")
+if(NOT NEXAUI_TEST_ATSPI_PREFIX)
+    pkg_check_modules(AT_SPI REQUIRED IMPORTED_TARGET atspi-2)
+endif()
+add_executable(document_host ../atspi_text_document_host.c)
+target_link_libraries(document_host PRIVATE NexaUI::NexaUI)
+add_executable(document_client ../atspi_text_document_client.c)
+if(NEXAUI_TEST_ATSPI_PREFIX)
+    target_include_directories(document_client PRIVATE
+        "${NEXAUI_TEST_ATSPI_PREFIX}/include/at-spi-2.0"
+        "${NEXAUI_TEST_ATSPI_PREFIX}/include/glib-2.0"
+        "${NEXAUI_TEST_ATSPI_PREFIX}/lib64/glib-2.0/include"
+        "${NEXAUI_TEST_ATSPI_PREFIX}/include/dbus-1.0"
+        "${NEXAUI_TEST_ATSPI_PREFIX}/lib64/dbus-1.0/include")
+    foreach(name atspi gobject-2.0 glib-2.0 dbus-1)
+        find_library(document_${name} NAMES ${name} PATHS "${NEXAUI_TEST_ATSPI_PREFIX}/lib64" NO_DEFAULT_PATH)
+        if(NOT document_${name})
+            find_file(document_${name} NAMES lib${name}.so.0 lib${name}.so.3
+                PATHS "${NEXAUI_TEST_ATSPI_PREFIX}/lib64" /usr/lib64 /usr/lib NO_DEFAULT_PATH REQUIRED)
+        endif()
+        target_link_libraries(document_client PRIVATE "${document_${name}}")
+    endforeach()
+else()
+    target_link_libraries(document_client PRIVATE PkgConfig::AT_SPI)
+endif()
+foreach(target document_host document_client)
+    set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endforeach()

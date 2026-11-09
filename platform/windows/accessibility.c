@@ -263,7 +263,8 @@ static int value_guard_current(void *user,uint64_t token,uint64_t context_id,
     int okay=b->hwnd && b->enabled && b->context_identity==context_id &&
         b->value_generation!=UINT64_MAX && b->value_generation==token && editable_value(n) &&
         !(n->state&NX_SEM_DISABLED) && n->text_value.identity==target.identity &&
-        n->text_value.revision==target.revision && n->text_value.multiline==target.multiline;
+        n->text_value.revision==target.revision && n->text_value.multiline==target.multiline &&
+        n->text_value.document_operations==target.document_operations;
     ReleaseSRWLockShared(&b->lock);return okay;
 }
 static int multi_request_live(nx_uia_bridge *b,const nx_uia_request *r) {
@@ -869,6 +870,7 @@ nx_result nx_uia_publish(nx_uia_bridge *b,const nx_context *context) {
         uint32_t old=b->context_identity==nx_context_identity(context) ? find(b->snapshot,v.id) : NX_UIA_NONE;
         if (old!=NX_UIA_NONE && b->snapshot->nodes[old].role==v.role &&
             b->snapshot->nodes[old].text_value.identity==n->text_value.identity &&
+            b->snapshot->nodes[old].text_value.document_operations==n->text_value.document_operations &&
             b->snapshot->nodes[old].selection_target.identity==n->selection_target.identity &&
             b->snapshot->nodes[old].selection_membership==n->selection_membership &&
             (!n->selection_target.identity||selection_ancestry_same(b->snapshot,b->snapshot->nodes[old].parent,s,n->parent)))
@@ -991,7 +993,8 @@ static int value_request_current(nx_uia_bridge *b,const nx_uia_request *r,nx_con
     return n->incarnation==r->incarnation && editable_value(n) && !(n->state&NX_SEM_DISABLED) &&
         b->value_generation!=UINT64_MAX && r->value_generation==b->value_generation &&
         r->text_value.identity==n->text_value.identity && r->text_value.revision==n->text_value.revision &&
-        r->text_value.multiline==n->text_value.multiline;
+        r->text_value.multiline==n->text_value.multiline &&
+        r->text_value.document_operations==n->text_value.document_operations;
 }
 static nx_result route_requests(nx_uia_bridge *b,nx_context *context,size_t *count) {
     *count=0; if (!b) return NX_OK;

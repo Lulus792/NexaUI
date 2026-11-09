@@ -12,6 +12,62 @@ After `nx_end_frame`, `nx_semantics_count`, `nx_semantics_get` and `nx_semantics
 
 The context queue has 64 entries. A duplicate ID/action or a full queue returns `NX_ERROR_LIMIT` without accepting another request. Context calls, including this function, belong to the context owner thread. There is no arbitrary worker-thread access to a context, and accepting a request does not mean the application has completed its action. Increment/decrement, editing, expansion and text-range actions remain separate work.
 
+## Application-owned document text
+
+Since 0.1.28, `nx_text_document_register` binds an existing application document
+to a text-field semantic node without creating an `nx_text_buffer` or replacing
+the application's editing, history or file model. Register it during a frame,
+then finish and publish that frame through the ordinary window bridge.
+
+Supply a stable widget ID and `NX_ROLE_TEXT_FIELD`, an empty semantic value, and
+an `nx_text_document_state`. The state contains UTF-8 bytes (at most 8 MiB), a
+never-reused nonzero document identity, a nonzero revision, scalar-boundary byte
+anchor/cursor offsets and explicit REPLACE/SELECT capabilities. READONLY and
+SET_VALUE must agree with REPLACE. A read-only document can still permit caret
+and selection changes; zero operations publishes queries only. Protected text
+is unsupported by this entry. Advance the revision on edits, selection,
+cancellation and policy changes, including accepted no-ops; never wrap it.
+
+The SDK copies the input text before invoking an optional application callback.
+The callback runs only during registration, on the context owner thread, for at
+most one request admitted against the preceding frame. It receives the original
+identity/revision, a byte range and a bounded replacement span, or a selection
+operation. Revalidate the application's complete original input token before
+performing one atomic model operation. Do not reenter NexaUI from the callback.
+Failure must preserve the model; success returns its truthful updated state
+with the same identity/policy and a strictly newer revision. Keep returned text
+valid until registration returns. No model pointer, callback or callback user
+is retained in a native snapshot.
+
+The SDK reserves space for the expected copied result before calling the model
+and rechecks native lifetime, ancestry, disabled state and modal scope. A stale,
+omitted or revoked request cannot call the model later. Callback errors appear
+in `out_result.edit_result`, with `applied == 0`, while registration succeeds so
+the unchanged UI can still render. A callback returning an inconsistent state
+causes `NX_ERROR_STATE`; the SDK cannot roll back an application that violates
+the callback contract. Successful registration updates this frame's copied text
+and selection. Bridges with deferred completion acknowledge the actual operation;
+Windows UIA retains its separately documented admission-based setter contract.
+
+Linux AT-SPI exposes scalar-offset Text queries and permitted EditableText
+replace operations through the existing native bridge. Replacement payloads are
+still limited to 64 KiB. The document snapshot can be 8 MiB, but each native Text
+reply is limited to 1 MiB: use explicit ranges for larger reads; oversized replies
+fail instead of silently truncating. The document is not duplicated into the
+custom `nexaui-value` attribute. Native clipboard operations, text geometry and
+attributes are not provided by this entry. Windows Text/TextRange coverage,
+screenreader acceptance and original Aetheri Editor adoption remain separate
+work. This API does not draw text or implement ordinary keyboard/IME handling.
+
+The portable [contract test](../../tests/test_text_document.c) covers copied
+snapshots, atomic callback errors, stale/policy/ancestry and allocation guards.
+The independent [AT-SPI peer](../../tests/atspi_text_document_client.c) links only
+the OS reader stack and checks actual application state, deferred replies,
+Unicode edits, rejected operations, full 8-MiB ranged reads/deletion and detach.
+An [installed-package fixture](../../tests/text_document_consumer/CMakeLists.txt)
+builds the host and reader outside the SDK build tree. Its optional reviewed
+AT-SPI development-prefix relocation affects only the reader test.
+
 ## Explicit single-selection groups
 
 `nx_selection_group(ui, &semantic_desc, required, &selected_id)` registers a named GROUP, LIST, TREE or TAB_LIST container. It applies queued selection requests to the caller-owned widget ID, then the application builds SELECT-capable descendants using that ID. Ordinary semantic registration cannot set the derived `NX_SEM_SELECTION_SINGLE` or `NX_SEM_SELECTION_REQUIRED` flags. The model pointer is never retained. If layout depends on selection, call `nx_selection_apply(ui, group_id, required, &selected_id)` before calculating layout; requests are consumed once, and later group registration preserves that result.

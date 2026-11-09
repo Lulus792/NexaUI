@@ -145,7 +145,8 @@ static int member(nx_ax_node *n) {
 static int row_role(nx_semantic_role role) { return role==NX_ROLE_ROW || role==NX_ROLE_LIST_ITEM || role==NX_ROLE_TREE_ITEM; }
 static int target_equal(nx_selection_target a,nx_selection_target b) { return a.identity==b.identity && a.revision==b.revision; }
 static int text_target_equal(nx_text_value_target a,nx_text_value_target b) {
-    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline;
+    return a.identity==b.identity && a.revision==b.revision && a.multiline==b.multiline &&
+        a.document_operations==b.document_operations;
 }
 static void lease_retain(nx_ax_multi_lease *l) { atomic_fetch_add_explicit(&l->references,1,memory_order_relaxed); }
 static void lease_release(nx_ax_multi_lease *l) {
@@ -857,6 +858,7 @@ static int hidden(NXMacAXBridge *b,nx_ax_node *n) {
         if(same && (n->text_target.identity || snapshot->nodes[old].text_target.identity)) {
             nx_ax_node *prior=&snapshot->nodes[old];
             same=n->text_target.identity && n->text_target.identity==prior->text_target.identity &&
+                n->text_target.document_operations==prior->text_target.document_operations &&
                 !((n->state^prior->state)&NX_SEM_PROTECTED) &&
                 same_ancestry(s,n->parent,snapshot,prior->parent);
         }
