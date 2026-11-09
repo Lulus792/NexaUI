@@ -25,6 +25,50 @@ The [compatibility report](../../docs/quality/settings-model-compatibility-repor
 records exact current/legacy sources, sanitizer checks, compiled counterexamples
 and the separate remaining Sound/native service integration.
 
+## Optional original Settings/Sound presentation
+
+`-DNEXAUI_MODEL_BUILD_ORIGINAL_VIEW=ON` compiles the supplied Aetheri
+`src/settings/nexaui_view.c` directly, using the same original model and an
+installed NexaUI 0.1.31 or newer. It adds `aetheri_original_view`,
+`aetheri_original_view_test` (the unchanged original `tests/test_settings_view.c`)
+and `aetheri_original_sound_test`. On Linux it also builds
+`aetheri_original_settings` directly from the original `nexaui_main.c`; that file
+already supplies the executable entry point. The existing example targets and
+the default OFF behavior remain available.
+
+In addition to the complete current model export listed above, supply
+`src/settings/nexaui_view.c`, `nexaui_view.h`, `nexaui_main.c`, `nexaui_main.h`
+and `tests/test_settings_view.c` from the same immutable Aetheri revision.
+Retain its `LICENSE`, `src/settings/NEXAUI-NOTICE.txt` and the text module's
+`UNICODE-LICENSE.txt` with the export. No original application files or fonts
+are bundled here. For example:
+
+```sh
+cmake -S examples/21_aetheri_model -B build-original-settings \
+  -DCMAKE_PREFIX_PATH=/path/to/nexaui-install \
+  -DAETHERI_SOURCE_DIR=/path/to/aetheri-snapshot \
+  -DNEXAUI_MODEL_BUILD_ORIGINAL_VIEW=ON
+cmake --build build-original-settings
+timeout 30 build-original-settings/aetheri_original_view_test /path/to/font.ttf 1
+timeout 30 build-original-settings/aetheri_original_view_test /path/to/font.ttf 2
+timeout 30 build-original-settings/aetheri_original_sound_test /path/to/font.ttf
+build-original-settings/aetheri_original_settings --font /path/to/font.ttf
+```
+
+The original view supplies Displays, Appearance, Language and Sound, its own
+chrome, keyboard focus, text scaling and semantics. Its original host supplies
+Wayland observations, software presentation, native action routing and normal
+close/signal teardown. The new Sound test covers all 64 admitted output rows,
+a 511-byte accessible description, keyboard default-output intent, replacement,
+reordering, once-only dispatch, independently supplied observation and permanent
+loss fencing. These observations are deterministic test inputs, not audio-device
+effects. The ordinary executable does not enable `AETHERI_SETTINGS_AUDIO_HOST`;
+Sound reports unavailable until a separately admitted original audio owner is
+integrated. No GLib/PipeWire dependency or new service admission is added to
+the SDK. The view has no editable text field and therefore supplies no IME task.
+Physical input, screenreader speech, canonical-font/design acceptance and normal
+Aetheri adoption remain separate gates.
+
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:
 

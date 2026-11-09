@@ -82,6 +82,16 @@ Set `NEXAUI_SETTINGS_AX_NEGATIVE=1` to additionally require rejection of an
 unfocused control as the current focus. This queries AT-SPI state, not spoken
 screenreader announcements or native focus event ordering.
 
+For a newer original Sound-capable view, `NEXAUI_SETTINGS_SOUND_PAGE=1` extends
+the keyboard task to the localized Sound navigation button before Escape. It
+also extends the independent action client to open Sound, observe its localized
+unavailable-audio label and verify the original model reports page 3 before
+closing. Leave it unset for older snapshots. These peers can exercise the
+optional original-view targets in `examples/21_aetheri_model`; the historical
+0.1.19 candidate build above retains its own exact SDK/source scope. An ordinary
+host with no admitted audio owner is expected to show unavailable audio. This
+does not test service admission or device effects.
+
 When Linux AT-SPI development files are present, the build also provides an
 independent `aetheri_settings_candidate_client` and the unchanged Aetheri
 `aetheri_settings_candidate_native` process. With the existing private Weston

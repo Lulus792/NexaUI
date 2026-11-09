@@ -57,13 +57,13 @@ static int press(AtspiAccessible *app,const char *name,int radio) {
     g_object_unref(node);return okay;
 }
 int main(int argc,char **argv) {
-    int okay=0;pid_t child=-1;AtspiAccessible *desktop=NULL,*app=NULL;FILE *log=NULL;
+    int okay=0,initialized=0;pid_t child=-1;AtspiAccessible *desktop=NULL,*app=NULL;FILE *log=NULL;
     const char *font=getenv("NEXAUI_AETHERI_SETTINGS_FONT");
     CHECK(argc==2 && font && *font && (log=tmpfile()));child=fork();CHECK(child>=0);
     if(!child){if(dup2(fileno(log),STDOUT_FILENO)<0)_exit(126);
         if(getenv("NEXAUI_SETTINGS_DISABLE_AX") && setenv("NO_AT_BRIDGE","1",1))_exit(126);
         execl(argv[1],argv[1],"--font",font,"--fixture-displays","--diagnostics",(char *)NULL);_exit(127);}
-    CHECK(atspi_init()==0);atspi_set_timeout(1000,1000);
+    CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);
     desktop=atspi_get_desktop(0);CHECK(desktop);
     for(unsigned i=0;i<500 && !app;++i){app=app_for_pid(desktop,child);if(!app)pump();}
     if(getenv("NEXAUI_SETTINGS_DISABLE_AX")) {
@@ -76,18 +76,36 @@ int main(int argc,char **argv) {
         child=-1;okay=1;puts("Disabled AT-SPI: rendered unchanged model remained undiscoverable");goto done;
     }
     CHECK(app && press(app,"Appearance",0) && press(app,"High contrast",1) && press(app,"200 %",1));
-    CHECK(press(app,"Language",0) && press(app,"German",1) && press(app,"Schließen",0));
+    CHECK(press(app,"Language",0) && press(app,"German",1));
+    if(getenv("NEXAUI_SETTINGS_SOUND_PAGE")) {
+        CHECK(press(app,"Ton",0));
+        AtspiAccessible *unavailable=NULL;
+        for(unsigned i=0;i<300 && !unavailable;++i) {
+            unavailable=find(app,"Audio ist in dieser Sitzung nicht verfügbar.",0);
+            if(!unavailable)pump();
+        }
+        CHECK(unavailable);
+        GError *error=NULL;
+        AtspiRole role=atspi_accessible_get_role(unavailable,&error);
+        int named_text=!error && role==ATSPI_ROLE_LABEL;
+        if(error)g_error_free(error);
+        g_object_unref(unavailable);CHECK(named_text);
+    }
+    CHECK(press(app,"Schließen",0));
     int status=0;pid_t waited=0;
     for(unsigned i=0;i<500 && !waited;++i){waited=waitpid(child,&status,WNOHANG);if(!waited)pump();}
     CHECK(waited==child && WIFEXITED(status) && WEXITSTATUS(status)==0);child=-1;
     char output[65536];CHECK(!fseek(log,0,SEEK_SET));size_t used=fread(output,1,sizeof(output)-1,log);
     output[used]=0;CHECK(strstr(output,"MODEL theme=2 german=1 text=200") && strstr(output,"FRAME "));
+    if(getenv("NEXAUI_SETTINGS_SOUND_PAGE"))
+        CHECK(strstr(output,"MODEL theme=2 german=1 text=200 page=3"));
     okay=1;
 done:
     if(child>0){kill(child,SIGKILL);waitpid(child,NULL,0);}
     if(app)g_object_unref(app);
     if(desktop)g_object_unref(desktop);
     if(log)fclose(log);
+    if(initialized)atspi_exit();
     if(okay && !getenv("NEXAUI_SETTINGS_DISABLE_AX"))
         puts("Aetheri-owned Settings: independent AT-SPI model changes and close passed");
     return okay?0:1;

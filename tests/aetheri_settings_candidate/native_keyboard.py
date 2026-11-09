@@ -103,6 +103,14 @@ def main():
         send('space')
         wait(lambda: observed['model'] == (2, 1, 200, 2), 'German')
         observe('Deutsch', 'radio', 'checked')
+        if env.get('NEXAUI_SETTINGS_SOUND_PAGE'):
+            focus(53)
+            observe('Ton', 'button')
+            send('space')
+            wait(lambda: observed['model'] == (2, 1, 200, 3), 'Sound')
+            observe('Ton', 'button')
+            print('Original Sound page reached by native keyboard; localized AT-SPI focus observed' if
+                  env.get('NEXAUI_SETTINGS_AX_PROBE') else 'Original Sound page reached by native keyboard')
         subprocess.run([xdotool, 'key', 'Escape'], check=True, timeout=5, env=env)
         if process.wait(timeout=8) != 0:
             raise RuntimeError(f'Settings process failed: {lines[-30:]}')
