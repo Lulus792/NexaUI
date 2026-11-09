@@ -50,7 +50,16 @@ static bool editor_ime_read(struct app *a) {
     nx_result result=nx_window_get_ime_preedit_for(a->window,a->ime.batch.target,a->ime.batch.revision,NULL,0,&length,&anchor,&cursor);
     if(result==NX_ERROR_STATE) {editor_ime_cancel(a);return !a->ime.failed;}
     if(result!=NX_OK)return false;
-    if(length)cancel_paste(a);
+    if(length) {
+        cancel_paste(a);
+#ifdef EDITOR_DOCUMENT_WITH_CLIPBOARD
+        /* Starting/updating composition retires an older assistive paste too.
+           The original model token need not change for an uncommitted preedit;
+           its separately published input revision must never be reused. */
+        if(a->native_document.serial==UINT64_MAX)return false;
+        ++a->native_document.serial;
+#endif
+    }
     if(length>=sizeof(a->ime.preedit)) {
         a->ime.length=0;editor_ime_notice(a,false,true);return true;
     }

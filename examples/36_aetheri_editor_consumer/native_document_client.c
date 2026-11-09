@@ -50,7 +50,26 @@ int main(int argc,char **argv) {
     CHECK(app);field=find(app,"Edit document",0);if(!field)field=find(app,"Dokument bearbeiten",0);CHECK(field);
     text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text);
     CHECK(cache_probe(field,0,64u*1024u));
-    if(!strcmp(argv[2],"expect")) {CHECK(argc==4 && expected_file(text,argv[3]));}
+    if(!strcmp(argv[2],"clipboard-seed")) {
+        CHECK(edit && atspi_editable_text_set_text_contents(edit,"A\xc3\xa9\xf0\x9f\x8c\x8d\r\nline",&e) && !e);
+        CHECK(atspi_text_set_caret_offset(text,0,&e) && !e);
+    } else if(!strcmp(argv[2],"clipboard-copy")) {
+        CHECK(edit);(void)atspi_editable_text_copy_text(edit,1,3,&e);CHECK(!e);
+        CHECK(expected_text(text,"A\xc3\xa9\xf0\x9f\x8c\x8d\r\nline"));
+    } else if(!strcmp(argv[2],"clipboard-cut")) {
+        CHECK(edit && atspi_editable_text_cut_text(edit,1,3,&e) && !e);
+        CHECK(expected_text(text,"A\r\nline"));
+    } else if(!strcmp(argv[2],"clipboard-paste") || !strcmp(argv[2],"clipboard-paste-refused") || !strcmp(argv[2],"clipboard-paste-cancelled")) {
+        CHECK(argc==4 && edit);puts("READY");fflush(stdout);
+        gboolean accepted=atspi_editable_text_paste_text(edit,1,&e);
+        if(!strcmp(argv[2],"clipboard-paste"))CHECK(accepted && !e);
+        else {CHECK(!accepted);g_clear_error(&e);}
+        if(strcmp(argv[2],"clipboard-paste-cancelled"))CHECK(expected_file(text,argv[3]));
+        else {
+            reply_text=atspi_text_get_text(text,0,-1,&e);CHECK(e);
+            g_clear_error(&e);g_free(reply_text);reply_text=NULL;
+        }
+    } else if(!strcmp(argv[2],"expect")) {CHECK(argc==4 && expected_file(text,argv[3]));}
     else if(!strcmp(argv[2],"readonly")) {
         CHECK(argc==4 && !edit && expected_file(text,argv[3]));
         CHECK(!atspi_text_set_caret_offset(text,0,&e));g_clear_error(&e);

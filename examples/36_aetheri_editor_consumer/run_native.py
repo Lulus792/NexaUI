@@ -8,7 +8,9 @@ def main():
         p.add_argument('--'+name.replace('_','-'),type=Path,required=True)
     p.add_argument('--ime',action='store_true',help='Enable the private native v3 producer and test the document IME variant')
     p.add_argument('--accessible-client',type=Path,help='Independent OS reader for the optional native document owner')
+    p.add_argument('--clipboard-tools',type=Path,help='Checked independent wl-copy/wl-paste runtime; requires the native clipboard owner and accessible client')
     args=p.parse_args();here=Path(__file__).resolve().parent;original=args.original.resolve(strict=True)
+    if args.clipboard_tools and not args.accessible_client:p.error('--clipboard-tools requires --accessible-client')
     subprocess.run([sys.executable,str(here/'../35_aetheri_files_consumer/check_source.py'),str(original),str(here/'source-inputs.json')],check=True)
     receipt=json.loads(args.sdk_receipt.read_text());binding=json.loads(args.sdk_source_binding.read_text())
     if receipt['sdk_version'] not in ('0.1.27','0.1.28','0.1.29') or not re.fullmatch('[0-9a-f]{40}',binding['source_revision']):raise SystemExit('Wrong SDK receipt/source binding')
@@ -47,7 +49,18 @@ def main():
         replace("            capture(name+' selected document')", "            capture(name+' selected document')\n            ax_style(name)")
         replace("remaining='native editable accessibility, external IME, asynchronous I/O, normal app/session admission'",
             "remaining='broader native document interfaces, delayed clipboard/IME, external IME, human/physical/performance and normal app/session admission'")
-        native_flow=accessible_flow.read_text()+native_flow
+        accessible_source=accessible_flow.read_text()
+        clipboard_flow=here/'native_clipboard_flow.py.inc'
+        marker='        # Native clipboard task boundary.\n'
+        if accessible_source.count(marker)!=1:raise SystemExit('Changed native clipboard task boundary')
+        accessible_source=accessible_source.replace(marker,clipboard_flow.read_text() if args.clipboard_tools else '')
+        native_flow=accessible_source+native_flow
+        if args.clipboard_tools:
+            if receipt['sdk_version']!='0.1.29':raise SystemExit('Native document clipboard requires a checked0.1.29 SDK')
+            args.clipboard_tools=args.clipboard_tools.resolve(strict=True)
+            replace("'NEXAUI_PLATFORM': 'wayland'", "'NEXAUI_PLATFORM': 'wayland', 'WAYLAND_DEBUG': '1'")
+            replace('        for child in reversed(children):',
+                "        if 'clipboard_cleanup' in locals():clipboard_cleanup()\n        for child in reversed(children):")
     if args.ime:
         replace("        wait(lambda: 'READY ' in log('server'), 'private compositor')", "        wait(lambda: 'READY ' in log('server'), 'private compositor')\n        event('I on')")
         replace("            capture(name+' selected document')", "            capture(name+' selected document')\n            ime_style(name)")
@@ -55,8 +68,14 @@ def main():
     replace(before,native_flow)
     args.output.mkdir(parents=True,exist_ok=True)
     adapted=args.output/'candidate-editor-native.py';adapted.write_text(source)
+    if args.clipboard_tools:
+        (args.output/'clipboard-adaptation.json').write_text(json.dumps(dict(
+            flow_sha256=digest(clipboard_flow),
+            foreign_helper_sha256=digest(here/'../35_aetheri_files_consumer/clipboard_task.py'),
+            tools=str(args.clipboard_tools),native_sdk='0.1.29',
+            scope='Additional original-owner native clipboard tasks; unchanged original assertions, deadlines and CPU guard.'),indent=2)+'\n')
     (args.output/'driver-adaptation.json').write_text(json.dumps(dict(original_driver_sha256=digest(original/'tools/test_editor_graphical.py'),adapted_sha256=digest(adapted),flow_sha256=digest(flow),ime=args.ime,ime_flow_sha256=digest(ime_flow) if args.ime else None,accessible_flow_sha256=digest(accessible_flow) if args.accessible_client else None,accessible_client_sha256=digest(args.accessible_client) if args.accessible_client else None,changes=changes,sdk_library=str(library),sdk_library_sha256=digest(library),sdk_receipt_sha256=digest(args.sdk_receipt),sdk_source_binding_sha256=digest(args.sdk_source_binding),source_revision=binding['source_revision'],scope='Original native workflows/assertions/deadlines retained; original empty-view idle/keyboard quit replaced by stronger retained dirty-document repeated-native-close task. Optional IME and independent document-reader tasks compose with original ownership/history/save and private native input. SDK declaration is externally bound.'),indent=2)+'\n')
     sys.argv=[str(original/'tools/test_editor_graphical.py')]+[str(getattr(args,k).resolve(strict=True)) for k in ('server','app','font','mono','output')]
-    namespace=dict(__name__='__main__',__file__=str(original/'tools/test_editor_graphical.py'),_candidate_library=library,_candidate_accessible_client=args.accessible_client,_candidate_accessible_ime=args.ime,_candidate_metadata=dict(version=receipt['sdk_version'],revision=binding['source_revision'],sha256=digest(library)))
+    namespace=dict(__name__='__main__',__file__=str(original/'tools/test_editor_graphical.py'),_candidate_library=library,_candidate_accessible_client=args.accessible_client,_candidate_accessible_ime=args.ime,_candidate_clipboard_tools=args.clipboard_tools,_candidate_clipboard_helper=here/'../35_aetheri_files_consumer/clipboard_task.py',_candidate_metadata=dict(version=receipt['sdk_version'],revision=binding['source_revision'],sha256=digest(library)))
     exec(compile(source,str(adapted),'exec'),namespace)
 if __name__=='__main__':main()

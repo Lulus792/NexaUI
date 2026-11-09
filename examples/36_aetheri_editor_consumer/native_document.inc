@@ -26,6 +26,11 @@ static bool editor_document_state(struct app *a,nx_text_document_state *out) {
        info/selection getters; zero token is never treated as an input grant. */
     size_t anchor=a->selection.active?(a->info.cursor==a->selection.begin?a->selection.end:a->selection.begin):a->info.cursor;
     uint32_t operations=blocked?0u:NX_TEXT_DOCUMENT_REPLACE|NX_TEXT_DOCUMENT_SELECT;
+#ifdef EDITOR_DOCUMENT_WITH_CLIPBOARD
+    /* Only a real window supplies the native clipboard. The headless original
+       model owner remains a valid replace/select-only consumer. */
+    if(!blocked && a->window)operations|=NX_TEXT_DOCUMENT_COPY|NX_TEXT_DOCUMENT_CUT|NX_TEXT_DOCUMENT_PASTE;
+#endif
     struct editor_native_document *p=&a->native_document;
     if(!editor_document_same(p->token,token) || p->operations!=operations ||
        p->document!=a->document || p->content_revision!=a->revision || p->anchor!=anchor || p->cursor!=a->info.cursor) {
@@ -99,7 +104,17 @@ static bool editor_native_document_register(struct app *a,struct ids *ids) {
         .flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE|NX_WIDGET_SCROLLABLE};
     struct editor_document_binding binding={a,a->native_document.token,a->document,state.revision};
     nx_text_document_result result;
-    if(nx_text_document_register(a->context,&widget,&state,editor_document_apply,&binding,&result)!=NX_OK)return false;
+    nx_result registered;
+#ifdef EDITOR_DOCUMENT_WITH_CLIPBOARD
+    if(a->window) {
+        nx_text_document_clipboard clipboard={0};
+        if(nx_text_clipboard_for_window(a->window,&clipboard.clipboard)!=NX_OK)return false;
+        registered=nx_text_document_register_with_clipboard(a->context,&widget,&state,
+            editor_document_apply,&binding,&clipboard,&result);
+    } else
+#endif
+        registered=nx_text_document_register(a->context,&widget,&state,editor_document_apply,&binding,&result);
+    if(registered!=NX_OK)return false;
     if(result.applied) {
         if(a->native_document.notice && !strcmp(a->message,a->native_document.notice))a->message[0]=0;
         a->native_document.notice=NULL;

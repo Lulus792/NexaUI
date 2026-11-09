@@ -70,10 +70,14 @@
         restored=snapshot('restored');assert restored==resized
         wait(lambda:state(width=restored['width'],height=restored['height'],active=document,cursor=10,review=0),'retained document and focus after zoom')
         capture('retained editor after Cancel move resize and zoom')
-        close_request(3);current_click('Save');wait(lambda:state(mode=2,closing=1),'native close preserves original Save picker')
+        if _candidate_clipboard_tools:clipboard_close_state=clipboard_close_begin()
+        close_request(3)
+        if _candidate_clipboard_tools:clipboard_close_settled(clipboard_close_state)
+        current_click('Save');wait(lambda:state(mode=2,closing=1),'native close preserves original Save picker')
         capture('native close original Save destination')
         typing('native.txt');wait(lambda:state(draft=10),'original native destination filename')
         key(28);assert app.wait(timeout=8)==0;children.remove(app)
+        if _candidate_clipboard_tools:clipboard_close_end(clipboard_close_state)
         requests=latest_requests();assert len(requests)==3 and requests==sorted(set(requests))
         assert 'NATIVE_CLOSE accepted='+str(requests[-1])+'\n' in log()
         assert (folder/'native.txt').read_bytes()==b'retainedxz'

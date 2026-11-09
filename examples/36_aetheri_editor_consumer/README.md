@@ -217,6 +217,34 @@ immutable export, fonts and private producer as the existing task; `--ime`
 additionally selects its native document IME work. No shared desktop bus or
 global system configuration is changed.
 
-Native document clipboard/geometry, real screenreaders/installed IMEs, new
+Native document geometry, real screenreaders/installed IMEs, new
 AX/UIA document tasks, physical/human/performance and normal Aetheri adoption
 remain separate. See the [source-specific report](../../docs/quality/editor-native-document-report.md).
+
+## Optional native document clipboard
+
+`EDITOR_BUILD_NATIVE_CLIPBOARD=ON` additionally requires installed SDK0.1.29
+and `EDITOR_BUILD_NATIVE_ACCESSIBILITY=ON`. It defaults to OFF, preserving
+the existing0.1.28 native-document and0.1.27 default consumers. Native IME is
+independently selectable. The real window supplies the existing native clipboard
+callbacks to `nx_text_document_register_with_clipboard`; an owner without a
+window still registers only replace/select capabilities. Review/picker policy
+continues to disable document operations.
+
+Copy exports the requested copied snapshot without a model edit or composition
+cancellation. Cut and Paste use the same atomic original document callback,
+complete controller token, preflight UI capacity and original Undo/Redo history
+as other native edits. A nonempty native preedit also advances the published
+input revision: uncommitted composition does not necessarily change the original
+document token, but must retire an older pending assistive paste. Native reads
+reuse SDK bounds/lifetimes; the original keyboard-paste token remains app-owned.
+
+With this owner enabled, pass `--clipboard-tools /path/to/checked/clipboard-tools`
+alongside `--accessible-client` to the existing native runner. The additional
+task reuses the independent Files `wl-copy`/`wl-paste` helper and checks its exact
+loader/tool hashes. It adds Unicode/CRLF transfers, Copy during composition,
+original Cut/Paste Undo/Redo, stopped-provider completion and invalidation,
+keyboard/native token overlap and original native-close/Save teardown. Original
+workflows, assertions, deadlines and the retained-close CPU/frame guard remain
+in the run. `clipboard-result.json` records the actual outcome; requesting the
+option alone is not evidence of successful native or ordinary Aetheri adoption.
