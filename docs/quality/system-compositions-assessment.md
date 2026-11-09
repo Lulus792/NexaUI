@@ -1,5 +1,16 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Settings model compatibility: Example21/source7d46024 builds the exact original
+current Settings modele1cd481 and minimal legacy7bbe704 model with installed
+SDK0.1.31. Six configurations pass24 headless CTests and51 source-bound objects;
+the current original Sound observation/once-only intent/loss fence survives view
+replacement and keyboard appearance/language changes. A compiled reset defect
+fails that unchanged test with sanitizers active. See the
+[compatibility report](settings-model-compatibility-report.md). No Sound page,
+audio service, device effect or new native acceptance is supplied by this step.
+The existing original Sound view/host is the next composition to reuse. Active
+Aetheri source/pin/default remains untouched; all103 IDs and packets6–8 persist.
+
 Original Editor attributes, partial checkpoint: consumer6d1f273 with installed
 SDK0.1.31 publishes the actual base font/point size, original colors, selected
 high-contrast overrides and editable policy through the existing presentation

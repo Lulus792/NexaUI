@@ -1,0 +1,2602 @@
+{
+  "result": "passed",
+  "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+  "initial_revision": "1f311a5b5cb017f15bf5850e9f8d889df5a4f609",
+  "current_original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+  "legacy_original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "current_aetheri_head": "2a1f88124ff12f161c80beead627b275e29f3047",
+  "inputs": [
+    {
+      "path": "current/src/settings/model.c",
+      "repository": "F:/Aetheri",
+      "source_path": "src/settings/model.c",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "83416a5d5e1f7afd0e2f06ece1f37d830e879fdb",
+      "size": 6877,
+      "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/src/settings/model.h",
+      "repository": "F:/Aetheri",
+      "source_path": "src/settings/model.h",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "c3d9fe873625e47afaa66415a16ab8d7aa38b477",
+      "size": 2959,
+      "sha256": "a85eb45715efd87184b6dc68da5898b2592fe2edc1d58fccb79a97b9cc843acb",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/src/audio/types.h",
+      "repository": "F:/Aetheri",
+      "source_path": "src/audio/types.h",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "cc05cdf99535dd569d6389e008fbe44a445f2f9b",
+      "size": 1645,
+      "sha256": "e4e89f72c3664edeb6d036181791478de806dd86c69737c5a4d48f148ce3593f",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/src/text/grapheme.c",
+      "repository": "F:/Aetheri",
+      "source_path": "src/text/grapheme.c",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "a9b36b2d8ea2b2f0909faea4391d3145703965fb",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/src/text/grapheme.h",
+      "repository": "F:/Aetheri",
+      "source_path": "src/text/grapheme.h",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "e0ecf83b5ab8af3a0141c3e8919ad9ace2cd961a",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/src/text/grapheme_data.h",
+      "repository": "F:/Aetheri",
+      "source_path": "src/text/grapheme_data.h",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "ff2df472ca57699cb508c636e552436a56cefd6c",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/tests/test_settings.c",
+      "repository": "F:/Aetheri",
+      "source_path": "tests/test_settings.c",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "f18909aa4ab7d502149b85251545a24fa0a2f617",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "current/tests/test_settings_sound.c",
+      "repository": "F:/Aetheri",
+      "source_path": "tests/test_settings_sound.c",
+      "source_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "git_blob": "0c5e9af4fdbf16ba06deb76ed5459e803113224a",
+      "size": 4874,
+      "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b",
+      "current_aetheri_revision": "2a1f88124ff12f161c80beead627b275e29f3047",
+      "current_input_unchanged": true
+    },
+    {
+      "path": "legacy/src/settings/model.c",
+      "repository": "F:/Aetheri",
+      "source_path": "src/settings/model.c",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "git_blob": "e04c33d734d3ca62d7fc92625efb019cdb855a01",
+      "size": 1769,
+      "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+    },
+    {
+      "path": "legacy/src/settings/model.h",
+      "repository": "F:/Aetheri",
+      "source_path": "src/settings/model.h",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "git_blob": "b510a0a392129d5c7cfe856df686d40bbf3f6625",
+      "size": 1126,
+      "sha256": "776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793"
+    },
+    {
+      "path": "legacy/tests/test_settings.c",
+      "repository": "F:/Aetheri",
+      "source_path": "tests/test_settings.c",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "git_blob": "f18909aa4ab7d502149b85251545a24fa0a2f617",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/CMakeLists.txt",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/CMakeLists.txt",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "105968a54496f54fd298246909b4215af8959030",
+      "size": 2642,
+      "sha256": "aa141bfaf7a49173e6109de2ee0f031db1dd7a2ad21a13c3694206edd2246960"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/README.md",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/README.md",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "b6c31866f9823aa0f76af4dcfa293df1bb30fa31",
+      "size": 6479,
+      "sha256": "31b0027c2e4bee20c6f5b09ad1a75e7c6317d883ebb3f772191187a12d5e29d8"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/atspi_client.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/atspi_client.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "21f231bcca6fe751e079cf86678c0b9ea80de435",
+      "size": 7818,
+      "sha256": "b2555cc23563e9cf58b65c02fac09322f298a8d2d4e39ba7c35ea6d034d3a1d9"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/benchmark_view.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/benchmark_view.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "0314a8d0fb1f38fde9162b904830d42ed9cebff2",
+      "size": 1980,
+      "sha256": "297b20a8d6d30d65dec13ace6eb5c4b37680c42a7c5cd9ef1e4ff7fd4fadf36b"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/main.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/main.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "ffa4aaa50cc36539491c7907fe7835fc5567c931",
+      "size": 10383,
+      "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/run_sway_resize.py",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/run_sway_resize.py",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "88c339886ff43cb0028b8943b0b447e3a2319f36",
+      "size": 12184,
+      "sha256": "e7fa1b02191f1fca202d3e03f2fdf87643ba002e1e153b1f8149ffbfb78dfca8"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/test_sound_state.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/test_sound_state.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "e5cd506ea018e1100cd803090428cd813e20c88d",
+      "size": 3457,
+      "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/test_text_wrap.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/test_text_wrap.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "fb5f47c4ae82832b1302ec5c2c8f4c3484b00f4f",
+      "size": 3471,
+      "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/test_view.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/test_view.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "428df07dbe38386abde830a30968f11a9814a5a3",
+      "size": 15045,
+      "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/view.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/view.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "9353a5ba2e1b750a043b0b4b314464350e2fa80c",
+      "size": 18451,
+      "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/view.h",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/view.h",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "3f4b5780ac60bfdc04b18ed682649932916c51bd",
+      "size": 586,
+      "sha256": "329958c4c289b5ebad59bf30c45f01fb00051258032bed8bbf96e6fadce1ab08"
+    },
+    {
+      "path": "repo/examples/21_aetheri_model/virtual_pointer.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/21_aetheri_model/virtual_pointer.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "9ea5155f9ecc20e1cd2ac03aff2d167b8e3a585a",
+      "size": 3254,
+      "sha256": "2a27ad5203034fd4bcdeda8f41b7a2710ce9191372dc1ccae2d7500feae11367"
+    },
+    {
+      "path": "repo/examples/common/text_wrap.c",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/common/text_wrap.c",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "54830b43bc54de69ab9de809bc75c38da3a988ad",
+      "size": 3658,
+      "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "path": "repo/examples/common/text_wrap.h",
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_path": "examples/common/text_wrap.h",
+      "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+      "git_blob": "bca1fcb10f12fec786edf3cd9cd290c3802ee1d2",
+      "size": 349,
+      "sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    }
+  ],
+  "compiled_objects": [
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "size": 6712,
+        "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c"
+      ],
+      "input": "current/tests/test_settings.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c",
+        "size": 4874,
+        "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "size": 18376,
+        "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c"
+      ],
+      "input": "current/tests/test_settings_sound.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c",
+        "size": 6877,
+        "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "size": 6032,
+        "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c"
+      ],
+      "input": "current/src/settings/model.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c",
+        "size": 3857,
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "size": 22928,
+        "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c"
+      ],
+      "input": "current/src/text/grapheme.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 27120,
+        "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 3512,
+        "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 14248,
+        "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 48024,
+        "sha256": "319fe190545fbdeb03d6808de5d969683cec67fa5a2098e4abc7d41c409332a1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 7496,
+        "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+        "size": 3457,
+        "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-shared/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "size": 11016,
+        "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_sound_state.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "size": 6664,
+        "sha256": "32cce7a00484d6a2504169c9313a082c299e04a820d0ed30b0ae6f099956ef61"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c"
+      ],
+      "input": "legacy/tests/test_settings.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c",
+        "size": 1769,
+        "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "size": 2512,
+        "sha256": "bf55689f14bc90b3631ef652068fb762e4d5354c90d762c19bd9f0e937074b6c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c"
+      ],
+      "input": "legacy/src/settings/model.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 27120,
+        "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 3512,
+        "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 14208,
+        "sha256": "71daae306ae82dbefb080a2e7f744a7a5b0885e78f6b4d746b9e47eb3f57f3cd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 47976,
+        "sha256": "949d400453e829f5ed30c81c3504370cc3c4a0dfb9156b0813f4b13d563de0e2"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-shared/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 7496,
+        "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-DNEXAUI_SHARED",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "size": 6712,
+        "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c"
+      ],
+      "input": "current/tests/test_settings.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c",
+        "size": 4874,
+        "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "size": 18376,
+        "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c"
+      ],
+      "input": "current/tests/test_settings_sound.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c",
+        "size": 6877,
+        "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "size": 6032,
+        "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c"
+      ],
+      "input": "current/src/settings/model.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c",
+        "size": 3857,
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "size": 22928,
+        "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c"
+      ],
+      "input": "current/src/text/grapheme.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 27120,
+        "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 3512,
+        "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 14248,
+        "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 48024,
+        "sha256": "319fe190545fbdeb03d6808de5d969683cec67fa5a2098e4abc7d41c409332a1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 7496,
+        "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+        "size": 3457,
+        "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-release/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "size": 11016,
+        "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_sound_state.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "size": 6664,
+        "sha256": "32cce7a00484d6a2504169c9313a082c299e04a820d0ed30b0ae6f099956ef61"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c"
+      ],
+      "input": "legacy/tests/test_settings.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c",
+        "size": 1769,
+        "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "size": 2512,
+        "sha256": "bf55689f14bc90b3631ef652068fb762e4d5354c90d762c19bd9f0e937074b6c"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c"
+      ],
+      "input": "legacy/src/settings/model.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 27120,
+        "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 3512,
+        "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 14208,
+        "sha256": "71daae306ae82dbefb080a2e7f744a7a5b0885e78f6b4d746b9e47eb3f57f3cd"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 47976,
+        "sha256": "949d400453e829f5ed30c81c3504370cc3c4a0dfb9156b0813f4b13d563de0e2"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-release/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 7496,
+        "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "size": 37424,
+        "sha256": "d5f2dfa7729057dde8965d656d1ca10bc8627e9bcb3524777fb1662c9259a949"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings.c"
+      ],
+      "input": "current/tests/test_settings.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c",
+        "size": 4874,
+        "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "size": 89664,
+        "sha256": "294c745084f952984dcab99166603cae7aa8c4d653b6b03ee978a98fd1585b70"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_sound.dir/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/tests/test_settings_sound.c"
+      ],
+      "input": "current/tests/test_settings_sound.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c",
+        "size": 6877,
+        "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "size": 110896,
+        "sha256": "bf8912f3380f5abd9150653b5d9b12a9408dc153dfb3a8fd8a142c9cdb75e626"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c"
+      ],
+      "input": "current/src/settings/model.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c",
+        "size": 3857,
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "size": 58840,
+        "sha256": "3beaa24b0eff921850b6296568fb895d6c4e079e301ed348708a3008b14666d1"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c"
+      ],
+      "input": "current/src/text/grapheme.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 274960,
+        "sha256": "ce93b18d3a50e9b14643246674e587b6daf84aa638ec120420e32f5d4476dd55"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 25800,
+        "sha256": "f981c2f74a770294aa13783a37a02ea35302c02eceb3f4b91a30ddf0c2c81111"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 112928,
+        "sha256": "c30e7d0a21ffaa8619f1e547856ac405fc75c96585e711295037198ab4c6c85b"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 198264,
+        "sha256": "58c60122321623a35350b9a312f222c8fd69392a2701634e7fd1cc788c975aaf"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 38640,
+        "sha256": "5fd38f2ccb0cc647a12d78ed91fe00a6fa9e877be1f1740908450003c1635d17"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+        "size": 3457,
+        "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/current-asan/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "size": 60744,
+        "sha256": "42ae86ff3b8a553d617fb9cece6fe89bc63523c72774b675d8164da042b6edbb"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_sound_state.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c",
+        "size": 1548,
+        "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "size": 33456,
+        "sha256": "abf8d51341b2785f3cb47512d107e5a61082dac7a05528151ede426a2daeaf66"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "CMakeFiles/original_settings_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/tests/test_settings.c"
+      ],
+      "input": "legacy/tests/test_settings.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c",
+        "size": 1769,
+        "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "size": 32168,
+        "sha256": "74cd3f8696af51bde0a687d5ee92f1e6bfdfdc6ed629d2e3e04d54cca6984ff6"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/legacy/src/settings/model.c"
+      ],
+      "input": "legacy/src/settings/model.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c",
+        "size": 18451,
+        "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "size": 271112,
+        "sha256": "18638f878526ca2432d48a8246b34767fee7628be0a3f275aeddfd53e5f7b2cf"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c",
+        "size": 3658,
+        "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "size": 25800,
+        "sha256": "550c8d398d7447b43958870cd20df868eff1af853a3d92c0c6310165726d8388"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/common/text_wrap.c"
+      ],
+      "input": "repo/examples/common/text_wrap.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c",
+        "size": 10383,
+        "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "size": 109128,
+        "sha256": "620fc4c07092f250ff4e41b02bc4d587d6eb841458f35be42e13da5d2c7bce83"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/main.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/main.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c",
+        "size": 15045,
+        "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "size": 194192,
+        "sha256": "6d3cf311df1b102d323742ae796abb17934b88e941d7790d5a2259086d358c73"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_view.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_view.c"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "source": {
+        "path": "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+        "size": 3471,
+        "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+      },
+      "object": {
+        "path": "/tmp/nexaui-settings-model3/legacy-asan/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "size": 38632,
+        "sha256": "ca1b83c6b9be6ece982a2a89a125159da276d88d8bb24fe6e03fdeb378e2e1d3"
+      },
+      "command": [
+        "/usr/bin/clang",
+        "-I/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/../common",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src/settings",
+        "-I/mnt/d/NexaUI/out/settings-source3/legacy/src",
+        "-isystem",
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-g",
+        "-std=c17",
+        "-o",
+        "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+        "-c",
+        "/mnt/d/NexaUI/out/settings-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+      ],
+      "input": "repo/examples/21_aetheri_model/test_text_wrap.c"
+    }
+  ],
+  "profiles": [
+    {
+      "model": "current",
+      "original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "profile": "shared",
+      "executed_ctests": 5,
+      "compiled_objects": 10,
+      "compiled_text_helpers": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-current",
+            "-B",
+            "/tmp/nexaui-settings-model3/current-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-shared-configure.log",
+          "sha256": "fda46a164f7f81c4fc79ec3aaa6fd58fe9c5bdfbb3eda9591e6cd986ebe1031a"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/current-shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-shared-build.log",
+          "sha256": "a2e64dca7337c9c42e017d4af91b83ec19d5c5618b89630d68ba99cb623943cd"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/current-shared",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-shared-test.log",
+          "sha256": "333a9a1267c1244c5205c6484067809bc5c3a5aeedb959ebbf636871e1d14ee5"
+        }
+      ]
+    },
+    {
+      "model": "legacy",
+      "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "profile": "shared",
+      "executed_ctests": 3,
+      "compiled_objects": 7,
+      "compiled_text_helpers": 0,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-legacy",
+            "-B",
+            "/tmp/nexaui-settings-model3/legacy-shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=OFF",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-shared-configure.log",
+          "sha256": "6dbe80de9a3ea08b71ded2ecc8e125a09af88e10b847e83d1d13b0cbabb6897d"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/legacy-shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-shared-build.log",
+          "sha256": "df7205c7b239fc70468aa93deb6abe4932d0794e80346849c91325b7143400c6"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/legacy-shared",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-shared-test.log",
+          "sha256": "da335ff3deae234c8b1bd60245f501ec1346399291da930024f445ed2d5eb23b"
+        }
+      ]
+    },
+    {
+      "model": "current",
+      "original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "profile": "release",
+      "executed_ctests": 5,
+      "compiled_objects": 10,
+      "compiled_text_helpers": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-current",
+            "-B",
+            "/tmp/nexaui-settings-model3/current-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-release-configure.log",
+          "sha256": "cf5c50afd361aac6562db29c7b482debae6345f418f46cc97dbbf9d229f2515e"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/current-release",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-release-build.log",
+          "sha256": "a2e64dca7337c9c42e017d4af91b83ec19d5c5618b89630d68ba99cb623943cd"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/current-release",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-release-test.log",
+          "sha256": "ed25a6510d875c4b4e45051af616d42944e2e92f4eb88ccc3c8789db7b04a4e8"
+        }
+      ]
+    },
+    {
+      "model": "legacy",
+      "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "profile": "release",
+      "executed_ctests": 3,
+      "compiled_objects": 7,
+      "compiled_text_helpers": 0,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-legacy",
+            "-B",
+            "/tmp/nexaui-settings-model3/legacy-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=OFF",
+            "-DCMAKE_EXE_LINKER_FLAGS="
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-release-configure.log",
+          "sha256": "27c60ed9b2fd418718b0951b600a9a1ca0d7f9428dbf0a19df8473adf26f3ac5"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/legacy-release",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-release-build.log",
+          "sha256": "df7205c7b239fc70468aa93deb6abe4932d0794e80346849c91325b7143400c6"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/legacy-release",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-release-test.log",
+          "sha256": "6e4dc2fbb8ace8ef9484b6d016889e7a7a109b16eb01c22394f3ef8244384d50"
+        }
+      ]
+    },
+    {
+      "model": "current",
+      "original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+      "profile": "asan",
+      "executed_ctests": 5,
+      "compiled_objects": 10,
+      "compiled_text_helpers": 1,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-current",
+            "-B",
+            "/tmp/nexaui-settings-model3/current-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-asan-configure.log",
+          "sha256": "f870e92b7aeb254405b57427afc8a4e4ae083de4e53e6c6370fee20cbdc116b5"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/current-asan",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-asan-build.log",
+          "sha256": "8428563f72b89721ae3adba1e68c9aaa8a67be81030aa7d2d1f025f1b77e044a"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/current-asan",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-current-asan-test.log",
+          "sha256": "ccf9c2ce88b8acc273da6c6478da84959e655fe841b4446f405e3491eef63aef"
+        }
+      ]
+    },
+    {
+      "model": "legacy",
+      "original_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "profile": "asan",
+      "executed_ctests": 3,
+      "compiled_objects": 7,
+      "compiled_text_helpers": 0,
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-model3/harness-legacy",
+            "-B",
+            "/tmp/nexaui-settings-model3/legacy-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DNEXAUI_MODEL_BUILD_SOUND_TEST=OFF",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-asan-configure.log",
+          "sha256": "7b52c2c5c3337aaf0f4256fc1acbf75726bf8739a99ee3877ccb273540d0418d"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-model3/legacy-asan",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-asan-build.log",
+          "sha256": "df7205c7b239fc70468aa93deb6abe4932d0794e80346849c91325b7143400c6"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-model3/legacy-asan",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "log": "settings-model3-legacy-asan-test.log",
+          "sha256": "bbf090e08de0136c9642c94f23ebee7312ef4c14f4126b7867ac3e6f9de1ff3d"
+        }
+      ]
+    }
+  ],
+  "executed_ctests": 24,
+  "uid": 65534,
+  "sdk_source_revision": "9f0b2294d04d7f5fdd63d3fe5c118b2bd222eade",
+  "sdk_version": "0.1.31",
+  "libraries": [
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix/lib/libnexaui.so.0.1.31",
+      "size": 970048,
+      "sha256": "83cee14f0483d096933806b616ceef4deaa4844f3e69def92ff3164a48efef60"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix/lib/libnexaui.a",
+      "size": 1226426,
+      "sha256": "ae7e623a4a6290416d2ac4453bed5c8f13dc7cf82b37d08eedb17ba471f69827"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/lib/libnexaui.a",
+      "size": 12372810,
+      "sha256": "ad62ec01d08a528282526f1a16428bf6b9bf3570e0eaffdd57f83bc1bc3b67c6"
+    }
+  ],
+  "baseline": {
+    "consumer_revision": "1f311a5b5cb017f15bf5850e9f8d889df5a4f609",
+    "original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+    "uid": 65534,
+    "commands": [
+      {
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/mnt/d/NexaUI/out/settings-source1/repo/examples/21_aetheri_model",
+          "-B",
+          "/tmp/nexaui-settings-model1/baseline-current",
+          "-G",
+          "Ninja",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+          "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-source1/current"
+        ],
+        "exit": 0,
+        "log": "settings-model1-baseline-configure.log",
+        "sha256": "281c04310c848376ab12e9c7bb91a760a5de01152a99454bf6eba8eb02c9ad22"
+      },
+      {
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-settings-model1/baseline-current",
+          "--parallel",
+          "2"
+        ],
+        "exit": 1,
+        "log": "settings-model1-baseline-build.log",
+        "sha256": "36f997a854967dd2ab6213de66a8840a28f23d45539d94e4863183b509fb460d"
+      }
+    ]
+  },
+  "scope": "Existing Example21 display/appearance/language view and unchanged original model tests on two exact model generations. Current original sound state/once-only intent/loss fence is additionally tested across actual Settings view creation, keyboard changes and replacement. The Sound page itself is not presented by this view. No native device/service, Sound page, audio intent dispatch, new native UI or complete Aetheri adoption inferred. The unchanged final Sound-state test rejects a separately compiled borrowed-model-reset defect under ASan/UBSan/LSan;5 control objects. Production SDK sources remain unchanged.",
+  "compiled_control": {
+    "result": "detected",
+    "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+    "mutated_view_sha256": "b11fb6a36343422fca974961d3f027daaaa2a41d136d5bbdcf6b5d8485e02d74",
+    "mutation": "Reset only the borrowed original model during view creation; original model, test and installed SDK remain unchanged.",
+    "commands": [
+      {
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model",
+          "-B",
+          "/tmp/nexaui-settings-model3/negative-reset/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Debug",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+          "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix",
+          "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-source3/current",
+          "-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON"
+        ],
+        "exit": 0,
+        "log": "settings-model3-reset-configure.log",
+        "sha256": "f192485b6d4dc99f29c59fd8c00623ff6e644bc6ecc2aa4a14b310e3ef2fb589"
+      },
+      {
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-settings-model3/negative-reset/build",
+          "--target",
+          "aetheri_model_sound_state_test",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "log": "settings-model3-reset-build.log",
+        "sha256": "7a6cac7611245179462fb70e09b69a3919f56e8578688a4affb09b22ebde2b74"
+      },
+      {
+        "phase": "run",
+        "command": [
+          "/tmp/nexaui-settings-model3/negative-reset/build/aetheri_model_sound_state_test",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf"
+        ],
+        "exit": 1,
+        "log": "settings-model3-reset-run.log",
+        "sha256": "66994f55d29b44db5b195893aaca9760fa621d9987c8cec6fb84cdef7882f9df"
+      }
+    ],
+    "compiled_objects": [
+      {
+        "source": {
+          "path": "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c",
+          "size": 6877,
+          "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+        },
+        "object": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/build/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+          "size": 110912,
+          "sha256": "f0a8054085f72457e0e8ccef68df2d5749c9b74e0e2a08f886cb53ba1a9f56f5"
+        },
+        "command": [
+          "/usr/bin/clang",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-g",
+          "-std=c17",
+          "-o",
+          "CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c.o",
+          "-c",
+          "/mnt/d/NexaUI/out/settings-source3/current/src/settings/model.c"
+        ],
+        "input": "current/src/settings/model.c",
+        "mutated": false
+      },
+      {
+        "source": {
+          "path": "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c",
+          "size": 3857,
+          "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+        },
+        "object": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/build/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+          "size": 58856,
+          "sha256": "7a03f40b6808d329461882d11686d0b82f9a56ed6b10c9d9008bcaac67effc31"
+        },
+        "command": [
+          "/usr/bin/clang",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-g",
+          "-std=c17",
+          "-o",
+          "CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c.o",
+          "-c",
+          "/mnt/d/NexaUI/out/settings-source3/current/src/text/grapheme.c"
+        ],
+        "input": "current/src/text/grapheme.c",
+        "mutated": false
+      },
+      {
+        "source": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/view.c",
+          "size": 18480,
+          "sha256": "b11fb6a36343422fca974961d3f027daaaa2a41d136d5bbdcf6b5d8485e02d74"
+        },
+        "object": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/build/CMakeFiles/aetheri_view.dir/view.c.o",
+          "size": 275240,
+          "sha256": "9d8cf0cbf136441235768f454ec6b8b75e834de713b18b91fc178cf92cfcdd7a"
+        },
+        "command": [
+          "/usr/bin/clang",
+          "-I/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/../common",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+          "-isystem",
+          "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-g",
+          "-std=c17",
+          "-o",
+          "CMakeFiles/aetheri_view.dir/view.c.o",
+          "-c",
+          "/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/view.c"
+        ],
+        "input": "repo/examples/21_aetheri_model/view.c",
+        "mutated": true
+      },
+      {
+        "source": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/repo/examples/common/text_wrap.c",
+          "size": 3658,
+          "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+        },
+        "object": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/build/CMakeFiles/aetheri_view.dir/tmp/nexaui-settings-model3/negative-reset/repo/examples/common/text_wrap.c.o",
+          "size": 25992,
+          "sha256": "a9d6ac3a77b9762dfd8b38698fa65771613e186f33f50d95c19fe0978ec970c2"
+        },
+        "command": [
+          "/usr/bin/clang",
+          "-I/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/../common",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+          "-isystem",
+          "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-g",
+          "-std=c17",
+          "-o",
+          "CMakeFiles/aetheri_view.dir/tmp/nexaui-settings-model3/negative-reset/repo/examples/common/text_wrap.c.o",
+          "-c",
+          "/tmp/nexaui-settings-model3/negative-reset/repo/examples/common/text_wrap.c"
+        ],
+        "input": "repo/examples/common/text_wrap.c",
+        "mutated": false
+      },
+      {
+        "source": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/test_sound_state.c",
+          "size": 3457,
+          "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+        },
+        "object": {
+          "path": "/tmp/nexaui-settings-model3/negative-reset/build/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+          "size": 60912,
+          "sha256": "7cb6f9de1fb646ec96f0234160dca617ce64a443f02aa504ffacbabfac448373"
+        },
+        "command": [
+          "/usr/bin/clang",
+          "-I/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/../common",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src/settings",
+          "-I/mnt/d/NexaUI/out/settings-source3/current/src",
+          "-isystem",
+          "/mnt/d/NexaUI/out/font-metadata-sdk4-asan-prefix/include",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-g",
+          "-std=c17",
+          "-o",
+          "CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+          "-c",
+          "/tmp/nexaui-settings-model3/negative-reset/repo/examples/21_aetheri_model/test_sound_state.c"
+        ],
+        "input": "repo/examples/21_aetheri_model/test_sound_state.c",
+        "mutated": false
+      }
+    ]
+  },
+  "changed_existing_inputs": [
+    "repo/examples/21_aetheri_model/CMakeLists.txt",
+    "repo/examples/21_aetheri_model/README.md"
+  ],
+  "new_input": "repo/examples/21_aetheri_model/test_sound_state.c",
+  "production_sdk_unchanged_from": "1f311a5b5cb017f15bf5850e9f8d889df5a4f609"
+}

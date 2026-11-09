@@ -1,0 +1,193 @@
+{
+  "result": "partial",
+  "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+  "run_id": 42653996046,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42653996046",
+  "initial_run_conclusion": "failure",
+  "retry_attempt": 2,
+  "retry_status": "queued",
+  "required_success": 6,
+  "required_total": 7,
+  "successful_jobs": [
+    {
+      "name": "core (windows-latest, OFF)",
+      "original_job_id": 129287478265,
+      "retry_attempt_alias_job_id": 129300822242,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        146
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287478265.log",
+        "size": 101656,
+        "sha256": "090f05ff1372b9c1d22e21cfa138522fda30f0d4a6d06690236e42cf11242295"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300822242.log",
+        "size": 101656,
+        "sha256": "090f05ff1372b9c1d22e21cfa138522fda30f0d4a6d06690236e42cf11242295"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    },
+    {
+      "name": "core (windows-latest, ON)",
+      "original_job_id": 129287478109,
+      "retry_attempt_alias_job_id": 129300879781,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        145
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287478109.log",
+        "size": 101521,
+        "sha256": "4c9025c3b8c06fc156cb9af325773f2e6d2bbb3fd80897746218c8b8bc8d0e6c"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300879781.log",
+        "size": 101521,
+        "sha256": "4c9025c3b8c06fc156cb9af325773f2e6d2bbb3fd80897746218c8b8bc8d0e6c"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    },
+    {
+      "name": "core (macos-latest, ON)",
+      "original_job_id": 129287478396,
+      "retry_attempt_alias_job_id": 129300823805,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        121
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287478396.log",
+        "size": 110921,
+        "sha256": "1eca62107e61385bf6e7ab7d47e4f91649f51db1a6214775ade4c95f2d130a08"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300823805.log",
+        "size": 110921,
+        "sha256": "1eca62107e61385bf6e7ab7d47e4f91649f51db1a6214775ade4c95f2d130a08"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    },
+    {
+      "name": "core (ubuntu-latest, OFF)",
+      "original_job_id": 129287477820,
+      "retry_attempt_alias_job_id": 129300890403,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        268,
+        1
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287477820.log",
+        "size": 304468,
+        "sha256": "6e84a6b763864d4c8cd0757436fd9325dd23c2cab735323589d9d26118f60cec"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300890403.log",
+        "size": 304468,
+        "sha256": "6e84a6b763864d4c8cd0757436fd9325dd23c2cab735323589d9d26118f60cec"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    },
+    {
+      "name": "core (ubuntu-latest, ON)",
+      "original_job_id": 129287478202,
+      "retry_attempt_alias_job_id": 129300824445,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        266
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287478202.log",
+        "size": 298158,
+        "sha256": "75940024073cc5f30395e036d593509031336a0051b39f6df37ff91938568aaa"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300824445.log",
+        "size": 298158,
+        "sha256": "75940024073cc5f30395e036d593509031336a0051b39f6df37ff91938568aaa"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    },
+    {
+      "name": "sanitizers",
+      "original_job_id": 129287478205,
+      "retry_attempt_alias_job_id": 129300911886,
+      "head_sha": "7d460242be65ea157fefe295a015def35c8aee15",
+      "conclusion": "success",
+      "test_summaries": [
+        268,
+        268
+      ],
+      "log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129287478205.log",
+        "size": 337477,
+        "sha256": "c649e24cd9fc03302cbdfd5d8b0b4b626ca9ce45a33d62e027e93dfed6f845dc"
+      },
+      "reused_log": {
+        "path": "/mnt/d/NexaUI/out/settings-model3-ci-129300911886.log",
+        "size": 337477,
+        "sha256": "c649e24cd9fc03302cbdfd5d8b0b4b626ca9ce45a33d62e027e93dfed6f845dc"
+      },
+      "byte_identical_reuse": true,
+      "scope": "One original successful execution; alias log in retry attempt is byte-identical, not another test execution."
+    }
+  ],
+  "pending_job": {
+    "name": "core (macos-latest, OFF)",
+    "id": 129300821868,
+    "status": "queued",
+    "initial_cancelled_id": 129287478217,
+    "reason": "The job was not acquired by Runner of type hosted even after multiple attempts"
+  },
+  "optional_skips": [
+    {
+      "name": "windows-asan",
+      "id": 129300886700
+    },
+    {
+      "name": "fuzz-campaigns",
+      "id": 129300874412
+    }
+  ],
+  "retry": {
+    "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+    "run_id": 42653996046,
+    "initial_attempt": 1,
+    "initial_cancelled_job": 129287478217,
+    "initial_job": "core (macos-latest, OFF)",
+    "initial_reason": "The job was not acquired by Runner of type hosted even after multiple attempts",
+    "annotations": "settings-model3-ci-mac-cancel-annotations.json",
+    "initial_passed_jobs": [
+      129287477820,
+      129287478109,
+      129287478202,
+      129287478205,
+      129287478265,
+      129287478396
+    ],
+    "connector_retry": {
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    },
+    "github_cli": "not installed",
+    "single_job_retry": {
+      "method": "POST /repos/Lulus792/NexaUI/actions/jobs/129287478217/rerun",
+      "http_status": 201,
+      "authentication": "Existing Git repository credential helper, no permission expansion, credential values not recorded"
+    },
+    "scope": "Only the terminal cancelled macOS job requested again. Six successful jobs/logs are retained and not re-executed. No source, tests, runner architecture, deadline or sanitizer policy changed. Retry acceptance alone does not prove a successful job."
+  },
+  "scope": "Six complete exact-source SDK jobs passed; macOS static initial acquisition cancelled before a runner/build, single-job retry queued. Root CI is incomplete. Standalone model/view/native Sound/device acceptance is not inferred; successful job aliases are byte-identical reused evidence."
+}

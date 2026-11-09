@@ -1,0 +1,8 @@
+{
+  "name": "nexaui-settings-model3-20261109.tar.gz",
+  "size": 40422407,
+  "sha256": "55126c710644da2a6a827fe3b858182902586874eef89eda1b00e64b0e01cc37",
+  "files": 444,
+  "verified": true,
+  "scope": "Existing Example21 compatibility with exact current8/legacy3 original files:24 CTests/51 objects and5 reset-negative objects, original include-root and missing-UTF8 failures retained in the separate source1/source2 archive. Actual original Sound state/once-only intent/loss fence survives view replacement. No native Sound/device/service acceptance. Borrowed Arial excluded."
+}

@@ -21,6 +21,9 @@ With a current Sound-capable model, `-DNEXAUI_MODEL_BUILD_SOUND_TEST=ON` adds
 `aetheri_model_sound_state_test FONT`. It checks that view replacement and
 appearance/language changes retain the original observation, output identity,
 once-only queued intent and permanent owner-loss fence, without device effects.
+The [compatibility report](../../docs/quality/settings-model-compatibility-report.md)
+records exact current/legacy sources, sanitizer checks, compiled counterexamples
+and the separate remaining Sound/native service integration.
 
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:

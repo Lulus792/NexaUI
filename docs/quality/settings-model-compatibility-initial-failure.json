@@ -1,0 +1,41 @@
+{
+  "consumer_revision": "1f311a5b5cb017f15bf5850e9f8d889df5a4f609",
+  "original_revision": "e1cd481c3bc1351b923aad1d08f57431ee9753b3",
+  "uid": 65534,
+  "commands": [
+    {
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/d/NexaUI/out/settings-source1/repo/examples/21_aetheri_model",
+        "-B",
+        "/tmp/nexaui-settings-model1/baseline-current",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-source1/current"
+      ],
+      "exit": 0,
+      "log": "settings-model1-baseline-configure.log",
+      "sha256": "281c04310c848376ab12e9c7bb91a760a5de01152a99454bf6eba8eb02c9ad22"
+    },
+    {
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-settings-model1/baseline-current",
+        "--parallel",
+        "2"
+      ],
+      "exit": 1,
+      "log": "settings-model1-baseline-build.log",
+      "sha256": "36f997a854967dd2ab6213de66a8840a28f23d45539d94e4863183b509fb460d"
+    }
+  ]
+}

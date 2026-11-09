@@ -1,0 +1,8 @@
+{
+  "name": "nexaui-settings-model3-bounded-20261109.tar.gz",
+  "size": 4646,
+  "sha256": "8f4d523baf986809b0bdcf725de005716a37cb5c5882c5eef1889ef96a0570c4",
+  "files": 11,
+  "verified": true,
+  "scope": "Final explicit60-second runs of the same24 Settings cases, nonroot, sanitizer policy retained;no new distinct cases or native/device acceptance."
+}

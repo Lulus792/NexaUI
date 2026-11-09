@@ -1,0 +1,8 @@
+{
+  "name": "nexaui-settings-model3-final-ci-20261109.tar.gz",
+  "size": 480948,
+  "sha256": "c43f7eb6bf3b02bf0c17042a221301deee0ed65ad5eab384d21c2c0f9c4f04f0",
+  "files": 35,
+  "verified": true,
+  "scope": "All7 exact-source SDK jobs at7d46024;initial Mac acquisition failure and successful single-job retry;six byte-identical reused successful logs;no duplicate execution counts."
+}

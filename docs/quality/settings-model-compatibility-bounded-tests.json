@@ -1,0 +1,115 @@
+{
+  "source_revision": "7d460242be65ea157fefe295a015def35c8aee15",
+  "uid": 65534,
+  "per_test_timeout_seconds": 60,
+  "sanitizer_env": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "commands": [
+    {
+      "model": "current",
+      "profile": "shared",
+      "executed_ctests": 5,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/current-shared",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-current-shared-bounded-test.log",
+      "sha256": "5f075abf237cd73328668da63c5d0cd8dc5bb2e3cf582a919fa04b3ab98cdcbc"
+    },
+    {
+      "model": "legacy",
+      "profile": "shared",
+      "executed_ctests": 3,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/legacy-shared",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-legacy-shared-bounded-test.log",
+      "sha256": "0713697a5958c58ffd03eb3760c28b503e317b7a42d065543d41315f417627e0"
+    },
+    {
+      "model": "current",
+      "profile": "release",
+      "executed_ctests": 5,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/current-release",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-current-release-bounded-test.log",
+      "sha256": "51f5b03dbc3eef78485ffe310e8ff213a349e1d2b4ebb591ba1ce06f55d160e6"
+    },
+    {
+      "model": "legacy",
+      "profile": "release",
+      "executed_ctests": 3,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/legacy-release",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-legacy-release-bounded-test.log",
+      "sha256": "b4cbcd0a76341865c1e5bd598ab7a7b31e1420a50d196d67f224a416a2f36697"
+    },
+    {
+      "model": "current",
+      "profile": "asan",
+      "executed_ctests": 5,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/current-asan",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-current-asan-bounded-test.log",
+      "sha256": "95c6c4828d0a6a47670f9dceb18c21bb9e357277cd53afb19871cb045a575203"
+    },
+    {
+      "model": "legacy",
+      "profile": "asan",
+      "executed_ctests": 3,
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/nexaui-settings-model3/legacy-asan",
+        "--output-on-failure",
+        "--no-tests=error",
+        "--timeout",
+        "60"
+      ],
+      "exit": 0,
+      "log": "settings-model3-legacy-asan-bounded-test.log",
+      "sha256": "7164af71b19371aae074c0cf02bd91f489f7b93b37090d66ad7eabd46c0f0076"
+    }
+  ],
+  "executed_ctests": 24,
+  "scope": "Final explicit60-second verification of the same24 cases on the already bound51 objects; not24 additional distinct tests or new native/device acceptance."
+}

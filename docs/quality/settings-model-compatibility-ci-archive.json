@@ -1,0 +1,8 @@
+{
+  "name": "nexaui-settings-model3-ci-20261109.tar.gz",
+  "size": 450799,
+  "sha256": "dd70715bcbdbfb8796437aeb47a7130b07928abac6a28ec71ec799fb883139f0",
+  "files": 25,
+  "verified": true,
+  "scope": "Partial SDK CI:6 original successful jobs and byte-identical retry aliases, initial macOS runner-acquisition cancellation/annotations, one accepted queued retry;no7/7 acceptance."
+}

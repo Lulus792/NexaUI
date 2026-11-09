@@ -1,0 +1,8 @@
+{
+  "name": "nexaui-settings-model2-20261109.tar.gz",
+  "size": 25988133,
+  "sha256": "f3c298d8ea8ce0e66c429c9824a8b5776dbc31e0ef220d52851e52f6d8a85a01",
+  "files": 361,
+  "verified": true,
+  "scope": "Existing Example21 compatibility with exact current8/legacy3 original files:21 CTests/48 objects, original include-root failure and compiled missing-UTF8 link refusal. No native Sound/device/service acceptance. Borrowed Arial excluded."
+}

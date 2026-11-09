@@ -1,0 +1,42 @@
+{
+  "result": "detected",
+  "source_revision": "540fb7f6da309bbf15d4804bcc99274a3118d0aa",
+  "mutated_cmake_sha256": "83987d654c20be3b53f597f9a4ff5bcaced90b8ce149e24664c887a83528bdcc",
+  "mutation": "Omit only the original text compilation unit; retain the corrected include root and every original source byte.",
+  "commands": [
+    {
+      "phase": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-settings-model1/negative-missing-utf8/repo/examples/21_aetheri_model",
+        "-B",
+        "/tmp/nexaui-settings-model1/negative-missing-utf8/build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-release-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-source2/current"
+      ],
+      "exit": 0,
+      "log": "settings-model2-missing-utf8-configure.log",
+      "sha256": "6f430f581e364a20f509f51820580708d77c0242bd3ba92000e7edfcd8c96b76"
+    },
+    {
+      "phase": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-settings-model1/negative-missing-utf8/build",
+        "--parallel",
+        "2"
+      ],
+      "exit": 1,
+      "log": "settings-model2-missing-utf8-build.log",
+      "sha256": "2ac612ed33f96f99841d9f6c16c1a4a9710918617340dbb0bf78560b85576258"
+    }
+  ]
+}
