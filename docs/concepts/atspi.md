@@ -22,6 +22,8 @@ the existing two-second native deadline; queue slots/bytes share the established
 replacement, bridge retirement and timeout cannot redirect work to another
 control. No model pointer is retained by the bridge. A successful UI assignment
 does not acknowledge a device/backend operation.
+Admission owns bounded success/cancellation replies, without retaining the
+complete incoming D-Bus call or allocating a new error reply at retirement.
 
 Numeric changes send `Object.PropertyChange` with detail `accessible-value` and
 a double variant. Existing value-string attributes remain. Bounds/step and Text

@@ -144,7 +144,7 @@ typedef struct nx_ax_numeric_request {
     uint64_t generation, context, id, incarnation, frame, deadline;
     nx_numeric_value_snapshot snapshot;
     double value;
-    DBusMessage *call, *reply;
+    DBusMessage *failure, *reply;
     int result;
 } nx_ax_numeric_request;
 typedef struct nx_ax_inflight {nx_ax_request request;struct nx_ax_inflight *previous;} nx_ax_inflight;
@@ -306,7 +306,7 @@ static void numeric_release(void *user) {
     nx_ax_numeric_request *r=user;
     if(r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
         if(r->reply)d.message_unref(r->reply);
-        if(r->call)d.message_unref(r->call);
+        if(r->failure)d.message_unref(r->failure);
         lease_release(r->lease);free(r);
     }
 }
@@ -330,7 +330,7 @@ static void numeric_reply(nx_ax_hub *h,nx_ax_numeric_request *r) {
     DBusMessage *reply=r->reply;r->reply=NULL;
     if(r->result!=1) {
         d.message_unref(reply);
-        reply=d.message_new_error(r->call,DBUS_ERROR_FAILED,"Numeric value was not applied");
+        reply=r->failure;r->failure=NULL;
     }
     if(h)nx_ax_send(h,reply,reply!=NULL);else if(reply)d.message_unref(reply);
 }
@@ -918,11 +918,16 @@ static int nx_ax_queue_numeric(nx_ax_ref ref,double value,DBusMessage *call,DBus
     for(nx_ax_inflight *f=b->inflight;f;f=f->previous)
         if(f->request.numeric && f->request.id==n->id)return 0;
     uint64_t now=nx_ax_now();if(!now || now>UINT64_MAX-2000u)return 0;
-    nx_ax_numeric_request *v=calloc(1,sizeof(*v));if(!v)return 0;
+    /* Retain bounded replies, not the caller's complete incoming message.
+       Cancellation can then reply without a fresh allocation at retirement. */
+    DBusMessage *failure=d.message_new_error(call,DBUS_ERROR_FAILED,"Numeric value was not applied");
+    if(!failure)return 0;
+    nx_ax_numeric_request *v=calloc(1,sizeof(*v));
+    if(!v){d.message_unref(failure);return 0;}
     atomic_init(&v->references,1);v->lease=b->lease;lease_retain(v->lease);
     v->generation=b->lease->generation;v->context=b->binding;v->frame=b->frame;
     v->id=n->id;v->incarnation=n->incarnation;v->snapshot=n->numeric;v->value=value;
-    v->deadline=now+2000u;v->call=d.message_ref(call);v->reply=reply;
+    v->deadline=now+2000u;v->failure=failure;v->reply=reply;
     nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.numeric=v;q.action=NX_ACTION_SET_VALUE;
     b->requests[b->request_count++]=q;b->request_bytes+=sizeof(*v);return 1;
 }
