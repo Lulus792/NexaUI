@@ -11,10 +11,10 @@ def main():
     args=p.parse_args();here=Path(__file__).resolve().parent;original=args.original.resolve(strict=True)
     subprocess.run([sys.executable,str(here/'../35_aetheri_files_consumer/check_source.py'),str(original),str(here/'source-inputs.json')],check=True)
     receipt=json.loads(args.sdk_receipt.read_text());binding=json.loads(args.sdk_source_binding.read_text())
-    if receipt['sdk_version'] not in ('0.1.27','0.1.28') or not re.fullmatch('[0-9a-f]{40}',binding['source_revision']):raise SystemExit('Wrong SDK receipt/source binding')
+    if receipt['sdk_version'] not in ('0.1.27','0.1.28','0.1.29') or not re.fullmatch('[0-9a-f]{40}',binding['source_revision']):raise SystemExit('Wrong SDK receipt/source binding')
     library=args.sdk_library.resolve(strict=True)
     if not any((x.get('path')==str(library) or (x.get('name') and str(library).endswith('/'+x['name']))) and x['sha256']==digest(library) for x in receipt['artifact_files']):raise SystemExit('Changed or unrecorded installed SDK library')
-    if library.name not in ('libnexaui.a','libnexaui.so.0.1.27','libnexaui.so.0.1.28'):raise SystemExit('Wrong installed SDK library kind')
+    if library.name not in ('libnexaui.a','libnexaui.so.0.1.27','libnexaui.so.0.1.28','libnexaui.so.0.1.29'):raise SystemExit('Wrong installed SDK library kind')
     source=(original/'tools/test_editor_graphical.py').read_text();changes=[]
     def replace(before,after):
         nonlocal source
@@ -40,7 +40,7 @@ def main():
     accessible_flow=here/'native_accessible_flow.py.inc'
     if args.accessible_client:
         args.accessible_client=args.accessible_client.resolve(strict=True)
-        if receipt['sdk_version']!='0.1.28':raise SystemExit('Native document accessibility requires the checked0.1.28 SDK')
+        if receipt['sdk_version'] not in ('0.1.28','0.1.29'):raise SystemExit('Native document accessibility requires a checked0.1.28/0.1.29 SDK')
         replace("'DBUS_SESSION_BUS_ADDRESS': 'unix:path=' + str(root / 'absent-bus')", "'DBUS_SESSION_BUS_ADDRESS': os.environ['NEXAUI_EDITOR_TEST_ATSPI_ADDRESS']")
         replace("    for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS'):\n        env.pop(name, None)",
             "    for name in ('DISPLAY', 'WAYLAND_SOCKET'):\n        env.pop(name, None)\n    env['AT_SPI_BUS_ADDRESS']=os.environ['NEXAUI_EDITOR_TEST_ATSPI_ADDRESS']")
