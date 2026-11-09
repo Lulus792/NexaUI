@@ -2,7 +2,7 @@
 
 ## 0.1.31 — Development snapshot
 
-- Added optional `nx_font_name_utf8` and `nx_font_get_style` metadata queries over the existing SFNT table reader. Bounded caller-owned UTF-8 names and versioned OS/2 weight/width/slant have explicit missing/unsupported/malformed outcomes; font opening and rendering do not depend on metadata. Original Editor attribute integration and native adoption remain separate work.
+- Added optional `nx_font_name_utf8` and `nx_font_get_style` metadata queries over the existing SFNT table reader. Bounded caller-owned UTF-8 names and versioned OS/2 weight/width/slant have explicit missing/unsupported/malformed outcomes; font opening and rendering do not depend on metadata. See the [verified source and remaining owner work](docs/quality/font-metadata-report.md). Original Editor attribute integration and native adoption remain separate work.
 
 ## 0.1.30 — Development snapshot
 

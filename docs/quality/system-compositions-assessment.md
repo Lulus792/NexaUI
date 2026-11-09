@@ -1,5 +1,15 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Font metadata prerequisite: SDK0.1.31/source9f0b229 exposes optional bounded
+UTF-8 names and OS/2 weight/width/slant through the existing font reader. Three
+installed profiles pass111 selected tests/twelve private native tasks, three
+external consumers and twelve real-font runs. All1086 Git inputs and319 objects
+are bound; two compiled defects fail with sanitizers active. See the
+[metadata report](font-metadata-report.md). Actual original Editor attributes,
+broader native interfaces, AX/UIA and physical/human/design/performance/normal
+adoption remain next/open; all103 IDs and remaining packets6–8 persist. Active
+Aetheri source/pin/default/build remains unchanged.
+
 Original Editor geometry: consumer364b122 reuses compiled042bf58 and installed
 SDKaa899fb/0.1.30. The existing original paint/layout supplies copied clipped
 cluster/caret cells, including combining/CRLF and real-font ffi coverage. Three

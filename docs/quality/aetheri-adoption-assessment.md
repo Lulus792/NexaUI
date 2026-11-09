@@ -1,5 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+## Optional static-face font metadata (2026-11-09)
+
+SDK0.1.31/source9f0b229 adds bounded caller-owned UTF-8 name and OS/2
+weight/width/slant queries through the existing SFNT reader. Three installed
+profiles pass111 selected CTests, twelve private AT-SPI tasks, three external
+C17 package consumers and twelve real-font runs. Both compiled name-priority
+and weight-offset defects fail the final tests with active sanitizers. All1086
+Git inputs and319 SDK/test/consumer objects are bound; previous public
+declarations and539 Linux definitions remain, with exactly two added functions.
+The [metadata report](font-metadata-report.md) retains the failed package-version
+check, test-fixture leak and strict-compiler finding. All seven required exact-source
+CI jobs pass, with full logs and history bound. This is a prerequisite;
+actual original Editor attributes/defaults/runs remain next. Font coverage,
+broader interfaces, AX/UIA and physical/human/design/performance/normal adoption
+remain open. Aetheri2188c3a retains all53 consumed inputs and is unchanged;
+all103 IDs and remaining packets6–8 persist.
+
 ## Original rendered Editor document geometry (2026-11-09)
 
 Consumer364b122 reuses compiled042bf58 and installed SDKaa899fb/0.1.30.

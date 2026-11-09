@@ -1,0 +1,72 @@
+{
+  "result": "passed",
+  "source_revision": "9f0b2294d04d7f5fdd63d3fe5c118b2bd222eade",
+  "font": {
+    "borrowed_vm_path": "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+    "local_path": "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+    "size": 319508,
+    "sha256": "f2b83c763e8afd21709333370bed4774337fae82267937e2b5aea7e2fbd922c1"
+  },
+  "commands": [
+    {
+      "profile": "release",
+      "command": [
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-release/nexaui_font_metadata_tests",
+        "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+        "Liberation Mono",
+        "400",
+        "0"
+      ],
+      "exit": 0,
+      "log": "/mnt/d/NexaUI/out/font-metadata-owner-font4-release.log",
+      "binary": {
+        "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-release/nexaui_font_metadata_tests",
+        "size": 40632,
+        "sha256": "6a727021e6e7c6c26f40b38a6a53917cfb4b0ccfccd50a8c517d79eeec910211"
+      },
+      "log_sha256": "59f788c4b9049d53ffba63cd95b19b18e070a137908d0950199315167977ffd1"
+    },
+    {
+      "profile": "shared",
+      "command": [
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-shared/nexaui_font_metadata_tests",
+        "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+        "Liberation Mono",
+        "400",
+        "0"
+      ],
+      "exit": 0,
+      "log": "/mnt/d/NexaUI/out/font-metadata-owner-font4-shared.log",
+      "binary": {
+        "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-shared/nexaui_font_metadata_tests",
+        "size": 31800,
+        "sha256": "b1988504b5d5c8aa527845c4b7fb8109d920c4aa1ca6838481ed2b211dde673c"
+      },
+      "log_sha256": "59f788c4b9049d53ffba63cd95b19b18e070a137908d0950199315167977ffd1"
+    },
+    {
+      "profile": "asan",
+      "command": [
+        "/mnt/d/NexaUI/out/font-metadata-sdk4-asan/nexaui_font_metadata_tests",
+        "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+        "Liberation Mono",
+        "400",
+        "0"
+      ],
+      "exit": 0,
+      "log": "/mnt/d/NexaUI/out/font-metadata-owner-font4-asan.log",
+      "binary": {
+        "path": "/mnt/d/NexaUI/out/font-metadata-sdk4-asan/nexaui_font_metadata_tests",
+        "size": 3029096,
+        "sha256": "c06c2c0fe781ed3c21c64177324c1b6378fd2c70a19a22eb8dc428811cf9f59c"
+      },
+      "log_sha256": "59f788c4b9049d53ffba63cd95b19b18e070a137908d0950199315167977ffd1"
+    }
+  ],
+  "scope": "Actual original Editor mono-font metadata through three current SDK builds. Borrowed font bytes are runtime-only and excluded from evidence archives. This does not implement original native attribute publication.",
+  "previous_original_runtime_font": {
+    "path": "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+    "size": 319508,
+    "sha256": "f2b83c763e8afd21709333370bed4774337fae82267937e2b5aea7e2fbd922c1"
+  }
+}

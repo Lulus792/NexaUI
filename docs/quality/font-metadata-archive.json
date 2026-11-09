@@ -1,0 +1,25 @@
+{
+  "archives": [
+    {
+      "path": "D:/NexaUI/out/nexaui-font-metadata-sdk4-20261109.tar.gz",
+      "sha256": "096dbd9724f63a7ae5008dfc7cd7f15aa622aee2e2b3b81b9b0a9b6c0dd5e345",
+      "files": 6481,
+      "links": 10,
+      "directories": 4403,
+      "verified": true,
+      "name": "nexaui-font-metadata-sdk4-20261109.tar.gz",
+      "size": 196365343
+    },
+    {
+      "path": "D:/NexaUI/out/nexaui-font-metadata-evidence-20261109.tar.gz",
+      "sha256": "c6b192240f2165a37fd8a7ccc7558c3f023e6b008046451df6b11a988d38b7f9",
+      "files": 40,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-font-metadata-evidence-20261109.tar.gz",
+      "size": 722365
+    }
+  ],
+  "scope": "All archive member types/modes/sizes/hashes verified. Current builds and prior configured/failed/package-version/Clang-warning/fixture-control attempts retained. Borrowed font bytes are not redistributed. No active Aetheri source/pin/default/build or quota/mount/driver/sanitizer settings changed."
+}
