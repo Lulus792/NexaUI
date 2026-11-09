@@ -1,4 +1,5 @@
 #include "nexaui/nexaui.h"
+#include "ascii_run.h"
 
 nx_result nx_utf8_decode(const char *bytes, size_t length,
                          size_t *offset, uint32_t *out_scalar) {
@@ -46,6 +47,10 @@ nx_result nx_utf8_validate(const char *bytes, size_t length, size_t *error_offse
     size_t offset = 0;
     uint32_t scalar;
     while (offset < length) {
+        if ((unsigned char)bytes[offset] <= 0x7fu) {
+            offset += nx_ascii_prefix(bytes + offset, length - offset);
+            continue;
+        }
         size_t start = offset;
         if (nx_utf8_decode(bytes, length, &offset, &scalar) != NX_OK) {
             if (error_offset) *error_offset = start;

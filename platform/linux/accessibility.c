@@ -3,6 +3,7 @@
 #include "../../src/context_identity.h"
 #include "../../src/selection_model.h"
 #include "../../src/text_value.h"
+#include "../../src/ascii_run.h"
 #include <stdatomic.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -373,6 +374,12 @@ static void nx_ax_prepare_text(nx_ax_node *n,size_t length) {
         (n->state&NX_SEM_PROTECTED) || memchr(n->value,0,length) ||
         (n->text_selection.present && (n->text_selection.anchor>length ||
         n->text_selection.cursor>length))) return;
+    if (length<=INT32_MAX && nx_ascii_prefix(n->value,length)==length) {
+        n->text_bytes=length;n->text_count=(int32_t)length;
+        n->text_anchor=n->text_selection.present?(int32_t)n->text_selection.anchor:-1;
+        n->text_cursor=n->text_selection.present?(int32_t)n->text_selection.cursor:-1;
+        n->text_ready=1;return;
+    }
     size_t offset=0; int32_t count=0,anchor=-1,cursor=-1;
     while (offset<length) {
         if (n->text_selection.present && offset==n->text_selection.anchor) anchor=count;
