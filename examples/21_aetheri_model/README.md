@@ -10,6 +10,14 @@ ID; stale observations are visible but disabled. An unpopulated model is shown
 as not yet observed, not as a confirmed empty output list. Escape and the Close
 button request an orderly exit.
 
+Supply a complete immutable export for the chosen model version. Current
+Settings models also need `src/audio/types.h` and the original UTF-8 helper
+`src/text/grapheme.c`, `grapheme.h` and `grapheme_data.h`. The build exposes the
+original `src` include root and compiles that helper when present. Older
+model-only exports remain supported. This example still presents display,
+appearance and language; compiling the current sound model does not add a Sound
+page, connect an audio service or submit device changes.
+
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:
 

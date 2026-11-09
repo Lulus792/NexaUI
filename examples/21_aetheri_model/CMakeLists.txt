@@ -6,7 +6,13 @@ if(NOT EXISTS "${AETHERI_SOURCE_DIR}/src/settings/model.c" OR NOT EXISTS "${AETH
     message(FATAL_ERROR "Set AETHERI_SOURCE_DIR to the desired Aetheri source snapshot")
 endif()
 add_library(aetheri_model STATIC "${AETHERI_SOURCE_DIR}/src/settings/model.c")
-target_include_directories(aetheri_model PUBLIC "${AETHERI_SOURCE_DIR}/src/settings")
+target_include_directories(aetheri_model PUBLIC
+    "${AETHERI_SOURCE_DIR}/src/settings" "${AETHERI_SOURCE_DIR}/src")
+# Current models validate sound observations with their own UTF-8 helper.
+# Older model-only exports remain usable without a text module.
+if(EXISTS "${AETHERI_SOURCE_DIR}/src/text/grapheme.c")
+    target_sources(aetheri_model PRIVATE "${AETHERI_SOURCE_DIR}/src/text/grapheme.c")
+endif()
 target_compile_features(aetheri_model PUBLIC c_std_17)
 add_library(aetheri_view STATIC view.c ../common/text_wrap.c)
 target_include_directories(aetheri_view PUBLIC ../common)
