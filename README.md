@@ -69,8 +69,9 @@ installed SDK. Source-bound keyboard, AT-SPI and model-lifetime checks remain
 separate from admitted audio-service integration and normal Aetheri adoption.
 Its [audio-owner composition](docs/quality/settings-audio-report.md) adds an
 explicit caller-host target and controlled native pending/loss/close checks.
-SDK0.1.32 supplies [ordered slider/drag semantic steps](docs/quality/value-steps-report.md);
-real session/device effects and standard native numeric Value interfaces remain open.
+SDK0.1.32 supplies [ordered slider/drag semantic steps](docs/quality/value-steps-report.md).
+SDK0.1.33 adds [copied numeric values and Linux AT-SPI assignment](docs/quality/numeric-value-report.md);
+UIA/AX numeric bindings and real session/device effects remain open.
 
 The Editor's [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation

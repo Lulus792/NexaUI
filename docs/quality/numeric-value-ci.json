@@ -1,0 +1,237 @@
+{
+  "source_revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "run_id": 42696490764,
+  "run_attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764",
+  "result": "passed",
+  "jobs": [
+    {
+      "id": 129429596566,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596566",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        271,
+        271
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:56:41.8028808Z 100/271 Test #100: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T20:57:55.1533739Z 157/271 Test #157: nexaui_numeric_value ..................................................   Passed    0.02 sec",
+        "2026-11-09T20:57:55.1695079Z 158/271 Test #158: nexaui_numeric_value_guard ............................................   Passed    0.02 sec",
+        "2026-11-09T21:01:30.0525486Z 100/271 Test #100: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T21:02:43.3116749Z 157/271 Test #157: nexaui_numeric_value ..................................................   Passed    0.02 sec",
+        "2026-11-09T21:02:43.3260996Z 158/271 Test #158: nexaui_numeric_value_guard ............................................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596566.log",
+        "size": 340004,
+        "sha256": "1fce0eed0974ecd5bd3f82d349d66abf8fc63b4667c80cfec019c60984a1ba58"
+      }
+    },
+    {
+      "id": 129429596725,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596725",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        147
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:49:46.9956658Z  58/147 Test  #58: nexaui_numeric_value .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596725.log",
+        "size": 102105,
+        "sha256": "9742a067ecd703585ba6b44eb228febec76c197ebf606b4fb4d772057172380a"
+      }
+    },
+    {
+      "id": 129429596845,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596845",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        122
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:49:15.4217170Z  52/122 Test  #52: nexaui_numeric_value .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596845.log",
+        "size": 111390,
+        "sha256": "12339af6eee9c588fe629ca7bb27289ee31052ed39e6ecb8bb5ca777909c0c38"
+      }
+    },
+    {
+      "id": 129429596882,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596882",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        271,
+        1
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:51:33.3082789Z 100/271 Test #100: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T20:52:41.3328796Z 157/271 Test #157: nexaui_numeric_value ..................................................   Passed    0.00 sec",
+        "2026-11-09T20:52:41.3348300Z 158/271 Test #158: nexaui_numeric_value_guard ............................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596882.log",
+        "size": 314161,
+        "sha256": "26f451b652524a0f79426234150a848710f650dbe8bf2a539c6802550b065137"
+      }
+    },
+    {
+      "id": 129429596885,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596885",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        123
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:49:33.3793400Z  52/123 Test  #52: nexaui_numeric_value .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596885.log",
+        "size": 111699,
+        "sha256": "055d554693b80e6ae6e1e1fa6c18b6c0c8558657831a1beb08d643217e16dcb5"
+      }
+    },
+    {
+      "id": 129429596916,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596916",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        146
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:49:50.5565907Z  58/146 Test  #58: nexaui_numeric_value .......................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596916.log",
+        "size": 102052,
+        "sha256": "3a74b6324894b0bdaf5cb9c49a847758c9fc2e8f978659d8ec524916f4408256"
+      }
+    },
+    {
+      "id": 129429596996,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429596996",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+      "test_summaries": [
+        269
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T20:51:01.5083929Z 100/269 Test #100: nexaui_atspi_numeric_value_wayland_private ............................   Passed    0.24 sec",
+        "2026-11-09T20:52:09.2642744Z 156/269 Test #156: nexaui_numeric_value ..................................................   Passed    0.00 sec",
+        "2026-11-09T20:52:09.2663061Z 157/269 Test #157: nexaui_numeric_value_guard ............................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/numeric-value-sdk2-ci-129429596996.log",
+        "size": 307854,
+        "sha256": "bdfde08107f309f074bccc74163d6535898abec5bb3d84ae5eb9e37ade6b2636"
+      }
+    },
+    {
+      "id": 129429598456,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429598456",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+    },
+    {
+      "id": 129429598613,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42696490764/job/129429598613",
+      "head_sha": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+    }
+  ],
+  "scope": "All seven required exact-source SDK/package jobs pass on first attempt. Two optional jobs skipped; no CTest skips. Numeric public API executes on all three platforms; private guard and real AT-SPI Value cancellation execute on Linux, twice in sanitizer driver orders. Independent original audio tasks have separate local evidence. UIA/AX numeric bindings, services/devices, human/physical/performance and general adoption remain open."
+}

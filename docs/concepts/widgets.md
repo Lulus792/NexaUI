@@ -47,6 +47,8 @@ numeric requests additionally support these two built-ins through the
 [numeric contract](accessibility.md#copied-numeric-values) and Linux AT-SPI Value.
 The [numeric-step report](../quality/value-steps-report.md) retains exact-source
 regressions, detected defects and native original-volume evidence.
+The [numeric Value follow-up](../quality/numeric-value-report.md) binds the
+absolute-write contract, deferred native cancellations and original consumer.
 
 `nx_value_control_desc.control` supplies the stable ID, accessible name, bounds, disabled state and optional visible text layout. Both calls register a slider semantic node with increment, decrement and set-value capability bits. Its copied numeric value string reflects the updated model in the same frame. The current drag-value visualization is a marker on a track; applications can provide a text layout for a visible numeric label. Vertical sliders, UIA/AX range-value bindings and numeric support for other kinds remain pending; capability bits on custom widgets do not implement arbitrary native value assignment.
 

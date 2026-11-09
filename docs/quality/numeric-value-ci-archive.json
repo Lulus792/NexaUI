@@ -1,0 +1,200 @@
+{
+  "archive": "/mnt/d/NexaUI/out/nexaui-numeric-value2-ci-20261109.tar.gz",
+  "size": 1291914,
+  "sha256": "ee178762d321b5a78e8d4b24d2b11a26cdefa7a48fcb6ae9683f302ba7fe709c",
+  "files": 37,
+  "verified_each_member": true,
+  "font_bytes_bundled": false,
+  "source_revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "run_id": 42696490764,
+  "run_attempt": 1,
+  "complete_decoded_logs": 7,
+  "scope": "Immutable exact-source final CI/documentation supplement: seven complete decoded logs, final API metadata, final public reports/receipts/reconciliations and verification helpers. Own receipt and subsequent publication/docs-check are sidecars, avoiding self-referential hashes.",
+  "members": [
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596566.log",
+      "size": 340004,
+      "sha256": "1fce0eed0974ecd5bd3f82d349d66abf8fc63b4667c80cfec019c60984a1ba58"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596725.log",
+      "size": 102105,
+      "sha256": "9742a067ecd703585ba6b44eb228febec76c197ebf606b4fb4d772057172380a"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596845.log",
+      "size": 111390,
+      "sha256": "12339af6eee9c588fe629ca7bb27289ee31052ed39e6ecb8bb5ca777909c0c38"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596882.log",
+      "size": 314161,
+      "sha256": "26f451b652524a0f79426234150a848710f650dbe8bf2a539c6802550b065137"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596885.log",
+      "size": 111699,
+      "sha256": "055d554693b80e6ae6e1e1fa6c18b6c0c8558657831a1beb08d643217e16dcb5"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596916.log",
+      "size": 102052,
+      "sha256": "3a74b6324894b0bdaf5cb9c49a847758c9fc2e8f978659d8ec524916f4408256"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-129429596996.log",
+      "size": 307854,
+      "sha256": "bdfde08107f309f074bccc74163d6535898abec5bb3d84ae5eb9e37ade6b2636"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-final-jobs.json",
+      "size": 70823,
+      "sha256": "868540ca2705d73f35c8cfe0c7d8cc6872d2b120acfdffdcf2e945e5fc45d3e5"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-final-run.json",
+      "size": 13443,
+      "sha256": "0c64019698e2300ac7468047ba1f16be168a18f94170bf799dfaaf067349772c"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-jobs.json",
+      "size": 70314,
+      "sha256": "f5e84dcd6435b45d552cecff7fe0a1ca5d8e4d1a3e29cc383025e1e4e41a985c"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-run.json",
+      "size": 13440,
+      "sha256": "b426cdbbab1975e3058c83d2909374188f97ab98b44879ade4c55b9caf9e99ef"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci-runs.json",
+      "size": 14390,
+      "sha256": "b7df1b866f136f4b7815960488fa65d24774fa1fc5a6ccf15b635820a41ebb8b"
+    },
+    {
+      "path": "ci/numeric-value-sdk2-ci.json",
+      "size": 10215,
+      "sha256": "53fbe92e22bd38032d2f94f17954a90261e0e8bdc32d4b0a1d03686df95462c3"
+    },
+    {
+      "path": "documentation/CHANGELOG.md",
+      "size": 37934,
+      "sha256": "ca3ff586d94b50cd336b7902be2064c8be71b02685484e98e8510fbd03f8307d"
+    },
+    {
+      "path": "documentation/README.md",
+      "size": 23708,
+      "sha256": "003c6205da0770692eac161abf38c974ff20b8a28a6e32249069a9e7e2a79620"
+    },
+    {
+      "path": "documentation/docs/concepts/accessibility.md",
+      "size": 32338,
+      "sha256": "bb594d0a8cf443ede5394f80e6ebfc6dec108cb634e0e5a5afb5dceed7a5d1bb"
+    },
+    {
+      "path": "documentation/docs/concepts/atspi.md",
+      "size": 16299,
+      "sha256": "401c68a9da6e3e885b97ec1ff3c62f6a95e94a77f283f368e640bbfaad746e0b"
+    },
+    {
+      "path": "documentation/docs/concepts/widgets.md",
+      "size": 26340,
+      "sha256": "17418906b9198c2e29c229fe9d2919f20a45d1244ecfe6b729d50fbc96e64dfb"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-adoption-assessment.md",
+      "size": 466581,
+      "sha256": "488ba9dfbe5c16754e9a79afb498d5f38d58f8b8921af5b54cccf934e7a80183"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-requirement-map.md",
+      "size": 273470,
+      "sha256": "ac46d40e8e35054cd8402b6f1623116e2004d756ddf9ab5ee3839e2f34f72d6c"
+    },
+    {
+      "path": "documentation/docs/quality/numeric-value-archive.json",
+      "size": 2099031,
+      "sha256": "d21cc0045b1ea04fa14554928ec3b30d52774f3cdaffaf1cbe3206922babd9ef"
+    },
+    {
+      "path": "documentation/docs/quality/numeric-value-ci.json",
+      "size": 10215,
+      "sha256": "53fbe92e22bd38032d2f94f17954a90261e0e8bdc32d4b0a1d03686df95462c3"
+    },
+    {
+      "path": "documentation/docs/quality/numeric-value-local.json",
+      "size": 708009,
+      "sha256": "80dc4a83bccb09797c124da4e7cfdab1d265953a0868e1a599ef8dae522a482c"
+    },
+    {
+      "path": "documentation/docs/quality/numeric-value-report.md",
+      "size": 11204,
+      "sha256": "15c50531b45ec143a04b83a3baa60ecfd088c334eb92f2750f2d22d80f3ee09e"
+    },
+    {
+      "path": "documentation/docs/quality/numeric-value-settings-local.json",
+      "size": 206721,
+      "sha256": "7fca2c0a47b895005420ede45bc77ef717e3fb5f380d9040d7b56cd0edb4c245"
+    },
+    {
+      "path": "documentation/docs/quality/system-compositions-assessment.md",
+      "size": 30908,
+      "sha256": "574016e9993532a49f8fce6ee24330b8cefef928fc6eb784c780afede00cd967"
+    },
+    {
+      "path": "documentation/examples/21_aetheri_model/README.md",
+      "size": 12010,
+      "sha256": "b6857fbf256ed48cb925b121b1fae1b596a3cdd424e19728b450187bbcd27cf6"
+    },
+    {
+      "path": "documentation/include/nexaui/nexaui.h",
+      "size": 171279,
+      "sha256": "69d93da18a573187cb0deaa0c7181a3895af075337ff60f315f3211d17ef3637"
+    },
+    {
+      "path": "documentation/tests/aetheri_settings_audio/README.md",
+      "size": 4409,
+      "sha256": "140e46eebeec0f97de1f5a3eae4b32d7bb795dedb3d44a03dfc7bbae5f66bdad"
+    },
+    {
+      "path": "verification/archive_numeric_value2.py",
+      "size": 3525,
+      "sha256": "047aa37f6f1cbdd1a64e3b0159b428d1003beb5176ffb0f5c856d90328778e07"
+    },
+    {
+      "path": "verification/archive_numeric_value2_ci.py",
+      "size": 2912,
+      "sha256": "bb52274c47588bfeaeba7eeff563b84be758472499c520bbf88ad7d5b52c8a94"
+    },
+    {
+      "path": "verification/bind_numeric_value2.py",
+      "size": 14639,
+      "sha256": "719125cc27d577c3efab68940d7c80f844d64265a489110d6f64c733ebd0fc9d"
+    },
+    {
+      "path": "verification/bind_numeric_value2_ci.py",
+      "size": 3644,
+      "sha256": "7f95f820ff5edc052d9ff51ad7f615847bb3b0f655bde4d35937136ec95d1f67"
+    },
+    {
+      "path": "verification/check_numeric_value2_docs.py",
+      "size": 6924,
+      "sha256": "e41aafe942ece0423cb2f14888584fe40101cdf2f202dcf34e7c4e1fae430ddf"
+    },
+    {
+      "path": "verification/numeric-value-sdk2-binding-notes.json",
+      "size": 1013,
+      "sha256": "b428951df9add358ec7f8c1edaa0d72fdf09ac235fb954b29972e75be0c5ee7f"
+    },
+    {
+      "path": "verification/numeric-value-sdk2-docs-precheck.json",
+      "size": 809,
+      "sha256": "49b10608be9fdbf3f67018f6b1e61bfdea40a0e2fb63fb74b0e8b0287d910ccc"
+    },
+    {
+      "path": "verification/prepare_numeric_value2_docs.py",
+      "size": 4271,
+      "sha256": "9c555fa8bc848e4466950304bbca665674d8d8acb1838fba9f3bbfa4ffde2aca"
+    }
+  ]
+}

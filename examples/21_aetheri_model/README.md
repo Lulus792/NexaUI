@@ -106,8 +106,10 @@ The [isolated audio fixture](../../tests/aetheri_settings_audio/README.md) combi
 the unchanged original entry/pump/GLib adapter with explicitly controlled test
 observations and an independent AT-SPI peer. It supplies no real service or
 device effect. The 0.1.32 minimum includes the slider/drag-value semantic-step
-path required by native assistive volume actions; numeric Value interfaces and
-other accessibility acceptance remain separate work.
+path required by native assistive volume actions. Installed0.1.33 additionally
+supports [standard Linux AT-SPI Value](../../docs/quality/numeric-value-report.md)
+through the optional numeric peer mode; UIA/AX numeric bindings and broader
+accessibility acceptance remain separate work.
 
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:

@@ -1,5 +1,21 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Numeric Value follow-up: SDK0.1.33/source `1e00a6f` adds copied slider/drag
+numeric snapshots and bounded absolute writes, plus guarded Linux AT-SPI Value.
+The optional original Settings consumer frozen at `d889494`/Aetheri `7934590`
+uses the final installed SDK without changing its model or owner. Three SDK
+profiles and enabled/default-OFF consumers pass86 local CTests, three installed
+packages and15 native workflows (three already included as CTests). All305
+positive objects,1,100 SDK/50 consumer inputs,36 generated files and16 captures
+are bound; all543 old ELF definitions remain. The published0.1.32 host and an
+unreleased false-ack prototype are rejected by unchanged final regressions.
+All seven exact-source CI jobs pass on attempt1. See the
+[numeric Value report](numeric-value-report.md) for receipts, external-client
+limitations, negative evidence and remaining gates. UIA/AX numeric bindings,
+other controls, actual service/device/compositor/IME/font, physical/human,
+performance and normal adoption remain open. All103 IDs/statuses and remaining
+packets6–8 persist; active Aetheri source/pin/default/build/processes are untouched.
+
 Original Settings audio-owner composition: Example21/source `a8ef31d` optionally
 links the unchanged original Aetheri `564dc2c` entry, pump and GLib host through
 an explicit caller-owned target. Installed SDK0.1.32/source `f1c9641` supplies the
