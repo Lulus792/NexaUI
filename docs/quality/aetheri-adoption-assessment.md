@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Original Editor focus-paint followup: source `b0a254c` uses installed SDK0.1.33/
+`1e00a6f` and original7bbe704 sources. A regression rejects the old late-focus
+dirty reset;91 local CTests and24 actual modal-paint cases pass. Shared and
+sanitizer complete168 native captures;82/84 whole-image pairs match, with only
+temporary-directory text differing in the remaining two pairs. Ordinary Release/OFF
+clipboard runs fail with native timeouts; their logs and a separate diagnostic
+remain open evidence. No SDK production/API/version or active Aetheri change is
+introduced. All103 IDs and packets6–8 remain; see the
+[focus-paint report](editor-focus-paint-report.md).
+
 Original Editor native follow-up: source `02ba99e` composes installed
 SDK0.1.33/source `1e00a6f` with the unchanged original7bbe704 owner. A restored
 private source-checked compositor environment executes four complete native

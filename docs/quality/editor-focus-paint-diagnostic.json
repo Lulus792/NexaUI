@@ -1,0 +1,83 @@
+{
+  "source_revision": "b0a254c80102d0458893d997ce5dc0fef7f1bc2a",
+  "profile": [
+    {
+      "file": "/tmp/nexaui-editor-native54/native67-release/candidate-editor-native.py",
+      "line": 477,
+      "function": "stream_frames",
+      "primitive_calls": 13,
+      "calls": 13,
+      "self_seconds": 0.054089378,
+      "cumulative_seconds": 5.0265622500000005
+    },
+    {
+      "file": "/tmp/nexaui-editor-native54/native67-release/candidate-editor-native.py",
+      "line": 50,
+      "function": "log",
+      "primitive_calls": 2366,
+      "calls": 2366,
+      "self_seconds": 0.049896122,
+      "cumulative_seconds": 27.634262087000003
+    },
+    {
+      "file": "/tmp/nexaui-editor-native54/native67-release/candidate-editor-native.py",
+      "line": 54,
+      "function": "view",
+      "primitive_calls": 1287,
+      "calls": 1287,
+      "self_seconds": 0.056080785,
+      "cumulative_seconds": 14.475133799000002
+    },
+    {
+      "file": "/tmp/nexaui-editor-native54/native67-release/candidate-editor-native.py",
+      "line": 99,
+      "function": "capture",
+      "primitive_calls": 28,
+      "calls": 28,
+      "self_seconds": 15.557017126000002,
+      "cumulative_seconds": 36.790877436
+    },
+    {
+      "file": "/tmp/nexaui-editor-native54/native67-release/candidate-editor-native.py",
+      "line": 70,
+      "function": "state",
+      "primitive_calls": 1012,
+      "calls": 1012,
+      "self_seconds": 0.259381623,
+      "cumulative_seconds": 10.284829799
+    }
+  ],
+  "files": [
+    {
+      "path": "/tmp/nexaui-editor-native54/native67-release/diagnostic-driver.prof",
+      "size": 146460,
+      "sha256": "ae424dfe71300ff7be4f8d8154b7b9f89524cb3975754445eeb3ffc84661c150"
+    },
+    {
+      "path": "/tmp/nexaui-editor-native54/native67-release/diagnostic-driver-profile.txt",
+      "size": 3945,
+      "sha256": "38566027b0aa5bb467de3c4a3b5da4905608b4250ed3818478f4cbb9a70a8670"
+    },
+    {
+      "path": "/tmp/nexaui-editor-native54/native67-release/diagnostic-private-bus.log",
+      "size": 38701572,
+      "sha256": "3334ea60c8e5bfb28b5ce3f3371d6062dfa8368e345194fb95c13152a6408f9d"
+    },
+    {
+      "path": "/tmp/nexaui-editor-native54/native67-release/diagnostic-metadata.json",
+      "size": 488,
+      "sha256": "e982e650f1a5d7c055ac6f4aec3633ebfac4128180809ffeaad7642ffdf0b45c"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-native66-release.json",
+      "size": 3152,
+      "sha256": "82f15b3a013acefb6738bf846d4cccef7a734a14f929262714aa066a03d8281b"
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/editor-native67-release.json",
+      "size": 3150,
+      "sha256": "4b4b7aed3ea3c23efb5945db0b0d0e52b1624baadebc7f840f439649fdef3665"
+    }
+  ],
+  "scope": "Separate diagnostic only. Full workflow completed with cProfile/private-bus monitor; no ordinary native acceptance or timeout repair. Read costs identify a next hypothesis; scheduling/host effects and failed ordinary Release/OFF runs remain open."
+}
