@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.30 — Development snapshot
+
+- Added optional copied document presentation through `nx_text_document_set_presentation`: owner-supplied cluster/caret rectangles and default/range text attributes bound to the current document identity/revision. Linux AT-SPI reads the owned snapshot for character/range extents, hit testing and attributes, with change notifications and explicit unavailable geometry. Existing registration APIs and structure layouts are preserved. Original Editor layout adoption, AX/UIA presentation and physical/human acceptance remain separate.
+
 ## 0.1.29 — Development snapshot
 
 - Added opt-in original Editor partial-byte/held-EOF clipboard acceptance with a standalone foreign-provider test adapter. Existing owner/SDK/compositor stay unchanged; native tasks cover incomplete UTF-8, all bytes before EOF, original IME/caret/review/tab invalidation and Save/exit with an open writer. See the [source-specific tests and remaining gates](docs/quality/editor-stream-report.md).

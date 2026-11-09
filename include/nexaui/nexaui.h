@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 29
+#define NX_VERSION_PATCH 30
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -929,6 +929,36 @@ typedef struct nx_text_document_result {
     nx_result edit_result; /* NX_OK with applied=0 also means no admitted edit. */
     int applied;
 } nx_text_document_result;
+
+/* Optional application-owned presentation for that exact copied document.
+   Byte ranges are UTF-8 scalar boundaries, never native character indices.
+   A box may cover a cluster/ligature: all its scalars share those bounds.
+   A zero-length range is an explicit caret rectangle. All bounds are logical
+   window coordinates, before native coordinate translation. */
+#define NX_TEXT_DOCUMENT_PRESENTATION_MAX_BYTES (8u * 1024u * 1024u)
+#define NX_TEXT_DOCUMENT_PRESENTATION_MAX_BOXES 65536u
+#define NX_TEXT_DOCUMENT_PRESENTATION_MAX_RUNS 4096u
+#define NX_TEXT_DOCUMENT_PRESENTATION_MAX_ATTRIBUTES 32u
+typedef struct nx_text_document_box {
+    size_t start_byte, end_byte;
+    nx_rect bounds;
+} nx_text_document_box;
+typedef struct nx_text_document_attribute {
+    nx_utf8_span name, value;
+} nx_text_document_attribute;
+typedef struct nx_text_document_attribute_run {
+    size_t start_byte, end_byte;
+    const nx_text_document_attribute *attributes;
+    size_t attribute_count;
+} nx_text_document_attribute_run;
+typedef struct nx_text_document_presentation {
+    const nx_text_document_box *boxes;
+    size_t box_count;
+    const nx_text_document_attribute *defaults;
+    size_t default_count;
+    const nx_text_document_attribute_run *runs;
+    size_t run_count;
+} nx_text_document_presentation;
 
 /* S04: a real-time line plot over one borrowed S03 series. The application
    owns state and a reusable envelope buffer of at least one element per
@@ -2026,6 +2056,22 @@ NX_API nx_result nx_text_document_register_with_clipboard(nx_context *context,
     const nx_widget_desc *widget, const nx_text_document_state *state,
     nx_text_document_apply apply, void *user,
     const nx_text_document_clipboard *clipboard, nx_text_document_result *out_result);
+/* Copy optional presentation after registering this frame's document and after
+   applying any admitted edit. identity/revision must match its current copied
+   state. No layout/model pointer is retained. Call at most once per node/frame;
+   failed validation/allocation leaves it unattached and permits retry.
+   Boxes are sorted by (start,end), with at most one caret at a boundary and no
+   overlapping nonempty ranges; gaps explicitly have no published geometry.
+   Runs are sorted nonempty, nonoverlapping ranges. Attributes have unique
+   nonempty UTF-8 names (max128 bytes) and UTF-8 values (max4096 bytes), no NUL.
+   Defaults apply throughout the document; runs override matching names.
+   Zero defaults/runs explicitly describe no attributes. Names/values use the
+   consumer's native text-attribute vocabulary; no CSS/shaping is performed.
+   Missing geometry returns UNSUPPORTED, never a fabricated character rectangle.
+   Ordinary keyboard/IME/model/layout ownership remains with the application.
+   Native adapter coverage is documented separately. */
+NX_API nx_result nx_text_document_set_presentation(nx_context *context,uint64_t id,
+    uint64_t identity,uint64_t revision,const nx_text_document_presentation *presentation);
 /* Set logical keyboard focus to a registered, enabled focusable region in
    the current or previous frame. Tab/Shift+Tab traverse registration order. */
 NX_API nx_result nx_focus_set(nx_context *context, uint64_t id);

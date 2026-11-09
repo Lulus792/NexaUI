@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(NexaUI VERSION 0.1.29 LANGUAGES C)
+project(NexaUI VERSION 0.1.30 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -21,7 +21,7 @@ endif()
 string(TOLOWER "${NEXAUI_SOURCE_REVISION}" NEXAUI_SOURCE_REVISION_NORMALIZED)
 configure_file(cmake/source_revision.h.in generated/source_revision.h @ONLY)
 
-add_library(nexaui src/nexaui.c src/headless.c src/renderer_backend.c src/theme.c src/color.c src/utf8.c src/grapheme.c src/word.c src/line.c src/bidi.c src/shape.c src/gsub.c src/gpos.c src/gpos_marks.c src/ot_layout.c src/text_layout.c src/text_buffer.c src/virtual_list.c src/table.c src/tree.c src/docking.c src/search.c src/snapshot.c src/sim_channel.c src/series.c src/arena.c src/layout.c src/font.c src/glyf.c src/raster.c src/glyph_cache.c src/font_collection.c src/unicode_data.c platform/common/event_queue.c platform/common/drop_queue.c platform/common/uri_list.c)
+add_library(nexaui src/nexaui.c src/document_presentation.c src/headless.c src/renderer_backend.c src/theme.c src/color.c src/utf8.c src/grapheme.c src/word.c src/line.c src/bidi.c src/shape.c src/gsub.c src/gpos.c src/gpos_marks.c src/ot_layout.c src/text_layout.c src/text_buffer.c src/virtual_list.c src/table.c src/tree.c src/docking.c src/search.c src/snapshot.c src/sim_channel.c src/series.c src/arena.c src/layout.c src/font.c src/glyf.c src/raster.c src/glyph_cache.c src/font_collection.c src/unicode_data.c platform/common/event_queue.c platform/common/drop_queue.c platform/common/uri_list.c)
 target_include_directories(nexaui PRIVATE platform/common src ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_sources(nexaui PRIVATE src/text_stamp.c)
 target_sources(nexaui PRIVATE src/paint.c)
@@ -1108,7 +1108,9 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_atspi_cache_budget_client PRIVATE PkgConfig::NEXAUI_ATSPI)
             add_executable(nexaui_atspi_document_clipboard_client tests/atspi_document_clipboard_client.c)
             target_link_libraries(nexaui_atspi_document_clipboard_client PRIVATE PkgConfig::NEXAUI_ATSPI)
-            foreach(target nexaui_atspi_text_document_host nexaui_atspi_text_document_client nexaui_atspi_cache_budget_client nexaui_atspi_document_clipboard_client)
+            add_executable(nexaui_atspi_document_presentation_client tests/atspi_document_presentation_client.c)
+            target_link_libraries(nexaui_atspi_document_presentation_client PRIVATE PkgConfig::NEXAUI_ATSPI)
+            foreach(target nexaui_atspi_text_document_host nexaui_atspi_text_document_client nexaui_atspi_cache_budget_client nexaui_atspi_document_clipboard_client nexaui_atspi_document_presentation_client)
                 set_target_properties(${target} PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
                 target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
             endforeach()
@@ -1117,6 +1119,12 @@ if(NEXAUI_BUILD_TESTS)
                     ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_text_document_client>
                     $<TARGET_FILE:nexaui_atspi_text_document_host>)
             set_tests_properties(nexaui_atspi_text_document_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
+                RESOURCE_LOCK native_display)
+            add_test(NAME nexaui_atspi_document_presentation_wayland_private
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
+                    ${NEXAUI_ATSPI_REGISTRY} $<TARGET_FILE:nexaui_atspi_document_presentation_client>
+                    $<TARGET_FILE:nexaui_atspi_text_document_host>)
+            set_tests_properties(nexaui_atspi_document_presentation_wayland_private PROPERTIES TIMEOUT 70 SKIP_RETURN_CODE 77
                 RESOURCE_LOCK native_display)
             add_test(NAME nexaui_atspi_cache_budget_wayland_private
                 COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_atspi_multiselection_wayland.py
@@ -1513,6 +1521,11 @@ if(NEXAUI_BUILD_TESTS)
     set_target_properties(nexaui_text_document_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
     add_test(NAME nexaui_text_document COMMAND nexaui_text_document_tests)
     set_tests_properties(nexaui_text_document PROPERTIES TIMEOUT 30)
+    add_executable(nexaui_document_presentation_tests tests/test_document_presentation.c)
+    target_include_directories(nexaui_document_presentation_tests PRIVATE src)
+    target_link_libraries(nexaui_document_presentation_tests PRIVATE NexaUI::NexaUI)
+    set_target_properties(nexaui_document_presentation_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+    add_test(NAME nexaui_document_presentation COMMAND nexaui_document_presentation_tests)
     add_executable(nexaui_utf8_validation_tests tests/test_utf8_validation.c)
     target_link_libraries(nexaui_utf8_validation_tests PRIVATE NexaUI::NexaUI)
     set_target_properties(nexaui_utf8_validation_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)

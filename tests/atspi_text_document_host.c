@@ -16,6 +16,7 @@ typedef struct fixture {
     char *cache_name;
     int clipboard_enabled,clipboard_fail;
     char *clipboard;size_t clipboard_length;
+    int presentation,presentation_changed;
 } fixture;
 static nx_text_document_state state(fixture *f) {
     uint32_t operations=NX_TEXT_DOCUMENT_SELECT|(f->readonly?0u:NX_TEXT_DOCUMENT_REPLACE);
@@ -58,6 +59,7 @@ static int frame(fixture *f) {
     nx_semantic_desc root={0};root.id=1;root.role=NX_ROLE_WINDOW;
     root.name=(nx_utf8_span){"External document fixture",25};root.bounds=(nx_rect){0,0,320,160};
     root.state=f->disabled?NX_SEM_DISABLED:0;
+    if(f->presentation)root.bounds=(nx_rect){5.75f,6.5f,310,150};
     nx_widget_desc w={0};w.semantic.id=2;w.semantic.parent_id=1;w.semantic.role=NX_ROLE_TEXT_FIELD;
     w.semantic.name=(nx_utf8_span){"External document",17};w.semantic.bounds=(nx_rect){8,8,300,140};
     w.semantic.state=f->readonly?NX_SEM_READONLY:0;w.semantic.actions=NX_ACTION_FOCUS|(f->readonly?0u:NX_ACTION_SET_VALUE);
@@ -69,6 +71,25 @@ static int frame(fixture *f) {
             nx_text_document_register_with_clipboard(f->context,&w,&s,edit,f,&clipboard,&result):
             nx_text_document_register(f->context,&w,&s,edit,f,&result);
         if(registered!=NX_OK)return 0;
+        if(f->presentation) {
+            nx_text_document_box boxes[65];size_t count=0,at=0;float x=f->presentation_changed?30.25f:20.25f;
+            while(at<f->length && count<64) {
+                size_t start=at;uint32_t scalar;
+                if(nx_utf8_decode(f->bytes,f->length,&at,&scalar)!=NX_OK)return 0;
+                float width=scalar>0xffff?16.0f:8.0f;
+                boxes[count++]=(nx_text_document_box){start,at,{x,30.5f,width,15}};x+=width;
+            }
+            if(at==f->length)boxes[count++]=(nx_text_document_box){at,at,{x,30.5f,0,15}};
+            nx_text_document_attribute defaults[]={{{"family-name",11},{"Fixture mono",12}},{{"weight",6},{"400",3}}};
+            nx_text_document_attribute override={{"weight",6},{f->presentation_changed?"600":"700",3}};
+            nx_text_document_attribute_run run={0};size_t runs=0;
+            if(count>1 && boxes[1].start_byte<boxes[1].end_byte) {run=(nx_text_document_attribute_run){boxes[1].start_byte,boxes[1].end_byte,&override,1};runs=1;}
+            nx_text_document_presentation p={boxes,count,defaults,2,&run,runs};
+            /* An admitted edit may have changed the copied identity/revision. */
+            nx_text_document_state current=state(f);
+            if(nx_text_document_set_presentation(f->context,2,current.identity,current.revision,&p)!=NX_OK)return 0;
+            memset(boxes,0,sizeof(boxes));memset(defaults,0,sizeof(defaults));memset(&override,0,sizeof(override));
+        }
     }
     if(f->cache_name)for(unsigned i=0;i<3072;++i) {
         nx_semantic_desc label={0};label.id=100u+i;label.parent_id=1;label.role=NX_ROLE_TEXT;
@@ -90,6 +111,7 @@ int main(int argc,char **argv) {
         f.cache_name=malloc(1537);if(!f.cache_name)goto done;
         memset(f.cache_name,'c',1536);f.cache_name[1536]=0;
     } else if(argc==2 && !strcmp(argv[1],"--clipboard"))f.clipboard_enabled=1;
+    else if(argc==2 && !strcmp(argv[1],"--presentation"))f.presentation=1;
     else if(argc!=1)return 2;
     nx_window_desc d={"External document fixture",320,160,0,{0}};
     if(!replace_local(&f,"A\xc3\xa9\xf0\x9f\x8c\x8dZ",8,0) || nx_window_create(&d,&f.window)!=NX_OK ||
@@ -116,6 +138,10 @@ int main(int argc,char **argv) {
         else if(!strcmp(input,"omit")){f.omitted=1;++f.revision;}
         else if(!strcmp(input,"restore")){f.omitted=0;++f.revision;}
         else if(!strcmp(input,"fail")){f.fail=1;publish=0;}
+        else if(!strcmp(input,"presentation-change")){f.presentation_changed=1;}
+        else if(!strcmp(input,"presentation-same")){/* Republish identical owned data. */}
+        else if(!strcmp(input,"presentation-off")){f.presentation=0;}
+        else if(!strcmp(input,"presentation-on")){f.presentation=1;}
         else if(!strcmp(input,"clip-check")) {
             if(f.clipboard_length!=6 || memcmp(f.clipboard,"\xc3\xa9\xf0\x9f\x8c\x8d",6))goto done;
             publish=0;

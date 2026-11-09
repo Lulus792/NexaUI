@@ -5,6 +5,7 @@
 #include "context_identity.h"
 #include "text_command.h"
 #include "text_value.h"
+#include "document_presentation.h"
 #include "selection_model.h"
 #include "source_revision.h"
 
@@ -122,6 +123,7 @@ typedef struct nx_semantic_record {
     uint32_t state, actions;
     nx_text_value_target text_value;
     nx_text_selection_snapshot text_selection;
+    size_t presentation_offset, presentation_bytes;
     int text_snapshot_only;
     nx_selection_target selection_target;
     uint64_t selection_membership;
@@ -3118,6 +3120,42 @@ nx_result nx_text_document_register_with_clipboard(nx_context *ctx,const nx_widg
     const nx_text_document_state *state,nx_text_document_apply apply,void *user,
     const nx_text_document_clipboard *clipboard,nx_text_document_result *out_result) {
     return nx_text_document_register_private(ctx,widget,state,apply,user,clipboard,out_result);
+}
+
+nx_result nx_text_document_set_presentation(nx_context *ctx,uint64_t id,uint64_t identity,
+    uint64_t revision,const nx_text_document_presentation *description) {
+    if(!ctx || !id || !identity || !revision || !description)return NX_ERROR_ARGUMENT;
+    if(ctx->state!=1u)return NX_ERROR_STATE;
+    uint32_t index=nx_semantic_find_index(&ctx->semantics,id);
+    if(index==UINT32_MAX)return NX_ERROR_STATE;
+    nx_semantic_record *node=&ctx->semantics.nodes[index];
+    if(!(node->text_value.document_operations&NX_TEXT_DOCUMENT_BOUND) ||
+       node->text_value.identity!=identity || node->text_value.revision!=revision ||
+       node->presentation_bytes || (node->state&NX_SEM_PROTECTED))return NX_ERROR_STATE;
+    nx_utf8_span value={node->value_length?ctx->semantics.text+node->value_offset:"",node->value_length};
+    nx_document_presentation *staging=NULL;
+    nx_result result=nx_document_presentation_build(value,description,&staging);
+    if(result!=NX_OK)return result;
+    size_t count=ctx->semantics.count,old=ctx->semantics.text_count,alignment=_Alignof(max_align_t);
+    size_t padding=(alignment-old%alignment)%alignment;
+    uint64_t frame=ctx->frame_serial;
+    result=nx_semantic_reserve_text(ctx,padding+staging->bytes);
+    if(ctx->state!=1u || ctx->frame_serial!=frame || ctx->semantics.count!=count ||
+       ctx->semantics.text_count!=old || ctx->semantics.nodes[index].id!=id ||
+       ctx->semantics.nodes[index].text_value.identity!=identity ||
+       ctx->semantics.nodes[index].text_value.revision!=revision ||
+       ctx->semantics.nodes[index].presentation_bytes){free(staging);return NX_ERROR_STATE;}
+    if(result!=NX_OK){free(staging);return result;}
+    node=&ctx->semantics.nodes[index];node->presentation_offset=old+padding;node->presentation_bytes=staging->bytes;
+    memset(ctx->semantics.text+old,0,padding);memcpy(ctx->semantics.text+node->presentation_offset,staging,staging->bytes);
+    ctx->semantics.text_count+=padding+staging->bytes;free(staging);return NX_OK;
+}
+
+const nx_document_presentation *nx_context_document_presentation(const nx_context *ctx,uint64_t id) {
+    if(!ctx || ctx->state!=2u)return NULL;
+    uint32_t index=nx_semantic_find_index(&ctx->semantics,id);
+    if(index==UINT32_MAX || !ctx->semantics.nodes[index].presentation_bytes)return NULL;
+    return (const nx_document_presentation *)(const void *)(ctx->semantics.text+ctx->semantics.nodes[index].presentation_offset);
 }
 
 nx_result nx_semantics_find(const nx_context *ctx, uint64_t id,

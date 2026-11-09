@@ -3,6 +3,7 @@
 #include "../../src/context_identity.h"
 #include "../../src/selection_model.h"
 #include "../../src/text_value.h"
+#include "../../src/document_presentation.h"
 #include "../../src/ascii_run.h"
 #include <stdatomic.h>
 #include <pthread.h>
@@ -83,6 +84,7 @@ typedef struct nx_ax_node {
     size_t text_bytes;
     int32_t text_count, text_anchor, text_cursor;
     int text_ready, text_snapshot_only;
+    const nx_document_presentation *presentation;
     int intrinsic_disabled;
     int owner_multiple;
     char *name, *description, *value;
@@ -411,6 +413,12 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
             if (lengths[j]>=NX_AX_LIMIT || bytes>NX_AX_LIMIT-lengths[j]-1u) return NX_ERROR_LIMIT;
             bytes+=lengths[j]+1u;
         }
+        const nx_document_presentation *presentation=nx_context_document_presentation(context,v.id);
+        if(presentation) {
+            size_t alignment=_Alignof(max_align_t),padding=(alignment-bytes%alignment)%alignment;
+            if(presentation->bytes>NX_AX_LIMIT-padding || bytes>NX_AX_LIMIT-padding-presentation->bytes)return NX_ERROR_LIMIT;
+            bytes+=padding+presentation->bytes;
+        }
     }
     nx_ax_snapshot *s=b->spare;
     int staged=!s || s->capacity<bytes;
@@ -464,6 +472,13 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
             text[spans[j].length]=0; text+=spans[j].length+1u;
         }
         nx_ax_prepare_text(n,spans[2].length);
+        const nx_document_presentation *presentation=nx_context_document_presentation(context,v.id);
+        if(presentation) {
+            size_t alignment=_Alignof(max_align_t),offset=(size_t)(text-(char *)s);
+            size_t padding=(alignment-offset%alignment)%alignment;
+            memset(text,0,padding);text+=padding;n->presentation=(const nx_document_presentation *)(const void *)text;
+            memcpy(text,presentation,presentation->bytes);text+=presentation->bytes;
+        }
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
             b->snapshot->nodes[old].text_ready==n->text_ready &&
@@ -518,6 +533,8 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
             native->nodes[i].name=(char *)native+(s->nodes[i].name-(char *)s);
             native->nodes[i].description=(char *)native+(s->nodes[i].description-(char *)s);
             native->nodes[i].value=(char *)native+(s->nodes[i].value-(char *)s);
+            if(s->nodes[i].presentation)native->nodes[i].presentation=(const nx_document_presentation *)(const void *)
+                ((char *)native+((const char *)s->nodes[i].presentation-(char *)s));
         }
         free(s);nx_ax_snapshot *previous=b->spare;b->spare=native;
         if(previous)b->allocator.deallocate(b->allocator.user,previous,previous->capacity);
@@ -1106,6 +1123,9 @@ static int nx_ax_text_range(DBusMessageIter *it,const nx_ax_node *n,int32_t star
     memcpy(copy,n->value+first,bytes); copy[bytes]=0;
     int ok=nx_ax_string(it,copy); free(copy); return ok;
 }
+static int nx_ax_rectangle(nx_ax_ref r,nx_rect bounds,uint32_t coordinates,int32_t out[4]);
+static int nx_ax_point(nx_ax_ref r,int x,int y,uint32_t coordinates);
+#include "atspi_document_presentation.inc"
 static int nx_ax_text_call(nx_ax_ref r,DBusMessage *call,const char *member,DBusMessageIter *it) {
     nx_ax_node *n=nx_ax_node_at(r);
     if (!n || !n->text_ready) return -2;
@@ -1142,9 +1162,9 @@ static int nx_ax_text_call(nx_ax_ref r,DBusMessage *call,const char *member,DBus
         int32_t last=n->text_anchor<n->text_cursor?n->text_cursor:n->text_anchor;
         return nx_ax_int(it,first) && nx_ax_int(it,last);
     }
-    /* Unimplemented movement, edit, geometry, non-character granularity and attribute
-       operations are explicit failures; no fabricated success or coordinates. */
-    return -5;
+    /* Remaining movement/non-character granularity operations stay explicit
+       failures. Presentation queries read only the owned completed snapshot. */
+    return nx_ax_document_presentation_call(r,call,member,it);
 }
 static int nx_ax_action_call(nx_ax_ref r,DBusMessage *call,const char *member,DBusMessageIter *it) {
     if (!strcmp(member,"GetActions")) {
@@ -1201,9 +1221,8 @@ static int nx_ax_selection_call(nx_ax_ref r,DBusMessage *call,const char *member
     if(!strcmp(member,"DeselectChild"))return nx_ax_boolean(it,selected_child && nx_ax_queue(child,NX_ACTION_DESELECT));
     return -2;
 }
-static int nx_ax_extents(nx_ax_ref r,uint32_t coordinates,int32_t out[4]) {
+static int nx_ax_rectangle(nx_ax_ref r,nx_rect bounds,uint32_t coordinates,int32_t out[4]) {
     if (coordinates>2u) return -1;
-    nx_rect bounds=nx_ax_bounds(r);
     /* Round the window-space rectangle once. Coordinate-system changes are
        translations of that same native pixel rectangle, including fractional
        semantic parent positions. Width/height must not change with the origin. */
@@ -1223,6 +1242,9 @@ static int nx_ax_extents(nx_ax_ref r,uint32_t coordinates,int32_t out[4]) {
         right-left<0 || right-left>INT32_MAX || bottom-top<0 || bottom-top>INT32_MAX) return -5;
     out[0]=(int32_t)left; out[1]=(int32_t)top; out[2]=(int32_t)(right-left); out[3]=(int32_t)(bottom-top);
     return 1;
+}
+static int nx_ax_extents(nx_ax_ref r,uint32_t coordinates,int32_t out[4]) {
+    return nx_ax_rectangle(r,nx_ax_bounds(r),coordinates,out);
 }
 static int nx_ax_point(nx_ax_ref r,int x,int y,uint32_t coordinates) {
     int32_t v[4]; int result=nx_ax_extents(r,coordinates,v);
@@ -1803,6 +1825,10 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         if (strcmp(a->name,n->name)) nx_ax_event(r,"PropertyChange","accessible-name",0,0,n->name,NULL);
         if (strcmp(a->description,n->description)) nx_ax_event(r,"PropertyChange","accessible-description",0,0,n->description,NULL);
         nx_ax_text_delta(r,a,n);
+        if(!nx_ax_document_styles_equal(a->presentation,n->presentation))
+            nx_ax_event(r,"TextAttributesChanged","",0,0,NULL,NULL);
+        if(!nx_ax_document_geometry_equal(a->presentation,n->presentation))
+            nx_ax_event(r,"VisibleDataChanged","",0,0,NULL,NULL);
         if (!n->text_target.document_operations && strcmp(a->value,n->value))
             nx_ax_event(r,"AttributesChanged","nexaui-value",0,0,n->value,NULL);
         if (a->bounds.x!=n->bounds.x || a->bounds.y!=n->bounds.y ||

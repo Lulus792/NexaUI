@@ -85,7 +85,11 @@ still limited to 64 KiB. The document snapshot can be 8 MiB, but each native Tex
 reply is limited to 1 MiB: use explicit ranges for larger reads; oversized replies
 fail instead of silently truncating. The document is not duplicated into the
 custom `nexaui-value` attribute. Native clipboard operations, text geometry and
-attributes are not provided by this entry. Windows Text/TextRange coverage,
+attributes are not provided by this entry. The separate0.1.30
+[copied presentation entry](document-presentation.md) optionally adds owner
+geometry and attributes with Linux AT-SPI queries and change events. Original
+Editor layout adoption and other native bridges remain separate.
+Windows Text/TextRange coverage,
 screenreader acceptance and original Aetheri Editor adoption remain separate
 work. This API does not draw text or implement ordinary keyboard/IME handling.
 
