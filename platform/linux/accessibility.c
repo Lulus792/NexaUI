@@ -415,7 +415,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         }
         const nx_document_presentation *presentation=nx_context_document_presentation(context,v.id);
         if(presentation) {
-            size_t alignment=_Alignof(max_align_t),padding=(alignment-bytes%alignment)%alignment;
+            size_t alignment=NX_DOCUMENT_PRESENTATION_ALIGNMENT,padding=(alignment-bytes%alignment)%alignment;
             if(presentation->bytes>NX_AX_LIMIT-padding || bytes>NX_AX_LIMIT-padding-presentation->bytes)return NX_ERROR_LIMIT;
             bytes+=padding+presentation->bytes;
         }
@@ -474,7 +474,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         nx_ax_prepare_text(n,spans[2].length);
         const nx_document_presentation *presentation=nx_context_document_presentation(context,v.id);
         if(presentation) {
-            size_t alignment=_Alignof(max_align_t),offset=(size_t)(text-(char *)s);
+            size_t alignment=NX_DOCUMENT_PRESENTATION_ALIGNMENT,offset=(size_t)(text-(char *)s);
             size_t padding=(alignment-offset%alignment)%alignment;
             memset(text,0,padding);text+=padding;n->presentation=(const nx_document_presentation *)(const void *)text;
             memcpy(text,presentation,presentation->bytes);text+=presentation->bytes;

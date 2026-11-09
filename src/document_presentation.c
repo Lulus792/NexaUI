@@ -16,7 +16,7 @@ static int add(size_t *bytes,size_t extra) {
     *bytes+=extra;return 1;
 }
 static int align_bytes(size_t *bytes) {
-    size_t alignment=_Alignof(max_align_t),extra=(alignment-*bytes%alignment)%alignment;
+    size_t alignment=NX_DOCUMENT_PRESENTATION_ALIGNMENT,extra=(alignment-*bytes%alignment)%alignment;
     return add(bytes,extra);
 }
 static nx_result attributes_size(const nx_text_document_attribute *a,size_t count,size_t *bytes) {

@@ -3136,7 +3136,7 @@ nx_result nx_text_document_set_presentation(nx_context *ctx,uint64_t id,uint64_t
     nx_document_presentation *staging=NULL;
     nx_result result=nx_document_presentation_build(value,description,&staging);
     if(result!=NX_OK)return result;
-    size_t count=ctx->semantics.count,old=ctx->semantics.text_count,alignment=_Alignof(max_align_t);
+    size_t count=ctx->semantics.count,old=ctx->semantics.text_count,alignment=NX_DOCUMENT_PRESENTATION_ALIGNMENT;
     size_t padding=(alignment-old%alignment)%alignment;
     uint64_t frame=ctx->frame_serial;
     result=nx_semantic_reserve_text(ctx,padding+staging->bytes);

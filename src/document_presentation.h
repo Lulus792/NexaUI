@@ -19,6 +19,16 @@ typedef struct nx_document_presentation {
     nx_document_attributes defaults;
 } nx_document_presentation;
 
+/* Align only the actual stored types; some supported C17 SDK headers do not
+   declare max_align_t. The caller's allocator already must align these types. */
+typedef union nx_document_presentation_alignment {
+    nx_document_presentation header;
+    nx_text_document_box box;
+    nx_document_attribute attribute;
+    nx_document_attribute_run run;
+} nx_document_presentation_alignment;
+#define NX_DOCUMENT_PRESENTATION_ALIGNMENT _Alignof(nx_document_presentation_alignment)
+
 /* System-allocated staging, freed with free(). All source validation and copying
    precede any application allocator. Complete value is an already copied UTF-8
    document. No native coordinate conversions or model callbacks occur here. */

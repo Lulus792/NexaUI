@@ -46,6 +46,9 @@ static int ordinary(void) {
     CHECK(nx_end_frame(c)==NX_OK && nx_text_document_set_presentation(c,1,77,9,&d)==NX_ERROR_STATE);
 #ifdef PRIVATE_QUERIES
     const nx_document_presentation *p=nx_context_document_presentation(c,1);CHECK(p && p->text_bytes==7 && p->box_count==3);
+    CHECK((uintptr_t)p%NX_DOCUMENT_PRESENTATION_ALIGNMENT==0 &&
+        p->box_offset%_Alignof(nx_text_document_box)==0 && p->run_offset%_Alignof(nx_document_attribute_run)==0 &&
+        p->defaults.offset%_Alignof(nx_document_attribute)==0);
     nx_rect box;size_t byte,start,end;
     CHECK(nx_document_presentation_character(p,1,&box)==NX_OK && box.x==40.25f);
     CHECK(nx_document_presentation_character(p,3,&box)==NX_OK && box.x==20.5f && box.width==16);
