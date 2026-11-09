@@ -1,6 +1,24 @@
 # Packet 6 system compositions: implemented sources and external seams
 
-Original Settings/Sound composition: optional Example21 at `a45b553` compiles
+Original Settings audio-owner composition: Example21/source `a8ef31d` optionally
+links the unchanged original Aetheri `564dc2c` entry, pump and GLib host through
+an explicit caller-owned target. Installed SDK0.1.32/source `f1c9641` supplies the
+ordered slider/drag semantic-step fix exposed by the old native failure. Three
+enabled and two default-OFF profiles pass38 consumer CTests; the SDK separately
+passes39 selected tests and three installed consumers. Six actual private
+AT-SPI tasks verify pending/acknowledged commands, permanent loss fencing and
+pending/unknown state after original window return. Sources/objects are bound
+to50 consumer and1,091 SDK Git inputs;16 headless captures retain eight current
+and four old-reference whole-image equalities. See the
+[audio composition report](settings-audio-report.md) and
+[numeric-step report](value-steps-report.md) for exact revisions, raw archives,
+CI history and detected old-SDK/compiled defects. Observations/effects are
+controlled test boundaries: actual session admission/device effects, Q04,
+canonical fonts/IME, standard numeric Value interfaces, physical/human,
+performance and normal adoption remain open. All103 IDs/statuses and packets6–8
+are preserved; active Aetheri source/pin/default/build/processes stay untouched.
+
+Earlier Settings/Sound composition: optional Example21 at `a45b553` compiles
 the original Aetheri `509766e` view, model and ordinary Wayland host against
 installed SDK `0.1.31`. Three enabled profiles pass 24 CTests; default-OFF
 current/legacy adds 8, and the unchanged instrumented SDK prerequisite passes 10.

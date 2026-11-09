@@ -1,0 +1,245 @@
+{
+  "archive": "/mnt/d/NexaUI/out/nexaui-settings-audio4-ci-20261109.tar.gz",
+  "size": 939472,
+  "sha256": "46dc915d0a85fbc73bd48122325ffac702ca3ae61e8616f6e5c229708b7824f7",
+  "files": 46,
+  "verified_each_member": true,
+  "font_bytes_bundled": false,
+  "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+  "run_id": 42673442896,
+  "run_attempt": 2,
+  "complete_decoded_logs": 12,
+  "scope": "Separate immutable CI/documentation supplement. Includes both attempts, twelve complete decoded job logs, raw metadata/retry history, exact documentation and verification scripts. Its own receipt and later publication/docs-check result are sidecars, avoiding self-referential hashes.",
+  "members": [
+    {
+      "path": "ci/settings-audio3-ci-archive1.json",
+      "size": 8623,
+      "sha256": "2af0f8aff9dc2b7e29549aa371181bd9f22330a854dd505db27c0a685e2d9fda"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367256835.log",
+      "size": 110922,
+      "sha256": "4a84ac9a0e979a027e985eff30d958e40ba2b65825252e0ca3789ca33a6f03e4"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257101.log",
+      "size": 101598,
+      "sha256": "e13aad4cce6a659d9b1166324036c40a93d5aa0ee754b52b9563e6a8a8ff71db"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257250.log",
+      "size": 101650,
+      "sha256": "8e6270eb8f6a58221e61d2545ceedd3ff11b0f50666473f0b25dc4cca3779b90"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257267.log",
+      "size": 111231,
+      "sha256": "a4d1feb382d32aba7f13852c6302e7ba0ff635001ac9e79a56ee6b691086bb54"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257331.log",
+      "size": 304459,
+      "sha256": "d535b6962f7b7982e619c6ab2cb4259e5a3fd60673a1a46b135303186ad52062"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257383.log",
+      "size": 298139,
+      "sha256": "58a8cf1a7a0c87f87244bf9b6e1bce583ba126901c906d58339eeea07d7b0abc"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-job-129367257618.log",
+      "size": 337474,
+      "sha256": "78520fea21926c66e203026b860fb7e741e00c76ef693b44f1c98c1fd0060242"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-jobs.json",
+      "size": 70823,
+      "sha256": "26882e9eedeebaef28c9bc8844044feeb46e0d238bc8f2ce186ee1381fc49939"
+    },
+    {
+      "path": "ci/settings-audio3-ci-final-run.json",
+      "size": 13541,
+      "sha256": "3b8ff3cd459600b0cb257421c61f5fdf1c7882d735a8055528286488209b38b5"
+    },
+    {
+      "path": "ci/settings-audio3-ci-infrastructure-error.json",
+      "size": 390,
+      "sha256": "94fb66c2db9474cadb2f7255e642a1f7283b4140b3cad25f0e159174948d6f0e"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-checks.json",
+      "size": 21940,
+      "sha256": "aaeb97728128970134d8787193e3e23919b8ba8a9f108d3669df60183f9d2bbd"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-job-129350748568.log",
+      "size": 337474,
+      "sha256": "5915b85ba940a0417cb65bbabf0c4b992b7991d1bdb9ffb1e379a171524e5686"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-job-129350750671.log",
+      "size": 304459,
+      "sha256": "08d7a04e644d6c9ef3d85079e1aa2d927d51eab4c30d326af1f20d8e265db823"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-job-129350751722.log",
+      "size": 101529,
+      "sha256": "38fef7fe448b743eb3213614db8b8eb4b5feb99b8a9a1b3990a7c08b53e838ca"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-job-129350762326.log",
+      "size": 101651,
+      "sha256": "c60ccefbb1705761461323c9839065eb6bb3fb6327c920ec5ce8529edf939e18"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-job-129350762898.log",
+      "size": 111231,
+      "sha256": "a13fcad8c514b641d3819dd5ff3d5c500bfc640b58ad9ca5645fcbf538cdf2e2"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-jobs.json",
+      "size": 47836,
+      "sha256": "eb19e43ef7f8632afa7bd3beb7ce4aea45b89dc4dac587956fdfda779bd171ce"
+    },
+    {
+      "path": "ci/settings-audio3-ci-initial-run.json",
+      "size": 13463,
+      "sha256": "2b62b909a1bb44222182721a494dcc8762f6b123e0da0552a604228a78dfdda4"
+    },
+    {
+      "path": "ci/settings-audio3-ci-jobs.json",
+      "size": 47327,
+      "sha256": "e881c2e9f4b85b49f0ef69b0ac00b0ca68f10d1cc3f0c31ff440289156a5ab83"
+    },
+    {
+      "path": "ci/settings-audio3-ci-retry-request.json",
+      "size": 362,
+      "sha256": "cdfa37863ec920a1a0f40f55f536faface482656eabb6d7058f084526d1bed05"
+    },
+    {
+      "path": "ci/settings-audio3-ci-run.json",
+      "size": 13460,
+      "sha256": "5d6ccadaf74a62723a6b3bfc104249a9ca4e2f9c60e053ae8511198a077bafef"
+    },
+    {
+      "path": "ci/settings-audio3-ci-runs.json",
+      "size": 14410,
+      "sha256": "bfda51cfcaf8a4981042a4a29d4c395453238294620237558b6298988343f6b8"
+    },
+    {
+      "path": "ci/settings-audio3-ci-targeted-unavailable.json",
+      "size": 350,
+      "sha256": "a220bd5113234c12ba312740c1cc1748c21a94301e49c410f4147bc3fb724ac5"
+    },
+    {
+      "path": "ci/settings-audio3-ci.json",
+      "size": 20433,
+      "sha256": "450aeebba7f9355c84353703d9e6faa270feb6200ed4f8ec922678c43ca20c51"
+    },
+    {
+      "path": "documentation/README.md",
+      "size": 23618,
+      "sha256": "3d55e7f368f5314de97e43ede04b1ac609459b46859e946e159b6c4babd9090b"
+    },
+    {
+      "path": "documentation/docs/concepts/widgets.md",
+      "size": 26060,
+      "sha256": "7223b5fd9ad283c61bbce91aaa41738ee6a83dafb530ad96cc8ba577f2a2eaf4"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-adoption-assessment.md",
+      "size": 465428,
+      "sha256": "9852bef87a2245c8b9901545f50f3fe6900f28e09e0be74a880baeb2479608d7"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-requirement-map.md",
+      "size": 270522,
+      "sha256": "c1bbfe3c3c78c2630f7e720415fad7548e1f51964eb57208162d7c89ce7248b9"
+    },
+    {
+      "path": "documentation/docs/quality/settings-audio-archive.json",
+      "size": 329368,
+      "sha256": "85d906c678f437aea8a363997e22218a76be1c93b0937a1319e00d857f9838d9"
+    },
+    {
+      "path": "documentation/docs/quality/settings-audio-ci.json",
+      "size": 20433,
+      "sha256": "450aeebba7f9355c84353703d9e6faa270feb6200ed4f8ec922678c43ca20c51"
+    },
+    {
+      "path": "documentation/docs/quality/settings-audio-local.json",
+      "size": 188587,
+      "sha256": "613e91536da9ba1fb132414c0beffa5b43ef9e72b217a83ae409ae4e5c919ac1"
+    },
+    {
+      "path": "documentation/docs/quality/settings-audio-report.md",
+      "size": 10465,
+      "sha256": "ded74db92620f95f05ca1c2daab60f2a578f7226e7dafa1f32b1a37169595077"
+    },
+    {
+      "path": "documentation/docs/quality/system-compositions-assessment.md",
+      "size": 29755,
+      "sha256": "449daf81cd97b3e8e37cd2d2e9a5326ec0a1d7fdf58f0111c8c737a33828a2a3"
+    },
+    {
+      "path": "documentation/docs/quality/value-steps-local.json",
+      "size": 699512,
+      "sha256": "9d545382e3a13e558125d55a7418be71d94378de7985389749067afb390274ea"
+    },
+    {
+      "path": "documentation/docs/quality/value-steps-report.md",
+      "size": 4772,
+      "sha256": "11a667482ebc12122244a1e9d47f68880760eb54b9501a869138320647d1a71c"
+    },
+    {
+      "path": "documentation/examples/21_aetheri_model/README.md",
+      "size": 11857,
+      "sha256": "041c595e7dece69f1f9a8d22b1f631cef15fefa880e4cde873a3eed41431cdd5"
+    },
+    {
+      "path": "documentation/tests/aetheri_settings_audio/README.md",
+      "size": 3710,
+      "sha256": "bf7c806c5d328fb1ece4eca06ec2bf6c0fe3531217ced5ada4f614d8dcd439a8"
+    },
+    {
+      "path": "verification/archive_settings_audio4_ci.py",
+      "size": 2928,
+      "sha256": "2105d19d571274dc6f9360567218c1ecf302e0928272952cb262f45378a5e6ce"
+    },
+    {
+      "path": "verification/bind_settings_audio3_ci.py",
+      "size": 5235,
+      "sha256": "5bfdd930607223b56456c5c5d8bbb44de8a2dfb65b0840727f2ebdca394a8985"
+    },
+    {
+      "path": "verification/bind_settings_audio6.py",
+      "size": 12814,
+      "sha256": "b5f1291cceb7dd50c3c2c933fb625e498a3cecd52627cf0f1dc0bfd68adb40b5"
+    },
+    {
+      "path": "verification/check_settings_audio3_docs.py",
+      "size": 7876,
+      "sha256": "fee7beca821013e46ffa9df72eaf54f1ef325ce7eaa1386f626cc2a04ea56a93"
+    },
+    {
+      "path": "verification/finalize_settings_audio3_docs.py",
+      "size": 1760,
+      "sha256": "0f15566b31b23dc7b9dea10b77e1dbd5bc95d5c73a6c46cf503373476456a5ed"
+    },
+    {
+      "path": "verification/prepare_public_settings_audio3.py",
+      "size": 6004,
+      "sha256": "0a89b36937c61c960f4bda7e490e1174b305bd822ef00ffdc5b79e0e08c5a3c0"
+    },
+    {
+      "path": "verification/settings-audio3-docs-local-check.json",
+      "size": 994,
+      "sha256": "959576bdba6528026f18411b85838594aa3260948542653305cd2449974807a2"
+    },
+    {
+      "path": "verification/settings-audio3-preflight-notes.json",
+      "size": 2578,
+      "sha256": "cee5aa6763f907c383fa467496a26940ec663afb5c6f204a480877d40c57b82f"
+    }
+  ]
+}

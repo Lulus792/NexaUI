@@ -1,0 +1,438 @@
+{
+  "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+  "run_id": 42673442896,
+  "run_attempt": 2,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896",
+  "result": "passed",
+  "jobs": [
+    {
+      "id": 129367256835,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367256835",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        121
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T18:58:32.0151450Z  48/121 Test  #48: nexaui_overlay .............................   Passed    0.01 sec",
+        "2026-11-09T18:58:32.0406370Z  51/121 Test  #51: nexaui_value_controls ......................   Passed    0.01 sec",
+        "2026-11-09T18:58:47.3565150Z  71/121 Test  #71: nexaui_semantics ...........................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367256835.log",
+        "size": 110922,
+        "sha256": "4a84ac9a0e979a027e985eff30d958e40ba2b65825252e0ca3789ca33a6f03e4"
+      }
+    },
+    {
+      "id": 129367257101,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257101",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        145
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T18:59:16.4670547Z  54/145 Test  #54: nexaui_overlay .............................   Passed    0.02 sec",
+        "2026-11-09T18:59:16.5162805Z  57/145 Test  #57: nexaui_value_controls ......................   Passed    0.02 sec",
+        "2026-11-09T18:59:36.8326825Z  89/145 Test  #89: nexaui_semantics ...........................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257101.log",
+        "size": 101598,
+        "sha256": "e13aad4cce6a659d9b1166324036c40a93d5aa0ee754b52b9563e6a8a8ff71db"
+      }
+    },
+    {
+      "id": 129367257250,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257250",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        146
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T18:59:26.7923875Z  54/146 Test  #54: nexaui_overlay .............................   Passed    0.02 sec",
+        "2026-11-09T18:59:26.8595297Z  57/146 Test  #57: nexaui_value_controls ......................   Passed    0.02 sec",
+        "2026-11-09T18:59:42.9360903Z  89/146 Test  #89: nexaui_semantics ...........................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257250.log",
+        "size": 101650,
+        "sha256": "8e6270eb8f6a58221e61d2545ceedd3ff11b0f50666473f0b25dc4cca3779b90"
+      }
+    },
+    {
+      "id": 129367257267,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257267",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        122
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T18:58:47.2327400Z  48/122 Test  #48: nexaui_overlay .............................   Passed    0.01 sec",
+        "2026-11-09T18:58:47.2849400Z  51/122 Test  #51: nexaui_value_controls ......................   Passed    0.02 sec",
+        "2026-11-09T18:59:04.3571310Z  71/122 Test  #71: nexaui_semantics ...........................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257267.log",
+        "size": 111231,
+        "sha256": "a4d1feb382d32aba7f13852c6302e7ba0ff635001ac9e79a56ee6b691086bb54"
+      }
+    },
+    {
+      "id": 129367257331,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257331",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        268,
+        1
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T19:01:11.0446729Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.01 sec",
+        "2026-11-09T19:01:11.0712621Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.01 sec",
+        "2026-11-09T19:01:11.3724529Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257331.log",
+        "size": 304459,
+        "sha256": "d535b6962f7b7982e619c6ab2cb4259e5a3fd60673a1a46b135303186ad52062"
+      }
+    },
+    {
+      "id": 129367257383,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257383",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        266
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T19:01:04.0671860Z 151/266 Test #151: nexaui_overlay ........................................................   Passed    0.00 sec",
+        "2026-11-09T19:01:04.0731157Z 154/266 Test #154: nexaui_value_controls .................................................   Passed    0.00 sec",
+        "2026-11-09T19:01:04.3106525Z 171/266 Test #171: nexaui_semantics ......................................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257383.log",
+        "size": 298139,
+        "sha256": "58a8cf1a7a0c87f87244bf9b6e1bce583ba126901c906d58339eeea07d7b0abc"
+      }
+    },
+    {
+      "id": 129367257618,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367257618",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "test_summaries": [
+        268,
+        268
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T19:09:16.3769606Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.02 sec",
+        "2026-11-09T19:09:16.4469237Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.02 sec",
+        "2026-11-09T19:09:18.0251733Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.02 sec",
+        "2026-11-09T19:14:38.7076278Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.02 sec",
+        "2026-11-09T19:14:38.7817262Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.02 sec",
+        "2026-11-09T19:14:40.3463378Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-audio3-ci-final-job-129367257618.log",
+        "size": 337474,
+        "sha256": "78520fea21926c66e203026b860fb7e741e00c76ef693b44f1c98c1fd0060242"
+      }
+    },
+    {
+      "id": 129367259613,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367259613",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321"
+    },
+    {
+      "id": 129367259957,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129367259957",
+      "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321"
+    }
+  ],
+  "initial_attempt": {
+    "run_attempt": 1,
+    "result": "failure",
+    "jobs": [
+      {
+        "id": 129350748568,
+        "name": "sanitizers",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129350748568",
+        "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+        "test_summaries": [
+          268,
+          268
+        ],
+        "required_steps": [
+          "Test",
+          "Require executed Wayland results",
+          "Test reverse driver discovery order",
+          "Require executed reverse-order Wayland results",
+          "Compare two fixed Vulkan driver discovery orders"
+        ],
+        "relevant_test_lines": [
+          "2026-11-09T18:33:41.1408173Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.02 sec",
+          "2026-11-09T18:33:41.2036326Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.02 sec",
+          "2026-11-09T18:33:42.5753950Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.02 sec",
+          "2026-11-09T18:39:00.0823987Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.02 sec",
+          "2026-11-09T18:39:00.1435393Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.02 sec",
+          "2026-11-09T18:39:01.5410334Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.02 sec"
+        ],
+        "log": {
+          "path": "D:/NexaUI/out/settings-audio3-ci-initial-job-129350748568.log",
+          "size": 337474,
+          "sha256": "5915b85ba940a0417cb65bbabf0c4b992b7991d1bdb9ffb1e379a171524e5686"
+        }
+      },
+      {
+        "id": 129350750671,
+        "name": "core (ubuntu-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129350750671",
+        "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+        "test_summaries": [
+          268,
+          1
+        ],
+        "required_steps": [
+          "Configure installed consumer",
+          "Build installed consumer",
+          "Run installed consumer (Unix)",
+          "Configure close-request consumer",
+          "Build close-request consumer",
+          "Run close-request consumer (Unix)",
+          "Configure add_subdirectory consumer",
+          "Build add_subdirectory consumer"
+        ],
+        "relevant_test_lines": [
+          "2026-11-09T18:26:41.6877463Z 152/268 Test #152: nexaui_overlay ........................................................   Passed    0.01 sec",
+          "2026-11-09T18:26:41.7212063Z 155/268 Test #155: nexaui_value_controls .................................................   Passed    0.01 sec",
+          "2026-11-09T18:26:42.1038988Z 172/268 Test #172: nexaui_semantics ......................................................   Passed    0.00 sec"
+        ],
+        "log": {
+          "path": "D:/NexaUI/out/settings-audio3-ci-initial-job-129350750671.log",
+          "size": 304459,
+          "sha256": "08d7a04e644d6c9ef3d85079e1aa2d927d51eab4c30d326af1f20d8e265db823"
+        }
+      },
+      {
+        "id": 129350751722,
+        "name": "core (windows-latest, ON)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129350751722",
+        "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+        "test_summaries": [
+          145
+        ],
+        "required_steps": [
+          "Configure installed consumer",
+          "Build installed consumer",
+          "Run installed consumer (Windows)",
+          "Configure close-request consumer",
+          "Build close-request consumer",
+          "Run close-request consumer (Windows)",
+          "Configure add_subdirectory consumer",
+          "Build add_subdirectory consumer"
+        ],
+        "relevant_test_lines": [
+          "2026-11-09T18:24:30.8994492Z  54/145 Test  #54: nexaui_overlay .............................   Passed    0.02 sec",
+          "2026-11-09T18:24:30.9606629Z  57/145 Test  #57: nexaui_value_controls ......................   Passed    0.02 sec",
+          "2026-11-09T18:24:47.4463847Z  89/145 Test  #89: nexaui_semantics ...........................   Passed    0.02 sec"
+        ],
+        "log": {
+          "path": "D:/NexaUI/out/settings-audio3-ci-initial-job-129350751722.log",
+          "size": 101529,
+          "sha256": "38fef7fe448b743eb3213614db8b8eb4b5feb99b8a9a1b3990a7c08b53e838ca"
+        }
+      },
+      {
+        "id": 129350762326,
+        "name": "core (windows-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129350762326",
+        "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+        "test_summaries": [
+          146
+        ],
+        "required_steps": [
+          "Configure installed consumer",
+          "Build installed consumer",
+          "Run installed consumer (Windows)",
+          "Configure close-request consumer",
+          "Build close-request consumer",
+          "Run close-request consumer (Windows)",
+          "Configure add_subdirectory consumer",
+          "Build add_subdirectory consumer"
+        ],
+        "relevant_test_lines": [
+          "2026-11-09T18:24:32.1833058Z  54/146 Test  #54: nexaui_overlay .............................   Passed    0.02 sec",
+          "2026-11-09T18:24:32.2447556Z  57/146 Test  #57: nexaui_value_controls ......................   Passed    0.02 sec",
+          "2026-11-09T18:24:48.7824424Z  89/146 Test  #89: nexaui_semantics ...........................   Passed    0.02 sec"
+        ],
+        "log": {
+          "path": "D:/NexaUI/out/settings-audio3-ci-initial-job-129350762326.log",
+          "size": 101651,
+          "sha256": "c60ccefbb1705761461323c9839065eb6bb3fb6327c920ec5ce8529edf939e18"
+        }
+      },
+      {
+        "id": 129350762898,
+        "name": "core (macos-latest, OFF)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896/job/129350762898",
+        "head_sha": "a8ef31de8f6b0afb476221d6840255e553930321",
+        "test_summaries": [
+          122
+        ],
+        "required_steps": [
+          "Configure installed consumer",
+          "Build installed consumer",
+          "Run installed consumer (Unix)",
+          "Configure close-request consumer",
+          "Build close-request consumer",
+          "Run close-request consumer (Unix)",
+          "Configure add_subdirectory consumer",
+          "Build add_subdirectory consumer"
+        ],
+        "relevant_test_lines": [
+          "2026-11-09T18:23:50.2959490Z  48/122 Test  #48: nexaui_overlay .............................   Passed    0.01 sec",
+          "2026-11-09T18:23:50.3234090Z  51/122 Test  #51: nexaui_value_controls ......................   Passed    0.01 sec",
+          "2026-11-09T18:24:04.7113410Z  71/122 Test  #71: nexaui_semantics ...........................   Passed    0.01 sec"
+        ],
+        "log": {
+          "path": "D:/NexaUI/out/settings-audio3-ci-initial-job-129350762898.log",
+          "size": 111231,
+          "sha256": "a13fcad8c514b641d3819dd5ff3d5c500bfc640b58ad9ca5645fcbf538cdf2e2"
+        }
+      }
+    ],
+    "missing_required_jobs": [
+      "core (macos-latest, ON)",
+      "core (ubuntu-latest, ON)"
+    ],
+    "infrastructure_annotation": {
+      "url": "https://github.com/Lulus792/NexaUI/actions/runs/42673442896",
+      "annotation": "Internal server error. Correlation ID: a81b31c6-0b69-4330-a43b-58cb8b3390d8",
+      "run_id": 42673442896,
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "scope": "Observed terminal workflow failure; five existing jobs succeeded; two required matrix jobs were not created."
+    }
+  },
+  "retry_history": {
+    "integration_targeted_retry": "403 Resource not accessible by integration",
+    "existing_git_helper_targeted_retry": {
+      "run_id": 42673442896,
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "action": "rerun-failed-jobs",
+      "http_status": 403,
+      "message": "This workflow run cannot be retried",
+      "scope": "Targeted retry not applicable after orchestration failure with all five existing jobs successful; no credential values recorded"
+    },
+    "full_retry": {
+      "run_id": 42673442896,
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "http_status": 201,
+      "action": "rerun",
+      "reason": "Original orchestration internal server error; targeted retry unavailable because all five created jobs succeeded",
+      "credential_source": "Existing authorized Git helper; no credential contents recorded"
+    }
+  },
+  "scope": "All seven required SDK/package jobs pass on attempt2 with two optional skips and no CTest skips. Attempt1 retained five successful jobs but failed with an internal server error before two required matrix jobs were created. Full retry re-executed all jobs on the same immutable source; no byte-reuse or source repair is claimed. Original audio-host/native fixtures have separate local evidence; real service/session/device/compositor/human/performance adoption remains open."
+}

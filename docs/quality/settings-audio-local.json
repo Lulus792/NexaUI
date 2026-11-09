@@ -1,0 +1,4609 @@
+{
+  "result": "passed_scoped",
+  "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+  "original_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+  "legacy_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+  "current_aetheri_head": "a58b0cc3f65fed2bd42cac3b0d5d1694b2f21884",
+  "inputs": [
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/model.c",
+      "path": "aetheri/src/settings/model.c",
+      "size": 6877,
+      "git_blob": "83416a5d5e1f7afd0e2f06ece1f37d830e879fdb",
+      "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/model.h",
+      "path": "aetheri/src/settings/model.h",
+      "size": 2959,
+      "git_blob": "c3d9fe873625e47afaa66415a16ab8d7aa38b477",
+      "sha256": "a85eb45715efd87184b6dc68da5898b2592fe2edc1d58fccb79a97b9cc843acb",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/audio/types.h",
+      "path": "aetheri/src/audio/types.h",
+      "size": 1645,
+      "git_blob": "cc05cdf99535dd569d6389e008fbe44a445f2f9b",
+      "sha256": "e4e89f72c3664edeb6d036181791478de806dd86c69737c5a4d48f148ce3593f",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/text/grapheme.c",
+      "path": "aetheri/src/text/grapheme.c",
+      "size": 3857,
+      "git_blob": "a9b36b2d8ea2b2f0909faea4391d3145703965fb",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/text/grapheme.h",
+      "path": "aetheri/src/text/grapheme.h",
+      "size": 874,
+      "git_blob": "e0ecf83b5ab8af3a0141c3e8919ad9ace2cd961a",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/text/grapheme_data.h",
+      "path": "aetheri/src/text/grapheme_data.h",
+      "size": 39894,
+      "git_blob": "ff2df472ca57699cb508c636e552436a56cefd6c",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/nexaui_view.c",
+      "path": "aetheri/src/settings/nexaui_view.c",
+      "size": 38050,
+      "git_blob": "f84ec0988ade1fb69e9f5b615fc36f6d1f9085b3",
+      "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/nexaui_view.h",
+      "path": "aetheri/src/settings/nexaui_view.h",
+      "size": 1744,
+      "git_blob": "36a1507da7c627a194c4056a05b4f586c8686e94",
+      "sha256": "4f8c1a625245c210507684ac4e6247cb34427a2e39e250ff14a8b0916541d7b6",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/nexaui_main.c",
+      "path": "aetheri/src/settings/nexaui_main.c",
+      "size": 20700,
+      "git_blob": "3d6c55b2ff1add6f7c6b11913b016821a2a2af2d",
+      "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/nexaui_main.h",
+      "path": "aetheri/src/settings/nexaui_main.h",
+      "size": 432,
+      "git_blob": "82db31edd983a023558fccd282659806e03116dd",
+      "sha256": "fe52f721cc0ec821e9ad0999fe3cd504b510a5dbb2f01709131db0877b749b28",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "tests/test_settings.c",
+      "path": "aetheri/tests/test_settings.c",
+      "size": 1548,
+      "git_blob": "f18909aa4ab7d502149b85251545a24fa0a2f617",
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "tests/test_settings_sound.c",
+      "path": "aetheri/tests/test_settings_sound.c",
+      "size": 4874,
+      "git_blob": "0c5e9af4fdbf16ba06deb76ed5459e803113224a",
+      "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "tests/test_settings_view.c",
+      "path": "aetheri/tests/test_settings_view.c",
+      "size": 17780,
+      "git_blob": "790f9dcceffce8cbe5b1324386637c59f2b2c697",
+      "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "LICENSE",
+      "path": "aetheri/LICENSE",
+      "size": 1077,
+      "git_blob": "539ef7249141a8f586d9bf7d1edb3fb603ba916e",
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/NEXAUI-NOTICE.txt",
+      "path": "aetheri/src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "git_blob": "1f260bce713f1376b6f514bec48010cd59ea1224",
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/text/UNICODE-LICENSE.txt",
+      "path": "aetheri/src/text/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "git_blob": "56da58912807030b451a4700687d5bd02c72d6ed",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/audio.c",
+      "path": "aetheri/src/settings/audio.c",
+      "size": 1175,
+      "git_blob": "e2c1bc6ff00c0e1871410900057f8ef4ae451710",
+      "sha256": "971a45daa9c30e90068c78259f9367f783bb08457eb5594cf0a3e8c27eac1933",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/audio.h",
+      "path": "aetheri/src/settings/audio.h",
+      "size": 613,
+      "git_blob": "be9edf3b812b5524ac4214c2084d54cfbca64153",
+      "sha256": "7b30a59354a9754ceccccaadf44e4867e50985bfad42cd83cb086b1f33b3a8ca",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/audio_host.c",
+      "path": "aetheri/src/settings/audio_host.c",
+      "size": 6761,
+      "git_blob": "19cc1bf33a460bdb0d7545a89d61d43aa55b2b84",
+      "sha256": "251a4f19ad4c04c8a05ccd49f07a988951639231d732fca83ddd9712394cd8b9",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/settings/audio_host.h",
+      "path": "aetheri/src/settings/audio_host.h",
+      "size": 1884,
+      "git_blob": "b7a92972a6a77c23bff505e52857cb91686471f7",
+      "sha256": "330d7d6e8add7ff7a9f598be3147472a4285c86b551c9b62e92a4e5c10f1695d",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/audio/control.h",
+      "path": "aetheri/src/audio/control.h",
+      "size": 2708,
+      "git_blob": "9a6c8f12d38be298c795525511bedfa9920c522c",
+      "sha256": "ae819c85cd3f8ff2d92526bdbc24b1968b7e85a02c17a872b2d25aa11b7fa16d",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "src/audio/session_control.h",
+      "path": "aetheri/src/audio/session_control.h",
+      "size": 3594,
+      "git_blob": "6a3649bf6bbb527d62450bb623fdcda247b2b68d",
+      "sha256": "5d1dcc27f4e30e33bb4a22bf4495c719937c530c8b048b4e1b1d2703235fbb7c",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "tests/test_settings_audio.c",
+      "path": "aetheri/tests/test_settings_audio.c",
+      "size": 3644,
+      "git_blob": "7cc34953b7f5a8d68cb8ddb7b8b87062b81f5eae",
+      "sha256": "5bca433aceaf8cfe4278903ca732e43c113fd9c6cd2e552078a66672286b5c7b",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "tests/test_settings_audio_host.c",
+      "path": "aetheri/tests/test_settings_audio_host.c",
+      "size": 8779,
+      "git_blob": "3f49f5acaa3c31966de36b4bb9397177c6ef1deb",
+      "sha256": "1c684fc95516900e73ce31f0a5248c8a20039fecf935eaa24e4253632537728c",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "spec/libinput-build-inputs.json",
+      "path": "aetheri/spec/libinput-build-inputs.json",
+      "size": 5872,
+      "git_blob": "2be80dd3208737e17a1d8e9aed6b597ca7726c6f",
+      "sha256": "8bc6636ad9aac1e8acdc055e4f964844b93d0203b5d45bb58792a6886736c9d5",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "564dc2c7468826cbe24e0143e661ab90681778f7",
+      "source_path": "CMakeLists.txt",
+      "path": "aetheri/CMakeLists.txt",
+      "size": 138674,
+      "git_blob": "0e3180d994ea86dd1a110e1dce22ec26e22ea65a",
+      "sha256": "333342779d1e972c8775b93db160e76d8f5c1c7ff9b26a0a614b84c47f02350a",
+      "current_original_unchanged": true
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "source_path": "src/settings/model.c",
+      "path": "legacy/src/settings/model.c",
+      "size": 1769,
+      "git_blob": "e04c33d734d3ca62d7fc92625efb019cdb855a01",
+      "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "source_path": "src/settings/model.h",
+      "path": "legacy/src/settings/model.h",
+      "size": 1126,
+      "git_blob": "b510a0a392129d5c7cfe856df686d40bbf3f6625",
+      "sha256": "776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793"
+    },
+    {
+      "repository": "F:/Aetheri",
+      "source_revision": "7bbe7042ecd48582b11ef7053a4dbeade6b02351",
+      "source_path": "tests/test_settings.c",
+      "path": "legacy/tests/test_settings.c",
+      "size": 1548,
+      "git_blob": "f18909aa4ab7d502149b85251545a24fa0a2f617",
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/CMakeLists.txt",
+      "path": "repo/examples/21_aetheri_model/CMakeLists.txt",
+      "size": 6099,
+      "git_blob": "df784de64c5c6053a089d8071d3398aa08d86245",
+      "sha256": "ea94f1cf393873fa2f32d3bd79d67a590c3aa2e6a8e8db3964c0aa3bfc0d908c"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/README.md",
+      "path": "repo/examples/21_aetheri_model/README.md",
+      "size": 11857,
+      "git_blob": "dae2ca59cf7fd069b52ce58eaa4b659ba8af6c34",
+      "sha256": "041c595e7dece69f1f9a8d22b1f631cef15fefa880e4cde873a3eed41431cdd5"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/atspi_client.c",
+      "path": "repo/examples/21_aetheri_model/atspi_client.c",
+      "size": 7818,
+      "git_blob": "21f231bcca6fe751e079cf86678c0b9ea80de435",
+      "sha256": "b2555cc23563e9cf58b65c02fac09322f298a8d2d4e39ba7c35ea6d034d3a1d9"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/benchmark_view.c",
+      "path": "repo/examples/21_aetheri_model/benchmark_view.c",
+      "size": 1980,
+      "git_blob": "0314a8d0fb1f38fde9162b904830d42ed9cebff2",
+      "sha256": "297b20a8d6d30d65dec13ace6eb5c4b37680c42a7c5cd9ef1e4ff7fd4fadf36b"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/main.c",
+      "path": "repo/examples/21_aetheri_model/main.c",
+      "size": 10383,
+      "git_blob": "ffa4aaa50cc36539491c7907fe7835fc5567c931",
+      "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/run_sway_resize.py",
+      "path": "repo/examples/21_aetheri_model/run_sway_resize.py",
+      "size": 12184,
+      "git_blob": "88c339886ff43cb0028b8943b0b447e3a2319f36",
+      "sha256": "e7fa1b02191f1fca202d3e03f2fdf87643ba002e1e153b1f8149ffbfb78dfca8"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/test_original_sound.c",
+      "path": "repo/examples/21_aetheri_model/test_original_sound.c",
+      "size": 5707,
+      "git_blob": "0cbf059ae446eeeb17f64f2783d94c3deb1fe677",
+      "sha256": "c81d7631374862b4466ac83244f16d1d3c49b6b91ccc57f34c5600f00be682d6"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/test_sound_state.c",
+      "path": "repo/examples/21_aetheri_model/test_sound_state.c",
+      "size": 3457,
+      "git_blob": "e5cd506ea018e1100cd803090428cd813e20c88d",
+      "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/test_text_wrap.c",
+      "path": "repo/examples/21_aetheri_model/test_text_wrap.c",
+      "size": 3471,
+      "git_blob": "fb5f47c4ae82832b1302ec5c2c8f4c3484b00f4f",
+      "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/test_view.c",
+      "path": "repo/examples/21_aetheri_model/test_view.c",
+      "size": 15045,
+      "git_blob": "428df07dbe38386abde830a30968f11a9814a5a3",
+      "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/view.c",
+      "path": "repo/examples/21_aetheri_model/view.c",
+      "size": 18451,
+      "git_blob": "9353a5ba2e1b750a043b0b4b314464350e2fa80c",
+      "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/view.h",
+      "path": "repo/examples/21_aetheri_model/view.h",
+      "size": 586,
+      "git_blob": "3f4b5780ac60bfdc04b18ed682649932916c51bd",
+      "sha256": "329958c4c289b5ebad59bf30c45f01fb00051258032bed8bbf96e6fadce1ab08"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/21_aetheri_model/virtual_pointer.c",
+      "path": "repo/examples/21_aetheri_model/virtual_pointer.c",
+      "size": 3254,
+      "git_blob": "9ea5155f9ecc20e1cd2ac03aff2d167b8e3a585a",
+      "sha256": "2a27ad5203034fd4bcdeda8f41b7a2710ce9191372dc1ccae2d7500feae11367"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/common/text_wrap.c",
+      "path": "repo/examples/common/text_wrap.c",
+      "size": 3658,
+      "git_blob": "54830b43bc54de69ab9de809bc75c38da3a988ad",
+      "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "examples/common/text_wrap.h",
+      "path": "repo/examples/common/text_wrap.h",
+      "size": 349,
+      "git_blob": "bca1fcb10f12fec786edf3cd9cd290c3802ee1d2",
+      "sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/aetheri_settings_audio/CMakeLists.txt",
+      "path": "repo/tests/aetheri_settings_audio/CMakeLists.txt",
+      "size": 3097,
+      "git_blob": "841cda37466ce472596e2cd52ea84dbd61bb4165",
+      "sha256": "be9a1d0c930c6ec835b35c44d963d9dcd93e27583381df5f28e7edc06190eeab"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/aetheri_settings_audio/README.md",
+      "path": "repo/tests/aetheri_settings_audio/README.md",
+      "size": 3710,
+      "git_blob": "f5b53a2fd82e84df7e890975492314ad90b33bed",
+      "sha256": "bf7c806c5d328fb1ece4eca06ec2bf6c0fe3531217ced5ada4f614d8dcd439a8"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/aetheri_settings_audio/atspi_client.c",
+      "path": "repo/tests/aetheri_settings_audio/atspi_client.c",
+      "size": 10776,
+      "git_blob": "7c74daa4fbb11f9701984bf66c0422bba2deddd4",
+      "sha256": "cfbf31c4bfb2faf6d76fa2c866242bce53cb2a8b594808f59d9729fd45830940"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/aetheri_settings_audio/controlled_owner.c",
+      "path": "repo/tests/aetheri_settings_audio/controlled_owner.c",
+      "size": 7157,
+      "git_blob": "fed7875baa337f4cc1bfa686920aba6ecd92b0f1",
+      "sha256": "46da85cce81baaf5a0918517f873fb4383e128a749e150dcfa24a79dbb36b6a6"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/run_atspi_native.py",
+      "path": "repo/tests/run_atspi_native.py",
+      "size": 6284,
+      "git_blob": "226d8cf47ad73d5192a43db0adf282ecfffee084",
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "repository": "C:/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI",
+      "source_revision": "a8ef31de8f6b0afb476221d6840255e553930321",
+      "source_path": "tests/run_weston_native.py",
+      "path": "repo/tests/run_weston_native.py",
+      "size": 8259,
+      "git_blob": "3bf588b81f5955fe846a50e154d090a6bc575aa5",
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    }
+  ],
+  "executed_ctests": 38,
+  "compiled_object_count": 80,
+  "profiles": [
+    {
+      "profile": "release",
+      "tests": [
+        {
+          "name": "settings.original_model",
+          "seconds": 0.00190399
+        },
+        {
+          "name": "settings.original_sound",
+          "seconds": 0.00153035
+        },
+        {
+          "name": "settings.example_view",
+          "seconds": 0.457122
+        },
+        {
+          "name": "settings.example_wrap",
+          "seconds": 0.10658
+        },
+        {
+          "name": "settings.example_state",
+          "seconds": 0.0212553
+        },
+        {
+          "name": "settings.original_view",
+          "seconds": 3.39047
+        },
+        {
+          "name": "settings.original_view_hidpi",
+          "seconds": 5.84776
+        },
+        {
+          "name": "settings.maximum_sound",
+          "seconds": 0.117115
+        },
+        {
+          "name": "settings.audio_binding",
+          "seconds": 0.0016252
+        },
+        {
+          "name": "settings.audio_events",
+          "seconds": 0.00272274
+        }
+      ],
+      "compiled_objects": [
+        {
+          "input": "aetheri/tests/test_settings.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c",
+            "size": 1548,
+            "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "size": 6712,
+            "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c",
+            "size": 4874,
+            "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "size": 18376,
+            "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c",
+            "size": 1175,
+            "sha256": "971a45daa9c30e90068c78259f9367f783bb08457eb5594cf0a3e8c27eac1933"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "size": 2136,
+            "sha256": "b98b2d01313c28ccd865f2e963f13292a75650c9fd10d4d6d347c22993671a46"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c",
+            "size": 6761,
+            "sha256": "251a4f19ad4c04c8a05ccd49f07a988951639231d732fca83ddd9712394cd8b9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "size": 7432,
+            "sha256": "769d004fa6be98e942acba95567321c0ba3f6595bd80dbac3a6c60de10e91c87"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c",
+            "size": 3644,
+            "sha256": "5bca433aceaf8cfe4278903ca732e43c113fd9c6cd2e552078a66672286b5c7b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "size": 12352,
+            "sha256": "aa2c5aa93d5d163c890125bb0d95faab641e09e6936ca627d993c013369c2cb9"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c",
+            "size": 8779,
+            "sha256": "1c684fc95516900e73ce31f0a5248c8a20039fecf935eaa24e4253632537728c"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "size": 24616,
+            "sha256": "628869fc76ebb250e53c15b06916c4e003629baeb3d90828f9de4837e4aa8452"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/controlled_owner.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c",
+            "size": 7157,
+            "sha256": "46da85cce81baaf5a0918517f873fb4383e128a749e150dcfa24a79dbb36b6a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "size": 10104,
+            "sha256": "b515380b2f3bd6a4b7ef59c6cc73625162eded09d0fe69689137edeeb9e0898d"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/atspi_client.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c",
+            "size": 10776,
+            "sha256": "cfbf31c4bfb2faf6d76fa2c866242bce53cb2a8b594808f59d9729fd45830940"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "size": 22656,
+            "sha256": "bcf38da85ba04ca99dadfb716a62ae795b0ea9948b6d8d03e8e21a173debf7b6"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-isystem",
+            "/usr/include/at-spi-2.0",
+            "-isystem",
+            "/usr/include/dbus-1.0",
+            "-isystem",
+            "/usr/lib/dbus-1.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/model.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c",
+            "size": 6877,
+            "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "size": 6032,
+            "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/text/grapheme.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c",
+            "size": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "size": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c",
+            "size": 18451,
+            "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "size": 27120,
+            "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/common/text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c",
+            "size": 3658,
+            "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "size": 3512,
+            "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c",
+            "size": 10383,
+            "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "size": 14248,
+            "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c",
+            "size": 15045,
+            "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "size": 48024,
+            "sha256": "dfa7293b09b93f15a6e7e4b38908834bcc56a11cbcd93fb04c47c4a83fd5e1da"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+            "size": 3471,
+            "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "size": 7496,
+            "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_sound_state.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+            "size": 3457,
+            "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "size": 11016,
+            "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c",
+            "size": 38050,
+            "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "size": 62440,
+            "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c",
+            "size": 17780,
+            "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "size": 66456,
+            "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_original_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c",
+            "size": 5707,
+            "sha256": "c81d7631374862b4466ac83244f16d1d3c49b6b91ccc57f34c5600f00be682d6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "size": 13048,
+            "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 19016,
+            "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/release/audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 20344,
+            "sha256": "416f353528514210f79c1430992e70a396855b198214916909f32db08a96058a"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DAETHERI_SETTINGS_AUDIO_HOST",
+            "-DAETHERI_SETTINGS_NO_MAIN",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/release-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        }
+      ],
+      "commands": [
+        {
+          "profile": "release",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-audio3/harness",
+            "-B",
+            "/tmp/nexaui-settings-audio3/release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_EXE_LINKER_FLAGS=",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-value-steps-sdk1/release-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+            "-DAETHERI_SYSTEMD_INCLUDE_DIR=/mnt/d/NexaUI/out/settings-audio-headers1/usr/include"
+          ],
+          "exit": 0,
+          "seconds": 4.981445128999999,
+          "log": "settings-audio3-release-configure.log",
+          "sha256": "014f49ec4b0ddab30dac7dcfc945ac184c678617c3f929b89f73e8f390831079"
+        },
+        {
+          "profile": "release",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-audio3/release",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 4.279055061000001,
+          "log": "settings-audio3-release-build.log",
+          "sha256": "482e0946de91d7e5898b37a975d0c726a50c9cc1b2bc822fcf73ec63139cbf9d"
+        },
+        {
+          "profile": "release",
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-audio3/release",
+            "--verbose",
+            "--output-junit",
+            "/tmp/nexaui-settings-audio3/release/tests.xml",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "seconds": 10.044071982000002,
+          "log": "settings-audio3-release-test.log",
+          "sha256": "b3d65b781b9e1413a421b0b9b14e15daf9f1c2603625708b3dda16e68cd541a3"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "tests": [
+        {
+          "name": "settings.original_model",
+          "seconds": 0.00130236
+        },
+        {
+          "name": "settings.original_sound",
+          "seconds": 0.00151179
+        },
+        {
+          "name": "settings.example_view",
+          "seconds": 0.482705
+        },
+        {
+          "name": "settings.example_wrap",
+          "seconds": 0.0868838
+        },
+        {
+          "name": "settings.example_state",
+          "seconds": 0.0207562
+        },
+        {
+          "name": "settings.original_view",
+          "seconds": 3.44875
+        },
+        {
+          "name": "settings.original_view_hidpi",
+          "seconds": 5.92103
+        },
+        {
+          "name": "settings.maximum_sound",
+          "seconds": 0.121691
+        },
+        {
+          "name": "settings.audio_binding",
+          "seconds": 0.00145026
+        },
+        {
+          "name": "settings.audio_events",
+          "seconds": 0.00277465
+        }
+      ],
+      "compiled_objects": [
+        {
+          "input": "aetheri/tests/test_settings.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c",
+            "size": 1548,
+            "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "size": 6712,
+            "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c",
+            "size": 4874,
+            "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "size": 18376,
+            "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c",
+            "size": 1175,
+            "sha256": "971a45daa9c30e90068c78259f9367f783bb08457eb5594cf0a3e8c27eac1933"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "size": 2136,
+            "sha256": "b98b2d01313c28ccd865f2e963f13292a75650c9fd10d4d6d347c22993671a46"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c",
+            "size": 6761,
+            "sha256": "251a4f19ad4c04c8a05ccd49f07a988951639231d732fca83ddd9712394cd8b9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "size": 7432,
+            "sha256": "769d004fa6be98e942acba95567321c0ba3f6595bd80dbac3a6c60de10e91c87"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c",
+            "size": 3644,
+            "sha256": "5bca433aceaf8cfe4278903ca732e43c113fd9c6cd2e552078a66672286b5c7b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "size": 12352,
+            "sha256": "aa2c5aa93d5d163c890125bb0d95faab641e09e6936ca627d993c013369c2cb9"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c",
+            "size": 8779,
+            "sha256": "1c684fc95516900e73ce31f0a5248c8a20039fecf935eaa24e4253632537728c"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "size": 24616,
+            "sha256": "628869fc76ebb250e53c15b06916c4e003629baeb3d90828f9de4837e4aa8452"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/controlled_owner.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c",
+            "size": 7157,
+            "sha256": "46da85cce81baaf5a0918517f873fb4383e128a749e150dcfa24a79dbb36b6a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "size": 10104,
+            "sha256": "b515380b2f3bd6a4b7ef59c6cc73625162eded09d0fe69689137edeeb9e0898d"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/atspi_client.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c",
+            "size": 10776,
+            "sha256": "cfbf31c4bfb2faf6d76fa2c866242bce53cb2a8b594808f59d9729fd45830940"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "size": 22656,
+            "sha256": "bcf38da85ba04ca99dadfb716a62ae795b0ea9948b6d8d03e8e21a173debf7b6"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-isystem",
+            "/usr/include/at-spi-2.0",
+            "-isystem",
+            "/usr/include/dbus-1.0",
+            "-isystem",
+            "/usr/lib/dbus-1.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/model.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c",
+            "size": 6877,
+            "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "size": 6032,
+            "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/text/grapheme.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c",
+            "size": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "size": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c",
+            "size": 18451,
+            "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "size": 27120,
+            "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/common/text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c",
+            "size": 3658,
+            "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "size": 3512,
+            "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c",
+            "size": 10383,
+            "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "size": 14248,
+            "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c",
+            "size": 15045,
+            "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "size": 48024,
+            "sha256": "dfa7293b09b93f15a6e7e4b38908834bcc56a11cbcd93fb04c47c4a83fd5e1da"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+            "size": 3471,
+            "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "size": 7496,
+            "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_sound_state.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+            "size": 3457,
+            "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "size": 11016,
+            "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c",
+            "size": 38050,
+            "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "size": 62440,
+            "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c",
+            "size": 17780,
+            "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "size": 66456,
+            "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_original_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c",
+            "size": 5707,
+            "sha256": "c81d7631374862b4466ac83244f16d1d3c49b6b91ccc57f34c5600f00be682d6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "size": 13048,
+            "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 19016,
+            "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/shared/audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 20344,
+            "sha256": "416f353528514210f79c1430992e70a396855b198214916909f32db08a96058a"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DAETHERI_SETTINGS_AUDIO_HOST",
+            "-DAETHERI_SETTINGS_NO_MAIN",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        }
+      ],
+      "commands": [
+        {
+          "profile": "shared",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-audio3/harness",
+            "-B",
+            "/tmp/nexaui-settings-audio3/shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_EXE_LINKER_FLAGS=",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-value-steps-sdk1/shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+            "-DAETHERI_SYSTEMD_INCLUDE_DIR=/mnt/d/NexaUI/out/settings-audio-headers1/usr/include"
+          ],
+          "exit": 0,
+          "seconds": 3.9275338860000026,
+          "log": "settings-audio3-shared-configure.log",
+          "sha256": "d849a2c6e96454bb21ee5a08091cd50edda453555da22bfc34b50e58dce66515"
+        },
+        {
+          "profile": "shared",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-audio3/shared",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 4.279194096000005,
+          "log": "settings-audio3-shared-build.log",
+          "sha256": "9a9987d19957f25c39cb37e30d30d1296e491de4ffde65a948aaf416dab05164"
+        },
+        {
+          "profile": "shared",
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-audio3/shared",
+            "--verbose",
+            "--output-junit",
+            "/tmp/nexaui-settings-audio3/shared/tests.xml",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "seconds": 10.147182199999996,
+          "log": "settings-audio3-shared-test.log",
+          "sha256": "3e01a58e31b1c1f26c0eeb007b19fd4825e9a8cf0d89006e0b5a34b9dd10ccbb"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "tests": [
+        {
+          "name": "settings.original_model",
+          "seconds": 0.0627345
+        },
+        {
+          "name": "settings.original_sound",
+          "seconds": 0.0640186
+        },
+        {
+          "name": "settings.example_view",
+          "seconds": 1.52574
+        },
+        {
+          "name": "settings.example_wrap",
+          "seconds": 0.457188
+        },
+        {
+          "name": "settings.example_state",
+          "seconds": 0.125435
+        },
+        {
+          "name": "settings.original_view",
+          "seconds": 9.67758
+        },
+        {
+          "name": "settings.original_view_hidpi",
+          "seconds": 14.3007
+        },
+        {
+          "name": "settings.maximum_sound",
+          "seconds": 0.425774
+        },
+        {
+          "name": "settings.audio_binding",
+          "seconds": 0.0645977
+        },
+        {
+          "name": "settings.audio_events",
+          "seconds": 0.076689
+        }
+      ],
+      "compiled_objects": [
+        {
+          "input": "aetheri/tests/test_settings.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c",
+            "size": 1548,
+            "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "size": 33360,
+            "sha256": "5355788877cbed430273daaddc8ea5caaa1d344ab2157e2d4c4c36565a51bbe6"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c",
+            "size": 4874,
+            "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "size": 72288,
+            "sha256": "19e2ffd2e669beab005aa21e3a7bed4c21c0daec2df9ad5d8d11160d41cf6529"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c",
+            "size": 1175,
+            "sha256": "971a45daa9c30e90068c78259f9367f783bb08457eb5594cf0a3e8c27eac1933"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "size": 15336,
+            "sha256": "0201d742e78b3dc152c839b67e905b3a404f05705cfeaddca719c8a614fa0faa"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c",
+            "size": 6761,
+            "sha256": "251a4f19ad4c04c8a05ccd49f07a988951639231d732fca83ddd9712394cd8b9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "size": 92416,
+            "sha256": "6b666e0bfe189a1f694f77fcfaf226a3ce2d05178299ba108a04ddfd273a15fd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_original_audio_host.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/audio_host.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c",
+            "size": 3644,
+            "sha256": "5bca433aceaf8cfe4278903ca732e43c113fd9c6cd2e552078a66672286b5c7b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "size": 53384,
+            "sha256": "8ce27e5f67357dde593ad18d94101e5c2e7018f1996736b5ba5d2301560efcca"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_binding_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_audio_host.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c",
+            "size": 8779,
+            "sha256": "1c684fc95516900e73ce31f0a5248c8a20039fecf935eaa24e4253632537728c"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "size": 108232,
+            "sha256": "d0ed667de5440a252b96b479f04d53ab21933f74985ea135d8a0dd25d10418e7"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/original_audio_events_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_audio_host.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/controlled_owner.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c",
+            "size": 7157,
+            "sha256": "46da85cce81baaf5a0918517f873fb4383e128a749e150dcfa24a79dbb36b6a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "size": 75360,
+            "sha256": "2c3e0f26f73d8a64bbb78b25465250d3e074f4f6e9a4ed0d77b87b69bd09fd79"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_settings.dir/controlled_owner.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/controlled_owner.c"
+          ]
+        },
+        {
+          "input": "repo/tests/aetheri_settings_audio/atspi_client.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c",
+            "size": 10776,
+            "sha256": "cfbf31c4bfb2faf6d76fa2c866242bce53cb2a8b594808f59d9729fd45830940"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "size": 125480,
+            "sha256": "d42dde5a25fd2c7a15f6b2c193c0ce18551db36b59a29db48432ba6b1e9f3f23"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-isystem",
+            "/usr/include/at-spi-2.0",
+            "-isystem",
+            "/usr/include/dbus-1.0",
+            "-isystem",
+            "/usr/lib/dbus-1.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/CMakeFiles/controlled_audio_atspi.dir/atspi_client.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/aetheri_settings_audio/atspi_client.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/model.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c",
+            "size": 6877,
+            "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "size": 98136,
+            "sha256": "4f039093b0cdf0bf4f1ae21fb2dfb14af782044b710ec793be2b20103dd14e6d"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/text/grapheme.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c",
+            "size": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "size": 46008,
+            "sha256": "0d1031e0970e48fec8e61498c7e345070b60ebeedac97009effa356a32cbc9b6"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c",
+            "size": 18451,
+            "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "size": 230112,
+            "sha256": "0051c02fcac589da450384ac188f35979193ce3aa28a9f6302a1c06a78ac50af"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/common/text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c",
+            "size": 3658,
+            "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "size": 21024,
+            "sha256": "680ce5f9f86eaa939734a158098fcca54c09fb4b713d0a8c64eec5ab4b181def"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c",
+            "size": 10383,
+            "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "size": 94176,
+            "sha256": "b6ffa1a81b6a41fb254787173d241fabc98bc90543b0ef3157fa4d7ece528ff0"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c",
+            "size": 15045,
+            "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "size": 189984,
+            "sha256": "3f6ddcc6c42bb3a0d1adc4005e043c949cfbb256713dbc1fe790cadc6a114e08"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+            "size": 3471,
+            "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "size": 38488,
+            "sha256": "d26ab039fae4b75c271dced8f7cce8a1c9a3d76b21131ecf8664941aa825b1de"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_sound_state.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+            "size": 3457,
+            "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "size": 53640,
+            "sha256": "b09e5c30164607cbebaf90ec5c6bbf49ef26d7e8b8cdba40ce5a151fa627ef89"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c",
+            "size": 38050,
+            "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "size": 462248,
+            "sha256": "e6b13bba12701cf6ee8e132c6b2f288da5e3de42f548c0625117c284fc879c10"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_view.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c",
+            "size": 17780,
+            "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "size": 268896,
+            "sha256": "f8aaa03ebbf5577a2e10540fb855198417b611c799ebe0a66546557aef7c8d82"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_original_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c",
+            "size": 5707,
+            "sha256": "c81d7631374862b4466ac83244f16d1d3c49b6b91ccc57f34c5600f00be682d6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "size": 73008,
+            "sha256": "79962d9aa3a31afb7adbb991084cff46127eab8226930317cc9bb68a858c3ae2"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_original_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 161256,
+            "sha256": "c0d6afb8420b7ffba5652008c69d7ac7fee8fd26e729390bc22232526a0af5e9"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/nexaui_main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c",
+            "size": 20700,
+            "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/asan/audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "size": 168400,
+            "sha256": "293c483ccccbf5f33288e895a8bc412822d3e85d1c161a97a88b27951f3d42be"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DAETHERI_SETTINGS_AUDIO_HOST",
+            "-DAETHERI_SETTINGS_NO_MAIN",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/asan-prefix/include",
+            "-isystem",
+            "/mnt/d/NexaUI/out/settings-audio-headers1/usr/include",
+            "-isystem",
+            "/usr/include/gio-unix-2.0",
+            "-isystem",
+            "/usr/include/glib-2.0",
+            "-isystem",
+            "/usr/lib/glib-2.0/include",
+            "-isystem",
+            "/usr/include/libmount",
+            "-isystem",
+            "/usr/include/blkid",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-g",
+            "-O1",
+            "-std=c17",
+            "-pthread",
+            "-o",
+            "audio/example21/CMakeFiles/aetheri_original_audio_entry.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/nexaui_main.c"
+          ]
+        }
+      ],
+      "commands": [
+        {
+          "profile": "asan",
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-settings-audio3/harness",
+            "-B",
+            "/tmp/nexaui-settings-audio3/asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-value-steps-sdk1/asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+            "-DAETHERI_SYSTEMD_INCLUDE_DIR=/mnt/d/NexaUI/out/settings-audio-headers1/usr/include"
+          ],
+          "exit": 0,
+          "seconds": 4.3314159780000026,
+          "log": "settings-audio3-asan-configure.log",
+          "sha256": "ec0270402b4af6dd18b26dbe5ba51c7367aef3c174408ec0367d338fc1e31195"
+        },
+        {
+          "profile": "asan",
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-settings-audio3/asan",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 8.390641589999994,
+          "log": "settings-audio3-asan-build.log",
+          "sha256": "f252c80f7134c61a9ac68fd49c4776fe54388a4b7b1e2bc11b110785509a60ec"
+        },
+        {
+          "profile": "asan",
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-settings-audio3/asan",
+            "--verbose",
+            "--output-junit",
+            "/tmp/nexaui-settings-audio3/asan/tests.xml",
+            "--no-tests=error"
+          ],
+          "exit": 0,
+          "seconds": 26.850672118000006,
+          "log": "settings-audio3-asan-test.log",
+          "sha256": "645a077c408f219cbb6c73675d87dc3b573ef83409e3eecc77b5dba1467301ad"
+        }
+      ]
+    },
+    {
+      "profile": "off-shared-aetheri",
+      "tests": [
+        {
+          "name": "settings.off_model",
+          "seconds": 0.00131484
+        },
+        {
+          "name": "settings.off_view",
+          "seconds": 0.503114
+        },
+        {
+          "name": "settings.off_wrap",
+          "seconds": 0.0869925
+        },
+        {
+          "name": "settings.off_sound",
+          "seconds": 0.00175372
+        },
+        {
+          "name": "settings.off_state",
+          "seconds": 0.0209888
+        }
+      ],
+      "compiled_objects": [
+        {
+          "input": "aetheri/tests/test_settings.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c",
+            "size": 1548,
+            "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "size": 6712,
+            "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings.c"
+          ]
+        },
+        {
+          "input": "aetheri/tests/test_settings_sound.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c",
+            "size": 4874,
+            "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "size": 18376,
+            "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/tests/test_settings_sound.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/settings/model.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c",
+            "size": 6877,
+            "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "size": 6032,
+            "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings/model.c"
+          ]
+        },
+        {
+          "input": "aetheri/src/text/grapheme.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c",
+            "size": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "size": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/text/grapheme.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c",
+            "size": 18451,
+            "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "size": 27120,
+            "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/common/text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c",
+            "size": 3658,
+            "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "size": 3512,
+            "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c",
+            "size": 10383,
+            "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "size": 14248,
+            "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c",
+            "size": 15045,
+            "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "size": 48024,
+            "sha256": "dfa7293b09b93f15a6e7e4b38908834bcc56a11cbcd93fb04c47c4a83fd5e1da"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+            "size": 3471,
+            "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "size": 7496,
+            "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_sound_state.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c",
+            "size": 3457,
+            "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-aetheri/build/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "size": 11016,
+            "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/aetheri/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_sound_state.c"
+          ]
+        }
+      ]
+    },
+    {
+      "profile": "off-shared-legacy",
+      "tests": [
+        {
+          "name": "settings.off_model",
+          "seconds": 0.00132512
+        },
+        {
+          "name": "settings.off_view",
+          "seconds": 0.600381
+        },
+        {
+          "name": "settings.off_wrap",
+          "seconds": 0.125717
+        }
+      ],
+      "compiled_objects": [
+        {
+          "input": "legacy/tests/test_settings.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/legacy/tests/test_settings.c",
+            "size": 1548,
+            "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/legacy/tests/test_settings.c.o",
+            "size": 6664,
+            "sha256": "32cce7a00484d6a2504169c9313a082c299e04a820d0ed30b0ae6f099956ef61"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-audio-source3/legacy/tests/test_settings.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/legacy/tests/test_settings.c"
+          ]
+        },
+        {
+          "input": "legacy/src/settings/model.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings/model.c",
+            "size": 1769,
+            "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings/model.c.o",
+            "size": 2512,
+            "sha256": "bf55689f14bc90b3631ef652068fb762e4d5354c90d762c19bd9f0e937074b6c"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings/model.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings/model.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c",
+            "size": 18451,
+            "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "size": 27120,
+            "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_view.dir/view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/common/text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c",
+            "size": 3658,
+            "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "size": 3512,
+            "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/common/text_wrap.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/main.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c",
+            "size": 10383,
+            "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "size": 14208,
+            "sha256": "71daae306ae82dbefb080a2e7f744a7a5b0885e78f6b4d746b9e47eb3f57f3cd"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/main.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_view.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c",
+            "size": 15045,
+            "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "size": 47976,
+            "sha256": "56afaa06361b8f9dfa9361e044d15950c9d0fb86709e9764363baa0599543375"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_view.c"
+          ]
+        },
+        {
+          "input": "repo/examples/21_aetheri_model/test_text_wrap.c",
+          "source": {
+            "path": "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+            "size": 3471,
+            "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+          },
+          "object": {
+            "path": "/tmp/nexaui-settings-audio3/off-legacy/build/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "size": 7496,
+            "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+          },
+          "command": [
+            "/usr/bin/clang",
+            "-DNEXAUI_SHARED",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/../common",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src/settings",
+            "-I/mnt/d/NexaUI/out/settings-audio-source3/legacy/src",
+            "-isystem",
+            "/tmp/nexaui-value-steps-sdk1/shared-prefix/include",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wconversion",
+            "-Wshadow",
+            "-Werror",
+            "-O3",
+            "-DNDEBUG",
+            "-std=c17",
+            "-o",
+            "example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+            "-c",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model/test_text_wrap.c"
+          ]
+        }
+      ]
+    }
+  ],
+  "binaries": [
+    {
+      "profile": "release",
+      "path": "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_atspi",
+      "size": 28928,
+      "sha256": "75d1b04e9af7072221d92ca0709c41f3b5da38f90369d502edbef3d3effb9c72"
+    },
+    {
+      "profile": "release",
+      "path": "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_settings",
+      "size": 892912,
+      "sha256": "467b7a11a7fcfef90cd2e652f11b8d6fab27cea71a43670623e2a0c1071320c1"
+    },
+    {
+      "profile": "shared",
+      "path": "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_atspi",
+      "size": 28928,
+      "sha256": "75d1b04e9af7072221d92ca0709c41f3b5da38f90369d502edbef3d3effb9c72"
+    },
+    {
+      "profile": "shared",
+      "path": "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_settings",
+      "size": 107440,
+      "sha256": "e387dd9ff360121e0cc1bce8a77404c534e1c52e48ae169c0d9d3706ff031707"
+    },
+    {
+      "profile": "asan",
+      "path": "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_atspi",
+      "size": 2905984,
+      "sha256": "7db9982e65f7d39f1f08b7435022dcd2e16600f9a71cef933b622a67331fe6de"
+    },
+    {
+      "profile": "asan",
+      "path": "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_settings",
+      "size": 10757136,
+      "sha256": "86598e9c245fdf3fdbecc91f2105ae020c04366b54871bc56ff97a23df14fa9e"
+    }
+  ],
+  "native": {
+    "commands": [
+      {
+        "profile": "release",
+        "mode": "observed-loss",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/release-native-observed-loss",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {},
+        "exit": 0,
+        "seconds": 2.376531387,
+        "log": "settings-audio3-native-release-observed-loss.log",
+        "sha256": "7629e1f74904e6cb0f77c5954c7ef9d9255b397cc8f34a9f23f7119e97ccd3f0"
+      },
+      {
+        "profile": "release",
+        "mode": "pending-close",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/release-native-pending-close",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {
+          "NEXAUI_AUDIO_CLOSE_PENDING": "1"
+        },
+        "exit": 0,
+        "seconds": 1.0210282350000002,
+        "log": "settings-audio3-native-release-pending-close.log",
+        "sha256": "190776b4dd6d44a21a046caf6b6965ffba4eead564dad01dca392df9ccfa28f6"
+      },
+      {
+        "profile": "shared",
+        "mode": "observed-loss",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/shared-native-observed-loss",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {},
+        "exit": 0,
+        "seconds": 1.3208802720000001,
+        "log": "settings-audio3-native-shared-observed-loss.log",
+        "sha256": "73ef2e2c3ab9408cb424fb3f0e3c0bc26f9f79da939a575a9dc2982fd235a3db"
+      },
+      {
+        "profile": "shared",
+        "mode": "pending-close",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/shared-native-pending-close",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {
+          "NEXAUI_AUDIO_CLOSE_PENDING": "1"
+        },
+        "exit": 0,
+        "seconds": 1.0714518120000012,
+        "log": "settings-audio3-native-shared-pending-close.log",
+        "sha256": "190776b4dd6d44a21a046caf6b6965ffba4eead564dad01dca392df9ccfa28f6"
+      },
+      {
+        "profile": "asan",
+        "mode": "observed-loss",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/asan-native-observed-loss",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {},
+        "exit": 0,
+        "seconds": 2.273862902000001,
+        "log": "settings-audio3-native-asan-observed-loss.log",
+        "sha256": "275e88ba61dbcd459c83133102d0c781caf3f8a89c6d7bf428ebc323b6bc5b87"
+      },
+      {
+        "profile": "asan",
+        "mode": "pending-close",
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_weston_native.py",
+          "--work-dir",
+          "/tmp/nexaui-settings-audio3/asan-native-pending-close",
+          "--timeout",
+          "60",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_atspi",
+          "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_settings"
+        ],
+        "extra_environment": {
+          "NEXAUI_AUDIO_CLOSE_PENDING": "1"
+        },
+        "exit": 0,
+        "seconds": 1.4205227489999999,
+        "log": "settings-audio3-native-asan-pending-close.log",
+        "sha256": "190776b4dd6d44a21a046caf6b6965ffba4eead564dad01dca392df9ccfa28f6"
+      }
+    ],
+    "tasks": [
+      {
+        "profile": "release",
+        "mode": "observed-loss",
+        "frames": 18,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/release-native-observed-loss/result.json",
+          "size": 1029,
+          "sha256": "19033030d8094e3917d92bcf1bb7259b1ab6b96722dcac1a9cc9ba9f670a1d67"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/release-native-observed-loss/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 25,
+          "child_pid": 26,
+          "startup_seconds": 0.13839163299999946,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 1.3033298429999993,
+          "exit_code": 0
+        }
+      },
+      {
+        "profile": "release",
+        "mode": "pending-close",
+        "frames": 8,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/release-native-pending-close/result.json",
+          "size": 1029,
+          "sha256": "17b23303a47a69ede0cfc252752b0548947e41bc3e557867cee8c55e728205ae"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/release/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/release-native-pending-close/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 51,
+          "child_pid": 54,
+          "startup_seconds": 0.07621236700000011,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 0.5959772370000014,
+          "exit_code": 0
+        }
+      },
+      {
+        "profile": "shared",
+        "mode": "observed-loss",
+        "frames": 17,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/shared-native-observed-loss/result.json",
+          "size": 1026,
+          "sha256": "be72f98f9b616f21ac26ff60d077585893fa5f8a7e85c0d398921a6dff674ab9"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/shared-native-observed-loss/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 77,
+          "child_pid": 80,
+          "startup_seconds": 0.08305224399999922,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 0.9462014859999996,
+          "exit_code": 0
+        }
+      },
+      {
+        "profile": "shared",
+        "mode": "pending-close",
+        "frames": 8,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/shared-native-pending-close/result.json",
+          "size": 1028,
+          "sha256": "70c111f0d3f18491f1949d515cc5331e1a19568f8962aae88feb389d2152d400"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/shared/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/shared-native-pending-close/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 113,
+          "child_pid": 116,
+          "startup_seconds": 0.08116307600000106,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 0.6775906580000015,
+          "exit_code": 0
+        }
+      },
+      {
+        "profile": "asan",
+        "mode": "observed-loss",
+        "frames": 18,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/asan-native-observed-loss/result.json",
+          "size": 1022,
+          "sha256": "5536d4b624cb63af602d74474c7aa08737987602722fcee257c1b210a0fd98ac"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/asan-native-observed-loss/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 139,
+          "child_pid": 142,
+          "startup_seconds": 0.07765179399999944,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 1.8260212419999995,
+          "exit_code": 0
+        }
+      },
+      {
+        "profile": "asan",
+        "mode": "pending-close",
+        "frames": 8,
+        "report": {
+          "path": "/tmp/nexaui-settings-audio3/asan-native-pending-close/result.json",
+          "size": 1022,
+          "sha256": "cf4052e068cfa843550c31f96e9f74942b02a46d4d051768fadef9dd41614ee3"
+        },
+        "result": {
+          "status": "passed",
+          "command": [
+            "python3",
+            "/mnt/d/NexaUI/out/settings-audio-source3/repo/tests/run_atspi_native.py",
+            "/usr/libexec/at-spi2-registryd",
+            "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_atspi",
+            "/tmp/nexaui-settings-audio3/asan/audio/controlled_audio_settings"
+          ],
+          "scope": "Private Weston/Xvfb Wayland integration; virtual input, no physical/human acceptance",
+          "weston_command": [
+            "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+            "--backend=x11-backend.so",
+            "--use-pixman",
+            "--shell=/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+            "--width=1600",
+            "--height=1200",
+            "--idle-time=0",
+            "--socket=nexaui-test",
+            "--config=/tmp/nexaui-settings-audio3/asan-native-pending-close/weston.ini"
+          ],
+          "display": ":102",
+          "weston_pid": 172,
+          "child_pid": 175,
+          "startup_seconds": 0.07749493200000046,
+          "child_exit": 0,
+          "weston_exit": 0,
+          "elapsed_seconds": 1.0436582689999998,
+          "exit_code": 0
+        }
+      }
+    ]
+  },
+  "guards": {
+    "uid": 65534,
+    "commands": [
+      {
+        "name": "no-view",
+        "command": [
+          "cmake",
+          "-S",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model",
+          "-B",
+          "/tmp/nexaui-settings-audio3/guard4-no-view",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-value-steps-sdk1/shared-prefix",
+          "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_AUDIO_ENTRY=ON",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_VIEW=OFF"
+        ],
+        "exit": 1,
+        "expected_failure": "requires the original Settings view on Linux",
+        "log": "settings-audio4-guard-no-view.log",
+        "sha256": "9b52cde42b1a86e6d29ea640f30f6ea950d6f8439a65b09fb54c82aa00a86ec6"
+      },
+      {
+        "name": "no-host",
+        "command": [
+          "cmake",
+          "-S",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model",
+          "-B",
+          "/tmp/nexaui-settings-audio3/guard4-no-host",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-value-steps-sdk1/shared-prefix",
+          "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_AUDIO_ENTRY=ON",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_VIEW=ON"
+        ],
+        "exit": 1,
+        "expected_failure": "existing original Settings audio-host target",
+        "log": "settings-audio4-guard-no-host.log",
+        "sha256": "b4cb08662d2393f7d46aae94fba05bee32d98905d1ae812b285d62f3613db4f8"
+      },
+      {
+        "name": "old-sdk",
+        "command": [
+          "cmake",
+          "-S",
+          "/mnt/d/NexaUI/out/settings-audio-source3/repo/examples/21_aetheri_model",
+          "-B",
+          "/tmp/nexaui-settings-audio3/guard4-old-sdk",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_PREFIX_PATH=/mnt/d/NexaUI/out/font-metadata-sdk4-shared-prefix",
+          "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/settings-audio-source3/aetheri",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_AUDIO_ENTRY=ON",
+          "-DNEXAUI_MODEL_BUILD_ORIGINAL_VIEW=ON"
+        ],
+        "exit": 1,
+        "expected_failure": "requested version \"0.1.32\"",
+        "log": "settings-audio4-guard-old-sdk.log",
+        "sha256": "fc733c2b171518544cb92083024e05039d8b87c00f0b965e11674c30569b6c0a"
+      }
+    ]
+  },
+  "headers": {
+    "package": {
+      "name": "systemd-devel-259.10-1.fc44.x86_64.rpm",
+      "url": "https://kojipkgs.fedoraproject.org/packages/systemd/259.10/1.fc44/data/signed/6d9f90a6/x86_64/systemd-devel-259.10-1.fc44.x86_64.rpm",
+      "size": 718475,
+      "sha256": "5084b02d680e990d022734f8083aa40c5f882ef68d9f8e8710cbaa2eae511711",
+      "metadata": [
+        "systemd-devel 259.10-1.fc44.x86_64",
+        "LGPL-2.1-or-later AND MIT",
+        "systemd-259.10-1.fc44.src.rpm"
+      ],
+      "selected_files": 20
+    },
+    "files": [
+      {
+        "path": "usr/include/systemd/_sd-common.h",
+        "size": 4273,
+        "sha256": "6853f728e39c464573663b83e6ce142a68fb920f33754693497341a1aa2705b0"
+      },
+      {
+        "path": "usr/include/systemd/sd-bus-protocol.h",
+        "size": 9953,
+        "sha256": "83b901c20d90c2a9111a3c3fcd1b06eaef673537ebef841a0505da4419eb4d71"
+      },
+      {
+        "path": "usr/include/systemd/sd-bus-vtable.h",
+        "size": 23343,
+        "sha256": "be09a3ff17dc4aaa166f2f8c341c61f2496a7419a256a2f368fc8ac5d911820c"
+      },
+      {
+        "path": "usr/include/systemd/sd-bus.h",
+        "size": 26726,
+        "sha256": "a52b187f3c2392b453c87485c66e6974cef15460c00055d09c2f354903fa4242"
+      },
+      {
+        "path": "usr/include/systemd/sd-daemon.h",
+        "size": 14202,
+        "sha256": "f0f21b4b6ce6db8fb0c397306c101101cfd1f46fa59d84f6959c34dd1cf566eb"
+      },
+      {
+        "path": "usr/include/systemd/sd-device.h",
+        "size": 9109,
+        "sha256": "90594b918d40b8d63f5620f21a0bd60e18e0b7176a8679c2d49cce42fbd55346"
+      },
+      {
+        "path": "usr/include/systemd/sd-event.h",
+        "size": 9293,
+        "sha256": "014e80a8bd11578db3776247782da5c7eae0475fb3621722708312108557c881"
+      },
+      {
+        "path": "usr/include/systemd/sd-gpt.h",
+        "size": 25695,
+        "sha256": "3ad87981bd1a721d8a9bc6833f12280a8519c1530c3c59d910e617ca4a9b9993"
+      },
+      {
+        "path": "usr/include/systemd/sd-hwdb.h",
+        "size": 1611,
+        "sha256": "99bd95a6667df476d11d072fea9f6aa2bdfed31e2ded030abe65fd81430fa185"
+      },
+      {
+        "path": "usr/include/systemd/sd-id128.h",
+        "size": 8571,
+        "sha256": "ae18a4b5987f36e3845354a26c1168c0dac7247d675d3c9e2ac84e32ad4a9260"
+      },
+      {
+        "path": "usr/include/systemd/sd-journal.h",
+        "size": 8919,
+        "sha256": "98935bf846f014e3c4d20be6e96ed467470db38e5cc9ac5a86486d6c0a555d6e"
+      },
+      {
+        "path": "usr/include/systemd/sd-json.h",
+        "size": 22451,
+        "sha256": "af1819dd633b7c9b2fec74633aaaefd6b97c2994386bd989ceba223d325b06ed"
+      },
+      {
+        "path": "usr/include/systemd/sd-login.h",
+        "size": 10711,
+        "sha256": "2add3ee839658722f3a9239de0550e6bf651e6f3f4f2fc9c35ed3f68e84fb2ce"
+      },
+      {
+        "path": "usr/include/systemd/sd-messages.h",
+        "size": 28638,
+        "sha256": "d08749a2a302f8bd55955685902b809ad7241aa086c459925f7282809c17dffa"
+      },
+      {
+        "path": "usr/include/systemd/sd-path.h",
+        "size": 4707,
+        "sha256": "504227751b8edda7d7ed22b097b840cd0ec31d2fad65e29f7d78536ab1fb6d6a"
+      },
+      {
+        "path": "usr/include/systemd/sd-varlink-idl.h",
+        "size": 11264,
+        "sha256": "9608b7d9357a4cf38416b087a28f07f37726acd2e926d50d448d103a81de1869"
+      },
+      {
+        "path": "usr/include/systemd/sd-varlink.h",
+        "size": 17151,
+        "sha256": "00463eef7ef7c56d92723f01d034931f2880a6f33d8a3474e455f6c5f82b01c6"
+      }
+    ],
+    "uid": 65534,
+    "scope": "Private header-only test SDK from the original exact Aetheri manifest hash. No installation/library linking/runtime replacement; no fresh RPM signature verification claimed."
+  },
+  "captures": {
+    "uid": 65534,
+    "commands": [
+      {
+        "profile": "release",
+        "density": 1,
+        "command": [
+          "/tmp/nexaui-settings-audio3/release/audio/example21/aetheri_original_view_test",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "1",
+          "/tmp/nexaui-settings-audio3/release-captures-1"
+        ],
+        "exit": 0,
+        "log": "settings-audio3-captures-release-1.log",
+        "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc",
+        "images": [
+          {
+            "path": "/tmp/nexaui-settings-audio3/release-captures-1/sound-dark.ppm",
+            "size": 2160016,
+            "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f",
+            "preview": "settings-audio3-release-1-sound-dark.png",
+            "preview_sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/release-captures-1/sound-light-de-200-controls.ppm",
+            "size": 1152015,
+            "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5",
+            "preview": "settings-audio3-release-1-sound-light-de-200-controls.png",
+            "preview_sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/release-captures-1/sound-light-de-200.ppm",
+            "size": 1152015,
+            "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89",
+            "preview": "settings-audio3-release-1-sound-light-de-200.png",
+            "preview_sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/release-captures-1/sound-muted-contrast.ppm",
+            "size": 2160016,
+            "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4",
+            "preview": "settings-audio3-release-1-sound-muted-contrast.png",
+            "preview_sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+          }
+        ]
+      },
+      {
+        "profile": "shared",
+        "density": 1,
+        "command": [
+          "/tmp/nexaui-settings-audio3/shared/audio/example21/aetheri_original_view_test",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "1",
+          "/tmp/nexaui-settings-audio3/shared-captures-1"
+        ],
+        "exit": 0,
+        "log": "settings-audio3-captures-shared-1.log",
+        "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc",
+        "images": [
+          {
+            "path": "/tmp/nexaui-settings-audio3/shared-captures-1/sound-dark.ppm",
+            "size": 2160016,
+            "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f",
+            "preview": "settings-audio3-shared-1-sound-dark.png",
+            "preview_sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/shared-captures-1/sound-light-de-200-controls.ppm",
+            "size": 1152015,
+            "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5",
+            "preview": "settings-audio3-shared-1-sound-light-de-200-controls.png",
+            "preview_sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/shared-captures-1/sound-light-de-200.ppm",
+            "size": 1152015,
+            "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89",
+            "preview": "settings-audio3-shared-1-sound-light-de-200.png",
+            "preview_sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/shared-captures-1/sound-muted-contrast.ppm",
+            "size": 2160016,
+            "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4",
+            "preview": "settings-audio3-shared-1-sound-muted-contrast.png",
+            "preview_sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+          }
+        ]
+      },
+      {
+        "profile": "asan",
+        "density": 1,
+        "command": [
+          "/tmp/nexaui-settings-audio3/asan/audio/example21/aetheri_original_view_test",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "1",
+          "/tmp/nexaui-settings-audio3/asan-captures-1"
+        ],
+        "exit": 0,
+        "log": "settings-audio3-captures-asan-1.log",
+        "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc",
+        "images": [
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-1/sound-dark.ppm",
+            "size": 2160016,
+            "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f",
+            "preview": "settings-audio3-asan-1-sound-dark.png",
+            "preview_sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-1/sound-light-de-200-controls.ppm",
+            "size": 1152015,
+            "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5",
+            "preview": "settings-audio3-asan-1-sound-light-de-200-controls.png",
+            "preview_sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-1/sound-light-de-200.ppm",
+            "size": 1152015,
+            "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89",
+            "preview": "settings-audio3-asan-1-sound-light-de-200.png",
+            "preview_sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-1/sound-muted-contrast.ppm",
+            "size": 2160016,
+            "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4",
+            "preview": "settings-audio3-asan-1-sound-muted-contrast.png",
+            "preview_sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+          }
+        ]
+      },
+      {
+        "profile": "asan",
+        "density": 2,
+        "command": [
+          "/tmp/nexaui-settings-audio3/asan/audio/example21/aetheri_original_view_test",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "2",
+          "/tmp/nexaui-settings-audio3/asan-captures-2"
+        ],
+        "exit": 0,
+        "log": "settings-audio3-captures-asan-2.log",
+        "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc",
+        "images": [
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-2/sound-dark.ppm",
+            "size": 2160016,
+            "sha256": "b56ff5edb532be2a3465b703f3609c6a460c7441cc442bc72f44ba64dd770e95",
+            "preview": "settings-audio3-asan-2-sound-dark.png",
+            "preview_sha256": "9a55eff76a7b3fc484e03d8f7c5fd8d929c448d32ea640e9b6faa52dc5e2cfe7"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-2/sound-light-de-200-controls.ppm",
+            "size": 1152015,
+            "sha256": "0101e9b048d71370eef36742faa806eeb7603aed026ce93dcb9015937431351a",
+            "preview": "settings-audio3-asan-2-sound-light-de-200-controls.png",
+            "preview_sha256": "9f867d0026ef29627cfa19873b918743308bbdb7520922a2a7af8876f764fc1a"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-2/sound-light-de-200.ppm",
+            "size": 1152015,
+            "sha256": "eab3becc85b91fe32abb14e916a70e1c8e1a6164c961f14fc5adcdf832130555",
+            "preview": "settings-audio3-asan-2-sound-light-de-200.png",
+            "preview_sha256": "d11a65032bf4ee307f4e3644e9894806ba88f01c09e0b101937f47bea0ad0066"
+          },
+          {
+            "path": "/tmp/nexaui-settings-audio3/asan-captures-2/sound-muted-contrast.ppm",
+            "size": 2160016,
+            "sha256": "d57fc577b6824d55b9caafc14498e3e53e0ebbec4db2c3e39888ba20c3d09e01",
+            "preview": "settings-audio3-asan-2-sound-muted-contrast.png",
+            "preview_sha256": "d9810a43bad9cee72b0fc3f6c34547d200772a6a068169ecccaac1dca5b981ae"
+          }
+        ]
+      }
+    ],
+    "complete_rgb_equal_1x_pairs": 8,
+    "old_sdk_release_equal_pairs": 4,
+    "scope": "Headless actual original view; four scenes per configuration. No physical or native pixel acceptance."
+  },
+  "sdk_source_revision": "f1c96419a33ac00e14ab14ec8c7f93cfec2aea93",
+  "sdk_version": "0.1.32",
+  "scope": "Original entry/pump/GLib host and view/model; controlled test observations/effects only. Six actual private native tasks, pending/unknown after window return and permanent model loss fence. No real service/session admission, original compositor, device effect/audibility/persistence, numeric Value interface, IME, canonical font, physical/human or normal adoption acceptance."
+}
